@@ -377,7 +377,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Collection cacerts)
+    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Collection<Certificate> cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null) {
@@ -556,7 +556,7 @@ public class KeyTools {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Find the key private key entry in the keystore
-        Enumeration e = ks.aliases();
+        Enumeration<String> e = ks.aliases();
         Object o = null;
         String alias = "";
         PrivateKey serverPrivKey = null;
@@ -695,7 +695,7 @@ public class KeyTools {
         }
 
         // If we came here, we have a cert which is not root cert in 'cert'
-        ArrayList array = new ArrayList();
+        ArrayList<Certificate> array = new ArrayList<Certificate>();
 
         for (int i = 0; i < certchain.length; i++) {
             array.add(certchain[i]);

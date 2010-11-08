@@ -50,7 +50,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
         String filename = args[2];
         try {
         	CryptoProviderTools.installBCProvider();
-            ArrayList chain = new ArrayList(getCertChain(caname));
+            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(caname));
             if (chain.size() > 0) {
                 Certificate rootcert = (Certificate)chain.get(chain.size()-1);
  

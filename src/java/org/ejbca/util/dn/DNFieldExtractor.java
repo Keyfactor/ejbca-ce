@@ -134,7 +134,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      */
     public void setDN(String dn, int type) {    	
         this.type = type;
-        ArrayList ids;
+        ArrayList<Integer> ids;
         if (type == TYPE_SUBJECTDN) {
         	ids = DnComponents.getDnDnIds();
         } else if (type == TYPE_SUBJECTALTNAME){
@@ -142,24 +142,24 @@ public class DNFieldExtractor implements java.io.Serializable {
         } else if (type == TYPE_SUBJECTDIRATTR){
         	ids = DnComponents.getDirAttrDnIds();
         } else {
-        	ids = new ArrayList();
+        	ids = new ArrayList<Integer>();
         }
-        fieldnumbers = new HashMap();
-        Iterator it = ids.iterator();
+        fieldnumbers = new HashMap<Integer, Integer>();
+        Iterator<Integer> it = ids.iterator();
         while (it.hasNext()) {
         	Integer id = (Integer)it.next();
-            fieldnumbers.put(id, new Integer(0));
+            fieldnumbers.put(id, 0);
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
-            dnfields = new HashMap();
+            dnfields = new HashMap<Integer, String>();
 
             try {
                 String[] dnexploded = LDAPDN.explodeDN(dn, false);
 
                 for (int i = 0; i < dnexploded.length; i++) {
                     boolean exists = false;       
-                    Iterator iter = ids.iterator();
+                    Iterator<Integer> iter = ids.iterator();
                     while (iter.hasNext()) {
                     	Integer id = (Integer)iter.next();
                     	Integer number = (Integer)fieldnumbers.get(id);

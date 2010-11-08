@@ -82,7 +82,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	public static final String SERVICENAME = "CMSCASERVICE";          
 
 	private PrivateKey      privKey        = null;
-	private List            certificatechain  = null;
+	private List<Certificate>            certificatechain  = null;
 
 	private CmsCAServiceInfo info = null;  
 
@@ -175,7 +175,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			null // sequence
 			);
 
-		certificatechain = new ArrayList();
+		certificatechain = new ArrayList<Certificate>();
 		certificatechain.add(certificate);
 		certificatechain.addAll(ca.getCertificateChain());
 		this.privKey = cmskeys.getPrivate(); 

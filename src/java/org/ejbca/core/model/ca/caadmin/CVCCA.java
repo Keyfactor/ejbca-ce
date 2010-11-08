@@ -23,7 +23,6 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CRL;
-import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -471,19 +470,17 @@ public class CVCCA extends CA implements Serializable {
 	}
 
 
-	public CRL generateCRL(Collection certs, int crlnumber) 
-	throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+    public CRL generateCRL(Collection certs, int crlnumber) {
         String msg = intres.getLocalizedMessage("signsession.nocrlcreate", "CVC");
         log.info(msg);
-		return null;        
-	}
+        return null;
+    }
 
-	public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber)
-	throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
+    public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber) {
         String msg = intres.getLocalizedMessage("signsession.nocrlcreate", "CVC");
         log.info(msg);
-		return null;        
-	}
+        return null;
+    }
 
 	/** Implementation of UpgradableDataHashMap function getLatestVersion */
 	public float getLatestVersion(){

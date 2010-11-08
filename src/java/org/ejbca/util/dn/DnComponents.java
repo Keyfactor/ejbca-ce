@@ -147,30 +147,30 @@ public class DnComponents {
     public static final String COUNTRYOFCITIZENSHIP = "COUNTRYOFCITIZENSHIP";
     public static final String COUNTRYOFRESIDENCE  = "COUNTRYOFRESIDENCE";
 
-    private static HashMap dnNameIdMap = new HashMap();
-    private static HashMap profileNameIdMap = new HashMap();
-    private static HashMap dnIdToProfileNameMap = new HashMap();
-    private static HashMap dnIdToProfileIdMap = new HashMap();
-    private static HashMap profileIdToDnIdMap = new HashMap();
-    private static HashMap dnErrorTextMap = new HashMap();
-    private static HashMap profileNameLanguageMap = new HashMap();
-    private static HashMap profileIdLanguageMap = new HashMap();
-    private static HashMap dnIdErrorMap = new HashMap();
-    private static HashMap dnIdToExtractorFieldMap = new HashMap();
-    private static HashMap altNameIdToExtractorFieldMap = new HashMap();
-    private static HashMap dirAttrIdToExtractorFieldMap = new HashMap();
-    private static ArrayList dnProfileFields = new ArrayList();
-    private static ArrayList dnLanguageTexts = new ArrayList();
+    private static HashMap<String, Integer> dnNameIdMap = new HashMap<String, Integer>();
+    private static HashMap<String, Integer> profileNameIdMap = new HashMap<String, Integer>();
+    private static HashMap<Integer, String> dnIdToProfileNameMap = new HashMap<Integer, String>();
+    private static HashMap<Integer, Integer> dnIdToProfileIdMap = new HashMap<Integer, Integer>();
+    private static HashMap<Integer, Integer> profileIdToDnIdMap = new HashMap<Integer, Integer>();
+    private static HashMap<Integer, String> dnErrorTextMap = new HashMap<Integer, String>();
+    private static HashMap<String, String> profileNameLanguageMap = new HashMap<String, String>();
+    private static HashMap<Integer, String> profileIdLanguageMap = new HashMap<Integer, String>();
+    private static HashMap<Integer, String> dnIdErrorMap = new HashMap<Integer, String>();
+    private static HashMap<Integer, String> dnIdToExtractorFieldMap = new HashMap<Integer, String>();
+    private static HashMap<Integer, String> altNameIdToExtractorFieldMap = new HashMap<Integer, String>();
+    private static HashMap<Integer, String> dirAttrIdToExtractorFieldMap = new HashMap<Integer, String>();
+    private static ArrayList<String> dnProfileFields = new ArrayList<String>();
+    private static ArrayList<String> dnLanguageTexts = new ArrayList<String>();
     private static ArrayList<Integer> dnDnIds = new ArrayList<Integer>();
-    private static ArrayList altNameFields = new ArrayList();
-    private static ArrayList altNameLanguageTexts = new ArrayList();
-    private static ArrayList altNameDnIds = new ArrayList();
-    private static ArrayList dirAttrFields = new ArrayList();
-    private static ArrayList dirAttrLanguageTexts = new ArrayList();
-    private static ArrayList dirAttrDnIds = new ArrayList();
-    private static ArrayList dnExtractorFields = new ArrayList();
-    private static ArrayList altNameExtractorFields = new ArrayList();
-    private static ArrayList dirAttrExtractorFields = new ArrayList();
+    private static ArrayList<String> altNameFields = new ArrayList<String>();
+    private static ArrayList<String> altNameLanguageTexts = new ArrayList<String>();
+    private static ArrayList<Integer> altNameDnIds = new ArrayList<Integer>();
+    private static ArrayList<String> dirAttrFields = new ArrayList<String>();
+    private static ArrayList<String> dirAttrLanguageTexts = new ArrayList<String>();
+    private static ArrayList<Integer> dirAttrDnIds = new ArrayList<Integer>();
+    private static ArrayList<String> dnExtractorFields = new ArrayList<String>();
+    private static ArrayList<String> altNameExtractorFields = new ArrayList<String>();
+    private static ArrayList<String> dirAttrExtractorFields = new ArrayList<String>();
     
 
     // Load values from a properties file, if it exists
@@ -192,27 +192,27 @@ public class DnComponents {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
     } // getOid
 
-    public static ArrayList getDnProfileFields() {
+    public static ArrayList<String> getDnProfileFields() {
     	return dnProfileFields;
     }
-    public static ArrayList getDnLanguageTexts() {
+    public static ArrayList<String> getDnLanguageTexts() {
     	return dnLanguageTexts;
     }
-    public static ArrayList getAltNameFields() {
+    public static ArrayList<String> getAltNameFields() {
     	return altNameFields;
     }
-    public static ArrayList getAltNameLanguageTexts() {
+    public static ArrayList<String> getAltNameLanguageTexts() {
     	return altNameLanguageTexts;
     }
-    public static ArrayList getDirAttrFields() {
+    public static ArrayList<String> getDirAttrFields() {
     	return dirAttrFields;
     }
     // Used by DNFieldExtractor and EntityProfile, don't USE
-    public static ArrayList getDirAttrDnIds() {
+    public static ArrayList<Integer> getDirAttrDnIds() {
     	return dirAttrDnIds;
     }
     // Used by DNFieldExtractor and EntityProfile, don't USE
-    public static ArrayList getAltNameDnIds() {
+    public static ArrayList<Integer> getAltNameDnIds() {
     	return altNameDnIds;
     }
     // Used by DNFieldExtractor and EntityProfile, don't USE
@@ -220,7 +220,7 @@ public class DnComponents {
     	return dnDnIds;
     }
     // Used only by DNFieldExtractor, don't USE
-    protected static ArrayList getDnExtractorFields() {
+    protected static ArrayList<String> getDnExtractorFields() {
     	return dnExtractorFields;
     }
     protected static String getDnExtractorFieldFromDnId(int field) {
@@ -228,7 +228,7 @@ public class DnComponents {
     	return val;    	
     }
     // Used only by DNFieldExtractor, don't USE
-    protected static ArrayList getAltNameExtractorFields() {
+    protected static ArrayList<String> getAltNameExtractorFields() {
     	return altNameExtractorFields;
     }
     protected static String getAltNameExtractorFieldFromDnId(int field) {
@@ -236,7 +236,7 @@ public class DnComponents {
     	return val;    	
     }
     // Used only by DNFieldExtractor, don't USE
-    protected static ArrayList getDirAttrExtractorFields() {
+    protected static ArrayList<String> getDirAttrExtractorFields() {
     	return dirAttrExtractorFields;
     }
     protected static String getDirAttrExtractorFieldFromDnId(int field) {
@@ -278,7 +278,7 @@ public class DnComponents {
     /** This method is only used to initialize EndEntityProfile, because of legacy baggage.
      * Should be refactored sometime! Please don't use this whatever you do!
      */
-    public static HashMap getProfilenameIdMap() {
+    public static HashMap<String, Integer> getProfilenameIdMap() {
     	return profileNameIdMap;
     	
     }
@@ -353,24 +353,23 @@ public class DnComponents {
             //log.info("is is: " + is);
             if (is != null) {
                 inf = new InputStreamReader(is);
-                //inf = new FileReader("c:\\foo.properties");
                 in = new BufferedReader(inf);
                 if (!in.ready()) {
                     throw new IOException();
                 }
                 String[] splits = null;
                 int lines = 0;
-                ArrayList dnids = new ArrayList();
-                ArrayList profileids = new ArrayList();
+                ArrayList<Integer> dnids = new ArrayList<Integer>();
+                ArrayList<Integer> profileids = new ArrayList<Integer>();
                 while ((line = in.readLine()) != null) {
                 	if (!line.startsWith("#")) { // # is a comment line
                         splits = StringUtils.split(line, ';');
                         if ( (splits != null) && (splits.length > 5) ) {
                         	String type = splits[0];
                             String dnname = splits[1]; 
-                            Integer dnid = new Integer(splits[2]); 
+                            Integer dnid = Integer.valueOf(splits[2]); 
                             String profilename = splits[3]; 
-                            Integer profileid = new Integer(splits[4]); 
+                            Integer profileid = Integer.valueOf(splits[4]); 
                             String errstr = splits[5]; 
                             String langstr = splits[6];
                             if (dnids.contains(dnid)) {
@@ -446,7 +445,7 @@ public class DnComponents {
     private static void loadOrdering() {
         // Read the file to an array of lines 
         String line;
-        LinkedHashMap map = new LinkedHashMap();
+        LinkedHashMap<String, DERObjectIdentifier> map = new LinkedHashMap<String, DERObjectIdentifier>();
         BufferedReader in = null;
         InputStreamReader inf = null;
         try
@@ -476,7 +475,7 @@ public class DnComponents {
                 log.info("Using DN components from properties file");
                 oids.clear();
                 oids.putAll(map);
-                Set keys = map.keySet();
+                Set<String> keys = map.keySet();
                 // Set the maps to the desired ordering
                 dNObjectsForward = (String[])keys.toArray(new String[0]);                
             } else {

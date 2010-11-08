@@ -694,7 +694,7 @@ public class CertToolsTest extends TestCase {
 		assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
 		String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
-		ArrayList emails = CertTools.getEmailFromDN(dn13);
+		ArrayList<String> emails = CertTools.getEmailFromDN(dn13);
 		assertEquals((String) emails.get(0), "foo@primekey.se");
 
 		String dn14 = "C=SE, E=foo@primekey.se, O=PrimeKey";
@@ -866,7 +866,7 @@ public class CertToolsTest extends TestCase {
 		assertEquals(guid, "1234567890abcdef");
 
 		String customAlt = "rfc822Name=foo@bar.com";
-		ArrayList oids = CertTools.getCustomOids(customAlt);
+		ArrayList<String> oids = CertTools.getCustomOids(customAlt);
 		assertEquals(0, oids.size());
 		customAlt = "rfc822Name=foo@bar.com, 1.1.1.1.2=foobar, 1.2.2.2.2=barfoo";
 		oids = CertTools.getCustomOids(customAlt);
@@ -885,7 +885,7 @@ public class CertToolsTest extends TestCase {
 		assertEquals(1, oids.size());
 		oid1 = (String) oids.get(0);
 		assertEquals("1.1.1.1.2", oid1);
-		List list = CertTools.getPartsFromDN(customAlt, oid1);
+		List<String> list = CertTools.getPartsFromDN(customAlt, oid1);
 		assertEquals(2, list.size());
 		val1 = (String)list.get(0);
 		assertEquals("foobar", val1);
@@ -1064,7 +1064,7 @@ public class CertToolsTest extends TestCase {
 		String revdn3 = CertTools.reverseDN(dn3);
 		assertEquals("dc=tld,dc=domain,cn=titi,cn=toto", revdn3);
 		
-        Vector dnorder = CertTools.getX509FieldOrder(true);
+        Vector<DERObjectIdentifier> dnorder = CertTools.getX509FieldOrder(true);
         X509Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
 		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
         dnorder = CertTools.getX509FieldOrder(false);
@@ -1230,7 +1230,7 @@ public class CertToolsTest extends TestCase {
 		// log.debug(cert);
 		assertEquals("rfc822name=municipality@darmstadt.de",
 				QCStatementExtension.getQcStatementAuthorities(cert));
-		Collection ids = QCStatementExtension.getQcStatementIds(cert);
+		Collection<String> ids = QCStatementExtension.getQcStatementIds(cert);
 		assertTrue(ids
 				.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2
 						.getId()));
@@ -1363,14 +1363,15 @@ public class CertToolsTest extends TestCase {
 		log.trace("<test18DNSpaceTrimming()");
 	}
 
-	public void test19getAltNameStringFromExtension() throws Exception {
+	@SuppressWarnings("unchecked")
+    public void test19getAltNameStringFromExtension() throws Exception {
 		PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(
 				p10ReqWithAltNames);
 		CertificationRequestInfo info = p10.getCertificationRequestInfo();
 		ASN1Set set = info.getAttributes();
 		// The set of attributes contains a sequence of with type oid
 		// PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
-		Enumeration en = set.getObjects();
+		Enumeration<Object> en = set.getObjects();
 		boolean found = false;
 		while (en.hasMoreElements()) {
 			ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
@@ -1399,6 +1400,7 @@ public class CertToolsTest extends TestCase {
 		set = info.getAttributes();
 		// The set of attributes contains a sequence of with type oid
 		// PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
+		
 		en = set.getObjects();
 		found = false;
 		while (en.hasMoreElements()) {
@@ -1514,12 +1516,12 @@ public class CertToolsTest extends TestCase {
 		Certificate cvccertroot = CertTools.getCertfromByteArray(cvccertchainroot);
 		Certificate cvccertsub = CertTools.getCertfromByteArray(cvccertchainsub);
 		
-		ArrayList certlist = new ArrayList();
+		ArrayList<Certificate> certlist = new ArrayList<Certificate>();
 		certlist.add(cvccertsub);
 		certlist.add(cvccertroot);
-		Collection col = CertTools.createCertChain(certlist);
+		Collection<Certificate> col = CertTools.createCertChain(certlist);
 		assertEquals(2, col.size());
-		Iterator iter = col.iterator();
+		Iterator<Certificate> iter = col.iterator();
 		Certificate certsub = (Certificate)iter.next();
 		assertEquals("CN=RPS,C=SE", CertTools.getSubjectDN(certsub));
 		Certificate certroot = (Certificate)iter.next();
@@ -1532,7 +1534,7 @@ public class CertToolsTest extends TestCase {
 		System.out.println(x509certsub.toString());
 		Certificate x509certroot = CertTools.getCertfromByteArray(x509certchainroot);
 		System.out.println(x509certroot.toString());
-		certlist = new ArrayList();
+		certlist = new ArrayList<Certificate>();
 		certlist.add(x509certsub);
 		certlist.add(x509certroot);
 		certlist.add(x509certsubsub);

@@ -38,7 +38,7 @@ public class ExtendedKeyUsageConfiguration {
      * The standard OIDs for extended key usages mostly comes from KeyPurposeId.id_kp_clientAuth
      * etc, or CertTools.EFS_OBJECTID, EFSR_OBJECTID, MS_DOCUMENT_SIGNING_OBJECTID, Intel_amt
      */
-    private static Map extendedKeyUsageOidsAndNames = null;
+    private static Map<String, String> extendedKeyUsageOidsAndNames = null;
     
     /**
      * Array of all OIDs for Extended Key Usage, is filled by below and must therefore appear
@@ -46,7 +46,7 @@ public class ExtendedKeyUsageConfiguration {
      */
     private static List<String> extendedKeyUsageOids = null;
 
-    public static synchronized Map getExtendedKeyUsageOidsAndNames() {
+    public static synchronized Map<String, String> getExtendedKeyUsageOidsAndNames() {
     	if (extendedKeyUsageOidsAndNames == null) {
     		fillExtendedKeyUsageOidsAndTexts();
     	}

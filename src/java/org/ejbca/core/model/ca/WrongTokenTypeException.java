@@ -23,6 +23,8 @@ import org.ejbca.core.EjbcaException;
  * @version $Id$
  */
 public class WrongTokenTypeException extends EjbcaException {
+
+    private static final long serialVersionUID = -5521689458199668528L;
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.

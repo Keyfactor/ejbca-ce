@@ -15,6 +15,7 @@ package org.ejbca.ui.web;
 
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -25,7 +26,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,8 +53,9 @@ import org.ejbca.util.keystore.KeyTools;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class CertificateView implements java.io.Serializable {
+public class CertificateView implements Serializable {
 
+    private static final long serialVersionUID = -3511834437471085177L;
     // Private fields
     private Certificate  certificate;
     private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
@@ -212,7 +216,7 @@ public class CertificateView implements java.io.Serializable {
     }
 
     public String[] getExtendedKeyUsageAsTexts(){
-      java.util.List extendedkeyusage = null;  
+     List extendedkeyusage = null;  
       if (certificate instanceof X509Certificate) {
     	  X509Certificate x509cert = (X509Certificate)certificate;
           try {  
@@ -220,7 +224,7 @@ public class CertificateView implements java.io.Serializable {
             } catch (java.security.cert.CertificateParsingException e) {}  
       }
       if(extendedkeyusage == null) {
-        extendedkeyusage = new java.util.ArrayList();
+        extendedkeyusage = new ArrayList();
       }
       String[] returnval = new String[extendedkeyusage.size()]; 
       Map map = CertificateProfile.getAllExtendedKeyUsageTexts();

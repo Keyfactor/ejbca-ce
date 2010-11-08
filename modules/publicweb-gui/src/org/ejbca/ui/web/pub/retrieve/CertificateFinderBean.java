@@ -91,8 +91,10 @@ public class CertificateFinderBean {
 	    mInitialized = true;
 	}
 
-	public Collection getAvailableCAs() throws RemoteException {
+	public Collection<Integer> getAvailableCAs() {
+	    if(log.isTraceEnabled()) {
 		log.trace(">getAvailableCAs()");
+	    }
 		return mInitialized ? mCaAdminSession.getAvailableCAs(mAdmin) : null;
 	}
 
@@ -114,7 +116,7 @@ public class CertificateFinderBean {
 		return mInitialized ? mCaAdminSession.getCAInfo(mAdmin, mCurrentCA) : null;
 	}
 
-	public Collection getCACertificateChain() throws RemoteException {
+	public Collection<CertificateWrapper> getCACertificateChain() throws RemoteException {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
@@ -122,9 +124,9 @@ public class CertificateFinderBean {
 			return null;
 		}
 		// Make a collection of CertificateWrapper instead of the real certificate
-		ArrayList ret = new ArrayList();
-		Collection certs = mSignSession.getCertificateChain(mAdmin, mCurrentCA);
-		for (Iterator it = certs.iterator(); it.hasNext();) {
+		ArrayList<CertificateWrapper> ret = new ArrayList<CertificateWrapper>();
+		Collection<Certificate> certs = mSignSession.getCertificateChain(mAdmin, mCurrentCA);
+		for (Iterator<Certificate> it = certs.iterator(); it.hasNext();) {
 			Certificate cert = (Certificate)it.next();
 			ret.add(new CertificateWrapper(cert));
 		}
@@ -132,7 +134,7 @@ public class CertificateFinderBean {
 	}
 
 	public String getCADN() throws RemoteException {
-		final Collection certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
+		final Collection<Certificate> certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
 		if ( certs==null || certs.isEmpty() ) {
 			return "";
 		}
@@ -140,10 +142,10 @@ public class CertificateFinderBean {
 		return CertTools.getSubjectDN(cert);
 	}
 
-	public Collection getCACertificateChainReversed() throws RemoteException {
-		Collection ret = getCACertificateChain();
+	public Collection<CertificateWrapper> getCACertificateChainReversed() throws RemoteException {
+		Collection<CertificateWrapper> ret = getCACertificateChain();
 		if (ret != null) {
-			Collections.reverse((ArrayList) ret);
+			Collections.reverse((ArrayList<CertificateWrapper>) ret);
 		}
 		return ret;
 	}
@@ -152,7 +154,7 @@ public class CertificateFinderBean {
 		CAInfo caInfo = getCAInfo();
 		boolean active = false;
 		if (caInfo != null) {
-			Iterator iter = caInfo.getExtendedCAServiceInfos().iterator();
+			Iterator<ExtendedCAServiceInfo> iter = caInfo.getExtendedCAServiceInfos().iterator();
 			while(iter.hasNext()){
 		      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
 		      if(next instanceof OCSPCAServiceInfo){
