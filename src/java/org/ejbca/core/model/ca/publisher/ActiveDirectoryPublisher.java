@@ -64,7 +64,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     
     public ActiveDirectoryPublisher(){
     	super();
-    	data.put(TYPE, new Integer(PublisherConst.TYPE_ADPUBLISHER));
+    	data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_ADPUBLISHER));
     	    	
         setUserObjectClass(DEFAULT_USEROBJECTCLASS);
         setCAObjectClass(DEFAULT_CAOBJECTCLASS);
@@ -101,7 +101,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *  Sets the value of the user account control, (mask)
      */        
     public void setUserAccountControl(int useraccountcontrol){
-    	data.put(USERACCOUNTCONTROL, new Integer(useraccountcontrol));	
+    	data.put(USERACCOUNTCONTROL, Integer.valueOf(useraccountcontrol));	
     }
 
     /**
@@ -119,7 +119,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *  which field to use as SAM Account Name.
      */        
     public void setSAMAccountName(int samaccountname){
-    	data.put(SAMACCOUNTNAME, new Integer(samaccountname));	
+    	data.put(SAMACCOUNTNAME, Integer.valueOf(samaccountname));	
     }
 
     /**

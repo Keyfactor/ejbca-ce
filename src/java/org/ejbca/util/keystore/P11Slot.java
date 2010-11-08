@@ -156,7 +156,7 @@ public class P11Slot {
         return getInstance(new SlotDataConfigFile(configFileName), token, caid);
     }
     static private P11Slot getInstance(ISlotData data, P11SlotUser token, int caid) throws CATokenOfflineException {
-        tokenMap.put(new Integer(caid), token);
+        tokenMap.put(Integer.valueOf(caid), token);
         P11Slot slot = slotMap.get(data.getSlotLabel());
         if (slot==null) {
             synchronized( slotsBeingCreated ) {
@@ -202,9 +202,9 @@ public class P11Slot {
         }
         final Iterator<P11Slot> i = slotMap.values().iterator();
         while ( i.hasNext() ) {
-            i.next().caids.remove(new Integer(caid));
+            i.next().caids.remove(Integer.valueOf(caid));
         }
-        slot.caids.add(new Integer(caid));
+        slot.caids.add(Integer.valueOf(caid));
         return slot;
     }
     private static interface ISlotData {

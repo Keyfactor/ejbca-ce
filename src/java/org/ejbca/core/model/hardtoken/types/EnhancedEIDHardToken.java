@@ -61,13 +61,13 @@ public class EnhancedEIDHardToken extends HardToken {
 		setEncKeyRecoverable(enckeyrecoverable);
         setTokenProfileId(hardtokenprofileid);     
         
-        data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+        data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     }
 
     /** Constructor only to be used internally. */
     public EnhancedEIDHardToken(boolean includePUK) {
     	super(includePUK);   	
-    	data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+    	data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     	if(!includePUK){
       	  setInitialAuthPIN("");
       	  setAuthPUK("");

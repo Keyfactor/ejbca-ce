@@ -169,7 +169,7 @@ public class PublisherQueueTest extends TestCase {
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertFalse("Storing certificate to external ocsp publisher should fail.", ret);
@@ -212,7 +212,7 @@ public class PublisherQueueTest extends TestCase {
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to external ocsp publisher should succeed.", ret);
@@ -256,7 +256,7 @@ public class PublisherQueueTest extends TestCase {
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         // storeCertificate should return false as we have not published to all publishers but instead only pushed to the queue
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);

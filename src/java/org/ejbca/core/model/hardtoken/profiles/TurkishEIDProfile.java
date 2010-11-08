@@ -60,11 +60,11 @@ public class TurkishEIDProfile extends EIDProfile {
     }
 
     private void init(){
-        data.put(TYPE, new Integer(TYPE_TURKISHEID));
+        data.put(TYPE, Integer.valueOf(TYPE_TURKISHEID));
         
         ArrayList certprofileids = new ArrayList(NUMBEROFCERTIFICATES);
-  	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
-  	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+  	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
+  	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
   	  data.put(CERTIFICATEPROFILEID, certprofileids);
   	  
   	  ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
@@ -73,16 +73,16 @@ public class TurkishEIDProfile extends EIDProfile {
   	  data.put(CERTWRITABLE, certWritable);
   	  
   	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
-  	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
-  	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
+  	  caids.add(Integer.valueOf(CAID_USEUSERDEFINED)); 
+  	  caids.add(Integer.valueOf(CAID_USEUSERDEFINED)); 
   	  data.put(CAID, caids);    
   	  
   	  ArrayList pintypes = new ArrayList(NUMBEROFPINS);
-  	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
+  	  pintypes.add(Integer.valueOf(PINTYPE_ASCII_NUMERIC));
   	  data.put(PINTYPE, pintypes);
 
   	  ArrayList minpinlength = new ArrayList(NUMBEROFPINS);
-  	  minpinlength.add(new Integer(4));
+  	  minpinlength.add(Integer.valueOf(4));
   	  data.put(MINIMUMPINLENGTH, minpinlength);
   	  
   	  ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
@@ -97,8 +97,8 @@ public class TurkishEIDProfile extends EIDProfile {
   	  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);		    
 
   	  ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);
-  	  minimumkeylength.add(new Integer(1024));
-  	  minimumkeylength.add(new Integer(1024));
+  	  minimumkeylength.add(Integer.valueOf(1024));
+  	  minimumkeylength.add(Integer.valueOf(1024));
   	  data.put(MINIMUMKEYLENGTH, minimumkeylength);	  
 
   	  ArrayList keytypes = new ArrayList(NUMBEROFCERTIFICATES);

@@ -193,7 +193,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             	logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         	}
     	} else {
-			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", new Integer(userdatasourceid));            	
+			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
         }
@@ -231,7 +231,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	if (UserDataSourceData.findByName(entityManager, name) == null) {
         		if (UserDataSourceData.findById(entityManager, id) == null) {
         			try {
-        				entityManager.persist(new UserDataSourceData(new Integer(id), name, userdatasource));
+        				entityManager.persist(new UserDataSourceData(Integer.valueOf(id), name, userdatasource));
         				success = true;
         			} catch (Exception e) {
         				log.error("Unexpected error creating new user data source: ", e);
@@ -410,7 +410,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         		returnval.add(next.getId());
         	}else{
         		BaseUserDataSource userdatasource = getUserDataSource(next);
-        		if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
+        		if(userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))){
         			if(includeAnyCA){
         				returnval.add(next.getId());
         			}
@@ -470,7 +470,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", new Integer(id));            	
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", Integer.valueOf(id));            	
         		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
             }
         }
@@ -552,7 +552,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             }
         }
         if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            if (userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))) {
+            if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return true;
             }
             Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
@@ -582,7 +582,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
         if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)
                 && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
-            if (userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))) {
+            if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return false;
             }
             Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
@@ -606,7 +606,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	}
         	id = ran.nextInt();
         }
-        return new Integer(id);
+        return Integer.valueOf(id);
     }
 
     /**

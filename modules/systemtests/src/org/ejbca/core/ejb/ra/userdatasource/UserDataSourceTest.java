@@ -138,7 +138,7 @@ public class UserDataSourceTest extends TestCase {
     public void test05FetchFromDummy() throws Exception {
         log.trace(">test05FetchFromDummy()");
         ArrayList<Integer> userdatasources = new ArrayList<Integer>();
-        userdatasources.add(new Integer(userDataSourceSession.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
+        userdatasources.add(Integer.valueOf(userDataSourceSession.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")));
 
         Collection<UserDataSourceVO> ret = userDataSourceSession.fetch(admin, userdatasources, "per");
         assertTrue("Fetching data from dummy userdatasource failed", ret.size() == 1);

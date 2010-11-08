@@ -166,7 +166,7 @@ public class CertificateProfileDataHandler implements Serializable {
                 returnval = false;
             } else {
                 Collection<Integer> availablecas = profile.getAvailableCAs();
-                if (availablecas.contains(new Integer(CertificateProfile.ANYCA))) {
+                if (availablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
                     if (issuperadministrator && editcheck) {
                         returnval = true;
                     }

@@ -167,7 +167,7 @@ public class ApprovalDataVOView implements Serializable {
         Object value = binding.getValue(context);
         ApproveActionSessionBean approvalActionSession = (ApproveActionSessionBean) value;
 
-        return (String) approvalActionSession.getStatusText().get(new Integer(data.getStatus()));
+        return (String) approvalActionSession.getStatusText().get(Integer.valueOf(data.getStatus()));
     }
 
     /**

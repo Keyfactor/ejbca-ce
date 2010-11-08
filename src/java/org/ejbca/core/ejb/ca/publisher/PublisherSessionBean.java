@@ -287,7 +287,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 throw new PublisherConnectionException(pe.getMessage());
             }
         } else {
-            String msg = intres.getLocalizedMessage("publisher.nopublisher", new Integer(publisherid));
+            String msg = intres.getLocalizedMessage("publisher.nopublisher", Integer.valueOf(publisherid));
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg);
 
         }
@@ -326,7 +326,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (PublisherData.findByName(entityManager, name) == null) {
             if (PublisherData.findById(entityManager, Integer.valueOf(id)) == null) {
                 try {
-                	entityManager.persist(new PublisherData(new Integer(id), name, publisher));
+                	entityManager.persist(new PublisherData(Integer.valueOf(id), name, publisher));
                     success = true;
                 } catch (Exception e) {
                     String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
@@ -610,7 +610,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     		}
     		id = ran.nextInt();
     	}
-    	return new Integer(id);
+    	return Integer.valueOf(id);
     }
 
     /**

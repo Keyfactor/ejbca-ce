@@ -97,7 +97,7 @@ public class Query implements java.io.Serializable {
      */
     public void add(Date startdate, Date enddate, int connector) {
         matches.addElement(new TimeMatch(type, startdate, enddate));
-        connectors.addElement(new Integer(connector));
+        connectors.addElement(Integer.valueOf(connector));
     }
 
     /**
@@ -112,7 +112,7 @@ public class Query implements java.io.Serializable {
      */
     public void add(int matchwith, Date startdate, Date enddate, int connector) {
         matches.addElement(new TimeMatch(type, matchwith, startdate, enddate));
-        connectors.addElement(new Integer(connector));
+        connectors.addElement(Integer.valueOf(connector));
     }
 
     /**
@@ -157,7 +157,7 @@ public class Query implements java.io.Serializable {
     public void add(int matchwith, int matchtype, String matchvalue, int connector)
         throws NumberFormatException {
         add(matchwith,matchtype,matchvalue);
-        connectors.addElement(new Integer(connector));
+        connectors.addElement(Integer.valueOf(connector));
 
  
     }
@@ -170,7 +170,7 @@ public class Query implements java.io.Serializable {
      * @throws NumberFormatException if there is an illegal character in matchvalue string.
      */
     public void add(int connector) {
-        connectors.addElement(new Integer(connector));
+        connectors.addElement(Integer.valueOf(connector));
     }
 
     /**

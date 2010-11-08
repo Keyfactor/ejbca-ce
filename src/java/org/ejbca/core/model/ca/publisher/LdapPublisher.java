@@ -131,7 +131,7 @@ public class LdapPublisher extends BasePublisher {
 
 	public LdapPublisher(){
 		super();
-		data.put(TYPE, new Integer(PublisherConst.TYPE_LDAPPUBLISHER));
+		data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_LDAPPUBLISHER));
 
 		setHostnames("");
 		setUseSSL(true);
@@ -294,7 +294,7 @@ public class LdapPublisher extends BasePublisher {
     				throw new PublisherException(msg);            
     			}
     		} else {
-    			String msg = intres.getLocalizedMessage("publisher.notpubltype", new Integer(type));
+    			String msg = intres.getLocalizedMessage("publisher.notpubltype", Integer.valueOf(type));
     			log.info(msg);
     			throw new PublisherException(msg);                      
     		}
@@ -373,7 +373,7 @@ public class LdapPublisher extends BasePublisher {
     			}
     		} while (connectionFailed && servers.hasNext()) ;
         } else {
-			String msg = intres.getLocalizedMessage("publisher.notpublwithstatus", new Integer(status));
+			String msg = intres.getLocalizedMessage("publisher.notpublwithstatus", Integer.valueOf(status));
 			log.info(msg);        	
         }
 		if (log.isTraceEnabled()) {

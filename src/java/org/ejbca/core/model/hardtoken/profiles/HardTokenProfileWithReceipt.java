@@ -120,7 +120,7 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setNumberOfReceiptCopies(int)
 	 */
 	public void setNumberOfReceiptCopies(int copies) {
-		  data.put(RECEIPTCOPIES, new Integer(copies));	
+		  data.put(RECEIPTCOPIES, Integer.valueOf(copies));	
 	}
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setReceiptData(java.lang.String)
@@ -138,6 +138,6 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#setReceipttype(int)
 	 */
 	public void setReceiptType(int type) {
-		data.put(RECEIPTTYPE, new Integer(type));
+		data.put(RECEIPTTYPE, Integer.valueOf(type));
 	}
 }

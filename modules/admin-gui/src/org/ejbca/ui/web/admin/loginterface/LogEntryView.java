@@ -120,7 +120,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        }
        
               
-       logentrydata[CA]    = (String) caidtonamemap.get(new Integer(logentry.getCAId()));
+       logentrydata[CA]    = (String) caidtonamemap.get(Integer.valueOf(logentry.getCAId()));
        
        logentrydata[MODULE] = localmodulenames[logentry.getModule()];
          

@@ -54,13 +54,13 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
     public String getEndEntityProfileName(int profileid) {
       String returnval = null;  
       // Check if name is in hashmap
-      returnval = (String) profilenamestore.get(new Integer(profileid));
+      returnval = (String) profilenamestore.get(Integer.valueOf(profileid));
       
       if(returnval==null){
         // Retreive profilename
         returnval = endEntityProfileSession.getEndEntityProfileName(administrator, profileid);
         if(returnval != null) {
-          profilenamestore.put(new Integer(profileid),returnval);
+          profilenamestore.put(Integer.valueOf(profileid),returnval);
         }
       }    
       return returnval;

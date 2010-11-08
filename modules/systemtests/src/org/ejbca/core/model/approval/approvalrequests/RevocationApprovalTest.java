@@ -112,7 +112,7 @@ public class RevocationApprovalTest extends CaTestCase {
     }
 
     private String genRandomUserName(String usernameBase) {
-        usernameBase += (new Integer((new Random(new Date().getTime() + 4711)).nextInt(999999))).toString();
+        usernameBase += (Integer.valueOf((new Random(new Date().getTime() + 4711)).nextInt(999999))).toString();
         return usernameBase;
     }
 

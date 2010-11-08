@@ -511,7 +511,7 @@ public class BatchMakeP12 extends BaseCommand {
             }
             
           
-            String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", new Integer(result.size()));
+            String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
             getLogger().info(iMsg);
 
             int failcount = 0;
@@ -550,11 +550,11 @@ public class BatchMakeP12 extends BaseCommand {
                 }
 
                 if (failedusers.length() > 0) {
-                    String errMsg = intres.getLocalizedMessage("batch.errorbatchfailed", new Integer(failcount), new Integer(successcount), failedusers);
+                    String errMsg = intres.getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount), Integer.valueOf(successcount), failedusers);
                     throw new Exception(errMsg);
                 }
 
-                iMsg = intres.getLocalizedMessage("batch.success", new Integer(successcount), successusers);
+                iMsg = intres.getLocalizedMessage("batch.success", Integer.valueOf(successcount), successusers);
                 getLogger().info(iMsg);
             }
         } while ((result.size() > 0) && !stopnow);

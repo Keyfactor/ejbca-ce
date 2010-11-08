@@ -254,7 +254,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     				ret = new LogConfiguration();
     				logSession.saveNewLogConfiguration(caid, ret);	// Need invocation through interface to start transaction
     			} catch (Exception f) {
-    				String msg = intres.getLocalizedMessage("log.errorcreateconf", new Integer(caid));            	
+    				String msg = intres.getLocalizedMessage("log.errorcreateconf", Integer.valueOf(caid));            	
     				log.error(msg, f);
     				throw new EJBException(f);
     			}
@@ -275,7 +275,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveNewLogConfiguration(int caid, LogConfiguration logConfiguration) {
-		entityManager.persist(new LogConfigurationData(new Integer(caid), logConfiguration));
+		entityManager.persist(new LogConfigurationData(Integer.valueOf(caid), logConfiguration));
         // Update cache
 		logConfCache.put(Integer.valueOf(caid), logConfiguration);
     }
@@ -303,9 +303,9 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         	if (lcd != null) {
         		lcd.saveLogConfiguration(logconfiguration);
         	} else { 
-        		String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
+        		String msg = intres.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
         		log.info(msg);
-        		entityManager.persist(new LogConfigurationData(new Integer(caid), logconfiguration));
+        		entityManager.persist(new LogConfigurationData(Integer.valueOf(caid), logconfiguration));
         	}
         } catch (Exception e) {
             log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_EDITLOGCONFIGURATION, "");

@@ -75,7 +75,7 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setPINEnvelopeType(int)
 	 */
 	public void setPINEnvelopeType(int type) {
-	  data.put(PINENVELOPETYPE, new Integer(type));		
+	  data.put(PINENVELOPETYPE, Integer.valueOf(type));		
 	}
 
 	/**
@@ -117,7 +117,7 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setNumberOfPINEnvelopeCopies(int)
 	 */
 	public void setNumberOfPINEnvelopeCopies(int copies) {		
-	  data.put(PINENVELOPECOPIES, new Integer(copies));	
+	  data.put(PINENVELOPECOPIES, Integer.valueOf(copies));	
 	}
 
 	/**
@@ -131,7 +131,7 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#setVisualValidity(int)
 	 */
 	public void setVisualValidity(int validity){
-	  data.put(VISUALVALIDITY, new Integer(validity));	
+	  data.put(VISUALVALIDITY, Integer.valueOf(validity));	
 	}
 
 

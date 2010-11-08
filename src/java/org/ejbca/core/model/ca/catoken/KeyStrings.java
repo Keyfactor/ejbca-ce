@@ -84,14 +84,14 @@ public class KeyStrings {
         String value = properties.getProperty(keyS);
         if ( value!=null && value.length()>0 ) {
             value = value.trim();
-            map.put(new Integer(keyI), value);
-            keymap.put(new Integer(keyI), keyS);
+            map.put(Integer.valueOf(keyI), value);
+            keymap.put(Integer.valueOf(keyI), keyS);
         }
     }
     public String getString(int key) {
         String s;
         try {
-            s = (String)map.get(new Integer(key));
+            s = (String)map.get(Integer.valueOf(key));
         } catch(Exception e) {
             s = null;
         }
@@ -107,7 +107,7 @@ public class KeyStrings {
     public String getKey(int key) {
         String s;
         try {
-            s = (String)keymap.get(new Integer(key));
+            s = (String)keymap.get(Integer.valueOf(key));
         } catch(Exception e) {
             s = null;
         }

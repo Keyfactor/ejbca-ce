@@ -367,7 +367,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
         // Check if administrator is authorized to add user to CA.
         if (!authorizedToCA(admin, userdata.getCAId())) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(userdata.getCAId()));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(userdata.getCAId()));
             logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                     LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
@@ -707,14 +707,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                         (type & SecConst.USER_SENDNOTIFICATION) != 0, userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), 
                         userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
-                String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(userdata.getEndEntityProfileId()), dn, udfp.getMessage());
+                String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(userdata.getEndEntityProfileId()), dn, udfp.getMessage());
                 logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                         LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw udfp;
             }
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, userdata.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(userdata.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(userdata.getEndEntityProfileId()));
                 logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                         LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
@@ -723,7 +723,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
         // Check if administrator is authorized to edit user to CA.
         if (!authorizedToCA(admin, userdata.getCAId())) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(userdata.getCAId()));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(userdata.getCAId()));
             logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                     LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
@@ -826,7 +826,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 print(admin, profile, userdata);
             }
             if (statuschanged) {
-                String msg = intres.getLocalizedMessage("ra.editedentitystatus", userdata.getUsername(), new Integer(userdata.getStatus()));
+                String msg = intres.getLocalizedMessage("ra.editedentitystatus", userdata.getUsername(), Integer.valueOf(userdata.getStatus()));
                 logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                         LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             } else {
@@ -867,13 +867,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (data1 != null) {
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+                String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data1.getEndEntityProfileId()));
                     logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_DELETEENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
@@ -934,7 +934,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (data1 != null) {
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+                String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
@@ -985,7 +985,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (data1 != null) {
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+                String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
@@ -1057,13 +1057,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (data1 != null) {
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+                String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data1.getEndEntityProfileId()));
                     logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
@@ -1199,13 +1199,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             UserData data1 = UserData.findByUsername(entityManager, username);
             if (data1 != null) {
                 if (!authorizedToCA(admin, caid)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+                    String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
                     logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
                 if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()
                         && !authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data1.getEndEntityProfileId()));
                     logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }
@@ -1264,13 +1264,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final int caid = data1.getCaId();
         final String username = data1.getUsername();
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data1.getEndEntityProfileId()));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
@@ -1301,7 +1301,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         data1.setStatus(status);
         data1.setTimeModified((new java.util.Date()).getTime());
-        String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, new Integer(status));
+        String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(status));
         logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
         // Send notifications when transitioning user through work-flow, if they
         // should be sent
@@ -1382,21 +1382,21 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             try {
                 profile.doesPasswordFulfillEndEntityProfile(password, true);
             } catch (UserDoesntFullfillEndEntityProfile ufe) {
-                String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(data.getEndEntityProfileId()), dn, ufe.getMessage());
+                String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(data.getEndEntityProfileId()), dn, ufe.getMessage());
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw ufe;
             }
 
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
 
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
@@ -1449,13 +1449,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
@@ -1483,13 +1483,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // Authorized?
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
@@ -1540,19 +1540,19 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
         }
         if (getUserStatus(admin, username) == UserDataConstants.STATUS_REVOKED) {
-            String msg = intres.getLocalizedMessage("ra.errorbadrequest", new Integer(data.getEndEntityProfileId()));
+            String msg = intres.getLocalizedMessage("ra.errorbadrequest", Integer.valueOf(data.getEndEntityProfileId()));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
             throw new AlreadyRevokedException(msg);
         }
@@ -1638,13 +1638,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
-            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+            String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
@@ -1763,13 +1763,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data = UserData.findByUsername(entityManager, username);
         if (data != null) {
         	if (!authorizedToCA(admin, data.getCaId())) {
-        		String msg = intres.getLocalizedMessage("ra.errorauthcaexist", new Integer(data.getCaId()), username);
+        		String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), username);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", new Integer(data.getEndEntityProfileId()), username);
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()), username);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
@@ -1855,12 +1855,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                     throw new AuthorizationDeniedException(msg);
                 }
             }
             if (!authorizedToCA(admin, data.getCaId())) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(data.getCaId()));
+                String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()));
                 throw new AuthorizationDeniedException(msg);
             }
             returnval = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data
@@ -2587,13 +2587,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (data1 != null) {
             caid = data1.getCaId();
             if (!authorizedToCA(admin, caid)) {
-                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));
+                String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS)) {
-                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data1.getEndEntityProfileId()));
                     logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                     throw new AuthorizationDeniedException(msg);
                 }

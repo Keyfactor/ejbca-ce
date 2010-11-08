@@ -59,7 +59,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			}
 			if (initAuth) {
 				String subjectdn = CertTools.getSubjectDN((Certificate)certs.iterator().next());
-				Integer caid = new Integer(subjectdn.hashCode());
+				Integer caid = Integer.valueOf(subjectdn.hashCode());
 				getLogger().info("Initializing authorization module for caid: "+caid);
 				initAuthorizationModule(caid.intValue(), superAdminCN);
 			}

@@ -168,7 +168,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			}
 			if ( handler==null || cmpMessage==null ) {
 				if (unknownMessageType > -1) {
-					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", new Integer(unknownMessageType));
+					final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
 					log.error(eMsg);
 					return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eMsg);
 				}

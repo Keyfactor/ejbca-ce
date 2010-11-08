@@ -46,13 +46,13 @@ public class CertificateProfileNameProxy implements java.io.Serializable {
     public String getCertificateProfileName(int certificateprofileid)  {
       String returnval = null;  
       // Check if name is in hashmap
-      returnval = (String) certificateprofilenamestore.get(new Integer(certificateprofileid));
+      returnval = (String) certificateprofilenamestore.get(Integer.valueOf(certificateprofileid));
       
       if(returnval==null){
         // Retreive profilename 
         returnval = certificateProfileSession.getCertificateProfileName(admin, certificateprofileid);
         if(returnval != null) {
-          certificateprofilenamestore.put(new Integer(certificateprofileid),returnval);
+          certificateprofilenamestore.put(Integer.valueOf(certificateprofileid),returnval);
         }
       }    
       return returnval;

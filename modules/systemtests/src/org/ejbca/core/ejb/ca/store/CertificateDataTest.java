@@ -362,7 +362,7 @@ public class CertificateDataTest extends TestCase {
         Random rand = new Random(new Date().getTime() + 4711);
         for (int i = 0; i < 6; i++) {
             int randint = rand.nextInt(9);
-            username += (new Integer(randint)).toString();
+            username += (Integer.valueOf(randint)).toString();
         }
         log.debug("Generated random username: username =" + username);
         userdata.setUsername(username);

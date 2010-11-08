@@ -162,7 +162,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      * @param remainingLoginAttempts The number to set
      */
     public void setRemainingLoginAttempts(int remainingLoginAttempts) {
-    	data.put(REMAININGLOGINATTEMPTS, new Integer(remainingLoginAttempts));
+    	data.put(REMAININGLOGINATTEMPTS, Integer.valueOf(remainingLoginAttempts));
     }
     
     /**
@@ -177,7 +177,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      * @param remainingLoginAttempts The number to set
      */
     public void setMaxLoginAttempts(int maxLoginAttempts) {
-    	data.put(MAXFAILEDLOGINATTEMPTS, new Integer(maxLoginAttempts));
+    	data.put(MAXFAILEDLOGINATTEMPTS, Integer.valueOf(maxLoginAttempts));
     }
 
     /**
@@ -302,7 +302,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      * @param object
      */
     protected void setType(int type){
-       data.put(TYPE,new Integer(type));	
+       data.put(TYPE,Integer.valueOf(type));	
     }
 
 }

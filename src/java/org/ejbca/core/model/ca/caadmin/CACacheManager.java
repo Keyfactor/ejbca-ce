@@ -149,8 +149,8 @@ public class CACacheManager {
      * 
      */
     public synchronized void removeCA(int caid) {
-        if (caRegistry.containsKey(new Integer(caid))) {
-            caRegistry.remove(new Integer(caid));
+        if (caRegistry.containsKey(Integer.valueOf(caid))) {
+            caRegistry.remove(Integer.valueOf(caid));
             // Remove all possible mappings from caname to this id, we may have changed CAName
             if (this.caNameToCaId.containsValue(Integer.valueOf(caid))) {
             	Set entrySet = this.caNameToCaId.entrySet();

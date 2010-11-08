@@ -243,7 +243,7 @@ public class PublisherTest extends TestCase {
         log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
 
         boolean ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
@@ -259,7 +259,7 @@ public class PublisherTest extends TestCase {
         log.trace(">test08storeCRLToDummy()");
         
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, null);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
@@ -291,7 +291,7 @@ public class PublisherTest extends TestCase {
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSP")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSP")));
 
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
@@ -324,7 +324,7 @@ public class PublisherTest extends TestCase {
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(new Integer(publisherSession.getPublisherId(admin, "TESTEXTOCSP2")));
+        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSP2")));
         
         long date = new Date().getTime();
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);

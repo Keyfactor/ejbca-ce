@@ -78,7 +78,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 	  // Currently only RSA keys are supported
       XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;	
       data = new HashMap();   
-      data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
+      data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
 
 	  data.put(KEYSPEC, info.getKeySpec());
 	  data.put(KEYALGORITHM, info.getKeyAlgorithm());
@@ -122,7 +122,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
                     (String) data.get(KEYALGORITHM), this.xKMScertificatechain);
         }
         
-        data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));        
+        data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));        
      } 
    }
     

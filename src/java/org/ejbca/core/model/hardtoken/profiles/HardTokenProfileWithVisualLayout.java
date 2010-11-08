@@ -65,7 +65,7 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#setVisualLayoutType(int)
 	 */
 	public void setVisualLayoutType(int type) {		
-	  data.put(VISUALLAYOUTTYPE, new Integer(type));	
+	  data.put(VISUALLAYOUTTYPE, Integer.valueOf(type));	
 	}
 
 	/**

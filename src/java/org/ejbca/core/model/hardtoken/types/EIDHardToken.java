@@ -52,7 +52,7 @@ public class EIDHardToken extends HardToken {
         setInitialSignaturePIN("");
         setSignaturePUK("");
 
-        data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+        data.put(TOKENTYPE, Integer.valueOf(THIS_TOKENTYPE));
     }
 
 

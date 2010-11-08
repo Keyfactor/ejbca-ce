@@ -304,8 +304,8 @@ public class PerformanceTest {
             final String CSI = "\u001B[";
 
             this.printStream.println(CSI+"J"); // clear rest of screen on VT100 terminals.
-            printLine("Total # of successfully performed tests", new Integer(this.nrOfSuccesses));
-            printLine("Total # of failed tests", new Integer(this.nrOfFailures));
+            printLine("Total # of successfully performed tests", Integer.valueOf(this.nrOfSuccesses));
+            printLine("Total # of failed tests", Integer.valueOf(this.nrOfFailures));
             printLine("# of tests completed each second", testsPerSecond);
             printLine("# of tests completed each second in last period", testsPerSecondInLastPeriod);
             this.printStream.println();

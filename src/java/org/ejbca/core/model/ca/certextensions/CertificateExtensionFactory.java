@@ -236,12 +236,12 @@ public class CertificateExtensionFactory {
                     certificateExtensions.put(Integer.valueOf(id), certificateExtension);
 
 				}else{
-					throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",new Integer(id)));
+					throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",Integer.valueOf(id)));
 				}
 			}
 			
 		}catch(Exception e){
-			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",new Integer(id)),e);
+			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",Integer.valueOf(id)),e);
 		}		
 	}
 	

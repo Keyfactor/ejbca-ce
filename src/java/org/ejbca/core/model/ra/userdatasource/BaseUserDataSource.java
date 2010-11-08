@@ -64,7 +64,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
       
       HashSet modifyableFields = new HashSet();
       for(int i=0; i< UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS.length; i++){
-    	  modifyableFields.add(new Integer(UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS[i]));
+    	  modifyableFields.add(Integer.valueOf(UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS[i]));
       }
       setModifiableFields(modifyableFields);
   
@@ -106,7 +106,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * @return true if user data source is applicable for all CAs
      */
     public boolean isApplicableToAnyCA(){
-    	return ((Collection) data.get(APPLICABLECAS)).contains(new Integer(ANYCA));
+    	return ((Collection) data.get(APPLICABLECAS)).contains(Integer.valueOf(ANYCA));
     } 
     
     /**

@@ -72,7 +72,7 @@ public class HardTokenAuthorization implements Serializable {
             }
             TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
             for (String alias : allhardtokenissuers.keySet()) {
-                if (authadmingroupids.contains(new Integer(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getAdminGroupId()))) {
+                if (authadmingroupids.contains(Integer.valueOf(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getAdminGroupId()))) {
                     hardtokenissuers.put(alias, allhardtokenissuers.get(alias));
                 }
             }

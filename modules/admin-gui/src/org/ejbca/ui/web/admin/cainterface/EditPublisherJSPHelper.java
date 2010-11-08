@@ -246,7 +246,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 request.getParameter(BUTTON_TESTCONNECTION) != null){
 
                             if(publisherdata == null){
-                                int tokentype = new Integer(request.getParameter(HIDDEN_PUBLISHERTYPE)).intValue();
+                                int tokentype = Integer.valueOf(request.getParameter(HIDDEN_PUBLISHERTYPE)).intValue();
                                 if(tokentype == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
                                     publisherdata = new CustomPublisherContainer();
                                 }
@@ -445,7 +445,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 if(values != null){
                                     ArrayList usefields = new ArrayList();
                                     for(int i=0;i< values.length;i++){
-                                        usefields.add(new Integer(values[i]));
+                                        usefields.add(Integer.valueOf(values[i]));
                                     }
 
                                     ldappublisher.setUseFieldInLdapDN(usefields);

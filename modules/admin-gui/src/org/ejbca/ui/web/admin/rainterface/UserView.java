@@ -44,7 +44,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
 
     public UserView(UserDataVO newuserdata, HashMap caidtonamemap){
       userdata = newuserdata;
-      this.caname = (String) caidtonamemap.get(new Integer(newuserdata.getCAId()));
+      this.caname = (String) caidtonamemap.get(Integer.valueOf(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
       String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
@@ -184,7 +184,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
             returnvalue = getEmail().compareTo(((UserView) obj).getEmail());
             break;
           case SortBy.STATUS :
-            returnvalue = (new Integer(getStatus())).compareTo(new Integer(((UserView) obj).getStatus()));
+            returnvalue = (Integer.valueOf(getStatus())).compareTo(Integer.valueOf(((UserView) obj).getStatus()));
             break;
           case SortBy.TIMECREATED :
             returnvalue = getTimeCreated().compareTo(((UserView) obj).getTimeCreated());

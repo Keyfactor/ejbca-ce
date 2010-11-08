@@ -1268,7 +1268,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             profile = getHardTokenProfile(i.next());
             if (profile instanceof EIDProfile) {
                 certprofiles = ((EIDProfile) profile).getAllCertificateProfileIds();
-                if (certprofiles.contains(new Integer(id))) {
+                if (certprofiles.contains(Integer.valueOf(id))) {
                     exists = true;
                 }
             }
@@ -1294,7 +1294,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         while (i.hasNext() && !exists) {
             issuer = i.next().getHardTokenIssuer();
             hardtokenissuers = issuer.getAvailableHardTokenProfiles();
-            if (hardtokenissuers.contains(new Integer(id))) {
+            if (hardtokenissuers.contains(Integer.valueOf(id))) {
                 exists = true;
             }
         }
@@ -1313,7 +1313,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             }
             id = ran.nextInt();
         }
-        return new Integer(id);
+        return Integer.valueOf(id);
     }
 
     private Integer findFreeHardTokenIssuerId() {
@@ -1328,7 +1328,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
             }
             id = ran.nextInt();
         }
-        return new Integer(id);
+        return Integer.valueOf(id);
     }
 
     /**

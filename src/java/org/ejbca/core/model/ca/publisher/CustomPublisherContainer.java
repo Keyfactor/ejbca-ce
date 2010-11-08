@@ -46,7 +46,7 @@ public class CustomPublisherContainer extends BasePublisher{
     
     public CustomPublisherContainer(){
     	super();
-    	data.put(TYPE, new Integer(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
+    	data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER));
     	setClassPath("");
     	setPropertyData("");
     }

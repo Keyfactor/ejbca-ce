@@ -697,7 +697,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     		rev.setRevocationDate(now);
     		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(reason);            	  
-    		String msg = intres.getLocalizedMessage("store.revokedcert", new Integer(reason));            	
+    		String msg = intres.getLocalizedMessage("store.revokedcert", Integer.valueOf(reason));            	
     		logSession.log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
@@ -722,14 +722,14 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     			if ( !published ) {
     				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
     			}                	  
-    			String msg = intres.getLocalizedMessage("store.republishunrevokedcert", new Integer(reason));            	
+    			String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));            	
     			logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     		} catch (Exception ex) {
     			// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
     			logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
     		}
     	} else {
-    		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, new Integer(rev.getStatus()), new Integer(reason));            	
+    		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));            	
     		logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     	}
     	// Update database protection
@@ -785,7 +785,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         	temprevoked = CertificateData.revokeOnHoldPermanently(entityManager, bcdn);
             // Revoking all non revoked certificates.
         	revoked = CertificateData.revokeAllNonRevokedCertificates(entityManager, bcdn, reason);
-    		String msg = intres.getLocalizedMessage("store.revokedallbyca", issuerdn, new Integer(revoked + temprevoked), new Integer(reason));            	
+    		String msg = intres.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked + temprevoked), Integer.valueOf(reason));            	
             logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
         } catch (Exception e) {
     		String msg = intres.getLocalizedMessage("store.errorrevokeallbyca", issuerdn);            	

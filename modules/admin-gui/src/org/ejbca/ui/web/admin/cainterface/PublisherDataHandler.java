@@ -157,7 +157,7 @@ public class PublisherDataHandler implements Serializable {
      * Help function that checks if administrator is authorized to edit publisher with given id.
      */
     private boolean authorizedToPublisherId(int id){      
-      return info.getAuthorizedPublisherNames().values().contains(new Integer(id));
+      return info.getAuthorizedPublisherNames().values().contains(Integer.valueOf(id));
     }
     
     /**

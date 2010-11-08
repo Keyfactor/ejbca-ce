@@ -90,7 +90,7 @@ public class CmpConfiguration {
 	}
 	
 	public static int getTCPPortNumber() {
-		return new Integer(ConfigurationHolder.getString("cmp.tcp.portno", "829")).intValue();
+		return Integer.valueOf(ConfigurationHolder.getString("cmp.tcp.portno", "829")).intValue();
 	}
 	
 	public static String getTCPLogDir() {

@@ -28,7 +28,7 @@ public class HashMapTest extends TestCase {
         HashMap a = new HashMap();
         a.put("foo0", Boolean.valueOf(false));
         a.put("foo1", "fooString");
-        a.put("foo2", new Integer(2));
+        a.put("foo2", Integer.valueOf(2));
         a.put("foo3", Boolean.valueOf(true));
         
         // Write to XML
@@ -53,7 +53,7 @@ public class HashMapTest extends TestCase {
         HashMap a = new HashMap();
         a.put("foo0", Boolean.valueOf(false));
         a.put("foo1", "\0001\0002fooString");
-        a.put("foo2", new Integer(2));
+        a.put("foo2", Integer.valueOf(2));
         a.put("foo3", Boolean.valueOf(true));
         
         // Write to XML
@@ -92,7 +92,7 @@ public class HashMapTest extends TestCase {
         HashMap h = new HashMap();
         h.put("foo0", Boolean.valueOf(false));
         h.put("foo1", "\0001\0002fooString");
-        h.put("foo2", new Integer(2));
+        h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
         HashMap a = new Base64PutHashMap();
@@ -125,7 +125,7 @@ public class HashMapTest extends TestCase {
         HashMap h = new HashMap();
         h.put("foo0", Boolean.valueOf(false));
         h.put("foo1", "fooString");
-        h.put("foo2", new Integer(2));
+        h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
         HashMap a = new Base64PutHashMap();

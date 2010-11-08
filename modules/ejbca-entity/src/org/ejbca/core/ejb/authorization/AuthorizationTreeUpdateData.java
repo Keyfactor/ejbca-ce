@@ -30,7 +30,7 @@ import javax.persistence.Version;
 public class AuthorizationTreeUpdateData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	public static final Integer AUTHORIZATIONTREEUPDATEDATA = new Integer(1);
+	public static final Integer AUTHORIZATIONTREEUPDATEDATA = Integer.valueOf(1);
 
 	private Integer pK;
 	private int authorizationTreeUpdateNumber;

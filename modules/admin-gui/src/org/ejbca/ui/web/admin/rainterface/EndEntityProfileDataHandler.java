@@ -203,7 +203,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
                     }
                     allexists = true;
                     for (int j = 0; j < availablecas.length; j++) {
-                        Integer caid = new Integer(availablecas[j]);
+                        Integer caid = Integer.valueOf(availablecas[j]);
                         if (!authorizedcaids.contains(caid)) {
                             log.debug("Not authorized to profile because admin is not authorized to CA " + caid);
                             allexists = false;

@@ -398,7 +398,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 final ResultSetMetaData rsmd = srs.getMetaData();
                 final Map<String, Integer> map = new HashMap<String, Integer>();
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    map.put(rsmd.getColumnLabel(i).toLowerCase(), new Integer(i));
+                    map.put(rsmd.getColumnLabel(i).toLowerCase(), Integer.valueOf(i));
                 }
                 iKeyID = map.get(lKeyID.toLowerCase()).intValue();
                 iCert = map.get(lCert.toLowerCase()).intValue();

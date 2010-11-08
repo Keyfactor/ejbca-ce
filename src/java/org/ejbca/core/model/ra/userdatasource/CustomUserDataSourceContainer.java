@@ -49,7 +49,7 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
     
     public CustomUserDataSourceContainer(){
     	super();
-    	data.put(TYPE, new Integer(TYPE_CUSTOMUSERDATASOURCECONTAINER));
+    	data.put(TYPE, Integer.valueOf(TYPE_CUSTOMUSERDATASOURCECONTAINER));
     	setClassPath("");
     	setPropertyData("");
     }

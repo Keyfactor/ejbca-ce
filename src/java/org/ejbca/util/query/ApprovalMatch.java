@@ -72,7 +72,7 @@ public class ApprovalMatch extends BasicMatch {
         // a legal number value when matching number field. See @throws clause.
         if (matchwith != MATCH_WITH_REQUESTADMINCERTISSUERDN &&
         	matchwith != MATCH_WITH_REQUESTADMINCERTSERIALNUMBER){
-            new Integer(matchvalue);
+            Integer.valueOf(matchvalue);
         }
     }
 

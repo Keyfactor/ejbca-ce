@@ -117,7 +117,7 @@ public class LogConfigurationData implements Serializable {
 	public Integer getAndIncrementRowCount() {
 		int returnval = getLogEntryRowNumber();
 		setLogEntryRowNumber(returnval + 1);
-		return new Integer(returnval);
+		return Integer.valueOf(returnval);
 	}
 
     //

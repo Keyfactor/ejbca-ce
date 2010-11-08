@@ -80,7 +80,7 @@ public class UserDataFiller {
         userData.setSubjectAltName(subjectAltName);
         if (userData.getType()==0) {
         	if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))){
-        		userData.setType(new Integer(profile.getValue(EndEntityProfile.FIELDTYPE, 0)).intValue());
+        		userData.setType(Integer.valueOf(profile.getValue(EndEntityProfile.FIELDTYPE, 0)).intValue());
         	}
         }
         return userData;

@@ -308,7 +308,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     }
     
     public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){ 
-    	data.put(NUMBEROFAPPROVALSTOVIEWPUK, new Integer(numberOfHardTokenApprovals));
+    	data.put(NUMBEROFAPPROVALSTOVIEWPUK, Integer.valueOf(numberOfHardTokenApprovals));
     }
     
     /**
@@ -327,7 +327,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
       * @param hardTokenEncryptCA the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
       */
      public void setHardTokenEncryptCA(int hardTokenEncryptCA){ 
-     	data.put(HARDTOKENENCRYPTCA, new Integer(hardTokenEncryptCA));
+     	data.put(HARDTOKENENCRYPTCA, Integer.valueOf(hardTokenEncryptCA));
      }
     
     /**
@@ -384,7 +384,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     	   String ret = (String) data.get(AUTOENROLL_ADSERVER);
    		   return (ret == null ? AUTOENROLL_DEFAULT_ADSERVER : ret);
        }
-       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, new Integer(caid)); }
+       public void setAutoEnrollADPort(int caid) { data.put(AUTOENROLL_ADPORT, Integer.valueOf(caid)); }
        public int getAutoEnrollADPort() {
     	   Integer ret = (Integer) data.get(AUTOENROLL_ADPORT);
    		   return (ret == null ? AUTOENROLL_DEFAULT_ADPORT : ret);
@@ -394,7 +394,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     	   String ret = (String) data.get(AUTOENROLL_BASEDN_USER);
    		   return (ret == null ? AUTOENROLL_DEFAULT_BASEDN_USER : ret);
    	   }
-       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, new Integer(caid)); }
+       public void setAutoEnrollCA(int caid) { data.put(AUTOENROLL_CA, Integer.valueOf(caid)); }
        public int getAutoEnrollCA() {
     	   Integer ret = (Integer) data.get(AUTOENROLL_CA);
     	   return (ret == null ? AUTOENROLL_DEFAULT_CA : ret);

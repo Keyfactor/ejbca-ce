@@ -33,14 +33,14 @@ public class UserDataConstants {
     /** These string values maps a status code to a language string in the admin GUI language property files */
     private static final HashMap STATUS_TEXT_TRANS = new HashMap();
     static {
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_NEW),"STATUSNEW");
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_FAILED),"STATUSFAILED"); 
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_INITIALIZED),"STATUSINITIALIZED"); 
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_INPROCESS),"STATUSINPROCESS");
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_GENERATED),"STATUSGENERATED");
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_REVOKED),"STATUSREVOKED");
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_HISTORICAL),"STATUSHISTORICAL");
-    	STATUS_TEXT_TRANS.put(new Integer(STATUS_KEYRECOVERY),"STATUSKEYRECOVERY");
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_NEW),"STATUSNEW");
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_FAILED),"STATUSFAILED"); 
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INITIALIZED),"STATUSINITIALIZED"); 
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INPROCESS),"STATUSINPROCESS");
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_GENERATED),"STATUSGENERATED");
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_REVOKED),"STATUSREVOKED");
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_HISTORICAL),"STATUSHISTORICAL");
+    	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_KEYRECOVERY),"STATUSKEYRECOVERY");
     }
 
     public static String getTranslatableStatusText(int status) {
@@ -55,14 +55,14 @@ public class UserDataConstants {
     /** These string values maps a status code to a plain string */
     private static final HashMap STATUS_TEXT = new HashMap();
     static {
-    	STATUS_TEXT.put(new Integer(STATUS_NEW),"NEW");
-    	STATUS_TEXT.put(new Integer(STATUS_FAILED),"FAILED"); 
-    	STATUS_TEXT.put(new Integer(STATUS_INITIALIZED),"INITIALIZED"); 
-    	STATUS_TEXT.put(new Integer(STATUS_INPROCESS),"INPROCESS");
-    	STATUS_TEXT.put(new Integer(STATUS_GENERATED),"GENERATED");
-    	STATUS_TEXT.put(new Integer(STATUS_REVOKED),"REVOKED");
-    	STATUS_TEXT.put(new Integer(STATUS_HISTORICAL),"HISTORICAL");
-    	STATUS_TEXT.put(new Integer(STATUS_KEYRECOVERY),"KEYRECOVERY");
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_NEW),"NEW");
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_FAILED),"FAILED"); 
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_INITIALIZED),"INITIALIZED"); 
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_INPROCESS),"INPROCESS");
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_GENERATED),"GENERATED");
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_REVOKED),"REVOKED");
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_HISTORICAL),"HISTORICAL");
+    	STATUS_TEXT.put(Integer.valueOf(STATUS_KEYRECOVERY),"KEYRECOVERY");
     }
 
     public static String getStatusText(int status) {
