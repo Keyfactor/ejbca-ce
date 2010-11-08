@@ -192,7 +192,7 @@
          <option  value='<%= authcaid %>' <% 
                                         if(authcaid ==caid)
                                            out.write(" selected ");%>>
-            <%= caidtonamemap.get(new Integer(authcaid)) %>
+            <%= caidtonamemap.get(Integer.valueOf(authcaid)) %>
         </option>
         <% } %>
    </select>  
@@ -260,7 +260,7 @@
         <input type="checkbox" name="<%=CHECKBOX_INFOLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
         <% 
   	       // We must make this independent of language encoding, utf, html escaped etc
-           Integer hashcode =  new Integer((inforows[i].hashCode()));
+           Integer hashcode =  Integer.valueOf((inforows[i].hashCode()));
            String val = hashcode.toString();
            if(logconfiguration.getLogEvent(((Integer) texthashtoid.get(val)).intValue()).booleanValue())
                out.write(" CHECKED "); %>> 
@@ -281,7 +281,7 @@
         <input type="checkbox" name="<%=CHECKBOX_ERRORLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
         <% 
      	   // We must make this independent of language encoding, utf, html escaped etc
-           Integer hashcode =  new Integer((errorrows[i].hashCode()));
+           Integer hashcode =  Integer.valueOf((errorrows[i].hashCode()));
            String val = hashcode.toString();
            if(logconfiguration.getLogEvent(((Integer) texthashtoid.get(val)).intValue()).booleanValue())
                out.write(" CHECKED "); %>> 
@@ -330,7 +330,7 @@
            int authcaid = ((Integer) iter.next()).intValue(); 
            if(caid != authcaid){ %>
          <option  value='<%= authcaid %>' >
-            <%= caidtonamemap.get(new Integer(authcaid)) %>
+            <%= caidtonamemap.get(Integer.valueOf(authcaid)) %>
         </option>
         <% }
          }%>

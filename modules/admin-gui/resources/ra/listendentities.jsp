@@ -234,7 +234,7 @@
         String parameter = (String) parameters.nextElement();
          if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
            index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-           indexes.addElement(new Integer(index));
+           indexes.addElement(Integer.valueOf(index));
          }
        }
        
@@ -261,7 +261,7 @@
           String parameter = (String) parameters.nextElement();
            if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
              index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-             indexes.addElement(new Integer(index));
+             indexes.addElement(Integer.valueOf(index));
            }
          }
        
@@ -301,7 +301,7 @@
           String parameter = (String) parameters.nextElement();
            if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
              index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-             indexes.addElement(new Integer(index));
+             indexes.addElement(Integer.valueOf(index));
            }
          }
        
@@ -339,7 +339,7 @@
         String parameter = (String) parameters.nextElement();
          if(parameter.startsWith(CHECKBOX_SELECT_USER) && request.getParameter(parameter).equals(CHECKBOX_VALUE)) {
            index = java.lang.Integer.parseInt(parameter.substring(CHECKBOX_SELECT_USER.length())); //Without []
-           indexes.addElement(new Integer(index));
+           indexes.addElement(Integer.valueOf(index));
          }
        }
        

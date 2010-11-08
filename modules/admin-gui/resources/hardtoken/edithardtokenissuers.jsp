@@ -165,7 +165,7 @@
              
              if(values!= null){
                for(int i=0; i< values.length; i++){
-                 availableprofiles.add(new Integer(values[i]));                     
+                 availableprofiles.add(Integer.valueOf(values[i]));                     
                }
              } 
              issuer.setAvailableHardTokenProfiles(availableprofiles);

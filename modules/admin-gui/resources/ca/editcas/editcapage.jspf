@@ -729,7 +729,7 @@ function checkallfields(){
                   if(cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA)
                     out.write(ejbcawebbean.getText("SIGNEDBYEXTERNALCA"));
                 }else
-                  out.write((String) caidtonamemap.get(new Integer(cainfo.getSignedBy())));
+                  out.write((String) caidtonamemap.get(Integer.valueOf(cainfo.getSignedBy())));
               }else{%>
         <select name="<%=SELECT_SIGNEDBY %>" size="1" onchange="fillCertProfileField(); isExternalX509(); isExternalGeneric()">
                 <option value="<%= CAInfo.SELFSIGNED%>" selected><%= ejbcawebbean.getText("SELFSIGNED") %></option>  
@@ -752,7 +752,7 @@ function checkallfields(){
       <td width="50%"> 
            <% if(editca){
                 if(cainfo.getCertificateProfileId() != 0)
-                  out.write((String) certprofileidtonamemap.get(new Integer(cainfo.getCertificateProfileId())));
+                  out.write((String) certprofileidtonamemap.get(Integer.valueOf(cainfo.getCertificateProfileId())));
                 else
                   out.write(ejbcawebbean.getText("NOTUSED"));
               }else{%>
