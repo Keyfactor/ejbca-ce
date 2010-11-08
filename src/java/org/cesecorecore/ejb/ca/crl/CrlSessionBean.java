@@ -14,7 +14,6 @@
 package org.cesecorecore.ejb.ca.crl;
 
 import java.security.cert.X509CRL;
-import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.EJB;
@@ -32,14 +31,9 @@ import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CRLData;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.util.CertTools;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs.
@@ -64,70 +58,7 @@ public class CrlSessionBean implements CrlSessionLocal, CrlSessionRemote{
 
    
         
-    /**
-     * Requests for a CRL to be created with the passed (revoked) certificates. 
-     * Generates the CRL and stores it in the database.
-     *
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param certs collection of RevokedCertInfo object.
-     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
-     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
-     * @throws CATokenOfflineException 
-     */
-    public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">createCRL(Collection)");
-    	}
-        byte[] crlBytes = null; // return value
-        try {
-            if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
-                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-                logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                throw new CATokenOfflineException(msg);
-            }
-            final X509CRL crl;
-            final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
-            int fullnumber = getLastCRLNumber(admin, certSubjectDN, false);
-            int deltanumber = getLastCRLNumber(admin, certSubjectDN, true);
-            // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
-            int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
-            boolean deltaCRL = (basecrlnumber > -1);
-            if (deltaCRL) {
-            	// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
-            	if (nextCrlNumber == basecrlnumber) {
-            		nextCrlNumber++;
-            	}
-            	crl = (X509CRL) ca.generateDeltaCRL(certs, nextCrlNumber, basecrlnumber);	
-            } else {
-            	crl = (X509CRL) ca.generateCRL(certs, nextCrlNumber);
-            }
-            if (crl != null) {
-                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(nextCrlNumber), ca.getName(), ca.getSubjectDN());
-                logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
-
-                // Store CRL in the database
-                String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
-                crlBytes = crl.getEncoded();            	
-                if (log.isDebugEnabled()) {
-                	log.debug("Storing CRL in certificate store.");
-                }
-                storeCRL(admin, crlBytes, fingerprint, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
-            }
-        } catch (CATokenOfflineException ctoe) {
-            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            log.error(msg, ctoe);
-            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
-            throw ctoe;
-        } catch (Exception e) {
-        	logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
-            throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
-        }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<createCRL(Collection)");
-    	}
-        return crlBytes;
-    }
+    
 
     /**
      * Stores a CRL
@@ -141,7 +72,7 @@ public class CrlSessionBean implements CrlSessionLocal, CrlSessionRemote{
      * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
      * @return true if storage was successful.
      */
-    private boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
     	if (log.isTraceEnabled()) {
         	log.trace(">storeCRL(" + cafp + ", " + number + ")");
     	}

@@ -15,7 +15,7 @@ package org.ejbca.core.model.util;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -59,7 +59,7 @@ public class EjbRemoteHelper {
     private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
     private ConfigurationSessionRemote configurationSession = null;
     private CrlSessionRemote crlSession = null;
-    private CrlStoreSessionRemote crlStoreSession = null;
+    private CrlCreateSessionRemote crlStoreSession = null;
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
@@ -117,9 +117,9 @@ public class EjbRemoteHelper {
         return cmpMessageDispatcherSession;
 	}
 
-    public CrlStoreSessionRemote getCrlStoreSession() {
+    public CrlCreateSessionRemote getCrlStoreSession() {
         if (crlStoreSession == null) {
-            crlStoreSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
+            crlStoreSession = JndiHelper.getRemoteSession(CrlCreateSessionRemote.class);
         }
         return crlStoreSession;
     }

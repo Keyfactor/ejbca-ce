@@ -99,7 +99,7 @@ public class CAInfo implements Serializable {
     protected long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
     /** Default value 0 = disabled */
     protected long deltacrlperiod = 0; 
-    protected Collection crlpublishers;  
+    protected Collection<Integer> crlpublishers;  
 	protected boolean finishuser;  
 	protected Collection<ExtendedCAServiceInfo> extendedcaserviceinfos;
 	protected Collection<Integer> approvalSettings;
@@ -160,8 +160,8 @@ public class CAInfo implements Serializable {
     public long getCRLOverlapTime(){ return crlOverlapTime;}
     public void setCRLOverlapTime(long crloverlaptime){ this.crlOverlapTime = crloverlaptime;}
 
-    public Collection getCRLPublishers(){ return crlpublishers;}
-    public void setCRLPublishers(Collection crlpublishers){this.crlpublishers=crlpublishers;}    
+    public Collection<Integer> getCRLPublishers(){ return crlpublishers;}
+    public void setCRLPublishers(Collection<Integer> crlpublishers){this.crlpublishers=crlpublishers;}    
     	
 	public boolean getFinishUser(){ return finishuser;}
 	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}

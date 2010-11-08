@@ -30,7 +30,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -57,7 +57,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private CrlSessionRemote createCrlSession = ejb.getCrlSession();
-    private CrlStoreSessionRemote crlStoreSession = ejb.getCrlStoreSession();    
+    private CrlCreateSessionRemote crlStoreSession = ejb.getCrlStoreSession();    
     /**
      * Retrieves the complete certificate chain from the CA
      * 

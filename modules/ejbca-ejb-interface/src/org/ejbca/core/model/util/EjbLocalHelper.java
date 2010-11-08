@@ -16,8 +16,8 @@ import javax.ejb.CreateException;
 
 import org.cesecore.core.ejb.ca.crl.CrlSession;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSession;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSession;
@@ -72,7 +72,7 @@ public class EjbLocalHelper {
 	// For now we will return the remote stub instead, just to get things working..
 
     private CertificateProfileSession certificateProfileSession;
-    private CrlStoreSession crlStoreSession;
+    private CrlCreateSession crlStoreSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     private SignSession signsession = null;
@@ -107,9 +107,9 @@ public class EjbLocalHelper {
     	return authorizationSession;
     }
     
-    public CrlStoreSession getCrlStoreSession() {
+    public CrlCreateSession getCrlCreateSession() {
         if(crlStoreSession == null) {
-            crlStoreSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
+            crlStoreSession = JndiHelper.getRemoteSession(CrlCreateSessionRemote.class);
         }
         return crlStoreSession;
     }

@@ -12,15 +12,15 @@
  *************************************************************************/
 package org.cesecore.core.ejb.ca.crl;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
- * Remote interface for CrlStoresession
+ * Local interface for CrlStoreSession
  * 
  * @version $Id$
  *
  */
-@Remote
-public interface CrlStoreSessionRemote extends CrlStoreSession {
+@Local
+public interface CrlCreateSessionLocal extends CrlCreateSession {
 
 }
