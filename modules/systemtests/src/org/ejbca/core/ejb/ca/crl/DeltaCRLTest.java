@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -57,7 +57,7 @@ public class DeltaCRLTest extends CaTestCase {
     private static final String USERNAME = "foo";
 
     private CrlSessionRemote createCrlSession = InterfaceCache.getCrlSession();
-    private CrlStoreSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
+    private CrlCreateSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();

@@ -12,11 +12,8 @@
  *************************************************************************/
 package org.cesecore.core.ejb.ca.crl;
 
-import java.util.Collection;
+import java.util.Date;
 
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -26,18 +23,7 @@ import org.ejbca.core.model.log.Admin;
  */
 public interface CrlSession {
 
-    /**
-     * Requests for a CRL to be created with the passed (revoked) certificates. 
-     * Generates the CRL and stores it in the database.
-     *
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param certs collection of RevokedCertInfo object.
-     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
-     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
-     * @throws CATokenOfflineException 
-     */
-    public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException;
+
 
     /**
      * Retrieves the latest CRL issued by this CA.
@@ -93,5 +79,19 @@ public interface CrlSession {
      *            complete CRL
      */
     public int getLastCRLNumber(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
+    
+    /**
+     * Stores a CRL
+     *
+     * @param incrl  The DER coded CRL to be stored.
+     * @param cafp   Fingerprint (hex) of the CAs certificate.
+     * @param number CRL number.
+     * @param issuerDN the issuer of the CRL
+     * @param thisUpdate when this CRL was created
+     * @param nextUpdate when this CRL expires
+     * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
+     * @return true if storage was successful.
+     */
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator);
 
 }

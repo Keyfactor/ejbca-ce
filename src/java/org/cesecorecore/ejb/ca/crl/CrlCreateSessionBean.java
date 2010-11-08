@@ -30,10 +30,11 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionLocal;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -56,9 +57,9 @@ import org.ejbca.util.CertTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessionRemote {
+public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSessionRemote {
 
-    private static final Logger log = Logger.getLogger(CrlStoreSessionBean.class);
+    private static final Logger log = Logger.getLogger(CrlCreateSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
@@ -71,6 +72,105 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlSessionLocal crlSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
+    
+    /**
+     * Requests for a CRL to be created with the passed (revoked) certificates. 
+     * Generates the CRL and stores it in the database.
+     *
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param certs collection of RevokedCertInfo object.
+     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
+     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
+     * @throws CATokenOfflineException 
+     */
+    public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
+        if (log.isTraceEnabled()) {
+                log.trace(">createCRL(Collection)");
+        }
+        byte[] crlBytes = null; // return value
+        try {
+            if ( (ca.getStatus() != SecConst.CA_ACTIVE) && (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) ) {
+                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+                logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                throw new CATokenOfflineException(msg);
+            }
+            final X509CRL crl;
+            final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
+            int fullnumber = crlSession.getLastCRLNumber(admin, certSubjectDN, false);
+            int deltanumber = crlSession.getLastCRLNumber(admin, certSubjectDN, true);
+            // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
+            int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
+            boolean deltaCRL = (basecrlnumber > -1);
+            if (deltaCRL) {
+                // Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
+                if (nextCrlNumber == basecrlnumber) {
+                        nextCrlNumber++;
+                }
+                crl = (X509CRL) ca.generateDeltaCRL(certs, nextCrlNumber, basecrlnumber);       
+            } else {
+                crl = (X509CRL) ca.generateCRL(certs, nextCrlNumber);
+            }
+            if (crl != null) {
+                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(nextCrlNumber), ca.getName(), ca.getSubjectDN());
+                logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
+
+                // Store CRL in the database
+                String fingerprint = CertTools.getFingerprintAsString(ca.getCACertificate());
+                crlBytes = crl.getEncoded();                    
+                if (log.isDebugEnabled()) {
+                        log.debug("Storing CRL in certificate store.");
+                }
+                crlSession.storeCRL(admin, crlBytes, fingerprint, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+            }
+        } catch (CATokenOfflineException ctoe) {
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+            log.error(msg, ctoe);
+            logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, ctoe);
+            throw ctoe;
+        } catch (Exception e) {
+                logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
+            throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
+        }
+        if (log.isTraceEnabled()) {
+                log.trace("<createCRL(Collection)");
+        }
+        return crlBytes;
+    }
+    
+    /**
+     * (Re-)Publish the last CRLs for a CA.
+     *
+     * @param admin            Information about the administrator or admin preforming the event.
+     * @param caCert           The certificate for the CA to publish CRLs for
+     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
+     * @param doPublishDeltaCRL should delta CRLs be published?
+     */
+    public void publishCRL(Admin admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
+        if ( usedpublishers==null ) {
+                return;
+        }
+        // Store crl in ca CRL publishers.
+        if (log.isDebugEnabled()) {
+                log.debug("Storing CRL in publishers");
+        }
+        final String issuerDN = CertTools.getSubjectDN(caCert);
+        final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
+        final byte crl[] = crlSession.getLastCRL(admin, issuerDN, false);
+        if ( crl!=null ) {
+                publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, caDataDN);
+        }
+        if ( !doPublishDeltaCRL ) {
+                return;
+        }
+        final byte deltaCrl[] = crlSession.getLastCRL(admin, issuerDN, true);
+        if ( deltaCrl!=null ) {
+                publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, caDataDN);
+        }
+    }
     
     /**
      * Method that checks if the CRL is needed to be updated for the CA and creates the CRL, if necessary. A CRL is created:
@@ -341,7 +441,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                         }
                 }
                 // a full CRL
-                byte[] crlBytes = crlSession.createCRL(admin, ca, revcerts, -1);
+                byte[] crlBytes = createCRL(admin, ca, revcerts, -1);
                 if (crlBytes != null) {
                         ret = CertTools.getFingerprintAsString(crlBytes);                       
                 }
@@ -425,7 +525,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                                 certs.add(ci);
                         }
                         // create a delta CRL
-                        crlBytes = crlSession.createCRL(admin, ca, certs, baseCrlNumber);
+                        crlBytes = createCRL(admin, ca, certs, baseCrlNumber);
                         X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                                 if (log.isDebugEnabled()) {
                                         log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());

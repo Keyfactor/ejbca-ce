@@ -63,7 +63,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -208,7 +208,7 @@ public class EjbcaWS implements IEjbcaWS {
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
-    private CrlStoreSessionLocal crlStoreSession;
+    private CrlCreateSessionLocal crlStoreSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB

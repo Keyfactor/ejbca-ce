@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSession;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
@@ -78,7 +78,7 @@ public class CAInterfaceBean implements Serializable {
     private CertificateStoreSession certificatesession;
     private CAAdminSession caadminsession;
     private CrlSession createCrlSession;
-    private CrlStoreSession crlStoreSession;
+    private CrlCreateSession crlCreateSession;
     private AuthorizationSession authorizationsession;
     private UserAdminSession adminsession;
     private RaAdminSession raadminsession;
@@ -111,7 +111,7 @@ public class CAInterfaceBean implements Serializable {
         if(!initialized){
           certificatesession = ejb.getCertStoreSession();
           createCrlSession = ejb.getCreateCrlSession();
-          crlStoreSession = ejb.getCrlStoreSession();
+          crlCreateSession = ejb.getCrlCreateSession();
           caadminsession = ejb.getCAAdminSession();
           authorizationsession = ejb.getAuthorizationSession();
           adminsession = ejb.getUserAdminSession();
@@ -126,7 +126,8 @@ public class CAInterfaceBean implements Serializable {
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);;
-          cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, authorizationsession, ejbcawebbean);
+            cadatahandler = new CADataHandler(administrator, caadminsession, endEntityProfileSession, adminsession, raadminsession,
+                    certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
@@ -255,7 +256,7 @@ public class CAInterfaceBean implements Serializable {
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         }
-        crlStoreSession.run(administrator, ca);
+        crlCreateSession.run(administrator, ca);
     }
     public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException {      
         CA ca;
@@ -264,7 +265,7 @@ public class CAInterfaceBean implements Serializable {
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         }
-        crlStoreSession.runDeltaCRL(administrator, ca, -1, -1);
+        crlCreateSession.runDeltaCRL(administrator, ca, -1, -1);
     }
 
     public int getLastCRLNumber(String  issuerdn) {

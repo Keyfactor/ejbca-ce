@@ -40,7 +40,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -89,7 +89,7 @@ public class CreateCRLSessionTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private CrlSessionRemote createCrlSession = InterfaceCache.getCrlSession();
-    private CrlStoreSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
+    private CrlCreateSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();

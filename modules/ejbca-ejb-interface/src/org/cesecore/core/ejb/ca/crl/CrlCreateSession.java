@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.cesecore.core.ejb.ca.crl;
 
+import java.util.Collection;
+
+import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Interface for CrlStoreSession, a session bean for performing business
@@ -21,8 +26,20 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
  * @version $Id$
  * 
  */
-public interface CrlStoreSession {
+public interface CrlCreateSession {
 
+    /**
+     * Requests for a CRL to be created with the passed (revoked) certificates. 
+     * Generates the CRL and stores it in the database.
+     *
+     * @param admin administrator performing the task
+     * @param ca the CA this operation regards
+     * @param certs collection of RevokedCertInfo object.
+     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
+     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
+     * @throws CATokenOfflineException 
+     */
+    public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException;
 
     /**
      * Method that checks if the CRL is needed to be updated for the CA and
@@ -67,6 +84,27 @@ public interface CrlStoreSession {
     public boolean runDeltaCRLnewTransactionConditioned(org.ejbca.core.model.log.Admin admin, org.ejbca.core.model.ca.caadmin.CA ca, long crloverlaptime)
                 throws CATokenOfflineException;
 
+    /**
+     * (Re-)Publish the last CRLs for a CA.
+     * 
+     * @param admin
+     *            Information about the administrator or admin performing the
+     *            event.
+     * @param caCert
+     *            The certificate for the CA to publish CRLs for
+     * @param usedpublishers
+     *            a collection if publisher id's (Integer) indicating which
+     *            publisher that should be used.
+     * @param caDataDN
+     *            DN from CA data. If a the CA certificate does not have a DN
+     *            object to be used by the publisher this DN could be searched
+     *            for the object.
+     * @param doPublishDeltaCRL
+     *            should delta CRLs be published?
+     */
+    public void publishCRL(Admin admin, java.security.cert.Certificate caCert, Collection<Integer> usedpublishers,
+            String caDataDN, boolean doPublishDeltaCRL);
+    
     /**
      * Generates a new CRL by looking in the database for revoked certificates
      * and generating a CRL. This method also "archives" certificates when after

@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
@@ -77,6 +78,7 @@ public class CADataHandler implements Serializable {
     private RaAdminSession raadminsession; 
     private CertificateStoreSession certificatesession;  
     private CertificateProfileSession certificateProfileSession;
+    private CrlCreateSession crlCreateSession;
     private EndEntityProfileSession endEntityProfileSession;
     private EjbcaWebBean ejbcawebbean;
     
@@ -87,7 +89,7 @@ public class CADataHandler implements Serializable {
                          UserAdminSession adminsession, 
                          RaAdminSession raadminsession, 
                          CertificateStoreSession certificatesession,
-                         CertificateProfileSession certificateProfileSession,
+                         CertificateProfileSession certificateProfileSession, CrlCreateSession crlCreateSession,
                          AuthorizationSession authorizationsession,
                          EjbcaWebBean ejbcawebbean) {
                             
@@ -98,6 +100,7 @@ public class CADataHandler implements Serializable {
        this.certificateProfileSession = certificateProfileSession;
        this.endEntityProfileSession = endEntityProfileSession;
        this.raadminsession = raadminsession;
+       this.crlCreateSession = crlCreateSession;
        this.administrator = administrator;          
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
@@ -299,7 +302,7 @@ public class CADataHandler implements Serializable {
    */  
  public void publishCA(int caid){
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
- 	Collection publishers = cainfo.getCRLPublishers();
+ 	Collection<Integer> publishers = cainfo.getCRLPublishers();
  	// Publish ExtendedCAServices certificates as well
 	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
 	while(iter.hasNext()){
@@ -326,7 +329,7 @@ public class CADataHandler implements Serializable {
     // (which there is probably not) 
     publishers.addAll(certprofile.getPublisherList());
     caadminsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
-    caadminsession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
+    crlCreateSession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
  }
  
  public void renewAndRevokeXKMSCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
@@ -347,7 +350,7 @@ public class CADataHandler implements Serializable {
  
  public void renewAndRevokeCmsCertificate(int caid) throws CATokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException, AuthorizationDeniedException{
 	 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
-		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+		Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof CmsCAServiceInfo){
