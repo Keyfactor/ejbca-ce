@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.RequestHelper;
@@ -56,7 +56,7 @@ public class GetCRLServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
 
     @EJB
-    private CreateCRLSessionLocal crlSession;
+    private CrlSessionLocal crlSession;
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);

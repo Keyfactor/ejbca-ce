@@ -14,6 +14,8 @@ package org.ejbca.core.model.util;
 
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -22,7 +24,6 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -57,7 +58,8 @@ public class EjbRemoteHelper {
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
     private ConfigurationSessionRemote configurationSession = null;
-    private CreateCRLSessionRemote crlSession = null;
+    private CrlSessionRemote crlSession = null;
+    private CrlStoreSessionRemote crlStoreSession = null;
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
@@ -115,6 +117,13 @@ public class EjbRemoteHelper {
         return cmpMessageDispatcherSession;
 	}
 
+    public CrlStoreSessionRemote getCrlStoreSession() {
+        if (crlStoreSession == null) {
+            crlStoreSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
+        }
+        return crlStoreSession;
+    }
+	
 	public EndEntityProfileSessionRemote getEndEntityProfileSession() {
         if(endEntityProfileSession == null) {
             endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -213,9 +222,9 @@ public class EjbRemoteHelper {
         return publisherSession;
     }
 
-    public CreateCRLSessionRemote getCrlSession() {
+    public CrlSessionRemote getCrlSession() {
         if (crlSession == null) {
-            crlSession = JndiHelper.getRemoteSession(CreateCRLSessionRemote.class);
+            crlSession = JndiHelper.getRemoteSession(CrlSessionRemote.class);
         }
         return crlSession;
     }

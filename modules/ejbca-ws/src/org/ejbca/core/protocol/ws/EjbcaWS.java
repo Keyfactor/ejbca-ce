@@ -63,6 +63,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -74,7 +75,6 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -192,42 +192,42 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
 public class EjbcaWS implements IEjbcaWS {
 	@Resource
 	private WebServiceContext wsContext;	
-	
-	@EJB
-	private ApprovalSessionLocal approvalSession;
-	@EJB
+
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
     private AuthenticationSessionLocal authenticationSession;
-	@EJB
+    @EJB
     private AuthorizationSessionLocal authorizationSession;
-	@EJB
+    @EJB
     private CAAdminSessionLocal caAdminSession;
-	@EJB
+    @EJB
     private CertificateRequestSessionLocal certificateRequestSession;
-	@EJB
+    @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
-	@EJB
-	private CertificateProfileSessionLocal certificateProfileSession;
-	@EJB
-    private CreateCRLSessionLocal crlSession;
-	@EJB
-	private EndEntityProfileSessionLocal endEntityProfileSession;
-	@EJB
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
     private HardTokenSessionLocal hardTokenSession;
-	@EJB
+    @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
-	@EJB
+    @EJB
     private LogSessionLocal logSession;
-	@EJB
+    @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
-	@EJB
+    @EJB
     private PublisherSessionLocal publisherSession;
-	@EJB
+    @EJB
     private RaAdminSessionLocal raAdminSession;
-	@EJB
+    @EJB
     private SignSessionLocal signSession;
-	@EJB
+    @EJB
     private UserAdminSessionLocal userAdminSession;
-	@EJB
+    @EJB
     private UserDataSourceSessionLocal userDataSourceSession;
 
 	/** The maximum number of rows returned in array responses. */
@@ -2472,7 +2472,7 @@ public class EjbcaWS implements IEjbcaWS {
             logAdminName(admin,logger);
 			CAInfo info = caAdminSession.getCAInfoOrThrowException(admin, caname);
 			CA ca = caAdminSession.getCA(admin, info.getCAId());
-			crlSession.run(admin, ca);
+			crlStoreSession.run(admin, ca);
 		} catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
 		} catch (EJBException e) {

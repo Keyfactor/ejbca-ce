@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -91,7 +91,7 @@ public class CertDistServlet extends HttpServlet {
     @EJB
     private CertificateStoreSessionLocal storesession;
     @EJB
-    private CreateCRLSessionLocal createCrlSession;
+    private CrlSessionLocal createCrlSession;
     @EJB
     private SignSessionLocal signSession;
 

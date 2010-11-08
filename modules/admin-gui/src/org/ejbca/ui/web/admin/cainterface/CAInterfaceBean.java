@@ -29,11 +29,12 @@ import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.core.ejb.ca.crl.CrlStoreSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -76,7 +77,8 @@ public class CAInterfaceBean implements Serializable {
     // Private fields
     private CertificateStoreSession certificatesession;
     private CAAdminSession caadminsession;
-    private CreateCRLSession createCrlSession;
+    private CrlSession createCrlSession;
+    private CrlStoreSession crlStoreSession;
     private AuthorizationSession authorizationsession;
     private UserAdminSession adminsession;
     private RaAdminSession raadminsession;
@@ -109,6 +111,7 @@ public class CAInterfaceBean implements Serializable {
         if(!initialized){
           certificatesession = ejb.getCertStoreSession();
           createCrlSession = ejb.getCreateCrlSession();
+          crlStoreSession = ejb.getCrlStoreSession();
           caadminsession = ejb.getCAAdminSession();
           authorizationsession = ejb.getAuthorizationSession();
           adminsession = ejb.getUserAdminSession();
@@ -136,10 +139,10 @@ public class CAInterfaceBean implements Serializable {
     public CertificateView[] getCACertificates(int caid) {
       CertificateView[] returnval = null;      
       
-      Collection chain = signsession.getCertificateChain(administrator, caid);
+      Collection<Certificate> chain = signsession.getCertificateChain(administrator, caid);
       
       returnval = new CertificateView[chain.size()];
-      Iterator iter = chain.iterator();
+      Iterator<Certificate> iter = chain.iterator();
       int i=0;
       while(iter.hasNext()){
         Certificate next = (Certificate) iter.next();  
@@ -173,7 +176,7 @@ public class CAInterfaceBean implements Serializable {
         return (String)informationmemory.getCAIdToNameMap().get(caId);
     }
 
-    public Collection getAuthorizedCAs(){
+    public Collection<Integer> getAuthorizedCAs(){
       return informationmemory.getAuthorizedCAIds();
     }  
       
@@ -246,22 +249,22 @@ public class CAInterfaceBean implements Serializable {
     }    
       
     public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException  {      
-      CA ca;
-		try {
-			ca = caadminsession.getCA(administrator, issuerdn.hashCode());
-		} catch (CADoesntExistsException e) {
-			throw new RuntimeException(e);
-		}
-      createCrlSession.run(administrator, ca);
+        CA ca;
+        try {
+            ca = caadminsession.getCA(administrator, issuerdn.hashCode());
+        } catch (CADoesntExistsException e) {
+            throw new RuntimeException(e);
+        }
+        crlStoreSession.run(administrator, ca);
     }
     public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException {      
         CA ca;
-		try {
-			ca = caadminsession.getCA(administrator, issuerdn.hashCode());
-		} catch (CADoesntExistsException e) {
-			throw new RuntimeException(e);
-		}
-    	createCrlSession.runDeltaCRL(administrator, ca, -1, -1);
+        try {
+            ca = caadminsession.getCA(administrator, issuerdn.hashCode());
+        } catch (CADoesntExistsException e) {
+            throw new RuntimeException(e);
+        }
+        crlStoreSession.runDeltaCRL(administrator, ca, -1, -1);
     }
 
     public int getLastCRLNumber(String  issuerdn) {
@@ -276,7 +279,7 @@ public class CAInterfaceBean implements Serializable {
 	public CRLInfo getLastCRLInfo(CAInfo caInfo, boolean deltaCRL) {
 		final String issuerdn;// use issuer DN from CA certificate. Might differ from DN in CAInfo.
 		{
-			final Collection certs = caInfo.getCertificateChain();
+			final Collection<Certificate> certs = caInfo.getCertificateChain();
 			final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
 			issuerdn = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
 		}
@@ -288,7 +291,7 @@ public class CAInterfaceBean implements Serializable {
       return certificateprofiles;
     }
     
-    public HashMap getAvailablePublishers() {
+    public HashMap<Integer, String> getAvailablePublishers() {
       return publishersession.getPublisherIdToNameMap(administrator);
     }
     
@@ -401,8 +404,8 @@ public class CAInterfaceBean implements Serializable {
     * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
     * 
     */
-   public List getCertReqUserDatas(String username){
-	   List history = this.certificatesession.getCertReqHistory(administrator, username);
+   public List<CertReqHistory> getCertReqUserDatas(String username){
+	   List<CertReqHistory> history = this.certificatesession.getCertReqHistory(administrator, username);
 	   
 	   // Sort it by timestamp, newest first;
 	   Collections.sort(history, new CertReqUserCreateComparator());
@@ -428,8 +431,6 @@ public class CAInterfaceBean implements Serializable {
    public boolean isUniqueIndexForSerialNumber() {
        return this.isUniqueIndex;
    }
-   
-   // Private methods
 
 
 }

@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -43,7 +43,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
-    private CreateCRLSessionRemote createCrlSession = ejb.getCrlSession();
+    private CrlSessionRemote createCrlSession = ejb.getCrlSession();
     private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
     

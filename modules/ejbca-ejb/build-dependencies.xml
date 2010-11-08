@@ -500,13 +500,13 @@
 			<mkdir dir="${build-temp.dir}/crl"/>
 			<copy todir="${src-temp.dir}/crl">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/ejbca/core/ejb/ca/crl/CreateCRLSession*.java"/>
+					<include name="org/cesecore/core/ejb/ca/crl/Crl*Session*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/ca/crl/CRLData.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
-					<include name="org/ejbca/core/ejb/ca/crl/*SessionBean.java"/>
+					<include name="org/cesecore/core/ejb/ca/crl/*.java"/>
 					<include name="org/ejbca/core/model/ca/crl/*.java"/>
 				</fileset>
 			</copy>

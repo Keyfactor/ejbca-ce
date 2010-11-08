@@ -29,9 +29,9 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.crl.CreateCRLSession;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
@@ -86,7 +86,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 
 	private CAAdminSession caadminsession;
 	private CertificateStoreSession certificateStoreSession;
-	private CreateCRLSession createCrlSession;
+	private CrlSession createCrlSession;
 
 	public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req){
 		super(remoteIP);		
