@@ -27,47 +27,46 @@ import org.ejbca.core.model.InternalResources;
 /**
  * Bean to handle the AuthorizationTreeUpdateData entity.
  * 
- * @version
- * 
+ * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthorizationTreeUpdateDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTreeUpdateDataSessionLocal, AuthorizationTreeUpdateDataSessionRemote {
 
-    private static final Logger log = Logger.getLogger(AuthorizationTreeUpdateDataSessionBean.class);
+    private static final Logger LOG = Logger.getLogger(AuthorizationTreeUpdateDataSessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources INTRES = InternalResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
-    private EntityManager entityManager;
+    private transient EntityManager entityManager;
 
     /**
      * Cache this local bean, because it will cause many many database lookups
      * otherwise
      */
-    private AuthorizationTreeUpdateData authorizationTreeUpdateData = null;
+    private AuthorizationTreeUpdateData authTreeData = null;
 
     /**
      * Returns a reference to the AuthorizationTreeUpdateData
      */
     public AuthorizationTreeUpdateData getAuthorizationTreeUpdateData() {
-        if (authorizationTreeUpdateData == null) {
-            authorizationTreeUpdateData = AuthorizationTreeUpdateData.findByPrimeKey(entityManager,
+        if (authTreeData == null) {
+            authTreeData = AuthorizationTreeUpdateData.findByPrimeKey(entityManager,
                     AuthorizationTreeUpdateData.AUTHORIZATIONTREEUPDATEDATA);
-            if (authorizationTreeUpdateData == null) {
+            if (authTreeData == null) {
                 try {
-                    AuthorizationTreeUpdateData temp = new AuthorizationTreeUpdateData();
+                    final AuthorizationTreeUpdateData temp = new AuthorizationTreeUpdateData();
                     entityManager.persist(temp);
-                    authorizationTreeUpdateData = temp;
+                    authTreeData = temp;
                 } catch (Exception e) {
-                    String msg = intres.getLocalizedMessage("authorization.errorcreateauthtree");
-                    log.error(msg, e);
+                    final String msg = INTRES.getLocalizedMessage("authorization.errorcreateauthtree");
+                    LOG.error(msg, e);
                     throw new EJBException(e);
                 }
             }
         }
-        return authorizationTreeUpdateData;
+        return authTreeData;
     }
 
     /**
@@ -75,12 +74,12 @@ public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTree
      * signaling to other beans that they should reconstruct their access trees.
      */
     public void signalForAuthorizationTreeUpdate() {
-        if (log.isTraceEnabled()) {
-            log.trace(">signalForAuthorizationTreeUpdate");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">signalForAuthorizationTreeUpdate");
         }
         getAuthorizationTreeUpdateData().incrementAuthorizationTreeUpdateNumber();
-        if (log.isTraceEnabled()) {
-            log.trace("<signalForAuthorizationTreeUpdate");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<signalForAuthorizationTreeUpdate");
         }
     }
 

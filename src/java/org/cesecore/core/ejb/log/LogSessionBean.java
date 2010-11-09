@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -62,10 +63,10 @@ import org.ejbca.util.query.Query;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 
-    private static final Logger log = Logger.getLogger(LogSessionBean.class);
+    private static final Logger LOG = Logger.getLogger(LogSessionBean.class);
     
 	/** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources INTRES = InternalResources.getInstance();
     
     /** Cache for log configuration data with default cache time of 5 seconds.
      * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
@@ -74,7 +75,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     private static volatile ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
 
     @PersistenceContext(unitName="ejbca")
-    private EntityManager entityManager;
+    private transient EntityManager entityManager;
 
     @Resource
     private SessionContext sessionContext;
@@ -84,7 +85,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     private LogSessionLocal logSession;	// Reference to an instance of this SSB to be able to get the right transaction attributes.
 
     /** Collection of available log devices, i.e Log4j etc */
-    private ArrayList<ILogDevice> logdevices;
+    private List<ILogDevice> logdevices;
 
     @PostConstruct
     public void ejbCreate() {
@@ -93,16 +94,16 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
             // Setup Connection to signing devices.
             logdevices = new ArrayList<ILogDevice>();
             // Load logging properties dynamically as internal resource
-            Map<String,String> logDeviceMap = org.ejbca.config.LogConfiguration.getUsedLogDevices();
-            Iterator<String> i = logDeviceMap.keySet().iterator();
+            final Map<String,String> logDeviceMap = org.ejbca.config.LogConfiguration.getUsedLogDevices();
+            final Iterator<String> i = logDeviceMap.keySet().iterator();
             while (i.hasNext()) {
-            	String deviceName = i.next();
+            	final String deviceName = i.next();
             	// Create log class
-            	Class implClass = Class.forName(logDeviceMap.get(deviceName));
-                Object fact = implClass.newInstance();
-                Class[] paramTypes = new Class[] {String.class};
-                Method method = implClass.getMethod("makeInstance", paramTypes);
-                Object[] params = new Object[1];
+            	final Class implClass = Class.forName(logDeviceMap.get(deviceName));
+                final Object fact = implClass.newInstance();
+                final Class[] paramTypes = new Class[] {String.class};
+                final Method method = implClass.getMethod("makeInstance", paramTypes);
+                final Object[] params = new Object[1];
                 params[0] = deviceName;
                 logdevices.add((ILogDevice) method.invoke(fact, params));
             }
@@ -118,8 +119,8 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     }
     
     public Collection<String> getAvailableLogDevices() {
-    	ArrayList<String> ret = new ArrayList<String>();
-    	Iterator<ILogDevice> i = logdevices.iterator();
+    	final ArrayList<String> ret = new ArrayList<String>();
+    	final Iterator<ILogDevice> i = logdevices.iterator();
     	while (i.hasNext()) {
     		ret.add( i.next().getDeviceName() );
     	}
@@ -137,14 +138,14 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @param event id of the event, should be one of the org.ejbca.core.model.log.LogConstants.EVENT_ constants.
      * @param comment comment of the event.
      */
-    public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
+    public void log(final Admin admin, final int caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment) {
         doLog(admin, caid, module, time, username, certificate, event, comment, null);
     }
 
     /**
      * Same as above but with the difference of CAid which is taken from the issuerdn of given certificate.
      */
-    public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment) {
+    public void log(final Admin admin, final Certificate caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment) {
         doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, null);
     }
 
@@ -154,35 +155,35 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      *
      * @param exception the exception that has occured
      */
-    public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
+    public void log(final Admin admin, final int caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment, final Exception exception) {
         doLog(admin, caid, module, time, username, certificate, event, comment, exception);
     }
 
     /**
      * Same as above but with the difference of CAid which is taken from the issuerdn of given certificate.
      */
-    public void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
+    public void log(final Admin admin, final Certificate caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment, final Exception exception) {
         doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     }
 
     /**
      * Internal implementation for logging. Does not allow Exceptions to propagate outside the logging functionality.
      */
-    private void doLog(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception ex) {
-    	Iterator<ILogDevice> i = logdevices.iterator();
+    private void doLog(final Admin admin, final int caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment, final Exception ex) {
+    	final Iterator<ILogDevice> i = logdevices.iterator();
     	while (i.hasNext()) {
-    		ILogDevice dev = i.next();
+    		final ILogDevice dev = i.next();
     		try {
     	    	final LogConfiguration config = loadLogConfiguration(caid);
     	    	if (!dev.getAllowConfigurableEvents() || config.logEvent(event)) {
     	    		dev.log(admin, caid, module, time, username, certificate, event, comment, ex);
     	    	}
-    		} catch (Throwable e) {
-            	log.error(intres.getLocalizedMessage("log.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
+    		} catch (Throwable e) { // NOPMD, we really want to catch every possible error from the log device
+            	LOG.error(INTRES.getLocalizedMessage("log.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
                			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+ex));
-    			String msg = intres.getLocalizedMessage("log.errormissingentry");
-    			log.error(msg, e);
+            	final String msg = INTRES.getLocalizedMessage("log.errormissingentry");
+    			LOG.error(msg, e);
     		}
         }
     }
@@ -199,11 +200,11 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @see org.ejbca.util.query.Query
      *
      */
-    public byte[] export(String deviceName, Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResults) throws IllegalQueryException, Exception {
+    public byte[] export(final String deviceName, final Admin admin, final Query query, final String viewlogprivileges, final String capriviledges, final ILogExporter logexporter, final int maxResults) throws IllegalQueryException, Exception {
     	byte[] result = null;
-    	Iterator<ILogDevice> i = logdevices.iterator();
+    	final Iterator<ILogDevice> i = logdevices.iterator();
         while (i.hasNext()) {
-            ILogDevice dev = i.next();
+        	final ILogDevice dev = i.next();
             if (dev.getDeviceName().equalsIgnoreCase(deviceName)) {
             	result = dev.export(admin, query, viewlogprivileges, capriviledges, logexporter, maxResults);
             	break;
@@ -221,12 +222,14 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see org.ejbca.util.query.Query
      */
-    public Collection<LogEntry> query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
-        log.trace(">query()");
+    public Collection<LogEntry> query(final String deviceName, final Query query, final String viewlogprivileges, final String capriviledges, final int maxResults) throws IllegalQueryException {
+    	if (LOG.isTraceEnabled()) {
+    		LOG.trace(">query()");
+    	}
     	Collection<LogEntry> result = null;
-    	Iterator<ILogDevice> i = logdevices.iterator();
+    	final Iterator<ILogDevice> i = logdevices.iterator();
         while (i.hasNext()) {
-            ILogDevice dev = i.next();
+        	final ILogDevice dev = i.next();
             if (dev.getDeviceName().equalsIgnoreCase(deviceName)) {
                 result = dev.query(query, viewlogprivileges, capriviledges, maxResults);
                 break;
@@ -240,24 +243,26 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      *
      * @return the logconfiguration
      */
-    public LogConfiguration loadLogConfiguration(int caid) {
+    public LogConfiguration loadLogConfiguration(final int caid) {
         // Check if log configuration exists, else create one.
         LogConfiguration ret = null; 
-    	Object o = logConfCache.get(Integer.valueOf(caid));
+        final Object o = logConfCache.get(Integer.valueOf(caid));
     	if (o == null) {
-    		LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
-    		if (logconfigdata != null) {
-    			ret = logconfigdata.loadLogConfiguration();
-    		} else {
-    			log.debug("Can't find log configuration during load (caid="+caid+"), trying to create new.");
+    		final LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
+    		if (logconfigdata == null) {
+    			if (LOG.isDebugEnabled()) {
+    				LOG.debug("Can't find log configuration during load (caid="+caid+"), trying to create new.");
+    			}
     			try {
     				ret = new LogConfiguration();
     				logSession.saveNewLogConfiguration(caid, ret);	// Need invocation through interface to start transaction
     			} catch (Exception f) {
-    				String msg = intres.getLocalizedMessage("log.errorcreateconf", Integer.valueOf(caid));            	
-    				log.error(msg, f);
+    				final String msg = INTRES.getLocalizedMessage("log.errorcreateconf", Integer.valueOf(caid));            	
+    				LOG.error(msg, f);
     				throw new EJBException(f);
     			}
+    		} else {
+    			ret = logconfigdata.loadLogConfiguration();
     		}
     		if (ret != null) {
     			logConfCache.put(Integer.valueOf(caid), ret);
@@ -274,7 +279,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @param logConfiguration the logconfiguration to save.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void saveNewLogConfiguration(int caid, LogConfiguration logConfiguration) {
+    public void saveNewLogConfiguration(final int caid, final LogConfiguration logConfiguration) {
 		entityManager.persist(new LogConfigurationData(Integer.valueOf(caid), logConfiguration));
         // Update cache
 		logConfCache.put(Integer.valueOf(caid), logConfiguration);
@@ -286,7 +291,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * @param logconfiguration the logconfiguration to save.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration) {
+    public void saveLogConfiguration(final Admin admin, final int caid, final LogConfiguration logconfiguration) {
     	internalSaveLogConfigurationNoFlushCache(admin, caid, logconfiguration);
         // Update cache
 		logConfCache.put(Integer.valueOf(caid), logconfiguration);    	
@@ -296,16 +301,16 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Used internally for testing only. Updates configuration without flushing caches.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void internalSaveLogConfigurationNoFlushCache(Admin admin, int caid, LogConfiguration logconfiguration) {
+    public void internalSaveLogConfigurationNoFlushCache(final Admin admin, final int caid, final LogConfiguration logconfiguration) {
         try {
         	log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
-        	LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
-        	if (lcd != null) {
-        		lcd.saveLogConfiguration(logconfiguration);
-        	} else { 
-        		String msg = intres.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
-        		log.info(msg);
+        	final LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
+        	if (lcd == null) {
+        		final String msg = INTRES.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
+        		LOG.info(msg);
         		entityManager.persist(new LogConfigurationData(Integer.valueOf(caid), logconfiguration));
+        	} else { 
+        		lcd.saveLogConfiguration(logconfiguration);
         	}
         } catch (Exception e) {
             log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_EDITLOGCONFIGURATION, "");
@@ -319,8 +324,8 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushConfigurationCache() {
     	logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
-    	if (log.isDebugEnabled()) {
-    		log.debug("Flushed log configuration cache.");
+    	if (LOG.isDebugEnabled()) {
+    		LOG.debug("Flushed log configuration cache.");
     	}
     }
 
@@ -328,8 +333,8 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Methods for testing that a log-row is never rolled back if the rest of the transaction is.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	public void testRollback(long rollbackTestTime) {
-		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	public void testRollback(final long rollbackTestTime) {
+    	final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 		log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");
