@@ -50,22 +50,22 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal, EndEntityProfileSessionRemote {
 
-    private static final Logger log = Logger.getLogger(EndEntityProfileSessionBean.class);
+    private static final Logger LOG = Logger.getLogger(EndEntityProfileSessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources INTRES = InternalResources.getInstance();
 
-    private static Random random = new Random(new Date().getTime());
+    private static final Random RANDOM = new Random(new Date().getTime());
 
     /**
      * help variable used to control that profiles update (read from database)
      * isn't performed to often.
      */
-    private static volatile long lastProfileCacheUpdateTime = -1;
+    private static volatile long lastCacheUpdateTime = -1;
     /** Cache of mappings between profileId and profileName */
-    private static volatile HashMap<Integer, String> profileIdNameMapCache = null;
+    private static volatile HashMap<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
-    private static volatile Map<String, Integer> profileNameIdMapCache = null;
+    private static volatile Map<String, Integer> nameIdMapCache = null;
     /** Cache of end entity profiles, with Id as keys */
     private static volatile Map<Integer, EndEntityProfile> profileCache = null;
 
@@ -73,7 +73,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private transient EntityManager entityManager;
 
     @EJB
-    private AuthorizationSessionLocal authorizationSession;
+    private AuthorizationSessionLocal authSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -90,7 +90,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      *            profile to be added
      * 
      */
-    public void addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
+    public void addEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
         addEndEntityProfile(admin, findFreeEndEntityProfileId(), profilename, profile);
     }
 
@@ -107,38 +107,38 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      *            profile to be added
      * 
      */
-    public void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException {
+    public void addEndEntityProfile(final Admin admin, final int profileid, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
-            String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
+            final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            String error = "Attempted to add an end entity profile matching " + EMPTY_ENDENTITYPROFILENAME;
-            log.error(error);
+            final String error = "Attempted to add an end entity profile matching " + EMPTY_ENDENTITYPROFILENAME;
+            LOG.error(error);
             throw new EndEntityProfileExistsException(error);
-        } else if (isFreeEndEntityProfileId(profileid) == false) {
-            String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
+        } else if (!isFreeEndEntityProfileId(profileid)) {
+        	final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            String error = "Attempted to add an end entity profile with id: " + profileid + ", which is already in the database.";
-            log.error(error);
+            final String error = "Attempted to add an end entity profile with id: " + profileid + ", which is already in the database.";
+            LOG.error(error);
             throw new EndEntityProfileExistsException(error);
         } else if (EndEntityProfileData.findByProfileName(entityManager, profilename) != null) {
-            String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
+        	final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            String errorMessage = "Attempted to add an end entity profile with name " + profilename + ", which already exists in the database.";
-            log.error(errorMessage);
+            final String errorMessage = "Attempted to add an end entity profile with name " + profilename + ", which already exists in the database.";
+            LOG.error(errorMessage);
             throw new EndEntityProfileExistsException(errorMessage);
         } else {
             try {
                 entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
                 flushProfileCache();
-                String msg = intres.getLocalizedMessage("ra.addedprofile", profilename);
+                final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
             } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("ra.erroraddprofile", profilename);
-                log.error(msg, e);
+            	final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
+                LOG.error(msg, e);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             }
@@ -148,7 +148,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     /**
      * Updates profile data
      */
-    public void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) {
+    public void changeEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) {
         internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
         flushProfileCache();
     }
@@ -157,35 +157,34 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * Adds a end entity profile to a group with the same content as the
      * original profile.
      */
-    public void cloneEndEntityProfile(Admin admin, String originalprofilename, String newprofilename) throws EndEntityProfileExistsException {
-        if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
-            String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);
+    public void cloneEndEntityProfile(final Admin admin, final String orgname, final String newname) throws EndEntityProfileExistsException {
+        if (newname.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
+        	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             throw new EndEntityProfileExistsException();
         }
-        if (EndEntityProfileData.findByProfileName(entityManager, newprofilename) == null) {
-            EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, originalprofilename);
+        if (EndEntityProfileData.findByProfileName(entityManager, newname) == null) {
+        	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, orgname);
             boolean success = false;
             if (pdl != null) {
-                try {
-                    entityManager.persist(new EndEntityProfileData(Integer.valueOf(findFreeEndEntityProfileId()), newprofilename, (EndEntityProfile) pdl
-                            .getProfile().clone()));
-                    flushProfileCache();
-                    String msg = intres.getLocalizedMessage("ra.clonedprofile", newprofilename, originalprofilename);
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                            LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
-                    success = true;
-                } catch (Exception e) {
-                }
+            	try {
+            		entityManager.persist(new EndEntityProfileData(Integer.valueOf(findFreeEndEntityProfileId()), newname, (EndEntityProfile) pdl.getProfile().clone()));
+            		flushProfileCache();
+            		final String msg = INTRES.getLocalizedMessage("ra.clonedprofile", newname, orgname);
+            		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+            				LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
+            		success = true;
+            	} catch (CloneNotSupportedException e) {
+            	}
             }
             if (!success) {
-                String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);
+            	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             }
         } else {
-            String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);
+        	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             throw new EndEntityProfileExistsException();
@@ -196,21 +195,21 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * Method to check if a certificateprofile exists in any of the end entity
      * profiles. Used to avoid desyncronization of certificate profile data.
      * 
-     * @param certificateprofileid
+     * @param profileid
      *            the certificatetype id to search for.
      * @return true if certificateprofile exists in any of the end entity
      *         profiles.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid) {
-        String[] availablecertprofiles = null;
+    public boolean existsCertificateProfileInEndEntityProfiles(final Admin admin, final int profileid) {
+        String[] availprofiles = null;
         boolean exists = false;
-        Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        Iterator<EndEntityProfileData> i = result.iterator();
+        final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+        final Iterator<EndEntityProfileData> i = result.iterator();
         while (i.hasNext() && !exists) {
-            availablecertprofiles = i.next().getProfile().getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-            for (int j = 0; j < availablecertprofiles.length; j++) {
-                if (Integer.parseInt(availablecertprofiles[j]) == certificateprofileid) {
+            availprofiles = i.next().getProfile().getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
+            for (int j = 0; j < availprofiles.length; j++) {
+                if (Integer.parseInt(availprofiles[j]) == profileid) {
                     exists = true;
                     break;
                 }
@@ -228,19 +227,19 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @return true if ca exists in any of the end entity profiles.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean existsCAInEndEntityProfiles(Admin admin, int caid) {
+    public boolean existsCAInEndEntityProfiles(final Admin admin, final int caid) {
         String[] availablecas = null;
         boolean exists = false;
-        Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        Iterator<EndEntityProfileData> i = result.iterator();
+        final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+        final Iterator<EndEntityProfileData> i = result.iterator();
         while (i.hasNext() && !exists) {
-            EndEntityProfileData ep = i.next();
+        	final EndEntityProfileData ep = i.next();
             availablecas = ep.getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
             for (int j = 0; j < availablecas.length; j++) {
                 if (Integer.parseInt(availablecas[j]) == caid) {
                     exists = true;
-                    if (log.isDebugEnabled()) {
-                        log.debug("CA exists in entity profile " + ep.getProfileName());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("CA exists in entity profile " + ep.getProfileName());
                     }
                     break;
                 }
@@ -250,9 +249,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     public synchronized int findFreeEndEntityProfileId() {
-        int id = Math.abs(random.nextInt());
+    	final int id = Math.abs(RANDOM.nextInt());
         while (!(EndEntityProfileData.findById(entityManager, id) == null)) {
-            Math.abs(random.nextInt());
+            Math.abs(RANDOM.nextInt());
         }
         return id;
     }
@@ -261,40 +260,40 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * Clear and reload end entity profile caches.
      */
     public void flushProfileCache() {
-        if (log.isTraceEnabled()) {
-            log.trace(">flushProfileCache");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">flushProfileCache");
         }
-        HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
-        HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
-        HashMap<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
+        final HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
+        final HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
+        final HashMap<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
         idNameCache.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EMPTY_ENDENTITYPROFILENAME);
         nameIdCache.put(EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         try {
-            Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-            if (log.isDebugEnabled()) {
-                log.debug("Found " + result.size() + " end entity profiles.");
+            final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Found " + result.size() + " end entity profiles.");
             }
-            Iterator<EndEntityProfileData> i = result.iterator();
+            final Iterator<EndEntityProfileData> i = result.iterator();
             while (i.hasNext()) {
-                EndEntityProfileData next = i.next();
+                final EndEntityProfileData next = i.next();
                 // debug("Added "+next.getId()+ ", "+next.getProfileName());
                 idNameCache.put(next.getId(), next.getProfileName());
                 nameIdCache.put(next.getProfileName(), next.getId());
                 profCache.put(next.getId(), next.getProfile());
             }
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("ra.errorreadprofiles");
-            log.error(msg, e);
+            final String msg = INTRES.getLocalizedMessage("ra.errorreadprofiles");
+            LOG.error(msg, e);
         }
-        profileIdNameMapCache = idNameCache;
-        profileNameIdMapCache = nameIdCache;
+        idNameMapCache = idNameCache;
+        nameIdMapCache = nameIdCache;
         profileCache = profCache;
-        lastProfileCacheUpdateTime = System.currentTimeMillis();
-        if (log.isDebugEnabled()) {
-            log.debug("Flushed profile cache");
+        lastCacheUpdateTime = System.currentTimeMillis();
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Flushed profile cache");
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<flushProfileCache");
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<flushProfileCache");
         }
     }
 
@@ -304,19 +303,19 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @return EndEntityProfile or null if it does not exist
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public EndEntityProfile getEndEntityProfile(Admin admin, String profilename) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getEndEntityProfile(" + profilename + ")");
+    public EndEntityProfile getEndEntityProfile(final Admin admin, final String profilename) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">getEndEntityProfile(" + profilename + ")");
         }
         EndEntityProfile returnval = null;
         if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
             returnval = new EndEntityProfile(true);
         } else {
-            Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
+        	final Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
             returnval = (EndEntityProfile) getProfileCacheInternal().get(id);
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
     }
@@ -325,35 +324,35 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * Retrieves a Collection of id:s (Integer) to authorized profiles.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin) {
-        ArrayList<Integer> returnval = new ArrayList<Integer>();
-        HashSet<Integer> authorizedcaids = new HashSet<Integer>(caAdminSession.getAvailableCAs(admin));
+    public Collection<Integer> getAuthorizedEndEntityProfileIds(final Admin admin) {
+    	final ArrayList<Integer> returnval = new ArrayList<Integer>();
+    	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caAdminSession.getAvailableCAs(admin));
         // debug("Admin authorized to "+authorizedcaids.size()+" CAs.");
    
-        if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (authSession.isAuthorizedNoLog(admin, "/super_administrator")) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
 
         try {
-            Iterator<EndEntityProfileData> i = EndEntityProfileData.findAll(entityManager).iterator();
+        	final Iterator<EndEntityProfileData> i = EndEntityProfileData.findAll(entityManager).iterator();
             while (i.hasNext()) {
-                EndEntityProfileData next = i.next();
+            	final EndEntityProfileData next = i.next();
                 // Check if all profiles available CAs exists in
                 // authorizedcaids.
-                String value = next.getProfile().getValue(EndEntityProfile.AVAILCAS, 0);
+            	final String value = next.getProfile().getValue(EndEntityProfile.AVAILCAS, 0);
                 // debug("AvailCAs: "+value);
                 if (value != null) {
-                    String[] availablecas = value.split(EndEntityProfile.SPLITCHAR);
+                	final String[] availablecas = value.split(EndEntityProfile.SPLITCHAR);
                     // debug("No of available CAs: "+availablecas.length);
                     boolean allexists = true;
                     for (int j = 0; j < availablecas.length; j++) {
                         // debug("Available CA["+j+"]: "+availablecas[j]);
-                        Integer caid = Integer.valueOf(availablecas[j]);
+                    	final Integer caid = Integer.valueOf(availablecas[j]);
                         // If this is the special value ALLCAs we are authorized
                         if ((caid.intValue() != SecConst.ALLCAS) && (!authorizedcaids.contains(caid))) {
                             allexists = false;
-                            if (log.isDebugEnabled()) {
-                                log.debug("Profile " + next.getId() + " not authorized");
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Profile " + next.getId() + " not authorized");
                             }
                             break;
                         }
@@ -365,8 +364,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                 }
             }
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("ra.errorgetids");
-            log.error(msg, e);
+        	final String msg = INTRES.getLocalizedMessage("ra.errorgetids");
+            LOG.error(msg, e);
         }
         return returnval;
     }
@@ -377,9 +376,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @return EndEntityProfile or null if it does not exist
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public EndEntityProfile getEndEntityProfile(Admin admin, int id) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getEndEntityProfile(" + id + ")");
+    public EndEntityProfile getEndEntityProfile(final Admin admin, final int id) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">getEndEntityProfile(" + id + ")");
         }
         EndEntityProfile returnval = null;
         if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
@@ -387,8 +386,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
             returnval = (EndEntityProfile) getProfileCacheInternal().get(Integer.valueOf(id));
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
     }
@@ -399,20 +398,20 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @return the id or 0 if profile cannot be found.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public int getEndEntityProfileId(Admin admin, String profilename) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getEndEntityProfileId(" + profilename + ")");
+    public int getEndEntityProfileId(final Admin admin, final String profilename) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">getEndEntityProfileId(" + profilename + ")");
         }
         int returnval = 0;
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
             return SecConst.EMPTY_ENDENTITYPROFILE;
         }
-        Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
+        final Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
         if (id != null) {
             returnval = id.intValue();
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfileId(" + profilename + "): " + returnval);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<getEndEntityProfileId(" + profilename + "): " + returnval);
         }
         return returnval;
     }
@@ -423,17 +422,17 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @return profilename or null if profile id doesn't exists.
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public String getEndEntityProfileName(Admin admin, int id) {
-        if (log.isTraceEnabled()) {
-            log.trace(">getEndEntityProfilename(" + id + ")");
+    public String getEndEntityProfileName(final Admin admin, final int id) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">getEndEntityProfilename(" + id + ")");
         }
         String returnval = null;
         if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
             return EMPTY_ENDENTITYPROFILENAME;
         }
         returnval = (String) getEndEntityProfileIdNameMapInternal().get(Integer.valueOf(id));
-        if (log.isTraceEnabled()) {
-            log.trace("<getEndEntityProfilename(" + id + "): " + returnval);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<getEndEntityProfilename(" + id + "): " + returnval);
         }
         return returnval;
     }
@@ -443,9 +442,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * (String).
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin) {
-        if (log.isTraceEnabled()) {
-            log.trace("><getEndEntityProfileIdToNameMap");
+    public HashMap<Integer, String> getEndEntityProfileIdToNameMap(final Admin admin) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("><getEndEntityProfileIdToNameMap");
         }
         return getEndEntityProfileIdNameMapInternal();
     }
@@ -461,117 +460,115 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      * @param admin
      *            administrator calling the method
      */
-    public void initializeAndUpgradeProfiles(Admin admin) {
-        Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        Iterator<EndEntityProfileData> iter = result.iterator();
+    public void initializeAndUpgradeProfiles(final Admin admin) {
+    	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+    	final Iterator<EndEntityProfileData> iter = result.iterator();
         while (iter.hasNext()) {
-            EndEntityProfileData pdata = iter.next();
-            String name = pdata.getProfileName();
-            pdata.upgradeProfile();
-            if (log.isDebugEnabled()) {
-                log.debug("Loaded end entity profile: " + name);
+        	final EndEntityProfileData pdata = iter.next();
+            if (LOG.isDebugEnabled()) {
+            	final String name = pdata.getProfileName();
+                LOG.debug("Loaded end entity profile: " + name);
             }
+            pdata.upgradeProfile();
         }
-                flushProfileCache();
+        flushProfileCache();
     }
     
     /**
      * Do not use, use changeEndEntityProfile instead. Used internally for
      * testing only. Updates a profile without flushing caches.
      */
-    public void internalChangeEndEntityProfileNoFlushCache(Admin admin, String profilename, EndEntityProfile profile) {
-        EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
-        if (pdl != null) {
-            pdl.setProfile(profile);
-            String msg = intres.getLocalizedMessage("ra.changedprofile", profilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
-        } else {
-            String msg = intres.getLocalizedMessage("ra.errorchangeprofile", profilename);
+    public void internalChangeEndEntityProfileNoFlushCache(final Admin admin, final String profilename, final EndEntityProfile profile) {
+    	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
+        if (pdl == null) {
+        	final String msg = INTRES.getLocalizedMessage("ra.errorchangeprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
+        } else {
+            pdl.setProfile(profile);
+            final String msg = INTRES.getLocalizedMessage("ra.changedprofile", profilename);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                    LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
         }
     }
 
     /**
      * Removes an end entity profile from the database.
      */
-    public void removeEndEntityProfile(Admin admin, String profilename) {
+    public void removeEndEntityProfile(final Admin admin, final String profilename) {
         try {
-            EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
+        	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
             entityManager.remove(pdl);
             flushProfileCache();
-            String msg = intres.getLocalizedMessage("ra.removedprofile", profilename);
+            final String msg = INTRES.getLocalizedMessage("ra.removedprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("ra.errorremoveprofile", profilename);
+        	final String msg = INTRES.getLocalizedMessage("ra.errorremoveprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            log.error("Error was caught when trying to remove end entity profile " + profilename, e);
+            LOG.error("Error was caught when trying to remove end entity profile " + profilename, e);
         }
     }
 
     /**
      * Renames a end entity profile
      */
-    public void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException {
+    public void renameEndEntityProfile(final Admin admin, final String oldprofilename, final String newprofilename) throws EndEntityProfileExistsException {
         if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
-            String msg = intres.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
+        	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             throw new EndEntityProfileExistsException();
         }
-        if (EndEntityProfileData.findByProfileName(entityManager, newprofilename) != null) {
-            String msg = intres.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
+        if (EndEntityProfileData.findByProfileName(entityManager, newprofilename) == null) {
+        	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, oldprofilename);
+            if (pdl == null) {
+            	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
+            } else {
+                pdl.setProfileName(newprofilename);
+                flushProfileCache();
+                final String msg = INTRES.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
+            }
+        } else {
+        	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             throw new EndEntityProfileExistsException();
-        } else {
-            EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, oldprofilename);
-            if (pdl != null) {
-                pdl.setProfileName(newprofilename);
-                flushProfileCache();
-                String msg = intres.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
-            } else {
-                String msg = intres.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
-            }
         }
     }
 
     private HashMap<Integer, String> getEndEntityProfileIdNameMapInternal() {
-        if ((profileIdNameMapCache == null)
-                || (lastProfileCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
+        if ((idNameMapCache == null)
+                || (lastCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
             flushProfileCache();
         }
-        return profileIdNameMapCache;
+        return idNameMapCache;
     }
 
     private Map<String, Integer> getEndEntityProfileNameIdMapInternal() {
-        if ((profileNameIdMapCache == null)
-                || (lastProfileCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
+        if ((nameIdMapCache == null)
+                || (lastCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
             flushProfileCache();
         }
-        return profileNameIdMapCache;
+        return nameIdMapCache;
     }
 
     private Map<Integer, EndEntityProfile> getProfileCacheInternal() {
-        if ((profileCache == null) || (lastProfileCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
+        if ((profileCache == null) || (lastCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
             flushProfileCache();
         }
         return profileCache;
     }
 
-    private boolean isFreeEndEntityProfileId(int id) {
+    private boolean isFreeEndEntityProfileId(final int id) {
         boolean foundfree = false;
-        if (id > 1) {
-            if (EndEntityProfileData.findById(entityManager, Integer.valueOf(id)) == null) {
-                foundfree = true;
-            }
+        if ( (id > 1) && (EndEntityProfileData.findById(entityManager, Integer.valueOf(id)) == null) ) {
+        	foundfree = true;
         }
         return foundfree;
     }
