@@ -34,6 +34,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -105,6 +106,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
@@ -325,7 +327,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         X509CAInfo cainfo = null;
         try {
             // Generate CA with approvals for revocation enabled
-            int caID = RevocationApprovalTest.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession);
+            int caID = RevocationApprovalTest.createApprovalCA(admin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
             // Get CA cert
             cainfo = (X509CAInfo) caAdminSession.getCAInfo(admin, caID);
             assertNotNull(cainfo);
@@ -410,7 +412,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             try {
                 caAdminSession.revokeCA(admin, cainfo.getCAId(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
             } finally {
-                caAdminSession.removeCA(admin, cainfo.getCAId());
+                caSession.removeCA(admin, cainfo.getCAId());
             }
         }
     } // test04RevocationApprovals

@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecorecore.ejb.ca.crl;
+package org.cesecore.core.ejb.ca.crl;
 
 import java.security.cert.X509CRL;
 import java.util.Date;
@@ -39,7 +39,7 @@ import org.ejbca.core.model.log.LogConstants;
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs.
  * CRLs are signed using RSASignSessionBean.
  * 
- * @version $Id$
+ * @version $Id: CrlSessionBean.java 10396 2010-11-08 14:05:45Z mikekushner $
  *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlSessionRemote")
@@ -55,11 +55,7 @@ public class CrlSessionBean implements CrlSessionLocal, CrlSessionRemote{
 
     @EJB
     private LogSessionLocal logSession;
-
-   
-        
-    
-
+ 
     /**
      * Stores a CRL
      *

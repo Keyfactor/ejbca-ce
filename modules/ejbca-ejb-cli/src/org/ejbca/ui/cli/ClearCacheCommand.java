@@ -79,7 +79,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (cacache) {
 				getLogger().info("Flushing CA cache.");
 				// Flush CAs
-				ejb.getCAAdminSession().flushCACache();
+				ejb.getCaSession().flushCACache();
 			}
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);

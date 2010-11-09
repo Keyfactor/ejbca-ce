@@ -48,6 +48,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
     private static final Logger log = Logger.getLogger(CAKeystoreExportRemoveRestoreTest.class);
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     
     public CAKeystoreExportRemoveRestoreTest(String name) {
@@ -207,15 +208,15 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Remove CAs if they already exists
         try {
-            caAdminSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(admin, cainfo1.getCAId());
         } catch (Exception ignored) {
         }
         try {
-            caAdminSession.removeCA(admin, cainfo2.getCAId());
+            caSession.removeCA(admin, cainfo2.getCAId());
         } catch (Exception ignored) {
         }
         try {
-            caAdminSession.removeCA(admin, cainfo3.getCAId());
+            caSession.removeCA(admin, cainfo3.getCAId());
         } catch (Exception ignored) {
         }
 
@@ -291,19 +292,19 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Clean up
         try {
-            caAdminSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(admin, cainfo1.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
         }
         try {
-            caAdminSession.removeCA(admin, cainfo2.getCAId());
+            caSession.removeCA(admin, cainfo2.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
         }
         try {
-            caAdminSession.removeCA(admin, cainfo3.getCAId());
+            caSession.removeCA(admin, cainfo3.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
@@ -338,7 +339,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Remove if they already exists
         try {
-            caAdminSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(admin, cainfo1.getCAId());
         } catch (Exception ignored) {
         }
 
@@ -372,7 +373,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Clean up
         try {
-            caAdminSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(admin, cainfo1.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
@@ -399,7 +400,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Remove if it already exists
         try {
-            caAdminSession.removeCA(admin, cainfo.getCAId());
+            caSession.removeCA(admin, cainfo.getCAId());
         } catch (Exception ignored) {
         }
 
@@ -487,7 +488,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Clean up
         try {
-            caAdminSession.removeCA(admin, cainfo.getCAId());
+            caSession.removeCA(admin, cainfo.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());

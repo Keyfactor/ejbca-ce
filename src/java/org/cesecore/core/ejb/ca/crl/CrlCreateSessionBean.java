@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecorecore.ejb.ca.crl;
+package org.cesecore.core.ejb.ca.crl;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -55,7 +55,7 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlStoreSessionRemote")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSessionRemote {
 

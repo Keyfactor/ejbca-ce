@@ -18,7 +18,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
@@ -166,13 +165,8 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public void execute() throws ApprovalRequestExecutionException {
 		log.debug("Executing Change Status  for user:" + username);
 		try{
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			IUserAdminSessionLocalHome userdatahome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-			IUserAdminSessionLocal usersession = userdatahome.create();*/
 			UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
 		    usersession.setUserStatus(getRequestAdmin(), username, newstatus);
-		}catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating new userdata session", e);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (FinderException e) {

@@ -19,8 +19,6 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -42,7 +40,7 @@ public class CsvLogExporter implements ILogExporter {
 	/**
 	 * @see org.ejbca.core.model.log.ILogExporter
 	 */
-	public void setEntries(Collection logentries) {
+	public void setEntries(Collection<LogEntry> logentries) {
 		this.logentries = logentries;
 	}
 	
@@ -130,8 +128,6 @@ public class CsvLogExporter implements ILogExporter {
 				//ISignSessionLocal signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
 				CmsCAServiceResponse resp = (CmsCAServiceResponse)new EjbLocalHelper().getCAAdminSession().extendedService(admin, caid, request);
 				ret = resp.getCmsDocument();
-			} catch (CreateException e) {
-				log.error("Can not create sign session", e);
 			} catch (IllegalExtendedCAServiceRequestException e) {
 				log.error("Bad CA service", e);
 			} catch (CADoesntExistsException e) {

@@ -32,6 +32,7 @@ import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -54,6 +55,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
 
+    private CaSessionRemote caSession = ejb.getCaSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private CrlSessionRemote createCrlSession = ejb.getCrlSession();
@@ -122,7 +124,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">createCRL()");
         try {
             if (issuerdn != null) {
-                CA ca = caAdminSession.getCA(getAdmin(), issuerdn.hashCode());
+                CA ca = caSession.getCA(getAdmin(), issuerdn.hashCode());
                 if (!deltaCRL) {
                     crlStoreSession.run(getAdmin(), ca);
                     int number = createCrlSession.getLastCRLNumber(getAdmin(), issuerdn, false);

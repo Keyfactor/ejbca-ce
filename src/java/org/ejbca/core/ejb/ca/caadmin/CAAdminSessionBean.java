@@ -43,7 +43,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
@@ -59,8 +58,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
@@ -161,6 +160,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
@@ -173,17 +174,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @EJB
     private ApprovalSessionLocal approvalSession;
 
-
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-
-    /** help variable used to control that CA info update (read from database) isn't performed to often. */
-    private static volatile long lastCACacheUpdateTime = -1;
-
-    /**
-     * Caching of CA IDs with CA cert hash as ID
-     */
-    private final Map<Integer, Integer> caCertToCaId = new HashMap<Integer, Integer>();
 
     public CAAdminSessionBean() {
         CryptoProviderTools.installBCProvider();
@@ -492,7 +484,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Get CA from database
         try {
         	CAData cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(cainfo.getCAId()));
-            //CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(cainfo.getCAId()));
             CA ca = cadata.getCA();
 
             // Update CA values
@@ -552,83 +543,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     } // editCA
 
     /**
-     * Method used to remove a CA from the system.
-     * 
-     * You should first check that the CA isn't used by any EndEntity, Profile
-     * or AccessRule before it is removed. CADataHandler for example makes this
-     * check.
-     * 
-     * Should be used with care. If any certificate has been created with the CA
-     * use revokeCA instead and don't remove it.
-     */
-    public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException {
-        // check authorization
-        if (!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremoveca", Integer.valueOf(caid));
-            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                    msg);
-            throw new AuthorizationDeniedException(msg);
-        }
-        // Get CA from database
-        try {
-        	CAData cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-            //CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
-            // Remove CA
-        	entityManager.remove(cadata);
-            //cadata.remove();
-            // Invalidate CA cache to refresh information
-            CACacheManager.instance().removeCA(caid);
-            // Remove an eventual CA token from the token registry
-            CATokenManager.instance().addCAToken(caid, null);
-            String msg = intres.getLocalizedMessage("caadmin.removedca", Integer.valueOf(caid));
-            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorremoveca", Integer.valueOf(caid), e.getMessage());
-            log.error(msg, e);
-            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
-            throw new EJBException(e);
-        }
-    } // removeCA
-
-    /**
-     * Renames the name of CA used in administrators web interface. This name
-     * doesn't have to be the same as SubjectDN and is only used for reference.
-     */
-    public void renameCA(Admin admin, String oldname, String newname) throws CAExistsException, AuthorizationDeniedException {
-        // Get CA from database
-   
-        	CAData cadata = CAData.findByName(entityManager, oldname);
-        	if (cadata == null) {
-                String msg = intres.getLocalizedMessage("caadmin.errorrenameca", oldname);
-                log.error(msg);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new EJBException(msg);
-        	}
-            // Check authorization
-            int caid = cadata.getCaId().intValue();
-            if(!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenameca", Integer.valueOf(caid));
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
-                throw new AuthorizationDeniedException(msg);
-            }
-            CAData cadatanew = CAData.findByName(entityManager, newname);
-            if (cadatanew != null) {
-                //CADataLocal cadatanew = cadatahome.findByName(newname);
-                cadatanew.getCaId();
-                throw new CAExistsException(" CA name " + newname + " already exists.");
-            } else {
-            
-                // new CA doesn't exits, it's ok to rename old one.
-                cadata.setName(newname);
-                // Invalidate CA cache to refresh information
-                CACacheManager.instance().removeCA(cadata.getCaId().intValue());
-                String msg = intres.getLocalizedMessage("caadmin.renamedca", oldname, newname);
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
-            }
-
-    } 
-
-    /**
      * Returns a value object containing non-sensitive information about a CA
      * give it's name.
      * 
@@ -644,8 +558,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
         CAInfo cainfo = null;
-        try {
-            CA ca = getCAInternal(-1, name);
+       // try {
+            CA ca = caSession.getCA(admin, name);
             cainfo = ca.getCAInfo();
             if (!authorizedToCA(admin, cainfo.getCAId())) {
                 if (log.isDebugEnabled()) {
@@ -654,15 +568,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 String msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);
                 throw new CADoesntExistsException(msg);
             }
-        } catch (CADoesntExistsException ce) {
+       // } catch (CADoesntExistsException ce) {
             // Just re-throw, getCAInternal has already logged that the CA does
             // not exist
-            throw ce;
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorgetcainfo", name);
-            log.error(msg, e);
-            throw new EJBException(e);
-        }
+        //    throw ce;
+       // } catch (Exception e) {
+         //   String msg = intres.getLocalizedMessage("caadmin.errorgetcainfo", name);
+         //   log.error(msg, e);
+        //    throw new EJBException(e);
+        //}
         return cainfo;
     }
 
@@ -738,7 +652,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         CAInfo cainfo = null;
         try {
-            CA ca = getCAInternal(caid, null);
+            CA ca = caSession.getCA(admin, caid);       
             cainfo = ca.getCAInfo();
             int status = cainfo.getStatus();
             boolean includeInHealthCheck = cainfo.getIncludeInHealthCheck();
@@ -822,208 +736,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return caInfo;
     } // getCAInfo
 
-    /**
-     * Get the CA object performing the regular authorization check. Checks if
-     * the CA has expired or the certificate isn't valid yet and in that case
-     * sets the correct CA status.
-     * 
-     * @param admin the admin retrieving the CA
-     * @param caid numerical id of CA (subjectDN.hashCode()) that we search for
-     * @return CA value object, never null
-     * @throws CADoesntExistsException if CA with caid does not exist or admin is not authorized to CA
-     */
-    public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
-        if (!authorizedToCA(admin, caid)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Admin (" + admin.toString() + ") is not authorized to CA: " + caid);
-            }
-            String msg = intres.getLocalizedMessage("caadmin.canotexistsid", Integer.valueOf(caid));
-            throw new CADoesntExistsException(msg);
-        }
-        return getCAInternal(caid, null);
-    }
-
-    /**
-     * Makes sure that no CAs are cached to ensure that we read from database next time we try to access it. 
-     */
-    public void flushCACache() {
-    	lastCACacheUpdateTime = -1;
-    	CACacheManager.instance().removeAll();
-    	if (log.isDebugEnabled()) {
-    		log.debug("Flushed CA cache.");
-    	}
-    }
-    
-    /**
-     * Internal method for getting CA, to avoid code duplication. Tries to find
-     * the CA even if the CAId is wrong due to CA certificate DN not being the
-     * same as CA DN. Uses CACacheManager directly if configured to do so in
-     * ejbca.properties.
-     * 
-     * Note! No authorization checks performed in this internal method
-     * 
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for,
-     *            or -1 of a name is to ge used instead
-     * @param name
-     *            human readable name of CA, used instead of caid if caid == -1,
-     *            can be null of caid != -1
-     * @return CA value object, never null
-     * @throws CADoesntExistsException
-     *             if no CA was found
-     */
-    private CA getCAInternal(int caid, String name) throws CADoesntExistsException {
-        if (log.isTraceEnabled()) {
-            log.trace(">getCAInternal: " + caid + ", " + name);
-        }
-        // First check if we already have a cached instance of the CA
-    	// This should only be done if we have enabled caching, meaning that 
-    	// we will not update the CA values until cache time expires
-        CA ca = null;
-    	if (lastCACacheUpdateTime+EjbcaConfiguration.getCacheCaTimeInCaAdminSession() > new Date().getTime()) {
-            if (caid != -1) {
-                ca = CACacheManager.instance().getCA(caid);
-            } else {
-                ca = CACacheManager.instance().getCA(name);
-            }
-        }
-        CAData cadata = null;
-        if (ca == null) {
-            if (log.isDebugEnabled()) {
-        		log.debug("CA not found in cache (or cache time expired), we have to get it: "+caid+", "+name);
-            }
-            try {
-                cadata = getCADataBean(caid, name);
-            	// this method checks CA data row timestamp to see if CA was updated by any other cluster nodes
-            	// also fills the CACacheManager cache if the CA is not in there
-                ca = cadata.getCA();
-            } catch (UnsupportedEncodingException uee) {
-                throw new EJBException(uee);
-            } catch (IllegalKeyStoreException e) {
-                throw new EJBException(e);
-            }
-    		lastCACacheUpdateTime = new Date().getTime();
-        }
-        // Check if CA has expired, cadata (CA in database) will only be updated
-        // if aggressive caching is not enabled
-        checkCAExpireAndUpdateCA(ca, cadata);
-        if (log.isTraceEnabled()) {
-            log.trace("<getCAInternal: " + caid + ", " + name);
-        }
-        return ca;
-    } // getCAInternal
-
-    /**
-     * Internal method for getting CADataBean. Tries to find the CA even if the
-     * CAId is wrong due to CA certificate DN not being the same as CA DN.
-     * 
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for,
-     *            or -1 of a name is to ge used instead
-     * @param name
-     *            human readable name of CA, used instead of caid if caid == -1,
-     *            can be null of caid != -1
-     * @throws CADoesntExistsException
-     *             if no CA was found
-     */
-    private CAData getCADataBean(int caid, String name) throws UnsupportedEncodingException, IllegalKeyStoreException, CADoesntExistsException {
-        CAData cadata = null;
-        if (caid != -1) {
-        	cadata = CAData.findById(entityManager, Integer.valueOf(caid));
-        } else {
-        	cadata = CAData.findByName(entityManager, name);
-        }
-        if (cadata == null) {
-            // We should never get to here if we are searching for name, in any
-            // case if the name does not exist, the CA really does not exist
-            // We don't have to try to find another mapping for the CAId
-            if (caid != -1) {
-            	// subject DN of the CA certificate might not have all objects
-            	// that is the DN of the certificate data.
-            	final Integer oRealCAId = (Integer) this.caCertToCaId.get(Integer.valueOf(caid));
-            	// has the "real" CAID been mapped to the certificate subject hash by a previous call?
-            	if (oRealCAId != null) { 
-            		// yes, using cached value of real caid.
-            		cadata = CAData.findById(entityManager, oRealCAId);
-            	} else {
-            		// no, we have to search for it among all CA certs
-            		Iterator<CAData> i = CAData.findAll(entityManager).iterator();
-            		while (cadata == null && i.hasNext()) {
-            			final CAData tmp = i.next();
-            			final Certificate caCert = tmp != null ? tmp.getCA().getCACertificate() : null;
-            			if (caCert != null && caid == CertTools.getSubjectDN(caCert).hashCode()) {
-            				cadata = tmp; // found. Do also cache it if
-            				// someone else is needing it
-            				// later
-            				this.caCertToCaId.put(Integer.valueOf(caid), Integer.valueOf(cadata.getSubjectDN().hashCode()));
-            			}
-            		}
-            	}
-            }
-            if (cadata == null) {
-                String msg;
-                if (caid != -1) {
-                    msg = intres.getLocalizedMessage("caadmin.canotexistsid", Integer.valueOf(caid));
-                } else {
-                    msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);
-                }
-                log.info(msg);
-                throw new CADoesntExistsException(msg);
-            }
-        }
-        return cadata;
-    }
-
-    /**
-     * Checks if the CA certificate has expired (or is not yet valid) and sets
-     * CA status to expired if it has (and status is not already expired). Logs
-     * an info message that the CA certificate has expired, or is not yet valid.
-     * 
-     * Note! No authorization checks performed in this internal method
-     * 
-     * @param ca
-     * @param cadata can be null, in which case we will try to find it in the 
-     * database *if* the CA data needs to be updated
-     */
-    private void checkCAExpireAndUpdateCA(final CA ca, CAData cadata) {
-        // Check that CA hasn't expired.
-        try {
-            CertTools.checkValidity(ca.getCACertificate(), new Date());
-        } catch (CertificateExpiredException cee) {
-            // Signers Certificate has expired, we want to make sure that the
-            // status in the database is correctly EXPIRED for this CA
-            if (ca.getStatus() != SecConst.CA_EXPIRED) {
-                ca.setStatus(SecConst.CA_EXPIRED); // update the value object
-                // Also try to update the database with new "expired" status
-                if (cadata == null) {
-                    try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Getting CADataBean from database to set EXPIRED status: " + ca.getCAId() + ", " + ca.getName());
-                        }
-                        cadata = getCADataBean(ca.getCAId(), ca.getName());
-                    } catch (UnsupportedEncodingException e) {
-                        // NOPMD: don't update in database if we can't find it
-                    } catch (IllegalKeyStoreException e) {
-                        // NOPMD: don't update in database if we can't find it
-                    } catch (CADoesntExistsException e) {
-                        // NOPMD: don't update in database if we can't find it
-                    }
-                }
-                if (cadata != null) {
-                    cadata.setStatus(SecConst.CA_EXPIRED);
-                    cadata.setUpdateTime(new Date().getTime());
-                }
-            }
-            String msg = intres.getLocalizedMessage("signsession.caexpired", ca.getSubjectDN());
-            msg += " "+cee.getMessage();
-            log.info(msg);
-        } catch (CertificateNotYetValidException e) {
-            // Signers Certificate is not yet valid.
-            String msg = intres.getLocalizedMessage("signsession.canotyetvalid", ca.getSubjectDN());
-            msg += " "+e.getMessage();
-            log.warn(msg);
-        }
-    } // checkCAExpireAndUpdateCA
 
     /**
      * Verify that a CA exists. (This method does not check admin privileges and
@@ -1164,7 +876,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             	log.debug("DV renewal missing CVCA cert, try finding CA for:"+ ca_ref);
 	        	Iterator<Integer> cas = getAvailableCAs(admin).iterator();
 	        	while (cas.hasNext()){
-	        		CA cvca = getCAInternal(cas.next(), null);
+	        		CA cvca = caSession.getCA(admin,cas.next());
 	        		if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED){
 	        			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cvca.getCACertificate();
 	        			if (ca_ref.equals (cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())){
@@ -3145,7 +2857,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
     	CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-        //CADataLocal caData = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
         return caData.getCA().decryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
     }
 
@@ -3311,9 +3022,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
             return true; // Skip database seach since this is always ok
         }
-
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
-
     }
 
     /**
@@ -3387,7 +3096,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             while (iter.hasNext()) {
                 int caid = ((Integer) iter.next()).intValue();
                 log.debug("createCRLs for caid: " + caid);
-                CA ca = getCA(admin, caid);
+                CA ca = caSession.getCA(admin, caid);
                 if (crlCreateSession.runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
                     createdcrls++;
                 }
@@ -3434,7 +3143,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             while (iter.hasNext()) {
                 int caid = iter.next().intValue();
                 log.debug("createDeltaCRLs for caid: " + caid);
-                CA ca = getCA(admin, caid);
+                CA ca = caSession.getCA(admin, caid);
                 if (crlCreateSession.runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
                     createddeltacrls++;
                 }
@@ -3494,7 +3203,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
         // Get CA that will process request
-        CA ca = getCA(admin, caid);
+        CA ca = caSession.getCA(admin, caid);
         if (log.isDebugEnabled()) {
         	log.debug("Exteneded service with request class '"+request.getClass().getName()+"' called for CA '"+ca.getName()+"'");            	
         }

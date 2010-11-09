@@ -55,7 +55,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
@@ -98,6 +98,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     private static final Logger log = Logger.getLogger(RSASignSessionBean.class);
     
     @EJB
+    private CaSessionLocal caSession;
+    @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
@@ -109,8 +111,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     private PublisherSessionLocal publisherSession;
     @EJB
     private CrlSessionLocal crlSession;
-    @EJB
-    private CAAdminSessionLocal caAdminSession;
     @EJB
     private LogSessionLocal logSession;
 
@@ -235,7 +235,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS) 
     public Collection<Certificate> getCertificateChain(Admin admin, int caid) {
     	try {
-    		return caAdminSession.getCA(admin, caid).getCertificateChain();
+    		return caSession.getCA(admin, caid).getCertificateChain();
     	} catch (CADoesntExistsException e) {
     		throw new EJBException(e);
     	}
@@ -289,7 +289,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
     	}
-        CA ca = caAdminSession.getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
+        CA ca = caSession.getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
         byte[] returnval = ca.createPKCS7(cert, includeChain);
     	if (log.isTraceEnabled()) {
     		log.trace("<createPKCS7()");
@@ -428,7 +428,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (suppliedUserData == null) {
         	ca = getCAFromRequest(admin, req);
         } else {
-        	ca = caAdminSession.getCA(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
+        	ca = caSession.getCA(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
         }
         try {
             CATokenContainer catoken = ca.getCAToken();
@@ -625,7 +625,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	        log.debug("User type=" + data.getType());
 		}
 	    // Get CA object and make sure it's active
-	    CA ca = caAdminSession.getCA(admin, data.getCAId());
+	    CA ca = caSession.getCA(admin, data.getCAId());
 	    if (ca.getStatus() != SecConst.CA_ACTIVE) {
 	    	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
 	    	logSession.log(admin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
@@ -868,7 +868,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             		log.debug("Using DN: "+dn);
             	}
             	try {
-            		ca = caAdminSession.getCA(admin, dn.hashCode());
+            		ca = caSession.getCA(admin, dn.hashCode());
             		if (log.isDebugEnabled()) {
             			log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
             		}
@@ -910,7 +910,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		String username = req.getUsername();
 		String password = req.getPassword();
 		UserDataVO data = authUser(admin, username, password);
-		CA ca = caAdminSession.getCA(admin, data.getCAId());
+		CA ca = caSession.getCA(admin, data.getCAId());
 		if (log.isDebugEnabled()) {
 			log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
 		}

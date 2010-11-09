@@ -22,6 +22,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -61,6 +62,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	int fooEEProfileId;
 
 	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+	private CaSessionRemote caSession = InterfaceCache.getCaSession();
 	private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 	private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
 	private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
@@ -112,7 +114,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 			log.debug("deleted user: foo3");
 		} catch (Exception e) {}
 
-		certificateStoreSession.revokeAllCertByCA(admin, caAdminSession.getCA(admin, rsacaid).getSubjectDN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+		certificateStoreSession.revokeAllCertByCA(admin, caSession.getCA(admin, rsacaid).getSubjectDN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 	}
 
 

@@ -520,6 +520,7 @@
 					<pathelement location="${build-temp.dir}/authorization"/>
 					<pathelement location="${build-temp.dir}/catoken"/>
 					<pathelement location="${build-temp.dir}/certstore"/>
+					<pathelement location="${build-temp.dir}/publish"/>
 				</classpath>
 			</javac>
 
@@ -529,7 +530,7 @@
 			<mkdir dir="${build-temp.dir}/caadmin"/>
 			<copy todir="${src-temp.dir}/caadmin">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/ejbca/core/ejb/ca/caadmin/CAAdminSession*.java"/>
+					<include name="org/ejbca/core/ejb/ca/caadmin/*Session*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/ca/caadmin/CAData.java"/>

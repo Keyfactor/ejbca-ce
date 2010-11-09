@@ -33,6 +33,8 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -98,6 +100,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private static Collection<String> createdUsers = new LinkedList<String>();
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
@@ -120,7 +123,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         createUser(admin1, adminUsername, caid, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER);
 
         // Create new CA
-        approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {}, caAdminSession,
+        approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {}, caAdminSession, caSession,
                 SecConst.CERTPROFILE_FIXED_ROOTCA);
 
         // Create certificate profiles
@@ -134,9 +137,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         certProfileIdAllApprovals = createCertificateProfile(admin1, CERTPROFILE5, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN,
                 CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, CAInfo.REQ_APPROVAL_KEYRECOVER, CAInfo.REQ_APPROVAL_REVOCATION }, CertificateProfile.TYPE_ENDENTITY);
         // Other CAs
-        anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {}, caAdminSession,
+        anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {}, caAdminSession, caSession,
                 SecConst.CERTPROFILE_FIXED_ROOTCA);
-        anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {}, caAdminSession,
+        anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {}, caAdminSession, caSession,
                 certProfileIdActivateCATokensApprovals);
 
         // Create an end entity profile with the certificate profiles
@@ -354,7 +357,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private void removeCA(int caId) {
         try {
-            caAdminSession.removeCA(admin1, caId);
+            caSession.removeCA(admin1, caId);
         } catch (AuthorizationDeniedException e) {
             log.error("Remove CA", e);
         }
@@ -386,7 +389,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return certProfileId;
     }
 
-    public static int createCA(Admin internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, CAAdminSessionRemote caAdminSession, int certProfileId)
+    public static int createCA(Admin internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId)
             throws Exception {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -406,7 +409,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-            caAdminSession.removeCA(internalAdmin, caID);
+            caSession.removeCA(internalAdmin, caID);
         } catch (Exception e) {
         }
         caAdminSession.createCA(internalAdmin, cainfo);

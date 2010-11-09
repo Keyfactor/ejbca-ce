@@ -24,6 +24,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -53,6 +54,7 @@ public class EjbRemoteHelper {
     private AuthenticationSessionRemote authenticationSession = null;
     private AuthorizationSessionRemote authorizationSession = null;
     private CAAdminSessionRemote caAdminSession = null;
+    private CaSessionRemote caSession = null;
     private CertificateProfileSessionRemote certificateProfileSession = null;
     private CertificateRequestSessionRemote certificateRequestSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
@@ -94,6 +96,13 @@ public class EjbRemoteHelper {
             adminGroupSession = JndiHelper.getRemoteSession(AdminGroupSessionRemote.class);
         }
         return adminGroupSession;
+    }
+    
+    public CaSessionRemote getCaSession() {
+        if(caSession == null) {
+            caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
+        }
+        return caSession;
     }
     
     public CAAdminSessionRemote getCAAdminSession() {

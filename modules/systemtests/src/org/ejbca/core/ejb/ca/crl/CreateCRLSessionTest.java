@@ -45,6 +45,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -86,6 +87,7 @@ public class CreateCRLSessionTest extends CaTestCase {
     private static final String TESTPROFILE = "TestCreateCRLSessionProfile";
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private CrlSessionRemote createCrlSession = InterfaceCache.getCrlSession();
@@ -107,7 +109,7 @@ public class CreateCRLSessionTest extends CaTestCase {
         CAInfo inforsa = caAdminSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         caid = inforsa.getCAId();
-        ca = caAdminSession.getCA(admin, caid);
+        ca = caSession.getCA(admin, caid);
     }
 
     public void setUp() throws Exception {
@@ -391,8 +393,8 @@ public class CreateCRLSessionTest extends CaTestCase {
             certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, userDN);
             // Change CRLPeriod
             cainfo.setCRLPeriod(Long.MAX_VALUE);
-            caAdminSessionRemote.editCA(admin, cainfo);
-            ca = caAdminSessionRemote.getCA(admin, caid);
+            caAdminSession.editCA(admin, cainfo);
+            ca = caSession.getCA(admin, caid);
             // Create new CRL's
             crlStoreSession.run(admin, ca);
             // Verify that status is not archived
@@ -401,8 +403,8 @@ public class CreateCRLSessionTest extends CaTestCase {
         } finally {
             // Restore CRL Period
             cainfo.setCRLPeriod(tempCRLPeriod);
-            caAdminSessionRemote.editCA(admin, cainfo);
-            ca = caAdminSessionRemote.getCA(admin, caid);
+            caAdminSession.editCA(admin, cainfo);
+            ca = caSession.getCA(admin, caid);
             // Delete and revoke User
             userAdminSession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
             // Delete end entity profile
@@ -434,8 +436,8 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint(cdpURL);
-        caAdminSessionRemote.editCA(admin, cainfo);
-        ca = caAdminSessionRemote.getCA(admin, caid);
+        caAdminSession.editCA(admin, cainfo);
+        ca = caSession.getCA(admin, caid);
         crlStoreSession.run(admin, ca);
         x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         cdpDER = x509crl.getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
@@ -451,8 +453,8 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         cainfo.setUseCrlDistributionPointOnCrl(false);
         cainfo.setDefaultCRLDistPoint("");
-        caAdminSessionRemote.editCA(admin, cainfo);
-        ca = caAdminSessionRemote.getCA(admin, caid);
+        caAdminSession.editCA(admin, cainfo);
+        ca = caSession.getCA(admin, caid);
         crlStoreSession.run(admin, ca);
         x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         assertNull("CRL has distribution points", x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
@@ -471,15 +473,15 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         final String cdpURL = "http://www.ejbca.org/foo/bar.crl";
         final String freshestCdpURL = "http://www.ejbca.org/foo/delta.crl";
-        X509CAInfo cainfo = (X509CAInfo) caAdminSessionRemote.getCAInfo(admin, caid);
+        X509CAInfo cainfo = (X509CAInfo) caAdminSession.getCAInfo(admin, caid);
         X509CRL x509crl;
         byte[] cFreshestDpDER;
 
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint(cdpURL);
         cainfo.setCADefinedFreshestCRL(freshestCdpURL);
-        caAdminSessionRemote.editCA(admin, cainfo);
-        ca = caAdminSessionRemote.getCA(admin, caid);
+        caAdminSession.editCA(admin, cainfo);
+        ca = caSession.getCA(admin, caid);
         crlStoreSession.run(admin, ca);
         x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         cFreshestDpDER = x509crl.getExtensionValue(X509Extensions.FreshestCRL.getId());

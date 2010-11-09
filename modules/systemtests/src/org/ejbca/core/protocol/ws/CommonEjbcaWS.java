@@ -41,6 +41,8 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -159,6 +161,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final String WS_EEPROF_EI = "WS_EEPROF_EI";
 
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
@@ -2540,7 +2543,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             CAInfo info = caAdminSessionRemote.getCAInfo(intAdmin, dvcaname);
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
             // It is signed by external so no certificates exists yet
-            Collection col = info.getCertificateChain();
+            Collection<java.security.cert.Certificate> col = info.getCertificateChain();
             assertEquals(0, col.size());
             return info.getName();
         } catch (CAExistsException pee) {
@@ -2571,7 +2574,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     	try {
             // Remove CA if it exists
             if (caAdminSessionRemote.getCAInfo(intAdmin, dn.hashCode()) != null) {
-        		caAdminSessionRemote.removeCA(intAdmin, dn.hashCode());
+                caSession.removeCA(intAdmin, dn.hashCode());
             } else {
         		log.error("CA " + dn + " did not exist. Skipping removal.");
             }

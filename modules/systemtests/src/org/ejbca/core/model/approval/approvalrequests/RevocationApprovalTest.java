@@ -24,6 +24,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -59,6 +60,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
@@ -100,7 +102,7 @@ public class RevocationApprovalTest extends CaTestCase {
         reuestingAdmin = new Admin(reqadmincert, requestingAdminUsername, null);
         // Create new CA using approvals
         String caname = RevocationApprovalTest.class.getSimpleName();
-        approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession);
+        approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
     }
 
     public void tearDown() throws Exception {
@@ -108,7 +110,7 @@ public class RevocationApprovalTest extends CaTestCase {
         userAdminSession.deleteUser(internalAdmin, adminUsername);
         userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
         adminEntitySession.removeAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
-        caAdminSession.removeCA(internalAdmin, approvalCAID);
+        caSession.removeCA(internalAdmin, approvalCAID);
     }
 
     private String genRandomUserName(String usernameBase) {
@@ -133,7 +135,7 @@ public class RevocationApprovalTest extends CaTestCase {
      * 
      * @return the CA's ID.
      */
-    static public int createApprovalCA(Admin internalAdmin, String nameOfCA, int approvalRequirementType, CAAdminSessionRemote caAdminSession)
+    static public int createApprovalCA(Admin internalAdmin, String nameOfCA, int approvalRequirementType, CAAdminSessionRemote caAdminSession, CaSessionRemote caSession)
             throws Exception {
         CATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -151,7 +153,7 @@ public class RevocationApprovalTest extends CaTestCase {
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
-            caAdminSession.removeCA(internalAdmin, caID);
+            caSession.removeCA(internalAdmin, caID);
         } catch (Exception e) {
         }
         caAdminSession.createCA(internalAdmin, cainfo);

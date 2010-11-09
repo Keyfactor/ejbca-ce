@@ -38,6 +38,7 @@ public class CAImportExportTest extends TestCase  {
     private static X509CAInfo cainfo = null;
     
     private CAAdminSessionRemote caadminsession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
 
     /**
      * Creates a new TestCAImportExport object.
@@ -244,7 +245,7 @@ public class CAImportExportTest extends TestCase  {
         	defaultRetValue = true;
         }
 		try {
-			caadminsession.removeCA(admin, cainfo.getCAId());
+		    caSession.removeCA(admin, cainfo.getCAId());
 		} catch (Exception e) { }
 		boolean ret = false;
 		try {
@@ -266,7 +267,7 @@ public class CAImportExportTest extends TestCase  {
 		assertEquals("Could not export CA.", ret, defaultRetValue);
 		ret = false;
 		try {
-			caadminsession.removeCA(admin, cainfo.getCAId());
+		    caSession.removeCA(admin, cainfo.getCAId());
 			ret = true;
 		} catch (Exception e) { }
 		assertEquals("Could not remove CA.", ret, defaultRetValue);
@@ -285,7 +286,7 @@ public class CAImportExportTest extends TestCase  {
 		assertEquals("Fingerprint does not match for \"" + caname + "\".", ret, defaultRetValue);
 		ret = false;
 		try {
-			caadminsession.removeCA(admin, cainfo.getCAId());
+		    caSession.removeCA(admin, cainfo.getCAId());
 			ret = true;
 		} catch (Exception e) { }
 		assertEquals("Could not remove CA.", ret, defaultRetValue);
@@ -305,7 +306,7 @@ public class CAImportExportTest extends TestCase  {
         cainfo = getNewCAInfo(caname, catokeninfo);
         Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 		try {
-			caadminsession.removeCA(internalAdmin, cainfo.getCAId());
+		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 		} catch (Exception e) { }
 		boolean ret = false;
 		try {
@@ -339,7 +340,7 @@ public class CAImportExportTest extends TestCase  {
 		assertTrue("Could not export CA.", ret);
 		ret = false;
 		try {
-			caadminsession.removeCA(internalAdmin, cainfo.getCAId());
+		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 			ret = true;
 		} catch (Exception e) { }
 		assertTrue("Could not remove CA.", ret);
@@ -371,7 +372,7 @@ public class CAImportExportTest extends TestCase  {
 		assertTrue("Fingerprint does not match for \"" + caname + "\".", ret);
 		ret = false;
 		try {
-			caadminsession.removeCA(internalAdmin, cainfo.getCAId());
+		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 			ret = true;
 		} catch (Exception e) { }
 		assertTrue("Could not remove CA.", ret);

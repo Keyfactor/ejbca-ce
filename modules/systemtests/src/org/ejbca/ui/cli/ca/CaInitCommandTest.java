@@ -6,6 +6,7 @@ import junit.framework.TestCase;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -34,6 +35,7 @@ public class CaInitCommandTest extends TestCase {
     private Admin admin;
     
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSessionRemote = InterfaceCache.getCertificateProfileSession();
 
     /**
@@ -47,7 +49,7 @@ public class CaInitCommandTest extends TestCase {
             caInitCommand.execute(HAPPY_PATH_ARGS);
             assertNotNull("Happy path CA was not created.", caAdminSession.getCAInfo(admin, CA_NAME));
         } finally {
-            caAdminSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
         }
     }
 
@@ -56,7 +58,7 @@ public class CaInitCommandTest extends TestCase {
             caInitCommand.execute(ROOT_CA_ARGS);
             assertNotNull("CA was not created using ROOTCA certificate profile.", caAdminSession.getCAInfo(admin, CA_NAME));
         } finally {
-            caAdminSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
         }
     }
 
@@ -79,7 +81,7 @@ public class CaInitCommandTest extends TestCase {
         admin = new Admin(Admin.TYPE_INTERNALUSER);
         caInitCommand = new CaInitCommand();
         if (caAdminSession.getCAInfo(admin, CA_NAME) != null) {
-            caAdminSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
         }
     }
 

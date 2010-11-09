@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -56,6 +57,7 @@ public class DeltaCRLTest extends CaTestCase {
 
     private static final String USERNAME = "foo";
 
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CrlSessionRemote createCrlSession = InterfaceCache.getCrlSession();
     private CrlCreateSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
@@ -79,7 +81,7 @@ public class DeltaCRLTest extends CaTestCase {
         log.trace(">setUp()");
         // Use Test CA created before
         caid = getTestCAId();
-        ca = caAdminSessionRemote.getCA(admin, caid);
+        ca = caSession.getCA(admin, caid);
         assertNotNull("CA TEST not active. You must run TestCAs before this test", ca.getSubjectDN());
         log.trace("<setUp()");
     }
