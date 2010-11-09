@@ -29,6 +29,7 @@ public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     
     /**
@@ -66,14 +67,14 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test03removeECDSACA()");
         boolean ret = false;
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=TESTECDSA".hashCode());
+            caSession.removeCA(admin, "CN=TESTECDSA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
         assertTrue("Removing ECDSA CA failed", ret);
 
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
+            caSession.removeCA(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -91,7 +92,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test04removeRSASha256WithMGF1CA()");
         boolean ret = false;
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=TESTSha256WithMGF1".hashCode());
+            caSession.removeCA(admin, "CN=TESTSha256WithMGF1".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -105,7 +106,7 @@ public class RemoveCATest extends CaTestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -119,7 +120,7 @@ public class RemoveCATest extends CaTestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -133,21 +134,21 @@ public class RemoveCATest extends CaTestCase {
         boolean ret = false;
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTCVCA,C=SE");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTDV-D,C=SE");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TESTDV-F,C=FI");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -155,21 +156,21 @@ public class RemoveCATest extends CaTestCase {
         // test10AddCVCCAECC
         try {
         	String dn = CertTools.stringToBCDNString("CN=TCVCAEC,C=SE");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TDVEC-D,C=SE");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
         }
         try {
         	String dn = CertTools.stringToBCDNString("CN=TDVEC-F,C=FI");
-            caAdminSessionRemote.removeCA(admin, dn.hashCode());
+        	caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
         	log.info("Remove failed: ", e);
@@ -189,7 +190,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test09removeRSASignedByExternal()");
         boolean ret = false;
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
+            caSession.removeCA(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -201,7 +202,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test10removeDSACA()");
         boolean ret = false;
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=TESTDSA".hashCode());
+            caSession.removeCA(admin, "CN=TESTDSA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
@@ -214,7 +215,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace(">test11removeRevokeCA()");
         boolean ret = false;
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=TestRevokeCA".hashCode());
+            caSession.removeCA(admin, "CN=TestRevokeCA".hashCode());
             ret = true;
         } catch (Exception pee) {
         }

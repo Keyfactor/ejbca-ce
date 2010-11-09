@@ -31,6 +31,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -80,6 +81,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
@@ -245,7 +247,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String username = "wsRevocationUser" + randomPostfix;
         int caID = -1;
         try {
-            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote);
+            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intAdmin, APPROVINGADMINNAME).iterator().next();
             Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
@@ -332,7 +334,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             try {
                 caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
             } finally {
-                caAdminSessionRemote.removeCA(intAdmin, caID);
+                caSession.removeCA(intAdmin, caID);
             }
         }
     	log.trace("<test19RevocationApprovals");

@@ -37,6 +37,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
@@ -83,6 +84,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
 	private static final String TESTCA_NAME = "ThrowAwayTestCA";
 	
+	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -141,7 +143,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 	
 	/** Assert that the CA is configured to store things as expected. */
 	private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws RemoteException {
-		CAInfo caInfo = caAdminSessionRemote.getCAInfo(admin, TESTCA_NAME);
+		CAInfo caInfo = caAdminSession.getCAInfo(admin, TESTCA_NAME);
 		assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
 		assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
 		assertEquals("CA has wrong useCertificateStorage setting: ", useCertificateStorage, caInfo.isUseCertificateStorage());
@@ -149,14 +151,14 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
 	/** Change CA configuration for what to store and assert that the changes were made. */
 	private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws RemoteException, AuthorizationDeniedException {
-		CAInfo caInfo = caAdminSessionRemote.getCAInfo(admin, TESTCA_NAME);
+		CAInfo caInfo = caAdminSession.getCAInfo(admin, TESTCA_NAME);
 		caInfo.setUseCertReqHistory(useCertReqHistory);
 		caInfo.setUseUserStorage(useUserStorage);
 		caInfo.setUseCertificateStorage(useCertificateStorage);
 		assertEquals("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory, caInfo.isUseCertReqHistory());
 		assertEquals("CAInfo did not store useUserStorage setting correctly: ", useUserStorage, caInfo.isUseUserStorage());
 		assertEquals("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage, caInfo.isUseCertificateStorage());
-		caAdminSessionRemote.editCA(admin, caInfo);
+		caAdminSession.editCA(admin, caInfo);
 		assertCAConfig(useCertReqHistory, useUserStorage, useCertificateStorage);
 	}
 	

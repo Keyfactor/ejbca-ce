@@ -31,18 +31,14 @@ public class ApprovalRequestHelper {
 	
 
 	
-	// Help Methods for approval requests
-	public static String getCAName(Admin admin,int caid){
-		String caname;
-			    
-		try {
-			caname = new EjbLocalHelper().getCAAdminSession().getCAInfo(admin, caid).getName();
-		} catch (javax.ejb.CreateException e) {
-			throw new javax.ejb.EJBException(e);
-		}
-		
-		return caname;
-	}
+    // Help Methods for approval requests
+    public static String getCAName(Admin admin, int caid) {
+        String caname;
+
+        caname = new EjbLocalHelper().getCAAdminSession().getCAInfo(admin, caid).getName();
+
+        return caname;
+    }
 	
     public static String getEndEntityProfileName(Admin admin, int profileid) {
         return new EjbLocalHelper().getEndEntityProfileSession().getEndEntityProfileName(admin, profileid);
@@ -54,40 +50,32 @@ public class ApprovalRequestHelper {
         return name;
     }
 		
-	public static ApprovalDataText getTokenName(Admin admin,int tokenid){
-		ApprovalDataText retval;
-	    
-		try {
-			if(tokenid <= SecConst.TOKEN_SOFT  ){
-				int tokenindex=0;
-				for(int i=0;i<SecConst.TOKENIDS.length;i++){					
-					if(SecConst.TOKENIDS[i] == tokenid){
-                      tokenindex = i;								
-					}
-				}
-				retval = new ApprovalDataText("TOKEN" ,SecConst.TOKENTEXTS[tokenindex],true,true);
-				
-			}else{			
-			  String name = new EjbLocalHelper().getHardTokenSession().getHardTokenProfileName(admin, tokenid);
-			  retval = new ApprovalDataText("TOKEN" ,name,true,false);
-			}
-		} catch (javax.ejb.CreateException e) {
-			throw new javax.ejb.EJBException(e);
-		}
-		
-		return retval;		
-	}
+    public static ApprovalDataText getTokenName(Admin admin, int tokenid) {
+        ApprovalDataText retval;
 
-	public static String getHardTokenIssuerName(Admin admin,int issuerid){
-		String name;
-	    
-		try {		
-			name = new EjbLocalHelper().getHardTokenSession().getHardTokenIssuerAlias(admin, issuerid);
-		} catch (javax.ejb.CreateException e) {
-			throw new javax.ejb.EJBException(e);
-		}
-		
-		return name;		
-	}
+        if (tokenid <= SecConst.TOKEN_SOFT) {
+            int tokenindex = 0;
+            for (int i = 0; i < SecConst.TOKENIDS.length; i++) {
+                if (SecConst.TOKENIDS[i] == tokenid) {
+                    tokenindex = i;
+                }
+            }
+            retval = new ApprovalDataText("TOKEN", SecConst.TOKENTEXTS[tokenindex], true, true);
+
+        } else {
+            String name = new EjbLocalHelper().getHardTokenSession().getHardTokenProfileName(admin, tokenid);
+            retval = new ApprovalDataText("TOKEN", name, true, false);
+        }
+
+        return retval;
+    }
+
+    public static String getHardTokenIssuerName(Admin admin, int issuerid) {
+        String name;
+
+        name = new EjbLocalHelper().getHardTokenSession().getHardTokenIssuerAlias(admin, issuerid);
+
+        return name;
+    }
 
 }

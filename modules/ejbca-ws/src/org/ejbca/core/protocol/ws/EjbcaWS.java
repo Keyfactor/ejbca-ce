@@ -75,6 +75,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -201,6 +202,8 @@ public class EjbcaWS implements IEjbcaWS {
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CertificateRequestSessionLocal certificateRequestSession;
     @EJB
@@ -2471,7 +2474,7 @@ public class EjbcaWS implements IEjbcaWS {
 			Admin admin = ejbhelper.getAdmin(true);
             logAdminName(admin,logger);
 			CAInfo info = caAdminSession.getCAInfoOrThrowException(admin, caname);
-			CA ca = caAdminSession.getCA(admin, info.getCAId());
+			CA ca = caSession.getCA(admin, info.getCAId());
 			crlStoreSession.run(admin, ca);
 		} catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);

@@ -12,12 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
-import javax.ejb.CreateException;
-
-import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSession;
@@ -35,6 +33,8 @@ import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -71,28 +71,36 @@ public class EjbLocalHelper {
 	// TODO: Find out how to do appserver agnostic local EJB lookup in JEE5
 	// For now we will return the remote stub instead, just to get things working..
 
+    private CAAdminSession caAdminSession = null;
+    private CaSession caSession;
     private CertificateProfileSession certificateProfileSession;
     private CrlCreateSession crlStoreSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     private SignSession signsession = null;
-    public SignSession getSignSession() throws CreateException {
+    public SignSession getSignSession()  {
     	if(signsession == null){
     		signsession = JndiHelper.getRemoteSession(SignSessionRemote.class);
     	}
     	return signsession;
     }
     
-    private CAAdminSession casession = null;
-    public CAAdminSession getCAAdminSession() throws CreateException {
-    	if(casession == null){	
-    		casession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
+    public CaSession getCaSession() {
+        if(caSession == null) {
+            caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
+        }
+        return caSession;
+    }
+    
+    public CAAdminSession getCAAdminSession()  {
+    	if(caAdminSession == null){	
+    		caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
     	}
-    	return casession;
+    	return caAdminSession;
     }
 
 	private AuthenticationSession authsession = null;
-    public AuthenticationSession getAuthenticationSession() throws CreateException {
+    public AuthenticationSession getAuthenticationSession()  {
     	if(authsession == null){	
     		authsession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
     	}
@@ -100,7 +108,7 @@ public class EjbLocalHelper {
     }
 
 	private AuthorizationSession authorizationSession = null;
-    public AuthorizationSession getAuthorizationSession() throws CreateException {
+    public AuthorizationSession getAuthorizationSession()  {
     	if(authorizationSession == null){	
     		authorizationSession = JndiHelper.getRemoteSession(AuthorizationSessionRemote.class);
     	}
@@ -115,7 +123,7 @@ public class EjbLocalHelper {
     }
 
     private KeyRecoverySession keyrecoverysession = null;
-    public KeyRecoverySession getKeyRecoverySession() throws CreateException {
+    public KeyRecoverySession getKeyRecoverySession()  {
     	if(keyrecoverysession == null){	
     		keyrecoverysession = JndiHelper.getRemoteSession(KeyRecoverySessionRemote.class);
     	}
@@ -130,7 +138,7 @@ public class EjbLocalHelper {
     }
 
 	private CertificateStoreSession certificatestoresession = null;
-	public CertificateStoreSession getCertStoreSession() throws CreateException {
+	public CertificateStoreSession getCertStoreSession()  {
 		if(certificatestoresession == null){
 			certificatestoresession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
 		}
@@ -138,7 +146,7 @@ public class EjbLocalHelper {
 	}
 	
 	private CertificateStoreOnlyDataSession certificateStoreOnlyDataSession = null;
-	public CertificateStoreOnlyDataSession getCertificateStoreOnlyDataSession() throws CreateException {
+	public CertificateStoreOnlyDataSession getCertificateStoreOnlyDataSession()  {
 		if(certificateStoreOnlyDataSession == null){
 			certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);
 		}
@@ -153,7 +161,7 @@ public class EjbLocalHelper {
 	}
 	
 	private UserAdminSession usersession = null;
-	public UserAdminSession getUserAdminSession() throws CreateException {
+	public UserAdminSession getUserAdminSession()  {
 		if(usersession == null){
 			usersession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
 		}
@@ -161,7 +169,7 @@ public class EjbLocalHelper {
 	}
 	
 	private RaAdminSession rasession = null;
-	public RaAdminSession getRAAdminSession() throws CreateException {
+	public RaAdminSession getRAAdminSession()  {
 		if(rasession == null){
 			rasession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
 		}
@@ -169,7 +177,7 @@ public class EjbLocalHelper {
 	}
 
 	private ApprovalSession approvalsession = null;	
-	public ApprovalSession getApprovalSession() throws CreateException {
+	public ApprovalSession getApprovalSession()  {
 		if(approvalsession == null){
 			approvalsession = JndiHelper.getRemoteSession(ApprovalSessionRemote.class);
 		}
@@ -177,7 +185,7 @@ public class EjbLocalHelper {
 	}
 
 	private HardTokenSession hardtokensession = null;
-	public HardTokenSession getHardTokenSession() throws CreateException {
+	public HardTokenSession getHardTokenSession()  {
 		if(hardtokensession == null){
 			hardtokensession = JndiHelper.getRemoteSession(HardTokenSessionRemote.class);
 		}
@@ -185,7 +193,7 @@ public class EjbLocalHelper {
 	}
 
 	private LogSession logSession = null;
-	public LogSession getLogSession() throws CreateException {
+	public LogSession getLogSession()  {
 		if(logSession == null){
 			logSession = JndiHelper.getRemoteSession(LogSessionRemote.class);
 		}
@@ -193,7 +201,7 @@ public class EjbLocalHelper {
 	}
 	
 	private OldLogSession oldLogSession = null;
-	public OldLogSession getOldLogSession() throws CreateException {
+	public OldLogSession getOldLogSession()  {
 		if(oldLogSession == null){
 			oldLogSession = JndiHelper.getRemoteSession(OldLogSessionRemote.class);
 		}
@@ -201,7 +209,7 @@ public class EjbLocalHelper {
 	}
 	
 	private TableProtectSession tableProtectSession = null;
-	public TableProtectSession getTableProtectSession() throws CreateException {
+	public TableProtectSession getTableProtectSession()  {
 		if(tableProtectSession == null){
 			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemote.class);
 		}
@@ -209,7 +217,7 @@ public class EjbLocalHelper {
 	}
 
 	private PublisherQueueSession publisherQueueSession = null;
-	public PublisherQueueSession getPublisherQueueSession() throws CreateException {
+	public PublisherQueueSession getPublisherQueueSession()  {
 		if(publisherQueueSession == null){
 			publisherQueueSession = JndiHelper.getRemoteSession(PublisherQueueSessionRemote.class);
 		}

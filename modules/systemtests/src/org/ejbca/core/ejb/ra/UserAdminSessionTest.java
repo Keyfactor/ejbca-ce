@@ -30,6 +30,8 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -69,6 +71,8 @@ public class UserAdminSessionTest extends CaTestCase {
     private static ArrayList<String> usernames = new ArrayList<String>();
     private static String serialnumber;
 
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
@@ -180,10 +184,10 @@ public class UserAdminSessionTest extends CaTestCase {
         usernames.add(thisusername);
 
         // Set the CA to enforce unique subjectDN serialnumber
-        CAInfo cainfo = caAdminSessionRemote.getCA(admin, caid).getCAInfo();
+        CAInfo cainfo = caSession.getCA(admin, caid).getCAInfo();
         boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
 
         // Add another user with the same serialnumber
         thisusername = genRandomUserName();
@@ -198,7 +202,7 @@ public class UserAdminSessionTest extends CaTestCase {
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
         userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         assertTrue(userAdminSession.existsUser(admin, thisusername));
@@ -207,7 +211,7 @@ public class UserAdminSessionTest extends CaTestCase {
         // Set the CA back to its original settings of enforcing unique
         // subjectDN serialnumber.
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(requiredUniqueSerialnumber);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
 
         log.trace("<test02AddUserWithUniqueDNSerialnumber()");
     }
@@ -225,12 +229,12 @@ public class UserAdminSessionTest extends CaTestCase {
         }
         String email = thisusername + username + "@anatomanatom.se";
 
-        CAInfo cainfo = caAdminSessionRemote.getCA(admin, caid).getCAInfo();
+        CAInfo cainfo = caSession.getCA(admin, caid).getCAInfo();
         boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
 
         // Set the CA to enforce unique serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
         try {
             userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
@@ -243,7 +247,7 @@ public class UserAdminSessionTest extends CaTestCase {
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
         userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
                 UserDataConstants.STATUS_NEW, caid);
@@ -253,7 +257,7 @@ public class UserAdminSessionTest extends CaTestCase {
         // Set the CA back to its original settings of enforcing unique
         // subjectDN serialnumber.
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(requiredUniqueSerialnumber);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
 
         log.trace("<test03ChangeUserWithUniqueDNSerialnumber()");
     }

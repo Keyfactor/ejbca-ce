@@ -15,8 +15,6 @@ package org.ejbca.core.protocol.xkms.generators;
 
 import java.security.cert.X509Certificate;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.ra.UserAdminSession;
@@ -46,18 +44,15 @@ import org.w3c.dom.Document;
 
 public class RevokeResponseGenerator extends
 		KRSSResponseGenerator {
-	//private static Logger log = Logger.getLogger(RevokeResponseGenerator.class);
 
     private UserAdminSession userAdminSession;
     
-	public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc) {
-		super(remoteIP, req,requestDoc);
-		try {
-			userAdminSession = new EjbLocalHelper().getUserAdminSession();
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-	}
+    public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc) {
+        super(remoteIP, req, requestDoc);
+
+        userAdminSession = new EjbLocalHelper().getUserAdminSession();
+
+    }
 	
 	/**
 	 * Returns a reissue response

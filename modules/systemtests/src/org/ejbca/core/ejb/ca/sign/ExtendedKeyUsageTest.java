@@ -24,6 +24,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
@@ -56,6 +57,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     private static int rsacaid = 0;    
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -78,7 +80,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         }
         // Add this again since it will be removed by the other tests in the batch..
         assertTrue("Could not create TestCA.", createTestCA());
-        CAInfo inforsa = caAdminSessionRemote.getCAInfo(admin, "TEST");
+        CAInfo inforsa = caAdminSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
     }

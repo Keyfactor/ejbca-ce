@@ -21,7 +21,6 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
@@ -78,32 +77,25 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	}
 
 
-	public void execute() throws ApprovalRequestExecutionException {
-		log.debug("Executing mark for recovery for user:" + username);
-		try{
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			IUserAdminSessionLocalHome home = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.JNDI_NAME);	
-			IUserAdminSessionLocal userAdminSession = home.create();	
-			*/
-			UserAdminSession userAdminSession = new EjbLocalHelper().getUserAdminSession();
-			if(recoverNewestCert){
-				userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
-			}else{
-				userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), cert);
-			}
- 
-		    
-		}catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating new userdata session", e);
-		} catch (AuthorizationDeniedException e) {
-			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
-		} catch (ApprovalException e) {
-			throw new EJBException("This should never happen",e);
-		} catch (WaitingForApprovalException e) {
-			throw new EJBException("This should never happen",e);
-		} 
+    public void execute() throws ApprovalRequestExecutionException {
+        log.debug("Executing mark for recovery for user:" + username);
+        try {
 
-	}
+            UserAdminSession userAdminSession = new EjbLocalHelper().getUserAdminSession();
+            if (recoverNewestCert) {
+                userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
+            } else {
+                userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), cert);
+            }
+        } catch (AuthorizationDeniedException e) {
+            throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
+        } catch (ApprovalException e) {
+            throw new EJBException("This should never happen", e);
+        } catch (WaitingForApprovalException e) {
+            throw new EJBException("This should never happen", e);
+        }
+
+    }
 
     /**
      * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName

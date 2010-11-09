@@ -63,6 +63,8 @@ import org.bouncycastle.ocsp.UnknownStatus;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -198,6 +200,8 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     private final String httpPort;
 
     private AdminGroupSessionRemote adminGroupSession = null;
+    private CAAdminSessionRemote caAdminSession = null;
+    private CaSessionRemote caSession = null;
     private ConfigurationSessionRemote configurationSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private SignSessionRemote signSession = null;
@@ -210,11 +214,13 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     public ProtocolOcspHttpTest(String name) throws CertificateException {
         super(name);
         // Setup remote interface access if we run EJBCA in CA-mode
+        caAdminSession = InterfaceCache.getCAAdminSession();
+        caSession = InterfaceCache.getCaSession();
         configurationSessionRemote = InterfaceCache.getConfigurationSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
         signSession = InterfaceCache.getSignSession();
         userAdminSession = InterfaceCache.getUserAdminSession();
-        adminGroupSession = InterfaceCache.getAdminGroupSession();
+        adminGroupSession = InterfaceCache.getAdminGroupSession();  
         
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
@@ -1050,12 +1056,12 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=OCSPDSATEST".hashCode());
+            caSession.removeCA(admin, "CN=OCSPDSATEST".hashCode());
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPDSATEST");
         }
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
+            caSession.removeCA(admin, "CN=OCSPDSAIMPCATEST".hashCode());
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
         }
@@ -1073,12 +1079,12 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
+            caSession.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPECDSATEST");
         }
         try {
-            caAdminSessionRemote.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
+            caSession.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
         }
@@ -1256,9 +1262,9 @@ public class ProtocolOcspHttpTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, dn);
+            CAInfo info = caAdminSession.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
@@ -1350,9 +1356,9 @@ public class ProtocolOcspHttpTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, dn);
+            CAInfo info = caAdminSession.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));

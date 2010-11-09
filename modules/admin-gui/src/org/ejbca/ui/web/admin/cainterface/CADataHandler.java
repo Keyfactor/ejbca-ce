@@ -35,6 +35,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -68,9 +69,13 @@ import org.ejbca.util.FileTools;
  * @version $Id$
  */
 public class CADataHandler implements Serializable {
+  
+    private static final long serialVersionUID = 2132603037548273013L;
+
     private static final Logger log = Logger.getLogger(CADataHandler.class);
 
     private CAAdminSession caadminsession; 
+    private CaSession caSession;
     private Admin administrator;
     private AuthorizationSession authorizationsession;
     private InformationMemory info;
@@ -84,7 +89,7 @@ public class CADataHandler implements Serializable {
     
     /** Creates a new instance of CertificateProfileDataHandler */
     public CADataHandler(Admin administrator, 
-                         CAAdminSession caadminsession, 
+                         CAAdminSession caadminsession, CaSession caSession,
                          EndEntityProfileSession endEntityProfileSession,
                          UserAdminSession adminsession, 
                          RaAdminSession raadminsession, 
@@ -93,7 +98,8 @@ public class CADataHandler implements Serializable {
                          AuthorizationSession authorizationsession,
                          EjbcaWebBean ejbcawebbean) {
                             
-       this.caadminsession = caadminsession;           
+       this.caadminsession = caadminsession; 
+       this.caSession = caSession;
        this.authorizationsession = authorizationsession;
        this.adminsession = adminsession;
        this.certificatesession = certificatesession;
@@ -161,7 +167,7 @@ public class CADataHandler implements Serializable {
                         this.authorizationsession.existsCAInRules(administrator, caid);
      
     if(!caidexits){
-      caadminsession.removeCA(administrator, caid);
+        caSession.removeCA(administrator, caid);
       info.cAsEdited();
     }
     
@@ -172,7 +178,7 @@ public class CADataHandler implements Serializable {
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
   public void renameCA(String oldname, String newname) throws CAExistsException, AuthorizationDeniedException{
-    caadminsession.renameCA(administrator, oldname, newname);  
+      caSession.renameCA(administrator, oldname, newname);  
     info.cAsEdited();
   }
 

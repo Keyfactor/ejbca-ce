@@ -18,7 +18,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
@@ -75,29 +74,24 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 
-	public void execute() throws ApprovalRequestExecutionException {
-		log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
-		try{
-			/*ServiceLocator locator = ServiceLocator.getInstance();
-			IUserAdminSessionLocalHome userdatahome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-			IUserAdminSessionLocal usersession = userdatahome.create();*/
-			UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
-		    usersession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
-		}catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating newuserdata session", e);
-		} catch (AuthorizationDeniedException e) {
-			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
-		} catch (UserDoesntFullfillEndEntityProfile e) {
-			throw new ApprovalRequestExecutionException("User Doesn't fullfil end entity profile :" + e.getMessage()  + e.getMessage(), e);			
-		} catch (ApprovalException e) {
-			throw new EJBException("This should never happen",e);
-		} catch (WaitingForApprovalException e) {
-			throw new EJBException("This should never happen",e);
-		} catch (EjbcaException e){
-			throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
-		}
+    public void execute() throws ApprovalRequestExecutionException {
+        log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
+        try {
+            UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
+            usersession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
+        } catch (AuthorizationDeniedException e) {
+            throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
+        } catch (UserDoesntFullfillEndEntityProfile e) {
+            throw new ApprovalRequestExecutionException("User Doesn't fullfil end entity profile :" + e.getMessage() + e.getMessage(), e);
+        } catch (ApprovalException e) {
+            throw new EJBException("This should never happen", e);
+        } catch (WaitingForApprovalException e) {
+            throw new EJBException("This should never happen", e);
+        } catch (EjbcaException e) {
+            throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
+        }
 
-	}
+    }
 
     /**
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName

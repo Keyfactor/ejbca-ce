@@ -44,8 +44,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
@@ -113,23 +111,21 @@ public class KRSSResponseGenerator extends
 	 private SignSession signSession;
 	 private UserAdminSession userAdminSession;
 	 
-	public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc) {
-		super(remoteIP, req);
-		this.requestDoc = requestDoc;
-		EjbLocalHelper ejb = new EjbLocalHelper();
-		try {
-			caadminsession = ejb.getCAAdminSession();
-			authenticationSession = ejb.getAuthenticationSession();
-			certificateStoreSession = ejb.getCertStoreSession();
-			endEntityProfileSession = ejb.getEndEntityProfileSession();
-			keyRecoverySession = ejb.getKeyRecoverySession();
-			raAdminSessionLocal = ejb.getRAAdminSession();
-			signSession = ejb.getSignSession();
-			userAdminSession = ejb.getUserAdminSession();
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-	}
+    public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc) {
+        super(remoteIP, req);
+        this.requestDoc = requestDoc;
+        EjbLocalHelper ejb = new EjbLocalHelper();
+
+        caadminsession = ejb.getCAAdminSession();
+        authenticationSession = ejb.getAuthenticationSession();
+        certificateStoreSession = ejb.getCertStoreSession();
+        endEntityProfileSession = ejb.getEndEntityProfileSession();
+        keyRecoverySession = ejb.getKeyRecoverySession();
+        raAdminSessionLocal = ejb.getRAAdminSession();
+        signSession = ejb.getSignSession();
+        userAdminSession = ejb.getUserAdminSession();
+
+    }
 	
 	/**
 	 * Method extracting the public key from the message.

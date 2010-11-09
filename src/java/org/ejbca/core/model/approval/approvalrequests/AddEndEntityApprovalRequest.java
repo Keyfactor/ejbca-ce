@@ -83,9 +83,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
 		    usersession.addUser(getRequestAdmin(), userdata, clearpwd);
 		} catch( PersistenceException e){
-			throw new ApprovalRequestExecutionException("Error, user already exists or a database error ocurred", e);
-		} catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating userdata session", e);
+			throw new ApprovalRequestExecutionException("Error, user already exists or a database error ocurred", e);		
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (UserDoesntFullfillEndEntityProfile e) {

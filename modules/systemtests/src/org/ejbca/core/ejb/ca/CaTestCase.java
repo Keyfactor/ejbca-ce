@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -64,7 +65,8 @@ public abstract class CaTestCase extends TestCase {
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
     private AdminGroupSessionRemote adminGroupSession = null;
-    protected CAAdminSessionRemote caAdminSessionRemote = null;
+    private CAAdminSessionRemote caAdminSessionRemote = null;
+    private CaSessionRemote caSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private RaAdminSessionRemote raAdminSession = null;
 
@@ -89,6 +91,7 @@ public abstract class CaTestCase extends TestCase {
     public void setupInterfaces() {
         adminGroupSession = InterfaceCache.getAdminGroupSession();
         caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+        caSession = InterfaceCache.getCaSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
         raAdminSession = InterfaceCache.getRAAdminSession();
     }
@@ -292,7 +295,7 @@ public abstract class CaTestCase extends TestCase {
             if (caInfo == null) {
                 return true;
             }
-            caAdminSessionRemote.removeCA(admin, ("CN=" + caName).hashCode());
+            caSession.removeCA(admin, ("CN=" + caName).hashCode());
         } catch (Exception e) {
             log.error("", e);
             return false;

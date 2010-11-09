@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.xkms.generators;
 
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -23,8 +24,6 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -88,18 +87,16 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	private CertificateStoreSession certificateStoreSession;
 	private CrlSession createCrlSession;
 
-	public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req){
-		super(remoteIP);		
-		this.req = req;	  	 
-		EjbLocalHelper ejb = new EjbLocalHelper();
-		try {
-			caadminsession = ejb.getCAAdminSession();
-			certificateStoreSession = ejb.getCertStoreSession();
-			createCrlSession = ejb.getCreateCrlSession();
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-	}
+    public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req) {
+        super(remoteIP);
+        this.req = req;
+        EjbLocalHelper ejb = new EjbLocalHelper();
+
+        caadminsession = ejb.getCAAdminSession();
+        certificateStoreSession = ejb.getCertStoreSession();
+        createCrlSession = ejb.getCreateCrlSession();
+
+    }
 
 	/**
 	 * Returns the generated response common data that should be sent back to the client
@@ -190,7 +187,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
     * and the requested UseKeyWithAttributes
     */
    protected List<UseKeyWithType> genUseKeyWithAttributes(X509Certificate cert, List<UseKeyWithType> reqUsages) throws Exception{
-	   ArrayList<UseKeyWithType> retval = new ArrayList();
+	   ArrayList<UseKeyWithType> retval = new ArrayList<UseKeyWithType>();
 	   
 	   Iterator<UseKeyWithType> iter = reqUsages.iterator();
 	   while(iter.hasNext()){
@@ -295,7 +292,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN)){
    			int caid = CertTools.getIssuerDN(cert).hashCode();
    			try {
-   				Iterator iter = caadminsession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
+   				Iterator<Certificate> iter = caadminsession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
    				while(iter.hasNext()){
    					X509Certificate next = (X509Certificate) iter.next();
    					x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(next.getEncoded()));

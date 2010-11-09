@@ -40,6 +40,13 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 
+/**
+ * Administrates and manages CAs in EJBCA system.
+ * 
+ * @version $Id$
+ * 
+ */
+
 public interface CAAdminSession {
 
 	/**
@@ -52,48 +59,8 @@ public interface CAAdminSession {
      *            administrator calling the method
      */
     public void initializeAndUpgradeCAs(Admin admin);
-	
-	/**
-     * Method used to create a new CA. The cainfo parameter should at least
-     * contain the following information. SubjectDN Name (if null then is
-     * subjectDN used). Validity a CATokenInfo Description (optional) Status
-     * (SecConst.CA_ACTIVE or SecConst.CA_WAITING_CERTIFICATE_RESPONSE) SignedBy
-     * (CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA or CAId of internal CA) For
-     * other optional values see:
-     * 
-     * @see org.ejbca.core.model.ca.caadmin.CAInfo
-     * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
-     */
-    public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
-            CATokenAuthenticationFailedException;
 
-    /**
-     * Method used to edit the data of a CA. Not all of the CAs data can be
-     * edited after the creation, therefore will only the values from CAInfo
-     * that is possible be updated.
-     * 
-     * @param cainfo
-     *            CAInfo object containing values that will be updated For
-     *            values see:
-     * @see org.ejbca.core.model.ca.caadmin.CAInfo
-     * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
-     */
-    public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException;
 
-    /**
-     * Method used to remove a CA from the system. You should first check that
-     * the CA isn't used by any EndEntity, Profile or AccessRule before it is
-     * removed. CADataHandler for example makes this check. Should be used with
-     * care. If any certificate has been created with the CA use revokeCA
-     * instead and don't remove it.
-     */
-    public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException;
-
-    /**
-     * Renames the name of CA used in administrators web interface. This name
-     * doesn't have to be the same as SubjectDN and is only used for reference.
-     */
-    public void renameCA(Admin admin, String oldname, String newname) throws CAExistsException, AuthorizationDeniedException;
 
     /**
      * Returns a value object containing nonsensitive information about a CA
@@ -166,26 +133,6 @@ public interface CAAdminSession {
      * @return value object or null if CA does not exist
      */
     public org.ejbca.core.model.ca.caadmin.CAInfo getCAInfo(Admin admin, int caid, boolean doSignTest);
-
-    /**
-     * Get the CA object. Does not perform any authorization check. Checks if
-     * the CA has expired or the certificate isn't valid yet and in that case
-     * sets the correct CA status.
-     * 
-     * @param admin
-     *            is used for logging
-     * @param caid
-     *            identifies the CA
-     * @return the CA object
-     * @throws CADoesntExistsException
-     *             if no CA was found
-     */
-    public org.ejbca.core.model.ca.caadmin.CA getCA(Admin admin, int caid) throws CADoesntExistsException;
-
-    /**
-     * Makes sure that no CAs are cached to ensure that we read from database next time we try to access it. 
-     */
-    public void flushCACache();
 
     /**
      * Verify that a CA exists. (This method does not check admin privileges and
@@ -596,6 +543,19 @@ public interface CAAdminSession {
             String privateEncryptionKeyAlias) throws EJBException;
 
     /**
+     * Method used to edit the data of a CA. Not all of the CAs data can be
+     * edited after the creation, therefore will only the values from CAInfo
+     * that is possible be updated.
+     * 
+     * @param cainfo
+     *            CAInfo object containing values that will be updated For
+     *            values see:
+     * @see org.ejbca.core.model.ca.caadmin.CAInfo
+     * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
+     */
+    public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException;
+    
+    /**
      * Method used to check if certificate profile id exists in any CA.
      */
     public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid);
@@ -673,6 +633,20 @@ public interface CAAdminSession {
      */
     public Collection<Integer> getAuthorizedPublisherIds(Admin admin);
 
+    /**
+     * Method used to create a new CA. The cainfo parameter should at least
+     * contain the following information. SubjectDN Name (if null then is
+     * subjectDN used). Validity a CATokenInfo Description (optional) Status
+     * (SecConst.CA_ACTIVE or SecConst.CA_WAITING_CERTIFICATE_RESPONSE) SignedBy
+     * (CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA or CAId of internal CA) For
+     * other optional values see:
+     * 
+     * @see org.ejbca.core.model.ca.caadmin.CAInfo
+     * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
+     */
+    public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
+            CATokenAuthenticationFailedException;
+    
     /**
      * Method that checks if there are any CRLs needed to be updated and then
      * creates their CRLs. No overlap is used. This method can be called by a

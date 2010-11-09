@@ -80,6 +80,8 @@ public class CAsTest extends CaTestCase {
     private static Collection rootcacertchain = null;
 
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
@@ -160,9 +162,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, "TEST");
+            CAInfo info = caAdminSession.getCAInfo(admin, "TEST");
 
             rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
@@ -184,7 +186,7 @@ public class CAsTest extends CaTestCase {
 
             // Test to generate a certificate request from the CA
             Collection cachain = info.getCertificateChain();
-            byte[] request = caAdminSessionRemote.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
+            byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
         } catch (CAExistsException pee) {
@@ -206,8 +208,8 @@ public class CAsTest extends CaTestCase {
 
         boolean ret = false;
         try {
-            caAdminSessionRemote.renameCA(admin, "TEST", "TEST2");
-            caAdminSessionRemote.renameCA(admin, "TEST2", "TEST");
+            caSession.renameCA(admin, "TEST", "TEST2");
+            caSession.renameCA(admin, "TEST2", "TEST");
             ret = true;
         } catch (CAExistsException cee) {
         }
@@ -225,10 +227,10 @@ public class CAsTest extends CaTestCase {
     public void test03EditCA() throws Exception {
         log.trace(">test03EditCA()");
 
-        X509CAInfo info = (X509CAInfo) caAdminSessionRemote.getCAInfo(admin, "TEST");
+        X509CAInfo info = (X509CAInfo) caAdminSession.getCAInfo(admin, "TEST");
         info.setCRLPeriod(33);
-        caAdminSessionRemote.editCA(admin, info);
-        X509CAInfo info2 = (X509CAInfo) caAdminSessionRemote.getCAInfo(admin, "TEST");
+        caAdminSession.editCA(admin, info);
+        X509CAInfo info2 = (X509CAInfo) caAdminSession.getCAInfo(admin, "TEST");
         assertTrue("Editing CA failed", info2.getCRLPeriod() == 33);
 
         log.trace("<test03EditCA()");
@@ -243,11 +245,7 @@ public class CAsTest extends CaTestCase {
      *             error
      */
     public void test04AddECDSACA() throws Exception {
-   
-        
-        
-        
-        
+
         boolean ret = false;
         try {
             adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
@@ -303,9 +301,9 @@ public class CAsTest extends CaTestCase {
             removeOldCa("TESTECDSA");
             
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, "TESTECDSA");
+            CAInfo info = caAdminSession.getCAInfo(admin, "TESTECDSA");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
@@ -397,9 +395,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+            CAInfo info = caAdminSession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSAImplicitlyCA"));
@@ -486,9 +484,9 @@ public class CAsTest extends CaTestCase {
                     true, // useUserStorage
                     true // useCertificateStorage
             );
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, "TESTSha256WithMGF1");
+            CAInfo info = caAdminSession.getCAInfo(admin, "TESTSha256WithMGF1");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
@@ -580,9 +578,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, "TESTRSA4096");
+            CAInfo info = caAdminSession.getCAInfo(admin, "TESTRSA4096");
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
@@ -678,9 +676,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, name);
+            CAInfo info = caAdminSession.getCAInfo(admin, name);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
@@ -755,9 +753,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cvccainfo);
+            caAdminSession.createCA(admin, cvccainfo);
 
-            cvcainfo = caAdminSessionRemote.getCAInfo(admin, rootcaname);
+            cvcainfo = caAdminSession.getCAInfo(admin, rootcaname);
             assertEquals(CAInfo.CATYPE_CVC, cvcainfo.getCAType());
 
             Certificate cert = (Certificate) cvcainfo.getCertificateChain().iterator().next();
@@ -819,9 +817,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cvccainfo);
+            caAdminSession.createCA(admin, cvccainfo);
 
-            dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+            dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
             assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
 
             Certificate cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
@@ -879,9 +877,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cvccainfo);
+            caAdminSession.createCA(admin, cvccainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, dvfcaname);
+            CAInfo info = caAdminSession.getCAInfo(admin, dvfcaname);
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
 
             Certificate cert = (Certificate) info.getCertificateChain().iterator().next();
@@ -920,8 +918,8 @@ public class CAsTest extends CaTestCase {
         certificateProfileSession.changeCertificateProfile(admin, "TESTCVCDV", profile);
 
         int caid = dvdcainfo.getCAId();
-        caAdminSessionRemote.renewCA(admin, caid, null, false);
-        dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+        caAdminSession.renewCA(admin, caid, null, false);
+        dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         Certificate cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
         assertEquals("CVC", cert.getType());
@@ -945,7 +943,7 @@ public class CAsTest extends CaTestCase {
         Certificate cert1 = (Certificate) cachain.iterator().next();
         CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate) cert1;
         assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
-        byte[] request = caAdminSessionRemote.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
+        byte[] request = caAdminSession.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
         CVCObject obj = CertificateParser.parseCVCObject(request);
         // We should have created an authenticated request signed by the default
         // key, we intended to have it signed by the old key,
@@ -958,7 +956,7 @@ public class CAsTest extends CaTestCase {
 
         // Make a certificate request from a DV, regenerating keys
         cachain = dvdcainfo.getCertificateChain();
-        request = caAdminSessionRemote.makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
+        request = caAdminSession.makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
         obj = CertificateParser.parseCVCObject(request);
         // We should have created an authenticated request signed by the old
         // certificate
@@ -972,7 +970,7 @@ public class CAsTest extends CaTestCase {
         assertEquals("SETESTDV-D00001", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
 
         // Get the DVs certificate request signed by the CVCA
-        byte[] authrequest = caAdminSessionRemote.signRequest(admin, cvcainfo.getCAId(), request, false, false);
+        byte[] authrequest = caAdminSession.signRequest(admin, cvcainfo.getCAId(), request, false, false);
         CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         authreq = (CVCAuthenticatedRequest) parsedObject;
         assertEquals("SETESTDV-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated());
@@ -983,12 +981,12 @@ public class CAsTest extends CaTestCase {
         // certificate.
         // Passing in a request without authrole should return a regular
         // authenticated request though.
-        authrequest = caAdminSessionRemote.signRequest(admin, cvcainfo.getCAId(), request, false, true);
+        authrequest = caAdminSession.signRequest(admin, cvcainfo.getCAId(), request, false, true);
         parsedObject = CertificateParser.parseCVCObject(authrequest);
         authreq = (CVCAuthenticatedRequest) parsedObject;
         // Pass in a certificate instead
         CardVerifiableCertificate dvdcert = (CardVerifiableCertificate) cachain.iterator().next();
-        authrequest = caAdminSessionRemote.signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
+        authrequest = caAdminSession.signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
         parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCertificate linkcert = (CVCertificate) parsedObject;
         assertEquals("SETESTCVCA00001", linkcert.getCertificateBody().getAuthorityReference().getConcatenated());
@@ -997,8 +995,8 @@ public class CAsTest extends CaTestCase {
         // Renew again but regenerate keys this time to make sure sequence is
         // updated
         caid = dvdcainfo.getCAId();
-        caAdminSessionRemote.renewCA(admin, caid, "foo123", true);
-        dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+        caAdminSession.renewCA(admin, caid, "foo123", true);
+        dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
         assertEquals("CVC", cert.getType());
@@ -1065,9 +1063,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cvccainfo);
+            caAdminSession.createCA(admin, cvccainfo);
 
-            cvcainfo = caAdminSessionRemote.getCAInfo(admin, rootcaname);
+            cvcainfo = caAdminSession.getCAInfo(admin, rootcaname);
             assertEquals(CAInfo.CATYPE_CVC, cvcainfo.getCAType());
 
             Certificate cert = (Certificate) cvcainfo.getCertificateChain().iterator().next();
@@ -1122,9 +1120,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cvccainfo);
+            caAdminSession.createCA(admin, cvccainfo);
 
-            dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+            dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
             assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
 
             Certificate cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
@@ -1182,9 +1180,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cvccainfo);
+            caAdminSession.createCA(admin, cvccainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, dvfcaname);
+            CAInfo info = caAdminSession.getCAInfo(admin, dvfcaname);
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
 
             Certificate cert = (Certificate) info.getCertificateChain().iterator().next();
@@ -1218,14 +1216,14 @@ public class CAsTest extends CaTestCase {
         assertTrue("Creating CVC CAs failed", ret);
 
         // Test to renew a CVC CA
-        dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+        dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
         Certificate cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
         // Verify that fingerprint and CA fingerprint is handled correctly
         CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
         assertFalse(certInfo.getFingerprint().equals(certInfo.getCAFingerprint()));
         int caid = dvdcainfo.getCAId();
-        caAdminSessionRemote.renewCA(admin, caid, null, false);
-        dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+        caAdminSession.renewCA(admin, caid, null, false);
+        dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
         assertEquals("CVC", cert.getType());
@@ -1248,7 +1246,7 @@ public class CAsTest extends CaTestCase {
 
         // Make a certificate request from a DV, regenerating keys
         Collection cachain = dvdcainfo.getCertificateChain();
-        byte[] request = caAdminSessionRemote.makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
+        byte[] request = caAdminSession.makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
         CVCObject obj = CertificateParser.parseCVCObject(request);
         // We should have created an authenticated request signed by the old
         // certificate
@@ -1262,7 +1260,7 @@ public class CAsTest extends CaTestCase {
         assertEquals("SETDVEC-D00001", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
 
         // Get the DVs certificate request signed by the CVCA
-        byte[] authrequest = caAdminSessionRemote.signRequest(admin, cvcainfo.getCAId(), request, false, false);
+        byte[] authrequest = caAdminSession.signRequest(admin, cvcainfo.getCAId(), request, false, false);
         CVCObject parsedObject = CertificateParser.parseCVCObject(authrequest);
         authreq = (CVCAuthenticatedRequest) parsedObject;
         assertEquals("SETDVEC-D00002", authreq.getRequest().getCertificateBody().getHolderReference().getConcatenated());
@@ -1273,12 +1271,12 @@ public class CAsTest extends CaTestCase {
         // certificate.
         // Passing in a request without authrole should return a regular
         // authenticated request though.
-        authrequest = caAdminSessionRemote.signRequest(admin, cvcainfo.getCAId(), request, false, true);
+        authrequest = caAdminSession.signRequest(admin, cvcainfo.getCAId(), request, false, true);
         parsedObject = CertificateParser.parseCVCObject(authrequest);
         authreq = (CVCAuthenticatedRequest) parsedObject;
         // Pass in a certificate instead
         CardVerifiableCertificate dvdcert = (CardVerifiableCertificate) cachain.iterator().next();
-        authrequest = caAdminSessionRemote.signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
+        authrequest = caAdminSession.signRequest(admin, cvcainfo.getCAId(), dvdcert.getEncoded(), false, true);
         parsedObject = CertificateParser.parseCVCObject(authrequest);
         CVCertificate linkcert = (CVCertificate) parsedObject;
         assertEquals("SETCVCAEC00001", linkcert.getCertificateBody().getAuthorityReference().getConcatenated());
@@ -1287,8 +1285,8 @@ public class CAsTest extends CaTestCase {
         // Renew again but regenerate keys this time to make sure sequence is
         // updated
         caid = dvdcainfo.getCAId();
-        caAdminSessionRemote.renewCA(admin, caid, "foo123", true);
-        dvdcainfo = caAdminSessionRemote.getCAInfo(admin, dvdcaname);
+        caAdminSession.renewCA(admin, caid, "foo123", true);
+        dvdcainfo = caAdminSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
         assertEquals("CVC", cert.getType());
@@ -1308,7 +1306,7 @@ public class CAsTest extends CaTestCase {
         Certificate cert1 = (Certificate) cachain.iterator().next();
         CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate) cert1;
         assertEquals("SETCVCAEC00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
-        request = caAdminSessionRemote.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
+        request = caAdminSession.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
         obj = CertificateParser.parseCVCObject(request);
         // We should have created an un-authenticated request, because there
         // does not exist any old key
@@ -1317,16 +1315,16 @@ public class CAsTest extends CaTestCase {
         assertEquals("SETCVCAEC00001", cvcertreq.getCertificateBody().getAuthorityReference().getConcatenated());
 
         // Renew the CVCA, generating new keys
-        caAdminSessionRemote.renewCA(admin, cvcainfo.getCAId(), "foo123", true);
+        caAdminSession.renewCA(admin, cvcainfo.getCAId(), "foo123", true);
 
         // Make a certificate request from a CVCA again
-        cvcainfo = caAdminSessionRemote.getCAInfo(admin, rootcaname);
+        cvcainfo = caAdminSession.getCAInfo(admin, rootcaname);
         cachain = cvcainfo.getCertificateChain();
         assertEquals(1, cachain.size());
         Certificate cert2 = (Certificate) cachain.iterator().next();
         CardVerifiableCertificate cvcert2 = (CardVerifiableCertificate) cert2;
         assertEquals("SETCVCAEC00002", cvcert2.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
-        request = caAdminSessionRemote.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
+        request = caAdminSession.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
         obj = CertificateParser.parseCVCObject(request);
         // We should have created an authenticated request signed by the old
         // certificate
@@ -1401,30 +1399,30 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertNull(info);
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
             // Generate a certificate request from the CA and send to the TEST
             // CA
-            byte[] request = caAdminSessionRemote.makeRequest(admin, info.getCAId(), rootcacertchain, false, false, false, null);
-            info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, false, false, false, null);
+            info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
             // Receive the certificate request on the TEST CA
             info.setSignedBy("CN=TEST".hashCode());
-            IResponseMessage resp = caAdminSessionRemote.processRequest(admin, info, msg);
+            IResponseMessage resp = caAdminSession.processRequest(admin, info, msg);
 
             // Receive the signed certificate back on our SubCA
-            caAdminSessionRemote.receiveResponse(admin, info.getCAId(), resp, null, null);
+            caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
 
             // Check that the CA has the correct certificate chain now
-            info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+            info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(SecConst.CA_ACTIVE, info.getStatus());
             Iterator iter = info.getCertificateChain().iterator();
             X509Certificate cert = (X509Certificate) iter.next();
@@ -1452,8 +1450,8 @@ public class CAsTest extends CaTestCase {
 
         // Make a certificate request from the CA
         Collection cachain = info.getCertificateChain();
-        byte[] request = caAdminSessionRemote.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
-        info = caAdminSessionRemote.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+        byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
+        info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
         assertEquals(SecConst.CA_ACTIVE, info.getStatus()); // No new keys
         // generated, still
         // active
@@ -1521,9 +1519,9 @@ public class CAsTest extends CaTestCase {
                     true // useCertificateStorage
             );
 
-            caAdminSessionRemote.createCA(admin, cainfo);
+            caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSessionRemote.getCAInfo(admin, "TESTDSA");
+            CAInfo info = caAdminSession.getCAInfo(admin, "TESTDSA");
 
             rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
@@ -1545,7 +1543,7 @@ public class CAsTest extends CaTestCase {
 
             // Test to generate a certificate request from the CA
             Collection cachain = info.getCertificateChain();
-            byte[] request = caAdminSessionRemote.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
+            byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTDSA", msg.getRequestDN());
         } catch (CAExistsException pee) {
@@ -1557,11 +1555,11 @@ public class CAsTest extends CaTestCase {
 
     public void test13RenewCA() throws Exception {
         // Test renew cacert
-        CAInfo info = caAdminSessionRemote.getCAInfo(admin, getTestCAId());
+        CAInfo info = caAdminSession.getCAInfo(admin, getTestCAId());
         Collection certs = info.getCertificateChain();
         X509Certificate cacert1 = (X509Certificate) certs.iterator().next();
-        caAdminSessionRemote.renewCA(admin, getTestCAId(), "foo123", false);
-        info = caAdminSessionRemote.getCAInfo(admin, getTestCAId());
+        caAdminSession.renewCA(admin, getTestCAId(), "foo123", false);
+        info = caAdminSession.getCAInfo(admin, getTestCAId());
         certs = info.getCertificateChain();
         X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
         assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
@@ -1569,8 +1567,8 @@ public class CAsTest extends CaTestCase {
         cacert2.verify(cacert1.getPublicKey()); // throws if it fails
 
         // Test renew CA keys
-        caAdminSessionRemote.renewCA(admin, getTestCAId(), "foo123", true);
-        info = caAdminSessionRemote.getCAInfo(admin, getTestCAId());
+        caAdminSession.renewCA(admin, getTestCAId(), "foo123", true);
+        info = caAdminSession.getCAInfo(admin, getTestCAId());
         certs = info.getCertificateChain();
         X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
         assertFalse(cacert2.getSerialNumber().equals(cacert3.getSerialNumber()));
@@ -1583,7 +1581,7 @@ public class CAsTest extends CaTestCase {
         // create a link certificate.
         // That link certificate should have the same subjetcKeyId as cert3, but
         // be possible to verify with cert2.
-        byte[] bytes = caAdminSessionRemote.signRequest(admin, getTestCAId(), cacert3.getEncoded(), true, true);
+        byte[] bytes = caAdminSession.signRequest(admin, getTestCAId(), cacert3.getEncoded(), true, true);
         X509Certificate cacert4 = (X509Certificate) CertTools.getCertfromByteArray(bytes);
         // Same public key as in cacert3 -> same subject key id
         keyid1 = new String(CertTools.getSubjectKeyId(cacert3));
@@ -1597,7 +1595,7 @@ public class CAsTest extends CaTestCase {
         cacert4.verify(cacert2.getPublicKey());
 
         // Test make request just making a request using the old keys
-        byte[] request = caAdminSessionRemote.makeRequest(admin, getTestCAId(), new ArrayList(), false, false, false, "foo123");
+        byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList(), false, false, false, "foo123");
         assertNotNull(request);
         PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
         PublicKey pk1 = cacert3.getPublicKey();
@@ -1607,7 +1605,7 @@ public class CAsTest extends CaTestCase {
         // A plain request using the CAs key will have the same public key
         assertEquals(key1, key2);
         // Test make request generating new keys
-        request = caAdminSessionRemote.makeRequest(admin, getTestCAId(), new ArrayList(), true, false, true, "foo123");
+        request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList(), true, false, true, "foo123");
         assertNotNull(request);
         msg = RequestMessageUtils.genPKCS10RequestMessage(request);
         pk1 = cacert3.getPublicKey();
@@ -1618,29 +1616,29 @@ public class CAsTest extends CaTestCase {
         assertFalse(key1.equals(key2));
         // After this (new keys activated but no cert response received) status
         // should be waiting...
-        info = caAdminSessionRemote.getCAInfo(admin, getTestCAId());
+        info = caAdminSession.getCAInfo(admin, getTestCAId());
         assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
         // To clean up after us so the active key is not out of sync with the
         // active certificate, we should simply renew the CA
         info.setStatus(SecConst.CA_ACTIVE);
-        caAdminSessionRemote.editCA(admin, info); // need active status in order
+        caAdminSession.editCA(admin, info); // need active status in order
         // to do renew
-        caAdminSessionRemote.renewCA(admin, getTestCAId(), "foo123", false);
+        caAdminSession.renewCA(admin, getTestCAId(), "foo123", false);
     } // test13RenewCA
 
     public void test14RevokeCA() throws Exception {
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
         createTestCA(caname);
-        CAInfo info = caAdminSessionRemote.getCAInfo(admin, caname);
+        CAInfo info = caAdminSession.getCAInfo(admin, caname);
         assertEquals(SecConst.CA_ACTIVE, info.getStatus());
         assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevokationReason());
         assertNull(info.getRevokationDate());
 
         // Revoke the CA
-        caAdminSessionRemote.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
-        info = caAdminSessionRemote.getCAInfo(admin, caname);
+        caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
+        info = caAdminSession.getCAInfo(admin, caname);
         assertEquals(SecConst.CA_REVOKED, info.getStatus());
         assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, info.getRevokationReason());
         assertTrue(info.getRevokationDate().getTime() > 0);
@@ -1651,11 +1649,11 @@ public class CAsTest extends CaTestCase {
      * @throws AuthorizationDeniedException 
      */
     private void removeOldCa(String caName) throws AuthorizationDeniedException {     
-        HashMap<Integer, String> nameMap = caAdminSessionRemote.getCAIdToNameMap(admin);
+        HashMap<Integer, String> nameMap = caAdminSession.getCAIdToNameMap(admin);
         if(nameMap.containsValue(caName)){
             for(Entry<Integer, String> entry: nameMap.entrySet()) {
                 if(entry.getValue().equals(caName)) {
-                    caAdminSessionRemote.removeCA(admin, entry.getKey());
+                    caSession.removeCA(admin, entry.getKey());
                     break;
                 }
             }

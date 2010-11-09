@@ -27,6 +27,7 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -56,6 +57,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
     public static KeyPair keys;
     
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -113,7 +115,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
     public void test00AddRSACA() throws Exception {
         adminGroupSession.init(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
         createTestCA(CANAME, 2048);
-        CAInfo info = caAdminSessionRemote.getCAInfo(admin, CANAME);
+        CAInfo info = caAdminSession.getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + CANAME));
         assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + CANAME));

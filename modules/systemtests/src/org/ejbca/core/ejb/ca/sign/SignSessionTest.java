@@ -61,6 +61,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -156,6 +157,7 @@ public class SignSessionTest extends CaTestCase {
     private X509Certificate dsacacert = null;
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -201,28 +203,28 @@ public class SignSessionTest extends CaTestCase {
         // Add this again since it will be removed by the other tests in the
         // batch..
         assertTrue("Could not create TestCA.", createTestCA());
-        inforsa = caAdminSessionRemote.getCAInfo(admin, "TEST");
+        inforsa = caAdminSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
-        CAInfo inforsareverse = caAdminSessionRemote.getCAInfo(admin, "TESTRSAREVERSE");
+        CAInfo inforsareverse = caAdminSession.getCAInfo(admin, "TESTRSAREVERSE");
         assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", inforsareverse != null);
         rsareversecaid = inforsareverse.getCAId();
-        CAInfo infoecdsa = caAdminSessionRemote.getCAInfo(admin, "TESTECDSA");
+        CAInfo infoecdsa = caAdminSession.getCAInfo(admin, "TESTECDSA");
         assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", infoecdsa != null);
         ecdsacaid = infoecdsa.getCAId();
-        CAInfo infoecdsaimplicitlyca = caAdminSessionRemote.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+        CAInfo infoecdsaimplicitlyca = caAdminSession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
         assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", infoecdsaimplicitlyca != null);
         ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        CAInfo inforsamgf1ca = caAdminSessionRemote.getCAInfo(admin, "TESTSha256WithMGF1");
+        CAInfo inforsamgf1ca = caAdminSession.getCAInfo(admin, "TESTSha256WithMGF1");
         assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", inforsamgf1ca != null);
         rsamgf1cacaid = inforsamgf1ca.getCAId();
-        CAInfo infocvcca = caAdminSessionRemote.getCAInfo(admin, "TESTDV-D");
+        CAInfo infocvcca = caAdminSession.getCAInfo(admin, "TESTDV-D");
         assertTrue("No active CVC CA! Must have at least one active CA to run tests!", infocvcca != null);
         cvccaid = infocvcca.getCAId();
-        CAInfo infocvccaec = caAdminSessionRemote.getCAInfo(admin, "TESTDVECC-D");
+        CAInfo infocvccaec = caAdminSession.getCAInfo(admin, "TESTDVECC-D");
         assertTrue("No active CVC EC CA! Must have at least one active CA to run tests!", infocvccaec != null);
         cvccaecid = infocvccaec.getCAId();
-        CAInfo infodsa = caAdminSessionRemote.getCAInfo(admin, "TESTDSA");
+        CAInfo infodsa = caAdminSession.getCAInfo(admin, "TESTDSA");
         assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
         dsacaid = infodsa.getCAId();
         Collection<Certificate> coll = inforsa.getCertificateChain();
@@ -1843,9 +1845,9 @@ public class SignSessionTest extends CaTestCase {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Set CA to offline
-        CAInfo inforsa = caAdminSessionRemote.getCAInfo(admin, rsacaid);
+        CAInfo inforsa = caAdminSession.getCAInfo(admin, rsacaid);
         inforsa.setStatus(SecConst.CA_OFFLINE);
-        caAdminSessionRemote.editCA(admin, inforsa);
+        caAdminSession.editCA(admin, inforsa);
 
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         boolean thrown = false;
@@ -1857,7 +1859,7 @@ public class SignSessionTest extends CaTestCase {
         assertTrue(thrown);
 
         inforsa.setStatus(SecConst.CA_ACTIVE);
-        caAdminSessionRemote.editCA(admin, inforsa);
+        caAdminSession.editCA(admin, inforsa);
     }
 
     public void test31TestProfileSignatureAlgorithm() throws Exception {
@@ -1919,10 +1921,10 @@ public class SignSessionTest extends CaTestCase {
     public void test32TestCertReqHistory() throws Exception {
 
         // Configure CA not to store certreq history
-        CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, rsacaid);
+        CAInfo cainfo = caAdminSession.getCAInfo(admin, rsacaid);
         cainfo.setUseCertReqHistory(true);
         cainfo.setDoEnforceUniquePublicKeys(false);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
 
         // New random username and create cert
         String username = genRandomUserName();
@@ -1939,7 +1941,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Configure CA not to store certreq history
         cainfo.setUseCertReqHistory(false);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
         // New random username and create cert
         username = genRandomUserName();
         userAdminSession.addUser(admin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1955,7 +1957,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Reset CA info
         cainfo.setUseCertReqHistory(true);
-        caAdminSessionRemote.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);
     } // test32TestCertReqHistory
 
     public void test99CleanUp() throws Exception {

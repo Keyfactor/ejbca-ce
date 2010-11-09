@@ -65,16 +65,14 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 	 private CertificateStoreSession certificateStoreSession;
 	 private UserAdminSession userAdminSession;
 	 
-	public KISSResponseGenerator(String remoteIP,RequestAbstractType req) {
-		super(remoteIP,req);
-		EjbLocalHelper ejb = new EjbLocalHelper();
-		try {
-			certificateStoreSession = ejb.getCertStoreSession();
-			userAdminSession = ejb.getUserAdminSession();
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-	}
+    public KISSResponseGenerator(String remoteIP, RequestAbstractType req) {
+        super(remoteIP, req);
+        EjbLocalHelper ejb = new EjbLocalHelper();
+
+        certificateStoreSession = ejb.getCertStoreSession();
+        userAdminSession = ejb.getUserAdminSession();
+
+    }
 
 	/** 
 	 * Method that should check the request and find 
