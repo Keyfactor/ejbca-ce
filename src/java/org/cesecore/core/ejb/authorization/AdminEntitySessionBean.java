@@ -35,23 +35,22 @@ import org.ejbca.core.model.log.LogConstants;
 /**
  * Handles AdminEntity objects.
  * 
- * @version
- * 
+ * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AdminEntitySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEntitySessionRemote {
 
-    private static final Logger log = Logger.getLogger(AdminEntitySessionBean.class);
+    private static final Logger LOG = Logger.getLogger(AdminEntitySessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources INTRES = InternalResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
-    private EntityManager entityManager;
+    private transient EntityManager entityManager;
 
     @EJB
-    private AuthorizationTreeUpdateDataSessionRemote authorizationTreeUpdateDataSession;
+    private AuthorizationTreeUpdateDataSessionRemote authTreeSession;
     
     @EJB
     private LogSessionLocal logSession;
@@ -60,21 +59,21 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
      * Adds a Collection of AdminEnity to the admingroup. Changes their values
      * if they already exists.
      */
-    public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities) {
+    public void addAdminEntities(final Admin admin, final String admingroupname, final Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
+                final AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
                 if (agdl == null) {
                     throw new FinderException("Could not find admin group " + admingroupname);
                 }          
                 agdl.addAdminEntities(entityManager, adminentities);
-                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
-                String msg = intres.getLocalizedMessage("authorization.adminadded", admingroupname);
+                authTreeSession.signalForAuthorizationTreeUpdate();
+                final String msg = INTRES.getLocalizedMessage("authorization.adminadded", admingroupname);
                 logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("authorization.erroraddadmin", admingroupname);
-                log.error(msg, e);
+                final String msg = INTRES.getLocalizedMessage("authorization.erroraddadmin", admingroupname);
+                LOG.error(msg, e);
                 logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
@@ -84,21 +83,21 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
     /**
      * Removes a Collection of AdminEntity from the administrator group.
      */
-    public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities) {
+    public void removeAdminEntities(final Admin admin, final String admingroupname, final Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
-                AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
+                final AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
                 if (agdl == null) {
                     throw new FinderException("Could not find admin group " + admingroupname);
                 }
                 agdl.removeAdminEntities(entityManager, adminentities);
-                authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
-                String msg = intres.getLocalizedMessage("authorization.adminremoved", admingroupname);
+                authTreeSession.signalForAuthorizationTreeUpdate();
+                final String msg = INTRES.getLocalizedMessage("authorization.adminremoved", admingroupname);
                 logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("authorization.errorremoveadmin", admingroupname);
-                log.error(msg, e);
+                final String msg = INTRES.getLocalizedMessage("authorization.errorremoveadmin", admingroupname);
+                LOG.error(msg, e);
                 logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_RA, new java.util.Date(), null, null,
                         LogConstants.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }

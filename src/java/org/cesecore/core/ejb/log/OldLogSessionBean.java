@@ -54,7 +54,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 	private static final Logger log = Logger.getLogger(OldLogSessionBean.class);
 	
     @PersistenceContext(unitName="ejbca")
-    private EntityManager entityManager;
+    private transient EntityManager entityManager;
 
 	@EJB
     private TableProtectSessionLocal tableProtectSession;

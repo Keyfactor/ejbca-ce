@@ -44,8 +44,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 /**
  * Session bean for handling EndEntityProfiles
  * 
- * @author mikek
- * 
+ * @version $Id$
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "EndEntityProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -71,7 +70,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private static volatile Map<Integer, EndEntityProfile> profileCache = null;
 
     @PersistenceContext(unitName = "ejbca")
-    private EntityManager entityManager;
+    private transient EntityManager entityManager;
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
