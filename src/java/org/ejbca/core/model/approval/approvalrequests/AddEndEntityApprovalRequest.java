@@ -18,7 +18,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
