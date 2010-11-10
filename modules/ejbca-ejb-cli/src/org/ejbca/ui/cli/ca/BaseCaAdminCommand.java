@@ -58,8 +58,8 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     private CaSessionRemote caSession = ejb.getCaSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
     private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
-    private CrlSessionRemote createCrlSession = ejb.getCrlSession();
-    private CrlCreateSessionRemote crlStoreSession = ejb.getCrlStoreSession();    
+    private CrlSessionRemote crlSession = ejb.getCrlSession();
+    private CrlCreateSessionRemote crlCreateSession = ejb.getCrlStoreSession();    
     /**
      * Retrieves the complete certificate chain from the CA
      * 
@@ -126,18 +126,18 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             if (issuerdn != null) {
                 CA ca = caSession.getCA(getAdmin(), issuerdn.hashCode());
                 if (!deltaCRL) {
-                    crlStoreSession.run(getAdmin(), ca);
-                    int number = createCrlSession.getLastCRLNumber(getAdmin(), issuerdn, false);
+                    crlCreateSession.run(getAdmin(), ca);
+                    int number = crlSession.getLastCRLNumber(getAdmin(), issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    crlStoreSession.runDeltaCRL(getAdmin(), ca, -1, -1);
-                    int number = createCrlSession.getLastCRLNumber(getAdmin(), issuerdn, true);
+                    crlCreateSession.runDeltaCRL(getAdmin(), ca, -1, -1);
+                    int number = crlSession.getLastCRLNumber(getAdmin(), issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = caAdminSession.createCRLs(getAdmin());
+                int createdcrls = crlCreateSession.createCRLs(getAdmin());
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = caAdminSession.createDeltaCRLs(getAdmin());
+                int createddeltacrls = crlCreateSession.createDeltaCRLs(getAdmin());
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {

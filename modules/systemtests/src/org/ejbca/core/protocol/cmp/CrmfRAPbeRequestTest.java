@@ -120,7 +120,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caAdminSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection<Integer> caids = caAdminSession.getAvailableCAs(admin);
+            Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 caid = iter.next().intValue();

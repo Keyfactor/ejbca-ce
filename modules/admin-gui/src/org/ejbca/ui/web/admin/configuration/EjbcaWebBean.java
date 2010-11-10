@@ -44,6 +44,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
@@ -101,6 +102,7 @@ public class EjbcaWebBean implements Serializable {
     private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private AuthorizationSession authorizationSession = ejb.getAuthorizationSession();
     private CAAdminSession caAdminSession = ejb.getCAAdminSession();
+    private CaSession caSession = ejb.getCaSession();
     private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
     private CertificateStoreSession certificateStoreSession = ejb.getCertStoreSession();   
     private EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
@@ -148,10 +150,10 @@ public class EjbcaWebBean implements Serializable {
     	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
-    		informationmemory = new InformationMemory(administrator, caAdminSession, raAdminSession, adminGroupSession, authorizationSession, endEntityProfileSession, hardTokenSession,
+    		informationmemory = new InformationMemory(administrator, caAdminSession, caSession, raAdminSession, adminGroupSession, authorizationSession, endEntityProfileSession, hardTokenSession,
     				publisherSession, userDataSourceSession, certificateProfileSession, globalconfiguration);
     	}
-    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, adminEntitySession, adminGroupSession, authorizationSession, caAdminSession);
+    	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, adminEntitySession, adminGroupSession, authorizationSession, caSession);
     	
     }
     /* Sets the current user and returns the global configuration */
@@ -638,7 +640,7 @@ public class EjbcaWebBean implements Serializable {
      */
     public Collection<Integer> getCAIdsWithCMSServiceActive(){
     	ArrayList<Integer> retval = new ArrayList<Integer>();
-    	Collection<Integer> caids = caAdminSession.getAvailableCAs(administrator);
+    	Collection<Integer> caids = caSession.getAvailableCAs(administrator);
     	Iterator<Integer> iter = caids.iterator();
     	while(iter.hasNext()){
     		Integer caid = iter.next();

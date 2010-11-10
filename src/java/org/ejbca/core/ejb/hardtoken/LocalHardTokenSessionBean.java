@@ -47,6 +47,7 @@ import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -105,6 +106,8 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private RaAdminSessionLocal raAdminSession;
     @EJB
@@ -281,8 +284,8 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
     public Collection<Integer> getAuthorizedHardTokenProfileIds(Admin admin) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
         HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(admin,
-                SecConst.CERTTYPE_HARDTOKEN, caAdminSession.getAvailableCAs(admin)));
-        HashSet<Integer> authorizedcaids = new HashSet<Integer>(caAdminSession.getAvailableCAs(admin));
+                SecConst.CERTTYPE_HARDTOKEN, caSession.getAvailableCAs(admin)));
+        HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
         Iterator<HardTokenProfileData> i = result.iterator();
         while (i.hasNext()) {

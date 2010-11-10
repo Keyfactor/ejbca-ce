@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.services;
 
+import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
 import org.cesecore.core.ejb.log.LogSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
@@ -34,6 +35,7 @@ public abstract class BaseServiceComponent {
     private LogSession logSession = null;
 	private CertificateStoreSession certificateStoreSession = null;
 	private CAAdminSession caAdminSession = null;
+	private CrlCreateSession crlCreateSession = null;
 	private UserAdminSession userAdminSession = null;
 	private PublisherQueueSession publisherQueueSession = null;
 	private PublisherSession publisherSession = null;
@@ -51,6 +53,13 @@ public abstract class BaseServiceComponent {
         }
         return logSession ;
     } //getLogSession
+    
+    protected CrlCreateSession getCrlCreateSession() {
+        if(crlCreateSession == null) {
+            crlCreateSession = new EjbLocalHelper().getCrlCreateSession();
+        }
+        return crlCreateSession;
+    }
     
     /**
      * Gets connection to certificate store session bean

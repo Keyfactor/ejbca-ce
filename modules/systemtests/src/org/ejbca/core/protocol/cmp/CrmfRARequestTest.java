@@ -29,6 +29,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -60,6 +61,7 @@ public class CrmfRARequestTest extends CmpTestCase {
     final private Admin admin;
     final private X509Certificate cacert;
 
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -91,7 +93,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         if (adminca1 == null) {
             final Collection<Integer> caids;
 
-            caids = caAdminSessionRemote.getAvailableCAs(admin);
+            caids = caSession.getAvailableCAs(admin);
 
             final Iterator<Integer> iter = caids.iterator();
             int tmp = 0;

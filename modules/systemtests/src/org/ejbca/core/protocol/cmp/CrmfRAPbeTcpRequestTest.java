@@ -29,6 +29,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -79,6 +80,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private static X509Certificate cacert = null;
     
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
@@ -92,7 +94,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caAdminSessionRemote.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection<Integer> caids = caAdminSessionRemote.getAvailableCAs(admin);
+            Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
             	caid = iter.next().intValue();

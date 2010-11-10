@@ -37,6 +37,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
@@ -77,10 +78,11 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private KeyPair keys = null;  
 
     private static int caid = 0;
-    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);;
+    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
@@ -90,7 +92,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caAdminSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
-            Collection<Integer> caids = caAdminSession.getAvailableCAs(admin);
+            Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
             	caid = iter.next().intValue();

@@ -35,7 +35,6 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
@@ -127,11 +126,10 @@ public class RAInterfaceBean implements java.io.Serializable {
         
         adminsession = ejb.getUserAdminSession();
         certificatesession = ejb.getCertStoreSession();
-        CAAdminSession caadminsession = ejb.getCAAdminSession();
         authorizationsession = ejb.getAuthorizationSession();
         endEntityProfileSession = ejb.getEndEntityProfileSession();
 
-        this.profiles = new EndEntityProfileDataHandler(administrator,authorizationsession,caadminsession, endEntityProfileSession, informationmemory);
+        this.profiles = new EndEntityProfileDataHandler(administrator,authorizationsession, ejb.getCaSession(), endEntityProfileSession, informationmemory);
         
         hardtokensession = ejb.getHardTokenSession();
         keyrecoverysession = ejb.getKeyRecoverySession();

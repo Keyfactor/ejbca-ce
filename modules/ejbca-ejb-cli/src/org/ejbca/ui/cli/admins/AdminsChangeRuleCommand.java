@@ -22,7 +22,7 @@ import java.util.List;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -37,7 +37,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 
     private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private AuthorizationSessionRemote authorizationSession = ejb.getAuthorizationSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private UserDataSourceSessionRemote userDataSourceSession = ejb.getUserDataSourceSession();
@@ -51,7 +51,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 			if (args.length < 5) {
     			getLogger().info("Description: " + getDescription());
 				getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
-				Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()));
+				Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(), caSession.getAvailableCAs(getAdmin()));
 				Collections.sort((List<AdminGroup>) adminGroups);
 				String availableGroups = "";
 				for (AdminGroup adminGroup : adminGroups) {
@@ -60,7 +60,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				getLogger().info("Available Admin groups: " + availableGroups);
 				getLogger().info("Available access rules:");
 				GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
-				for (String current : (Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()),
+				for (String current : (Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caSession.getAvailableCAs(getAdmin()),
 						globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
 						endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))) {
 					getLogger().info(" " + getParsedAccessRule(current));
@@ -80,7 +80,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
             }
 			String accessRule = getOriginalAccessRule(args[2]);
 			GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(getAdmin());
-			if (!((Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caAdminSession.getAvailableCAs(getAdmin()),
+			if (!((Collection<String>) authorizationSession.getAuthorizedAvailableAccessRules(getAdmin(), caSession.getAvailableCAs(getAdmin()),
 					globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
 					endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin()), userDataSourceSession.getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {
 				getLogger().error("Accessrule \"" + accessRule + "\" is not available.");

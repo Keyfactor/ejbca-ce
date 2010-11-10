@@ -49,6 +49,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -133,6 +134,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
@@ -2186,7 +2189,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
 
         if (caauthorizationstring == null || endentityprofilestring == null) {
-            raauthorization = new RAAuthorization(admin, raAdminSession, authorizationSession, caAdminSession, endEntityProfileSession);
+            raauthorization = new RAAuthorization(admin, raAdminSession, authorizationSession, caSession, endEntityProfileSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
                 endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);

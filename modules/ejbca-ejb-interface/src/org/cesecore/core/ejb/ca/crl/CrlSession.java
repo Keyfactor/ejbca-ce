@@ -23,8 +23,6 @@ import org.ejbca.core.model.log.Admin;
  */
 public interface CrlSession {
 
-
-
     /**
      * Retrieves the latest CRL issued by this CA.
      * 

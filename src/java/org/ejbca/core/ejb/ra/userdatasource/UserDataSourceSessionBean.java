@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -68,7 +68,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private CAAdminSessionLocal caAdminSession;
+    private CaSessionLocal caSession;
     @EJB
     private LogSessionLocal logSession;
 
@@ -402,7 +402,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      
         superadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
       
-        Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
+        Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	UserDataSourceData next = i.next();
@@ -555,7 +555,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return true;
             }
-            Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
+            Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
             if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
                 return true;
             }
@@ -585,7 +585,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return false;
             }
-            Collection<Integer> authorizedcas = caAdminSession.getAvailableCAs(admin);
+            Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
             if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
                 return true;
             }

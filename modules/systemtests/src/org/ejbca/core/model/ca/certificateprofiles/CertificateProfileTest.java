@@ -24,6 +24,8 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
@@ -41,7 +43,7 @@ public class CertificateProfileTest extends TestCase {
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     
     /**
@@ -107,7 +109,7 @@ public class CertificateProfileTest extends TestCase {
         log.trace(">test03CloneCertificateProfile()");
         boolean ret = false;
         try {
-            certificateProfileSession.cloneCertificateProfile(admin, "TEST2", "TEST", caAdminSessionRemote.getAvailableCAs(admin));
+            certificateProfileSession.cloneCertificateProfile(admin, "TEST2", "TEST", caSession.getAvailableCAs(admin));
             ret = true;
         } catch (CertificateProfileExistsException pee) {
         }

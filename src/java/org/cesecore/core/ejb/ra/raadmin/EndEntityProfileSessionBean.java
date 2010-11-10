@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -75,7 +75,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @EJB
     private AuthorizationSessionLocal authSession;
     @EJB
-    private CAAdminSessionLocal caAdminSession;
+    private CaSessionLocal caSession;
     @EJB
     private LogSessionLocal logSession;
 
@@ -326,8 +326,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final Admin admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
-    	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caAdminSession.getAvailableCAs(admin));
-        // debug("Admin authorized to "+authorizedcaids.size()+" CAs.");
+    	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
    
         if (authSession.isAuthorizedNoLog(admin, "/super_administrator")) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);

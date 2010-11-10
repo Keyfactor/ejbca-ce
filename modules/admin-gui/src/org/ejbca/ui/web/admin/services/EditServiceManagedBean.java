@@ -295,7 +295,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 */
 	private List getAvailableCAs(boolean includeAllCAs) {
 		List availableCANames = new ArrayList();
-		Collection cAIds = EjbcaJSFHelper.getBean().getCAAdminSession().getAvailableCAs(getAdmin());
+		Collection cAIds = EjbcaJSFHelper.getBean().getCaSession().getAvailableCAs(getAdmin());
 		Iterator iter = cAIds.iterator();
 		while(iter.hasNext()){
 			int next = ((Integer) iter.next()).intValue();

@@ -15,6 +15,7 @@ package org.ejbca.core.model.services.workers;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
@@ -50,12 +51,13 @@ public class CRLUpdateWorker extends BaseWorker {
 				running = true;
 			    long polltime = getNextInterval();
 			    CAAdminSession session = getCAAdminSession();
+			    CrlCreateSession crlCreateSession = getCrlCreateSession();
 			    if (session != null) {
 			    	// Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
 			    	// selecting CAs did not exist, no CA = Any CA.
-				    Collection caids = getCAIdsToCheck(true); 
-			    	session.createCRLs(getAdmin(), caids, polltime*1000);
-			    	session.createDeltaCRLs(getAdmin(), caids, polltime*1000);
+				    Collection<Integer> caids = getCAIdsToCheck(true); 
+				    crlCreateSession.createCRLs(getAdmin(), caids, polltime*1000);
+				    crlCreateSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
 			    }			
 			} finally {
 				running = false;

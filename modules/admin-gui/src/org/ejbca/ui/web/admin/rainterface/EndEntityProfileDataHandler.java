@@ -20,7 +20,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -42,15 +42,15 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     private EndEntityProfileSession endEntityProfileSession;
     private Admin administrator;
     private AuthorizationSession authorizationsession;
-    private CAAdminSession caadminsession;
+    private CaSession caSession;
     private InformationMemory info;
 
     public static final String EMPTY_PROFILE        = EndEntityProfileSession.EMPTY_ENDENTITYPROFILE;    
     /** Creates a new instance of EndEntityProfileDataHandler */
-    public EndEntityProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CAAdminSession caadminsession, EndEntityProfileSession endEntityProfileSession, InformationMemory info) {
+    public EndEntityProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, InformationMemory info) {
        this.endEntityProfileSession = endEntityProfileSession;        
        this.authorizationsession = authorizationsession;
-       this.caadminsession = caadminsession;
+       this.caSession = caSession;
        this.administrator = administrator;          
        this.info = info;
     }
@@ -167,7 +167,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         if (!(editcheck && !authorizationsession.isAuthorizedNoLog(administrator, "/ra_functionality/edit_end_entity_profiles"))
                 && !((profile == null && editcheck) && !authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"))) {
 
-            HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizationsession.getAuthorizedCAIds(administrator, caadminsession
+            HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizationsession.getAuthorizedCAIds(administrator, caSession
                     .getAvailableCAs()));
     
             if (profile == null) {
@@ -190,7 +190,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
                      * availablecas /to be a list of all CAs
                      */
                     if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
-                        Collection<Integer> allcaids = caadminsession.getAvailableCAs();
+                        Collection<Integer> allcaids = caSession.getAvailableCAs();
                         if (log.isDebugEnabled()) {
                             log.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "
                                     + allcaids.size() + " CAs in the system");

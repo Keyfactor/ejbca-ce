@@ -23,6 +23,7 @@ import java.util.Map;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -36,6 +37,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
     private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
     private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
     
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -58,7 +60,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
                 Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(),
-                        caAdminSession.getAvailableCAs(getAdmin()));
+                        caSession.getAvailableCAs(getAdmin()));
                 Collections.sort((List<AdminGroup>) adminGroups);
                 String availableGroups = "";
                 for (AdminGroup adminGroup : adminGroups) {
@@ -66,7 +68,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 }
                 getLogger().info("Available Admin groups: " + availableGroups);
                 Map caIdToNameMap = caAdminSession.getCAIdToNameMap(getAdmin());
-                Collection<Integer> caids = caAdminSession.getAvailableCAs(getAdmin());
+                Collection<Integer> caids = caSession.getAvailableCAs(getAdmin());
                 String availableCas = "";
                 for (Integer caid : caids) {
                     availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caIdToNameMap.get(caid) + "\"";

@@ -15,6 +15,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
@@ -43,6 +44,8 @@ public class EjbcaJSFHelper {
 	private RaAdminSessionLocal raAdminSession;
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private CaSessionLocal caSession;
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
@@ -186,6 +189,10 @@ public class EjbcaJSFHelper {
     	return raAdminSession;
     }
 
+    public CaSessionLocal getCaSession() {
+        return caSession;
+    }
+    
     public CAAdminSessionLocal getCAAdminSession(){
     	return caAdminSession;
     }

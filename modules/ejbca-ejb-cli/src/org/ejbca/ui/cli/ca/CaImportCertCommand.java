@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -42,6 +43,7 @@ import org.ejbca.util.FileTools;
 public class CaImportCertCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
@@ -208,10 +210,10 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				+ "<certificate file> <endentityprofile> [<certificateprofile>]");
 		getLogger().info(" Email can be set to null to try to use the value from the certificate.");
 		String existingCas = "";
-		Collection cas = null;
+		Collection<Integer> cas = null;
 		try {
-			cas = caAdminSession.getAvailableCAs(getAdmin());
-			Iterator iter = cas.iterator();
+			cas = caSession.getAvailableCAs(getAdmin());
+			Iterator<Integer> iter = cas.iterator();
 			while (iter.hasNext()) {
 				int caid = ((Integer)iter.next()).intValue();
 				CAInfo info = caAdminSession.getCAInfo(getAdmin(), caid);
@@ -225,8 +227,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" Certificate: must be PEM encoded");
 		String endEntityProfiles = "";
 		try {
-			Collection eps = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
-			Iterator iter = eps.iterator();
+			Collection<Integer> eps = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
+			Iterator<Integer> iter = eps.iterator();
 			while (iter.hasNext()) {
 				int epid = ((Integer)iter.next()).intValue();
 				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + endEntityProfileSession.getEndEntityProfileName(getAdmin(), epid) + "\"";
@@ -238,9 +240,9 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" End entity profiles: " + endEntityProfiles);
 		String certificateProfiles = "";
 		try {
-			Collection cps = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, cas);
+			Collection<Integer> cps = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, cas);
 			boolean first = true;
-			Iterator iter = cps.iterator();
+			Iterator<Integer> iter = cps.iterator();
 			while (iter.hasNext()) {
 				int cpid = ((Integer)iter.next()).intValue();
 				if (first) {
