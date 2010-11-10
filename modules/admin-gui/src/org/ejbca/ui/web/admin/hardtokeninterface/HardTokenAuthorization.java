@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -46,16 +47,16 @@ public class HardTokenAuthorization implements Serializable {
     private AdminGroupSession adminGroupSession;
     private HardTokenSession hardtokensession;
     private AuthorizationSession authorizationsession;    
-    private CAAdminSession caadminsession;
+    private CaSession caSession;
 
     /** Creates a new instance of CAAuthorization. */
     public HardTokenAuthorization(Admin admin, AdminGroupSession adminGroupSession, HardTokenSession hardtokensession, 
-    		AuthorizationSession authorizationsession, CAAdminSession caadminsession) {
+    		AuthorizationSession authorizationsession, CaSession caSession) {
       this.admin=admin;
       this.adminGroupSession = adminGroupSession;
       this.hardtokensession=hardtokensession;            
       this.authorizationsession = authorizationsession;
-      this.caadminsession = caadminsession;
+      this.caSession = caSession;
     }
 
     /**
@@ -67,7 +68,7 @@ public class HardTokenAuthorization implements Serializable {
         if (hardtokenissuers == null) {
             hardtokenissuers = new TreeMap<String, HardTokenIssuerData>();
             HashSet<Integer> authadmingroupids = new HashSet<Integer>();
-            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin))) {
+            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caSession.getAvailableCAs(admin))) {
                 authadmingroupids.add(Integer.valueOf(next.getAdminGroupId()));
             }
             TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
@@ -144,7 +145,7 @@ public class HardTokenAuthorization implements Serializable {
     public Collection<AdminGroup> getHardTokenIssuingAdminGroups() {
         if (authissueingadmgrps == null) {
             authissueingadmgrps = new ArrayList<AdminGroup>();
-            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caadminsession.getAvailableCAs(admin))) {
+            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caSession.getAvailableCAs(admin))) {
                 if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
                     authissueingadmgrps.add(next);
                 }        

@@ -20,6 +20,7 @@ import java.util.Iterator;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -53,6 +54,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -89,7 +91,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if ((args.length < 9) || (args.length > 12)) {
                 getLogger().info("Description: " + getDescription());
-                Collection caids = caAdminSession.getAvailableCAs(getAdmin());
+                Collection caids = caSession.getAvailableCAs(getAdmin());
                 HashMap caidtonamemap = caAdminSession.getCAIdToNameMap(getAdmin());
 
                 Collection certprofileids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, caids);

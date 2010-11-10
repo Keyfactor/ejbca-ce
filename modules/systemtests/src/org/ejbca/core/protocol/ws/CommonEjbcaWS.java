@@ -41,7 +41,6 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
@@ -1471,7 +1470,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAvailableCAs() throws Exception {
     	log.trace(">getAvailableCAs");
-        Collection<Integer> ids = caAdminSessionRemote.getAvailableCAs(intAdmin);
+        Collection<Integer> ids = caSession.getAvailableCAs(intAdmin);
         List<NameAndId> cas = ejbcaraws.getAvailableCAs();
         assertNotNull(cas);
         assertEquals(cas.size(), ids.size());

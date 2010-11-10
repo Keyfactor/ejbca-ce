@@ -59,7 +59,6 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
@@ -116,7 +115,6 @@ import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -165,8 +163,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private CrlSessionLocal crlSession;
     @EJB
     private CrlCreateSessionLocal crlCreateSession;
     @EJB
@@ -408,7 +404,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             //cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), castatus, ca);
             if (castatus == SecConst.CA_ACTIVE) {
                 // create initial CRL
-                createCRLs(admin, ca, cainfo);
+                crlCreateSession.createCRLs(admin, ca, cainfo);
             }
             String msg = intres.getLocalizedMessage("caadmin.createdca", cainfo.getName(), Integer.valueOf(castatus));
             logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
@@ -422,26 +418,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Update local OCSP's CA certificate cache
         CertificateCacheInternal.getInstance().update(ca.getCACertificate());
     	log.trace("<createCA");
-    }
-
-    /**
-     * Generates the CRL and potentially deltaCRL and stores it in the database.
-     * 
-     * @param admin
-     * @param ca
-     * @param cainfo
-     * @throws CATokenOfflineException
-     */
-    private void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException {
-        final String fp = this.crlCreateSession.run(admin, ca);
-        // If we could not create a full CRL (for example CVC CAs does not even
-        // support CRLs), don't try to create a delta CRL.
-        if (fp != null) {
-            final CRLInfo crlInfo = crlSession.getCRLInfo(admin, fp);
-            if (cainfo.getDeltaCRLPeriod() > 0) {
-                this.crlCreateSession.runDeltaCRL(admin, ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
-            }
-        }
     }
 
     /**
@@ -770,34 +746,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     /**
-     * Method returning id's of all CA's available in the system database. Note
-     * that this method does not check for authorization and can thus leak
-     * information.
-     * 
-     * @return a Collection (Integer) of CA id's
-     */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<Integer> getAvailableCAs() {
-    	return CAData.findAllCaIds(entityManager);
-    }
-
-    /**
-     * Method returning id's of all CA's available to the system that the
-     * administrator is authorized to i.e. not having status "external" or
-     * "waiting for certificate response"
-     * 
-     * @param admin
-     *            The administrator
-     * @return a Collection<Integer> of available CA id's
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
-     */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<Integer> getAvailableCAs(Admin admin) {
-        return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
-    }
-
-    /**
      * Creates a certificate request that should be sent to External Root CA for
      * processing. To create a normal request using the CAs currently active
      * signature keys use false for all of regenerateKeys, usenextkey and
@@ -874,7 +822,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             	CardVerifiableCertificate dvcert = (CardVerifiableCertificate)ca.getCACertificate();
     			String ca_ref = dvcert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated();
             	log.debug("DV renewal missing CVCA cert, try finding CA for:"+ ca_ref);
-	        	Iterator<Integer> cas = getAvailableCAs(admin).iterator();
+	        	Iterator<Integer> cas = caSession.getAvailableCAs(admin).iterator();
 	        	while (cas.hasNext()){
 	        		CA cvca = caSession.getCA(admin,cas.next());
 	        		if (cvca.getCAType() == CAInfo.CATYPE_CVC && cvca.getSignedBy() == CAInfo.SELFSIGNED){
@@ -1807,7 +1755,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Publish the new CA certificate
             publishCACertificate(admin, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
-            createCRLs(admin, ca, ca.getCAInfo());
+            crlCreateSession.createCRLs(admin, ca, ca.getCAInfo());
             crlCreateSession.publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
         } catch (CATokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenewca", Integer.valueOf(caid));
@@ -2339,7 +2287,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         + "certificate chain in PKCS#12");
             }
         } else if (signatureCertChain.length > 1) {
-            Collection<Integer> cas = getAvailableCAs();
+            Collection<Integer> cas = caSession.getAvailableCAs();
             Iterator<Integer> iter = cas.iterator();
             // Assuming certificate chain in forward direction (from target
             // to most-trusted CA). Multiple CA chains can contains the
@@ -2559,7 +2507,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         ArrayList<Certificate> returnval = new ArrayList<Certificate>();
 
         try {
-            Collection<Integer> caids = getAvailableCAs();
+            Collection<Integer> caids = caSession.getAvailableCAs();
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 Integer caid = iter.next();
@@ -3010,7 +2958,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             returnval.addAll(publisherSession.getAllPublisherIds(admin));
         } catch (AuthorizationDeniedException e1) {
             // If regular CA-admin return publishers he is authorized to
-            Iterator authorizedcas = getAvailableCAs(admin).iterator();
+            Iterator authorizedcas = caSession.getAvailableCAs(admin).iterator();
             while (authorizedcas.hasNext()) {
                 returnval.addAll(getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
             }
@@ -3025,141 +2973,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
 
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then
-     * creates their CRLs. No overlap is used. This method can be called by a
-     * scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * 
-     * @return the number of crls created.
-     * @throws EJBException
-     *             om ett kommunikations eller systemfel intr?ffar.
-     */
-    public int createCRLs(Admin admin) {
-        return createCRLs(admin, null, 0);
-    }
-
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and
-     * then creates their delta CRLs. No overlap is used. This method can be
-     * called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * 
-     * @return the number of delta crls created.
-     * @throws EJBException
-     *             if communication or system error happens
-     */
-    public int createDeltaCRLs(Admin admin) {
-        return createDeltaCRLs(admin, null, 0);
-    }
-
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then
-     * creates their CRLs. A CRL is created: 1. if the current CRL expires
-     * within the crloverlaptime (milliseconds) 2. if a crl issue interval is
-     * defined (>0) a CRL is issued when this interval has passed, even if the
-     * current CRL is still valid
-     * 
-     * This method can be called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param caids
-     *            list of CA ids (Integer) that will be checked, or null in
-     *            which case ALL CAs will be checked
-     * @param addtocrloverlaptime
-     *            given in milliseconds and added to the CRL overlap time, if
-     *            set to how often this method is run (poll time), it can be
-     *            used to issue a new CRL if the current one expires within the
-     *            CRL overlap time (configured in CA) and the poll time. The
-     *            used CRL overlap time will be (crloverlaptime +
-     *            addtocrloverlaptime)
-     * 
-     * @return the number of crls created.
-     * @throws EJBException
-     *             if communication or system error occurrs
-     */
-    public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime) {
-        int createdcrls = 0;
-        try {
-            Iterator<Integer> iter = null;
-            if (caids != null) {
-                iter = caids.iterator();
-            }
-            if ((iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS)))) {
-                iter = getAvailableCAs().iterator();
-            }
-            while (iter.hasNext()) {
-                int caid = ((Integer) iter.next()).intValue();
-                log.debug("createCRLs for caid: " + caid);
-                CA ca = caSession.getCA(admin, caid);
-                if (crlCreateSession.runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
-                    createdcrls++;
-                }
-            }
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("createcrl.erroravailcas");
-            log.error(msg, e);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
-            if (e instanceof EJBException) {
-                throw (EJBException) e;
-            }
-            throw new EJBException(e);
-        }
-        return createdcrls;
-    }
-
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and
-     * then creates them. This method can be called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param caids
-     *            list of CA ids (Integer) that will be checked, or null in
-     *            which case ALL CAs will be checked
-     * @param crloverlaptime
-     *            A new delta CRL is created if the current one expires within
-     *            the crloverlaptime given in milliseconds
-     * 
-     * @return the number of delta crls created.
-     * @throws EJBException
-     *             if communication or system error occurrs
-     */
-    public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime) {
-        int createddeltacrls = 0;
-        try {
-            Iterator<Integer> iter = null;
-            if (caids != null) {
-                iter = caids.iterator();
-            }
-            if ((iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS)))) {
-                iter = getAvailableCAs().iterator();
-            }
-            while (iter.hasNext()) {
-                int caid = iter.next().intValue();
-                log.debug("createDeltaCRLs for caid: " + caid);
-                CA ca = caSession.getCA(admin, caid);
-                if (crlCreateSession.runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
-                    createddeltacrls++;
-                }
-            }
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("createcrl.erroravailcas");
-            log.error(msg, e);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
-            if (e instanceof EJBException) {
-                throw (EJBException) e;
-            }
-            throw new EJBException(e);
-        }
-        return createddeltacrls;
-    }
-
+  
     /**
      * Used by healthcheck. Validate that CAs are online and optionally performs
      * a signature test.
@@ -3172,7 +2986,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         log.debug("CaTokenSignTest: " + caTokenSignTest);
-        Iterator<Integer> iter = getAvailableCAs().iterator();
+        Iterator<Integer> iter = caSession.getAvailableCAs().iterator();
         while (iter.hasNext()) {
             int caid = iter.next().intValue();
             CAInfo cainfo = getCAInfo(admin, caid, caTokenSignTest);

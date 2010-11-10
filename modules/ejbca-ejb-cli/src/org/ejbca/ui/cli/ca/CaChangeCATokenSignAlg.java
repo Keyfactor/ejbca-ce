@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.util.Collection;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
@@ -31,6 +32,7 @@ import org.ejbca.util.CertTools;
 public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "changecatokensignalg"; }
@@ -79,7 +81,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = caAdminSession.getAvailableCAs(getAdmin());
+			Collection<Integer> cas = caSession.getAvailableCAs(getAdmin());
 			for (Integer caid : cas) {
 				CAInfo info = caAdminSession.getCAInfo(getAdmin(), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCATokenInfo().getSignatureAlgorithm());				

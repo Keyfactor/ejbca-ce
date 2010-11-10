@@ -14,7 +14,10 @@ package org.cesecore.core.ejb.ca.crl;
 
 import java.util.Collection;
 
+import javax.ejb.EJBException;
+
 import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
@@ -41,6 +44,86 @@ public interface CrlCreateSession {
      */
     public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException;
 
+    /**
+     * Method that checks if there are any CRLs needed to be updated and then
+     * creates their CRLs. No overlap is used. This method can be called by a
+     * scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * @return the number of crls created.
+     * @throws EJBException
+     *             om ett kommunikations eller systemfel intr?ffar.
+     */
+    public int createCRLs(Admin admin);
+    
+    /**
+     * Method that checks if there are any CRLs needed to be updated and then
+     * creates their CRLs. A CRL is created: 1. if the current CRL expires
+     * within the crloverlaptime (milliseconds) 2. if a crl issue interval is
+     * defined (>0) a CRL is issued when this interval has passed, even if the
+     * current CRL is still valid This method can be called by a scheduler or a
+     * service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * @param caids
+     *            list of CA ids (Integer) that will be checked, or null in
+     *            which case ALL CAs will be checked
+     * @param addtocrloverlaptime
+     *            given in milliseconds and added to the CRL overlap time, if
+     *            set to how often this method is run (poll time), it can be
+     *            used to issue a new CRL if the current one expires within the
+     *            CRL overlap time (configured in CA) and the poll time. The
+     *            used CRL overlap time will be (crloverlaptime +
+     *            addtocrloverlaptime)
+     * @return the number of crls created.
+     * @throws EJBException
+     *             if communication or system error occurrs
+     */
+    public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime);
+    
+    /**
+     * Generates the CRL and potentially deltaCRL and stores it in the database.
+     * 
+     * @param admin
+     * @param ca
+     * @param cainfo
+     * @throws CATokenOfflineException
+     */
+    public void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException;
+    
+    /**
+     * Method that checks if there are any delta CRLs needed to be updated and
+     * then creates their delta CRLs. No overlap is used. This method can be
+     * called by a scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * @return the number of delta crls created.
+     * @throws EJBException
+     *             if communication or system error happens
+     */
+    public int createDeltaCRLs(Admin admin);
+
+    /**
+     * Method that checks if there are any delta CRLs needed to be updated and
+     * then creates them. This method can be called by a scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * @param caids
+     *            list of CA ids (Integer) that will be checked, or null in
+     *            which case ALL CAs will be checked
+     * @param crloverlaptime
+     *            A new delta CRL is created if the current one expires within
+     *            the crloverlaptime given in milliseconds
+     * @return the number of delta crls created.
+     * @throws EJBException
+     *             if communication or system error occurrs
+     */
+    public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime);
+    
     /**
      * Method that checks if the CRL is needed to be updated for the CA and
      * creates the CRL, if neccessary. A CRL is created: 1. if the current CRL

@@ -21,7 +21,7 @@ import java.util.Iterator;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -34,7 +34,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     
@@ -54,7 +54,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caAdminSession.getAvailableCAs(getAdmin()));                                               
+            Collection certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caSession.getAvailableCAs(getAdmin()));                                               
 			Collection endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");

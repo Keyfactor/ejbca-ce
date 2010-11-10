@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -56,6 +57,7 @@ public class CertificateFinderBean {
 	private EjbRemoteHelper ejb = new EjbRemoteHelper();
 	private SignSessionRemote mSignSession = ejb.getSignSession();
 	private CAAdminSessionRemote mCaAdminSession = ejb.getCAAdminSession();
+	private CaSessionRemote caSession = ejb.getCaSession();
 	private CertificateStoreSessionRemote mStoreSession = ejb.getCertStoreSession();
 
 	private boolean mInitialized = false;
@@ -95,7 +97,7 @@ public class CertificateFinderBean {
 	    if(log.isTraceEnabled()) {
 		log.trace(">getAvailableCAs()");
 	    }
-		return mInitialized ? mCaAdminSession.getAvailableCAs(mAdmin) : null;
+		return mInitialized ? caSession.getAvailableCAs(mAdmin) : null;
 	}
 
 	public int getCurrentCA() {

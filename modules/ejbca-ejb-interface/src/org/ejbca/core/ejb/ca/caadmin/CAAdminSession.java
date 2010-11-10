@@ -154,25 +154,6 @@ public interface CAAdminSession {
     public java.util.HashMap<Integer, String> getCAIdToNameMap(Admin admin);
 
     /**
-     * Method returning id's of all CA's available to the system. i.e. not
-     * having status "external" or "waiting for certificate response"
-     * 
-     * @return a Collection (Integer) of available CA id's
-     */
-    public Collection<Integer> getAvailableCAs();
-
-    /**
-     * Method returning id's of all CA's available to the system that the
-     * administrator is authorized to i.e. not having status "external" or
-     * "waiting for certificate response"
-     * 
-     * @param admin
-     *            The administrator
-     * @return a Collection<Integer> of available CA id's
-     */
-    public Collection<Integer> getAvailableCAs(Admin admin);
-
-    /**
      * Creates a certificate request that should be sent to External Root CA for
      * processing. To create a normal request using the CAs currently active
      * signature keys use false for all of regenerateKeys, usenextkey and
@@ -646,76 +627,6 @@ public interface CAAdminSession {
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
             CATokenAuthenticationFailedException;
-    
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then
-     * creates their CRLs. No overlap is used. This method can be called by a
-     * scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @return the number of crls created.
-     * @throws EJBException
-     *             om ett kommunikations eller systemfel intr?ffar.
-     */
-    public int createCRLs(Admin admin);
-
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and
-     * then creates their delta CRLs. No overlap is used. This method can be
-     * called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @return the number of delta crls created.
-     * @throws EJBException
-     *             if communication or system error happens
-     */
-    public int createDeltaCRLs(Admin admin);
-
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then
-     * creates their CRLs. A CRL is created: 1. if the current CRL expires
-     * within the crloverlaptime (milliseconds) 2. if a crl issue interval is
-     * defined (>0) a CRL is issued when this interval has passed, even if the
-     * current CRL is still valid This method can be called by a scheduler or a
-     * service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param caids
-     *            list of CA ids (Integer) that will be checked, or null in
-     *            which case ALL CAs will be checked
-     * @param addtocrloverlaptime
-     *            given in milliseconds and added to the CRL overlap time, if
-     *            set to how often this method is run (poll time), it can be
-     *            used to issue a new CRL if the current one expires within the
-     *            CRL overlap time (configured in CA) and the poll time. The
-     *            used CRL overlap time will be (crloverlaptime +
-     *            addtocrloverlaptime)
-     * @return the number of crls created.
-     * @throws EJBException
-     *             if communication or system error occurrs
-     */
-    public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime);
-
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and
-     * then creates them. This method can be called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param caids
-     *            list of CA ids (Integer) that will be checked, or null in
-     *            which case ALL CAs will be checked
-     * @param crloverlaptime
-     *            A new delta CRL is created if the current one expires within
-     *            the crloverlaptime given in milliseconds
-     * @return the number of delta crls created.
-     * @throws EJBException
-     *             if communication or system error occurrs
-     */
-    public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime);
 
     /**
      * Method used to perform a extended CA Service, like OCSP CA Service.

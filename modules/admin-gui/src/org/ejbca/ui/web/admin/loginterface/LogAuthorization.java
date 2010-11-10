@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -36,14 +37,14 @@ public class LogAuthorization implements Serializable {
     private String caidstring = null;
     private Collection<Integer> authorizedmodules = null;
     private AuthorizationSession authorizationsession;
-    private CAAdminSession caAdminSession;
+    private CaSession caSession;
     private Admin administrator;
     
     /** Creates a new instance of LogAuthorization. */
-    public LogAuthorization(Admin administrator, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {
+    public LogAuthorization(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession) {
        this.administrator = administrator;
        this.authorizationsession = authorizationsession;
-       this.caAdminSession = caAdminSession;
+       this.caSession = caSession;
     }
 
     /**
@@ -92,7 +93,7 @@ public class LogAuthorization implements Serializable {
                 caidstring = " cAId = " + LogConstants.INTERNALCAID;
             }
 
-            for (Integer caId : caAdminSession.getAvailableCAs(administrator)) {
+            for (Integer caId : caSession.getAvailableCAs(administrator)) {
                 if (caidstring.equals("")) {
                     caidstring = " cAId = " + caId;
                 } else {

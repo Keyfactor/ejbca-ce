@@ -22,7 +22,7 @@ import java.util.TreeMap;
 
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -37,6 +37,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  */
 public class RAAuthorization implements Serializable {
     
+    private static final long serialVersionUID = -3195162814492440326L;
     private String authcastring = null;
     private String authendentityprofilestring = null;
     private TreeMap authprofilenames = null;
@@ -45,15 +46,15 @@ public class RAAuthorization implements Serializable {
     private Admin admin;
     private AuthorizationSession authorizationsession;
     private RaAdminSession raadminsession;
-    private CAAdminSession caAdminSession;
+    private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(Admin admin, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession) {
+    public RAAuthorization(Admin admin, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.raadminsession = raadminsession;
     	this.authorizationsession = authorizationsession;
-    	this.caAdminSession = caAdminSession;
+    	this.caSession = caSession;
     	this.endEntityProfileSession = endEntityProfileSession;
     }
 
@@ -64,7 +65,7 @@ public class RAAuthorization implements Serializable {
      */
     public String getCAAuthorizationString() {      
       if(authcastring==null){
-        Iterator iter =  caAdminSession.getAvailableCAs(admin).iterator();
+        Iterator iter =  caSession.getAvailableCAs(admin).iterator();
          
         authcastring = "";
         

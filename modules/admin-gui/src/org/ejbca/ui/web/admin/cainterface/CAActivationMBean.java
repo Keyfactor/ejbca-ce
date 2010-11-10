@@ -25,6 +25,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -58,6 +59,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private String authenticationcode;
 	private List<CAWrapper> caInfoList;
 	private Admin administrator;
+	private CaSession caSession;
 	private CertificateStoreSession certificatesession;
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
@@ -86,6 +88,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			EjbLocalHelper ejb = new EjbLocalHelper();
 			certificatesession = ejb.getCertStoreSession();
 			caadminsession = ejb.getCAAdminSession();
+			caSession = ejb.getCaSession();
 			authorizationsession = ejb.getAuthorizationSession();
 			adminsession = ejb.getUserAdminSession();
 			raadminsession = ejb.getRAAdminSession();             
@@ -94,7 +97,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			crlCreateSession = ejb.getCrlCreateSession();
 			this.informationmemory = webBean.getInformationMemory();
 
-			new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, certificateProfileSession, informationmemory);
+			new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, caSession, certificateProfileSession, informationmemory);
 			cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();

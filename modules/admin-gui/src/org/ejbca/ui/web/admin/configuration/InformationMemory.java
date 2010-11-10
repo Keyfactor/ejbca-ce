@@ -33,6 +33,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -64,6 +65,7 @@ public class InformationMemory implements Serializable {
     // Session Bean interfaces (was *Local originally)
     private AdminGroupSession adminGroupSession;
     private CAAdminSession caadminsession;
+    private CaSession caSession;
     private AuthorizationSession authorizationsession;
     private EndEntityProfileSession endEntityProfileSession;
     private PublisherSession publishersession;
@@ -94,7 +96,7 @@ public class InformationMemory implements Serializable {
 
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(Admin administrator,
-                             CAAdminSession caadminsession,
+                             CAAdminSession caadminsession, CaSession caSession,
                              RaAdminSession raadminsession,
                              AdminGroupSession adminGroupSession,
                              AuthorizationSession authorizationsession,
@@ -113,10 +115,11 @@ public class InformationMemory implements Serializable {
       this.userdatasourcesession = userdatasourcesession;
       this.globalconfiguration = globalconfiguration;
       this.certificateProfileSession = certificateProfileSession;
-      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caadminsession, endEntityProfileSession);
-      this.caauthorization = new CAAuthorization(administrator, caadminsession, authorizationsession, certificateProfileSession);
-      this.logauthorization = new LogAuthorization(administrator, authorizationsession, caadminsession);
-      this.hardtokenauthorization = new HardTokenAuthorization(administrator, adminGroupSession, hardtokensession, authorizationsession, caadminsession);
+      this.caSession = caSession;
+      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caSession, endEntityProfileSession);
+      this.caauthorization = new CAAuthorization(administrator, caadminsession, caSession, authorizationsession, certificateProfileSession);
+      this.logauthorization = new LogAuthorization(administrator, authorizationsession, caSession);
+      this.hardtokenauthorization = new HardTokenAuthorization(administrator, adminGroupSession, hardtokensession, authorizationsession, caSession);
     }
     
     
@@ -406,7 +409,7 @@ public class InformationMemory implements Serializable {
 
     public HashSet getAuthorizedAccessRules(){
       if(authorizedaccessrules == null) {
-	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caadminsession.getAvailableCAs(administrator),
+	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caSession.getAvailableCAs(administrator),
 	    		globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
 	    		endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
       }
@@ -456,7 +459,7 @@ public class InformationMemory implements Serializable {
     public TreeMap getAuthorizedAdminGroups(){
       if(authgroups == null){
         authgroups = new TreeMap();
-        Iterator iter = this.adminGroupSession.getAuthorizedAdminGroupNames(administrator, caadminsession.getAvailableCAs(administrator)).iterator();
+        Iterator iter = this.adminGroupSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator)).iterator();
         while(iter.hasNext()){
           AdminGroup admingroup = (AdminGroup) iter.next();	
           authgroups.put(admingroup.getAdminGroupName(),Integer.valueOf(admingroup.getAdminGroupId()));

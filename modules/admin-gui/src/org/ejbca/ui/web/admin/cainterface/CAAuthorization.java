@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
@@ -45,12 +46,13 @@ public class CAAuthorization implements Serializable {
     private TreeMap allprofilenames = null;
     private Admin admin;
     private CAAdminSession caadminsession;
+    private CaSession caSession;
     private AuthorizationSession authorizationsession;
     private CertificateProfileSession certificateProfileSession;
     
     /** Creates a new instance of CAAuthorization. */
     public CAAuthorization(Admin admin,  
-                           CAAdminSession caadminsession,
+                           CAAdminSession caadminsession, CaSession caSession,
                            AuthorizationSession authorizationsession, CertificateProfileSession certificateProfileSession) {
       this.admin=admin;
       this.caadminsession=caadminsession;      
@@ -64,7 +66,7 @@ public class CAAuthorization implements Serializable {
      */
     public Collection<Integer> getAuthorizedCAIds() {         
     	if(authcas == null || authcas.size() == 0){
-    		authcas = caadminsession.getAvailableCAs(admin);
+    		authcas = caSession.getAvailableCAs(admin);
     	}
     	return authcas;
     } 

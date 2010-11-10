@@ -34,6 +34,7 @@ import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -68,6 +69,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     
     @EJB
     private LogSessionLocal logSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -139,6 +142,164 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         }
         return crlBytes;
     }
+    
+    /**
+     * Method that checks if there are any CRLs needed to be updated and then
+     * creates their CRLs. No overlap is used. This method can be called by a
+     * scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * 
+     * @return the number of crls created.
+     * @throws EJBException
+     *             om ett kommunikations eller systemfel intr?ffar.
+     */
+    public int createCRLs(Admin admin) {
+        return createCRLs(admin, null, 0);
+    }
+    
+    /**
+     * Generates the CRL and potentially deltaCRL and stores it in the database.
+     * 
+     * @param admin
+     * @param ca
+     * @param cainfo
+     * @throws CATokenOfflineException
+     */
+    public void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException {
+        final String fp = run(admin, ca);
+        // If we could not create a full CRL (for example CVC CAs does not even
+        // support CRLs), don't try to create a delta CRL.
+        if (fp != null) {
+            final CRLInfo crlInfo = crlSession.getCRLInfo(admin, fp);
+            if (cainfo.getDeltaCRLPeriod() > 0) {
+                runDeltaCRL(admin, ca, crlInfo.getLastCRLNumber(), crlInfo.getCreateDate().getTime());
+            }
+        }
+    }
+    
+    /**
+     * Method that checks if there are any CRLs needed to be updated and then
+     * creates their CRLs. A CRL is created: 1. if the current CRL expires
+     * within the crloverlaptime (milliseconds) 2. if a crl issue interval is
+     * defined (>0) a CRL is issued when this interval has passed, even if the
+     * current CRL is still valid
+     * 
+     * This method can be called by a scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * @param caids
+     *            list of CA ids (Integer) that will be checked, or null in
+     *            which case ALL CAs will be checked
+     * @param addtocrloverlaptime
+     *            given in milliseconds and added to the CRL overlap time, if
+     *            set to how often this method is run (poll time), it can be
+     *            used to issue a new CRL if the current one expires within the
+     *            CRL overlap time (configured in CA) and the poll time. The
+     *            used CRL overlap time will be (crloverlaptime +
+     *            addtocrloverlaptime)
+     * 
+     * @return the number of crls created.
+     * @throws EJBException
+     *             if communication or system error occurrs
+     */
+    public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime) {
+        int createdcrls = 0;
+        try {
+            Iterator<Integer> iter = null;
+            if (caids != null) {
+                iter = caids.iterator();
+            }
+            if ((iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS)))) {
+                iter = caSession.getAvailableCAs().iterator();
+            }
+            while (iter.hasNext()) {
+                int caid = ((Integer) iter.next()).intValue();
+                log.debug("createCRLs for caid: " + caid);
+                CA ca = caSession.getCA(admin, caid);
+                if (runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
+                    createdcrls++;
+                }
+            }
+        } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("createcrl.erroravailcas");
+            log.error(msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
+            if (e instanceof EJBException) {
+                throw (EJBException) e;
+            }
+            throw new EJBException(e);
+        }
+        return createdcrls;
+    }
+    
+    /**
+     * Method that checks if there are any delta CRLs needed to be updated and
+     * then creates their delta CRLs. No overlap is used. This method can be
+     * called by a scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * 
+     * @return the number of delta crls created.
+     * @throws EJBException
+     *             if communication or system error happens
+     */
+    public int createDeltaCRLs(Admin admin) {
+        return createDeltaCRLs(admin, null, 0);
+    }
+
+   
+
+    /**
+     * Method that checks if there are any delta CRLs needed to be updated and
+     * then creates them. This method can be called by a scheduler or a service.
+     * 
+     * @param admin
+     *            administrator performing the task
+     * @param caids
+     *            list of CA ids (Integer) that will be checked, or null in
+     *            which case ALL CAs will be checked
+     * @param crloverlaptime
+     *            A new delta CRL is created if the current one expires within
+     *            the crloverlaptime given in milliseconds
+     * 
+     * @return the number of delta crls created.
+     * @throws EJBException
+     *             if communication or system error occurrs
+     */
+    public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime) {
+        int createddeltacrls = 0;
+        try {
+            Iterator<Integer> iter = null;
+            if (caids != null) {
+                iter = caids.iterator();
+            }
+            if ((iter == null) || (caids.contains(Integer.valueOf(SecConst.ALLCAS)))) {
+                iter = caSession.getAvailableCAs().iterator();
+            }
+            while (iter.hasNext()) {
+                int caid = iter.next().intValue();
+                log.debug("createDeltaCRLs for caid: " + caid);
+                CA ca = caSession.getCA(admin, caid);
+                if (runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
+                    createddeltacrls++;
+                }
+            }
+        } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("createcrl.erroravailcas");
+            log.error(msg, e);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
+            if (e instanceof EJBException) {
+                throw (EJBException) e;
+            }
+            throw new EJBException(e);
+        }
+        return createddeltacrls;
+    }
+
     
     /**
      * (Re-)Publish the last CRLs for a CA.

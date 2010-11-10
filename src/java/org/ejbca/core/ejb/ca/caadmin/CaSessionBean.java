@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -83,6 +84,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @EJB
     private LogSessionLocal logSession;
 
+    
+    
     /**
      * Makes sure that no CAs are cached to ensure that we read from database
      * next time we try to access it.
@@ -283,6 +286,34 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return ca;
     }
 
+    /**
+     * Method returning id's of all CA's available in the system database. Note
+     * that this method does not check for authorization and can thus leak
+     * information.
+     * 
+     * @return a Collection (Integer) of CA id's
+     */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Collection<Integer> getAvailableCAs() {
+        return CAData.findAllCaIds(entityManager);
+    }
+
+    /**
+     * Method returning id's of all CA's available to the system that the
+     * administrator is authorized to i.e. not having status "external" or
+     * "waiting for certificate response"
+     * 
+     * @param admin
+     *            The administrator
+     * @return a Collection<Integer> of available CA id's
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Collection<Integer> getAvailableCAs(Admin admin) {
+        return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
+    }
+    
     /**
      * Checks if the CA certificate has expired (or is not yet valid) and sets
      * CA status to expired if it has (and status is not already expired). Logs

@@ -19,7 +19,7 @@ import java.util.HashSet;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.SecConst;
@@ -45,18 +45,18 @@ public class HardTokenProfileDataHandler implements Serializable {
     private AuthorizationSession authorizationsession;
     private CertificateProfileSession certificateProfileSession;
     private UserAdminSession useradminsession;
-    private CAAdminSession caadminsession; 
+    private CaSession caSession; 
     private Admin administrator;
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
     public HardTokenProfileDataHandler(Admin administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AuthorizationSession authorizationsession, 
-                                       UserAdminSession useradminsession, CAAdminSession caadminsession, InformationMemory info) {
+                                       UserAdminSession useradminsession, CaSession caSession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
        this.certificateProfileSession = certificatesession;
        this.useradminsession = useradminsession;
-       this.caadminsession = caadminsession;
+       this.caSession = caSession;
        this.administrator = administrator;          
        this.info = info;       
     }
@@ -191,7 +191,7 @@ public class HardTokenProfileDataHandler implements Serializable {
             returnval = true; // yes authorized to everything
         } else {
             if (editcheck && authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles")) {      
-                HashSet<Integer> authorizedcaids = new HashSet<Integer>(caadminsession.getAvailableCAs(administrator));
+                HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
                 HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(administrator,
                         SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
                 if (profile instanceof EIDProfile) {

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.util.Collection;
+
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -26,14 +28,31 @@ import org.ejbca.core.model.log.Admin;
  */
 public interface CaSession {
 
- 
-
     /**
      * Makes sure that no CAs are cached to ensure that we read from database
      * next time we try to access it.
      */
     public void flushCACache();
 
+    /**
+     * Method returning id's of all CA's available to the system. i.e. not
+     * having status "external" or "waiting for certificate response"
+     * 
+     * @return a Collection (Integer) of available CA id's
+     */
+    public Collection<Integer> getAvailableCAs();
+
+    /**
+     * Method returning id's of all CA's available to the system that the
+     * administrator is authorized to i.e. not having status "external" or
+     * "waiting for certificate response"
+     * 
+     * @param admin
+     *            The administrator
+     * @return a Collection<Integer> of available CA id's
+     */
+    public Collection<Integer> getAvailableCAs(Admin admin);
+    
     /**
      * Get the CA object. Does not perform any authorization check. Checks if
      * the CA has expired or the certificate isn't valid yet and in that case

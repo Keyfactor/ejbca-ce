@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -66,14 +65,14 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
 		AuthorizationSession authorizationsession = ejb.getAuthorizationSession();
 		UserAdminSession useradminsession = ejb.getUserAdminSession();
 	CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
-		CAAdminSession caadminsession = ejb.getCAAdminSession();
+	
         keyrecoverysession = ejb.getKeyRecoverySession();
 		
         initialized=true;
         
         this.informationmemory = ejbcawebbean.getInformationMemory();
                       
-        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession, authorizationsession , useradminsession, caadminsession, informationmemory);
+        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession, authorizationsession , useradminsession, ejb.getCaSession(), informationmemory);
 		
       }
     }

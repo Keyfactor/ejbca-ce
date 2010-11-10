@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -34,6 +35,7 @@ import org.ejbca.util.CryptoProviderTools;
 public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
     private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
+    private CaSessionRemote caSession = ejb.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
     
 	public String getMainCommand() { return MAINCOMMAND; }
@@ -80,7 +82,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			cas = caAdminSession.getAvailableCAs(getAdmin());
+			cas = caSession.getAvailableCAs(getAdmin());
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {

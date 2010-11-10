@@ -494,10 +494,48 @@
 				</classpath>
 			</javac>
 
+			<!-- CA Admin component -->
+			<echo message=" ** Validating component: CA Admin (Excluding CAAdminSessionBean!) **" />
+			<mkdir dir="${src-temp.dir}/caadmin" />
+			<mkdir dir="${build-temp.dir}/caadmin" />
+			<copy todir="${src-temp.dir}/caadmin">
+				<fileset dir="${src-ejbca-ejb-interface.dir}">
+					<include name="org/ejbca/core/ejb/ca/caadmin/*Session*.java" />
+				</fileset>
+				<fileset dir="${src-ejbca-entity.dir}">
+					<include name="org/ejbca/core/ejb/ca/caadmin/CAData.java" />
+				</fileset>
+				<fileset dir="${src.dir}">
+					<!-- Depends on things that depends in Ejb*Helper
+				    			<include name="org/ejbca/core/ejb/ca/caadmin/CAAdminSessionBean.java"/>
+				    			-->
+					<include name="org/ejbca/core/model/ca/caadmin/*.java" />
+					<include name="org/ejbca/core/protocol/X509ResponseMessage.java" />
+					<!-- Depends on EjbRemoteHelper and EjbLocalHelper -->
+					<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java" />
+					<exclude name="org/ejbca/core/protocol/ocsp/CertificateCacheInternal.java" />
+				</fileset>
+			</copy>
+			<javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
+				<classpath>
+					<path refid="compile-util.classpath" />
+					<pathelement location="${build-temp.dir}/common" />
+					<pathelement location="${build-temp.dir}/admins" />
+					<pathelement location="${build-temp.dir}/ca" />
+					<pathelement location="${build-temp.dir}/logging" />
+					<pathelement location="${build-temp.dir}/authorization" />
+					<pathelement location="${build-temp.dir}/catoken" />
+					<pathelement location="${build-temp.dir}/certstore" />
+					<pathelement location="${build-temp.dir}/certprof" />
+					<pathelement location="${build-temp.dir}/approval" />
+					<pathelement location="${build-temp.dir}/publish" />
+				</classpath>
+			</javac>
+
 			<!-- CRL component -->
-			<echo message=" ** Validating component: CRL **"/>
-			<mkdir dir="${src-temp.dir}/crl"/>
-			<mkdir dir="${build-temp.dir}/crl"/>
+			<echo message=" ** Validating component: CRL **" />
+			<mkdir dir="${src-temp.dir}/crl" />
+			<mkdir dir="${build-temp.dir}/crl" />
 			<copy todir="${src-temp.dir}/crl">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/cesecore/core/ejb/ca/crl/Crl*Session*.java"/>
@@ -516,6 +554,7 @@
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
 					<pathelement location="${build-temp.dir}/ca"/>
+					<pathelement location="${build-temp.dir}/caadmin"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 					<pathelement location="${build-temp.dir}/authorization"/>
 					<pathelement location="${build-temp.dir}/catoken"/>
@@ -524,45 +563,7 @@
 				</classpath>
 			</javac>
 
-			<!-- CA Admin component -->
-			<echo message=" ** Validating component: CA Admin (Excluding CAAdminSessionBean!) **"/>
-			<mkdir dir="${src-temp.dir}/caadmin"/>
-			<mkdir dir="${build-temp.dir}/caadmin"/>
-			<copy todir="${src-temp.dir}/caadmin">
-				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/ejbca/core/ejb/ca/caadmin/*Session*.java"/>
-				</fileset>
-				<fileset dir="${src-ejbca-entity.dir}">
-					<include name="org/ejbca/core/ejb/ca/caadmin/CAData.java"/>
-				</fileset>
-				<fileset dir="${src.dir}">
-					<!-- Depends on things that depends in Ejb*Helper
-    			<include name="org/ejbca/core/ejb/ca/caadmin/CAAdminSessionBean.java"/>
-    			-->
-					<include name="org/ejbca/core/model/ca/caadmin/*.java"/>
-					<include name="org/ejbca/core/protocol/X509ResponseMessage.java"/>
-					<!-- Depends on EjbRemoteHelper and EjbLocalHelper -->
-					<exclude name="org/ejbca/core/model/approval/approvalrequests/ActivateCATokenApprovalRequest.java"/>
-					<exclude name="org/ejbca/core/protocol/ocsp/CertificateCacheInternal.java"/>
-				</fileset>
-			</copy>
-			<javac srcdir="${src-temp.dir}/caadmin" destdir="${build-temp.dir}/caadmin" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-				<classpath>
-					<path refid="compile-util.classpath"/>
-					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/admins"/>
-					<pathelement location="${build-temp.dir}/ca"/>
-					<pathelement location="${build-temp.dir}/logging"/>
-					<pathelement location="${build-temp.dir}/authorization"/>
-					<pathelement location="${build-temp.dir}/catoken"/>
-					<pathelement location="${build-temp.dir}/certstore"/>
-					<pathelement location="${build-temp.dir}/certprof"/>
-					<pathelement location="${build-temp.dir}/approval"/>
-					<pathelement location="${build-temp.dir}/crl"/>
-					<pathelement location="${build-temp.dir}/publish"/>
-				</classpath>
-			</javac>
+
 
 			<!-- Signing component -->
 			<echo message=" ** Validating component: Signing **"/>

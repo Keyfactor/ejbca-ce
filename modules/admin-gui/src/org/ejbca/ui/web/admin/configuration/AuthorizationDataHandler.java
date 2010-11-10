@@ -22,6 +22,7 @@ import org.cesecore.core.ejb.authorization.AdminEntitySession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -43,7 +44,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     
     private static final Logger log = Logger.getLogger(AuthorizationDataHandler.class);
     
-    private CAAdminSession caAdminSession; 
+    private CaSession caSession;
     private AuthorizationSession authorizationsession;
     private AdminEntitySession adminEntitySession;
     private AdminGroupSession adminGroupSession;
@@ -53,13 +54,13 @@ public class AuthorizationDataHandler implements java.io.Serializable {
 
     /** Creates a new instance of ProfileDataHandler */
     public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AdminEntitySession adminEntitySession,
-            AdminGroupSession adminGroupSession, AuthorizationSession authorizationsession, CAAdminSession caAdminSession) {
+            AdminGroupSession adminGroupSession, AuthorizationSession authorizationsession, CaSession caSession) {
         this.adminEntitySession = adminEntitySession;
         this.adminGroupSession = adminGroupSession;
         this.authorizationsession = authorizationsession;
-        this.caAdminSession = caAdminSession;
         this.administrator = administrator;
         this.informationmemory = informationmemory;
+        this.caSession = caSession;
     }
 
     /**
@@ -120,7 +121,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      */
     public Collection<AdminGroup> getAdminGroupNames(){ 
       if (this.authorizedadmingroups==null) {
-        this.authorizedadmingroups = adminGroupSession.getAuthorizedAdminGroupNames(administrator, caAdminSession.getAvailableCAs(administrator));    
+        this.authorizedadmingroups = adminGroupSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator));    
       }
       return this.authorizedadmingroups;
     }
