@@ -309,3 +309,14 @@ function checkuseautoenroll(){
         
       </td>
     </tr>
+
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES\") %>"/></h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHESHELPER\") %>"/></p>
+      </td>
+      <td width="51%" valign="top">
+          <input type="submit" name="<%= BUTTON_CLEAR_ALL_CACHES %>" value="<c:out value="<%= ejbcawebbean.getText(\"CLEARALLCACHES\") %>"/>" />
+        
+      </td>
+    </tr>

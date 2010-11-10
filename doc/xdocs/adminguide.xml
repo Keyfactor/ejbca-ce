@@ -1834,8 +1834,13 @@ isn't specified by the worker.
 </p>
 </subsubsection>
 <subsubsection name="Pin to Specific Node(s)">
-<p>With this option it is possible to choose on which nodes the service is allowed to execute. By not choosing any nodes in the list the service can be executed on any of the nodes.</p>
+<p>With this option, it is possible to choose on which nodes the service is allowed to execute. By not choosing any nodes in the list the service can be executed on any of the nodes.</p>
 <p>On startup of EJBCA each node adds its hostname to the list of nodes. The list can also be manually edited on the System Configuration page.</p>
+</subsubsection>
+<subsubsection name="Clear All Caches">
+<p>This butten is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
+nodes in this cluster. In order for this to work, the operation system should be configured to map the names of the nodes to their IP addresses. The configuration should be done on all 
+the nodes in the cluster.</p>
 </subsubsection>
 </subsection>
 
