@@ -22,6 +22,7 @@
   static final String BUTTON_CANCEL                          = "buttoncancel";
   static final String BUTTON_NODES_ADD						 = "buttonnodesadd";
   static final String BUTTON_NODES_REMOVE					 = "buttonnodesremove";
+  static final String BUTTON_CLEAR_ALL_CACHES				 = "buttonclearallcaches";
 
 // Textfields used in webconfiguration.jsp
   static final String TEXTFIELD_TITLE                        = "textfieldtitle";
@@ -219,6 +220,8 @@
      		gc.setNodesInCluster(nodes);
      		ejbcawebbean.saveGlobalConfiguration();
      	}
+     } else if (request.getParameter(BUTTON_CLEAR_ALL_CACHES) != null) {
+    	 ejbcawebbean.clearClusterCache();
      }
 
      if(request.getParameter(BUTTON_SAVE) == null &&
