@@ -118,19 +118,13 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         }
         issuerDN = cacert.getIssuerDN().getName();
         // Configure CMP for this test
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
-        log.info("Current server configuration:");
-        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
-        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
-        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
-        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
+        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBEPASSWORD);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
     }
 
     public void setUp() throws Exception {
@@ -161,9 +155,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         checkCmpCertRepMessage(userDN, cacert, resp, reqId);
     }
 
@@ -187,9 +179,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 
         // Send a confirm message to the CA
@@ -202,9 +192,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
     }
 
@@ -216,7 +204,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] senderNonce = req.getHeader().getSenderNonce().getOctets();
         byte[] transId = req.getHeader().getTransactionID().getOctets();
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-        checkCmpResponseGeneral(resp, issuerDN, "CN=Some Common Name", cacert, senderNonce, transId, true, false);
+        checkCmpResponseGeneral(resp, issuerDN, "CN=Some Common Name", cacert, senderNonce, transId, true, null);
         checkCmpCertRepMessage(userDN, cacert, resp, reqId);
     }
 
@@ -234,9 +222,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received an unathenticated message in RA mode.");
     }
 
@@ -255,9 +241,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received CMP message with unknown protection alg: 1.2.840.113533.7.66.13.7.");
     }
 
@@ -284,9 +268,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, true, false);
+        checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, true, null);
         checkCmpCertRepMessage(subjectDN, cacert, resp, reqId);
 
         // Send a confirm message to the CA
@@ -299,9 +281,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpTcp(ba, 5);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, false);
+        checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null);
         checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
 
     }

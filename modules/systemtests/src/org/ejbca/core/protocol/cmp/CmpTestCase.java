@@ -47,8 +47,6 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -72,6 +70,7 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -112,7 +111,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * @version $Id$
  *
  */
-public class CmpTestCase extends TestCase {
+public class CmpTestCase extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CmpTestCase.class);
     
@@ -418,8 +417,10 @@ public class CmpTestCase extends TestCase {
         }
     }
 
-    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
-            boolean signed, boolean pbe) throws Exception {
+    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, Certificate cacert, byte[] senderNonce, byte[] transId, boolean signed, String pbeSecret) throws Exception {
+    	assertNotNull("No response from server.", retMsg);
+    	assertTrue("Response was of 0 length.", retMsg.length > 0);
+    	boolean pbe = (pbeSecret!=null);
         //
         // Parse response message
         //
@@ -437,7 +438,7 @@ public class CmpTestCase extends TestCase {
         }
         if (pbe) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
-            assertNotNull(algId);
+            assertNotNull("Protection algorithm was null.", algId);
             assertEquals("Protection algorithm id: " + algId.getObjectId().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId.getObjectId().getId());	//1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
         }
 
@@ -492,8 +493,7 @@ public class CmpTestCase extends TestCase {
             log.debug("Mac type is: " + macAlg.getObjectId().getId());
             byte[] salt = pp.getSalt().getOctets();
             // log.info("Salt is: "+new String(salt));
-            String raAuthenticationSecret = "password";
-            byte[] raSecret = raAuthenticationSecret.getBytes();
+            byte[] raSecret = pbeSecret.getBytes();
             byte[] basekey = new byte[raSecret.length + salt.length];
             for (int i = 0; i < raSecret.length; i++) {
                 basekey[i] = raSecret[i];
@@ -689,9 +689,9 @@ public class CmpTestCase extends TestCase {
         assertNotNull(n);
         PKIStatusInfo info = n.getPKIStatusInfo(0);
         if (success) {
-            assertEquals(info.getStatus().getValue().intValue(), 0);
+            assertEquals("If the revocation was successful, status should be 0.", 0, info.getStatus().getValue().intValue());
         } else {
-            assertEquals(info.getStatus().getValue().intValue(), 2);
+            assertEquals("If the revocation was unsuccessful, status should be 2.", 2, info.getStatus().getValue().intValue());
         }
 
     }
@@ -793,6 +793,11 @@ public class CmpTestCase extends TestCase {
         ret = info.revocationReason;
         return ret;
     }
+
+	protected void updatePropertyOnServer(String property, String value) {
+		log.debug("Setting property on server: " + property + "=" + value);
+		assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"", InterfaceCache.getConfigurationSession().updateProperty(property, value));
+	}
 
     //
     // Private methods

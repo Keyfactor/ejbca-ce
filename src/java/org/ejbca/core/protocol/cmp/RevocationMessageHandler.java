@@ -14,12 +14,11 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
-import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,11 +28,13 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalResources;
@@ -41,6 +42,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -52,7 +55,6 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.cmp.RevDetails;
 import com.novosec.pkix.asn1.cmp.RevReqContent;
@@ -63,53 +65,77 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
  * @author tomas
  * @version $Id$
  */
-public class RevocationMessageHandler implements ICmpMessageHandler {
+public class RevocationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
-	private static Logger log = Logger.getLogger(RevocationMessageHandler.class);
+	private static final Logger LOG = Logger.getLogger(RevocationMessageHandler.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources INTRES = InternalResources.getInstance();
 	
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
-	private Admin admin;
 	private UserAdminSession userAdminSession;
 	private CertificateStoreSession certificateStoreSession;
 	
-	public RevocationMessageHandler(Admin admin, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession) throws CreateException, RemoteException {
+	public RevocationMessageHandler(Admin admin, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+		super(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
-		this.admin = admin;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		this.userAdminSession = userAdminSession;
 		this.certificateStoreSession = certificateStoreSession;
 
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		log.trace(">handleMessage");
+		LOG.trace(">handleMessage");
 		IResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		// Try to find a HMAC/SHA1 protection key
 		String owfAlg = null;
 		String macAlg = null;
-		String keyId = null;
 		int iterationCount = 1024;
-		PKIHeader head = msg.getHeader();
-		DEROctetString os = head.getSenderKID();
-		if (os != null) {
-			keyId = new String(os.getOctets());
-			log.debug("Found a sender keyId: "+keyId);
+		String cmpRaAuthSecret = null;
+		String keyId = getSenderKeyId(msg.getHeader());
+		if (keyId != null) {
 			try {
 				ResponseStatus status = ResponseStatus.FAILURE;
 				FailInfo failInfo = FailInfo.BAD_MESSAGE_CHECK;
 				String failText = null;
-				CmpPbeVerifyer verifyer = new CmpPbeVerifyer(raAuthenticationSecret, msg.getMessage());				
-				boolean ret = verifyer.verify();
+				CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());				
 				owfAlg = verifyer.getOwfOid();
 				macAlg = verifyer.getMacOid();
 				iterationCount = verifyer.getIterationCount();
+				boolean ret = true;
+				if (raAuthenticationSecret != null) {
+					if (!verifyer.verify(raAuthenticationSecret)) {
+						ret = false;
+					}
+					cmpRaAuthSecret = raAuthenticationSecret;
+				} else {
+					// Get the correct profiles' and CA ids based on current configuration. 
+					CAInfo caInfo;
+					try {
+						int eeProfileId = getUsedEndEntityProfileId(keyId);
+						int caId = getUsedCaId(keyId, eeProfileId);
+						caInfo = caAdminSession.getCAInfo(admin, caId);
+					} catch (NotFoundException e) {
+						LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+						return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+					} catch (EJBException e) {
+						final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
+						LOG.error(errMsg, e);                   
+						return null;    // Fatal error
+					}
+					if (caInfo instanceof X509CAInfo) {
+						cmpRaAuthSecret = ((X509CAInfo) caInfo).getCmpRaAuthSecret();
+					}
+					// Now we know which CA the request is for, if we didn't use a global shared secret we can check it now!
+					if (cmpRaAuthSecret == null || !verifyer.verify(cmpRaAuthSecret)) {
+						ret = false;
+					}
+				}
 				if (ret) {
 					// If authentication was correct, we will now try to find the certificate to revoke
 					PKIMessage pkimsg = msg.getMessage();
@@ -126,9 +152,9 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 					DERBitString reasonbits = rd.getRevocationReason();
 					if (reasonbits != null) {
 						reason = CertTools.bitStringToRevokedCertInfo(reasonbits);						
-						log.debug("CMPv1 revocation reason: "+reason);
+						LOG.debug("CMPv1 revocation reason: "+reason);
 					} else {
-						log.debug("CMPv1 revocation reason is null");
+						LOG.debug("CMPv1 revocation reason is null");
 					}
 					X509Extensions crlExt = rd.getCrlEntryDetails();
 					if (crlExt != null) {
@@ -140,62 +166,62 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 								DEREnumerated crlreason = DEREnumerated.getInstance(obj);
 								// RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code
 								reason = crlreason.getValue().intValue();
-								log.debug("CRLReason extension: "+reason);
+								LOG.debug("CRLReason extension: "+reason);
 							} catch (IOException e) {
-								log.info("Exception parsin CRL reason extension: ", e);
+								LOG.info("Exception parsin CRL reason extension: ", e);
 							}
 						} else {
-							log.debug("No CRL reason code extension present.");
+							LOG.debug("No CRL reason code extension present.");
 						}
 					} else {
-						log.debug("No CRL entry extensions present");
+						LOG.debug("No CRL entry extensions present");
 					}
 					
 					if ( (serno != null) && (issuer != null) ) {
-						String iMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
-						log.info(iMsg);
+						String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
+						LOG.info(iMsg);
 						try {
 							String username = certificateStoreSession.findUsernameByCertSerno(admin, serno.getValue(), issuer.toString());
 							userAdminSession.revokeCert(admin, serno.getValue(), issuer.toString(), username, reason);
 							status = ResponseStatus.SUCCESS;
 						} catch (AuthorizationDeniedException e) {
 							failInfo = FailInfo.NOT_AUTHORIZED;
-							String errMsg = intres.getLocalizedMessage("cmp.errornotauthrevoke", issuer.toString(), serno.getValue().toString(16));
+							String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", issuer.toString(), serno.getValue().toString(16));
 							failText = errMsg; 
-							log.error(failText);
+							LOG.error(failText);
 						} catch (FinderException e) {
 							failInfo = FailInfo.BAD_CERTIFICATE_ID;
-							String errMsg = intres.getLocalizedMessage("cmp.errorcertnofound", issuer.toString(), serno.getValue().toString(16));
+							String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", issuer.toString(), serno.getValue().toString(16));
 							failText = errMsg; 
-							log.error(failText);
+							LOG.error(failText);
 						} catch (WaitingForApprovalException e) {
 							status = ResponseStatus.GRANTED_WITH_MODS;
 						} catch (ApprovalException e) {
 							failInfo = FailInfo.BAD_REQUEST;
-							String errMsg = intres.getLocalizedMessage("cmp.erroralreadyrequested");
+							String errMsg = INTRES.getLocalizedMessage("cmp.erroralreadyrequested");
 							failText = errMsg; 
-							log.error(failText);
+							LOG.error(failText);
 						} catch (AlreadyRevokedException e) {
 							failInfo = FailInfo.BAD_REQUEST;
-							String errMsg = intres.getLocalizedMessage("cmp.erroralreadyrevoked");
+							String errMsg = INTRES.getLocalizedMessage("cmp.erroralreadyrevoked");
 							failText = errMsg; 
-							log.error(failText);
+							LOG.error(failText);
 						}
 					} else {
 						failInfo = FailInfo.BAD_CERTIFICATE_ID;
-						String errMsg = intres.getLocalizedMessage("cmp.errormissingissuerrevoke", issuer.toString(), serno.getValue().toString(16));
+						String errMsg = INTRES.getLocalizedMessage("cmp.errormissingissuerrevoke", issuer.toString(), serno.getValue().toString(16));
 						failText = errMsg; 
-						log.error(failText);
+						LOG.error(failText);
 					}
 				} else {
-					String errMsg = intres.getLocalizedMessage("cmp.errorauthmessage");
-					log.error(errMsg);
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage");
+					LOG.error(errMsg);
 					failText = errMsg;
 					if (verifyer.getErrMsg() != null) {
 						failText = verifyer.getErrMsg();
 					}
 				}
-				log.debug("Creating a PKI revocation message response");
+				LOG.debug("Creating a PKI revocation message response");
 				CmpRevokeResponseMessage rresp = new CmpRevokeResponseMessage();
 				rresp.setRecipientNonce(msg.getSenderNonce());
 				rresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
@@ -206,44 +232,44 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 				rresp.setFailText(failText);
 				rresp.setStatus(status);
 	    		// Set all protection parameters
-				log.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+raAuthenticationSecret);
-	    		if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (raAuthenticationSecret != null) ) {
-	    			rresp.setPbeParameters(keyId, raAuthenticationSecret, owfAlg, macAlg, iterationCount);
+				LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+	    		if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
+	    			rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
 	    		}
 	    		resp = rresp;
 				try {
 					resp.create();
 				} catch (InvalidKeyException e) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-					log.error(errMsg, e);			
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+					LOG.error(errMsg, e);			
 				} catch (NoSuchAlgorithmException e) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-					log.error(errMsg, e);			
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+					LOG.error(errMsg, e);			
 				} catch (NoSuchProviderException e) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-					log.error(errMsg, e);			
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+					LOG.error(errMsg, e);			
 				} catch (SignRequestException e) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-					log.error(errMsg, e);			
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+					LOG.error(errMsg, e);			
 				} catch (NotFoundException e) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-					log.error(errMsg, e);			
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+					LOG.error(errMsg, e);			
 				} catch (IOException e) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
-					log.error(errMsg, e);			
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
+					LOG.error(errMsg, e);			
 				}							
 
 			} catch (NoSuchAlgorithmException e) {
-				String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
-				log.error(errMsg, e);			
+				String errMsg = INTRES.getLocalizedMessage("cmp.errorcalcprotection");
+				LOG.error(errMsg, e);			
 				resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 			} catch (NoSuchProviderException e) {
-				String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
-				log.error(errMsg, e);			
+				String errMsg = INTRES.getLocalizedMessage("cmp.errorcalcprotection");
+				LOG.error(errMsg, e);			
 				resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 			} catch (InvalidKeyException e) {
-				String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
-				log.error(errMsg, e);			
+				String errMsg = INTRES.getLocalizedMessage("cmp.errorcalcprotection");
+				LOG.error(errMsg, e);			
 				resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 			/*} catch (RemoteException e) {
 				// Fatal error
@@ -253,7 +279,7 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 			}							
 		} else {
 			// If we don't have any protection to verify, we fail
-			String errMsg = intres.getLocalizedMessage("cmp.errornoprot");
+			String errMsg = INTRES.getLocalizedMessage("cmp.errornoprot");
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
 		}
 		

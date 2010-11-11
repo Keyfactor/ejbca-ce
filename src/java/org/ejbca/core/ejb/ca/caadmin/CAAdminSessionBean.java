@@ -1522,7 +1522,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC, signedby, null, null, description, -1,
@@ -2355,7 +2356,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
             ca = new X509CA((X509CAInfo) cainfo);
         } else if (caSignatureCertificate.getType().equals("CVC")) {

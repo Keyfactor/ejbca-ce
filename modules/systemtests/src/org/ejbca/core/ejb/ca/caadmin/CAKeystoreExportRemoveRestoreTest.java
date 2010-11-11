@@ -539,7 +539,8 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 true, // useCertReqHistory
                 true, // useUserStorage
-                true // useCertificateStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
         );
         return cainfo;
     }

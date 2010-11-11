@@ -50,7 +50,7 @@ public class X509CAInfo extends CAInfo{
   private boolean useLdapDNOrder;
   private boolean useCrlDistributionPointOnCrl;
   private boolean crlDistributionPointOnCrlCritical;
-
+  private String cmpRaAuthSecret;
     
     /**
      * Constructor that should be used when creating CA and retrieving CA info.
@@ -64,7 +64,7 @@ public class X509CAInfo extends CAInfo{
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                     boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
                     boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-                    boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
+                    boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, String _cmpRaAuthSecret) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -126,6 +126,7 @@ public class X509CAInfo extends CAInfo{
         this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
+        this.cmpRaAuthSecret = _cmpRaAuthSecret;
     }
 
     /**
@@ -141,7 +142,7 @@ public class X509CAInfo extends CAInfo{
                       boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                       boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
                       boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
-                      boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
+                      boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, String _cmpRaAuthSecret) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -175,6 +176,7 @@ public class X509CAInfo extends CAInfo{
         this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
+        this.cmpRaAuthSecret = _cmpRaAuthSecret;
     }
   
   
@@ -232,4 +234,8 @@ public class X509CAInfo extends CAInfo{
   public boolean getCrlDistributionPointOnCrlCritical() {
       return this.crlDistributionPointOnCrlCritical;
   }
+  
+  public String getCmpRaAuthSecret() { return cmpRaAuthSecret; }
+  public void setCmpRaAuthSecret(String cmpRaAuthSecret) { this.cmpRaAuthSecret = cmpRaAuthSecret; }
+  
 }

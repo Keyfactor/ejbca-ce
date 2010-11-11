@@ -108,6 +108,7 @@
   static final String TEXTFIELD_IMPORTCA_SIGKEYALIAS  = "textfieldimportcasigkeyalias";
   static final String TEXTFIELD_IMPORTCA_ENCKEYALIAS  = "textfieldimportcaenckeyalias";
   static final String TEXTFIELD_IMPORTCA_NAME		  = "textfieldimportcaname";
+  static final String TEXTFIELD_SHAREDCMPRASECRET     = "textfieldsharedcmprasecret";
 
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
@@ -645,6 +646,8 @@
              value = request.getParameter(CHECKBOX_ACTIVATECMSSERVICE);
              if(value != null && value.equals(CHECKBOX_VALUE))
                 cmsactive = ExtendedCAServiceInfo.STATUS_ACTIVE; 
+
+             final String sharedCmpRaSecret = request.getParameter(TEXTFIELD_SHAREDCMPRASECRET);
              
              if(crlperiod != 0 && !illegaldnoraltname){
             	 
@@ -700,7 +703,8 @@
                                                         isDoEnforceUniqueSubjectDNSerialnumber,
                                                         useCertReqHistory,
                                                         useUserStorage,
-                                                        useCertificateStorage);
+                                                        useCertificateStorage,
+                                                        sharedCmpRaSecret);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -779,7 +783,8 @@
                                                         isDoEnforceUniqueSubjectDNSerialnumber,
                                                         useCertReqHistory,
                                                         useUserStorage,
-                                                        useCertificateStorage);
+                                                        useCertificateStorage,
+                                                        null);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -1098,7 +1103,9 @@
               extendedcaservices.add(
   		             new CmsCAServiceInfo(cmsactive, cmsrenew)); 
 
-               cainfo = new X509CAInfo(caid, validity,
+              final String sharedCmpRaSecret = request.getParameter(TEXTFIELD_SHAREDCMPRASECRET);
+
+              cainfo = new X509CAInfo(caid, validity,
                                                       catoken, description, 
                                                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
                                                       useauthoritykeyidentifier, 
@@ -1122,7 +1129,8 @@
                                                       isDoEnforceUniqueSubjectDNSerialnumber,
                                                       useCertReqHistory,
                                                       useUserStorage,
-                                                      useCertificateStorage);
+                                                      useCertificateStorage,
+                                                      sharedCmpRaSecret);
              } // if(catype == CAInfo.CATYPE_X509)
             	 
              // Info specific for CVC CA
@@ -1489,7 +1497,8 @@
                                                         isDoEnforceUniqueSubjectDNSerialnumber,
                                                         useCertReqHistory,
                                                         useUserStorage,
-                                                        useCertificateStorage);
+                                                        useCertificateStorage,
+                                                        null);
                }                               
                }
              } // if(catype == CAInfo.CATYPE_X509)
