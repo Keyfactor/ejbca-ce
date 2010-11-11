@@ -1840,7 +1840,9 @@ isn't specified by the worker.
 <subsubsection name="Clear All Caches">
 <p>This butten is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
 nodes in this cluster. In order for this to work, the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
-the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.</p>
+the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
+<br/>Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list. Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address.
+</p>
 </subsubsection>
 </subsection>
 
