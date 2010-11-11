@@ -32,7 +32,6 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.log.Admin;
@@ -42,8 +41,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Servlet used to clear all caches (Global Configuration Cache, End Entity Profile Cache, 
  * Certificate Profile Cache, Log Configuration Cache, Authorization Cache and CA Cache).
  *
- * 
- * @author aveen Ismail
+ * @author Aveen Ismail
  * 
  * @version $Id$
  */
@@ -76,17 +74,17 @@ public class ClearCacheServlet extends HttpServlet {
 
 	public void doGet(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
-        log.trace(">doGet()");
+		if (log.isTraceEnabled()) {
+			log.trace(">doGet()");
+		}
         
         if (StringUtils.equals(req.getParameter("command"), "clearcaches")) {
-
             if(!acceptedHost(req.getRemoteHost())) {
         		if (log.isDebugEnabled()) {
         			log.debug("Clear cache request denied from host "+req.getRemoteHost());
         		}
-        		res.sendError(HttpServletResponse.SC_BAD_REQUEST, "The remote host "+req.getRemoteHost()+" is unknown");
-        	} else {
-       
+        		res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The remote host "+req.getRemoteHost()+" is unknown");
+        	} else {       
         		raadminsession.flushGlobalConfigurationCache();
         		if(log.isDebugEnabled()){
         			log.debug("Global Configuration cache cleared");
@@ -117,22 +115,41 @@ public class ClearCacheServlet extends HttpServlet {
         			log.debug("CA cache cleared");
         		}
         	}
+        } else {
+    		if (log.isDebugEnabled()) {
+    			log.debug("No clearcaches command (?command=clearcaches) received, returning bad request.");
+    		}
+			res.sendError(HttpServletResponse.SC_BAD_REQUEST, "No command.");
         }
-        log.trace("<doGet()");
+		if (log.isTraceEnabled()) {
+			log.trace("<doGet()");
+		}
     }
 
-    private boolean acceptedHost(String remotehost) {
-    	
+	private boolean acceptedHost(String remotehost) {
+		if (log.isTraceEnabled()) {
+			log.trace(">acceptedHost: "+remotehost);
+		}    	
+		boolean ret = false;
 		GlobalConfiguration gc = raadminsession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
-    	Set nodes = gc.getNodesInCluster();
-		Iterator itr = nodes.iterator();
+		Set<String> nodes = gc.getNodesInCluster();
+		Iterator<String> itr = nodes.iterator();
 		String nodename = null;
-		while(itr.hasNext()){
-			nodename = (String) itr.next();
+		while (itr.hasNext()) {
+			nodename = itr.next();
 			try {
-				if(StringUtils.equals(remotehost, InetAddress.getByName(nodename).getHostAddress()))	return true;
-			} catch (UnknownHostException e) {}
+				if (StringUtils.equals(remotehost, InetAddress.getByName(nodename).getHostAddress())) {
+					ret = true;
+				}
+			} catch (UnknownHostException e) {
+				if (log.isDebugEnabled()) {
+					log.debug("Unknown host '"+nodename+"': "+e.getMessage());
+				}
+			}
 		}
-		return false;
-    }
+		if (log.isTraceEnabled()) {
+			log.trace("<acceptedHost: "+ret);
+		}
+		return ret;
+	}
 }

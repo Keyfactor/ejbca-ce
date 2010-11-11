@@ -36,15 +36,6 @@
         <url-pattern>/autoenroll</url-pattern>
     </servlet-mapping>
     
-    <servlet>
-        <servlet-name>ClearCacheServlet</servlet-name>
-        <servlet-class>org.ejbca.ui.web.pub.ClearCacheServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ClearCacheServlet</servlet-name>
-        <url-pattern>/clearcache</url-pattern>
-    </servlet-mapping>    
-
 <!--
     <servlet>
         <servlet-name>DemoCertReqServlet</servlet-name>
