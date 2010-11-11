@@ -19,7 +19,6 @@ import java.util.HashSet;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -33,15 +32,13 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  * currently from a database.
  * 
  * @author TomSelleck
- * @version $Id: CertificateProfileDataHandler.java 9553 2010-07-27 15:08:36Z
- *          jeklund $
+ * @version $Id$
  */
 public class CertificateProfileDataHandler implements Serializable {
 
     private static final long serialVersionUID = 6293364591292667934L;
 
     private AuthorizationSession authorizationsession;
-    private CAAdminSession caadminsession;
     private CaSession caSession;
     private Admin administrator;
     private InformationMemory info;
@@ -50,10 +47,10 @@ public class CertificateProfileDataHandler implements Serializable {
     public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY = SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY;
 
     /** Creates a new instance of CertificateProfileDataHandler */
-    public CertificateProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CAAdminSession caadminsession, CaSession caSession,
+    public CertificateProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession,
             CertificateProfileSession certificateProfileSession, InformationMemory info) {
         this.authorizationsession = authorizationsession;
-        this.caadminsession = caadminsession;
+        this.caSession = caSession;
         this.administrator = administrator;
         this.certificateProfileSession = certificateProfileSession;
         this.info = info;
