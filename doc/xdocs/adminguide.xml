@@ -699,6 +699,19 @@ cmp.ra.certificateprofile=CMP_CERT
 cmp.ra.caname=AdminCA1
 </source>
 </subsubsection>
+
+<subsubsection name="Using one authentication secret per CA">
+<p>
+Edit each CAs that should be used for CMP certificate issuance and enter new CMP RA Authentication Secret.
+The global secret in cmp.properties has to be commented out (and applied to EJBCA by rebuilding and redploying).
+</p>
+<source>
+#cmp.ra.authenticationsecret=
+</source>
+<p>
+This property will otherwise override the CA specific configuration. 
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="Certificate validity">

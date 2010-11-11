@@ -38,52 +38,54 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  * @version $Id$
  */
 public class CmpPbeVerifyer {
-	private static Logger log = Logger.getLogger(CmpPbeVerifyer.class);
+	private static final Logger LOG = Logger.getLogger(CmpPbeVerifyer.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources INTRES = InternalResources.getInstance();
 
-	private PKIMessage msg = null;
-	private String raAuthenticationSecret = null;
+    private byte[] protectedBytes = null;
+    private DERBitString protection = null;
+	private AlgorithmIdentifier pAlg = null;
 	private String errMsg = null;
 	private String owfOid = null;
 	private String macOid = null;
 	private int iterationCount = 1024;
+	private byte[] salt = null;
+	private String lastUsedRaSecret = null;
 	
-	public CmpPbeVerifyer(String key, PKIMessage msg) {
-		this.raAuthenticationSecret = key;
-		this.msg = msg;
+	public CmpPbeVerifyer(PKIMessage msg) {
+		PKIHeader head = msg.getHeader();
+		protectedBytes = msg.getProtectedBytes();
+		protection = msg.getProtection();
+		pAlg = head.getProtectionAlg();
+		LOG.debug("Protection type is: "+pAlg.getObjectId().getId());
+		PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
+		iterationCount = pp.getIterationCount().getPositiveValue().intValue();
+		LOG.debug("Iteration count is: "+iterationCount);
+		AlgorithmIdentifier owfAlg = pp.getOwf();
+		// Normal OWF alg is 1.3.14.3.2.26 - SHA1
+		owfOid = owfAlg.getObjectId().getId();
+		LOG.debug("Owf type is: "+owfOid);
+		AlgorithmIdentifier macAlg = pp.getMac();
+		// Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
+		macOid = macAlg.getObjectId().getId();
+		LOG.debug("Mac type is: "+macOid);
+		salt = pp.getSalt().getOctets();
+		//log.info("Salt: "+new String(salt));
 	}
 	
-	public boolean verify() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+	public boolean verify(String raAuthenticationSecret) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+		lastUsedRaSecret = raAuthenticationSecret;
 		boolean ret = false;
 		// Verify the PasswordBased protection of the message
-		PKIHeader head = msg.getHeader();
-		byte[] protectedBytes = msg.getProtectedBytes();
-		DERBitString protection = msg.getProtection();
-		AlgorithmIdentifier pAlg = head.getProtectionAlg();
-		log.debug("Protection type is: "+pAlg.getObjectId().getId());
 		if (!pAlg.getObjectId().equals(CMPObjectIdentifiers.passwordBasedMac)) {
-			errMsg = intres.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getObjectId().getId());
-			log.error(errMsg);
+			errMsg = INTRES.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getObjectId().getId());
+			LOG.error(errMsg);
 			return ret;
 		} else {
-			PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
-			iterationCount = pp.getIterationCount().getPositiveValue().intValue();
-			log.debug("Iteration count is: "+iterationCount);
 			if (iterationCount > 10000) {
-				log.info("Received message with too many iterations in PBE protection: "+iterationCount);
+				LOG.info("Received message with too many iterations in PBE protection: "+iterationCount);
 				throw new InvalidKeyException("Iteration count can not exceed 10000");
 			}			
-			AlgorithmIdentifier owfAlg = pp.getOwf();
-			// Normal OWF alg is 1.3.14.3.2.26 - SHA1
-			owfOid = owfAlg.getObjectId().getId();
-			log.debug("Owf type is: "+owfOid);
-			AlgorithmIdentifier macAlg = pp.getMac();
-			// Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
-			macOid = macAlg.getObjectId().getId();
-			log.debug("Mac type is: "+macOid);
-			byte[] salt = pp.getSalt().getOctets();
-			//log.info("Salt: "+new String(salt));
 			byte[] raSecret = raAuthenticationSecret.getBytes();
 			byte[] basekey = new byte[raSecret.length + salt.length];
 			for (int i = 0; i < raSecret.length; i++) {
@@ -110,7 +112,6 @@ public class CmpPbeVerifyer {
 			ret = Arrays.equals(out, pb);
 		}
 		return ret;
-		
 	}
 
 	public String getErrMsg() {
@@ -127,6 +128,10 @@ public class CmpPbeVerifyer {
 
 	public int getIterationCount() {
 		return iterationCount;
+	}
+	
+	public String getLastUsedRaSecret() {
+		return lastUsedRaSecret;
 	}
 	
 }

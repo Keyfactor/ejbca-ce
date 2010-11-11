@@ -120,21 +120,12 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         }
         issuerDN = cacert.getIssuerDN().getName();
         // Configure CMP for this test
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
-        log.info("Current server configuration:");
-        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
-        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
-        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
-        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
+        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "pbe");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
         if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
             CertificateProfile cp = new EndUserCertificateProfile();
@@ -188,9 +179,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
 		byte[] resp = sendCmpTcp(ba, 5);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
 		X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 		assertNotNull(cert);
 		
@@ -205,9 +194,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		ba = bao.toByteArray();
 		// Send request and receive response
 		resp = sendCmpTcp(ba, 5);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
 		
 		// Now revoke the bastard using the CMPv2 CRL entry extension!
@@ -220,9 +207,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		ba = bao.toByteArray();
 		// Send request and receive response
 		resp = sendCmpTcp(ba, 5);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
 		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
 		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
 		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);

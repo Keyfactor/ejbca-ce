@@ -1212,6 +1212,18 @@ function checkallfields(){
       </td>
     </tr>
 
+    <% if (catype == CAInfo.CATYPE_X509) { %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("SHAREDCMPRASECRET") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CMP%20RA%20Authentication%20Secret") %>
+      </td>
+      <td width="50%">
+        <% String cmpRaAuthSecretValue = (editca?((X509CAInfo)cainfo).getCmpRaAuthSecret():""); %>
+        <input type="password" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<%= cmpRaAuthSecretValue %>">
+      </td>
+    </tr>
+    <% } // if (catype == CAInfo.CATYPE_X509) %>
+
     <% } // if(!processrequest && !isexternal) %>
 
 
@@ -1249,7 +1261,7 @@ function checkallfields(){
        <% if(editca && revokable){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        &nbsp;
+        <strong><%= ejbcawebbean.getText("CALIFECYCLE") %></strong>
       </td>
       <td width="50%"> 
         &nbsp;

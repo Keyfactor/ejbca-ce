@@ -192,7 +192,8 @@ public abstract class CaTestCase extends TestCase {
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 true, // useCertReqHistory
                 true, // useUserStorage
-                true // useCertificateStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
         );
 
         try {

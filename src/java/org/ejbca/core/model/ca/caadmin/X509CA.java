@@ -152,6 +152,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String USELDAPDNORDER                 = "useldapdnorder";
     protected static final String USECRLDISTRIBUTIONPOINTONCRL   = "usecrldistributionpointoncrl";
     protected static final String CRLDISTRIBUTIONPOINTONCRLCRITICAL = "crldistributionpointoncrlcritical";
+    protected static final String CMPRAAUTHSECRET                = "cmpraauthsecret";
 
     // Public Methods
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
@@ -173,7 +174,7 @@ public class X509CA extends CA implements Serializable {
       setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
       setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
       setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
-
+      setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
       data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
     }
@@ -198,7 +199,7 @@ public class X509CA extends CA implements Serializable {
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder(),
         		  getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(), getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
-        		  isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage());
+        		  isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), getCmpRaAuthSecret());
         super.setCAInfo(info);
     }
 
@@ -306,6 +307,14 @@ public class X509CA extends CA implements Serializable {
           data.put(CRLDISTRIBUTIONPOINTONCRLCRITICAL, Boolean.valueOf(crlDistributionPointOnCrlCritical));
       }
 
+      public String getCmpRaAuthSecret() {
+          return ((String)data.get(CMPRAAUTHSECRET));
+      }
+
+      public void setCmpRaAuthSecret(String cmpRaAuthSecret) {
+          data.put(CMPRAAUTHSECRET, cmpRaAuthSecret);
+      }
+
       public void updateCA(CAInfo cainfo) throws Exception{
     	  super.updateCA(cainfo); 
     	  X509CAInfo info = (X509CAInfo) cainfo;
@@ -323,6 +332,7 @@ public class X509CA extends CA implements Serializable {
           setUseLdapDNOrder(info.getUseLdapDnOrder());
           setUseCrlDistributionPointOnCrl(info.getUseCrlDistributionPointOnCrl());
           setCrlDistributionPointOnCrlCritical(info.getCrlDistributionPointOnCrlCritical());
+          setCmpRaAuthSecret(info.getCmpRaAuthSecret());
       }
     
 

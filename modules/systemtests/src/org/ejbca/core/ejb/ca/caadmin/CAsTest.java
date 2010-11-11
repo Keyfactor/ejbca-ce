@@ -159,7 +159,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -295,7 +296,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
             
             removeOldCa("TESTECDSA");
@@ -392,7 +394,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null // cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -482,7 +485,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
             caAdminSession.createCA(admin, cainfo);
 
@@ -575,7 +579,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -673,7 +678,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -1396,7 +1402,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
 
             info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1516,7 +1523,8 @@ public class CAsTest extends CaTestCase {
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
                     true, // useCertReqHistory
                     true, // useUserStorage
-                    true // useCertificateStorage
+                    true, // useCertificateStorage
+                    null //cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);

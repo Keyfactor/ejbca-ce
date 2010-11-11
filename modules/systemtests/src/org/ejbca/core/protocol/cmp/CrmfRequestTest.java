@@ -114,18 +114,9 @@ public class CrmfRequestTest extends CmpTestCase {
         issuerDN = cacert.getIssuerDN().getName();
         log.debug("issuerDN: " + issuerDN);
         log.debug("caid: " + caid);
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
-        configurationSession.updateProperty(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
-        log.info("Current server configuration:");
-        log.info("    " + CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, null));
-        log.info("    " + CmpConfiguration.CONFIG_DEFAULTCA + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_DEFAULTCA, null));
-        log.info("    " + CmpConfiguration.CONFIG_OPERATIONMODE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_OPERATIONMODE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, null));
-        log.info("    " + CmpConfiguration.CONFIG_RACANAME + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RACANAME, null));
-        log.info("    " + CmpConfiguration.CONFIG_RESPONSEPROTECTION + ": " + configurationSession.getProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, null));
+        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
     }
 
     public void setUp() throws Exception {
@@ -159,9 +150,7 @@ public class CrmfRequestTest extends CmpTestCase {
          * fos.close();
          */
         byte[] resp = sendCmpHttp(ba, 200);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
     	log.trace("<test01CrmfHttpUnknowUser");
     }
@@ -183,9 +172,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         String altNames = CertTools.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
@@ -200,9 +187,7 @@ public class CrmfRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         // Now revoke the bastard!
@@ -214,9 +199,7 @@ public class CrmfRequestTest extends CmpTestCase {
         ba = bao.toByteArray();
         // Send request and receive response
         resp = sendCmpHttp(ba, 200);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpFailMessage(resp, "No PKI protection to verify.", 23, reqId, 1);
     	log.trace("<test02CrmfHttpOkUser");
     }

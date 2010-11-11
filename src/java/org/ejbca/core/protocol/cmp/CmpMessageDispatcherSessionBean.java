@@ -148,17 +148,14 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				break;
 			case 19:
 				// PKI confirm
-				handler = new ConfirmationMessageHandler();
-				cmpMessage = new GeneralCmpMessage(req);
-				break;
 			case 24:
 				// Certificate confirmation
-				handler = new ConfirmationMessageHandler();
+				handler = new ConfirmationMessageHandler(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request
-				handler = new RevocationMessageHandler(admin, certificateStoreSession, userAdminSession);
+				handler = new RevocationMessageHandler(admin, certificateStoreSession, userAdminSession, caAdminSession, endEntityProfileSession, certificateProfileSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:

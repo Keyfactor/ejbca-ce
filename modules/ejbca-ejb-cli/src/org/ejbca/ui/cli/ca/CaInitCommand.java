@@ -300,7 +300,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 false, // isDoEnforceUniqueSubjectDNSerialnumber
 			                                 true, // useCertReqHistory
 			                                 true, // useUserStorage
-			                                 true // useCertificateStorage
+			                                 true, // useCertificateStorage
+			                                 null //cmpRaAuthSecret
 			                                 );
             
             getLogger().info("Creating CA...");

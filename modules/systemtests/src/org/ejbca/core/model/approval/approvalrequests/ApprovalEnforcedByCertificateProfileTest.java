@@ -404,7 +404,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 .currentTimeMillis()
                 + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10,
                 0, new ArrayList(), true, false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true, false, false,
-                true, true, true, false, true, true, true);
+                true, true, true, false, true, true, true, null);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);

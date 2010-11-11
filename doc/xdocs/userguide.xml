@@ -264,6 +264,13 @@ After the certificate has been issued the user status is set to 'Generated' and 
 </p>
 </subsubsection>
 
+<subsubsection name="CMP RA Authentication Secret">
+<p>
+CMP can be configured in RA mode to use one shared secret for each CA to authenticate messages from the RA.
+If "cmp.ra.authenticationsecret" in cmp.properties is set, this field will be ignored.
+</p>
+</subsubsection>
+
 </subsection> 
 
 <subsection name="Creating a SubCA signed by an external CA">
