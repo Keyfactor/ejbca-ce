@@ -24,8 +24,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;

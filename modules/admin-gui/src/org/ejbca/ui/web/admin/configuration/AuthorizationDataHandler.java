@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;

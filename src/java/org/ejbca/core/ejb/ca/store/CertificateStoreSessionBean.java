@@ -42,7 +42,6 @@ import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.log.Admin;
