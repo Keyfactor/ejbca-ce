@@ -56,6 +56,7 @@ public class CAAuthorization implements Serializable {
                            AuthorizationSession authorizationsession, CertificateProfileSession certificateProfileSession) {
       this.admin=admin;
       this.caadminsession=caadminsession;      
+      this.caSession=caSession;      
       this.authorizationsession=authorizationsession;
         this.certificateProfileSession = certificateProfileSession;
     }
