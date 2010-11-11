@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.FileTools;
 
 /**
@@ -70,6 +71,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                     return;
             	}
             }
+        	CryptoProviderTools.installBCProvider();
             HashMap<Integer, Integer> certificateProfileIdMapping = new HashMap<Integer, Integer>();
             getLogger().info("Importing certificate and end entity profiles: ");
             File inFile = new File(inpath);
