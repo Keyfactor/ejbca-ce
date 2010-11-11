@@ -259,7 +259,7 @@
 	<target name="ejbca.ear" depends="ca.ear">
 	</target>
 	
-	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service, ejbca-cmp-tcp, create-log4config-bundle">
+	<target name="ca.ear" depends="jsflibs, publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, clearcache.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service, ejbca-cmp-tcp, create-log4config-bundle">
 		<!-- Make sure we have an application.xml since we don't do preprocessing any longer.. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
@@ -322,6 +322,7 @@
                 <include name="publicweb.war" />
                 <include name="scep.war" />
                 <include name="healthcheck.war" />
+                <include name="clearcache.war" />
                 <include name="webdist.war" />
                 <include name="ocsp.war" />
                 <include name="renew.war" />
@@ -747,6 +748,10 @@
 
     <target name="healthcheck.war">
     	<ant antfile="modules/build.xml" target="healthcheck-ejbca-war" />
+    </target>
+		
+    <target name="clearcache.war">
+    	<ant antfile="modules/build.xml" target="clearcache-ejbca-war" />
     </target>
 		
     <target name="ocsphealthcheck.war">

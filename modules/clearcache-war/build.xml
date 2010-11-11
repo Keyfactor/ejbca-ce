@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="clearcache-war" default="ejbca-build">
+    <description>
+            Build file for the ClearCache Web components
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.clearcache-war}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+
+	<path id="compile-common.classpath">
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
+
+	<path id="compile-ejbca.classpath">
+		<path refid="compile-common.classpath"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
+		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb.lib}"/>
+		<path refid="lib.ejbca-util.classpath"/>
+	</path>
+	
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${build-ocsp.dir}" />
+    	<delete file="${mod.clearcache-war.war}" />
+    </target>
+
+    <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
+        <war destfile="${mod.clearcache-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
+    </target>
+
+    <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
+    	<mkdir dir="${build.dir}/WEB-INF/classes" />
+        <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			classpathref="compile-ejbca.classpath"/>
+    		
+    </target>
+
+</project>

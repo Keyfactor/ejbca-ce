@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -741,38 +740,35 @@ public class EjbcaWebBean implements Serializable {
         throw new Exception("Trying to set an invalid option.");
     }
 
-    public void clearClusterCache() throws Exception{
-    	
-  	   Set nodes = globalconfiguration.getNodesInCluster();
- 	   final java.util.Iterator itr = nodes.iterator();
- 	   String host = null;
- 	   while(itr.hasNext()){
- 		   host = (String) itr.next();
- 		   if(host!=null) {
- 			   String requestUrl = "http://" + host + ":8080/ejbca/clearcache";
- 			   URL url = new URL(requestUrl);
- 			   HttpURLConnection con = (HttpURLConnection) url.openConnection();
- 			   if (log.isDebugEnabled()) {
- 				   log.debug("Contacting host with url:"+requestUrl);
- 			   }
-
- 			   con.setRequestMethod("POST");
- 			   con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
- 			   con.setDoOutput(true);
-
- 			   OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream()); 
- 			   wr.write("command=clearcaches");
- 			   wr.flush();
- 		   
- 			   int responseCode = con.getResponseCode();
- 			   if(responseCode != 200){
- 				   if (log.isDebugEnabled()) {
- 					   log.debug("Failed to clear caches for host: " + host + ", responseCode="+responseCode);
- 				   }
- 				   throw new Exception("Failed to clear caches for host: " + host + ", responseCode="+responseCode);
- 			   }		   
- 			   wr.close(); 
- 		   }
- 	   }
-     }
+    public void clearClusterCache() throws Exception {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">clearClusterCache");
+    	}
+    	Set<String> nodes = globalconfiguration.getNodesInCluster();
+    	final Iterator<String> itr = nodes.iterator();
+    	String host = null;
+    	while(itr.hasNext()){
+    		host = (String) itr.next();
+    		if(host!=null) {
+    			// get http port of remote host, this requires that all cluster nodes uses the same public htt port
+    			int pubport = WebConfiguration.getPublicHttpPort();
+    			String requestUrl = "http://" + host + ":"+pubport+"/ejbca/clearcache?command=clearcaches";
+    			URL url = new URL(requestUrl);
+    			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+    			if (log.isDebugEnabled()) {
+    				log.debug("Contacting host with url:"+requestUrl);
+    			}
+    			int responseCode = con.getResponseCode();
+    			if (responseCode != 200) {
+    				if (log.isDebugEnabled()) {
+    					log.debug("Failed to clear caches for host: " + host + ", responseCode="+responseCode);
+    				}
+    				throw new Exception("Failed to clear caches for host: " + host + ", responseCode="+responseCode);
+    			}		   
+    		}
+    	}
+    	if (log.isTraceEnabled()) {
+    		log.trace("<clearClusterCache");
+    	}
+    }
 }
