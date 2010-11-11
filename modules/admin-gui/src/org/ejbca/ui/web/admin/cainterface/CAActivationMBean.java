@@ -97,7 +97,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			crlCreateSession = ejb.getCrlCreateSession();
 			this.informationmemory = webBean.getInformationMemory();
 
-			new CertificateProfileDataHandler(administrator, authorizationsession, caadminsession, caSession, certificateProfileSession, informationmemory);
+			new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);
 			cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
