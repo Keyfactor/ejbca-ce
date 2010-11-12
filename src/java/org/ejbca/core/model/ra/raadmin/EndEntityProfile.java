@@ -620,29 +620,32 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	return PasswordGeneratorFactory.getInstance(type).getNewPassword(pwdlen, pwdlen);    	
     }
     
-    public static Collection getAvailablePasswordTypes() {
+    /**
+     * @return String value with types from org.ejbca.util.passgen, example org.ejbca.util.passgen.DigitPasswordGenerator.NAME (PWGEN_DIGIT)
+     */
+    public static Collection<String> getAvailablePasswordTypes() {
         return PasswordGeneratorFactory.getAvailablePasswordTypes();
     }
 
     // User notifications - begin
-    public List getUserNotifications() {
-    	List l = (List)data.get(USERNOTIFICATIONS);
+    public List<UserNotification> getUserNotifications() {
+    	List<UserNotification> l = (List<UserNotification>)data.get(USERNOTIFICATIONS);
     	if (l == null) {
-    		l = new ArrayList();
+    		l = new ArrayList<UserNotification>();
     	}
     	return l;
     }
 
     public void addUserNotification(UserNotification notification) {
     	if (data.get(USERNOTIFICATIONS) == null) {
-    		setUserNotifications(new ArrayList(0));
+    		setUserNotifications(new ArrayList<UserNotification>(0));
     	}
-    	((List) data.get(USERNOTIFICATIONS)).add(notification);
+    	((List<UserNotification>) data.get(USERNOTIFICATIONS)).add(notification);
     }
 
-    public void setUserNotifications(List notifications) {
+    public void setUserNotifications(List<UserNotification> notifications) {
     	if (notifications == null) {
-    		data.put(USERNOTIFICATIONS, new ArrayList(0));
+    		data.put(USERNOTIFICATIONS, new ArrayList<UserNotification>(0));
     	} else {
     		data.put(USERNOTIFICATIONS, notifications);
     	}
@@ -650,7 +653,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     public void removeUserNotification(UserNotification notification) {
     	if (data.get(USERNOTIFICATIONS) != null) {
-    		((List) data.get(USERNOTIFICATIONS)).remove(notification);
+    		((List<UserNotification>) data.get(USERNOTIFICATIONS)).remove(notification);
     	}
     }
     // User notifications - end

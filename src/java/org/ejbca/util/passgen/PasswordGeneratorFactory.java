@@ -54,8 +54,8 @@ public class PasswordGeneratorFactory {
 		return ret;
     }
 
-	public static Collection getAvailablePasswordTypes() {
-		ArrayList al = new ArrayList();
+	public static Collection<String> getAvailablePasswordTypes() {
+		ArrayList<String> al = new ArrayList<String>();
     	for (int i=0; i<classes.length; i++) {
     		al.add(classes[i].getName());
     	}
