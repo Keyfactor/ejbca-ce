@@ -114,7 +114,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                 crl = (X509CRL) ca.generateCRL(certs, nextCrlNumber);
             }
             if (crl != null) {
-                String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(nextCrlNumber), ca.getName(), ca.getSubjectDN());
+                String msg = intres.getLocalizedMessage("signsession.createdcrl", Integer.valueOf(nextCrlNumber), ca.getName(), ca.getSubjectDN());
                 logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
 
                 // Store CRL in the database
@@ -369,7 +369,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                                 // Don't create CRLs if the CA has expired
                                 if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
                                         if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
-                                                String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(cainfo.getCAId()));                                                   
+                                                String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
                                                 log.info(msg);
                                                 logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_INFO_CREATECRL, msg);
                                         } else {
@@ -426,7 +426,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                                                         }
 
                                                 } catch (CATokenOfflineException e) {
-                                                        String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(cainfo.getCAId()));                                                   
+                                                        String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
                                                         log.error(msg);
                                                         logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
                                                 }
@@ -443,7 +443,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                         }                                                          
                 }
         } catch(Exception e) {
-                String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));                                                  
+                String msg = intres.getLocalizedMessage("createcrl.generalerror", Integer.valueOf(cainfo.getCAId()));                                                  
                 log.error(msg, e);
                 logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
                 if (e instanceof EJBException) {
@@ -491,7 +491,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                                         if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
                                         if(cainfo.getDeltaCRLPeriod() > 0) {
                                                 if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
-                                                        String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(cainfo.getCAId()));                                                   
+                                                        String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
                                                         log.error(msg);
                                                         logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg);
                                                 } else {
@@ -527,7 +527,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         } catch (CATokenOfflineException e) {
             throw e;            
                 }catch(Exception e) {
-                String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(cainfo.getCAId()));                                                  
+                String msg = intres.getLocalizedMessage("createcrl.generalerror", Integer.valueOf(cainfo.getCAId()));                                                  
                 log.error(msg, e);
                 logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL,msg,e);
                 if (e instanceof EJBException) {
@@ -615,13 +615,13 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
 //              fos.close();
 //              }
             } else {
-                String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), new Integer(caid), cainfo.getStatus());                                                      
+                String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), Integer.valueOf(caid), cainfo.getStatus());                                                      
                 log.info(msg);                  
             }
         } catch (CATokenOfflineException e) {
             throw e;            
         } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("createcrl.errorcreate", new Integer(caid));                    
+                String msg = intres.getLocalizedMessage("createcrl.errorcreate", Integer.valueOf(caid));                    
             log.error(msg, e);
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
