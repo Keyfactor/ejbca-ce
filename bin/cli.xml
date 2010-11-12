@@ -3,9 +3,7 @@
     <property name="ejbca.home" location=".."/>
     <property environment="env"/>
 
-	<!-- read in the installation configuration settings from differnet possible locations -->
-    <property file="${user.home}/install.properties"/>
-    <property file="${ejbca.home}/install.properties"/>
+	<!-- read in the installation configuration settings from conf directory -->
     <property file="${ejbca.home}/conf/install.properties"/>
 
     <property name="lib.dir" location="${ejbca.home}/lib"/>
