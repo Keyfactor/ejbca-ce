@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -95,9 +97,11 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
             logdevices = new ArrayList<ILogDevice>();
             // Load logging properties dynamically as internal resource
             final Map<String,String> logDeviceMap = org.ejbca.config.LogConfiguration.getUsedLogDevices();
-            final Iterator<String> i = logDeviceMap.keySet().iterator();
+            final Set<Entry<String, String>> entries = logDeviceMap.entrySet();
+            final Iterator<Map.Entry<String,String>> i = entries.iterator();
             while (i.hasNext()) {
-            	final String deviceName = i.next();
+            	final Map.Entry<String, String> entry = i.next();
+            	final String deviceName = entry.getValue();
             	// Create log class
             	final Class implClass = Class.forName(logDeviceMap.get(deviceName));
                 final Object fact = implClass.newInstance();
