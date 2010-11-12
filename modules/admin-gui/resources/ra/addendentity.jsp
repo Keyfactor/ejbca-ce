@@ -1253,7 +1253,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" name="<%= TEXTFIELD_PASSWORD %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
+             <input type="password" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
            <% } %>
  
         </td>
@@ -1277,7 +1277,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
+             <input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(EndEntityProfile.PASSWORD,0) %>"/>'>
            <% } %>
         </td>
 		<td>&nbsp;</td> 
@@ -1294,16 +1294,23 @@ function checkallfields(){
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
                %>
-           <select name="<%= SELECT_EMAILDOMAIN %>" size="1" tabindex="<%=tabindex++%>">
-               <% if( options != null){
-                    for(int i=0;i < options.length;i++){ %>
-             <option value='<c:out value="<%=options[i].trim()%>"/>' <% if(lastselectedemaildomain.equals(options[i])) out.write(" selected "); %>>
-                <c:out value="<%=options[i].trim()%>"/>  
-             </option>                
-               <%   }
-                  }
-                %>
-           </select>
+              <% if( options == null ){ %>
+                   <input type="hidden" name="<%= SELECT_EMAILDOMAIN %>" value="" />
+                   &nbsp;
+              <% }else{ %> 
+                <% if( options.length == 1 ){ %>
+                   <input type="hidden" name="<%= SELECT_EMAILDOMAIN %>" value="<c:out value='<%=options[0].trim()%>'/>" />
+                   <strong><c:out value='<%=options[0].trim()%>'/></strong>
+                <% }else{ %> 
+                   <select name="<%= SELECT_EMAILDOMAIN %>" size="1" tabindex="<%=tabindex++%>">
+                     <% for(int i=0;i < options.length;i++){ %>
+                       <option value="<c:out value='<%=options[i].trim()%>'/>" <% if(lastselectedemaildomain.equals(options[i])) out.write(" selected "); %>>
+                         <c:out value='<%=options[i].trim()%>'/>
+                       </option>                
+                     <% } %>
+                   </select>
+                <% } %>
+              <% } %>
            <% }else{ %> 
              <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"  value='<c:out value="<%= profile.getValue(EndEntityProfile.EMAIL,0) %>"/>'>
            <% } %>
@@ -1370,17 +1377,24 @@ function checkallfields(){
                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                %>
-           <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
-               <% if( options != null){
-                    for(int j=0;j < options.length;j++){ %>
-             <option value='<c:out value="<%=options[j].trim()%>"/>' <% if( lastselectedsubjectdns != null && lastselectedsubjectdns[i] != null) 
-                                                         if(lastselectedsubjectdns[i].equals(options[j])) out.write(" selected "); %>> 
-                <c:out value="<%=options[j].trim()%>"/>
-             </option>                
-               <%   }
-                  }
-                %>
-           </select>
+              <% if( options == null ){ %>
+                   <input type="hidden" name="<%= SELECT_SUBJECTDN + i %>" value="" />
+                   &nbsp;
+              <% }else{ %> 
+                <% if( options.length == 1 ){ %>
+                   <input type="hidden" name="<%= SELECT_SUBJECTDN + i %>" value="<c:out value='<%=options[0].trim()%>'/>" />
+                   <strong><c:out value='<%=options[0].trim()%>'/></strong>
+                <% }else{ %> 
+                   <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
+                     <% for(int j=0;j < options.length;j++){ %>
+                       <option value="<c:out value='<%=options[j].trim()%>'/>" <% if( lastselectedsubjectdns != null && lastselectedsubjectdns[i] != null) 
+                                                         if(lastselectedsubjectdns[i].equals(options[j])) out.write(" selected "); %>>
+                         <c:out value='<%=options[j].trim()%>'/>
+                       </option>                
+                     <% } %>
+                   </select>
+                <% } %>
+              <% } %>
            <% }else{ %> 
              <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
            <% }
@@ -1466,21 +1480,27 @@ function checkallfields(){
 					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"
 						value='<c:out value="<%= rfc822NameArray[1] %>"/>' />
 				<%	} else {
-						String[] options = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
-						if( options != null && options.length > 0 ) { %>
-							<select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
-							<%	for ( int j=0; j < options.length; j++ ) { %>
-									<option value='<c:out value="<%= options[j].trim() %>"/>'
-									<%	if ( lastselectedsubjectaltnames != null && lastselectedsubjectaltnames[i] != null &&
-												lastselectedsubjectaltnames[i].equals(options[j]) ) { %>
-												SELECTED
-									<%	} %> > 
-										<c:out value="<%=	options[j].trim() %>"/>
-									</option>
-							<%	} %>
-							</select>
-					<%	}
-					} %>
+						String[] options = rfc822NameString.split(EndEntityProfile.SPLITCHAR); %>
+		              <% if( options == null || options.length <= 0 ){ %>
+		                   <input type="hidden" name="<%= SELECT_SUBJECTALTNAME + i %>" value="" />
+		                   &nbsp;
+		              <% }else{ %> 
+		                <% if( options.length == 1 ){ %>
+		                   <input type="hidden" name="<%= SELECT_SUBJECTALTNAME + i %>" value="<c:out value='<%=options[0].trim()%>'/>" />
+		                   <strong><c:out value='<%=options[0].trim()%>'/></strong>
+		                <% }else{ %> 
+		                   <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
+		                     <% for(int j=0;j < options.length;j++){ %>
+		                       <option value="<c:out value='<%=options[j].trim()%>'/>"
+		                       <% if ( lastselectedsubjectaltnames != null && lastselectedsubjectaltnames[i] != null &&
+										lastselectedsubjectaltnames[i].equals(options[j]) ) out.write(" selected "); %>>
+		                         <c:out value='<%=options[j].trim()%>'/>
+		                       </option>                
+		                     <% } %>
+		                   </select>
+		                <% } %>
+		              <% } %>
+	             <% } %>
 			<%	}
 		} else {
 				// Handle all non-RFC822NAME-fields
@@ -1490,20 +1510,28 @@ function checkallfields(){
 					if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN) ) { %>
 						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" /> @
 				<%	} %>
-				<%	if( options != null && options.length > 0 ) { %>
-						<select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
-						<%	for ( int j=0; j < options.length; j++ ) { %>
-								<option value='<c:out value="<%=options[j].trim()%>"/>'
-								<%	if ( lastselectedsubjectaltnames != null &&  lastselectedsubjectaltnames[i] != null) {
-										if ( lastselectedsubjectaltnames[i].equals(options[j])) {
-											out.write(" selected ");
-										}
-									} %> > 
-									<c:out value="<%=	options[j].trim() %>"/>
-								</option>                
-						<%	} %>
-						</select>
-				<%	} %>
+	            <%  if( options == null || options.length <= 0 ) { %>
+	                   <input type="hidden" name="<%= SELECT_SUBJECTALTNAME + i %>" value="" />
+	                   &nbsp;
+	            <%  } else { %> 
+	              <%  if( options.length == 1 ) { %>
+	                   <input type="hidden" name="<%= SELECT_SUBJECTALTNAME + i %>" value="<c:out value='<%=options[0].trim()%>'/>" />
+	                   <strong><c:out value='<%=options[0].trim()%>'/></strong>
+	              <%  } else { %> 
+	                   <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
+	                   <%  for(int j=0;j < options.length;j++) { %>
+	                       <option value="<c:out value='<%=options[j].trim()%>'/>"
+							<%	if ( lastselectedsubjectaltnames != null &&  lastselectedsubjectaltnames[i] != null) {
+									if ( lastselectedsubjectaltnames[i].equals(options[j])) {
+										out.write(" selected ");
+									}
+								} %> >
+	                         <c:out value='<%=options[j].trim()%>'/>
+	                       </option>                
+	                   <%  } %>
+	                   </select>
+	              <%  } %>
+	            <%  } %>
 			<%	} else {
 					// Display modifyable subject altname fields
 	               	if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
@@ -1542,17 +1570,25 @@ function checkallfields(){
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                 %>
-           <select name="<%= SELECT_SUBJECTDIRATTR + i %>" size="1" tabindex="<%=tabindex++%>">
-               <% if( options != null){
-                    for(int j=0;j < options.length;j++){ %>
-             <option value='<c:out value="<%=options[j].trim()%>"/>' <% if( lastselectedsubjectdirattrs != null &&  lastselectedsubjectdirattrs[i] != null) 
-                                                         if(lastselectedsubjectdirattrs[i].equals(options[j])) out.write(" selected "); %>> 
-                <c:out value="<%=options[j].trim()%>"/>
-             </option>                
-               <%   }
-                  }
-                %>
-           </select>
+              <% if( options == null ){ %>
+                   <input type="hidden" name="<%= SELECT_SUBJECTDIRATTR + i %>" value="" />
+                   &nbsp;
+              <% }else{ %> 
+                <% if( options.length == 1 ){ %>
+                   <input type="hidden" name="<%= SELECT_SUBJECTDIRATTR + i %>" value="<c:out value='<%=options[0].trim()%>'/>" />
+                   <strong><c:out value='<%=options[0].trim()%>'/></strong>
+                <% }else{ %> 
+                   <select name="<%= SELECT_SUBJECTDIRATTR + i %>" size="1" tabindex="<%=tabindex++%>">
+                     <% for(int j=0;j < options.length;j++){ %>
+                       <option value="<c:out value='<%=options[j].trim()%>'/>"
+                       		<% if( lastselectedsubjectdirattrs != null &&  lastselectedsubjectdirattrs[i] != null) 
+                        			if(lastselectedsubjectdirattrs[i].equals(options[j])) out.write(" selected "); %>>
+                         <c:out value='<%=options[j].trim()%>'/>
+                       </option>                
+                     <% } %>
+                   </select>
+                <% } %>
+              <% } %>
            <% } else { %> 
              <input type="text" name="<%= TEXTFIELD_SUBJECTDIRATTR + i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>"/>'>
            <% } %>
