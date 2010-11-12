@@ -123,9 +123,13 @@ public abstract class AbstractHealthServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        log.trace(">doPost()");
+		if (log.isTraceEnabled()) {
+			log.trace(">doPost()");
+		}
         check(request, response);
-        log.trace("<doPost()");
+		if (log.isTraceEnabled()) {
+			log.trace("<doPost()");
+		}
     }
 
     // doPost
@@ -144,9 +148,13 @@ public abstract class AbstractHealthServlet extends HttpServlet {
      *             on error
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        log.trace(">doGet()");
+		if (log.isTraceEnabled()) {
+			log.trace(">doGet()");
+		}
         check(request, response);
-        log.trace("<doGet()");
+		if (log.isTraceEnabled()) {
+			log.trace("<doGet()");
+		}
     }
 
 }
