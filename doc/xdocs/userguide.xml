@@ -1321,7 +1321,7 @@ The default validity time for the SSL certificate is two years. When this expire
 You can do this through the admin-GUI by:
 <ol>
 <li>Go to 'List/Edit End Entities' and search for user 'tomcat'.</li>
-<li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your conf/ejbca.properties and 'Status' to 'New'.</li>
+<li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your conf/web.properties and 'Status' to 'New'.</li>
 <li>Open up a command line in EJBCA_HOME and run 'bin/ejbca.sh batch'.</li>
 <li>Copy EJBCA_HOME/p12/tomcat.jks to APPSRV_HOME/server/default/conf/keystore.jks, or run 'ant deploy'. Ant deploy will do some other things as well, so if you are not sure, just copy the file.</li>
 <li>Restart JBoss.</li>

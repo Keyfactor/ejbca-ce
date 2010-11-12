@@ -104,29 +104,29 @@ There are default configuration options, that should work in a test environment,
 <subsubsection name="Configuration files">
 <p>The configuration of EJBCA that can not be configured in the admin GUI is located in properties files in the <i>conf</i> directory.
 All properties are documented in sample files and to configure an option you copy the sample file, for example copy <i>conf/ejbca.properties.sample</i> to <i>conf/ejbca.properties</i>
-and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/ejbca.properties</i>.
-Most options, except those related to the AdminCA can be changed after installation.
+and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/install.properties</i> and <i>conf/ejbca.properties</i>.
+Most options, except those in install.properties can be changed after installation.
 </p> 
 </subsubsection>
 
 <subsubsection name="EJBCA configuration">
 <p>
-1) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
-The default values works fine for a test installation. 
+1) Copy conf/install.properties.sample to conf/install.properties and conf/ejbca.properties.sample to conf/ejbca.properties
+Customize if needed. The default values works fine for a test installation. 
 </p><p>
 <ul>
-<li>Customize the CA properties if you need to do so.
+<li>Customize the CA properties in conf/ejbca.properties if you need to do so.
 For production use you need to do this, don't forget to edit
 passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
 DO NOT forget the passwords, if you need to re-install the software sometime.</li>
-<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the HSM. Read the HSM documentation for the right values.</li>
+<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties in install.properties. You also need to add the appropriate values to the ca.tokenproperties file for the HSM. Read the HSM documentation for the right values.</li>
 <li>
 To put the initial superadmin certificate on a smartcard, set superadmin.batch=false in
 web.properties. Enroll from public web after the installation is complete, as you would
 with any other smartcard user. Username is &quot;superadmin&quot; and password is superadmin.password
 from web.properties.
 </li>
-<li>If you are deploying on JBoss EAP you probably want to look at the property 'jboss.config' as well, since 'production' is the default server to start on JBoss EAP.</li>
+<li>If you are deploying on JBoss EAP you probably want to look at the property 'jboss.config' as well, since 'production' may be the default server to start on JBoss EAP (depends on your configuration).</li>
 </ul>
 Do the same with other configuration files that you might want to customize. The default values often works fine and is a safe bet if you are unsure.
 Most options are well documented in the sample files.
