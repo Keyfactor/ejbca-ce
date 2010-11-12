@@ -138,7 +138,17 @@ public class ClearCacheServlet extends HttpServlet {
 		while (itr.hasNext()) {
 			nodename = itr.next();
 			try {
-				if (StringUtils.equals(remotehost, InetAddress.getByName(nodename).getHostAddress())) {
+				String nodeip = InetAddress.getByName(nodename).getHostAddress();
+				if (log.isDebugEnabled()) {
+					log.debug("Checking remote host against host in list: "+nodename+", "+nodeip);
+				}
+				if (StringUtils.equals(remotehost, nodeip)) {
+					ret = true;
+				} else if (StringUtils.equals(remotehost, "127.0.0.1")) {
+					// Always allow requests from localhost, 127.0.0.1 may not be added in the list
+					if (log.isDebugEnabled()) {
+						log.debug("Always allowing request from 127.0.0.1");
+					}
 					ret = true;
 				}
 			} catch (UnknownHostException e) {
