@@ -55,7 +55,9 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	}
 	
 	public String checkHealth(HttpServletRequest request) {
-		log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
+		if (log.isDebugEnabled()) {
+			log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
+		}
 		String errormessage = "";
 		
 		errormessage += checkMaintenance();
@@ -82,17 +84,23 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	}
 		
 	private String checkDB(){
-		log.debug("Checking database connection.");
+		if (log.isDebugEnabled()) {
+			log.debug("Checking database connection.");
+		}
 		return certificateStoreSession.getDatabaseStatus();
 	}
 
 	private String checkCAs(){
-		log.debug("Checking CAs.");
+		if (log.isDebugEnabled()) {
+			log.debug("Checking CAs.");
+		}
 		return caAdminSession.healthCheck();
 	}
 	
 	private String checkPublishers(){
-		log.debug("Checking publishers.");
+		if (log.isDebugEnabled()) {
+			log.debug("Checking publishers.");
+		}
 		return publisherSession.testAllConnections();
 	}
 
