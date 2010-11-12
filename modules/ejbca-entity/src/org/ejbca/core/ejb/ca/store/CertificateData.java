@@ -462,7 +462,10 @@ public class CertificateData implements Serializable {
 	// Comparators
 	
 	public boolean equals(Object obj) {
-		return equals((CertificateData) obj);
+		if( !(obj instanceof CertificateData) ) {
+			return false;
+		}
+		return equals((CertificateData) obj, true);
 	}
 
 	public boolean equals(CertificateData certificateData, boolean mode, boolean strictStatus) {

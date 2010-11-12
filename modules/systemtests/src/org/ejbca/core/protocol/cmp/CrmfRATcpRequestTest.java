@@ -317,7 +317,6 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
             ApprovalException, WaitingForApprovalException, EjbcaException, FinderException {
         // Make user that we know...
         boolean userExists = false;
-        userDN = "C=SE,O=PrimeKey,CN=cmptest";
         try {
             userAdminSession.addUser(admin, username, "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);

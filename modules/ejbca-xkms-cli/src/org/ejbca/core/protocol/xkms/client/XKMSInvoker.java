@@ -136,8 +136,8 @@ public class XKMSInvoker {
 		}   
 		
 		this.cacerts = cacerts;
-		if(cacerts==null){	// TODO: Bug? Should be this.cacerts?
-			cacerts = new ArrayList<Certificate>();
+		if(cacerts==null){
+			this.cacerts = new ArrayList<Certificate>();
 		}
 	}
 

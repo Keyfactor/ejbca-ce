@@ -76,7 +76,7 @@ public class XKMSConfig {
      * xkms.response.causedforsigning on which CA that should
      * be used for signing XKMS requests
      */
-    public static int cAIdUsedForSigning(Admin admin, CAAdminSession cAAdminSession){
+    public static synchronized int cAIdUsedForSigning(Admin admin, CAAdminSession cAAdminSession){
     	if(cAIdUsedForSigning == null){
     		CAInfo info = cAAdminSession.getCAInfo(admin, XkmsConfiguration.getResponseCaUsedForSigning());
     		if(info == null){    		
@@ -95,16 +95,16 @@ public class XKMSConfig {
      * xkms.request.acceptedcas on which CA that should
      * be accepted for signing XKMS requests
      */
-    public static Collection getAcceptedCA(Admin admin,CAAdminSession cAAdminSession){
+    public static synchronized Collection getAcceptedCA(Admin admin,CAAdminSession cAAdminSession){
     	if(acceptedCAs == null){
     		acceptedCAs = new ArrayList();
     		String[] cANames = XkmsConfiguration.getRequestAcceptedCas();
     		for(int i=0; i < cANames.length;i++){
-    		  CAInfo info = cAAdminSession.getCAInfo(admin, cANames[i]);
-    		  if(info == null){    		
-    			throw new EJBException("Property parameter xkms.request.acceptedcas is missconfigured, should contain a ';' separated string of existing CA names.");
-    		  }
-    		  acceptedCAs.add(Integer.valueOf(info.getCAId()));
+    			CAInfo info = cAAdminSession.getCAInfo(admin, cANames[i]);
+    			if(info == null){    		
+    				throw new EJBException("Property parameter xkms.request.acceptedcas is missconfigured, should contain a ';' separated string of existing CA names.");
+    			}
+    			acceptedCAs.add(Integer.valueOf(info.getCAId()));
     		}
     	}
     	return acceptedCAs;

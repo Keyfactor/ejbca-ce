@@ -137,7 +137,7 @@ public class MSCertTools {
 		if (certificateTemplate != null) {
 			for (int i=0; i<SUPPORTEDCERTIFICATETEMPLATES.length; i++) {
 				if (SUPPORTEDCERTIFICATETEMPLATES[i].equalsIgnoreCase(certificateTemplate)) {
-					certificateTemplate = SUPPORTEDCERTIFICATETEMPLATES[i];
+					certificateTemplate = SUPPORTEDCERTIFICATETEMPLATES[i]; //TODO: bug? assigning the parameter?
 					templateIndex = i;
 				}
 			}
@@ -145,7 +145,7 @@ public class MSCertTools {
 		if (templateIndex == -1) {
 			templateIndex = 0;
 			log.warn("Got request for a unsupported certificate template \"" + certificateTemplate + "\" using \"" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex] + "\" instead.");
-			certificateTemplate = SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
+			certificateTemplate = SUPPORTEDCERTIFICATETEMPLATES[templateIndex]; //TODO: bug? assigning the parameter?
 		}
 		return templateIndex;
 	}
