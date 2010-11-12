@@ -79,7 +79,7 @@ public class CrlSessionBean implements CrlSessionLocal, CrlSessionRemote{
             	logSession.log(admin, LogConstants.INTERNALCAID, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECRL, msg);        		
         	}
         	entityManager.persist(new CRLData(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator));
-        	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
+        	String msg = intres.getLocalizedMessage("store.storecrl", Integer.valueOf(number), null);            	
         	logSession.log(admin, issuerDN.toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECRL, msg);
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.storecrl");            	
@@ -114,7 +114,7 @@ public class CrlSessionBean implements CrlSessionLocal, CrlSessionRemote{
                 crl = data.getCRL();
             }
             if (crl != null) {
-            	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, new Integer(maxnumber));            	
+            	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, Integer.valueOf(maxnumber));            	
                 logSession.log(admin, crl.getIssuerDN().toString().hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_GETLASTCRL, msg);
                 return crl.getEncoded();
             }
@@ -161,7 +161,7 @@ public class CrlSessionBean implements CrlSessionLocal, CrlSessionRemote{
                 		log.debug("No CRL exists for CA with dn '"+issuerdn+"'");
                 	}
             	} else {
-                	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(crlnumber));            	
+                	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, Integer.valueOf(crlnumber));            	
                     log.error(msg);            		
             	}
                 crlinfo = null;
