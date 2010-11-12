@@ -73,7 +73,7 @@ public class EjbcaConfiguration {
 	}
 
 	/**
-     * @return true if it is permitted to use an extactable private key in a HSM.
+     * @return true if it is permitted to use an extractable private key in a HSM.
      */
     public static boolean doPermitExtractablePrivateKeys() {
         final String value = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys", null);
@@ -81,7 +81,7 @@ public class EjbcaConfiguration {
     }
     
     /**
-     * The algorith that should be used to generate random numbers (Random Number Generator Algorithm)
+     * The algorithm that should be used to generate random numbers (Random Number Generator Algorithm)
      */
     public static String getRNGAlgorithm() {
     	return ConfigurationHolder.getString("ca.rngalgorithm", "SHA1PRNG");
