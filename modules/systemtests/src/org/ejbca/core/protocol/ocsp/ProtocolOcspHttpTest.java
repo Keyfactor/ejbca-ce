@@ -105,12 +105,13 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests http pages of ocsp
+ * @version $Id$
  **/
 public class ProtocolOcspHttpTest extends CaTestCase {
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
-    private static Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
+    private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
     protected final String httpReqPath;
     protected final String resourceOcsp;
