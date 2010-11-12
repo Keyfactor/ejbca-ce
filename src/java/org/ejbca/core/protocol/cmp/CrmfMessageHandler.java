@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -218,7 +217,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @param msg
 	 * @param crmfreq
 	 * @return IResponseMessage that can be sent back to the client
-	 * @throws RemoteException
 	 * @throws AuthorizationDeniedException
 	 * @throws EjbcaException
 	 * @throws ClassNotFoundException
