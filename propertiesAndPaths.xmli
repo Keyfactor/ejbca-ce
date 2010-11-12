@@ -85,6 +85,9 @@
 	
     <!-- Default to 16 -->    
     <property name="java.ver" value="16" />
+	
+	<!-- Default to true -->	
+	<property name="ejbcaws.enabled" value="true" />
 		
     <!-- set global properties for this build -->
     <property name="tmp" value="./tmp" />
@@ -120,49 +123,9 @@
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="./doc/api" />
 
-    <property name="scep.src" value="${src}/publicweb/scep" />
-    <property name="scepwar" value="${dist.dir}/scep.war" />
-
-    <property name="webdist.src" value="${src}/publicweb/webdist" />
-    <property name="webdistwar" value="${dist.dir}/webdist.war" />
-
-    <property name="sampleauth.src" value="${src}/ca/sampleauth" />
-    <property name="sampleauthwar" value="${dist.dir}/sampleauth.war" />
-
-    <property name="status.src" value="${src}/publicweb/status" />
-    <property name="statuswar" value="${dist.dir}/status.war" />
-	
     <property name="doc.src" value="tmp/htdocs" />
     <property name="docwar" value="${dist.dir}/doc.war" />
 	
-    <property name="cmp.src" value="${src}/publicweb/cmp" />
-    <property name="cmpwar" value="${dist.dir}/cmp.war" />
-	
-    <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
-    <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
-	
-	<property name="ejbcaws.enabled" value="true" />
-    <property name="ejbcaws.src" value="${src}/wsee" />
-	<property name="ejbcaws.build" value="${tmp}/ejbcaws.war" />  
-    <property name="ejbcawswar" value="${dist.dir}/ejbcaws.war" />
-
-    <property name="ocsphealthcheck.src" value="${src}/publicweb/ocsphealthcheck" />
-    <property name="ocsphealthcheckwar" value="${ocsp-dist.dir}/ocsphealthcheck.war" />
-	
-    <property name="ocspwar" value="${ocsp-dist.dir}/status.war" />
-
-    <property name="adminweb.src" value="${src}/adminweb" />
-    <property name="adminweb.build" value="${tmp}/adminweb.war" />    
-    <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
-
-    <property name="publicweb.src" value="${src}/publicweb/publicweb" />
-    <property name="publicweb.build" value="${tmp}/publicweb.war" />    
-    <property name="publicwebwar" value="${dist.dir}/publicweb.war" />
-
-	<property name="renew.src" value="${src}/publicweb/renew" />
-    <property name="renew.build" value="${tmp}/renew.war" />    
-    <property name="renewwar" value="${dist.dir}/renew.war" />
-
     <property name="deploy.src" value="${src}/deploy" />
     <property name="ejbdd.src" value="${deploy.src}/ejb" />
     <property name="webdd.src" value="${deploy.src}/web" />
@@ -170,10 +133,6 @@
     <property name="ocsp-eardd.src" value="${deploy.src}/ocsp-ear" />
     <property name="caear" value="${dist.dir}/${app.name}.ear" />
     <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
-
-	<property name="cmptcpservice.name" value="cmptcpservice.jar" />
-    <property name="cmptcpservice.build" value="${tmp}/${cmptcpservice.name}" />	
-    <property name="cmptcpservicejar" value="${dist.dir}/${cmptcpservice.name}" />
 
     <property name="logsigning.name" value="ejbcalogsigning.jar" />
     <property name="logsigning.build" value="${tmp}/${logsigning.name}" />  
