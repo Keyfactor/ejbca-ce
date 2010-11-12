@@ -124,7 +124,7 @@ public class XKMSInvoker {
 	 * Creates an invoker to the web service at the specified URL
 	 * 
 	 * @param serviceURL the url to the web service.
-	 * @param cacerts a collection of trusted CA signing responses. Use null if signed responses isn't required.
+	 * @param cacerts a collection of trusted CA signing responses. Use null if signed responses are not required.
 	 */
 	public XKMSInvoker(String serviceURL, Collection<Certificate> cacerts){
 		XKMSService xkmsService;
@@ -133,12 +133,8 @@ public class XKMSInvoker {
 			sourceDispatch = xkmsService.createDispatch(new QName("http://www.w3.org/2002/03/xkms#wsdl", "XKMSPort"), Source.class, Service.Mode.PAYLOAD);
 		} catch (MalformedURLException e) {
 		  log.error("Error creating XKMS Service instance",e);
-		}   
-		
-		this.cacerts = cacerts;
-		if(cacerts==null){
-			this.cacerts = new ArrayList<Certificate>();
-		}
+		}   		
+		this.cacerts = cacerts; // null if signed responses are not required.
 	}
 
 	/**
