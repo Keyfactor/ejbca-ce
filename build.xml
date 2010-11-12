@@ -138,15 +138,6 @@
     </target>
 	
     <!-- =================================================================== -->
-    <!-- Build sampleauth part                                               -->
-    <!-- =================================================================== -->
-    <target name="sampleauth.war" depends="compile">
-        <war destfile="${sampleauthwar}" webxml="${sampleauth.src}/WEB-INF/web.xml">
-            <fileset dir="${sampleauth.src}" excludes="WEB-INF/web.xml" />
-        </war>
-    </target>
-    
-    <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar">
