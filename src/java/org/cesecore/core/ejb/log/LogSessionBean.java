@@ -101,9 +101,13 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
             final Iterator<Map.Entry<String,String>> i = entries.iterator();
             while (i.hasNext()) {
             	final Map.Entry<String, String> entry = i.next();
-            	final String deviceName = entry.getValue();
+            	final String deviceName = entry.getKey();
+            	final String deviceImpl = entry.getValue();
+            	if (LOG.isDebugEnabled()) {
+            		LOG.debug("Creating log device: "+deviceName+", "+deviceImpl);
+            	}
             	// Create log class
-            	final Class implClass = Class.forName(logDeviceMap.get(deviceName));
+            	final Class implClass = Class.forName(deviceImpl);
                 final Object fact = implClass.newInstance();
                 final Class[] paramTypes = new Class[] {String.class};
                 final Method method = implClass.getMethod("makeInstance", paramTypes);
