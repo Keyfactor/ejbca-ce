@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.UnsupportedEncodingException;
-import java.rmi.RemoteException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
