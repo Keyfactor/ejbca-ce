@@ -4780,5 +4780,22 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 </ul>
 </section>
 
+<section name="High Availability (HA)">
+<p>
+EJBCA is designed to work well in a clustered, high availability configuration. The key to EJBCA high availability is to have a HA database, since all EJBCA nodes shares the same database.
+The process of setting up EJBCA in a HA setup is:
+<ol>
+<li>Install a HA database. The process for this differs between databases, consult your database documentation/vendor.</li>
+<li>Install EJBCA on one EJBCA application node and perform all needed configuration.</li>
+<li>Deploy EJBCA with the exact same configuration on other application nodes.</li>
+<li>If you are using HSMs, connect one HSM with the same (duplicated) keys on all EJBCA application nodes. Alternatively set up a HA HSM configuration according to your vendors instructions.</li> 
+</ol>
+When setup you can connect to any of the EJBCA application nodes, and use load balancers to failover and/or spread the load between the different EJBCA application nodes.
+</p>
+<p>A note of caution. Setting up and managing a fully HA database can be very difficult and/or expensive. You may consider different variants of HA databases, such as replication with manual or automatic failover. 
+The possibilities are virtually unlimited, only your requirements and imagination can decide what type of configuration works best for you.
+</p>
+</section>
+
 </body>
 </document>
