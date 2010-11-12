@@ -18,6 +18,8 @@ public class CmpConfiguration {
 	public static final String CONFIG_DEFAULTCA               = "cmp.defaultca";
 	public static final String CONFIG_ALLOWRAVERIFYPOPO       = "cmp.allowraverifypopo";
 	public static final String CONFIG_OPERATIONMODE           = "cmp.operationmode";
+	public static final String CONFIG_RA_NAMEGENERATIONSCHEME = "cmp.ra.namegenerationscheme";
+	public static final String CONFIG_RA_NAMEGENERATIONPARAMS = "cmp.ra.namegenerationparameters";
 	public static final String CONFIG_RA_AUTHENTICATIONSECRET = "cmp.ra.authenticationsecret";
 	public static final String CONFIG_RA_ENDENTITYPROFILE     = "cmp.ra.endentityprofile";
 	public static final String CONFIG_RA_CERTIFICATEPROFILE   = "cmp.ra.certificateprofile";
@@ -50,11 +52,11 @@ public class CmpConfiguration {
 	}
 	
 	public static String getRANameGenerationScheme() {
-		return ConfigurationHolder.getString("cmp.ra.namegenerationscheme", "DN");
+		return ConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
 	}
 	
 	public static String getRANameGenerationParameters() {
-		return ConfigurationHolder.getString("cmp.ra.namegenerationparameters", "CN");
+		return ConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
 	}
 	
 	public static String getRANameGenerationPrefix() {
