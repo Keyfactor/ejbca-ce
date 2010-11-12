@@ -60,7 +60,7 @@ public class UserData implements Serializable {
 
 	private String username;
 	private String subjectDN;
-	private int cAId;
+	private int caId;
 	private String subjectAltName;
 	private String cardNumber;
 	private String subjectEmail;
@@ -145,8 +145,8 @@ public class UserData implements Serializable {
     public void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
 
     @Column(name="caId")
-    public int getCaId() { return cAId; }
-    public void setCaId(int caId) { this.cAId = caId; }
+    public int getCaId() { return caId; }
+    public void setCaId(int caId) { this.caId = caId; }
 
     @Column(name="subjectAltName")
     public String getSubjectAltName() { return subjectAltName; }
@@ -506,9 +506,9 @@ public class UserData implements Serializable {
 	}
 
 	/** @return return a count of UserDatas with the specified CA. */
-	public static long countByCaId(EntityManager entityManager, int cAId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.cAId=:cAId");
-    	query.setParameter("cAId", cAId);
+	public static long countByCaId(EntityManager entityManager, int caId) {
+    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
+    	query.setParameter("caId", caId);
     	return ((Long)query.getSingleResult()).longValue();
 	}
 
