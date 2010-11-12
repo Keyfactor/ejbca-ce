@@ -1396,7 +1396,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
                 data.put(ENCRYPTEDDATA, response.getData());
                 retval = data;
             } catch (Exception e) {
-                new EJBException(e);
+                throw new EJBException(e);
             }
         } else {
             // Don't encrypt data

@@ -353,10 +353,6 @@ public class EjbcaWebBean implements Serializable {
         }
     }
 
-    public Object clone() throws CloneNotSupportedException {
-      return super.clone();
-    }
-
     /* Checks if the admin have authorization to view the resource */
     public boolean isAuthorized(String resource) throws AuthorizationDeniedException {
         boolean returnval = false;

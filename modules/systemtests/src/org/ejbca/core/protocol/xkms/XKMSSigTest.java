@@ -130,15 +130,13 @@ public class XKMSSigTest extends TestCase {
     public void test00SetupAccessRights() throws Exception {
     	log.trace(">test00SetupAccessRights");
         Admin administrator = new Admin(Admin.TYPE_RA_USER);
-        Object o = null;
         username = baseUsername + "1";
         try {
             userAdminSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ADMINISTRATOR, SecConst.TOKEN_SOFT_JKS, 0, caid);
             userAdminSession.setClearTextPassword(administrator, username, "foo123");
-            o = new String("");
         } catch (Exception e) {
-            assertNotNull("Failed to create user " + username, o);
+            assertTrue("Failed to create user " + username, false);
         }
 
         BatchMakeP12 makep12 = new BatchMakeP12();
