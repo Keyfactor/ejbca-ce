@@ -249,9 +249,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     public synchronized int findFreeEndEntityProfileId() {
-    	final int id = Math.abs(RANDOM.nextInt());
+    	int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
         while (!(EndEntityProfileData.findById(entityManager, id) == null)) {
-            Math.abs(RANDOM.nextInt());
+            id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
         }
         return id;
     }
