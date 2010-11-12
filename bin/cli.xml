@@ -3,8 +3,10 @@
     <property name="ejbca.home" location=".."/>
     <property environment="env"/>
 
-    <property file="${user.home}/${app.name}.properties"/>
-    <property file="${ejbca.home}/${app.name}.properties"/>
+	<!-- read in the installation configuration settings from differnet possible locations -->
+    <property file="${user.home}/install.properties"/>
+    <property file="${ejbca.home}/install.properties"/>
+    <property file="${ejbca.home}/conf/install.properties"/>
 
     <property name="lib.dir" location="${ejbca.home}/lib"/>
 
@@ -74,6 +76,8 @@ appserver.home         : ${appserver.home}
     </target>
 
 	<target name="ejbca:javatruststore" description="Java trust store config">
+		<!-- prompt for ca name, but only if it has not been set in install.properties or prompted for already during install -->
+	    <input message="Enter name of CA to add to truststore" addproperty="ca.name"/>
         <echo message="Getting root certificate in DER format..."/>
 		<ejbca:cli arg="ca getrootcert '${ca.name}' ${java.io.tmpdir}/rootca.der -der"/>
 		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
@@ -113,7 +117,7 @@ appserver.home         : ${appserver.home}
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
-		<ejbca:cli arg='ra adduser superadmin ${superadmin.password} "${superadmin.dn}" null "${ca.name}" null 65 ${superadmin.keystoretype}'/>
+		<ejbca:cli arg='ra adduser superadmin ${superadmin.password} "${superadmin.dn}" null "${ca.name}" null 1 ${superadmin.keystoretype}'/>
 		<ejbca:cli arg="ra setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--

@@ -313,7 +313,7 @@ keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_H
 	<p>
 	<b>3)</b> Perhaps the JBoss/Tomcat configuration was not done automatically because you are running another configuration than 'default'
 	in JBoss. the file '$JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml' holds the Tomcat configuration.
-	The configuration should be like the following, where 'serverpwd' is the 'httpsserver.password' as configured in ejbca.properties.
+	The configuration should be like the following, where 'serverpwd' is the 'httpsserver.password' as configured in web.properties.
 	</p>
 <source>
 &lt;!-- HTTPS Connector requiring client cert on port 8443 --&gt;
@@ -334,7 +334,7 @@ keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_H
       <question>I get a blank page on the admiweb after start?</question>
       <answer>
         <p>
-		Either you entered a hostname (in httpsserver.hostname in ejbca.properties) that does not resolve to the 
+		Either you entered a hostname (in httpsserver.hostname in web.properties) that does not resolve to the 
 		machine where EJBCA is running during setup, or you changed the port that JBoss listens to.
 		Make sure the hostname resolves to the machine ejbca is running on.
 		If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.

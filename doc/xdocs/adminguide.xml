@@ -638,7 +638,7 @@ Proof of Possession (POP) is another part where CMP has gazillions of different 
 <br/>
 The following POPs in the CRMF are supported by EJBCA:
 <ul>
-<li>raVerify - if configured so in conf/ejbca.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
+<li>raVerify - if configured so in conf/cmp.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
 <li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
 </ul>
 Currently these are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail because POP is not verified.
@@ -1748,7 +1748,7 @@ When the approving administrators have recieved the mail, there is a link direct
 </p><p>
 The text of notifications is configured in src/intresources.xx.properties. See the ' Dynamic Substitution Variables' section in this manual for a list of available variables.
 </p><p>
-Remember to configure mail-server settings in the ejbca.properties file.
+Remember to configure mail-server settings in the mail.properties file.
 </p>
 </section>
 
@@ -4393,7 +4393,7 @@ Ex: bin/ejbca.sh setup setbaseurl localhost ejbca
 You should never have to do this in version >= 3.2.
 </p><p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
-conf/ejbca.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
+conf/web.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
 After changing, run 'ant deploy' and re-start the application server.
 </p></subsection>
 
@@ -4614,7 +4614,7 @@ to <br></br>$APPSRV_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml.
 Edit the file so 'keyStorePass' is the
 same as the password you specify below for 'tomcat'.
 </p><p>
-2. Edit parameters in conf/ejbca.properties.
+2. Edit parameters in conf/web.properties.
 </p><p>
 3. Create a tomcat server keystore with the 'ejbca.sh batch' tool
 (this can also be done with Suns 'keytool' by creating a keystore and then
