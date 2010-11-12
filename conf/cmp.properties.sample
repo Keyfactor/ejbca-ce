@@ -59,7 +59,7 @@
 # Random will generate a 12 character long random username.
 # DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
 # USERNAME will use the request DN as username.
-# If the same username is constructed (for exmaple UID) as an already existing user, the existing user will be modified with
+# If the same username is constructed (for example UID) as an already existing user, the existing user will be modified with
 # new values for profile etc, and a new certificate will be issued for that user.
 #
 # Default: DN
