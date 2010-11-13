@@ -1950,17 +1950,23 @@ function checkallfields(){
 
     <!-- ---------- Form buttons -------------------- -->
 
-       <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-	 <td><input type="submit" name="<%= BUTTON_ADDUSER %>" value='<c:out value="<%= ejbcawebbean.getText(\"ADDENDENTITY\") %>"/>' tabindex="<%=tabindex++%>"
-                    onClick='return checkallfields()'> 
-             <input type="reset" name="<%= BUTTON_RESET %>" value='<c:out value="<%= ejbcawebbean.getText(\"RESET\") %>"/>' tabindex="<%=tabindex++%>"></td>
-         <td>&nbsp;</td>
-       </tr> 
-     </table> 
-   
-  <script language=javascript>
+	<tr id="Row<%=(row++)%2%>">
+	  <td>&nbsp;</td>
+	  <td>&nbsp;</td>
+	  <td><input type="submit" name="<%= BUTTON_ADDUSER %>" value='<c:out value="<%= ejbcawebbean.getText(\"ADD\") %>"/>' tabindex="<%=tabindex++%>"
+				onClick='return checkallfields()'>
+		  &nbsp; 
+		  <input type="reset" name="<%= BUTTON_RESET %>" value='<c:out value="<%= ejbcawebbean.getText(\"RESET\") %>"/>' tabindex="<%=tabindex++%>"></td>
+	  <td>&nbsp;</td>
+	</tr>
+
+	</table> 
+
+
+
+    <!-- ---------- New end-entities added -------------------- -->
+
+<script type="application/javascript" language="javascript">
 <!--
 function viewuser(row){
     var hiddenusernamefield = eval("document.adduser.<%= HIDDEN_USERNAME %>" + row);
