@@ -1001,6 +1001,64 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
     </tr>
 
+   <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <%= ejbcawebbean.getText("USEHARDTOKENISSUERS") %>
+      </td>
+      <td width="50%"> 
+           <% used =  profiledata.getUse(EndEntityProfile.AVAILTOKENISSUER,0); %>
+        <input type="checkbox" name="<%=CHECKBOX_USE_HARDTOKENISSUERS %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusehardtokenissuers()"
+           <% if(used)
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTHARDTOKENISSUER") %>
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_DEFAULTHARDTOKENISSUER %>" size="1" <% if(!used) out.write(" disabled "); %>>
+            <% for(int i=0; i < hardtokenissueraliases.length;i++){ %>
+           <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER ,0) != null)
+                          if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER  ,0).equals(Integer.toString(hardtokenissuerids[i])))
+                            out.write(" selected "); %>
+                    value='<%= hardtokenissuerids[i] %>'><%= hardtokenissueraliases[i] %>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <%= ejbcawebbean.getText("AVAILABLEHARDTOKENISSUERS") %>
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_AVAILABLEHARDTOKENISSUERS %>" size="5" multiple <% if(!used) out.write(" disabled "); %>>
+            <% String[] availableissuers = profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR); 
+               for(int i=0; i < hardtokenissueraliases.length;i++){ %>
+           <option <% for(int j=0;j< availableissuers.length;j++){
+                         if(availableissuers[j].equals(Integer.toString(hardtokenissuerids[i])))
+                            out.write(" selected "); 
+                      }%>
+                    value='<%= hardtokenissuerids[i]%>'><%= hardtokenissueraliases[i]%>
+           </option>
+            <% } %>
+        </select>
+      </td>
+    </tr>
+    <% } %>
+
 
     <!-- ---------- Other certificate data -------------------- -->
 
@@ -1135,64 +1193,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            %>> 
       </td>
     </tr>
-
-   <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("USEHARDTOKENISSUERS") %>
-      </td>
-      <td width="50%"> 
-           <% used =  profiledata.getUse(EndEntityProfile.AVAILTOKENISSUER,0); %>
-        <input type="checkbox" name="<%=CHECKBOX_USE_HARDTOKENISSUERS %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusehardtokenissuers()"
-           <% if(used)
-                 out.write("CHECKED");
-           %>>
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("DEFAULTHARDTOKENISSUER") %>
-      </td>
-      <td width="50%"> 
-        <select name="<%=SELECT_DEFAULTHARDTOKENISSUER %>" size="1" <% if(!used) out.write(" disabled "); %>>
-            <% for(int i=0; i < hardtokenissueraliases.length;i++){ %>
-           <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER ,0) != null)
-                          if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER  ,0).equals(Integer.toString(hardtokenissuerids[i])))
-                            out.write(" selected "); %>
-                    value='<%= hardtokenissuerids[i] %>'><%= hardtokenissueraliases[i] %>
-           </option>
-            <% } %>
-        </select>
-      </td>
-    </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("AVAILABLEHARDTOKENISSUERS") %>
-      </td>
-      <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLEHARDTOKENISSUERS %>" size="5" multiple <% if(!used) out.write(" disabled "); %>>
-            <% String[] availableissuers = profiledata.getValue(EndEntityProfile.AVAILTOKENISSUER, 0).split(EndEntityProfile.SPLITCHAR); 
-               for(int i=0; i < hardtokenissueraliases.length;i++){ %>
-           <option <% for(int j=0;j< availableissuers.length;j++){
-                         if(availableissuers[j].equals(Integer.toString(hardtokenissuerids[i])))
-                            out.write(" selected "); 
-                      }%>
-                    value='<%= hardtokenissuerids[i]%>'><%= hardtokenissueraliases[i]%>
-           </option>
-            <% } %>
-        </select>
-      </td>
-    </tr>
-    <% } %>
 
 
     <!-- ---------- Other data -------------------- -->

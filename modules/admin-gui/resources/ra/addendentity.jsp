@@ -1635,7 +1635,7 @@ function checkallfields(){
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
        </tr>
 
-       <tr id="Row<%=(row++)%2%>">
+     <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CA\") %>"/></td>
 	 <td>
@@ -1643,9 +1643,9 @@ function checkallfields(){
          </select>
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
-       </tr>
+     </tr>
 
-       <tr id="Row<%=(row++)%2%>">
+     <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"TOKEN\") %>"/></td>
 	 <td>
@@ -1675,7 +1675,19 @@ function checkallfields(){
          </select>
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
-       </tr>
+     </tr>
+
+	<%	if( usehardtokenissuers ) { %>
+		<tr id="Row<%=(row++)%2%>">
+			<td>&nbsp;</td>
+			<td align="right"><c:out value="<%= ejbcawebbean.getText(\"HARDTOKENISSUER\") %>"/></td>
+			<td>
+				<select name="<%= SELECT_HARDTOKENISSUER %>" size="1" tabindex="<%=tabindex++%>">
+				</select>
+			</td>
+			<td>&nbsp;</td>
+		</tr>
+	<%	} %>
 
 
     <!-- ---------- Other certificate data -------------------- -->
@@ -1684,7 +1696,6 @@ function checkallfields(){
 		  || profile.getUse(EndEntityProfile.STARTTIME, 0)
 		  || profile.getUse(EndEntityProfile.ENDTIME, 0)
 		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
-		  || usehardtokenissuers
 		   ) { %>
 	    <tr id="Row<%=(row++)%2%>">
 		<td>&nbsp;</td>
@@ -1764,28 +1775,16 @@ function checkallfields(){
 		</tr>
 	<%	} %>
 
-         <% if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
-	 <td>      
-           <input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
-        </td>
-     <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
-       </tr>
-       <% }%>
-
-       <% if(usehardtokenissuers){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"HARDTOKENISSUER\") %>"/></td>
-	 <td>
-         <select name="<%= SELECT_HARDTOKENISSUER %>" size="1" tabindex="<%=tabindex++%>">
-         </select>
-         </td>
-	 <td>&nbsp;</td>
-       </tr>
-       <% } %>
+	<%	if( profile.getUse(EndEntityProfile.CARDNUMBER,0) ) { %>
+		<tr id="Row<%=(row++)%2%>">
+			<td>&nbsp;</td>
+			<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
+			<td>
+				<input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
+			</td>
+			<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
+		</tr>
+	<%	} %>
 
 
     <!-- ---------- Other data -------------------- -->
