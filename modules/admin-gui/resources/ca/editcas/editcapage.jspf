@@ -1230,6 +1230,15 @@ function checkallfields(){
     <!-- ---------- Form buttons -------------------- -->
 
     <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        &nbsp;
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right">
         &nbsp;
         <% if(editca && !waitingresponse){ %>
@@ -1261,6 +1270,15 @@ function checkallfields(){
        <% if(editca && revokable){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        &nbsp;
+      </td>
+      <td width="50%"> 
+        &nbsp;
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right" class="title"> 
         <strong><%= ejbcawebbean.getText("CALIFECYCLE") %></strong>
       </td>
       <td width="50%"> 
