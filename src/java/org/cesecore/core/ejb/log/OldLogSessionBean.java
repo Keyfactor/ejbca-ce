@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -28,17 +27,13 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.config.OldLogConfiguration;
-import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.ejb.log.LogEntryData;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -56,12 +51,6 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
     @PersistenceContext(unitName="ejbca")
     private transient EntityManager entityManager;
 
-	@EJB
-    private TableProtectSessionLocal tableProtectSession;
-
-    /** If signing of logs is enabled of not, default not */
-    private boolean logsigning = OldLogConfiguration.getLogSigning() || ProtectConfiguration.getLogProtectionEnabled();
-
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		String uid = null;
@@ -75,10 +64,6 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		}
 		Integer id = getAndIncrementRowCount();
 		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment));
-		if (logsigning) {
-			LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment);
-			tableProtectSession.protect(le);
-		}
 	}
 
 	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
@@ -90,10 +75,6 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		List<LogEntry> returnval = new ArrayList<LogEntry>();
 		for (LogEntryData logEntryData : logEntryDataList) {
 			LogEntry logEntry = logEntryData.getLogEntry();
-			if (logsigning) {
-				TableVerifyResult res = tableProtectSession.verify(logEntry);
-				logEntry.setVerifyResult(res.getResultConstant());
-			}
 			returnval.add(logEntry);
 		}
 		return returnval;

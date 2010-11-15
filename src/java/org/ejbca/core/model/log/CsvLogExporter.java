@@ -98,8 +98,6 @@ public class CsvLogExporter implements ILogExporter {
 					pw.print(next.getCertificateSNR());
 					pw.print("\t");
 					pw.print(next.getComment());
-					pw.print("\t");
-					pw.print(next.getVerifyResult());
 					pw.print("\n");
 				}
 				pw.close();

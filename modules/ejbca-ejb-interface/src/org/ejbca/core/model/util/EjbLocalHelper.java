@@ -51,8 +51,6 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
-import org.ejbca.core.ejb.protect.TableProtectSession;
-import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -206,14 +204,6 @@ public class EjbLocalHelper {
 			oldLogSession = JndiHelper.getRemoteSession(OldLogSessionRemote.class);
 		}
 		return oldLogSession;
-	}
-	
-	private TableProtectSession tableProtectSession = null;
-	public TableProtectSession getTableProtectSession()  {
-		if(tableProtectSession == null){
-			tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemote.class);
-		}
-		return tableProtectSession;
 	}
 
 	private PublisherQueueSession publisherQueueSession = null;

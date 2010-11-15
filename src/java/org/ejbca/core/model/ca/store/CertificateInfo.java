@@ -14,22 +14,15 @@
 package org.ejbca.core.model.ca.store;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.Date;
-
-import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.model.protect.Protectable;
 
 /**
  * Holds information about a certificate but not the certificate itself.
  *
  * @version $Id$
  */
-public class CertificateInfo implements Serializable, Protectable {
+public class CertificateInfo implements Serializable {
 
 	private static final long serialVersionUID = -1973602951994928833L;
 	
@@ -111,31 +104,4 @@ public class CertificateInfo implements Serializable, Protectable {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-
-    // 
-    // Protectable
-    //
-    public int getHashVersion() {
-    	return 1;
-    }
-    public String getDbKeyString() {
-    	return fingerprint;
-    }
-    public String getEntryType() {
-    	return "CERTIFICATEDATA";
-    }
-    public String getHash() throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
-    	StringBuffer buf = new StringBuffer();
-    	// Don't include cafingerprint and type in the hash, because it is not avaiable in all places where we need to create protection
-    	buf.append(fingerprint).append(issuerdn).append(subjectdn).append(status).
-    		append(serno).append(expiredate).append(revocationdate).append(revocationreason);
-        MessageDigest digest = MessageDigest.getInstance("SHA-256", "BC");
-        byte[] result = digest.digest(buf.toString().getBytes("UTF-8"));
-        return new String(Hex.encode(result));
-    }
-    public String getHash(int version) throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
-    	return getHash();
-    }
-    
-
 }

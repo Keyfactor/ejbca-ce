@@ -4337,8 +4337,7 @@ back to EJBCA for display in the Admin GUI.
 </subsection>
 <subsection name="OldLogDevice">
 <p>
-OldLogDevice stores log-events in the database. By using the addon
-HMAC-protection, alterations in a log event can be detected. Viewed events can
+OldLogDevice stores log-events in the database. Viewed events can
 be exported from the Admin GUI.
 </p>
 </subsection>

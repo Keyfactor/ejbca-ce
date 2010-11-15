@@ -23,13 +23,10 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.protect.TableProtectSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -47,15 +44,14 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 2;
         
     protected static final String DATASOURCE 				= "dataSource";
-    protected static final String PROTECT 					= "protect";
+    private static final String PROTECT 					= "protect";	// Removed in version 2
     protected static final String STORECERT					= "storeCert";
     
     // Default values
     public static final String DEFAULT_DATASOURCE 			= "java:/OcspDS";
-    public static final boolean DEFAULT_PROTECT 			= false;
 
     private final static String insertSQL = "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     private final static String updateSQL = "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=? WHERE fingerprint=?";
@@ -66,7 +62,6 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
         super();
         data.put(TYPE, Integer.valueOf(PublisherConst.TYPE_EXTOCSPPUBLISHER));
         setDataSource(DEFAULT_DATASOURCE);
-        setProtect(DEFAULT_PROTECT);
     }
 
     /**
@@ -77,26 +72,12 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
 	}
     
     /**
-     *  Sets the property protect for the publisher.
-     */
-    public void setProtect(boolean protect) {
-		data.put(PROTECT, Boolean.valueOf(protect));
-	}
-    
-    /**
      * @return The value of the property data source
      */
     public String getDataSource() {
     	return (String) data.get(DATASOURCE);
     }
     
-    /**
-     * @return The value of the property protect
-     */
-    public boolean getProtect() {
-    	return ((Boolean) data.get(PROTECT)).booleanValue();
-    }
-
     /**
      *  Sets the property protect for the publisher.
      */
@@ -121,9 +102,6 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     public void init(Properties properties) {
         setDataSource(properties.getProperty(DATASOURCE));
         log.debug("dataSource='"+getDataSource()+"'.");
-        String prot = properties.getProperty(PROTECT, "false"); // false is default for this
-        setProtect(StringUtils.equalsIgnoreCase(prot, "true"));
-        log.debug("protect='"+getProtect()+"'.");
         String storecert = properties.getProperty(STORECERT, "true"); // true is default for this
         setStoreCert(StringUtils.equalsIgnoreCase(storecert, "true"));
         log.debug("storeCert='"+getStoreCert()+"'.");
@@ -193,7 +171,6 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
                                     String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
                                     ExtendedInformation extendedinformation)
     throws PublisherException {
-    	boolean fail = true;
     	if (log.isDebugEnabled()) {
     		String fingerprint = CertTools.getFingerprintAsString(incert);
     		log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external OCSP");
@@ -206,7 +183,6 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     		} else {
         		JDBCUtil.execute(insertSQL, prep, getDataSource());    			
     		}
-    		fail = false;
     	} catch (Exception e) {
     		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
     		if (e instanceof SQLException) {
@@ -221,7 +197,6 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     	    		} else {
     	        		JDBCUtil.execute(updateSQL, prep, getDataSource());
     	    		}
-            		fail = false;    				
     			} catch (Exception ue) {
     				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
     	            log.error(lmsg, ue);
@@ -236,26 +211,6 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
 	            pe.initCause(e);
 	            throw pe;				
 			}
-    	}
-    	// If we managed to update the OCSP database, and protection is enabled, we have to update the protection database
-    	if (!fail && getProtect()) {
-    		X509Certificate cert = (X509Certificate)incert;
-    		String fp = CertTools.getFingerprintAsString(cert);
-    		String serno = cert.getSerialNumber().toString();
-    		String issuer = CertTools.getIssuerDN(cert);
-    		String subject = CertTools.getSubjectDN(cert);
-    		long expire = cert.getNotAfter().getTime();
-    		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason, username, tag, certificateProfileId, lastUpdate);
-    		//TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
-            try {
-				//TableProtectSessionRemote remote = home.create();
-            	TableProtectSession remote = new EjbRemoteHelper().getTableProtectSession();
-				remote.protectExternal(entry, getDataSource());
-			} catch (Exception e) {
-				String msg = intres.getLocalizedMessage("protect.errorcreatesession");
-				log.error(msg, e);
-			} 
-
     	}
         return true;
     }
@@ -304,5 +259,22 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
 
 	public float getLatestVersion() {
 		return LATEST_VERSION;
+	}
+
+	/** 
+	 * Implementation of UpgradableDataHashMap function upgrade. 
+	 */
+	public void upgrade() {
+		log.trace(">upgrade");
+		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+			// New version of the class, upgrade
+			String msg = intres.getLocalizedMessage("publisher.upgrade", new Float(getVersion()));
+			log.info(msg);
+			if (getVersion() < 2) {
+				data.remove(PROTECT);
+			}
+			data.put(VERSION, new Float(LATEST_VERSION));
+		}
+		log.trace("<upgrade");
 	}
 }

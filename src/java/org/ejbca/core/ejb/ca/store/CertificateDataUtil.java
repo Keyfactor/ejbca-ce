@@ -26,14 +26,11 @@ import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
@@ -161,8 +158,7 @@ public class CertificateDataUtil {
     }
 
 
-    static public CertificateStatus getStatus(String issuerDN, BigInteger serno,
-                                              EntityManager entityManager, TableProtectSessionLocal protect, Adapter adapter) {
+    static public CertificateStatus getStatus(String issuerDN, BigInteger serno, EntityManager entityManager, Adapter adapter) {
         if (adapter.getLogger().isTraceEnabled()) {
             adapter.getLogger().trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -179,9 +175,6 @@ public class CertificateDataUtil {
         	Iterator<CertificateData> iter = coll.iterator();
         	if (iter.hasNext()) {
         		final CertificateData data = iter.next();
-        		if (protect != null) {
-        			verifyProtection(data, protect, adapter);
-        		}
         		final CertificateStatus result = getIt(data);
         		if (adapter.getLogger().isTraceEnabled()) {
         			adapter.getLogger().trace("<getStatus() returned " + result + " for cert number "+serno.toString(16));
@@ -228,61 +221,5 @@ public class CertificateDataUtil {
     		return new CertificateStatus(CertificateStatus.OK.toString(), pId);
     	}
     	return new CertificateStatus(data.getRevocationDate(), revReason, pId);
-    }
-
-    static public void verifyProtection(Admin admin, String issuerDN, BigInteger serno,
-    		EntityManager entityManager, TableProtectSessionLocal tableProtectSession, Adapter adapter) {
-    	if (adapter.getLogger().isTraceEnabled()) {
-    		adapter.getLogger().trace(">verifyProtection, dn:" + issuerDN + ", serno=" + serno.toString(16));
-    	}
-    	if (tableProtectSession != null) {
-    		// First make a DN in our well-known format
-    		Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, CertTools.stringToBCDNString(issuerDN), serno.toString());
-    		if (coll.size() > 1) {
-    			String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
-    			adapter.error(msg);
-    		}
-    		Iterator<CertificateData> iter = coll.iterator();
-    		if (iter.hasNext()) {
-    			CertificateData data = iter.next();
-    			verifyProtection(data, tableProtectSession, adapter);
-    		}
-    	}
-    }
-
-    static void verifyProtection(CertificateData data, TableProtectSessionLocal tableProtectSession, Adapter adapter) {
-    	if (data==null) {
-        	adapter.error("CertificateData to verify is null.");
-    	} else {
-    		if (adapter.getLogger().isDebugEnabled()) {
-    			// Debug info (temporarily) added to hunt down a hard to reproduce NPE.
-    			adapter.debug("data.getFingerprint: " + data.getFingerprint());
-    			adapter.debug("data.getCaFingerprint: " + data.getCaFingerprint());
-    			adapter.debug("data.getSerialNumber: " + data.getSerialNumber());
-    			adapter.debug("data.getIssuerDN: " + data.getIssuerDN());
-    			adapter.debug("data.getSubjectDN: " + data.getSubjectDN());
-    			adapter.debug("data.getStatus: " + data.getStatus());
-    			adapter.debug("data.getType: " + data.getType());
-    			adapter.debug("data.getExpireDate: " + data.getExpireDate());
-    			adapter.debug("data.getRevocationDate: " + data.getRevocationDate());
-    			adapter.debug("data.getRevocationReason: " + data.getRevocationReason());
-    			adapter.debug("data.getUsername: " + data.getUsername());
-    			adapter.debug("data.getTag: " + data.getTag());
-    			adapter.debug("data.getCertificateProfileId: " + data.getCertificateProfileId());
-    			adapter.debug("data.getUpdateTime: " + data.getUpdateTime());
-    		}
-    		Integer certProfileId = data.getCertificateProfileId();
-    		if (certProfileId == null) {
-    			adapter.error("CertificateData.certificateProfileId was null. Upgrade might have failed.");
-    		}
-    		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(),
-    				data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason(), data.getUsername(), data.getTag(),
-    				data.getCertificateProfileId(), data.getUpdateTime());
-    		// The verify method will log failed verifies itself
-    		TableVerifyResult res = tableProtectSession.verify(entry);
-    		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-    			//adapter.error("Verify failed, but we go on anyway.");
-    		}
-    	}
     }
 }

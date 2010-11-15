@@ -379,18 +379,6 @@ public interface CertificateStoreSession {
             throws AuthenticationFailedException;
 
     /**
-     * Checks the table protection information for a certificate data row
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerDN
-     *            the DN of the issuer.
-     * @param serno
-     *            the serialnumber of the certificate that will be checked
-     */
-    public void verifyProtection(org.ejbca.core.model.log.Admin admin, java.lang.String issuerDN, java.math.BigInteger serno);
-
-    /**
      * Method used to add a CertReqHistory to database
      * 
      * @param admin
@@ -434,11 +422,6 @@ public interface CertificateStoreSession {
      * @return a collection of CertReqHistory
      */
     public java.util.List<CertReqHistory> getCertReqHistory(org.ejbca.core.model.log.Admin admin, java.lang.String username);
-
-
-
-
-
 
     /**
      * Used by healthcheck. Validate database connection.
