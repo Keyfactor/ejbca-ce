@@ -108,7 +108,7 @@ function changematchfields(row){
      }     
      menumatchvalue.disabled = true;
      textmatchvalue.disabled = false;
-     textmatchvalue.size=40;
+     textmatchvalue.size=20;
   }
    // if profile remove beginswith and menu
   else{
@@ -216,7 +216,7 @@ function changematchfields(row){
            }     
            menumatchvalue.disabled = true;
            textmatchvalue.disabled = false;
-           textmatchvalue.size=40;
+           textmatchvalue.size=20;
          } 
         }
       }
@@ -351,10 +351,10 @@ function changematchfields(row){
                || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow1.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="20" maxlength="255" value='' >
         <% } %>
     </td>
   </tr>
@@ -495,10 +495,10 @@ function changematchfields(row){
                || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE))  || oldmatchwithrow2.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow2 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow2 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="20" maxlength="255" value='' >
         <% } %>
     </td>
   </tr>
@@ -639,10 +639,10 @@ function changematchfields(row){
                || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CERTIFICATEPROFILE)) || oldmatchwithrow3.equals(Integer.toString(UserMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow3 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow3 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="20" maxlength="255" value='' >
         <% } %>
     </td>
   </tr>
@@ -733,6 +733,8 @@ function changematchfields(row){
     </td>
     <td width="93%" align="left"> 
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORBEFORE\") %>"/>&nbsp;
       <select name='<%= SELECT_DAY_ROW5  %>'> 
          <%  tempval =0;
