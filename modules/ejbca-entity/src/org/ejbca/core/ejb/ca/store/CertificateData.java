@@ -737,7 +737,7 @@ public class CertificateData implements Serializable {
 		return certificateList;
 	}
 
-	/** @return the CertificateInfo representation (all fields except the actual cert) */
+	/** @return the CertificateInfo representation (all fields except the actual cert) or null if no such fingerprint exists. */
 	public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
 		CertificateInfo ret = null;
 		Query query = entityManager.createNativeQuery(

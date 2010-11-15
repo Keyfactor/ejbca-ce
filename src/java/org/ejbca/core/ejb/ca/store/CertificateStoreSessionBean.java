@@ -236,7 +236,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param subjectDN the DN of the subject whos certificates will be retrieved.
      * @param issuerDN  the dn of the certificates issuer.
      * @return Collection of Certificates (java.security.cert.Certificate) in no specified order or an empty Collection.
-     * @throws EJBException if a communication or other error occurs.
      */
     public Collection<Certificate> findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
     	if (log.isTraceEnabled()) {
@@ -275,7 +274,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN
      * @param subjectDN
      * @return set of users with certificates with specified subject DN issued by specified issuer.
-     * @throws EJBException if a communication or other error occurs.
      */
     public Set<String> findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
         if (log.isTraceEnabled()) {
@@ -301,7 +299,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @param issuerDN
      * @param subjectKeyId
      * @return set of users with certificates with specified key issued by specified issuer.
-     * @throws EJBException if a communication or other error occurs.
      */
     public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte subjectKeyId[]) {
         if (log.isTraceEnabled()) {
@@ -595,9 +592,10 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      *                 If <tt>null</tt> or empty return certificates regardless of
      *                 the issuer.
      * @param type     CERTTYPE_* types from CertificateDataBean
+     * @throws IllegalArgumentException when admin is null or type is not one or more of of SecConst.CERTTYPE_SUBCA, SecConst.CERTTYPE_ENDENTITY, SecConst.CERTTYPE_ROOTCA
      * @return Collection Collection of Certificate, never <tt>null</tt>
      */
-    public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
+    public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) throws IllegalArgumentException {
         return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
     }
 
