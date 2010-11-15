@@ -48,7 +48,7 @@
     </target>
 
     <target name="build-ocsp" description="Build this module" depends="compile, handlepersistence, handleorm-ocsp">
-    	<jar destfile="${mod.ocsp-entity.lib}" basedir="${build.dir}" includes="**/CertificateData.class **/TableProtectData.class **/*.xml"/>
+    	<jar destfile="${mod.ocsp-entity.lib}" basedir="${build.dir}" includes="**/CertificateData.class **/*.xml"/>
     </target>
 
     <target name="compile" depends="ejbca-util">

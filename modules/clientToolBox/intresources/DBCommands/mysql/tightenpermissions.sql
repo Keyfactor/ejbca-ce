@@ -30,12 +30,9 @@ grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.ProtectedLogExportData to
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.PublisherData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.PublisherQueueData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.ServiceData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.TableProtectData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.UserData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT,UPDATE,DELETE,INDEX on ${url.path}.UserDataSourceData to '${database.username}'@'${url.host}';
 
-grant SELECT,INSERT on ${url.path}.ProtectedLogData to '${database.username}'@'${url.host}';
-grant SELECT,INSERT on ${url.path}.ProtectedLogTokenData to '${database.username}'@'${url.host}';
 grant SELECT,INSERT on ${url.path}.LogEntryData to '${database.username}'@'${url.host}';
 
 flush privileges;

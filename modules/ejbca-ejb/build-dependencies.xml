@@ -100,31 +100,6 @@
 				</classpath>
 			</javac>
 
-			<!-- Protect component -->
-			<echo message=" ** Validating component: Protect **"/>
-			<mkdir dir="${src-temp.dir}/protect"/>
-			<mkdir dir="${build-temp.dir}/protect"/>
-			<copy todir="${src-temp.dir}/protect">
-				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/ejbca/core/ejb/protect/*.java"/>
-				</fileset>
-				<fileset dir="${src-ejbca-entity.dir}">
-					<include name="org/ejbca/core/ejb/protect/*.java"/>
-				</fileset>
-				<fileset dir="${src.dir}">
-					<include name="org/ejbca/core/ejb/protect/*SessionBean.java"/>
-					<include name="org/ejbca/core/model/protect/*.java"/>
-					<include name="org/ejbca/config/ProtectConfiguration.java"/>
-				</fileset>
-			</copy>
-			<javac srcdir="${src-temp.dir}/protect" destdir="${build-temp.dir}/protect" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-				<classpath>
-					<path refid="compile-util.classpath"/>
-					<pathelement location="${build-temp.dir}/common"/>
-				</classpath>
-			</javac>
-
 			<!-- AdminObjects component -->
 			<echo message=" ** Validating component: AdminObjects **"/>
 			<mkdir dir="${src-temp.dir}/admins"/>
@@ -175,7 +150,6 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/protect"/>
 					<pathelement location="${build-temp.dir}/admins"/>
 				</classpath>
 			</javac>
@@ -202,7 +176,6 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/protect"/>
 					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 				</classpath>
@@ -226,7 +199,6 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/protect"/>
 					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 				</classpath>
@@ -311,7 +283,6 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/protect"/>
 					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 					<pathelement location="${build-temp.dir}/authorization"/>
@@ -398,7 +369,6 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/protect"/>
 					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 					<pathelement location="${build-temp.dir}/authorization"/>
@@ -599,7 +569,6 @@
 				<classpath>
 					<path refid="compile-util.classpath"/>
 					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/protect"/>
 					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/logging"/>
 					<pathelement location="${build-temp.dir}/authorization"/>

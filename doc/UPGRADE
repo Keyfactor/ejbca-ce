@@ -29,6 +29,9 @@ Support for ProtectedLog that was deprecated in EJBCA 3.10.0 has been dropped. I
 export the logs before upgrading. If you don't have any data in these tables, the indexes and tables can
 be dropped.
 
+Support for table protection (configured in proptecion.properties) that was deprecated in EJBCA 3.11
+has now been dropped. If you don't have any data in these tables, the indexes and tables can be dropped.
+
 EJBCA 4.0 requires an application server supporting JEE5. For JBoss this means at least JBoss 5.1.x. 
 
 *Note for on-line upgrades*

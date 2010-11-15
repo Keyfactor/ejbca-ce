@@ -194,7 +194,6 @@
             </classpath>
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
-            <include name="org/ejbca/core/ejb/protect/TableProtectSessionBean.java" />
 			<!-- Classes not available in ejbca-util.jar -->
             <include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java" />
             <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" />

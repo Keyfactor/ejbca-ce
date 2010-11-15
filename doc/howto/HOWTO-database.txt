@@ -350,7 +350,6 @@ LogConfigurationData
 LogEntryData
 PublisherData
 ServiceData
-TableProtectData
 UserData
 UserDataSourceData
 ... some SYS tables ...
@@ -429,8 +428,7 @@ You can run this script to boost your database performance, if you have many rec
 
 Indexes are in MySQL syntax, it should be general enough though.
 
-On external OCSP responders you should create the following two indexes:
-create index protect_idx1 on TableProtectData (dbKey,dbType);
+On external OCSP responders you should create the following index:
 create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
 
 Indexes for extra security

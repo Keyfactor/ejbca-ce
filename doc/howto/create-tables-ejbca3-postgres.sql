@@ -303,23 +303,6 @@ CREATE TABLE servicedata (
 CONSTRAINT pk_servicedata PRIMARY KEY (id)
 );
 
-DROP TABLE TABLEPROTECTDATA;
-
-CREATE TABLE tableprotectdata (
-  id TEXT NOT NULL, 
-  version INT4 NOT NULL, 
-  hashVersion INT4 NOT NULL, 
-  protectionAlg TEXT, 
-  hash TEXT, 
-  signature TEXT, 
-  time INT8 NOT NULL, 
-  dbKey TEXT, 
-  dbType TEXT, 
-  keyType TEXT, 
-  rowVersion INT4 DEFAULT 0, 
-CONSTRAINT pk_tableprotectdata PRIMARY KEY (id)
-);
-
 DROP TABLE USERDATA;
 
 CREATE TABLE userdata (
