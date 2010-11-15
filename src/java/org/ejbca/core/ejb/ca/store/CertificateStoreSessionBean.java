@@ -40,10 +40,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.ProtectConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
@@ -53,7 +51,6 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.util.Base64;
@@ -82,13 +79,8 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     @EJB
     private LogSessionLocal logSession;
     @EJB
-    private TableProtectSessionLocal tableProtectSession;
-    @EJB
     private PublisherSessionLocal publisherSession;
     
-    /** If protection of database entries are enabled of not, default not */
-    private boolean protect = ProtectConfiguration.getCertProtectionEnabled();
-
     final private CertificateDataUtil.Adapter adapter;
     
     public CertificateStoreSessionBean() {
@@ -190,10 +182,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         }
         String msg = intres.getLocalizedMessage("store.storecert");            	
         logSession.log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
-        if (protect) {
-        	CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), cafp, data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), status, type, data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason(), username, tag, certificateProfileId, updateTime);
-        	tableProtectSession.protect(entry);
-        }
         log.trace("<storeCertificate()");
         return true;
     }
@@ -729,11 +717,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));            	
     		logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     	}
-    	// Update database protection
-    	if (protect) {
-    		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason(), username, rev.getTag(), rev.getCertificateProfileId(), rev.getUpdateTime());
-    		tableProtectSession.protect(entry);
-    	}
     	if (log.isTraceEnabled()) {
         	log.trace("<private setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
     	}
@@ -811,17 +794,9 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         		certificate = j.next();
         		String fingerprint = CertTools.getFingerprintAsString(certificate);
         		CertificateInfo info = getCertificateInfo(admin, fingerprint);
-        		if (info != null) {
-                    if (protect) {
-                        // The verify method will log failed verifies itself
-                        TableVerifyResult res = tableProtectSession.verify(info);
-                        if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
-                            // error("Verify failed, but we go on anyway.");
-                        }
-                    }
-            		if (info.getStatus() != SecConst.CERT_REVOKED) {
-            			returnval = false;
-            		}        			
+        		if (info != null && info.getStatus() != SecConst.CERT_REVOKED) {
+        			returnval = false;
+        			break;
         		}
         	}
         }
@@ -853,9 +828,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
                 Iterator<CertificateData> iter = coll.iterator();
                 while (iter.hasNext()) {
                     CertificateData data = iter.next();
-                    if (tableProtectSession != null) {
-                        CertificateDataUtil.verifyProtection(data, tableProtectSession, adapter);
-                    }
                     // if any of the certificates with this serno is revoked, return true
                     if (data.getStatus() == SecConst.CERT_REVOKED) {
                     	ret = true;
@@ -886,7 +858,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @return CertificateStatus status of the certificate, never null, CertificateStatus.NOT_AVAILABLE if the certificate is not found.
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, tableProtectSession, adapter);
+        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, adapter);
     }
 
     /**
@@ -916,17 +888,6 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
         } else {
         	// TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
         }
-    }
-
-    /**
-     * Checks the table protection information for a certificate data row
-     *
-     * @param admin    Administrator performing the operation
-     * @param issuerDN the DN of the issuer.
-     * @param serno    the serialnumber of the certificate that will be checked
-     */
-    public void verifyProtection(Admin admin, String issuerDN, BigInteger serno) {
-        CertificateDataUtil.verifyProtection(admin, issuerDN, serno, entityManager, tableProtectSession, adapter);
     }
 
     /**

@@ -19,7 +19,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -29,7 +28,6 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CryptoProviderTools;
 
@@ -50,9 +48,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-    @EJB
-    private TableProtectSessionLocal tableProtectSession;
-    
     public CertificateStoreOnlyDataSessionBean() {
         super();
         CryptoProviderTools.installBCProvider();
@@ -84,7 +79,7 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @return the status of the certificate
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, tableProtectSession, adapter);
+        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, adapter);
     }
 
     /**

@@ -14,8 +14,8 @@ package org.ejbca.core.model.util;
 
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -31,7 +31,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
-import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -71,7 +70,6 @@ public class EjbRemoteHelper {
     private RaAdminSessionRemote raAdminSession = null;
     private ServiceSessionRemote serviceSession = null;
     private SignSessionRemote signSession = null;
-    private TableProtectSessionRemote tableProtectSession = null;
     private UpgradeSessionRemote upgradeSession = null;
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
@@ -243,13 +241,6 @@ public class EjbRemoteHelper {
             certificateRequestSession = JndiHelper.getRemoteSession(CertificateRequestSessionRemote.class);
         }
         return certificateRequestSession;
-    }
-
-    public TableProtectSessionRemote getTableProtectSession() {
-        if (tableProtectSession == null) {
-            tableProtectSession = JndiHelper.getRemoteSession(TableProtectSessionRemote.class);
-        }
-        return tableProtectSession;
     }
 
     public UpgradeSessionRemote getUpgradeSession() {

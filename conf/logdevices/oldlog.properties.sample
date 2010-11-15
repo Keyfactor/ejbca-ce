@@ -1,5 +1,2 @@
 # This is where the old log class OldLogDevice is configured
 
-# *** Deprecated ***
-# This option will disappear in future version of EJBCA. Use protection.logprotect in protect.properties instead.
-#logSigning=false

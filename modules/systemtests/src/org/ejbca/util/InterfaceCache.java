@@ -31,7 +31,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
-import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -143,10 +142,6 @@ public class InterfaceCache {
 
 	public static CertificateRequestSessionRemote getCertficateRequestSession() {
 		return getEjb().getCertficateRequestSession();
-	}
-
-	public static TableProtectSessionRemote getTableProtectSession() {
-		return getEjb().getTableProtectSession();
 	}
 
 	public static UpgradeSessionRemote getUpgradeSession() {

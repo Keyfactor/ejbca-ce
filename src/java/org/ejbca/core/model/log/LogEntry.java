@@ -20,15 +20,7 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.Date;
-
-import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.model.protect.Protectable;
-import org.ejbca.core.model.protect.TableVerifyResult;
 
 /**
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
@@ -36,7 +28,18 @@ import org.ejbca.core.model.protect.TableVerifyResult;
  * @author  TomSelleck
  * @version $Id$
  */
-public class LogEntry implements Serializable, Protectable {
+public class LogEntry implements Serializable {
+
+    private int id;
+    private int admintype;
+    private String admindata;
+    private int caid;
+    private int module;
+    private Date time;
+    private String username;
+    private String certificatesnr;
+    private int event;
+    private String comment;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -147,52 +150,4 @@ public class LogEntry implements Serializable, Protectable {
     public String getComment() {
         return this.comment;
     }
-
-    public String getVerifyResult() {
-        return this.verifyResult;
-    }
-
-    public void setVerifyResult(String result) {
-        this.verifyResult=result;
-    }
-    
-    // 
-    // Protectable
-    //
-    public int getHashVersion() {
-    	return 1;
-    }
-    public String getDbKeyString() {
-    	return Integer.toString(id);
-    }
-    public String getEntryType() {
-    	return "LOGENTRY";
-    }
-    public String getHash() throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
-    	StringBuffer buf = new StringBuffer();
-    	buf.append(id).append(admintype).append(admindata).append(caid).append(module).append(time.getTime()).
-    		append(username).append(certificatesnr).append(event).append(comment);
-        MessageDigest digest = MessageDigest.getInstance("SHA-256", "BC");
-        byte[] result = digest.digest(buf.toString().getBytes("UTF-8"));
-        return new String(Hex.encode(result));
-    }
-    public String getHash(int version) throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
-    	return getHash();
-    }
-
-    // Private methods
-
-    // Private fields
-    private int id;
-    private int admintype;
-    private String admindata;
-    private int caid;
-    private int module;
-    private Date time;
-    private String username;
-    private String certificatesnr;
-    private int event;
-    private String comment;
-    private String verifyResult = TableVerifyResult.VERIFY_DISABLED_MSG;
-
 }

@@ -44,13 +44,16 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     public static final int CERTIFICATESERNO  = 8;
     public static final int EVENT             = 9;
     public static final int COMMENT           = 10;
-    public static final int VERIFY            = 11;
    
     public static final String TRUE = "T";
     public static final String FALSE = "F";
     
     public static final int NUMBEROF_FIELDS=12;
 
+    private String[] logentrydata; 
+    private SortBy sortby; 
+    private Date time;
+    private SubjectDNProxy dnproxy;
     
     /** Creates a new instance of UserView */
     public LogEntryView(SubjectDNProxy dnproxy) {
@@ -152,7 +155,6 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        }
        
        logentrydata[COMMENT] = logentry.getComment();  
-       logentrydata[VERIFY] = logentry.getVerifyResult();
     }
           
     public int compareTo(Object obj) {
@@ -200,12 +202,4 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
     
     public Date getTime(){return time;}
-    
-    // Private constants.  
-    
-    // Private methods.
-    private String[] logentrydata; 
-    private SortBy sortby; 
-    private Date time;
-    private SubjectDNProxy dnproxy;
 }

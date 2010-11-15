@@ -603,7 +603,6 @@ public class EjbcaWSHelper {
 				if (validate) {
 					// Check validity
 					CertTools.checkValidity(next, new Date());
-					certificateStoreSession.verifyProtection(admin, CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
 				}
 				// Check authorization
 				int caid = CertTools.getIssuerDN(next).hashCode();
