@@ -60,15 +60,14 @@ public class CertificateDataUtil {
         Certificate ret = null;
         try {
         	CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
-        	if (res == null) {
-        		return null;
+        	if (res != null) {
+                ret = res.getCertificate();
         	}
-            ret = res.getCertificate();
-            adapter.getLogger().trace("<findCertificateByFingerprint()");
         } catch (Exception e) {
             adapter.getLogger().error("Error finding certificate with fp: " + fingerprint);
             throw new EJBException(e);
         }
+        adapter.getLogger().trace("<findCertificateByFingerprint()");
         return ret;
     }
 
@@ -109,7 +108,7 @@ public class CertificateDataUtil {
 
     public static Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN,
                                                     EntityManager entityManager,
-                                                    Adapter adapter) {
+                                                    Adapter adapter) throws IllegalArgumentException {
         adapter.getLogger().trace(">findCertificatesByType()");
         if (null == admin
                 || type <= 0
