@@ -62,9 +62,8 @@ public class CreateCert extends BaseCommand {
 				getLogger().error("Input file '"+csr+"' is not a PKCS#10 request.");
 				return;
 			}
-			Class responseClass = Class.forName(X509ResponseMessage.class.getName());
 			// Call signsession to create a certificate
-			IResponseMessage resp = signSession.createCertificate(getAdmin(), req, responseClass, null);
+			IResponseMessage resp = signSession.createCertificate(getAdmin(), req, X509ResponseMessage.class, null);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);

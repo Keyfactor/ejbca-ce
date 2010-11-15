@@ -496,7 +496,7 @@ public class CardCertReqServlet extends HttpServlet {
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()), null);
+        IResponseMessage resp = signsession.createCertificate(administrator, req, org.ejbca.core.protocol.X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         result = cert.getEncoded();
         return Base64.encode(result, false);

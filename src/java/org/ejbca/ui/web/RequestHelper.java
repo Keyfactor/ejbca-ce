@@ -169,7 +169,7 @@ public class RequestHelper {
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()), null);
+        IResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         if(resulttype == ENCODED_CERTIFICATE) {
           result = cert.getEncoded();
@@ -198,7 +198,7 @@ public class RequestHelper {
     		req.setUsername(username);
             req.setPassword(password);
             // Yes it says X509ResponseMessage, but for CVC it means it just contains the binary certificate blob
-            IResponseMessage resp = signsession.createCertificate(administrator,req,Class.forName(X509ResponseMessage.class.getName()), null);
+            IResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             byte[] result = cert.getEncoded();
             log.debug("Created CV certificate for " + username);

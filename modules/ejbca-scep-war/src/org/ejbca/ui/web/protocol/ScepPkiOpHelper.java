@@ -70,17 +70,15 @@ public class ScepPkiOpHelper {
             }
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
                 // Get the certificate
-                IResponseMessage resp = signsession.createCertificate(admin, reqmsg,
-                        Class.forName(org.ejbca.core.protocol.scep.ScepResponseMessage.class.getName()), null);
+                IResponseMessage resp = signsession.createCertificate(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class, null);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
             }
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
                 // create the stupid encrypted CRL message, the below can actually only be made 
-                // at the CA, since CAs privvate key is needed to decrypt
-                IResponseMessage resp = signsession.getCRL(admin, reqmsg,
-                        Class.forName(org.ejbca.core.protocol.scep.ScepResponseMessage.class.getName()));
+                // at the CA, since CAs private key is needed to decrypt
+                IResponseMessage resp = signsession.getCRL(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
@@ -89,8 +87,6 @@ public class ScepPkiOpHelper {
             log.error("Error receiving ScepMessage: ", e);
         } catch (GeneralSecurityException e) {
             log.error("Error receiving ScepMessage: ", e);
-        } catch (ClassNotFoundException e) {
-            log.error("Error createing response message template: ", e);
         }
         if (log.isTraceEnabled()) {
         	log.trace("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));

@@ -167,8 +167,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// This is a request message, so we want to enroll for a certificate, if we have not created an error already
 			if (resp == null) {
 				// Get the certificate
-				resp = signSession.createCertificate(admin, crmfreq,
-						Class.forName(org.ejbca.core.protocol.cmp.CmpResponseMessage.class.getName()), null);				
+				resp = signSession.createCertificate(admin, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class, null);				
 			}
 			if (resp == null) {
 				final String errMsg = INTRES.getLocalizedMessage("cmp.errornullresp");
