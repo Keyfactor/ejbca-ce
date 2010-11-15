@@ -140,7 +140,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
-		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
 
 		X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
 		assertNotNull("Failed to create certificate", cert);
@@ -175,7 +175,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		user.setPassword("foo123");
 
 
-		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
 
 		X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
 		assertNotNull("Failed to create certificate", cert);
@@ -212,7 +212,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 		IResponseMessage resp = null;
 		try {
-			resp = certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+			resp = certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
 		} catch (EjbcaException e) {
 			log.debug(e.getMessage());
 			assertTrue("Unexpected exception.", e.getMessage().startsWith("There is already a certificate stored in 'CertificateData' with the serial number"));
@@ -246,7 +246,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
 		try {
-			certificateRequestSession.processCertReq(admin, user, p10, Class.forName(org.ejbca.core.protocol.X509ResponseMessage.class.getName()));
+			certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
 			assertTrue("This method should throw exception", false);
 		} catch (EjbcaException e) {
 			assertTrue(e.getMessage().contains("not allowing certificate serial number override"));
