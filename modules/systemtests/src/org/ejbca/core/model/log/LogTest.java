@@ -112,7 +112,7 @@ public class LogTest extends CaTestCase {
 	   assertNotNull(export);
 	   String str = new String(export);
 	   //assertEquals("foo", str);
-	   int ind = str.indexOf("Test\t");
+	   int ind = str.indexOf("\tTest");
 	   assertTrue(ind > 0);
 	   log.trace("<test02AddAndCheckLogEvents()");
     }
