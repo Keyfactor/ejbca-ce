@@ -262,8 +262,8 @@ EXTERNAL OCSP ERROR, publishing is not working
 This will be followed by more details of the error.
 </p><p>
 The log must be monitored to discover such a fault and if such a fault is discovered an alarm should notify 
-the operator that he has to fix whatever is wrong and then synchronise the OCSP database with the EJBCA 
-database (see 'Synchronise the database of the responder').
+the operator that he has to fix whatever is wrong and then synchronize the OCSP database with the EJBCA 
+database (see 'Synchronize the database of the responder').
   </p>
   
   <subsection name="Synchronise the database of the responder">
@@ -292,9 +292,7 @@ Run on the CA server:
 </p>
 <source>
 mysqldump -u ejbca -p --compress ejbca_db CertificateData > CertificateData.dat
-mysqldump -u ejbca -p --compress ejbca_db TableProtectData > TableProtectData.dat
 cat CertificateData.dat | mysql -h ocspresponder ocsp_db
-cat TableProtectData.dat | mysql -h ocspresponder ocsp_db
 </source>
 <p>
 Replace your the username ejbca with your username.
@@ -613,29 +611,6 @@ of the certificates placed in the directory pointed to by 'ocsp.unidtrustdir'.
 If these conditions are not met, no Fnr is returned.
 </p>
 </subsection>
-  </section>
-
-  <section name="Using database integrity protection">
-  <p>
-Enable the basic support for database protection as described in the section about Log signing in EJBCA Administrator section at wiki.ejbca.org. 
-(you don't have to enable log signing though) and then select 'Database Integrity Protection' in the 
-External OCSP Publisher.
-</p>
-
-<p>
-Thats all there is to it. When EJBCA publishes certificate entries to the OCSP responder database, it will also write 
-entries in the TableProtectData table. 
-If protection is enabled also on the External OCSP responder, it will log errors:
-</p>
-<source>
-PROTECT ERROR
-</source>
-<p>
-if verification fails when it answers OCSP queries (this will slow it down a little bit).
-<br/>
-If protection is not enabled on the External OCSP responder, it will not verify the entries when answering OCSP queries, 
-a remote batch job can be used to verify the database integrity periodically instead.
-  </p>
   </section>
 
   <section name="OCSP GET">

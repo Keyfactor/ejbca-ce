@@ -278,22 +278,6 @@ CREATE TABLE ServiceData (
     PRIMARY KEY (id)
 );
 
-DROP TABLE TableProtectData;
-CREATE TABLE TableProtectData (
-    id varchar(250) binary NOT NULL DEFAULT '',
-    version int(11) NOT NULL DEFAULT '0',
-    hashVersion int(11) NOT NULL DEFAULT '0',
-    protectionAlg varchar(250) binary NULL DEFAULT NULL,
-    hash varchar(250) binary NULL DEFAULT NULL,
-    signature varchar(250) binary NULL DEFAULT NULL,
-    time bigint(20) NOT NULL DEFAULT '0',
-    dbKey varchar(250) binary NULL DEFAULT NULL,
-    dbType varchar(250) binary NULL DEFAULT NULL,
-    keyType varchar(250) binary NULL DEFAULT NULL,
-    rowVersion int(11) DEFAULT 0,
-    PRIMARY KEY (id)
-);
-
 DROP TABLE UserData;
 CREATE TABLE UserData (
     username varchar(250) binary NOT NULL DEFAULT '',

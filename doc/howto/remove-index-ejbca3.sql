@@ -25,7 +25,6 @@ drop index userdata_idx8 on UserData;
 drop index userdata_idx9 on UserData;
 drop index historydata_idx1 on CertReqHistoryData;
 drop index historydata_idx2 on CertReqHistoryData;
-drop index protect_idx1 on TableProtectData;
 drop index cadata_idx1 on CAData;
 drop index accessrules_idx1 on AccessRulesData;
 drop index adminentity_idx1 on AdminEntityData;

@@ -193,13 +193,6 @@
             </basic>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.protect.TableProtectData" access="PROPERTY">
-        <attributes>
-            <basic name="time">
-                <column name="time" column-definition="DECIMAL(18,0)" />
-            </basic>
-        </attributes>
-    </entity>
     <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
         <attributes>
             <basic name="extendedInformationData">

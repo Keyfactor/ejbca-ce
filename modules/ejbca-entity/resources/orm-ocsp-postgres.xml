@@ -6,7 +6,7 @@
 
 	<!--
 		Stripped down ORM file for the External OCSP Responder.
-		Only contains necessary mapping for CertificateData and TableProtectData.
+		Only contains necessary mapping for CertificateData.
 	-->
 
 </entity-mappings>

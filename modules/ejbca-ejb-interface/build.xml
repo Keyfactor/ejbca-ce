@@ -41,7 +41,6 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src.dir}"/>
 			<include name="org/ejbca/core/ejb/**/CertificateStoreOnlyDataSession*.java"/>
-			<include name="org/ejbca/core/ejb/**/TableProtectSession*.java"/>
         	<include name="org/ejbca/core/ejb/JndiHelper.java" />
     	</javac>
     </target>
