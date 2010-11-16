@@ -110,6 +110,7 @@ import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.RequestMessageUtils;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
@@ -762,7 +763,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         }
     }//GEN-LAST:event_settingsMenuItemActionPerformed
 
-    private void jTable1Changed(TableModelEvent e) {
+    private void jTable1Changed(TableModelEvent e) { // NOPMD
         System.out.println("tableChanged");
         boolean enable = false;
         for (Request request : requests) {
@@ -938,7 +939,6 @@ public class BatchEnrollmentGUIView extends FrameView {
                     "BC");
 
             SignerInformationStore  signers = signedData.getSignerInfos();
-            Collection c = signers.getSigners();
             for (Object o : signers.getSigners()) {
                 if (o instanceof SignerInformation) {
                     SignerInformation si = (SignerInformation) o;
@@ -1105,14 +1105,14 @@ public class BatchEnrollmentGUIView extends FrameView {
     }
 
     private void initWS() {
-        CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProvider();
 
         final ConnectDialog dlg = new ConnectDialog(null, true);
         dlg.setVisible(true);
         ejbcaWS = dlg.getEjbcaWS();
         
         if (ejbcaWS == null) {
-            System.exit(0);
+            System.exit(0); // NOPMD: this is not a JEE app
         }
     }
 
@@ -1332,7 +1332,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         return endentity;
     }
 
-    private void jTable1SelectionChanged(final ListSelectionEvent e) {
+    private void jTable1SelectionChanged(final ListSelectionEvent e) { // NOPMD
         removeButton.setEnabled(!jTable1.getSelectionModel()
                 .isSelectionEmpty());
 
