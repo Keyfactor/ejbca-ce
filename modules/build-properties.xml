@@ -144,6 +144,9 @@
     <property name="mod.externalra-scep.path" location="${mod.path}/externalra-scep" />
     <property name="mod.externalra-scep.war" location="${ejbca.dist.path}/scepraserver.war" />
     <property name="mod.batchenrollment-gui.path" location="${mod.path}/batchenrollment-gui" />
+    <property name="mod.appserver-ext.path" location="${mod.path}/appserver-ext" />
+    <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
+    <property name="mod.jbosslog4jsafer.lib" location="${ejbca.dist.path}/jbosslog4jsafer.jar" />
 	
     <!-- Variables of global interest -->
     <property name="java.target.version" value="1.6"/>	<!-- This should probably be defined in internal.properties -->
@@ -181,6 +184,7 @@
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
 	<path id="lib.commons-el.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-el-*.jar"/></path>
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
+	<path id="lib.commons-httpclient.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="commons-httpclient-*.jar"/></path>
 	<path id="lib.batik.classpath"><fileset dir="${ejbca.home}/lib/batik" includes="*.jar"/></path>
 	<path id="lib.mail.classpath">
 		<fileset dir="${ejbca.home}/lib/ext" includes="mail.jar"/>
@@ -328,6 +332,9 @@
 			<!-- websphere ? -->
 		</fileset>
 	</path>
+	
+	<!-- JBoss 5.1.0 -->
+	<path id="lib.jboss-log4j.classpath"><fileset dir="${appserver.home}/client" includes="jboss-logging-log4j.jar log4j.jar"/></path>
 	
 	<path id="lib.ejbca-util.classpath">
     	<pathelement location="${ejbca.home}/lib/cert-cvc.jar"/>

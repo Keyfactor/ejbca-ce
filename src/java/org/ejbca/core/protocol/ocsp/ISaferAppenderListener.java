@@ -13,11 +13,15 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-
 /**
-* @author Tham Wickenberg
-* @version  $Id$
-*/
+ * Interface implemented by the client of the SaferDailyRollingFileAppender.
+ * 
+ * Since the appender is used from JBoss we can't just throw an Exception and
+ * need this to communicate errors.
+ * 
+ * @author Tham Wickenberg
+ * @version  $Id$
+ */
 public interface ISaferAppenderListener {
 
 	public abstract void setCanlog(boolean pCanlog);

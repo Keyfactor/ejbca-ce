@@ -43,6 +43,7 @@
 		<ant antfile="${mod.renew-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"/>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"/>
+		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="false"/>
 	</target>
 	
 	<target name="ejbca-entity" description="Build EJBCA JPA entity library">
@@ -192,6 +193,14 @@
 
 	<target name="ocsp-ejb" description="Build OCSP EJB module">
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-ocsp" inheritall="false"/>
+	</target>
+
+	<target name="appserver-ext-jbosslog4jsafer">
+		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslog4jsafer" inheritall="false"/>
+	</target>
+
+	<target name="appserver-ext-jbosslogsigning">
+		<ant antfile="${mod.appserver-ext.path}/build.xml" target="jbosslogsigning" inheritall="false"/>
 	</target>
 
 	<!-- Helper to execute the EJBCA EJB CLI -->
