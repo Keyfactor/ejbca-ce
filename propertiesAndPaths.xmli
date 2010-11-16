@@ -100,9 +100,6 @@
     <property name="mainbin" value="bin"/>
     <property name="appserver.src" value="${mainsrc}/appserver" />
     
-    <property name="jsf.dir" value="${tmp}/jsf" />
-    <property name="jsf.libdir" value="${jsf.dir}/lib" />
-
     <property name="jaxws.dir" value="${tmp}/jaxws" />
     <property name="jaxws.libdir" value="${jaxws.dir}/lib" />
 

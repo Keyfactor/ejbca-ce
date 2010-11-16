@@ -300,11 +300,6 @@
 	</path>
 	
 	<path id="lib.jsp.classpath">
-		<!--
-		<fileset dir="${ejbca.home}/lib">
-			<include name="myfaces/standard-*.jar" />
-		</fileset>
-		-->
 		<fileset dir="${appserver.home}">
 			<!-- jboss -->
 			<include name="common/lib/jsp-api.jar" /> <!-- 5.1.0 -->

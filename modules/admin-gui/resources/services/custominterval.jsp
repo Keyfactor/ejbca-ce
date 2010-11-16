@@ -1,7 +1,5 @@
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-<%@ taglib uri="http://myfaces.apache.org/tomahawk" prefix="t" %>
-
 
 	<h:panelGroup>
 		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CUSTOMINTERVALSETTINGS}"/><f:verbatim></strong></f:verbatim>
