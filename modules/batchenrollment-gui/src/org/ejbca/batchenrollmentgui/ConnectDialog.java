@@ -355,11 +355,11 @@ public class ConnectDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_cancelButtonActionPerformed
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
+    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_connectButtonActionPerformed
         settings = new ConnectSettings();
         settings.setUrl(urlTextField.getText());
         settings.setTruststoreType((String) truststoreTypeComboBox.getSelectedItem());
@@ -506,7 +506,7 @@ public class ConnectDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_connectButtonActionPerformed
 
-    private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_truststoreBrowseButtonActionPerformed
+    private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_truststoreBrowseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(new File(truststoreFilePathTextField.getText()));
         final int result  = chooser.showOpenDialog(this);
@@ -516,7 +516,7 @@ public class ConnectDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_truststoreBrowseButtonActionPerformed
 
-    private void keystoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keystoreBrowseButtonActionPerformed
+    private void keystoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_keystoreBrowseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(new File(keystoreFilePathTextField.getText()));
         final int result  = chooser.showOpenDialog(this);
@@ -526,11 +526,11 @@ public class ConnectDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_keystoreBrowseButtonActionPerformed
 
-    private void defaultsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_defaultsButtonActionPerformed
+    private void defaultsButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_defaultsButtonActionPerformed
         loadSettingsFromFile(DEFAULT_CONNECT_FILE);
     }//GEN-LAST:event_defaultsButtonActionPerformed
 
-    private void truststoreTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_truststoreTypeComboBoxActionPerformed
+    private void truststoreTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_truststoreTypeComboBoxActionPerformed
         final String type = (String) truststoreTypeComboBox.getSelectedItem();
         truststorePasswordField.setEnabled(!TRUSTSTORE_TYPE_PEM.equals(type)
                 && !TRUSTSTORE_TYPE_KEYSTORE.equals(type));

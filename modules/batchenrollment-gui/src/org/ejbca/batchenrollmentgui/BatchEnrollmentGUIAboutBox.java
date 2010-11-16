@@ -192,7 +192,7 @@ public class BatchEnrollmentGUIAboutBox extends javax.swing.JDialog {
                     .addComponent(homepageLabel1)
                     .addComponent(appHomepageLabel1))
                 .addGap(18, 18, 18)
-                .addComponent(appDescLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
+                .addComponent(appDescLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(closeButton)
                 .addContainerGap())

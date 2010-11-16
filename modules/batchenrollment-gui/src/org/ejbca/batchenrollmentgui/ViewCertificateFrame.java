@@ -42,8 +42,6 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
 
     private X509Certificate certificate;
 
-    private List<X509Certificate> certificates;
-
     private List<Field> fields;
 
     private List<String> usages;
@@ -51,7 +49,6 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
     /** Creates new form ViewStatusFrame. */
     public ViewCertificateFrame(final List<X509Certificate> certificates) {
         this.certificate = certificates.get(0);
-        this.certificates = certificates;
         initComponents();
         chainList.setModel(new AbstractListModel() {
 
@@ -502,7 +499,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_closeButtonActionPerformed
         dispose();
     }//GEN-LAST:event_closeButtonActionPerformed
 

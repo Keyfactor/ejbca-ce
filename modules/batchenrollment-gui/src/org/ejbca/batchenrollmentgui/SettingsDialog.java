@@ -160,11 +160,11 @@ public class SettingsDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_cancelButtonActionPerformed
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_truststoreBrowseButtonActionPerformed
+    private void truststoreBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_truststoreBrowseButtonActionPerformed
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(new File(truststorePath.getText()));
         final int result  = chooser.showOpenDialog(this);
@@ -174,7 +174,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_truststoreBrowseButtonActionPerformed
 
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_okButtonActionPerformed
         settings.setTruststorePath(truststorePath.getText());
         if (new File(settings.getTruststorePath()).exists()) {
             okSettings = settings;
