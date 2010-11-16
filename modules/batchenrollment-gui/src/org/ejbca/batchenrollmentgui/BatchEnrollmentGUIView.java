@@ -717,7 +717,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_addButtonActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_addButtonActionPerformed
         final JFileChooser fc = getOpenFileChooser();
         final int result = fc.showOpenDialog(getFrame());
         if (result == JFileChooser.APPROVE_OPTION) {
@@ -727,7 +727,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         }
     }//GEN-LAST:event_addButtonActionPerformed
 
-    private void clearDoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_clearDoneButtonActionPerformed
+    private void clearDoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_clearDoneButtonActionPerformed
         for (int i = requests.size() - 1; i >= 0; i--) {
             if (requests.get(i).isDone()) {
                 requests.remove(i);
@@ -736,7 +736,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         jTable1.revalidate();
     }//GEN-LAST:event_clearDoneButtonActionPerformed
 
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_removeButtonActionPerformed
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_removeButtonActionPerformed
         int[] selected = jTable1.getSelectedRows();
         Arrays.sort(selected);
         for (int i = selected.length - 1; i >= 0; i--) {
@@ -746,7 +746,7 @@ public class BatchEnrollmentGUIView extends FrameView {
 //        jTable1.valueChanged(null);
     }//GEN-LAST:event_removeButtonActionPerformed
 
-    private void settingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD //GEN-FIRST:event_settingsMenuItemActionPerformed
+    private void settingsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//NOPMD//GEN-FIRST:event_settingsMenuItemActionPerformed
         final SettingsDialog dlg = new SettingsDialog(getFrame(), true,
                 getApp().getSettings());
         dlg.setVisible(true);
@@ -1112,7 +1112,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         ejbcaWS = dlg.getEjbcaWS();
         
         if (ejbcaWS == null) {
-            System.exit(0); // NOPMD: this is not a JEE app
+            getApplication().exit();
         }
     }
 
