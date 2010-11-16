@@ -15,7 +15,7 @@
         <fileset dir="${ejbca.home}/lib">
             <include name="log4j.jar"/>
             <include name="bcprov-*.jar"/>
-            <include name="commons-lang-2.4.jar"/>
+            <include name="commons-lang-2.5.jar"/>
             <include name="bcmail-*.jar"/>
             <include name="cert-cvc.jar"/>
             <include name="ldap.jar"/>
