@@ -31,7 +31,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import junit.framework.TestCase;
@@ -89,7 +88,7 @@ public class XKMSSigTest extends TestCase {
 
     private static JAXBContext jAXBContext = null;
     private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+//    private static Unmarshaller unmarshaller = null;
     private static DocumentBuilderFactory dbf = null;
 
     private static int caid;
@@ -106,7 +105,7 @@ public class XKMSSigTest extends TestCase {
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             //dbf.setExpandEntityReferences(true);	// Default: true
-            unmarshaller = jAXBContext.createUnmarshaller();
+//            unmarshaller = jAXBContext.createUnmarshaller();
 
         } catch (JAXBException e) {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
