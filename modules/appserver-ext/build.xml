@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="appserver-ext" default="build">
+    <description>
+            Build file for the application server extensions
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.appserver-ext}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="build-jbosslogsigning.dir" location="${this.dir}/build-jbosslogsigning"/>
+	<property name="build-jbosslog4jsafer.dir" location="${this.dir}/build-jbosslog4jsafer"/>
+	<property name="src.dir" location="${this.dir}/src"/>
+
+	<path id="compile-jbosslogsigning.classpath">
+		<path refid="lib.jboss-log4j.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.commons-httpclient.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+	</path>
+	
+	<path id="compile-jbosslog4jsafer.classpath">
+		<path refid="lib.jboss-log4j.classpath"/>
+	</path>
+	
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build-jbosslogsigning.dir}" />
+		<delete dir="${build-jbosslog4jsafer.dir}" />
+    	<delete file="${mod.logsigning.lib}" />
+    	<delete file="${mod.jbosslog4jsafer.lib}" />
+    </target>
+
+    <target name="build" description="Build this module" depends="jbosslogsigning, jbosslog4jsafer"/>
+
+    <!-- =================================================================== -->
+    <!-- Build Signing log4j log appended for JBoss                          -->
+    <!-- =================================================================== -->
+    <target name="jbosslogsigning" depends="compile-jbosslogsigning">
+    	<mkdir dir="${ejbca.dist.path}"/>
+        <jar basedir="${build-jbosslogsigning.dir}" jarfile="${mod.logsigning.lib}"/>
+    </target>
+	
+    <target name="compile-jbosslogsigning">
+    	<mkdir dir="${build-jbosslogsigning.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build-jbosslogsigning.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslogsigning.classpath">
+        	<sourcepath location="${ejbca.home}/src/java"/>
+            <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender.java"/>
+            <include name="org/ejbca/appserver/jboss/ScriptrunningDailyRollingFileAppender.java"/>
+            <include name="org/ejbca/appserver/jboss/RollingCalendar.java"/>
+            <include name="org/ejbca/appserver/jboss/SignerThread.java"/>   
+            <include name="org/ejbca/appserver/jboss/ScriptThread.java"/>   
+    		<include name="org/ejbca/util/CryptoProviderTools.java"/>
+    		<include name="org/ejbca/util/FileTools.java"/>
+    	</javac>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Create Log4j ErrorHandler and appender                              -->
+    <!-- =================================================================== -->
+	<target name="jbosslog4jsafer" depends="compile-jbosslog4jsafer">
+    	<mkdir dir="${ejbca.dist.path}"/>
+		<jar basedir="${build-jbosslog4jsafer.dir}" jarfile="${mod.jbosslog4jsafer.lib}"/>
+	</target>
+
+	<target name="compile-jbosslog4jsafer">
+    	<mkdir dir="${build-jbosslog4jsafer.dir}" />
+        <javac srcdir="${src.dir}" destdir="${build-jbosslog4jsafer.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslog4jsafer.classpath">
+        	<sourcepath location="${ejbca.home}/src/java"/>
+			<include name="org/ejbca/appserver/jboss/SaferDailyRollingFileAppender.java"/>
+			<include name="org/ejbca/appserver/jboss/ProbeableErrorHandler.java"/>
+        	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java"/>
+    	</javac>
+    </target>
+
+</project>

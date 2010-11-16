@@ -432,75 +432,6 @@
     <target name="upgrade" depends="set-upgrade,base-upgrade"/>
     <target name="post-upgrade" depends="set-post-upgrade,base-upgrade"/>
 
-    <!-- =================================================================== -->
-    <!-- Build Signing log4j log appended for JBoss                          -->
-    <!-- =================================================================== -->
-    <target name="jbosslogsigning" depends="compile">
-        <path id="jbosslogsigning.classpath">
-        </path>
-        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
-            <exclude name="**/CVS/**" />
-            <include name="**/appserver/jboss/SigningDailyRollingFileAppender*" />
-            <include name="**/appserver/jboss/ScriptrunningDailyRollingFileAppender*" />
-            <include name="**/appserver/jboss/RollingCalendar*" />
-            <include name="**/appserver/jboss/SignerThread*" />
-            <include name="**/appserver/jboss/ScriptThread*" />
-            <!-- appserver specific files are built separtely-->
-            <classpath refid="jbosslogsigning.classpath" />
-            <classpath refid="compile.classpath" />
-        </javac>
-
-        <mkdir dir="${logsigning.build}" />
-        <copy todir="${logsigning.build}">
-            <fileset dir="${build}">
-                <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender*.class" />
-                <include name="org/ejbca/appserver/jboss/ScriptrunningDailyRollingFileAppender*.class" />
-                <include name="org/ejbca/appserver/jboss/RollingCalendar.class" />   
-                <include name="org/ejbca/appserver/jboss/SignerThread.class" />   
-                <include name="org/ejbca/appserver/jboss/ScriptThread.class" />   
-                <include name="org/ejbca/util/CertTools*.class" />
-                <include name="org/ejbca/util/FileTools*.class" />
-                <exclude name="se/anatom/ejbca/**/*Test*" />
-            </fileset>
-        </copy>
-        <jar basedir="${logsigning.build}" jarfile="${logsigningjar}">
-            <manifest>
-                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
-            </manifest>
-        </jar>
-    </target>
-	
-    <!-- =================================================================== -->
-    <!-- Create Log4j ErrorHandler and appender                              -->
-    <!-- =================================================================== -->
-	<target name="jbosslog4jsafer" depends="compile">
-	        <path id="jbosslog4jsafer.classpath">
-	        </path>
-	        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
-	            <exclude name="**/CVS/**" />
-	            <include name="**/appserver/jboss/SaferDailyRollingFileAppender*" />
-	            <include name="**/appserver/jboss/ProbeableErrorHandler*" />
-	        	<include name="**/protocol/ocsp/ISaferAppenderListener*" />
-	            <!-- appserver specific files are built separtely-->
-	            <classpath refid="jbosslog4jsafer.classpath" />
-	            <classpath refid="compile.classpath" />
-	        </javac>
-
-	        <mkdir dir="${jbosslog4jsafer.build}" />
-	        <copy todir="${jbosslog4jsafer.build}">
-	            <fileset dir="${build}">
-	                <include name="org/ejbca/appserver/jboss/SaferDailyRollingFileAppender.class" />
-	                <include name="org/ejbca/appserver/jboss/ProbeableErrorHandler.class" />
-	            	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.class" />
-	                <exclude name="se/anatom/ejbca/**/*Test*" />
-	            </fileset>
-	        </copy>
-	        <jar basedir="${jbosslog4jsafer.build}" jarfile="${jbosslog4jsaferjar}">
-	            <manifest>
-	                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
-	            </manifest>
-	        </jar>
-	    </target>
 	
 
     <!-- ======================================================================= -->
@@ -838,5 +769,13 @@
 
 	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client">
     	<ant antfile="build.xml" dir="modules" target="batchenrollment-gui"/>
+	</target>
+
+	<target name="jbosslogsigning" description="Build signing Log4j appended for JBoss">
+    	<ant antfile="build.xml" dir="modules" target="appserver-ext-jbosslogsigning"/>
+	</target>
+
+	<target name="jbosslog4jsafer" description="Build Log4j ErrorHandler and Appender extensions for JBoss">
+    	<ant antfile="build.xml" dir="modules" target="appserver-ext-jbosslog4jsafer"/>
 	</target>
 </project>

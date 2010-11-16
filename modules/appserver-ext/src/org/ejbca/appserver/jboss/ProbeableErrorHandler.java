@@ -18,9 +18,12 @@ import java.util.Date;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
-* @author Tham Wickenberg
-* @version  $Id$
-*/
+ * The purpose of this errorhandler is that we can still respond with InternalServer error if and error occurs,
+ * but repeated errors will only be logged once.
+ * 
+ * @author Tham Wickenberg
+ * @version  $Id: ProbeableErrorHandler.java 8053 2009-10-01 11:44:10Z anatom $
+ */
 
 public class ProbeableErrorHandler extends org.jboss.logging.util.OnlyOnceErrorHandler {
 	private static Date lastFailure = null;
