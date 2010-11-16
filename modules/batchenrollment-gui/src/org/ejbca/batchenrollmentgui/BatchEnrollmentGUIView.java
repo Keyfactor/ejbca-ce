@@ -21,22 +21,6 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
-import java.io.IOException;
-import javax.swing.JList;
-import javax.swing.JTable;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.TableModelEvent;
-import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
-import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
-import org.jdesktop.application.Action;
-import org.jdesktop.application.ResourceMap;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.FrameView;
-import org.jdesktop.application.Task;
-import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
@@ -46,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -79,10 +64,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.Vector;
+
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -90,13 +75,19 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.cms.CMSException;
@@ -104,18 +95,29 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
+import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
+import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
+import org.jdesktop.application.FrameView;
+import org.jdesktop.application.ResourceMap;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.Task;
+import org.jdesktop.application.TaskMonitor;
 
 /**
  * The application's main frame.
@@ -138,7 +140,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         "End entity", "Output file"
     };
 
-    private Collection<X509Certificate> trustedCerts;
+    private Collection<Certificate> trustedCerts;
 
     private Vector<UserDataVOWS> endEntities = new Vector<UserDataVOWS>();
 
@@ -777,7 +779,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         enrollButton.setEnabled(enable);
     }
 
-    private Collection<X509Certificate> getTrustedCerts() {
+    private Collection<Certificate> getTrustedCerts() {
         if (trustedCerts == null) {
             String truststore = getApp().getSettings().getTruststorePath();
             if (truststore == null || !new File(truststore).exists()) {
@@ -786,7 +788,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                         "Please configure the truststore first");
             } else {
                 try {
-                    trustedCerts = new HashSet<X509Certificate>();
+                    trustedCerts = new HashSet<Certificate>();
                     trustedCerts.addAll(CertTools.getCertsFromPEM(
                             getApp().getSettings().getTruststorePath()));
                 } catch (IOException ex) {
@@ -915,7 +917,7 @@ public class BatchEnrollmentGUIView extends FrameView {
     }
 
     private static CMSValidationResult validateCMS(final CMSSignedData signedData,
-            final Collection<X509Certificate> trustedCerts) {
+            final Collection<Certificate> trustedCerts) {
 
         final CMSValidationResult result = new CMSValidationResult();
 
@@ -1044,12 +1046,14 @@ public class BatchEnrollmentGUIView extends FrameView {
         return result;
     }
 
-    private static List<X509Certificate> validateChain(X509Certificate signerCert, CertStore certs, Collection<X509Certificate> trustedCerts) throws CertPathBuilderException, CertPathValidatorException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    private static List<X509Certificate> validateChain(X509Certificate signerCert, CertStore certs, Collection<Certificate> trustedCerts) throws CertPathBuilderException, CertPathValidatorException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
 
         final Set<TrustAnchor> anchors
                 = new HashSet<TrustAnchor>();
-        for (X509Certificate cert : trustedCerts) {
-            anchors.add(new TrustAnchor(cert, null));
+        for (Certificate cert : trustedCerts) {
+        	if (cert instanceof X509Certificate) {
+                anchors.add(new TrustAnchor((X509Certificate)cert, null));
+			}
         }
 
         final CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
