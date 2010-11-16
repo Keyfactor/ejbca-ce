@@ -1222,18 +1222,17 @@ You should also try the different roles and privileges to see the differences be
 </subsection>
 </section>
 
-<section name="Misc information">
-<subsection name="EJBCA client toolbox">
+<section name="EJBCA client toolbox">
 <p>
-There are also a set of different tools that could be used without an EJBCA.
+There is a set of tools that could be used without an EJBCA. Built from the EJBCA source, but the resulting distribution package can be moved to any machine. The client toolbox provides commands to function as a Web Service RA, to manage keys on PKCS#11 HSM, to perform EJBCA health checks, to enroll CVC EAC certificates, to test CMP and SCEP protocol, and much much more.  
 </p><p>
 Build these tools with:
 </p><source>
 ant clientToolBox
 </source><p>
-The directory './dist/clientToolBox' is then created. You may then move this directory to any location.
+The directory './clientToolBox-dist' is then created. You may then move this directory to any location.
 </p><p>
-To use any of the tools just call 'ejbcaClientToolBox.sh' in this directory. You may call the script from any location.
+To use any of the tools just call 'ejbcaClientToolBox.sh' in this directory. You may call the script from any location. Running the command will provide on-line documentation for available commands and options.
 </p><p>
 If you put the directory in your PATH then you just have to write 'ejbcaClientToolBox.sh' to call it.
 </p><p>
@@ -1245,8 +1244,9 @@ Then just one argument gives help about the specified tool. Example:
 </p><source>
 ejbcaClientToolBox.sh ocsp
 </source>
-</subsection>
-<subsection name="EJBCA Batch Enrollment GUI">
+</section>
+
+<section name="EJBCA Batch Enrollment GUI">
 <p>
 The EJBCA Batch Enrollment GUI is a standalone Java desktop application which
 can be used to enroll multiple end entities from certificate signing requests
@@ -1254,14 +1254,14 @@ at once. The application uses the web services interface for communication with
 EJBCA so an authorized administrator needs to be logged in to it in order to
 perform the operations.
 </p>
-<subsubsection name="Building and running">
+<subsection name="Building and running">
 <p>
 The application is built from the EJBCA directory by typing
 'ant batchenrollment-gui' and can then be started with the scripts
 'bin/batchenrollmentgui.sh' or 'bin/batchenrollmentgui.cmd'.
 </p>
-</subsubsection>
-<subsubsection name="Using">
+</subsection>
+<subsection name="Using">
 <p>
 When the application starts the connection dialog asks for connection
 information and login credentials. You need to supply some sort of truststore
@@ -1279,8 +1279,8 @@ use the button <b>Add...</b> to browse for the files.</li>
 the resulting certificate.</li>
 <li>Click the button <b>Enroll</b>.</li>
 </ol>
-</subsubsection>
-<subsubsection name="Signed requests">
+</subsection>
+<subsection name="Signed requests">
 <p>
 The application also supports signed certificate signing requests. That is
 requests that are wrapped in a PKCS#7/CMS structure also containing a signature
@@ -1289,8 +1289,10 @@ issuing the certificate. In order for the verification to work the Batch
 Enrollment GUI needs to have a PEM file with trusted certificates configured
 under the menu <b>Edit</b> -&gt; <b>Settings...</b>.
 </p>
-</subsubsection>
 </subsection>
+</section>
+
+<section name="Misc information">
 <subsection name="Backup and restore of EJBCA">
 <p>
 To backup an EJBCA installation you need to:

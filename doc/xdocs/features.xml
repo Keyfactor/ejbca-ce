@@ -66,6 +66,7 @@
 <li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish, Websphere</li>
 <li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS-SQL, Derby, Sybase, Informix.</li>
+<li>Simple stand-alone <a href="userguide.html#EJBCA%20Batch%20Enrollment%20GUI">batch enrollment GUI</a> for CSRs (webservice RA).</li>
 </ul>    
 
   </section>
