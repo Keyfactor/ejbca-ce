@@ -4,26 +4,32 @@
      <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDUSER)) { %>
           value='<c:out value="<%= oldactionvalue %>"/>' <%}%>
      >
-    <input type="submit" name="<%=BUTTON_FIND %>" value='<c:out value="<%= ejbcawebbean.getText(\"FIND\") %>"/>'>
+    &nbsp;
+    <input type="submit" name="<%=BUTTON_FIND %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>'>
   </p>
+
   <p><c:out value="<%= ejbcawebbean.getText(\"ORIFCERTIFICATSERIAL\") %>"/>
     <input type="text" name="<%=TEXTFIELD_SERIALNUMBER %>" size="33" maxlength="255" 
      <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_ISREVOKED)) { %>
           value='<c:out value="<%= oldactionvalue %>"/>' <%}%>
      >
-    <input type="submit" name="<%=BUTTON_ISREVOKED %>" value='<c:out value="<%= ejbcawebbean.getText(\"FIND\") %>"/>' 
+    &nbsp;
+    <input type="submit" name="<%=BUTTON_ISREVOKED %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>' 
            onclick='return checkfieldforhexadecimalnumbers("document.form.<%=TEXTFIELD_SERIALNUMBER %>","<c:out value="<%= ejbcawebbean.getText(\"ONLYHEXNUMBERS\") %>"/>")'>
   </p>
+
   <% if(globalconfiguration.getIssueHardwareTokens()){ %>
   <p><c:out value="<%= ejbcawebbean.getText(\"ORTOKENSERIALPATTERN\") %>"/>
     <input type="text" name="<%=TEXTFIELD_TOKENSERIALNUMBER %>" size="33" maxlength="255" 
      <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDTOKEN)) %>
           value='<c:out value="<%= oldactionvalue %>"/>'
      >
-    <input type="submit" name="<%=BUTTON_FINDTOKEN %>" value='<c:out value="<%= ejbcawebbean.getText(\"FIND\") %>"/>' 
+    &nbsp;
+    <input type="submit" name="<%=BUTTON_FINDTOKEN %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>' 
            onclick='return checkfieldforlegalchars("document.form.<%=TEXTFIELD_TOKENSERIALNUMBER %>","<c:out value="<%= ejbcawebbean.getText(\"ONLYLETTERSANDNUMBERS\") %>"/>")'>
   </p>
   <% } %>
+
   <p><c:out value="<%= ejbcawebbean.getText(\"ORWITHSTATUS\") %>"/>
     <select name="<%=SELECT_LIST_STATUS %>">
       <option value=''>--</option> 
@@ -38,13 +44,16 @@
               value='<%= availablestatuses[i] %>'><c:out value="<%= ejbcawebbean.getText(availablestatustexts[i]) %>"/></option>
       <% } %>
     </select>
-    <input type="submit" name="<%=BUTTON_LIST %>" value='<c:out value="<%= ejbcawebbean.getText(\"LIST\") %>"/>'>
+    &nbsp;
+    <input type="submit" name="<%=BUTTON_LIST %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>'>
   </p>
+
   <p><c:out value="<%= ejbcawebbean.getText(\"ORLISTEXPIRING\") %>"/>
     <input type="text" name="<%=TEXTFIELD_DAYS %>" size="3" maxlength="5" 
      <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_LISTEXPIRED)) {%>
           value='<c:out value="<%= oldactionvalue %>"/>' <%}%>
      > <c:out value="<%= ejbcawebbean.getText(\"DAYS\") %>"/>
-    <input type="submit" name="<%=BUTTON_LISTEXPIRED %>" value='<c:out value="<%= ejbcawebbean.getText(\"LIST\") %>"/>'
+    &nbsp;
+    <input type="submit" name="<%=BUTTON_LISTEXPIRED %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>'
            onclick='return checkfieldfordecimalnumbers("document.form.<%=TEXTFIELD_DAYS %>","<c:out value="<%= ejbcawebbean.getText(\"ONLYDECNUMBERS\") %>"/>")'>
   </p>

@@ -193,7 +193,7 @@
               out.write("<li id=\"cat2\" class=\"section\"><strong>" + ejbcawebbean.getText("RAFUNCTIONS")+"</strong><ul>"); 
               raheaderprinted=true;
             }  %>
-				<li><a href="<%=RA_LISTENDENTITIESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("LISTEDITENDENTITIES") %></a></li>
+				<li><a href="<%=RA_LISTENDENTITIESLINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("SEARCHEDITENDENTITIES") %></a></li>
 <%   }
    }catch(AuthorizationDeniedException e){}
    if(raheaderprinted){
