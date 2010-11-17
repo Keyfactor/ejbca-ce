@@ -1284,12 +1284,45 @@ function checkallfields(){
       </tr>
       <% } %>
 
-      <%
-         if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
-       <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td align="right"><c:out value="<%= ejbcawebbean.getText(\"EMAIL\") %>"/></td>
-	 <td>      
+      <% if(profile.getUse(EndEntityProfile.MAXFAILEDLOGINS,0)) { %>
+      <tr id="Row<%=(row++)%2%>">
+		<td>&nbsp;</td>
+		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"MAXFAILEDLOGINATTEMPTS\") %>"/></td>
+        <td>
+        	<%
+       			int maxLoginAttempts = -1;
+        		try {
+        			maxLoginAttempts = Integer.parseInt(profile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0));
+        		} catch(NumberFormatException ignored) {}
+       		%>   
+       		<input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
+             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
+             
+             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
+        </td>
+		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_MAXFAILEDLOGINS %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.MAXFAILEDLOGINS,0)) out.write(" CHECKED "); %>></td> 
+      </tr>
+      <% } %>
+
+    <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%>
+    <tr id="Row<%=(row++)%2%>">
+	<td>&nbsp;</td>
+	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"USEINBATCH\") %>"/></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE))
+                                                                                                                 out.write(" CHECKED "); 
+                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0))
+                                                                                                                 out.write(" disabled='true' "); 
+                                                                                                             %>> 
+        </td>
+	<td>&nbsp;</td> 
+    </tr>
+    <% } %>
+
+    <%	if(profile.getUse(EndEntityProfile.EMAIL,0)){ %>
+    <tr id="Row<%=(row++)%2%>">
+	<td>&nbsp;</td>
+	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"EMAIL\") %>"/></td>
+	<td>      
            <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldemail%>"/>'> @
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
@@ -1316,42 +1349,8 @@ function checkallfields(){
            <% } %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
-       </tr>
-       <% }%>
-
-      <% if(profile.getUse(EndEntityProfile.MAXFAILEDLOGINS,0)) { %>
-      <tr id="Row<%=(row++)%2%>">
-		<td>&nbsp;</td>
-		<td align="right"><c:out value="<%= ejbcawebbean.getText(\"MAXFAILEDLOGINATTEMPTS\") %>"/></td>
-        <td>
-        	<%
-       			int maxLoginAttempts = -1;
-        		try {
-        			maxLoginAttempts = Integer.parseInt(profile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0));
-        		} catch(NumberFormatException ignored) {}
-       		%>   
-       		<input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED %>" onclick="maxFailedLoginsSpecified()" <% if(maxLoginAttempts != -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write("readonly"); } %>>
-             <input type="text" name="<%= TEXTFIELD_MAXFAILEDLOGINS %>" size="5" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(maxLoginAttempts != -1) { out.write(""+maxLoginAttempts); } %>' <% if(maxLoginAttempts == -1) { out.write("disabled"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>>
-             
-             <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
-        </td>
-		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_MAXFAILEDLOGINS %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.MAXFAILEDLOGINS,0)) out.write(" CHECKED "); %>></td> 
-      </tr>
-      <% } %>
-
-      <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%>
-      <tr id="Row<%=(row++)%2%>">
-	<td>&nbsp;</td>
-	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"USEINBATCH\") %>"/></td>
-	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE))
-                                                                                                                 out.write(" CHECKED "); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0))
-                                                                                                                 out.write(" disabled='true' "); 
-                                                                                                             %>> 
-        </td>
-	<td>&nbsp;</td> 
-      </tr>
-      <% } %>
+    </tr>
+    <%	} %>
 
 
     <!-- ---------- Subject DN Fields -------------------- -->

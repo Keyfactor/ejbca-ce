@@ -449,38 +449,6 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("EMAILDOMAIN") %><br />
-        <%= ejbcawebbean.getText("USEONLYDOMAIN") %>
-      </td>
-      <td width="50%"> 
-        <% used = false;
-           if(profiledata.getUse(EndEntityProfile.EMAIL,0) || emailfieldexists) 
-             used=true; %>
-        <input type="text" name="<%=TEXTFIELD_EMAIL%>" size="45" maxlength="1024"  <% if(!used) out.write(" disabled "); %>
-           value="<% if(profiledata.getValue(EndEntityProfile.EMAIL,0) != null && used) out.write(profiledata.getValue(EndEntityProfile.EMAIL,0)); %>"><br>
-        <%= ejbcawebbean.getText("USE") %> 
-        <input type="checkbox" name="<%=CHECKBOX_USE_EMAIL %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusetextfield('<%=CHECKBOX_USE_EMAIL %>', '<%=TEXTFIELD_EMAIL%>', '<%=CHECKBOX_REQUIRED_EMAIL %>', '<%=CHECKBOX_MODIFYABLE_EMAIL %>')"
-           <% if(used)
-                 out.write(" CHECKED "); %>
-           >&nbsp;&nbsp;
-               <%= ejbcawebbean.getText("REQUIRED") %>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_EMAIL%>" value="<%=CHECKBOX_VALUE %>"  <% if(!used) out.write(" disabled "); %>
-           <% if(profiledata.isRequired(EndEntityProfile.EMAIL,0) && used)
-                 out.write("CHECKED");
-           %>> 
-        &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
-        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_EMAIL  %>" value="<%=CHECKBOX_VALUE %>"  <% if(!used) out.write(" disabled "); %>
-           <% if(profiledata.isModifyable(EndEntityProfile.EMAIL,0) && used)
-                 out.write("CHECKED");
-           %>> 
-      </td>
-    </tr>
-
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="10%" valign="top">
-         &nbsp;
-      </td>
-      <td width="40%" valign="top" align="right"> 
 		<%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %> 
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Maximum%20number%20of%20failed%20login%20attempts") %>
       </td>
@@ -539,6 +507,38 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_CLEARTEXTPASSWORD %>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0) && used)
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <%= ejbcawebbean.getText("EMAILDOMAIN") %><br />
+        <%= ejbcawebbean.getText("USEONLYDOMAIN") %>
+      </td>
+      <td width="50%"> 
+        <% used = false;
+           if(profiledata.getUse(EndEntityProfile.EMAIL,0) || emailfieldexists) 
+             used=true; %>
+        <input type="text" name="<%=TEXTFIELD_EMAIL%>" size="45" maxlength="1024"  <% if(!used) out.write(" disabled "); %>
+           value="<% if(profiledata.getValue(EndEntityProfile.EMAIL,0) != null && used) out.write(profiledata.getValue(EndEntityProfile.EMAIL,0)); %>"><br>
+        <%= ejbcawebbean.getText("USE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_USE_EMAIL %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusetextfield('<%=CHECKBOX_USE_EMAIL %>', '<%=TEXTFIELD_EMAIL%>', '<%=CHECKBOX_REQUIRED_EMAIL %>', '<%=CHECKBOX_MODIFYABLE_EMAIL %>')"
+           <% if(used)
+                 out.write(" CHECKED "); %>
+           >&nbsp;&nbsp;
+               <%= ejbcawebbean.getText("REQUIRED") %>
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_EMAIL%>" value="<%=CHECKBOX_VALUE %>"  <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.isRequired(EndEntityProfile.EMAIL,0) && used)
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_EMAIL  %>" value="<%=CHECKBOX_VALUE %>"  <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.isModifyable(EndEntityProfile.EMAIL,0) && used)
                  out.write("CHECKED");
            %>> 
       </td>
