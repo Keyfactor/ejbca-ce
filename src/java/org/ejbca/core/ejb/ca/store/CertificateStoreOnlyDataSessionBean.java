@@ -15,9 +15,7 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Date;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -39,19 +37,16 @@ import org.ejbca.util.CryptoProviderTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreOnlyDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnlyDataSessionLocal, CertificateStoreOnlyDataSessionRemote {
+public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil implements CertificateStoreOnlyDataSessionLocal, CertificateStoreOnlyDataSessionRemote {
     
     private static final Logger log = Logger.getLogger(CertificateStoreOnlyDataSessionBean.class);
     
-    private final CertificateDataUtil.Adapter adapter;
-
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
     public CertificateStoreOnlyDataSessionBean() {
         super();
         CryptoProviderTools.installBCProvider();
-        adapter = new MyAdapter();
     }
 
     /**
@@ -79,7 +74,7 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @return the status of the certificate
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, adapter);
+        return getStatus(issuerDN, serno, entityManager);
     }
 
     /**
@@ -91,7 +86,7 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @return Certificate if found or null
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
-    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager, adapter);
+    	return findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager);
     }
 
     /**
@@ -162,7 +157,7 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @return Collection Collection of X509Certificate, never <tt>null</tt>
      */
     public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
-        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
+        return findCertificatesByType(admin, type, issuerDN, entityManager);
     }
 
     /**
@@ -173,39 +168,6 @@ public class CertificateStoreOnlyDataSessionBean implements CertificateStoreOnly
      * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
      */
     public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
-    	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);
-    }
-
-    private class MyAdapter implements CertificateDataUtil.Adapter {
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()
-         */
-        public Logger getLogger() {
-            return log;
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
-         */
-        public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment) {
-            // no log bean available
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
-         */
-        public void debug(String s) {
-            log.debug(s);
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
-         */
-        public void error(String s) {
-            log.error(s);
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
-         */
-        public void error(String s, Exception e) {
-            log.error(s, e);        	
-        }
+    	return findCertificatesByUsername(admin, username, entityManager);
     }
 }
