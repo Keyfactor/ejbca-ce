@@ -67,7 +67,7 @@ import org.ejbca.util.keystore.KeyTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class CertificateStoreSessionBean  implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
+public class CertificateStoreSessionBean extends CertificateDataUtil implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
 
     private final static Logger log = Logger.getLogger(CertificateStoreSessionBean.class);
     /** Internal localization of logs and errors */
@@ -81,11 +81,8 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     @EJB
     private PublisherSessionLocal publisherSession;
     
-    final private CertificateDataUtil.Adapter adapter;
-    
     public CertificateStoreSessionBean() {
         super();
-        adapter = new MyAdapter();
     }
     
     /**
@@ -377,7 +374,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @return Certificate if found or null
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
-    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager, adapter);
+    	return findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager);
     }
 
     /**
@@ -467,7 +464,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @return Collection of Certificates ordered by expire date, with last expire date first, or null if none found.
      */
     public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
-    	return CertificateDataUtil.findCertificatesByUsername(admin, username, entityManager, adapter);
+    	return findCertificatesByUsername(admin, username, entityManager);
     }
 
     /**
@@ -512,7 +509,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     }
 
     public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) {
-        return CertificateDataUtil.findCertificateByFingerprint(admin, fingerprint, entityManager, adapter);
+        return findCertificateByFingerprint(admin, fingerprint, entityManager);
     }
 
     /**
@@ -584,7 +581,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @return Collection Collection of Certificate, never <tt>null</tt>
      */
     public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) throws IllegalArgumentException {
-        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, entityManager, adapter);
+        return findCertificatesByType(admin, type, issuerDN, entityManager);
     }
 
     /** Method that sets status CertificateDataBean.CERT_ARCHIVED on the certificate data, only used for testing.
@@ -811,8 +808,8 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @return true if the certificate is revoked or can not be found in the database, false if it exists and is not revoked.
      */
     public boolean isRevoked(String issuerDN, BigInteger serno) {
-        if (adapter.getLogger().isTraceEnabled()) {
-            adapter.getLogger().trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
+        if (log.isTraceEnabled()) {
+        	log.trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -823,7 +820,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
                 if (coll.size() > 1) {
                     String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));             
                     //adapter.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_DATABASE, msg);
-                    adapter.error(msg);
+                    log.error(msg);
                 }
                 Iterator<CertificateData> iter = coll.iterator();
                 while (iter.hasNext()) {
@@ -837,15 +834,15 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
             } else {
                 // If there are no certificates with this serial number, return true (=revoked). Better safe than sorry!
             	ret = true;
-            	if (adapter.getLogger().isTraceEnabled()) {
-            		adapter.getLogger().trace("isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            	if (log.isTraceEnabled()) {
+            		log.trace("isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
             	}
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
-        if (adapter.getLogger().isTraceEnabled()) {
-            adapter.getLogger().trace("<isRevoked() returned " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<isRevoked() returned " + ret);
         }
         return ret;
     }
@@ -858,7 +855,7 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
      * @return CertificateStatus status of the certificate, never null, CertificateStatus.NOT_AVAILABLE if the certificate is not found.
      */
     public CertificateStatus getStatus(String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.getStatus(issuerDN, serno, entityManager, adapter);
+        return getStatus(issuerDN, serno, entityManager);
     }
 
     /**
@@ -987,42 +984,5 @@ public class CertificateStoreSessionBean  implements CertificateStoreSessionRemo
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public boolean setStatus(String fingerprint, int status) {
     	return CertificateData.updateStatus(entityManager, fingerprint, status);
-    }
-
-    // Private methods
-
-    private class MyAdapter implements CertificateDataUtil.Adapter {
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()
-         */
-        public Logger getLogger() {
-            return log;
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
-         */
-        public void log(Admin admin, int caid, int module, Date time, String username,
-                        X509Certificate certificate, int event, String comment) {
-            logSession.log(admin, caid, module, new java.util.Date(),
-                                username, certificate, event, comment);
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
-         */
-        public void debug(String s) {
-            log.debug(s);
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
-         */
-        public void error(String s) {
-            log.error(s);        	
-        }
-        /*
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
-         */
-        public void error(String s, Exception e) {
-            log.error(s, e);        	
-        }
     }
 }
