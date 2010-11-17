@@ -42,7 +42,9 @@ public abstract class CertificateDataUtil {
     private static final Logger LOG = Logger.getLogger(CertificateDataUtil.class);
     
     protected Certificate findCertificateByFingerprint(Admin admin, String fingerprint, EntityManager entityManager) {
-        LOG.trace(">findCertificateByFingerprint()");
+        if (LOG.isTraceEnabled()) {
+        	LOG.trace(">findCertificateByFingerprint()");
+        }
         Certificate ret = null;
         try {
         	CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
@@ -53,7 +55,9 @@ public abstract class CertificateDataUtil {
         	LOG.error("Error finding certificate with fp: " + fingerprint);
             throw new EJBException(e);
         }
-        LOG.trace("<findCertificateByFingerprint()");
+        if (LOG.isTraceEnabled()) {
+        	LOG.trace("<findCertificateByFingerprint()");
+        }
         return ret;
     }
 
@@ -94,7 +98,9 @@ public abstract class CertificateDataUtil {
     }
 
     protected Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN, EntityManager entityManager) throws IllegalArgumentException {
-    	LOG.trace(">findCertificatesByType()");
+        if (LOG.isTraceEnabled()) {
+        	LOG.trace(">findCertificatesByType()");
+        }
         if (null == admin
                 || type <= 0
                 || type > SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY + SecConst.CERTTYPE_ROOTCA) {
@@ -122,7 +128,9 @@ public abstract class CertificateDataUtil {
         } else {
         	ret = CertificateData.findActiveCertificatesByType(entityManager, ctypes.toString());
         }
-        LOG.trace("<findCertificatesByType()");
+        if (LOG.isTraceEnabled()) {
+        	LOG.trace("<findCertificatesByType()");
+        }
         return ret;
     }
     
