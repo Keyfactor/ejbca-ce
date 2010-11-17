@@ -4778,7 +4778,7 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>Use the native JBoss connectors for http and https. This can give an additional 10%.</li>
 </ul>
 <subsection name="Throw away CA">
-<p>EJBCA have a configurable functiongoing by the name of "throw away CA". This is an option where EJBCA simply functions as a certificate factory, issuing certificates but not storing any trace of them in the local database.
+<p>EJBCA have a configurable function going by the name of "throw away CA". This is an option where EJBCA simply functions as a high speed certificate factory, issuing certificates but not storing any trace of them in the local database.
 </p><p>Using the throw away CA option naturally comes with many limitations,  unless taken care of in another way external to EJBCA.
 </p>
 <ul>

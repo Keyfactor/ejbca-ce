@@ -54,7 +54,7 @@
 <li>Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP or legacy databases. Several flexible standard publishers exist to meet different demands.</li>
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
-<li>Autoenrollment for windows clients.</li>
+<li>Possibility for autoenrollment (albeit not using windows standard autoenroll).</li>
 <li>Component- and plug-in based architecture  for publishing certificates and CRLs to different sources.</li>
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
 <li>Advanced log signing of PKI audit logs.</li>
@@ -67,6 +67,7 @@
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish, Websphere</li>
 <li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS-SQL, Derby, Sybase, Informix.</li>
 <li>Simple stand-alone <a href="userguide.html#EJBCA%20Batch%20Enrollment%20GUI">batch enrollment GUI</a> for CSRs (webservice RA).</li>
+<li>Unique possibility to configure either as fully audited CA or as high speed <a href="adminguide.html#Throw%20away%20CA">certificate factory</a>, with the same level of management features.</li>
 </ul>    
 
   </section>
