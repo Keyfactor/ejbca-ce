@@ -4777,6 +4777,21 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>Minimize the number of indexes in the database, only use the ones that are absolutely needed. This makes inserts in the database a bit faster and can give additonal 10%.</li>
 <li>Use the native JBoss connectors for http and https. This can give an additional 10%.</li>
 </ul>
+<subsection name="Throw away CA">
+<p>EJBCA have a configurable functiongoing by the name of "throw away CA". This is an option where EJBCA simply functions as a certificate factory, issuing certificates but not storing any trace of them in the local database.
+</p><p>Using the throw away CA option naturally comes with many limitations,  unless taken care of in another way external to EJBCA.
+</p>
+<ul>
+<li>You can not search for issued certificates.</li>
+<li>You can not revoke certificates, and thus not use CRLs or OCSP.</li>
+<li>You can not enable some limitations such as <a href="userguide.html#Enforce%20unique%20DN">Enforce unique DN</a> or <a href="userguide.html#Enforce%20unique%20public%20keys">Enforce unique public keys</a>.</li>
+</ul>
+<p>If these limitations are acceptable you can gain some benefits by using the throw away CA option:</p>
+<ul>
+<li>Maximum performance since no database queries are done. Enable to maximum caching and EJBCA will not make a single call to the database.</li>
+<li>Minimal storage requirements. Since no issued certificates are stored in the database only EJBCA configuration needs storage.</li>
+</ul>
+</subsection>
 </section>
 
 <section name="High Availability (HA)">
