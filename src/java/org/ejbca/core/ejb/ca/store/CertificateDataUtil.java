@@ -13,8 +13,6 @@
 
 package org.ejbca.core.ejb.ca.store;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -30,7 +28,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
@@ -46,38 +43,18 @@ public abstract class CertificateDataUtil {
     
     protected Certificate findCertificateByFingerprint(Admin admin, String fingerprint, EntityManager entityManager) {
         LOG.trace(">findCertificateByFingerprint()");
+        Certificate ret = null;
         try {
-        	final CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
-            if ( res==null ) {
-            	return null;
-            }
-            final Certificate certificate = res.getCertificate();
-            try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
-            	certificate.getPublicKey();
-            } catch ( Throwable t ) {
-            	if ( !LOG.isDebugEnabled() ) {
-            		return null;
-            	}
-            	final String b64encoded = new String( Base64.encode(certificate.getEncoded()) );
-            	final StringWriter sw = new StringWriter();
-            	final PrintWriter pw = new PrintWriter(sw);
-            	pw.println("Erroneous certificate fetched from database.");
-            	pw.println("The public key can not be extracted from the certificate.");
-            	pw.println("Here follows a base64 encoding of the certificate:");
-            	pw.println(CertTools.BEGIN_CERTIFICATE);
-            	pw.println(b64encoded);
-            	pw.println(CertTools.END_CERTIFICATE);
-            	pw.flush();
-            	LOG.debug(sw.toString());
-            	return null;
-            }
-            return certificate;
+        	CertificateData res = CertificateData.findByFingerprint(entityManager, fingerprint);
+        	if (res != null) {
+                ret = res.getCertificate();
+        	}
         } catch (Exception e) {
         	LOG.error("Error finding certificate with fp: " + fingerprint);
             throw new EJBException(e);
-        } finally {
-            LOG.trace("<findCertificateByFingerprint()");
         }
+        LOG.trace("<findCertificateByFingerprint()");
+        return ret;
     }
 
     protected Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, EntityManager entityManager) {
