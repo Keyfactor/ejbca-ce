@@ -222,8 +222,9 @@ the Admin GUI will not be very useful.
 The user data storage is enabled by default.
 </p>
 <p>
-If EJBCA is used as a factory and where the functionality if the Admin GUI is not required, this could be disabled to improve performance.
+If EJBCA is used as a factory and where the functionality of the Admin GUI is not required, this could be disabled to improve performance.
 </p>
+<p>See <a href="adminguide.html#Throw%20away%20CA">Throw away CA</a> in the admin guide for more information about this option.</p>
 </subsubsection>
 
 <subsubsection name="Use Certificate Storage">
@@ -234,8 +235,9 @@ Issued certificates are stored in the database to be able to provide them upon r
 The certificate data storage is enabled by default.
 </p>
 <p>
-If EJBCA is used as a factory and where the functionality if the Admin GUI is not required, this could be disabled to improve performance.
+If EJBCA is used as a factory and where the functionality of the Admin GUI is not required, this could be disabled to improve performance.
 </p>
+<p>See <a href="adminguide.html#Throw%20away%20CA">Throw away CA</a> in the admin guide for more information about this option.</p>
 </subsubsection>
 
 <subsubsection name="CRL Period">
