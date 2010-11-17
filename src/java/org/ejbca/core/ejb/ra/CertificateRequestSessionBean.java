@@ -288,11 +288,13 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
 		    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
 		}
-		
+		// First we need to fetch the CA configuration to see if we save UserData, if not, we still run addUserFromWS to
+		// get all the proper authentication checks for CA and end entity profile.
+		boolean useUserStorage = caAdminSession.getCAInfo(admin, caid).isUseUserStorage();
 		// Add or edit user
 		try {
 			String username = userdata.getUsername();
-			if (userAdminSession.existsUser(admin, username)) {
+			if (useUserStorage && userAdminSession.existsUser(admin, username)) {
 				if (log.isDebugEnabled()) {
 					log.debug("User " + username + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );
 				}
