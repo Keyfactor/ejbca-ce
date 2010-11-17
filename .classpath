@@ -33,9 +33,6 @@
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
-	<classpathentry kind="lib" path="lib/myfaces/jstl-1.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/myfaces/myfaces-api-1.1.5.jar"/>
-	<classpathentry kind="lib" path="lib/myfaces/myfaces-impl-1.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar"/>
