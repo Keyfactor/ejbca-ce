@@ -267,9 +267,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				if (StringUtils.isEmpty(cmpRaAuthSecret) || !verifyer.verify(cmpRaAuthSecret)) {
 					String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CAId="+caId);
 					if (StringUtils.isEmpty(cmpRaAuthSecret)) {
-						errMsg += ", secret is empty";
+						errMsg += " Secret is empty";
 					} else {
-						errMsg += ", secret fails verify";
+						errMsg += " Secret fails verify";
 					}
 					LOG.info(errMsg); // info because this is something we should expect and we handle it
 					if (verifyer.getErrMsg() != null) {
