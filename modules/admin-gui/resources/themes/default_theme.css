@@ -275,6 +275,15 @@ table.search tr td {
 	padding: .25em .5em .1em 0em;
 	line-height: 1.75em;
 }
+table.search tr td select.day {
+	text-align: right;
+}
+table.search tr td select.year {
+	text-align: center;
+}
+table.search tr td select.time {
+	text-align: center;
+}
 
 /* Page: Home */
 h3#welcome {
