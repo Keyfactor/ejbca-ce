@@ -76,6 +76,8 @@ public class CrmfRARequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
 
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         CryptoProviderTools.installBCProvider();
@@ -197,36 +199,40 @@ public class CrmfRARequestTest extends CmpTestCase {
         final String userName2 = "cmptest2";
         final String userDN1 = "C=SE,O=PrimeKey,CN=" + userName1;
         final String userDN2 = "C=SE,O=PrimeKey,CN=" + userName2;
-        // check that several certificates could be created for one user and one
-        // key.
-        crmfHttpUserTest(userDN1, key1, null);
-        crmfHttpUserTest(userDN2, key2, null);
-        // check that the request fails when asking for certificate for another
-        // user with same key.
-        crmfHttpUserTest(userDN2, key1, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName2 + "'",
-                "'" + userName1 + "'"));
-        crmfHttpUserTest(userDN1, key2, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName1 + "'",
-                "'" + userName2 + "'"));
-        // check that you can not issue a certificate with same DN as another
-        // user.
-        crmfHttpUserTest("CN=AdminCA1,O=EJBCA Sample,C=SE", key3, InternalResources.getInstance().getLocalizedMessage(
-                "signsession.subjectdn_exists_for_another_user", "'AdminCA1'", "'SYSTEMCA'"));
-        String hostname;
-
-        hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
-
-        crmfHttpUserTest("CN=" + hostname + ",O=EJBCA Sample,C=SE", key4, InternalResources.getInstance().getLocalizedMessage(
-                "signsession.subjectdn_exists_for_another_user", "'" + hostname + "'", "'tomcat'"));
-
-        userAdminSession.deleteUser(admin, userName1);
-        userAdminSession.deleteUser(admin, userName2);
+        String hostname=null;
         try {
-            userAdminSession.deleteUser(admin, "AdminCA1");
-        } catch (NotFoundException e) {
-        }
-        try {
-            userAdminSession.deleteUser(admin, hostname);
-        } catch (NotFoundException e) {
+        	// check that several certificates could be created for one user and one key.
+        	crmfHttpUserTest(userDN1, key1, null);
+        	crmfHttpUserTest(userDN2, key2, null);
+        	// check that the request fails when asking for certificate for another
+        	// user with same key.
+        	crmfHttpUserTest(userDN2, key1, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName2 + "'",
+        			"'" + userName1 + "'"));
+        	crmfHttpUserTest(userDN1, key2, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName1 + "'",
+        			"'" + userName2 + "'"));
+        	// check that you can not issue a certificate with same DN as another
+        	// user.
+        	crmfHttpUserTest("CN=AdminCA1,O=EJBCA Sample,C=SE", key3, InternalResources.getInstance().getLocalizedMessage(
+        			"signsession.subjectdn_exists_for_another_user", "'AdminCA1'", "'SYSTEMCA'"));
+
+        	hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+
+        	crmfHttpUserTest("CN=" + hostname + ",O=EJBCA Sample,C=SE", key4, InternalResources.getInstance().getLocalizedMessage(
+        			"signsession.subjectdn_exists_for_another_user", "'" + hostname + "'", "'tomcat'"));
+
+        } finally {
+        	try {
+        		userAdminSession.deleteUser(admin, userName1);
+        	} catch (NotFoundException e) {}
+        	try {
+        		userAdminSession.deleteUser(admin, userName2);        	
+        	} catch (NotFoundException e) {}
+        	try {
+        		userAdminSession.deleteUser(admin, "AdminCA1");
+        	} catch (NotFoundException e) {}
+        	try {
+        		userAdminSession.deleteUser(admin, hostname);
+        	} catch (NotFoundException e) {}
         }
     }
 
