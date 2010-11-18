@@ -50,7 +50,7 @@
 #cmp.responseprotection=signature
 
 # Shared secret between the CA and the RA used to authenticate valid RA messages.
-# Leave this commented out to be able to use a separate secret for each CA.
+# Leave this commented out to be able to use a separate secret for each CA (see Edit Certificate Authorities configuration).
 #
 # Default: empty
 #cmp.ra.authenticationsecret=
