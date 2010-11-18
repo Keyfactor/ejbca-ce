@@ -271,6 +271,7 @@ After the certificate has been issued the user status is set to 'Generated' and 
 CMP can be configured in RA mode to use one shared secret for each CA to authenticate messages from the RA.
 If "cmp.ra.authenticationsecret" in cmp.properties is set, this field will be ignored.
 </p>
+<p>An empty value in this field will deny all RA mode CMP requests (if cmp.ra.authenticationsecret is not set).</p>
 </subsubsection>
 
 </subsection> 
