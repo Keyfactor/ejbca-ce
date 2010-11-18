@@ -190,6 +190,11 @@ public class CAsTest extends CaTestCase {
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
+            
+            // Check CMP RA sercret, default value empty string
+            X509CAInfo xinfo = (X509CAInfo)info;
+            assertNotNull(xinfo.getCmpRaAuthSecret());
+            assertEquals("", xinfo.getCmpRaAuthSecret());
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }

@@ -308,7 +308,12 @@ public class X509CA extends CA implements Serializable {
       }
 
       public String getCmpRaAuthSecret() {
-          return ((String)data.get(CMPRAAUTHSECRET));
+    	  Object o = data.get(CMPRAAUTHSECRET);
+    	  if (o == null) {
+    		  // Default to empty value if it is not set. An empty value will be denied by CRMFMessageHandler
+    		  return "";
+    	  }
+          return (String)o;
       }
 
       public void setCmpRaAuthSecret(String cmpRaAuthSecret) {
