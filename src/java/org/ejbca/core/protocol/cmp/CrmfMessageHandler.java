@@ -238,7 +238,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
 			// If we use a globally configured shared secret for all CAs we check it right away
 			if (raAuthSecret != null && !verifyer.verify(raAuthSecret)) {
-				String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage");
+				String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Global auth secret");
 				LOG.info(errMsg); // info because this is something we should expect and we handle it
 				if (verifyer.getErrMsg() != null) {
 					errMsg = verifyer.getErrMsg();
@@ -265,7 +265,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					cmpRaAuthSecret = ((X509CAInfo) caInfo).getCmpRaAuthSecret();
 				}
 				if (cmpRaAuthSecret == null || !verifyer.verify(cmpRaAuthSecret)) {
-					String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage");
+					String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CAId="+caId);
 					LOG.info(errMsg); // info because this is something we should expect and we handle it
 					if (verifyer.getErrMsg() != null) {
 						errMsg = verifyer.getErrMsg();
