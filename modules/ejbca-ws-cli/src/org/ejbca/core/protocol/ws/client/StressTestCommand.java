@@ -14,8 +14,13 @@ package org.ejbca.core.protocol.ws.client;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -48,6 +53,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
     final PerformanceTest performanceTest;
     enum TestType {
         BASIC,
+        BASICSINGLETRANS,
         REVOKE,
         REVOKEALOT
     }
@@ -77,6 +83,10 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 return new Command[]{
                                      new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
                                      new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
+            case BASICSINGLETRANS:
+                return new Command[]{
+                                     new CertificateRequestCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN, kpg.generateKeyPair())
+                					};
             case REVOKE:
                 return new Command[]{
                                      new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
@@ -135,28 +145,40 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
         public boolean doIt() throws Exception {
             final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(this.jobData.userName, this.jobData.passWord,
                                                                                        new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
-            X509Certificate cert = null;
-            while ( i.hasNext() ) {
-                cert = i.next();
-            }
-            if ( cert==null ) {
-                StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+this.jobData.userName);
-                return false;
-            }
-            final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
-            if ( commonName.equals(this.jobData.userName) ) {
-                StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
-                StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
-                return true;
-            }
-            StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+this.jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
-            return false;
+            return checkAndLogCertificateResponse(certificateResponse, this.jobData);
         }
         public String getJobTimeDescription() {
             return "Relative time spent signing certificates";
         }
     }
+
+	/**
+	 * @param certificateResponse
+	 * @throws CertificateException
+	 */
+	private boolean checkAndLogCertificateResponse(
+			final CertificateResponse certificateResponse, final JobData jobData)
+			throws CertificateException {
+		boolean ret = false;
+		final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
+        X509Certificate cert = null;
+        while ( i.hasNext() ) {
+            cert = i.next();
+        }
+        if ( cert==null ) {
+            StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+jobData.userName);
+        } else {
+            final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
+            if ( commonName.equals(jobData.userName) ) {
+                StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
+                StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
+                ret = true;
+            }
+            StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");            	
+        }
+        return ret;
+	}
+
     private class MultipleCertsRequestsForAUserCommand extends BaseCommand implements Command {
         final EjbcaWS ejbcaWS;
         final String caName;
@@ -305,7 +327,60 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             }
             return "Relative time spent setting status of user to NEW";
         }
-    }
+    } // EditUserCommand
+    
+    /**
+     * Command for using the "single transaction" certificateRequest method from EjbcaWS 
+     */
+    private class CertificateRequestCommand extends BaseCommand implements Command {
+        final private EjbcaWS ejbcaWS;
+        final private UserDataVOWS user;
+        final private boolean doCreateNewUser;
+        final private int bitsInCertificateSN;
+        final private PKCS10CertificationRequest pkcs10;
+        CertificateRequestCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName,
+                        JobData _jobData, boolean _doCreateNewUser, int _bitsInCertificateSN, KeyPair keys) throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            super(_jobData);
+            this.doCreateNewUser = _doCreateNewUser;
+            this.ejbcaWS = _ejbcaWS;
+            this.user = new UserDataVOWS();
+            this.user.setClearPwd(true);
+            this.user.setCaName(caName);
+            this.user.setEmail(null);
+            this.user.setSubjectAltName(null);
+            this.user.setStatus(UserDataConstants.STATUS_NEW);
+            this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+            this.user.setEndEntityProfileName(endEntityProfileName);
+            this.user.setCertificateProfileName(certificateProfileName);
+            this.bitsInCertificateSN = _bitsInCertificateSN;
+            this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());            
+        }
+        public boolean doIt() throws Exception {
+            if ( this.doCreateNewUser ) {
+                this.jobData.passWord = "foo123";
+                this.jobData.userName = "WSTESTUSER"+StressTestCommand.this.performanceTest.nextLong();
+            }
+            if ( this.bitsInCertificateSN>0 && this.doCreateNewUser ) {
+                this.user.setCertificateSerialNumber(new BigInteger(this.bitsInCertificateSN, StressTestCommand.this.performanceTest.getRandom()));
+            }
+            this.user.setSubjectDN(this.jobData.getDN());
+            this.user.setUsername(this.jobData.userName);
+            this.user.setPassword(this.jobData.passWord);
+            int requestType = CertificateHelper.CERT_REQ_TYPE_PKCS10;
+            String responseType = CertificateHelper.RESPONSETYPE_CERTIFICATE;
+            String hardTokenSN = null; // not used
+            String requestData = new String(Base64.encode(this.pkcs10.getEncoded()));
+            final CertificateResponse certificateResponse = this.ejbcaWS.certificateRequest(this.user, requestData, requestType, hardTokenSN, responseType);
+            return checkAndLogCertificateResponse(certificateResponse, this.jobData);
+        }
+        public String getJobTimeDescription() {
+            if ( this.doCreateNewUser ) {
+                return "Relative time spent registring new users";
+            }
+            return "Relative time spent setting status of user to NEW";
+        }
+    } // CertificateRequestCommand
+    
     /**
      * @param args
      */
