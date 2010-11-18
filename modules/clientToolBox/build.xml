@@ -58,7 +58,7 @@
 	
     <target name="compile" depends="setup">
     	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" encoding="iso8859-1" target="${java.target.version}">
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
             <classpath>
             	<path refid="lib.bouncycastle.classpath"/>
             	<path refid="clientToolBox.lib.classpath"/>
