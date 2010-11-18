@@ -226,7 +226,11 @@ function changematchfields(row){
 
  -->
 </script>
-<table width="100%" border="0" cellspacing="1" cellpadding="0">
+
+<table class="search" width="100%" border="0" cellspacing="1" cellpadding="0">
+
+  <!-- ---------- ROW 1 ---------- -->
+
   <tr> 
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">&nbsp;
@@ -358,6 +362,9 @@ function changematchfields(row){
         <% } %>
     </td>
   </tr>
+
+
+  <!-- ---------- ROW 2 ---------- -->
 
   <tr> 
     <td width="2%">&nbsp;</td>
@@ -503,6 +510,9 @@ function changematchfields(row){
     </td>
   </tr>
 
+
+  <!-- ---------- ROW 3 ---------- -->
+
   <tr> 
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">
@@ -647,6 +657,9 @@ function changematchfields(row){
     </td>
   </tr>
 
+
+  <!-- ---------- ROW 4 ---------- -->
+
   <tr> 
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">
@@ -678,6 +691,9 @@ function changematchfields(row){
               value='<c:out value="<%= Integer.toString(TimeMatch.MATCH_WITH_TIMEMODIFIED) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"MODIFIED\") %>"/>
          </option>          
       </select>  
+
+      <!-- ----- Row 4 : Search after ----- -->
+
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORAFTER\") %>"/>&nbsp;
       <select name='<%= SELECT_DAY_ROW4  %>'>  
          <% for(int i=0; i <  31; i++) { %> 
@@ -723,18 +739,14 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>
-    </td>
-  </tr>
+      <br/>
 
-  <tr> 
-    <td width="2%">&nbsp;</td>
-    <td width="5%" align="left">
-     &nbsp;
-    </td>
-    <td width="93%" align="left"> 
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+      <!-- ----- Row 4 : Search before ----- -->
+
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORBEFORE\") %>"/>&nbsp;
       <select name='<%= SELECT_DAY_ROW5  %>'> 
          <%  tempval =0;
@@ -803,9 +815,16 @@ function changematchfields(row){
       </select>
     </td>
   </tr>
+
+
+  <!-- ---------- Submit ---------- -->
+
+  <tr>
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">
     </td>
     <td width="93%" align="left"> <input type="submit" name="<%=BUTTON_ADVANCEDLIST %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>'>
     </td>        
+  </tr>
+
 </table>
