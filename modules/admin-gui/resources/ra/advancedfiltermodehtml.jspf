@@ -695,7 +695,7 @@ function changematchfields(row){
       <!-- ----- Row 4 : Search after ----- -->
 
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORAFTER\") %>"/>&nbsp;
-      <select name='<%= SELECT_DAY_ROW4  %>'>  
+      <select name='<%= SELECT_DAY_ROW4  %>' class="day">  
          <% for(int i=0; i <  31; i++) { %> 
          <option <% if(olddayrow4 != null)
                       if(olddayrow4.equals(Integer.toString(i))) 
@@ -705,7 +705,7 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_MONTH_ROW4  %>'>  
+      <select name='<%= SELECT_MONTH_ROW4  %>' class="month">  
          <% for(int i=0; i < monthreferences.length; i++) { %> 
          <option <% if(oldmonthrow4 != null)
                       if(oldmonthrow4.equals(Integer.toString(i))) 
@@ -715,7 +715,7 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_YEAR_ROW4  %>'>  
+      <select name='<%= SELECT_YEAR_ROW4  %>' class="year">  
          <% for(int i=2000; i <  2020; i++) { %> 
          <option <% if(oldyearrow4 != null)
                       if(oldyearrow4.equals(Integer.toString(i))) 
@@ -725,7 +725,7 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_TIME_ROW4  %>'>  
+      <select name='<%= SELECT_TIME_ROW4  %>' class="time">  
           <% Calendar time = Calendar.getInstance();
              DateFormat dateformat = DateFormat.getTimeInstance(DateFormat.SHORT);%>
 
@@ -748,7 +748,7 @@ function changematchfields(row){
       <!-- ----- Row 4 : Search before ----- -->
 
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORBEFORE\") %>"/>&nbsp;
-      <select name='<%= SELECT_DAY_ROW5  %>'> 
+      <select name='<%= SELECT_DAY_ROW5  %>' class="day"> 
          <%  tempval =0;
              if(olddayrow5 != null){
                tempval = Integer.parseInt(olddayrow5);  
@@ -763,7 +763,7 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_MONTH_ROW5  %>'>  
+      <select name='<%= SELECT_MONTH_ROW5  %>' class="month">  
          <%  tempval =0;
              if(oldmonthrow5 != null){
                tempval = Integer.parseInt(oldmonthrow5);  
@@ -779,7 +779,7 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_YEAR_ROW5  %>'>  
+      <select name='<%= SELECT_YEAR_ROW5  %>' class="year">  
          <%  tempval =0;
              if(oldyearrow5 != null){
                tempval = Integer.parseInt(oldyearrow5);  
@@ -794,7 +794,7 @@ function changematchfields(row){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_TIME_ROW5  %>'>  
+      <select name='<%= SELECT_TIME_ROW5  %>' class="time">  
           <% time = Calendar.getInstance();
              dateformat = DateFormat.getTimeInstance(DateFormat.SHORT);%>
          <%  tempval =0;
