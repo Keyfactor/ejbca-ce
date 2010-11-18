@@ -271,9 +271,15 @@ table.edit tr td {
 }
 form#edit table tr td.title,	/* Services */
 table.edit tr td.title {
-        font-size: 1.1em;
+	font-size: 1.1em;
 }
 table.edit tr td table tr td {
+	line-height: 1.75em;
+}
+
+/* Page: ALL Search forms */
+table.search tr td {
+	padding: .25em .5em .1em 0em;
 	line-height: 1.75em;
 }
 
