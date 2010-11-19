@@ -215,7 +215,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         // from above
         // In this test userDN contains special, escaped characters to verify
         // that that works with CMP RA as well
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
         assertNotNull(req);
 
@@ -283,7 +283,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 10001);
         assertNotNull(req);
 

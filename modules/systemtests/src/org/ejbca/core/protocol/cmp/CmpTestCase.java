@@ -127,11 +127,11 @@ public class CmpTestCase extends CaTestCase {
 		super(arg0);
 	}
 
-	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
-		return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo, extensions, notBefore, notAfter);
+	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+		return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo, extensions, notBefore, notAfter, customCertSerno);
 	}
 	
-	protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
 		if (notBefore != null) {
@@ -186,6 +186,11 @@ public class CmpTestCase extends CaTestCase {
             exts = new X509Extensions(oids, values);
         }
         myCertTemplate.setExtensions(exts);
+		if (customCertSerno != null) {
+			// Add serialNumber to the certTemplate, it is defined as a MUST NOT be used in RFC4211, but we will use it anyway in order
+			// to request a custom certificate serial number (something not standard anyway)
+			myCertTemplate.setSerialNumber(new DERInteger(customCertSerno));
+		}
 
         CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
         // myCertRequest.addControls(new

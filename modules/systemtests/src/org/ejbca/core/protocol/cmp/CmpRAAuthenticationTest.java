@@ -158,7 +158,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
 		Date notAfter = new Date(new Date().getTime()+24*3600*1000);
 		KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		String subjectDN = "CN=cmpRAAuthenticationTestUser" + RND.nextLong();
-        PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore, notAfter);
+        PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore, notAfter, null);
         PKIMessage req = protectPKIMessage(one, false, pbeSecret, keyId, 567);
 		assertNotNull("Request was not created properly.", req);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();

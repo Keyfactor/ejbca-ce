@@ -118,7 +118,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 		KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
 		String username = "cmpRaThrowAwayTestUser" + RND.nextLong();	// This is what we expect from the CMP configuration
 		String subjectDN = "CN=" + username;
-        PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore, notAfter);
+        PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore, notAfter, null);
         PKIMessage req = protectPKIMessage(one, false, PBE_SECRET, "unusedKeyId", 567);
 		assertNotNull("Request was not created properly.", req);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
