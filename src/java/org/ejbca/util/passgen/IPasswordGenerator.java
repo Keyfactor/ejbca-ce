@@ -15,6 +15,11 @@ package org.ejbca.util.passgen;
 
 /**
  * IPasswordGenerator is an interface used to generate passwords used by end entities in EJBCA
+ * Usage:
+ * <pre>
+ *  IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+ *  String pwd = pwdgen.getNewPassword(12, 16);
+ * </pre>
  *
  * @version $Id$
  */

@@ -18,6 +18,11 @@ import java.util.Collection;
 
 /**
  * Factory class creating PasswordGenerators.
+ * Usage:
+ * <pre>
+ *  IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+ *  String pwd = pwdgen.getNewPassword(12, 16);
+ * </pre>
  *
  * @version $Id$
  */
