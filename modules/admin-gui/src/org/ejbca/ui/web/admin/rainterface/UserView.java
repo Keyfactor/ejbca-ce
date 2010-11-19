@@ -18,7 +18,6 @@ import java.util.HashMap;
 
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.HTMLTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DNFieldExtractor;
 
@@ -122,7 +121,9 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public ExtendedInformation getExtendedInformation() { return userdata.getExtendedinformation();}
     
     public String getSubjectDNField(int parameter, int number){
-      return HTMLTools.htmlescape(subjectdnfields.getField(parameter,number));
+    	// We don't need to htmlescape the output, because we use JSTL output stuff in JSP pages that does it for us 
+    	// in the output shown in browser
+      return subjectdnfields.getField(parameter,number);
     }
 
     public String getSubjectAltNameField(int parameter, int number){
