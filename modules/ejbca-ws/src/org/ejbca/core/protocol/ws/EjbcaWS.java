@@ -175,6 +175,7 @@ import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.RequestMessageUtils;
 import org.ejbca.util.keystore.KeyTools;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
+import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -2525,7 +2526,9 @@ public class EjbcaWS implements IEjbcaWS {
     private void setUserDataVOWS(UserDataVOWS userdata) {
     	userdata.setStatus(UserDataVOWS.STATUS_NEW);
     	if (userdata.getPassword() == null) {
-    		userdata.setPassword("foo123");
+    		final IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
+			final String pwd = pwdgen.getNewPassword(12, 12);									
+    		userdata.setPassword(pwd);
     	}
     	userdata.setClearPwd(false);
     	userdata.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
