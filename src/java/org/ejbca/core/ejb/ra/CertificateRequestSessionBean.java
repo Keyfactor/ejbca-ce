@@ -229,6 +229,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
 	/**
 	 * Edits or adds a user and generates a certificate for that user in a single transaction.
+     * Username and password in userdata and req message must match.
      * 
 	 * @param admin is the requesting administrator
 	 * @param userdata contains information about the user that is about to get a certificate
