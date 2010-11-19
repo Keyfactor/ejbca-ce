@@ -1,5 +1,5 @@
 --
--- These definitions should work for EJBCA 3.8.x, MySQL 4.x or 5.x.
+-- These definitions should work for EJBCA 4.0.x, MySQL 4.x or 5.x.
 --
 
 DROP TABLE AccessRulesData;
@@ -10,6 +10,7 @@ CREATE TABLE AccessRulesData (
     isRecursive tinyint(4) NOT NULL DEFAULT '0',
     `AdminGroupData_accessRules` int(11) NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (pK)
 );
 
@@ -22,6 +23,7 @@ CREATE TABLE AdminEntityData (
     `AdminGroupData_adminEntities` int(11) NULL DEFAULT NULL,
     cAId int(11) NOT NULL DEFAULT '0',
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (pK)
 );
 
@@ -31,6 +33,7 @@ CREATE TABLE AdminGroupData (
     adminGroupName varchar(250) binary NULL DEFAULT NULL,
     cAId int(11) NOT NULL DEFAULT '0',
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (pK)
 );
 
@@ -39,6 +42,7 @@ CREATE TABLE AdminPreferencesData (
     id varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -58,6 +62,7 @@ CREATE TABLE ApprovalData (
     expiredate bigint(20) NOT NULL DEFAULT '0',    
     remainingapprovals int(11) NOT NULL DEFAULT '0',
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -66,6 +71,7 @@ CREATE TABLE AuthorizationTreeUpdateData (
     pK int(11) NOT NULL DEFAULT '0',
     authorizationTreeUpdateNumber int(11) NOT NULL DEFAULT '0',
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (pK)
 );
 
@@ -79,6 +85,7 @@ CREATE TABLE CAData (
     updateTime bigint(20) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (cAId)
 );
 
@@ -93,6 +100,7 @@ CREATE TABLE CRLData (
     deltaCRLIndicator int(11) NOT NULL DEFAULT '-1',
     base64Crl longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -105,6 +113,7 @@ CREATE TABLE CertReqHistoryData (
     userDataVO longtext NULL DEFAULT NULL,
     username varchar(250) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -127,6 +136,7 @@ CREATE TABLE CertificateData (
     updateTime bigint(20) NOT NULL DEFAULT '0',
     subjectKeyId varchar(250) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (fingerprint)
 );
 
@@ -136,6 +146,7 @@ CREATE TABLE CertificateProfileData (
     certificateProfileName varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -145,6 +156,7 @@ CREATE TABLE EndEntityProfileData (
     profileName varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -153,6 +165,7 @@ CREATE TABLE GlobalConfigurationData (
     configurationId varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (configurationId)
 );
 
@@ -161,6 +174,7 @@ CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(250) binary NOT NULL DEFAULT '',
     tokenSN varchar(250) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (certificateFingerprint)
 );
 
@@ -174,6 +188,7 @@ CREATE TABLE HardTokenData (
     significantIssuerDN varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (tokenSN)
 );
 
@@ -184,6 +199,7 @@ CREATE TABLE HardTokenIssuerData (
     adminGroupId int(11) NOT NULL DEFAULT '0',
     data longblob NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -194,6 +210,7 @@ CREATE TABLE HardTokenProfileData (
     updateCounter int(11) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -203,6 +220,7 @@ CREATE TABLE HardTokenPropertyData (
     property varchar(250) binary NOT NULL DEFAULT '',
     value varchar(250) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id, property)
 );
 
@@ -214,6 +232,7 @@ CREATE TABLE KeyRecoveryData (
     markedAsRecoverable tinyint(4) NOT NULL DEFAULT '0',
     keyData longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (certSN, issuerDN)
 );
 
@@ -223,6 +242,7 @@ CREATE TABLE LogConfigurationData (
     logConfiguration longblob NULL DEFAULT NULL,
     logEntryRowNumber int(11) NOT NULL DEFAULT '0',
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -239,6 +259,7 @@ CREATE TABLE LogEntryData (
     event int(11) NOT NULL DEFAULT '0',
     logComment varchar(250) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -249,6 +270,7 @@ CREATE TABLE PublisherData (
     updateCounter int(11) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -264,6 +286,7 @@ CREATE TABLE PublisherQueueData (
     publisherId int(11) NOT NULL DEFAULT '0',
     volatileData longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (pk)
 );
 
@@ -275,6 +298,7 @@ CREATE TABLE ServiceData (
     nextRunTimeStamp bigint(20) NOT NULL DEFAULT '0',
     runTimeStamp bigint(20) NOT NULL DEFAULT '0',    
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
@@ -299,6 +323,7 @@ CREATE TABLE UserData (
     keyStorePassword varchar(250) binary NULL DEFAULT NULL,
     cardnumber varchar(19) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (username)
 );
 
@@ -309,5 +334,6 @@ CREATE TABLE UserDataSourceData (
     updateCounter int(11) NOT NULL DEFAULT '0',
     data longtext NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
+    rowProtection longtext DEFAULT NULL,
     PRIMARY KEY (id)
 );

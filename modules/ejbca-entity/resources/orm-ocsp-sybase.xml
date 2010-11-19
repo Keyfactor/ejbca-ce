@@ -11,15 +11,9 @@
 
     <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
         <attributes>
-            <basic name="expireDate">
-                <column name="expireDate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="revocationDate">
-                <column name="revocationDate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="updateTime">
-                <column name="updateTime" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="expireDate"><column name="expireDate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="revocationDate"><column name="revocationDate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
 

@@ -9,11 +9,10 @@
 		Only contains necessary mapping for CertificateData.
 	-->
 
-    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
         <attributes>
-            <basic name="base64Cert">
-                <column name="base64Cert" column-definition="VARCHAR"/>
-            </basic>
+            <basic name="userDataVO"><column name="userDataVO" column-definition="VARCHAR"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
         </attributes>
     </entity>
 

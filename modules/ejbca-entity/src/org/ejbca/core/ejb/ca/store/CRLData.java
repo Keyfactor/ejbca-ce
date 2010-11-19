@@ -54,6 +54,7 @@ public class CRLData implements Serializable {
 	private long nextUpdate;
 	private String base64Crl;
 	private int rowVersion = 0;
+	private String rowProtection;
 
 	/**
 	 * Entity holding info about a CRL. Create by sending in the CRL, which extracts (from the
@@ -132,6 +133,11 @@ public class CRLData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	//
 	// Public methods used to help us manage CRLs

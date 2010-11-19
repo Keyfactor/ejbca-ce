@@ -12,6 +12,7 @@ CREATE TABLE accessrulesdata (
   isRecursive BOOLEAN DEFAULT FALSE NOT NULL, 
   AdminGroupData_accessRules INT4, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_accessrulesdata PRIMARY KEY (pK)
 );
 
@@ -25,6 +26,7 @@ CREATE TABLE adminentitydata (
   AdminGroupData_adminEntities INT4, 
   cAId INT4 NOT NULL, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_adminentitydata PRIMARY KEY (pK)
 );
    
@@ -35,6 +37,7 @@ CREATE TABLE admingroupdata (
   adminGroupName TEXT, 
   cAId INT4 NOT NULL, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_admingroupdata PRIMARY KEY (pK)
 );
 
@@ -44,6 +47,7 @@ CREATE TABLE adminpreferencesdata (
   id TEXT NOT NULL, 
   data BYTEA, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_adminpreferencesdata PRIMARY KEY (id)
 );
 
@@ -64,6 +68,7 @@ CREATE TABLE approvaldata (
   expiredate INT8 NOT NULL, 
   remainingapprovals INT4 NOT NULL, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_approvaldata PRIMARY KEY (id)
 );
 
@@ -73,6 +78,7 @@ CREATE TABLE authorizationtreeupdatedata (
   pK INT4 NOT NULL, 
   authorizationTreeUpdateNumber INT4 NOT NULL, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_authorizationtreeupdatedata PRIMARY KEY (pK)
 );
 
@@ -87,6 +93,7 @@ CREATE TABLE cadata (
   updateTime INT8 NOT NULL, 
   data TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_cadata PRIMARY KEY (cAId)
 );
 
@@ -110,6 +117,7 @@ CREATE TABLE certificatedata (
   updateTime INT8 NOT NULL, 
   subjectKeyId TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_certificatedata PRIMARY KEY (fingerprint)
 );
 
@@ -120,6 +128,7 @@ CREATE TABLE certificateprofiledata (
   certificateProfileName TEXT, 
   data BYTEA, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_certificateprofiledata PRIMARY KEY (id)
 );
 
@@ -133,6 +142,7 @@ CREATE TABLE certreqhistorydata (
   userDataVO TEXT, 
   username TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_certreqhistorydata PRIMARY KEY (fingerprint)
 );
 
@@ -148,6 +158,7 @@ CREATE TABLE crldata (
   nextUpdate INT8 NOT NULL, 
   base64Crl TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_crldata PRIMARY KEY (fingerprint)
 );
 
@@ -158,6 +169,7 @@ CREATE TABLE endentityprofiledata (
   profileName TEXT, 
   data BYTEA, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_endentityprofiledata PRIMARY KEY (id)
 );
 
@@ -167,6 +179,7 @@ CREATE TABLE globalconfigurationdata (
   configurationId TEXT NOT NULL, 
   data BYTEA, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_globalconfigurationdata PRIMARY KEY (configurationId)
 );
 
@@ -176,6 +189,7 @@ CREATE TABLE hardtokencertificatemap (
   certificateFingerprint TEXT NOT NULL, 
   tokenSN TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
  CONSTRAINT pk_hardtokencertificatemap PRIMARY KEY (certificateFingerprint)
 );
 
@@ -190,6 +204,7 @@ CREATE TABLE hardtokendata (
   significantIssuerDN TEXT, 
   data BYTEA, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_hardtokendata PRIMARY KEY (tokenSN)
 );
 
@@ -201,6 +216,7 @@ CREATE TABLE hardtokenissuerdata (
   adminGroupId INT4 NOT NULL, 
   data BYTEA, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_hardtokenissuerdata PRIMARY KEY (id)
 );
 
@@ -212,6 +228,7 @@ CREATE TABLE hardtokenprofiledata (
   updateCounter INT4 NOT NULL, 
   data TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_hardtokenprofiledata PRIMARY KEY (id)
 );
 
@@ -222,6 +239,7 @@ CREATE TABLE hardtokenpropertydata (
   property TEXT NOT NULL, 
   value TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_hardtokenpropertydata PRIMARY KEY (id, property)
 );
 
@@ -234,6 +252,7 @@ CREATE TABLE keyrecoverydata (
   markedAsRecoverable BOOLEAN DEFAULT FALSE NOT NULL, 
   keyData TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_keyrecoverydata PRIMARY KEY (certSN, issuerDN)
 );
 
@@ -244,6 +263,7 @@ CREATE TABLE logconfigurationdata (
   logConfiguration BYTEA, 
   logEntryRowNumber INT4 NOT NULL, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_logconfigurationdata PRIMARY KEY (id)
 );
 
@@ -261,6 +281,7 @@ CREATE TABLE logentrydata (
   event INT4 NOT NULL, 
   logComment TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_logentrydata PRIMARY KEY (id)
 );
 
@@ -272,6 +293,7 @@ CREATE TABLE publisherdata (
   updateCounter INT4 NOT NULL, 
   data TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_publisherdata PRIMARY KEY (id)
 );
 
@@ -288,6 +310,7 @@ CREATE TABLE publisherqueuedata (
   publisherId INT4 NOT NULL,
   volatileData TEXT,
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_publisherqueuedata PRIMARY KEY (pk)
 );
 
@@ -300,6 +323,7 @@ CREATE TABLE servicedata (
   nextRunTimeStamp INT8 NOT NULL DEFAULT 0,  
   runTimeStamp INT8 NOT NULL DEFAULT 0,  
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_servicedata PRIMARY KEY (id)
 );
 
@@ -325,6 +349,7 @@ CREATE TABLE userdata (
   keyStorePassword TEXT, 
   cardnumber TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_userdata PRIMARY KEY (username)
 );
 
@@ -336,5 +361,6 @@ CREATE TABLE userdatasourcedata (
   updateCounter INT4 NOT NULL, 
   data TEXT, 
   rowVersion INT4 DEFAULT 0, 
+  rowProtection TEXT DEFAULT NULL,
 CONSTRAINT pk_userdatasourcedata PRIMARY KEY (id)
 );

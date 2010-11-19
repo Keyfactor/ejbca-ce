@@ -19,6 +19,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Version;
 
@@ -35,6 +36,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	private Integer pK;
 	private int authorizationTreeUpdateNumber;
 	private int rowVersion = 0;
+	private String rowProtection;
 	
 	@Id
 	@Column(name="pK")
@@ -54,6 +56,11 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	public AuthorizationTreeUpdateData() {
 		setPrimKey(AUTHORIZATIONTREEUPDATEDATA);

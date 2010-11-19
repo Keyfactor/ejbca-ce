@@ -51,6 +51,7 @@ public class HardTokenIssuerData implements Serializable {
 	private int adminGroupId;
 	private Serializable data;
 	private int rowVersion = 0;
+	private String rowProtection;
 
 	/**
 	 * Entity holding data of a hard token issuer.
@@ -95,6 +96,11 @@ public class HardTokenIssuerData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	private HashMap getData() { return (HashMap) getDataUnsafe(); }

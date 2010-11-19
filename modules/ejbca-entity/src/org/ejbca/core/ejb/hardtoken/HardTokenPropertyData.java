@@ -21,6 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Lob;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
@@ -44,6 +45,7 @@ public class HardTokenPropertyData implements Serializable {
     private String property;
     private String value;
 	private int rowVersion = 0;
+	private String rowProtection;
 
     /**
      * Entity holding data of a hard token properties.
@@ -94,6 +96,11 @@ public class HardTokenPropertyData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
     //
     // Search functions.

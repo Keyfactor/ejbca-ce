@@ -51,6 +51,7 @@ public class ServiceData implements Serializable {
 	private long nextRunTimeStamp;
 	private String data;
 	private int rowVersion = 0;
+	private String rowProtection;
 
     /**
      * Entity Bean holding data of a service configuration.
@@ -108,6 +109,11 @@ public class ServiceData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
     /**
      * Method that returns the service configuration data and updates it if necessary.

@@ -8,9 +8,7 @@
 
     <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
         <attributes>
-            <basic name="rule">
-                <column name="rule_"/>
-            </basic>
+            <basic name="rule"><column name="rule_"/></basic>
         </attributes>
     </entity>
 

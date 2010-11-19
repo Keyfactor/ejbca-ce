@@ -93,6 +93,7 @@ public class CertificateData implements Serializable {
 	private long updateTime = 0;
 	private String subjectKeyId;
 	private int rowVersion = 0;
+	private String rowProtection;
 
 	/**
 	 * Entity holding info about a certificate. Create by sending in the certificate, which
@@ -379,6 +380,11 @@ public class CertificateData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	//
 	// Public business methods used to help us manage certificates

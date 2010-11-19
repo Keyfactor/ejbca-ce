@@ -28,6 +28,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.OneToMany;
 import javax.persistence.Query;
@@ -62,6 +63,7 @@ public class AdminGroupData implements Serializable {
 	private Set<AdminEntityData> adminEntityDatas = new HashSet<AdminEntityData>();
 	private Set<AccessRulesData> accessRulesDatas = new HashSet<AccessRulesData>();
 	private int rowVersion = 0;
+	private String rowProtection;
 
 	/**
 	 * Entity holding data of admin profile groups.
@@ -95,6 +97,11 @@ public class AdminGroupData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	/*
 	 * TODO: Mapping between admins and group ok?

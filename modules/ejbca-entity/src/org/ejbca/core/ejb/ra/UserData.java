@@ -77,6 +77,7 @@ public class UserData implements Serializable {
 	private String extendedInformationData;
 	private String keyStorePassword;
 	private int rowVersion = 0;
+	private String rowProtection;
 
     /**
      * Entity Bean holding info about a User.
@@ -268,6 +269,11 @@ public class UserData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
     //
     // Public methods used to help us manage passwords
