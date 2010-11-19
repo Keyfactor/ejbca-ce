@@ -316,9 +316,9 @@ in JavaDB 10.2, and like this
 in JavaDB 10.1
 
 You can also run directly from glassfish like this:
-> export DERBY_INSTALL=/home/sun/glassfish
+> export DERBY_HOME=/home/sun/glassfish/javadb
 > cd /home/sun/glassfish/bin
-> ../javadb/frameworks/NetworkServer/bin/ij.ksh
+> ../javadb/bin/ij
 
 Sample run of ij:
 ij version 10.1
