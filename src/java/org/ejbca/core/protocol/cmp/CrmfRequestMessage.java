@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -297,6 +298,23 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 
 	public BigInteger getCRLSerialNo() {
 		return null;
+	}
+
+	/** Gets a requested certificate serial number of the subject. This is a standard field in the CertTemplate in the request.
+	 * However the standard RFC 4211, section 5 (CertRequest syntax) says it MUST not be used. 
+	 * Requesting custom certificate serial numbers is a very non-standard procedure anyhow, so we use it anyway. 
+	 * 
+	 * @return BigInteger the requested custom certificate serial number or null, normally this should return null.
+	 */
+	public BigInteger getSubjectCertSerialNo() {
+		BigInteger ret = null;
+		CertRequest request = getReq().getCertReq();
+		CertTemplate templ = request.getCertTemplate();
+		DERInteger serno = templ.getSerialNumber();
+		if (serno != null) {
+			ret = serno.getValue();			
+		}
+		return ret;
 	}
 
     /**

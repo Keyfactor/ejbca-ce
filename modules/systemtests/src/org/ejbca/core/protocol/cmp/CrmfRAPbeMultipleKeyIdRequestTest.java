@@ -174,7 +174,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // A message with the KeyId "foobarfoobar" should not be known by this
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "foobarfoobar", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -196,7 +196,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -277,7 +277,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -329,7 +329,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -381,7 +381,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -448,7 +448,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -533,7 +533,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         X509Extensions exts = extgen.generate();
 
         // First test without extension override
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -569,7 +569,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         //
         // Do the same with keyId4, that has full extension override
-        one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null);
+        one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null);
         req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId4", 567);
 
         reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();

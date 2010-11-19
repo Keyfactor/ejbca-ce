@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -43,6 +44,7 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -174,29 +176,29 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				LOG.error(errMsg);
 			}
 		} catch (AuthorizationDeniedException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
-			LOG.error(errMsg, e);			
+			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+			LOG.info(errMsg, e);			
 		} catch (IllegalKeyException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
+			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.error(errMsg, e);			
 		} catch (CADoesntExistsException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
+			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it	
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.WRONG_AUTHORITY, e.getMessage());
 		} catch (SignRequestException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
-			LOG.error(errMsg, e);			
+			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+			LOG.info(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (SignRequestSignatureException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
+			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
         } catch (EjbcaException e) {
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
-            LOG.error(errMsg, e);           
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.info(errMsg, e);           
             resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (ClassNotFoundException e) {
-			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL);
+			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.error(errMsg, e);			
 		} catch (EJBException e) {
 			// Fatal error
@@ -302,11 +304,24 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// AltNames may be in the request template
 			final String altNames = crmfreq.getRequestAltNames();
 			String email = null;
-			final List emails = CertTools.getEmailFromDN(altNames);
+			final List<String> emails = CertTools.getEmailFromDN(altNames);
 			emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
 			if (!emails.isEmpty()) {
 				email = (String) emails.get(0); // Use rfc822name or first SubjectDN email address as user email address if available
 			}
+			ExtendedInformation ei = null;
+			BigInteger customCertSerno = crmfreq.getSubjectCertSerialNo();
+			if (customCertSerno != null) {
+				// If we have a custom certificate serial number in the request, we will pass it on to the UserData object
+				ei = new ExtendedInformation();
+				ei.setCertificateSerialNumber(customCertSerno);
+			}
+			final UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
+			userdata.setPassword(pwd);
+			// Set so we have the right params in the call to processCertReq. 
+			// Username and pwd in the UserDataVO and the IRequestMessage must match
+			crmfreq.setUsername(username);
+			crmfreq.setPassword(pwd);
 			// Set all protection parameters
 			final String pbeDigestAlg = verifyer.getOwfOid();
 			final String pbeMacAlg = verifyer.getMacOid();
@@ -318,11 +333,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			if (StringUtils.equals(responseProt, "pbe")) {
 				crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 			}
-			// Now we are all set to go ahead and generate a certificate for the poor bastard
-			crmfreq.setUsername(username); // so we have the right params in the call to processCertReq
-			crmfreq.setPassword(pwd);
-			final UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
-			userdata.setPassword(pwd);
 			try {
 				try {
 					if (LOG.isDebugEnabled()) {
