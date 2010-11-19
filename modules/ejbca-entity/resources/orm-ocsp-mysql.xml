@@ -9,12 +9,4 @@
 		Only contains necessary mapping for CertificateData.
 	-->
 
-    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
-        <attributes>
-            <basic name="base64Cert">
-                <column name="base64Cert" column-definition="TEXT"/>
-            </basic>
-        </attributes>
-    </entity>
-
 </entity-mappings>

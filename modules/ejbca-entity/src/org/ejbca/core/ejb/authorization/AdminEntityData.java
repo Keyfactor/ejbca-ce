@@ -20,6 +20,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
+import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -47,6 +48,7 @@ public class AdminEntityData implements Serializable {
 	private String matchValue;
 	private Integer cAId;
 	private int rowVersion = 0;
+	private String rowProtection;
 
 	public AdminEntityData(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {
 		AdminEntityDataPK adminEntityDataPK = new AdminEntityDataPK(admingroupname, caid, matchwith, matchtype, matchvalue);
@@ -85,6 +87,11 @@ public class AdminEntityData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	public AdminEntity getAdminEntity() {

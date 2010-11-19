@@ -21,6 +21,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -57,6 +58,7 @@ public class LogEntryData implements Serializable {
 	private int event;
 	private String logComment;
 	private int rowVersion = 0;
+	private String rowProtection;
 
 	public LogEntryData(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String logComment) {
 		setId(id);
@@ -128,6 +130,11 @@ public class LogEntryData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	public Date getTimeAsDate() {

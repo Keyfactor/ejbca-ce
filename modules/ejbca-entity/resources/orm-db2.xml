@@ -6,26 +6,131 @@
 
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
         <attributes>
-            <basic name="approvaldata">
-                <column name="approvaldata" column-definition="VARCHAR(4000)"/>
-            </basic>
-            <basic name="requestdata">
-                <column name="requestdata" column-definition="VARCHAR(8000)"/>
-            </basic>
+            <basic name="approvaldata"><column name="approvaldata" column-definition="VARCHAR(4000)"/></basic>
+            <basic name="requestdata"><column name="requestdata" column-definition="VARCHAR(8000)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.authorization.AdminEntityData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.authorization.AdminGroupData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
         <attributes>
-            <basic name="base64Cert">
-                <column name="base64Cert" column-definition="VARCHAR(8000)"/>
-            </basic>
+            <basic name="base64Cert"><column name="base64Cert" column-definition="VARCHAR(8000)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
         <attributes>
-            <basic name="keyData">
-                <column name="keyData" column-definition="VARCHAR(8000)"/>
-            </basic>
+            <basic name="keyData"><column name="keyData" column-definition="VARCHAR(8000)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogEntryData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY">
+        <attributes>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>
 

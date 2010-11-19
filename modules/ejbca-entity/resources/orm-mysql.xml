@@ -8,67 +8,18 @@
          This file contains mappings specific to MySQL.
          
          Hibernate maps boolean on MySQL to BIT. See http://opensource.atlassian.com/projects/hibernate/browse/HHH-468 . We will use TINYINT(4) instead.
-         Hibernate always maps CLOB on MySQL to LONGTEXT. See http://opensource.atlassian.com/projects/hibernate/browse/HHH-3440 . We will use TEXT instead.
+         Hibernate always maps CLOB on MySQL to LONGTEXT. See http://opensource.atlassian.com/projects/hibernate/browse/HHH-3440 .
     -->
 
     <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
         <attributes>
-            <basic name="isRecursive">
-                <column name="isRecursive" column-definition="TINYINT(4)"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
-        <attributes>
-            <basic name="data">
-                <column name="data" column-definition="TEXT"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
-        <attributes>
-            <basic name="base64Cert">
-                <column name="base64Cert" column-definition="TEXT"/>
-            </basic>
+            <basic name="isRecursive"><column name="isRecursive" column-definition="TINYINT(4)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
         <attributes>
-            <basic name="keyData">
-                <column name="keyData" column-definition="TEXT"/>
-            </basic>
-            <basic name="markedAsRecoverable">
-                <column name="markedAsRecoverable" column-definition="TINYINT(4)"/>
-            </basic>
+            <basic name="markedAsRecoverable"><column name="markedAsRecoverable" column-definition="TINYINT(4)"/></basic>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
-        <attributes>
-            <basic name="data">
-                <column name="data" column-definition="TEXT"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
-        <attributes>
-            <basic name="volatileData">
-                <column name="volatileData" column-definition="TEXT"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY">
-        <attributes>
-            <basic name="data">
-                <column name="data" column-definition="TEXT"/>
-            </basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY">
-        <attributes>
-            <basic name="data">
-                <column name="data" column-definition="TEXT"/>
-            </basic>
-        </attributes>
-    </entity>
-
+ 
 </entity-mappings>

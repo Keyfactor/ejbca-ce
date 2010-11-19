@@ -72,6 +72,7 @@ public class PublisherQueueData implements Serializable {
     private int publisherId;
     private String volatileData; // LOB
 	private int rowVersion = 0;
+	private String rowProtection;
 
     /**
      * @param publishType
@@ -200,6 +201,11 @@ public class PublisherQueueData implements Serializable {
 	@Column(name = "rowVersion", nullable = false, length = 5)
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+
+	@Column(name = "rowProtection", length = 10*1024)
+	@Lob
+	public String getRowProtection() { return rowProtection; }
+	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
     /**
      * Method that returns the PublisherQueueVolatileData data and updates it if

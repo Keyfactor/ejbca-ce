@@ -11,18 +11,11 @@
 
     <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
         <attributes>
-            <basic name="base64Cert">
-                <column name="base64Cert" column-definition="TEXT"/>
-            </basic>
-            <basic name="expireDate">
-                <column name="expireDate" column-definition="DECIMAL(18,0)" />
-            </basic>
-            <basic name="revocationDate">
-                <column name="revocationDate" column-definition="DECIMAL(18,0)" />
-            </basic>
-            <basic name="updateTime">
-                <column name="updateTime" column-definition="DECIMAL(18,0)" />
-            </basic>
+            <basic name="base64Cert"><column name="base64Cert" column-definition="TEXT"/></basic>
+            <basic name="expireDate"><column name="expireDate" column-definition="DECIMAL(18,0)"/></basic>
+            <basic name="revocationDate"><column name="revocationDate" column-definition="DECIMAL(18,0)"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(18,0)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
         </attributes>
     </entity>
 

@@ -10,51 +10,37 @@
 -->
     <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY">
         <attributes>
-            <basic name="dataUnsafe">
-                <column name="data" column-definition="BYTEA"/>
-            </basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY">
         <attributes>
-            <basic name="dataUnsafe">
-                <column name="data" column-definition="BYTEA"/>
-            </basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY">
         <attributes>
-            <basic name="dataUnsafe">
-                <column name="data" column-definition="BYTEA"/>
-            </basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY">
         <attributes>
-            <basic name="dataUnsafe">
-                <column name="data" column-definition="BYTEA"/>
-            </basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
         <attributes>
-            <basic name="dataUnsafe">
-                <column name="data" column-definition="BYTEA"/>
-            </basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY">
         <attributes>
-            <basic name="dataUnsafe">
-                <column name="data" column-definition="BYTEA"/>
-            </basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY">
         <attributes>
-            <basic name="logConfigurationUnsafe">
-                <column name="logConfiguration" column-definition="BYTEA"/>
-            </basic>
+            <basic name="logConfigurationUnsafe"><column name="logConfiguration" column-definition="BYTEA"/></basic>
         </attributes>
     </entity>
 

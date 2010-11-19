@@ -9,96 +9,60 @@
 
     <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
         <attributes>
-            <basic name="rule">
-                <column name="rule_"/>
-            </basic>
+            <basic name="rule"><column name="rule_"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
         <attributes>
-            <basic name="expiredate">
-                <column name="expiredate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="requestdate">
-                <column name="requestdate" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="expiredate"><column name="expiredate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="requestdate"><column name="requestdate" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
         <attributes>
-            <basic name="expireTime">
-                <column name="expireTime" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="updateTime">
-                <column name="updateTime" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="expireTime"><column name="expireTime" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY">
         <attributes>
-            <basic name="nextUpdate">
-                <column name="nextUpdate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="thisUpdate">
-                <column name="thisUpdate" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="nextUpdate"><column name="nextUpdate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="thisUpdate"><column name="thisUpdate" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
         <attributes>
-            <basic name="timestamp">
-                <column name="timestamp" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="timestamp"><column name="timestamp" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
         <attributes>
-            <basic name="expireDate">
-                <column name="expireDate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="revocationDate">
-                <column name="revocationDate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="updateTime">
-                <column name="updateTime" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="expireDate"><column name="expireDate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="revocationDate"><column name="revocationDate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
         <attributes>
-            <basic name="ctime">
-                <column name="cTime" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="mtime">
-                <column name="mTime" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="ctime"><column name="cTime" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="mtime"><column name="mTime" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.log.LogEntryData" access="PROPERTY">
         <attributes>
-            <basic name="time">
-                <column name="time" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="time"><column name="time" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
         <attributes>
-            <basic name="lastUpdate">
-                <column name="lastUpdate" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="timeCreated">
-                <column name="timeCreated" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="lastUpdate"><column name="lastUpdate" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="timeCreated"><column name="timeCreated" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
         <attributes>
-            <basic name="timeCreated">
-                <column name="timeCreated" column-definition="DECIMAL(20,0)" />
-            </basic>
-            <basic name="timeModified">
-                <column name="timeModified" column-definition="DECIMAL(20,0)" />
-            </basic>
+            <basic name="timeCreated"><column name="timeCreated" column-definition="DECIMAL(20,0)"/></basic>
+            <basic name="timeModified"><column name="timeModified" column-definition="DECIMAL(20,0)"/></basic>
         </attributes>
     </entity>
 
