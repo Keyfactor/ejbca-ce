@@ -44,6 +44,7 @@
   For example when creating a country CVCA you select type CVC in the create CA page and enter a 'Subject DN' like: C=SE,CN=TESTCVCA.
   For the CVCA you select 'Signed by=Self Signed' and 'Certificate Profile=ROOTCA'.
   </p>
+  <p><i>Note that EJBCA only validates that country codes consist of two characters with value A-Z to facilitate testing with &quot;fake&quot; countries!</i></p>
   <p>To create a DV you select 'Signed by=Name of CVCCA' and 'Certificate Profile=SUBCA'.</p>
   <p>You can import a CVCA certificate from another country as an 'External CA' using 'Edit Certificate Authorities->Import CA certificate'. 
   When a CA has been imported, this CA certificate can authenticate CVC requests from foreign DVs.</p>
