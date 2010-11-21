@@ -471,7 +471,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %>
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLEBITLENGTHS%>" size="5" multiple >
+        <select name="<%=SELECT_AVAILABLEBITLENGTHS%>" size="5" style="text-align:right;" multiple >
            <%  int[] availablebits = certificateprofiledata.getAvailableBitLengths();
                 for(int i=0; i<defaultavailablebitlengths.length;i++){ %>
            <option  value="<%= defaultavailablebitlengths[i] %>" 
