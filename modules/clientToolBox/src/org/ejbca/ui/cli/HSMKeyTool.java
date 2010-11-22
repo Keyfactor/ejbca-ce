@@ -285,7 +285,7 @@ public class HSMKeyTool extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
-    public void execute(String[] args) {
+	protected void execute(String[] args) {
         try {
             if ( args.length>1 && doIt(args)) {
                 return; // command was found.
@@ -326,7 +326,7 @@ public class HSMKeyTool extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override
-    public String getName() {
+    protected String getName() {
         return "HSMKeyTool";
     }
 }
