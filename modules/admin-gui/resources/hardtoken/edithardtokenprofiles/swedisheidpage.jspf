@@ -9,7 +9,7 @@
   String[] signpintexts    = {"ASCIINUMERIC","UTF8","ISO95641"};
   String[] authencpintexts = {"ASCIINUMERIC","UTF8","ISO95641", "SAMEASSIGNCERT"};
 
-  String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
+  String[] keytexts = {"RSA1024BIT", "RSA1536BIT", "RSA2048BIT"};
 
   int maxpinlength = 8;
 

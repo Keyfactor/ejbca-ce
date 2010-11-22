@@ -6,7 +6,7 @@
   String[] pintexts    = {"ASCIINUMERIC","UTF8","ISO95641"};
  
 
-  String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
+  String[] keytexts = {"RSA1024BIT", "RSA1536BIT", "RSA2048BIT"};
 
   int maxpinlength = 8;
 

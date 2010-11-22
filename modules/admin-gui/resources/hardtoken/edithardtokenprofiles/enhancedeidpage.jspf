@@ -14,7 +14,7 @@
   String[] authpintexts    = {"ASCIINUMERIC","UTF8","ISO95641", "SAMEASSIGNCERT"};
   String[] encpintexts     = {"ASCIINUMERIC","UTF8","ISO95641", "SAMEASAUTHCERT"};
 
-  String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
+  String[] keytexts = {"RSA1024BIT", "RSA1536BIT", "RSA2048BIT"};
 
   int maxpinlength = 8; 
   EnhancedEIDProfile curprofile = (EnhancedEIDProfile) edithardtokenprofile.profiledata;
