@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -321,10 +322,11 @@ public class PublisherQueueTest extends TestCase {
     	} catch(InterruptedException ex) {
     		fail(ex.getMessage());
     	}
-    	// Another entry in the queue, atleast 1s after the first one
+    	// Another entry in the queue, at least 1s after the first one
     	publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	 
     	actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0, 1, 10, 0}, new int[]{1, 10, -1, -1}); //new int[]{0, 1, 10});
+    	log.debug("actual=" + Arrays.toString(actual));
     	assertEquals(4, actual.length);
     	assertEquals(1, actual[0]); // (0, 1) s  = 1
     	assertEquals(1, actual[1]); // (1, 10) s = 1
