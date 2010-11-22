@@ -1116,7 +1116,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                         log.debug("No (optional) request counter exists for end entity: " + username);
                     }
                 }
-                if (!serialNumberCleared && ei.getCertificateSerialNumber() != null) {
+                if (!serialNumberCleared && ei.certificateSerialNumber() != null) {
                     ei.setCertificateSerialNumber(null);// cert serial number should also be cleared after successful command.
                     data1.setExtendedInformation(ei);
                 }

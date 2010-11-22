@@ -946,7 +946,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	 */
 	private void cleanUserCertDataSN(UserDataVO data) {
 		if ( data==null || data.getExtendedinformation()==null ||
-				data.getExtendedinformation().getCertificateSerialNumber()==null ) {
+				data.getExtendedinformation().certificateSerialNumber()==null ) {
 			return;
 		}
 		try {
@@ -1104,7 +1104,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 			final boolean useCustomSN;
 			{
 				final ExtendedInformation ei = data.getExtendedinformation();
-				useCustomSN = ei!=null && ei.getCertificateSerialNumber()!=null;
+				useCustomSN = ei!=null && ei.certificateSerialNumber()!=null;
 			}
 			final int maxRetrys;
 			if ( useCustomSN ) {

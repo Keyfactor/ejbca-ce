@@ -1406,7 +1406,7 @@ function checkUseInBatch(){
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	final ExtendedInformation ei = userdata.getExtendedInformation();
-						final BigInteger oldNr = ei!=null ? ei.getCertificateSerialNumber() : null;
+						final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
 						final String certSerialNr = oldNr!=null ? oldNr.toString(16) : "";
 						%>
 					value="<%= certSerialNr %>"

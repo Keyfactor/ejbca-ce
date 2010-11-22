@@ -566,7 +566,7 @@ public class X509CA extends CA implements Serializable {
             // Serialnumber is either random bits, where random generator is initialized by the serno generator.
         	// Or a custom serial number defined in the end entity object
             final ExtendedInformation ei = subject.getExtendedinformation();
-            BigInteger customSN = ei!=null ? ei.getCertificateSerialNumber() : null;
+            BigInteger customSN = ei!=null ? ei.certificateSerialNumber() : null;
 			if (customSN != null) {
 				if (!certProfile.getAllowCertSerialNumberOverride()) {
 					final String msg = intres.getLocalizedMessage("signsession.certprof_not_allowing_cert_sn_override_using_normal", customSN.toString(16));
