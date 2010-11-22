@@ -277,7 +277,7 @@
                 <include name="${lib}/commons-collections-3.2.jar" />
                 <include name="${lib}/commons-fileupload-1.0.jar" />
                 <include name="${lib}/commons-configuration-1.6.jar" />
-                <include name="${lib}/commons-logging.jar" />
+                <include name="${lib}/commons-logging-1.1.1.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="lib/hibernate" excludes="${bundle-hibernate-exclude}"/>
             <fileset dir="modules/dist">

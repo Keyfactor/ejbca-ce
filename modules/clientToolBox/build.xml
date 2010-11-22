@@ -21,7 +21,7 @@
             <include name="ldap.jar"/>
             <include name="commons-collections-3.2.jar"/>
             <include name="commons-configuration-1.6.jar"/>
-            <include name="commons-logging.jar"/>
+            <include name="commons-logging-1.1.1.jar"/>
         </fileset>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.xml.classpath"/>
