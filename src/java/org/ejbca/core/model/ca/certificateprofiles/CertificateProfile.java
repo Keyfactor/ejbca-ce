@@ -108,7 +108,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int ANYCA = -1;
 
     /** Constant holding the default available bit lengths for certificate profiles */
-    public static final int[] DEFAULTBITLENGTHS= {0,192,239,256,384,512,1024,2048,4096};
+    public static final int[] DEFAULTBITLENGTHS= {0,192,239,256,384,512,1024,1536,2048,4096,8192};
     
     // Profile fields
     protected static final String CERTVERSION                    = "certversion";

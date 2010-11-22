@@ -215,9 +215,9 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to make a CVC request. A user must exist, add one with 'ejbcawsracli.sh edituser'.");
-		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <signatureAlg> <keyspec (1024/2048/curve)><genreq=true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
+		getPrintStream().println("Usage : cvcrequest <username> <password> <subjectdn> <sequence> <signatureAlg> <keyspec (1024|1536|2048|curve)><genreq=true|false> <basefilename> [<auth-sign-key>] [<auth-sign-cert>]\n\n");
 		getPrintStream().println("SignatureAlg is used when generating a request and can be SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA1WithECDSA, SHA224WithECDSA, SHA256WithECDSA");
-		getPrintStream().println("Keyspec is used when generating a request and is 1024, 2048 etc for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");
+		getPrintStream().println("Keyspec is used when generating a request and is 1024, 1536, 2048, etc. for RSA keys and the name of a named curve for ECDSA, see User Guide for supported curves.");
 		getPrintStream().println("DN is used when generating a request and is of form \"C=SE, CN=ISTEST2\", where SE is the country and ISTEST2 the mnemonic.");
 		getPrintStream().println("Sequence is used when generating a request and is a sequence number for the public key, recomended form 00001 etc. If 'null' a random 5 number sequence will be generated.");
 		getPrintStream().println("If genreq is true a new request is generated and the generated request is written to <basefilename>.cvreq, and the private key to <basefilename>.pkcs8.");

@@ -72,7 +72,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs");
     		getLogger().info(" keytype is RSA, DSA or ECDSA.");
-    		getLogger().info(" keyspec for RSA keys is size of RSA keys (1024, 2048, 4096).");
+    		getLogger().info(" keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192).");
     		getLogger().info(" keyspec for DSA keys is size of DSA keys (1024).");
     		getLogger().info(" keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.");
     		getLogger().info(" policyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".");

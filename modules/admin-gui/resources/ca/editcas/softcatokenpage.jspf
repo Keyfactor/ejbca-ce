@@ -1,6 +1,6 @@
 <%               
   SoftCATokenInfo softcatokeninfo = (SoftCATokenInfo) catokeninfo; 
-  int[] AVAILABLEKEYSIZES = {1024,2048,4096};
+  int[] AVAILABLEKEYSIZES = {1024,2048,4096,8192};
   int[] AVAILABLEKEYSIZES_DSA = {/*512,*/1024};
 %>
     <tr  id="Row<%=row++%2%>">       
