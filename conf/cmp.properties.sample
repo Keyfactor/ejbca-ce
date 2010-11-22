@@ -90,7 +90,13 @@
 # Example: foo123
 #
 # Default: random
-#cmp.ra.passwordgenparams
+#cmp.ra.passwordgenparams=
+
+# Specifies if the CMP service, in RA mode, will look for requests for custom certificate serial number.
+# If this setting is true, a requested serial number can be passed in the non-standard field serialNumber 
+# in the CRMF certTemplate.
+# Default: false
+#cmp.ra.allowcustomcertserno=false
 
 # The endEntityProfile to be used when adding users in RA mode. 
 # Possible values are:
