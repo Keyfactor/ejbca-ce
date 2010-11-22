@@ -81,6 +81,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private String raAuthSecret = null;
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProt = null;
+	/** Determines if it the RA will look for requested custom certificate serial numbers, if false such data is ignored */
+	private boolean allowCustomCertSerno = false;
 	
 	private SignSession signSession;
 	private UserAdminSession userAdminSession;
@@ -107,9 +109,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
 			userPwdParams =  CmpConfiguration.getUserPasswordParams();
 			raAuthSecret = CmpConfiguration.getRAAuthenticationSecret();
+			allowCustomCertSerno = CmpConfiguration.getRAAllowCustomCertSerno();
 			responseProt = CmpConfiguration.getResponseProtection();
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("cmp.operationmode=ra");
+				LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
+				LOG.debug("cmp.ra.passwordgenparams"+userPwdParams);
 				LOG.debug("cmp.responseprotection="+responseProt);
 			}
 		}
@@ -310,11 +315,17 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				email = (String) emails.get(0); // Use rfc822name or first SubjectDN email address as user email address if available
 			}
 			ExtendedInformation ei = null;
-			BigInteger customCertSerno = crmfreq.getSubjectCertSerialNo();
-			if (customCertSerno != null) {
-				// If we have a custom certificate serial number in the request, we will pass it on to the UserData object
-				ei = new ExtendedInformation();
-				ei.setCertificateSerialNumber(customCertSerno);
+			if (allowCustomCertSerno) {
+				// Don't even try to parse out the field if it is not allowed
+				BigInteger customCertSerno = crmfreq.getSubjectCertSerialNo();
+				if (customCertSerno != null) {
+					// If we have a custom certificate serial number in the request, we will pass it on to the UserData object
+					ei = new ExtendedInformation();
+					ei.setCertificateSerialNumber(customCertSerno);
+				}
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Custom certificate serial number: "+customCertSerno.toString(16));					
+				}
 			}
 			final UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
 			userdata.setPassword(pwd);

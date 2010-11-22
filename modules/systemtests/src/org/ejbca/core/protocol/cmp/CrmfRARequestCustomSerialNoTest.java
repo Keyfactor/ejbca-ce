@@ -114,6 +114,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false");
 
         CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
@@ -172,12 +173,12 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
      * @param sFailMessage
      *            if !=null then EJBCA is expected to fail. The failure response
      *            message string is checked against this parameter.
+     * @return If it is a certificate request that results in a successful certificate issuance, this certificate is returned
      * @throws Exception
      */
-    private void crmfHttpUserTest(String userDN, KeyPair keys, String sFailMessage, BigInteger customCertSerno) throws Exception {
+    private X509Certificate crmfHttpUserTest(String userDN, KeyPair keys, String sFailMessage, BigInteger customCertSerno) throws Exception {
 
-        // Create a new good user
-
+        X509Certificate ret = null;
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
@@ -196,10 +197,10 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, sFailMessage == null, null);
             if (sFailMessage == null) {
-                X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            	ret = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
                 // verify if custom cert serial number was used
                 if (customCertSerno != null) {
-                	assertTrue(cert.getSerialNumber().toString(16)+" is not same as expected "+customCertSerno.toString(16), cert.getSerialNumber().equals(customCertSerno));
+                	assertTrue(ret.getSerialNumber().toString(16)+" is not same as expected "+customCertSerno.toString(16), ret.getSerialNumber().equals(customCertSerno));
                 }
             } else {
                 checkCmpFailMessage(resp, sFailMessage, CmpPKIBodyConstants.ERRORMESSAGE, reqId, FailInfo.BAD_REQUEST.hashCode());
@@ -220,6 +221,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
             checkCmpPKIConfirmMessage(userDN, cacert, resp);
         }
+        return ret;
     }
 
     public void test01CustomCertificateSerialNumber() throws Exception {
@@ -231,9 +233,16 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     		long serno = RandomUtils.nextLong();
     		BigInteger bint = BigInteger.valueOf(serno);
             int cpId = certProfileSession.getCertificateProfileId(admin, "CMPTESTPROFILE");
-            // First it should fail when the certificate profile does not allow serial number override
+            // First it should fail because the CMP RA does not even look for, or parse, requested custom certificate serial numbers
+            // Actually it does not fail here, but returns good answer
+    		X509Certificate cert = crmfHttpUserTest(userDN1, key1, null, null);
+    		assertFalse("SerialNumbers should not be equal when custom serialnumbers are not allowed.", bint.equals(cert.getSerialNumber()));
+            // Second it should fail when the certificate profile does not allow serial number override
             // crmfHttpUserTest checks the returned serno if bint parameter is not null 
+            updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "true");
     		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+cpId+"') is not allowing certificate serial number override.", bint);
+    		// Third it should succeed and we should get our custom requested serialnumber
+            updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "true");
     		CertificateProfile cp = certProfileSession.getCertificateProfile(admin, "CMPTESTPROFILE");
     		cp.setAllowCertSerialNumberOverride(true);
     		// Now when the profile allows serial number override it should work
