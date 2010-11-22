@@ -26,7 +26,7 @@ public class EjbcaWsRaCli extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
      */
     @Override
-    public void execute(String[] args) {
+	protected void execute(String[] args) {
         final List<String> lArgs = new ArrayList<String>();
         for ( int i=1; i<args.length; i++)  { // remove first argument
             lArgs.add(args[i]);
@@ -43,7 +43,7 @@ public class EjbcaWsRaCli extends ClientToolBox {
      * @see org.ejbca.ui.cli.ClientToolBox#getName()
      */
     @Override
-    public String getName() {
+    protected String getName() {
         return "EjbcaWsRaCli";
     }
 }

@@ -30,7 +30,7 @@ public class PKCS11HSMKeyTool extends HSMKeyTool {
      * @see org.ejbca.ui.cli.HSMKeyTool#execute(java.lang.String[])
      */
     @Override
-    public void execute(String[] args) {
+	protected void execute(String[] args) {
         if (args.length<3) {
             super.execute(args);
             return;
@@ -51,7 +51,7 @@ public class PKCS11HSMKeyTool extends HSMKeyTool {
      * @see org.ejbca.ui.cli.HSMKeyTool#getName()
      */
     @Override
-    public String getName() {
+    protected String getName() {
         return "PKCS11HSMKeyTool";
     }
 

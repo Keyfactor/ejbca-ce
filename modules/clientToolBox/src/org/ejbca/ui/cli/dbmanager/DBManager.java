@@ -36,7 +36,7 @@ public class DBManager extends ClientToolBox {
 	 * @see org.ejbca.ui.cli.ClientToolBox#execute(java.lang.String[])
 	 */
 	@Override
-	public void execute(final String[] args) {
+	protected void execute(final String[] args) {
 		if (args.length<2) {
 			System.out.println(args[0]+" <EJBCA home> <command>");
 			System.out.println("Give just the <EJBCA home> to get available commands for this database");
@@ -106,7 +106,7 @@ public class DBManager extends ClientToolBox {
 	 * @see org.ejbca.ui.cli.ClientToolBox#getName()
 	 */
 	@Override
-	public String getName() {
+	protected String getName() {
 		return "DBManager";
 	}
 }

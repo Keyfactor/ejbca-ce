@@ -26,11 +26,11 @@ public abstract class ClientToolBox {
      * Execute the command issued from the command line.
      * @param args from command line
      */
-    abstract public void execute(String[] args);
+    protected abstract void execute(String[] args);
     /**
      * @return the name of the tool.
      */
-    abstract public String getName();
+    protected abstract String getName();
     /**
      * Check if this tool should be executed.
      * @param args Command line from the user.
