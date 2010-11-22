@@ -1,4 +1,0 @@
-ALTER TABLE AdminEntityData ADD cAId INTEGER DEFAULT 0 NOT NULL;
-ALTER TABLE UserData ADD cardnumber VARCHAR(19);
-
-
