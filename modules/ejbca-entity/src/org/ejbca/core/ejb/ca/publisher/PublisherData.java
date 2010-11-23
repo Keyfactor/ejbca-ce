@@ -64,8 +64,8 @@ public class PublisherData implements Serializable {
 	public int getUpdateCounter() { return updateCounter; }
 	public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: LONG VARCHAR [32,700 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: TEXT [65535 chars], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-	@Column(name="data", length=32700)
+	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB(1 M), Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [2GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
+	@Column(name="data", length=100*1024)
 	@Lob
 	public String getData() { return data; }
 	public void setData(String data) { this.data = data; }

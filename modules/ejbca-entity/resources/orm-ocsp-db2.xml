@@ -11,7 +11,6 @@
 
     <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
         <attributes>
-            <basic name="base64Cert"><column name="base64Cert" column-definition="VARCHAR(8000)"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>

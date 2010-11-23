@@ -191,8 +191,8 @@ s	 */
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	// DB2: VARCHAR(4000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: TEXT, Oracle: VARCHAR2(4000), Sybase: TEXT 
-	@Column(name="approvaldata", length=4000)
+	// DB2: CLOB(1M), Derby: CLOB(1 M), Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: LONGTEXT, Oracle: VARCHAR2(4000), Sybase: TEXT 
+	@Column(name="approvaldata", length=1024*1024*1024)
 	@Lob
 	public String getApprovaldata() { return approvaldata; }
 
@@ -204,8 +204,8 @@ s	 */
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	// DB2: VARCHAR(8000), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: TEXT, Oracle: CLOB, Sybase: TEXT
-	@Column(name="requestdata", length=8000)
+	// DB2: CLOB(1M), Derby: CLOB(1 M), Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
+	@Column(name="requestdata", length=1024*1024*1024)
 	@Lob
 	public String getRequestdata() { return requestdata; }
 
@@ -520,7 +520,9 @@ s	 * @throws ApprovalRequestExpiredException
 
 	/** @return return the query results as a List<ApprovalData>. */
 	public static List<ApprovalData> findByCustomQuery(EntityManager entityManager, int index, int numberofrows, String customQuery) {
-		Query query = entityManager.createNativeQuery("SELECT * FROM ApprovalData a WHERE " + customQuery, ApprovalData.class);
+		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults  
+		Query query = entityManager.createNativeQuery("SELECT id, approvalid, approvaltype, endentityprofileid, caid, reqadmincertissuerdn, reqadmincertsn, status, "
+				+ "approvaldata, requestdata, requestdate, expiredate, remainingapprovals, rowVersion, rowProtection FROM ApprovalData WHERE " + customQuery, ApprovalData.class);
 		query.setFirstResult(index);
 		query.setMaxResults(numberofrows);
 		return query.getResultList();
