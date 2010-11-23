@@ -41,7 +41,7 @@ public class SwedishEIDProfile extends EIDProfile {
 	
 	
 	// Private Constants
-	public static final int[] AVAILABLEMINIMUMKEYLENGTHS = {1024, 1536, 2048};
+	public static final int[] AVAILABLEMINIMUMKEYLENGTHS = {1024, 2048};
 		
 	
 	// Protected Fields
