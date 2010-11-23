@@ -339,7 +339,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final int pbeIterationCount = verifyer.getIterationCount();
 			final String raSecret = verifyer.getLastUsedRaSecret();
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("responseProt="+responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+raSecret);
+				LOG.debug("responseProt="+responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
 			}
 			if (StringUtils.equals(responseProt, "pbe")) {
 				crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
