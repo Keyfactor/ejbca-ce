@@ -206,7 +206,7 @@
                 <include name="bcprov-jdk${java.ver}-145.jar" />
                 <include name="bctsp-jdk${java.ver}-145.jar" />
                 <include name="cert-cvc.jar" />
-                <include name="log4j.jar" />
+                <include name="log4j-1.2.16.jar" />
                 <include name="ldap.jar" />
                 <include name="commons-*.jar" />
                 <include name="libidn.jar" />	<!-- XKMS -->
@@ -271,7 +271,7 @@
                 <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
                 <include name="${lib}/cert-cvc.jar" />
-                <include name="${lib}/log4j.jar" />
+                <include name="${lib}/log4j-1.2.16.jar" />
                 <include name="${lib}/ldap.jar" />
                 <include name="${lib}/commons-lang-*.jar" />
                 <include name="${lib}/commons-collections-3.2.jar" />

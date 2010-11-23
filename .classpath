@@ -32,7 +32,7 @@
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="src" path="modules/cmpProxy/src"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
-	<classpathentry kind="lib" path="lib/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.2.1.jar"/>

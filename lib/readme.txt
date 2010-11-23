@@ -23,7 +23,7 @@ Ldap.jar is from OpenLDAP and used for publishing in LDAP directories.
 
 Log4j.jar is from apache, License is Apache.
 The file is used for logging throughout EJBCA.
-Version is 1.2.14.
+Version is 1.2.16.
 
 cert-cvc.jar is a library for handling Card Verifiable Certificates, developed
 by Keijo Kurkinen, and contributed to EJBCA. License is LGPL.
