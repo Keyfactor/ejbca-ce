@@ -6,8 +6,6 @@
 
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
         <attributes>
-            <basic name="approvaldata"><column name="approvaldata" column-definition="VARCHAR(4000)"/></basic>
-            <basic name="requestdata"><column name="requestdata" column-definition="VARCHAR(8000)"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>
@@ -48,7 +46,6 @@
     </entity>
     <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
         <attributes>
-            <basic name="base64Cert"><column name="base64Cert" column-definition="VARCHAR(8000)"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>
@@ -89,7 +86,6 @@
     </entity>
     <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
         <attributes>
-            <basic name="keyData"><column name="keyData" column-definition="VARCHAR(8000)"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>

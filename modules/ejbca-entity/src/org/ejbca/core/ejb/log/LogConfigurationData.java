@@ -74,7 +74,7 @@ public class LogConfigurationData implements Serializable {
 		}
 		return logConfiguration;
 	}
-	/** DO NOT USE! Stick with setLogConfiguration(LogConfiguration logConfiguration) instead. */
+	/** DO NOT USE! Stick with saveLogConfiguration(LogConfiguration logConfiguration) instead. */
 	public void setLogConfigurationUnsafe(Serializable logConfiguration) { this.logConfiguration = logConfiguration; }
 
 	@Transient
