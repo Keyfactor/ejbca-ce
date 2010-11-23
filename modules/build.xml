@@ -7,7 +7,6 @@
 	
 	<!-- Get the correct relative path when this file is imported. -->
 	<dirname property="modules.basedir" file="${ant.file.modules}"/>
-	<echo message="${modules.basedir}"></echo>
 	
 	<import file="${modules.basedir}/build-properties.xml"/>
 	<import file="${modules.basedir}/build-helpers.xml"/>
