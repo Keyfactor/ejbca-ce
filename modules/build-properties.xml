@@ -17,10 +17,10 @@
     <property name="customejbca.home" location="${ejbca.home}/../ejbca-custom" />
     <available file="${customejbca.home}" type="dir" property="customejbca.present" />
     <condition property="customejbca.message" else="No custom changes to merge."
-    	value="Merging available external modifications from ${customejbca.home}.">
+    	value="Merging available external modifications from ${customejbca.home} (unless done previously).">
     	<isset property="customejbca.present" />
     </condition>
-	<echo message="${customejbca.message}" />
+	<echo message="${customejbca.message}"/>
     <condition property="customejbca.extensions" value="*" else="none-at-all">
     	<isset property="customejbca.present" />
     </condition>
@@ -28,10 +28,12 @@
     	<isset property="customejbca.present" />
     </condition>
 	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
-		<fileset dir="${customejbca.dir}" >
-			<include name="**/*.${customejbca.extensions}"/>
+		<fileset dir="${customejbca.dir}">
+			<include name="**/*.${customejbca.extensions}" unless="customejbca.merged"/>
+			<exclude name="**/*" if="customejbca.merged"/>
    		</fileset>
 	</copy>
+	<property name="customejbca.merged" value="true"/>
 	<!-- Load property files -->
     <property file="${ejbca.home}/conf/${app.name}.properties" />
     <property file="${ejbca.home}/conf/protection.properties" />
