@@ -13,7 +13,7 @@
 
 	<path id="clientToolBox.lib.classpath">
         <fileset dir="${ejbca.home}/lib">
-            <include name="log4j.jar"/>
+            <include name="log4j-1.2.16.jar"/>
             <include name="bcprov-*.jar"/>
             <include name="commons-lang-2.5.jar"/>
             <include name="bcmail-*.jar"/>
