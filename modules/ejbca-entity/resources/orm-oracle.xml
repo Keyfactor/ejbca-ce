@@ -7,7 +7,7 @@
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
         <attributes>
             <basic name="approvaldata">
-                <column name="approvaldata" column-definition="VARCHAR2(4000)"/>
+                <column name="approvaldata" column-definition="CLOB"/>
             </basic>
         </attributes>
     </entity>
