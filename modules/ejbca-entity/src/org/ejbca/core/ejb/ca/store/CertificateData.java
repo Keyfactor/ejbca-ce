@@ -40,6 +40,7 @@ import javax.persistence.Transient;
 import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
+import org.ejbca.util.ValueExtractor;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -695,9 +696,9 @@ public class CertificateData implements Serializable {
 			// The order of the results are defined by the SqlResultSetMapping annotation
 			String fingerprint = (String) current[0];
 			BigInteger serialNumber = new BigInteger((String)current[1]);
-			Date expireDate = new Date(((BigInteger)current[2]).longValue());
-			Date revocationDate = new Date(((BigInteger)current[3]).longValue());
-			int revocationReason = (((Integer)current[4])).intValue();
+			Date expireDate = new Date(ValueExtractor.extractLongValue(current[2]));
+			Date revocationDate = new Date(ValueExtractor.extractLongValue(current[3]));
+			int revocationReason = ValueExtractor.extractIntValue(current[4]);
 			revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
 		}
 	    return revokedCertInfos;
@@ -757,16 +758,21 @@ public class CertificateData implements Serializable {
 			String issuerDN = (String) fields[0];
 			String subjectDN = (String) fields[1];
 			String cafp = (String) fields[2];
-			int status = ((Integer)fields[3]).intValue();
-			int type = ((Integer)fields[4]).intValue();
+			int status = ValueExtractor.extractIntValue(fields[3]);
+			int type = ValueExtractor.extractIntValue(fields[4]);
 			String serno = (String) fields[5];
-			long expireDate = ((BigInteger)fields[6]).longValue();
-			long revocationDate = ((BigInteger)fields[7]).longValue();
-			int revocationReason = ((Integer)fields[8]).intValue();
+			long expireDate = ValueExtractor.extractLongValue(fields[6]);
+			long revocationDate = ValueExtractor.extractLongValue(fields[7]);
+			int revocationReason = ValueExtractor.extractIntValue(fields[8]);
 			String username = (String) fields[9];
 			String tag = (String) fields[10];
-			int cProfId = ((Integer)fields[11]).intValue();
-			long updateTime = (fields[12]==null?0:((BigInteger)fields[12]).longValue());	// Might be null in an upgraded installation
+			int cProfId = ValueExtractor.extractIntValue(fields[11]);
+			long updateTime;
+			if (fields[12]==null) {
+				updateTime = 0;	// Might be null in an upgraded installation
+			} else {
+				updateTime = ValueExtractor.extractLongValue(fields[12]);
+			}
 	        ret = new CertificateInfo(fingerprint, cafp, serno, issuerDN, subjectDN, status, type, expireDate, revocationDate, revocationReason, username, tag, cProfId, updateTime);				
 		}
 		return ret;

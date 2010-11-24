@@ -320,6 +320,7 @@
            	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
            	<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
            	<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
+           	<include name="org/ejbca/util/ValueExtractor.java"/>
         	<!-- From EJBCA EJB CLI (including some of the classes above) -->
            	<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
            	<include name="org/ejbca/core/protocol/X509ResponseMessage.java"/>

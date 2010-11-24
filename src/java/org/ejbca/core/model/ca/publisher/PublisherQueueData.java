@@ -13,7 +13,6 @@
  
 package org.ejbca.core.model.ca.publisher;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +21,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
+import org.ejbca.util.ValueExtractor;
 
 
 /**
@@ -171,14 +171,14 @@ public class PublisherQueueData implements java.io.Serializable {
     	Query query = entityManager.createNativeQuery(sql.toString());
     	List<?> resultList = query.getResultList();
     	List<Integer> returnList;
-    	// Derby returns Integers, MySQL returns BigIntegers
-    	if (resultList.size()>0 && resultList.get(0) instanceof BigInteger) {
+    	// Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
+    	if (resultList.size()>0 && resultList.get(0) instanceof Integer) {
+    		returnList = (List<Integer>) resultList;	// This means we can return it in it's current format
+    	} else {
     		returnList = new ArrayList<Integer>();
     		for (Object o : resultList) {
-    			returnList.add(Integer.valueOf(((BigInteger)o).intValue()));
+    			returnList.add(ValueExtractor.extractIntValue(o));
     		}
-    	} else {
-    		returnList = (List<Integer>) resultList;
     	}
 		return returnList;
 	}
