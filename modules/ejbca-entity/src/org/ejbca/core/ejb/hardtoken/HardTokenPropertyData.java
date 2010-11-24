@@ -59,10 +59,8 @@ public class HardTokenPropertyData implements Serializable {
     public HardTokenPropertyData() {
     }
 
-    // DB2: VARCHAR(80), Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: ,
-    // MySQL: VARCHAR(80) BINARY, Oracle: , Sybase:
     @Id
-    @Column(name = "id", length=80)
+    @Column(name = "id")
     public String getId() {
         return id;
     }
@@ -71,8 +69,6 @@ public class HardTokenPropertyData implements Serializable {
         this.id = id;
     }
 
-    // DB2: , Derby: , Informix: VARCHAR(194), Ingres: , MSSQL: , MySQL: ,
-    // Oracle: , Sybase:
     @Id
     @Column(name = "property")
     public String getProperty() {
