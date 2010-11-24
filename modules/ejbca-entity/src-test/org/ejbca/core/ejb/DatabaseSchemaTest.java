@@ -65,11 +65,8 @@ public class DatabaseSchemaTest {
 	
 	private static final Logger LOG = Logger.getLogger(DatabaseSchemaTest.class);
 
-	private static String VARCHAR_80B;
-	private static String VARCHAR_194B;
 	private static String VARCHAR_250B;
 	private static String CLOB_10KiB;
-	private static String CLOB_32700B;
 	private static String CLOB_100KiB;
 	private static String CLOB_1MiB;
 	private static String CLOB_100MiB;
@@ -122,33 +119,24 @@ public class DatabaseSchemaTest {
 		entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
 		entityManager = entityManagerFactory.createEntityManager();
 		LOG.info("Allocating memory..");
-		final byte[] lob80B = new byte[80];
-		final byte[] lob194B = new byte[194];
 		final byte[] lob250B = new byte[250];
 		final byte[] lob10K = new byte[10*1024];
-		final byte[] lob32700B = new byte[32700];
 		final byte[] lob100K = new byte[100*1024];
 		final byte[] lob196K = new byte[196*1024];
 		final byte[] lob996K = new byte[996*1024];
 		final byte[] lob1M = new byte[1*1024*1024];
 		final byte[] lob100M = new byte[100*1024*1024];
 		LOG.info("Filling memory..");
-		Arrays.fill(lob80B, (byte) '0');
-		Arrays.fill(lob194B, (byte) '0');
 		Arrays.fill(lob250B, (byte) '0');
 		Arrays.fill(lob10K, (byte) '0');
-		Arrays.fill(lob32700B, (byte) '0');
 		Arrays.fill(lob100K, (byte) '0');
 		Arrays.fill(lob196K, (byte) '0');
 		Arrays.fill(lob996K, (byte) '0');
 		Arrays.fill(lob1M, (byte) '0');
 		Arrays.fill(lob100M, (byte) '0');
 		LOG.info("Creating Strings..");
-		VARCHAR_80B = new String(lob80B);
-		VARCHAR_194B = new String(lob194B);
 		VARCHAR_250B = new String(lob250B);
 		CLOB_10KiB = new String(lob10K);
-		CLOB_32700B = new String(lob32700B);
 		CLOB_100KiB = new String(lob100K);
 		CLOB_1MiB = new String(lob1M);
 		CLOB_100MiB = new String(lob100M);
@@ -307,7 +295,7 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setTimeCreated(0);
 		entity.setTryCounter(0);
-		entity.setVolatileData(CLOB_32700B);
+		entity.setVolatileData(CLOB_100KiB);
 		storeAndRemoveEntity(entity);
 	}
 
@@ -409,11 +397,11 @@ public class DatabaseSchemaTest {
 
 	public void testHardTokenPropertyData() {
 		HardTokenPropertyData entity = new HardTokenPropertyData();
-		entity.setId(VARCHAR_80B);
-		entity.setProperty(VARCHAR_194B);
+		entity.setId(VARCHAR_250B);
+		entity.setProperty(VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
-		entity.setValue(VARCHAR_194B);
+		entity.setValue(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
 	}
 
