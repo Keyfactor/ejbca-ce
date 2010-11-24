@@ -38,7 +38,7 @@
     <p>
     <ul>
     <li>Implements RFC 2560 and RFC 5019.</li>
-    <li>Independent of CA software used.</li>
+    <li>Independent of CA software used (various degrees of integration may be required and/or possible).</li>
     <li>One responder can respond for any number of CAs.</li>
     <li>Status information stored in SQL database.</li>
     <li>Not depending on CRLs. Status information can be updated in real-time.</li>
