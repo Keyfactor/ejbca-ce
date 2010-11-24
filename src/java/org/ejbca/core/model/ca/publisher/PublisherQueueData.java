@@ -172,7 +172,9 @@ public class PublisherQueueData implements java.io.Serializable {
     	List<?> resultList = query.getResultList();
     	List<Integer> returnList;
     	// Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
-    	if (resultList.size()>0 && resultList.get(0) instanceof Integer) {
+    	if (resultList.size()==0) {
+    		returnList = new ArrayList<Integer>();
+    	} else if (resultList.get(0) instanceof Integer) {
     		returnList = (List<Integer>) resultList;	// This means we can return it in it's current format
     	} else {
     		returnList = new ArrayList<Integer>();
