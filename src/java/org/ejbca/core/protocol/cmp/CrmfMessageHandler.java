@@ -114,7 +114,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("cmp.operationmode=ra");
 				LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
-				LOG.debug("cmp.ra.passwordgenparams"+userPwdParams);
+				LOG.debug("cmp.ra.passwordgenparams="+userPwdParams);
 				LOG.debug("cmp.responseprotection="+responseProt);
 			}
 		}
