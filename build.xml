@@ -14,29 +14,24 @@
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
 	
-
     <!-- =================================================================== -->
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
 	<taskdef resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
 		
-	<target name="-check.clover">
-	<available property="clover.installed"
-	classname="com.cenqua.clover.CloverInstr" />
-	</target>
-
-	<target name="guard.noclover" depends="-check.clover" unless="clover.installed">
-	<fail message="The target you are attempting to run requires Clover, which doesn't appear to be installed"/>
+	<target name="guard.noclover" unless="clover.installed">
+		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr"/>
+		<fail unless="clover.installed" message="The target you are attempting to run requires Clover, which doesn't appear to be installed"/>
 	</target>
 	
 	<target name="with.clover">
-	        <clover-setup>
-	            <fileset dir="${src}">
-	                <exclude name="**/org/apache/**/*.java"/>
-	            	<exclude name="**/com/novosec/**/*.java"/>
-	            </fileset>
-	        </clover-setup>
-	     </target>
+		<clover-setup>
+			<fileset dir="${ejbca.home}/src/java">
+				<exclude name="org/apache/**/*.java"/>
+				<exclude name="com/novosec/**/*.java"/>
+			</fileset>
+		</clover-setup>
+	</target>
 
 	<target name="clover.xml">
 	    <clover-report>
@@ -47,15 +42,14 @@
 	 </target>
 	
 	<target name="clover.html">
-		<clover-html-report outdir="clover_html"
-		                        title="EJBCA"/>
+		<clover-html-report outdir="clover_html" title="EJBCA"/>
 	 </target>
 
 	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="testforgnujava, ejbca.ear, ejbca-ejb-cli" description="Compiles EJBCA"/>
+    <target name="build" depends="testforgnujava, ejbca.ear, ejbca.clients" description="Compiles EJBCA"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -132,7 +126,7 @@
     <!-- =================================================================== -->
     <target name="doc.war" if="doc.war.enabled">
     	<antcall target="doc" />
-		<war destfile="${docwar}" webxml="${mainsrc}/publicweb/empty_webxml.xml">
+		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
             <fileset dir="${doc.src}" />
         </war>
     </target>
@@ -161,13 +155,12 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ejbca.ear" depends="ca.ear"/>
-	
-	<target name="ca.ear" depends="publicweb.war, renew.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, clearcache.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client, doc.war, externalra-service, ejbca-cmp-tcp, create-log4config-bundle">
+	<target name="ejbca.ear" depends="ejbca.ear.module-dependencies, doc.war, create-log4config-bundle">
+	    <property name="caear" value="${dist.dir}/ejbca.ear" />
 		<!-- Make sure we have an application.xml since we don't do preprocessing any longer.. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
-		<condition property="doc.war.enabled.replace-string" else="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/${app.name}/doc&lt;/context-root>&lt;/web>&lt;/module>">
+		<condition property="doc.war.enabled.replace-string" else="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/ejbca/doc&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${doc.war.enabled}"/>
 		</condition>
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@doc.war@-->" value="${doc.war.enabled.replace-string}"/>
@@ -179,11 +172,11 @@
 			<istrue value="${xkms.enabled}"/>
 		</condition>
     	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-xkms-ejb.jar@-->" value="${xkms.enabled.replace-string}"/>
-		<condition property="renew.enabled.replace-string" else="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/${app.name}/renew&lt;/context-root>&lt;/web>&lt;/module>">
+		<condition property="renew.enabled.replace-string" else="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/ejbca/renew&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${web.renewalenabled}"/>
 		</condition>
 		<replace file="${eardd.src}/META-INF/application.xml" token="!--@renew.war@-->" value="${renew.enabled.replace-string}"/>
-		<condition property="ejbca-cmp-tcp.enabled.replace-string" else="!--@ejbca-cmp-tcp.war@-->" value="module>&lt;web>&lt;web-uri>ejbca-cmp-tcp.war&lt;/web-uri>&lt;context-root>/${app.name}/cmp-tcp&lt;/context-root>&lt;/web>&lt;/module>">
+		<condition property="ejbca-cmp-tcp.enabled.replace-string" else="!--@ejbca-cmp-tcp.war@-->" value="module>&lt;web>&lt;web-uri>ejbca-cmp-tcp.war&lt;/web-uri>&lt;context-root>/ejbca/cmp-tcp&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${cmp.tcp.enabled}"/>
 		</condition>
 		<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-cmp-tcp.war@-->" value="${ejbca-cmp-tcp.enabled.replace-string}"/>
@@ -246,11 +239,10 @@
         	<zipfileset prefix="lib" dir="${hwtoken.class.dir}">
                 <include name="*.jar" />
         	</zipfileset>
-	</ear>
-
-    <antcall target="signjar">
-        <param name="signjar.file" value="${caear}"/>
-    </antcall>
+		</ear>
+    	<antcall target="signjar">
+        	<param name="signjar.file" value="${caear}"/>
+    	</antcall>
     </target>
 
 	<target name="create-log4config-bundle">
@@ -266,7 +258,7 @@
     <!-- =================================================================== -->
     <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war, create-log4config-bundle">
         <mkdir dir="${ocsp-dist.dir}"/>
-        <ear destfile="${ocspear}" appxml="src/deploy/ocsp-ear/META-INF/application.xml"> 
+        <ear destfile="${ocsp-dist.dir}/ejbca.ear" appxml="src/deploy/ocsp-ear/META-INF/application.xml"> 
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
@@ -307,18 +299,17 @@
     	<!-- extdirs="${lib}" -->
         <javadoc packagenames="org.ejbca.*" maxmemory="256m" destdir="${apidoc}" classpathref="javadoc-dependencies.classpath" 
         	author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB." >
-        	<sourcepath location="${src.java}"/>
-        	<sourcepath location="${src.gen}"/>
-           	<sourcepath location="modules/externalra-scep/src"/>
-           	<sourcepath location="modules/externalra/src"/>
-           	<sourcepath location="modules/ejbca-xkms/src"/>
-           	<sourcepath location="modules/ejbca-ws-cli/src"/>
-           	<sourcepath location="modules/ejbca-ws-cli/src-gen"/>
-           	<sourcepath location="modules/ejbca-ws/src"/>	<!-- ECA-1396 will probably change this.. -->
-           	<sourcepath location="modules/ejbca-ejb-cli/src"/>
-           	<sourcepath location="modules/clientToolBox/src"/>
-           	<sourcepath location="modules/cmpProxy/src"/>
-           	<sourcepath location="modules/ejbca-entity/src"/>
+        	<sourcepath location="${ejbca.home}/src/java"/>
+           	<sourcepath location="${ejbca.home}/modules/externalra-scep/src"/>
+           	<sourcepath location="${ejbca.home}/modules/externalra/src"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-xkms/src"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-ws-cli/src-gen"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	<!-- ECA-1396 will probably change this.. -->
+           	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
+           	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
+           	<sourcepath location="${ejbca.home}/modules/cmpProxy/src"/>
+           	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
         </javadoc>
     	<echo message=""/>
     	<dirname file="${apidoc}/index.html" property="javadoc.dir"/>
@@ -344,8 +335,6 @@
     </target>
     <target name="upgrade" depends="set-upgrade,base-upgrade"/>
     <target name="post-upgrade" depends="set-post-upgrade,base-upgrade"/>
-
-	
 
     <!-- ======================================================================= -->
     <!-- Promts for password properties if not previously set.                   -->
@@ -505,128 +494,92 @@
         	alias="${signjar.keystorealias}" storepass="${signjar.keystorepass}" />
     </target>
 
-	<!--
-        Target that finds duplicated code. 
-        You must install jar files from pmd.sourceforge.net in ANT_HOME/lib so the taskdef finds the class
-	-->
-	<!--
-	<target name="cpd">
-	    <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" />
-	    <cpd minimumTokenCount="100" outputFile="${src}/cpd.txt">
-	        <fileset dir="${src.java}/org.ejbca">
-	            <include name="**/*.java"/>
-	        </fileset>
-	    </cpd>
+	<target name="ejbca.ear.module-dependencies">
+    	<ant dir="modules" target="ejbca.ear.module-dependencies"/>
 	</target>
-	-->
 
-	<!-- Target that runs the Lint code check from http://www.jutils.com/.
-         You must install lint4j.jar in ANT_HOME/lib so the taskdef finds the class
-	-->
-	<!--
-	<target name="lint" description="Perform checks on EJBCA source code">
-		<taskdef name="lint4j" classname="com.jutils.lint4j.ant.Lint4jAntTask" />
-	  <lint4j packages="org.ejbca.*" level="3">
-	    <sourcepath>
-		  <dirset dir="${src}">
-			<include name="**/java" />
-		  </dirset>
-		</sourcepath>
-		<classpath>
-		  <fileset dir="${lib}">
-			<include name="**/*.jar" />
-		  </fileset>
-		  <dirset dir="${tmp}">
-			<include name="bin/classes" />
-		  </dirset>
-          <path refid="j2ee.classpath" />
-		</classpath>
-	    <formatters>
-	      <formatter type="text" />
-	      <formatter type="text" toFile="ejbca-lint.out"/>
-	    </formatters>
-	  </lint4j>
+	<target name="ejbca.clients">
+    	<ant dir="modules" target="ejbca.clients"/>
 	</target>
-    -->
 
     <target name="ejbca-entity">
-    	<ant antfile="modules/build.xml" target="ejbca-entity" />
+    	<ant dir="modules" target="ejbca-entity" />
     </target>
 
     <target name="ocsp-entity">
-    	<ant antfile="modules/build.xml" target="ocsp-entity" />
+    	<ant dir="modules" target="ocsp-entity" />
     </target>
 
 	<target name="ejbca-ejb-interface">
-       	<ant antfile="modules/build.xml" target="ejbca-ejb-interface" />
+       	<ant dir="modules" target="ejbca-ejb-interface" />
     </target>
 
 	<target name="ocsp-ejb-interface">
-       	<ant antfile="modules/build.xml" target="ocsp-ejb-interface" />
+       	<ant dir="modules" target="ocsp-ejb-interface" />
     </target>
 
     <target name="ejbca-ejb-cli" description="Builds EJBCA command line interface">
-    	<ant antfile="build.xml" dir="modules" target="ejbca-ejb-cli" />
+    	<ant dir="modules" target="ejbca-ejb-cli" />
     </target>
 	
     <target name="adminweb.war">
-    	<ant antfile="modules/build.xml" target="admin-gui" />
+    	<ant dir="modules" target="admin-gui" />
     </target>
 
     <target name="publicweb.war">
-    	<ant antfile="modules/build.xml" target="publicweb-gui" />
+    	<ant dir="modules" target="publicweb-gui" />
     </target>
 
     <target name="cmp.war">
-    	<ant antfile="modules/build.xml" target="cmp-war" />
+    	<ant dir="modules" target="cmp-war" />
     </target>
 
     <target name="healthcheck.war">
-    	<ant antfile="modules/build.xml" target="healthcheck-ejbca-war" />
+    	<ant dir="modules" target="healthcheck-ejbca-war" />
     </target>
 		
     <target name="clearcache.war">
-    	<ant antfile="modules/build.xml" target="clearcache-ejbca-war" />
+    	<ant dir="modules" target="clearcache-ejbca-war" />
     </target>
 		
     <target name="ocsphealthcheck.war">
-    	<ant antfile="modules/build.xml" target="healthcheck-ocsp-war" />
+    	<ant dir="modules" target="healthcheck-ocsp-war" />
     </target>	
 
     <target name="renew.war" if="renew.war.enabled">
-    	<ant antfile="modules/build.xml" target="renew-war" />
+    	<ant dir="modules" target="renew-war" />
     </target>   
 
     <target name="scep.war">
-    	<ant antfile="modules/build.xml" target="scep-war" />
+    	<ant dir="modules" target="scep-war" />
     </target>
 
     <target name="status.war">
-    	<ant antfile="modules/build.xml" target="ocsp-ejbca-war" />
+    	<ant dir="modules" target="ocsp-ejbca-war" />
     </target>
 	
     <target name="ocsp-war">
-    	<ant antfile="modules/build.xml" target="ocsp-ocsp-war" />
+    	<ant dir="modules" target="ocsp-ocsp-war" />
     </target>
 
     <target name="webdist.war">
-    	<ant antfile="modules/build.xml" target="webdist-war" />
+    	<ant dir="modules" target="webdist-war" />
     </target>
 
 	<target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
-    	<ant antfile="modules/build.xml" target="clientToolBox" />
+    	<ant dir="modules" target="clientToolBox" />
     </target>
 
-    <target name="ejbca-cmp-tcp" description="Builds the EJBCA CMP TCP module.">
-    	<ant antfile="modules/build.xml" target="ejbca-cmp-tcp" />
+    <target name="ejbca-cmp-tcp">
+    	<ant dir="modules" target="ejbca-cmp-tcp" />
     </target>
 	
     <target name="cmpTcpProxy" description="Builds a CMP TCP proxy.">
-    	<ant antfile="modules/build.xml" target="cmpTcpProxy" />
+    	<ant dir="modules" target="cmpTcpProxy" />
     </target>
 	
     <target name="cmpHttpProxy" description="Builds a CMP HTTP proxy.">
-    	<ant antfile="modules/build.xml" target="cmpHttpProxy" />
+    	<ant dir="modules" target="cmpHttpProxy" />
     </target>
 	
 	<target name="showtime" >
@@ -637,35 +590,35 @@
 	</target>
 	
     <target name="ejbcaws.client" description="Build the EJBCA WS-API client">
-    	<ant antfile="build.xml" dir="modules" target="ejbca-ws-cli" />
+    	<ant dir="modules" target="ejbca-ws-cli" />
     </target>
 
     <target name="ejbcaws.war" description="Build the EJBCA WS WAR">
-    	<ant antfile="build.xml" dir="modules" target="ejbca-ws"/>
+    	<ant dir="modules" target="ejbca-ws"/>
     </target>
 
     <target name="ejbca-ws-generate">
-    	<ant antfile="build.xml" dir="modules" target="ejbca-ws-generate"/>
+    	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
 
     <target name="xkms.client" description="Build the EJBCA XKMS client">
-    	<ant antfile="build.xml" dir="modules" target="ejbca-xkms-cli" />
+    	<ant dir="modules" target="ejbca-xkms-cli" />
     </target>
 
     <target name="xkms.war" description="Build the EJBCA XKMS WAR">
-    	<ant antfile="build.xml" dir="modules" target="ejbca-xkms"/>
+    	<ant dir="modules" target="ejbca-xkms"/>
     </target>
 	
 	<target name="externalra-service">
-    	<ant antfile="build.xml" dir="modules" target="externalra-service"/>
+    	<ant dir="modules" target="externalra-service"/>
 	</target>
 
 	<target name="externalra-client">
-    	<ant antfile="build.xml" dir="modules" target="externalra-client"/>
+    	<ant dir="modules" target="externalra-client"/>
 	</target>
 
 	<target name="externalra-scep" description="Build the EJBCA External RA StandAlone SCEP application">
-    	<ant antfile="build.xml" dir="modules" target="externalra-scep"/>
+    	<ant dir="modules" target="externalra-scep"/>
 	</target>
 
 	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application" depends="externalra-scep">
@@ -673,7 +626,7 @@
 	</target>
 
 	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI application">
-    	<ant antfile="build.xml" dir="modules" target="externalra-gui"/>
+    	<ant dir="modules" target="externalra-gui"/>
 	</target>
 
 	<target name="externalra-gui-deploy" description="Deploy the EJBCA External RA StandAlone GUI application" depends="externalra-gui">
@@ -681,14 +634,14 @@
 	</target>
 
 	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client">
-    	<ant antfile="build.xml" dir="modules" target="batchenrollment-gui"/>
+    	<ant dir="modules" target="batchenrollment-gui"/>
 	</target>
 
 	<target name="jbosslogsigning" description="Build signing Log4j appended for JBoss">
-    	<ant antfile="build.xml" dir="modules" target="appserver-ext-jbosslogsigning"/>
+    	<ant dir="modules" target="appserver-ext-jbosslogsigning"/>
 	</target>
 
 	<target name="jbosslog4jsafer" description="Build Log4j ErrorHandler and Appender extensions for JBoss">
-    	<ant antfile="build.xml" dir="modules" target="appserver-ext-jbosslog4jsafer"/>
+    	<ant dir="modules" target="appserver-ext-jbosslog4jsafer"/>
 	</target>
 </project>

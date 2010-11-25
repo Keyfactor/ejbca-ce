@@ -1,7 +1,7 @@
 #
 # $Id$
 #
-# This is a sample file to override defautl properties used
+# This is a sample file to override default properties used
 # during installation of EJBCA (ant install)
 # 
 # You should copy and rename this file to install.properties

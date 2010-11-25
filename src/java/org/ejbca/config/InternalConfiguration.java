@@ -24,7 +24,7 @@ public class InternalConfiguration {
 	 * Lower case application name
 	 */
 	public static String getAppNameLower() {
-		return ConfigurationHolder.getExpandedString("app.name", "ejbca");
+		return "ejbca";
 	}
 
 	/**
@@ -38,7 +38,7 @@ public class InternalConfiguration {
 	 * Upper case application name
 	 */
 	public static String getAppNameCapital() {
-		return ConfigurationHolder.getExpandedString("app.name.cap", "EJBCA");
+		return "EJBCA";
 	}
 
 	/**

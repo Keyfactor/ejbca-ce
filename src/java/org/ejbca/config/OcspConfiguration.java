@@ -153,7 +153,7 @@ public class OcspConfiguration {
 	 * CA on this server.
 	 */
 	public static String getDefaultResponderId() {
-		return ConfigurationHolder.getExpandedString("ocsp.defaultresponder", "CN=AdminCA1,O=${app.name.cap} Sample,C=SE");
+		return ConfigurationHolder.getExpandedString("ocsp.defaultresponder", "CN=AdminCA1,O=EJBCA Sample,C=SE");
 	}
 
 	/**

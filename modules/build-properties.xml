@@ -20,7 +20,10 @@
     	value="Merging available external modifications from ${customejbca.home} (unless done previously).">
     	<isset property="customejbca.present" />
     </condition>
-	<echo message="${customejbca.message}"/>
+    <condition property="customejbca.message.level" else="info" value="debug">
+    	<isset property="runoncesetup.hasrun"/>
+    </condition>
+	<echo message="${customejbca.message}" level="${customejbca.message.level}"/>
     <condition property="customejbca.extensions" value="*" else="none-at-all">
     	<isset property="customejbca.present" />
     </condition>
@@ -29,13 +32,14 @@
     </condition>
 	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
 		<fileset dir="${customejbca.dir}">
-			<include name="**/*.${customejbca.extensions}" unless="customejbca.merged"/>
-			<exclude name="**/*" if="customejbca.merged"/>
+			<include name="**/*.${customejbca.extensions}" unless="runoncesetup.hasrun"/>
+			<exclude name="**/*" if="runoncesetup.hasrun"/>
    		</fileset>
 	</copy>
-	<property name="customejbca.merged" value="true"/>
+	<property name="runoncesetup.hasrun" value="true"/>
+
 	<!-- Load property files -->
-    <property file="${ejbca.home}/conf/${app.name}.properties" />
+    <property file="${ejbca.home}/conf/ejbca.properties" />
     <property file="${ejbca.home}/conf/protection.properties" />
     <property file="${ejbca.home}/conf/database.properties" />
     <property file="${ejbca.home}/conf/mail.properties" />
@@ -62,7 +66,7 @@
     </condition>
 	
 	<!-- Auto-detect supported application server type (also still present in ../propertiesAndPaths.xmli) -->
-	<echo message="appserver.home: ${appserver.home}"/>
+	<echo message="appserver.home: ${appserver.home}" level="${customejbca.message.level}"/>
 	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<!-- Not yet tested:
@@ -70,7 +74,7 @@
 		<available file="${appserver.home}/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
 	-->
 	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1 and JBoss 5.1.0.GA are currently supported. (Normally you should not have to configure this.)" unless="appserver.type"/>
-	<echo message="appserver.type: ${appserver.type}"/>
+	<echo message="appserver.type: ${appserver.type}" level="${customejbca.message.level}"/>
 	
     <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
     <property name="ocsp.dist.path" location="${ejbca.home}/ocsp-dist" />

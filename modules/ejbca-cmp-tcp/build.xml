@@ -33,7 +33,7 @@
         </war>
     </target>
 
-    <target name="compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb" if="cmptcpservices.enabled">
+    <target name="compile" depends="ejbca-ejb" if="cmptcpservices.enabled">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>

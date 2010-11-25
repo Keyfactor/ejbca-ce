@@ -35,6 +35,16 @@
 		<path location="lib/bcprov-jdk16-145.jar" />
     </path>
 
+    <!-- =================================================================== -->
+    <!-- Build doc part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="doc.war" if="doc.war.enabled">
+    	<antcall target="doc" />
+		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
+            <fileset dir="${doc.src}" />
+        </war>
+    </target>
+	
     <target name="doc-build-tool">
     	<mkdir dir="${docs.tools.dest}"/>
     	<javac srcdir="${ejbca.home}/src/java" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="iso8859-1"

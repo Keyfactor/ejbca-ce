@@ -11,25 +11,30 @@
 		Merge custom modifications from customejbca.home to
 		ejbca.home before reading the other configuration files.
 	-->
-    <property file="conf/custom.properties" />
+    <property file="${ejbca.home}/conf/custom.properties" />
     <property name="customejbca.home" location="${ejbca.home}/../ejbca-custom" />
     <available file="${customejbca.home}" type="dir" property="customejbca.present" />
     <condition property="customejbca.message" else="No custom changes to merge."
-    	value="Merging available external modifications from ${customejbca.home}.">
+    	value="Merging available external modifications from ${customejbca.home} (unless done previously).">
     	<isset property="customejbca.present" />
     </condition>
-	<echo message="${customejbca.message}" />
+    <condition property="customejbca.message.level" else="info" value="debug">
+    	<isset property="runoncesetup.hasrun"/>
+    </condition>
+	<echo message="${customejbca.message}" level="${customejbca.message.level}"/>
     <condition property="customejbca.extensions" value="*" else="none-at-all">
     	<isset property="customejbca.present" />
     </condition>
-    <condition property="customejbca.dir" value="${customejbca.home}" else="conf">
+    <condition property="customejbca.dir" value="${customejbca.home}" else="${ejbca.home}/conf">	<!-- This is just any dir that we know exists to avoid error messages.. -->
     	<isset property="customejbca.present" />
     </condition>
 	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
-		<fileset dir="${customejbca.dir}" >
-			<include name="**/*.${customejbca.extensions}"/>
+		<fileset dir="${customejbca.dir}">
+			<include name="**/*.${customejbca.extensions}" unless="runoncesetup.hasrun"/>
+			<exclude name="**/*" if="runoncesetup.hasrun"/>
    		</fileset>
 	</copy>
+	<property name="runoncesetup.hasrun" value="true"/>
 
     <!-- 
        Give user a chance to override without editing this file
@@ -37,10 +42,7 @@
        First it checks your home directory for ejbca.properties
        next it checks the properties file here. 
     -->
-    <property file="${user.home}/${app.name}.properties" />
-	<!-- Keep reading the old file to be simply backwards compatible, the new one (conf/x overrides -->
-    <property file="${app.name}.properties" />
-    <property file="conf/${app.name}.properties" />
+    <property file="conf/ejbca.properties" />
     <property file="conf/protection.properties" />
     <property file="conf/database.properties" />
     <property file="conf/mail.properties" />
@@ -83,52 +85,17 @@
 	-->
 	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1 and JBoss 5.1.0.GA are currently supported. (Normally you should not have to configure this.)" unless="appserver.type"/>
 	
-    <!-- Default to 16 -->    
-    <property name="java.ver" value="16" />
-	
-	<!-- Default to true -->	
-	<property name="ejbcaws.enabled" value="true" />
-		
     <!-- set global properties for this build -->
-    <property name="tmp" value="./tmp" />
-    <property name="bin" value="./${tmp}/bin" />
-    <property name="build" value="${bin}/classes" />
-    <property name="ocsp-build" location="${bin}/ocsp-classes"/>
-    <property name="clientToolBox.build" location="${bin}/clientToolBox-classes" />
-    <property name="lib" value="lib" />
-    <property name="mainsrc" value="src"/>
-    <property name="mainbin" value="bin"/>
-    <property name="appserver.src" value="${mainsrc}/appserver" />
+    <property name="tmp" value="${ejbca.home}/tmp" />
+    <property name="lib" value="${ejbca.home}/lib" />
     
-    <property name="jaxws.dir" value="${tmp}/jaxws" />
-    <property name="jaxws.libdir" value="${jaxws.dir}/lib" />
-
-    <property name="src" value="${tmp}/preprocessed" />
-    <property name="src.java" value="${src}/java" />
-    <property name="src.gen" value="${bin}/gensrc" />
-    <property name="src.dd" value="${bin}/dd" />
-    <property name="ocsp-src.gen" value="${bin}/ocsp-gensrc" />
-    <property name="ocsp-src.dd" value="${bin}/ocsp-dd" />
-    
-    <property name="test.dir" value="${bin}/junit" />
-    <property name="test.src.dir" location="${src}/test" />
     <property name="dist.dir" location="dist" />
     <property name="ocsp-dist.dir" location="ocsp-dist" />
-    <property name="clientToolBox-dist.dir" location="dist/clientToolBox" />
 	
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
-    <property name="apidoc" value="./doc/api" />
+    <property name="apidoc" value="${ejbca.home}/doc/api" />
 
-    <property name="doc.src" value="tmp/htdocs" />
-    <property name="docwar" value="${dist.dir}/doc.war" />
+    <property name="doc.src" value="${tmp}/htdocs" />
 	
-    <property name="deploy.src" value="${src}/deploy" />
-    <property name="ejbdd.src" value="${deploy.src}/ejb" />
-    <property name="webdd.src" value="${deploy.src}/web" />
-    <property name="eardd.src" value="${deploy.src}/ear" />
-    <property name="ocsp-eardd.src" value="${deploy.src}/ocsp-ear" />
-    <property name="caear" value="${dist.dir}/${app.name}.ear" />
-    <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
-
     <import file="propertyDefaults.xml"/>
