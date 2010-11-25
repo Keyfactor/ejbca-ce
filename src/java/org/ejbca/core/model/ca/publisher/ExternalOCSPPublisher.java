@@ -53,8 +53,8 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     // Default values
     public static final String DEFAULT_DATASOURCE 			= "java:/OcspDS";
 
-    private final static String insertSQL = "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-    private final static String updateSQL = "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=? WHERE fingerprint=?";
+    private final static String insertSQL = "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,tag,certificateProfileId,updateTime,fingerprint,rowVersion) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)";
+    private final static String updateSQL = "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=?,tag=?,certificateProfileId=?,updateTime=?,rowVersion=(rowVersion+1) WHERE fingerprint=?";
     /**
      * 
      */
