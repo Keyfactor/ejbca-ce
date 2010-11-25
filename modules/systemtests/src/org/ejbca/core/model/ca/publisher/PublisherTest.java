@@ -343,6 +343,10 @@ public class PublisherTest extends TestCase {
         assertEquals("foobar", info.getTag());
         assertEquals(date, info.getUpdateTime().getTime());
 
+        // Test storing and updating CRLs as well
+        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", null);
+        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", null);
+        
         log.trace("<test15ExternalOCSPPublisher()");
     }
 
