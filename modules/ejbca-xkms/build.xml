@@ -31,6 +31,13 @@
 		<path refid="lib.idn.classpath" /> 
 	</path>
 
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${build-lib.dir}" />
+		<delete file="${mod.ejbca-xkms.war}" />
+		<delete file="${mod.ejbca-xkms.lib}" />
+    </target>
+	
     <target name="build" description="Build this module" depends="build-ejb-jar, build-jar"/>
 
     <target name="build-ejb-jar" description="Build the EJB JAR that handles XKMS in EJBCA" depends="compile">
@@ -60,14 +67,7 @@
     	<jar destfile="${mod.ejbca-xkms.lib}" basedir="${build-lib.dir}"/>
     </target>
 
-    <target name="clean" description="Clean up this module">
-		<delete dir="${build.dir}" />
-		<delete dir="${build-lib.dir}" />
-		<delete file="${mod.ejbca-xkms.war}" />
-		<delete file="${mod.ejbca-xkms.lib}" />
-    </target>
-	
-    <target name="compile" depends="ejbca-util, ejbca-ejb, ejbca-ejb-interface">
+    <target name="compile" depends="ejbca-ejb">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath" bootclasspathref="lib.javart.classpath">

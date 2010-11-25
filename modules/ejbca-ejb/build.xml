@@ -82,7 +82,7 @@
 		<delete file="${mod.ejbca-util.lib}" />
     </target>
 	
-    <target name="build" description="Build this module" depends="compile-ejbca-ejb, ejbca-ejb-interface">
+    <target name="build" description="Build this module" depends="compile-ejbca-ejb">
     	<copy todir="${build.dir}" failonerror="true">
     		<fileset dir="${resources.dir}" includes="META-INF/ejb-jar.xml"/>
 			<filterchain>

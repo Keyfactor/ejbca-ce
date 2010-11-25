@@ -84,5 +84,7 @@
 	<!-- XKMS settings -->
 	<property name="xkms.enabled" value="false" />				
 	<property name="xkms.serviceport" value="8080" />
-    
+
+	<!-- WS settings -->
+	<property name="ejbcaws.enabled" value="true" />
 </project>

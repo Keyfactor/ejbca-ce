@@ -49,7 +49,7 @@
 		<war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml" basedir="${build-ocsp.dir}"/>
 	</target>
 
-    <target name="ejbca-compile" depends="ejbca-ejb-interface, ejbca-util, ejbca-ejb">
+    <target name="ejbca-compile" depends="ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java, org/ejbca/ui/web/pub/OCSPHealthServlet.java" classpathref="compile-ejbca.classpath"/>

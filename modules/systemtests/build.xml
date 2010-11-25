@@ -39,14 +39,14 @@
 	</path>
 	-->
 
-    <target name="build" description="Build this module" depends="ejbca-util, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, ejbca-ejb, compile"/>
+    <target name="build" description="Build this module" depends="compile"/>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${this.dir}/reports" />
     </target>
 
-    <target name="compile" depends="assert-notinproduction, ejbca-entity, ejbca-ejb-interface, clientToolBox">
+    <target name="compile" depends="assert-notinproduction, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">

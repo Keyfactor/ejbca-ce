@@ -30,7 +30,7 @@
         <war destfile="${mod.cmp-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
     </target>
 
-    <target name="compile" depends="setup, ejbca-ejb-interface, ejbca-util, ejbca-ejb">
+    <target name="compile" depends="setup, ejbca-ejb">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>
