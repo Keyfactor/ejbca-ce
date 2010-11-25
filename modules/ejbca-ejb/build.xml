@@ -418,7 +418,7 @@
 			<param name="test-subprocess.exclude-pattern" value="" />
 		</antcall>
 		-->
-		<echo message=" ** Running stand-alone tests in two parallel chunks. Console output will be a bit scrambled.. **"/>
+		<echo message=" ** Running stand-alone tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
 			<antcall target="test-subprocess">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
@@ -430,7 +430,7 @@
 			</antcall>
 			<antcall target="test-subprocess">
 				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
-				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class" />
 			</antcall>
 		</parallel>
 		<antcall target="createreport"/>
