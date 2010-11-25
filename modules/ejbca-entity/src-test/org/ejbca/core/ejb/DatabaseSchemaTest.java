@@ -23,6 +23,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
 import org.ejbca.core.ejb.approval.ApprovalData;
@@ -57,11 +59,9 @@ import org.ejbca.core.model.log.LogConfiguration;
  * 
  * We also validate that all fields can hold the values that we assume they can.
  * 
- * TODO: Rewrite as a JUnit test
- * 
  * @version $Id$
  */
-public class DatabaseSchemaTest {
+public class DatabaseSchemaTest extends TestCase {
 	
 	private static final Logger LOG = Logger.getLogger(DatabaseSchemaTest.class);
 
@@ -76,49 +76,12 @@ public class DatabaseSchemaTest {
 	private static final Integer BOGUS_INTEGER = Integer.valueOf(BOGUS_INT);
 	private static EntityManagerFactory entityManagerFactory;
 	private static EntityManager entityManager;
-	private static int exitStatus = 0;
-	
-	public static void main(String[] args) throws Exception {
-		DatabaseSchemaTest instance = new DatabaseSchemaTest();
-		instance.test000Setup();
-		try {
-			instance.testApprovalData();
-			instance.testAccessRulesData();
-			instance.testAdminEntityData();
-			instance.testAdminGroupData();
-			instance.testCAData();
-			instance.testCertificateProfileData();
-			instance.testPublisherData();
-			instance.testPublisherQueueData();
-			instance.testCertificateData();
-			instance.testCertReqHistoryData();
-			instance.testCRLData();
-			instance.testHardTokenCertificateMap();
-			instance.testHardTokenData();
-			instance.testHardTokenIssuerData();
-			instance.testHardTokenProfileData();
-			instance.testHardTokenPropertyData();
-			instance.testKeyRecoveryData();
-			instance.testLogConfigurationData();
-			instance.testLogEntryData();
-			instance.testUserData();
-			instance.testAdminPreferencesData();
-			instance.testEndEntityProfileData();
-			instance.testGlobalConfigurationData();
-			instance.testUserDataSourceData();
-			instance.testServiceData();
-		} catch (Exception e) {
-			exitStatus = 1;
-		} finally {
-			instance.testZZZCleanUp();
-		}
-		System.exit(exitStatus);
-	}
-	
+
 	public void test000Setup() throws Exception {
+		LOG.trace(">test000Setup");
 		entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
 		entityManager = entityManagerFactory.createEntityManager();
-		LOG.info("Allocating memory..");
+		LOG.debug("Allocating memory..");
 		final byte[] lob250B = new byte[250];
 		final byte[] lob10K = new byte[10*1024];
 		final byte[] lob100K = new byte[100*1024];
@@ -126,7 +89,7 @@ public class DatabaseSchemaTest {
 		final byte[] lob996K = new byte[996*1024];
 		final byte[] lob1M = new byte[1*1024*1024];
 		final byte[] lob100M = new byte[100*1024*1024];
-		LOG.info("Filling memory..");
+		LOG.debug("Filling memory..");
 		Arrays.fill(lob250B, (byte) '0');
 		Arrays.fill(lob10K, (byte) '0');
 		Arrays.fill(lob100K, (byte) '0');
@@ -134,68 +97,20 @@ public class DatabaseSchemaTest {
 		Arrays.fill(lob996K, (byte) '0');
 		Arrays.fill(lob1M, (byte) '0');
 		Arrays.fill(lob100M, (byte) '0');
-		LOG.info("Creating Strings..");
+		LOG.debug("Creating Strings..");
 		VARCHAR_250B = new String(lob250B);
 		CLOB_10KiB = new String(lob10K);
 		CLOB_100KiB = new String(lob100K);
 		CLOB_1MiB = new String(lob1M);
 		CLOB_100MiB = new String(lob100M);
-		LOG.info("Filling HashMaps..");
+		LOG.debug("Filling HashMaps..");
 		HASHMAP_200K.put("object", lob196K);	// It need to be less than 200KiB in Serialized format..
 		HASHMAP_1M.put("object", lob996K);		// It need to be less than 1MiB in Serialized format.. 
-		LOG.info("Init done!");
+		LOG.trace("<test000Setup");
 	}
 	
-	/**
-	 * Outputs which method it is run from.
-	 * Validates that all getters on the entity that is annotated with @javax.persistence.Column is set. 
-	 * Commits the entity in one transaction and then removes it in another transaction.
-	 */
-	private void storeAndRemoveEntity(Object entity) {
-		LOG.info(Thread.currentThread().getStackTrace()[2].getMethodName() + " running:");
-		Class<?> entityClass = entity.getClass();
-		LOG.info("  - verifying that all getter has an assigned value for " + entityClass.getName());
-		for (Method m : entityClass.getDeclaredMethods()) {
-			for (Annotation a :m.getAnnotations()) {
-				if (a.annotationType().equals(javax.persistence.Column.class) && m.getName().startsWith("get")) {
-					try {
-						m.setAccessible(true);
-						if (m.invoke(entity) == null) {
-							LOG.warn(m.getName() + " was annotated with @Column, but value was null. Test should be updated!");
-							exitStatus = 1;
-						}
-					} catch (Exception e) {
-						LOG.error(m.getName() + " was annotated with @Column and could not be read. " + e.getMessage());
-						exitStatus = 1;
-					}
-				}
-			}
-		}
-		LOG.info("  - adding entity.");
-		EntityTransaction transaction = entityManager.getTransaction();
-		transaction.begin();
-		entityManager.persist(entity);
-		transaction.commit();
-		LOG.info("  - removing entity.");
-		transaction = entityManager.getTransaction();
-		transaction.begin();
-		entityManager.remove(entity);
-		transaction.commit();
-		LOG.info(Thread.currentThread().getStackTrace()[2].getMethodName() + " done!");
-	}
-	
-	/** Used in order to bypass validity check of different private fields that are access via transient setters. */
-	private void setPrivateField(Object entity, String fieldName, Object value) {
-		try {
-			Field field = entity.getClass().getDeclaredField(fieldName);
-			field.setAccessible(true);
-			field.set(entity, value);
-		} catch (Exception e) {
-			LOG.error("Could not set " + fieldName + " to " + value + ": " + e.getMessage());
-		}
-	}
-
 	public void testApprovalData() {
+		LOG.trace(">testApprovalData");
 		ApprovalData entity = new ApprovalData();
 		entity.setApprovalid(0);
 		entity.setApprovaldata(CLOB_1MiB);
@@ -213,9 +128,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setStatus(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testApprovalData");
 	}
 
 	public void testAccessRulesData() {
+		LOG.trace(">testAccessRulesData");
 		AccessRulesData entity = new AccessRulesData();
 		entity.setAccessRule(VARCHAR_250B);
 		entity.setIsRecursive(false);
@@ -224,9 +141,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setRule(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testAccessRulesData");
 	}
 
 	public void testAdminEntityData() {
+		LOG.trace(">testAdminEntityData");
 		AdminEntityData entity = new AdminEntityData();
 		entity.setCaId(BOGUS_INTEGER);
 		entity.setMatchType(0);
@@ -236,9 +155,11 @@ public class DatabaseSchemaTest {
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testAdminEntityData");
 	}
 
 	public void testAdminGroupData() {
+		LOG.trace(">testAdminGroupData");
 		AdminGroupData entity = new AdminGroupData();
 		entity.setAdminGroupName(VARCHAR_250B);
 		entity.setCaId(BOGUS_INT);
@@ -246,9 +167,11 @@ public class DatabaseSchemaTest {
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testAdminGroupData");
 	}
 
 	public void testCAData() {
+		LOG.trace(">testCAData");
 		CAData entity = new CAData();
 		entity.setCaId(BOGUS_INTEGER);
 		entity.setData(CLOB_100KiB);
@@ -260,9 +183,11 @@ public class DatabaseSchemaTest {
 		entity.setSubjectDN(VARCHAR_250B);
 		entity.setUpdateTime(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testCAData");
 	}
 
 	public void testCertificateProfileData() {
+		LOG.trace(">testCertificateProfileData");
 		CertificateProfileData entity = new CertificateProfileData();
 		entity.setCertificateProfileName(VARCHAR_250B);
 		entity.setDataUnsafe(HASHMAP_1M);
@@ -270,9 +195,11 @@ public class DatabaseSchemaTest {
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testCertificateProfileData");
 	}
 
 	public void testPublisherData() {
+		LOG.trace(">testPublisherData");
 		PublisherData entity = new PublisherData();
 		entity.setData(CLOB_100KiB);
 		entity.setId(BOGUS_INTEGER);
@@ -281,9 +208,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setUpdateCounter(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testPublisherData");
 	}
 
 	public void testPublisherQueueData() {
+		LOG.trace(">testPublisherQueueData");
 		PublisherQueueData entity = new PublisherQueueData();
 		entity.setFingerprint(VARCHAR_250B);
 		entity.setLastUpdate(0);
@@ -297,9 +226,11 @@ public class DatabaseSchemaTest {
 		entity.setTryCounter(0);
 		entity.setVolatileData(CLOB_100KiB);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testPublisherQueueData");
 	}
 
 	public void testCertificateData() {
+		LOG.trace(">testCertificateData");
 		CertificateData entity = new CertificateData();
 		entity.setBase64Cert(CLOB_1MiB);
 		entity.setCaFingerprint(VARCHAR_250B);
@@ -320,9 +251,11 @@ public class DatabaseSchemaTest {
 		entity.setUpdateTime(Long.valueOf(0L));
 		entity.setUsername(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testCertificateData");
 	}
 
-	public void testCertReqHistoryData() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+	public void testCertReqHistoryData() {
+		LOG.trace(">testCertReqHistoryData");
 		CertReqHistoryData entity = new CertReqHistoryData();
 		setPrivateField(entity, "issuerDN", VARCHAR_250B);
 		setPrivateField(entity, "fingerprint", VARCHAR_250B);
@@ -333,9 +266,11 @@ public class DatabaseSchemaTest {
 		entity.setUserDataVO(CLOB_1MiB);
 		setPrivateField(entity, "username", VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testCertReqHistoryData");
 	}
 
 	public void testCRLData() {
+		LOG.trace(">testCRLData");
 		CRLData entity = new CRLData();
 		entity.setBase64Crl(CLOB_100MiB);
 		entity.setCaFingerprint(VARCHAR_250B);
@@ -348,18 +283,22 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setThisUpdate(0L);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testCRLData");
 	}
 
 	public void testHardTokenCertificateMap() {
+		LOG.trace(">testHardTokenCertificateMap");
 		HardTokenCertificateMap entity = new HardTokenCertificateMap();
 		entity.setCertificateFingerprint(VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		entity.setTokenSN(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testHardTokenCertificateMap");
 	}
 
 	public void testHardTokenData() {
+		LOG.trace(">testHardTokenData");
 		HardTokenData entity = new HardTokenData();
 		entity.setCtime(0L);
 		entity.setData(HASHMAP_200K);
@@ -371,9 +310,11 @@ public class DatabaseSchemaTest {
 		entity.setTokenType(0);
 		entity.setUsername(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testHardTokenData");
 	}
 
 	public void testHardTokenIssuerData() {
+		LOG.trace(">testHardTokenIssuerData");
 		HardTokenIssuerData entity = new HardTokenIssuerData();
 		entity.setAdminGroupId(0);
 		entity.setAlias(VARCHAR_250B);
@@ -382,9 +323,11 @@ public class DatabaseSchemaTest {
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testHardTokenIssuerData");
 	}
 
 	public void testHardTokenProfileData() {
+		LOG.trace(">testHardTokenProfileData");
 		HardTokenProfileData entity = new HardTokenProfileData();
 		entity.setData(CLOB_1MiB);
 		entity.setId(BOGUS_INTEGER);
@@ -393,9 +336,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setUpdateCounter(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testHardTokenProfileData");
 	}
 
 	public void testHardTokenPropertyData() {
+		LOG.trace(">testHardTokenPropertyData");
 		HardTokenPropertyData entity = new HardTokenPropertyData();
 		entity.setId(VARCHAR_250B);
 		entity.setProperty(VARCHAR_250B);
@@ -403,9 +348,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setValue(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testHardTokenPropertyData");
 	}
 
 	public void testKeyRecoveryData() {
+		LOG.trace(">testKeyRecoveryData");
 		KeyRecoveryData entity = new KeyRecoveryData();
 		entity.setCertSN(VARCHAR_250B);
 		entity.setIssuerDN(VARCHAR_250B);
@@ -415,9 +362,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setUsername(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testKeyRecoveryData");
 	}
 
 	public void testLogConfigurationData() {
+		LOG.trace(">testLogConfigurationData");
 		LogConfigurationData entity = new LogConfigurationData();
 		entity.setId(BOGUS_INTEGER);
 		entity.setLogConfigurationUnsafe(new LogConfiguration(false, false, HASHMAP_200K));
@@ -425,9 +374,11 @@ public class DatabaseSchemaTest {
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testLogConfigurationData");
 	}
 
 	public void testLogEntryData() {
+		LOG.trace(">testLogEntryData");
 		LogEntryData entity = new LogEntryData();
 		entity.setAdminData(VARCHAR_250B);
 		entity.setAdminType(0);
@@ -442,9 +393,11 @@ public class DatabaseSchemaTest {
 		entity.setTime(0L);
 		entity.setUsername(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testLogEntryData");
 	}
 
 	public void testUserData() {
+		LOG.trace(">testUserData");
 		UserData entity = new UserData();
 		entity.setCaId(0);
 		entity.setCardNumber(VARCHAR_250B);
@@ -467,18 +420,22 @@ public class DatabaseSchemaTest {
 		entity.setType(0);
 		entity.setUsername(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testUserData");
 	}
 
 	public void testAdminPreferencesData() {
+		LOG.trace(">testAdminPreferencesData");
 		AdminPreferencesData entity = new AdminPreferencesData();
 		entity.setDataUnsafe(HASHMAP_200K);
 		entity.setId(VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testAdminPreferencesData");
 	}
 
 	public void testEndEntityProfileData() {
+		LOG.trace(">testEndEntityProfileData");
 		EndEntityProfileData entity = new EndEntityProfileData();
 		entity.setDataUnsafe(HASHMAP_200K);
 		entity.setId(BOGUS_INTEGER);
@@ -486,18 +443,22 @@ public class DatabaseSchemaTest {
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testEndEntityProfileData");
 	}
 
 	public void testGlobalConfigurationData() {
+		LOG.trace(">testGlobalConfigurationData");
 		GlobalConfigurationData entity = new GlobalConfigurationData();
 		entity.setConfigurationId(VARCHAR_250B);
 		entity.setDataUnsafe(HASHMAP_200K);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testGlobalConfigurationData");
 	}
 
 	public void testUserDataSourceData() {
+		LOG.trace(">testUserDataSourceData");
 		UserDataSourceData entity = new UserDataSourceData();
 		entity.setData(CLOB_100KiB);
 		entity.setId(BOGUS_INTEGER);
@@ -506,9 +467,11 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setUpdateCounter(0);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testUserDataSourceData");
 	}
 
 	public void testServiceData() {
+		LOG.trace(">testServiceData");
 		ServiceData entity = new ServiceData();
 		entity.setData(CLOB_100KiB);
 		entity.setId(BOGUS_INTEGER);
@@ -518,10 +481,67 @@ public class DatabaseSchemaTest {
 		entity.setRowVersion(0);
 		entity.setRunTimeStamp(0L);
 		storeAndRemoveEntity(entity);
+		LOG.trace("<testServiceData");
 	}
 	
 	public void testZZZCleanUp() throws Exception {
+		LOG.trace(">testZZZCleanUp");
 		entityManager.close();
 		entityManagerFactory.close();
+		LOG.trace("<testZZZCleanUp");
+	}
+
+	/**
+	 * Outputs which method it is run from.
+	 * Validates that all getters on the entity that is annotated with @javax.persistence.Column is set. 
+	 * Commits the entity in one transaction and then removes it in another transaction.
+	 */
+	private void storeAndRemoveEntity(Object entity) {
+		LOG.trace(">storeAndRemoveEntity");
+		Class<?> entityClass = entity.getClass();
+		LOG.info("  - verifying that all getter has an assigned value for " + entityClass.getName());
+		boolean allOk = true;
+		for (Method m : entityClass.getDeclaredMethods()) {
+			for (Annotation a :m.getAnnotations()) {
+				if (a.annotationType().equals(javax.persistence.Column.class) && m.getName().startsWith("get")) {
+					try {
+						m.setAccessible(true);
+						if (m.invoke(entity) == null) {
+							LOG.warn(m.getName() + " was annotated with @Column, but value was null. Test should be updated!");
+							allOk = false;
+						}
+					} catch (Exception e) {
+						LOG.error(m.getName() + " was annotated with @Column and could not be read. " + e.getMessage());
+						allOk = false;
+					}
+				}
+			}
+		}
+		assertTrue("There is a problem with a @Column annotated getter. Please refer to log output for further info.", allOk);
+		LOG.info("  - adding entity.");
+		EntityTransaction transaction = entityManager.getTransaction();
+		transaction.begin();
+		entityManager.persist(entity);
+		transaction.commit();
+		LOG.info("  - removing entity.");
+		transaction = entityManager.getTransaction();
+		transaction.begin();
+		entityManager.remove(entity);
+		transaction.commit();
+		LOG.trace("<storeAndRemoveEntity");
+	}
+	
+	/** Used in order to bypass validity check of different private fields that are access via transient setters. */
+	private void setPrivateField(Object entity, String fieldName, Object value) {
+		LOG.trace(">setPrivateField");
+		try {
+			Field field = entity.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(entity, value);
+		} catch (Exception e) {
+			LOG.error("", e);
+			assertTrue("Could not set " + fieldName + " to " + value + ": " + e.getMessage(), false);
+		}
+		LOG.trace("<setPrivateField");
 	}
 }
