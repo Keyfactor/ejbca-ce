@@ -94,7 +94,7 @@
     </target>
 
     <target name="handleorm">
-		<copy file="${resources.dir}/orm-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
 	</target>
 
     <target name="handleorm-ocsp">
@@ -113,7 +113,7 @@
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
         <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
     	<mkdir dir="${build-test.dir}/META-INF"/>
-		<copy file="${resources.dir}/orm-${database.name}.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
     	<property name="reports.dir" location="${reports.base.dir}/dbschema"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
