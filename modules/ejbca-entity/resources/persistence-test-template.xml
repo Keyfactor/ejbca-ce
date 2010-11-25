@@ -31,11 +31,11 @@
         <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
         <class>org.ejbca.core.ejb.services.ServiceData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
-            <property name="hibernate.connection.url" value="jdbc:hsqldb:/home/user/local/jboss/server/default/data/hypersonic/localDB"/>
-            <property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver"/>
-            <property name="hibernate.connection.username" value="sa"/>
-            <property name="hibernate.connection.password" value=""/>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <property name="hibernate.connection.url" value="${database.url}"/>
+            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
+            <property name="hibernate.connection.username" value="${database.username}"/>
+            <property name="hibernate.connection.password" value="${database.password}"/>
             <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- validate | update | create | create-drop -->
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
         </properties>
