@@ -79,6 +79,8 @@
 		</or>
 	</condition>
 	
+	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
+	<property name="java.ver" value="16" />
 	<property name="ejbca.productionmode" value="true"/>
 	<property name="ca.tokentype" value="soft"/>
 	<property name="ca.tokenproperties" value=""/>
