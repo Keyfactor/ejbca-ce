@@ -1,3 +1,16 @@
+3.10.6, 2010-11-26
+---
+New Feature
+    * [ECA-1264] - Add extended information to edit user WS-API.
+
+Improvement
+    * [ECA-1877] - SPOC interop requires "unusual" countries which the CVC library does not permit
+
+Bug
+    * [ECA-1841] - Error adding end entity with several required and non required OUs
+    * [ECA-1845] - Wrong reference in on line doc link for renew ca
+    * [ECA-1914] - Import of certificate profiles referring to CVC CAs failed i CLI
+
 3.10.5, 2010-09-21
 ---
 New Feature
