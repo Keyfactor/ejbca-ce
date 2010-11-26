@@ -12,18 +12,26 @@
  *************************************************************************/
 package org.cesecore.core.ejb.log;
 
+import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.Date;
+
+import org.ejbca.config.LogConfiguration;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 /**
  * Interface for log session bean
- *
- *
+ * 
+ * 
  * @version $Id$
  */
 public interface LogSession {
 
-	public java.util.Collection<String> getAvailableLogDevices();
+    Collection<String> getAvailableLogDevices();
 
     /**
      * Session beans main function. Takes care of the logging functionality.
@@ -43,15 +51,13 @@ public interface LogSession {
      * @param comment
      *            comment of the event.
      */
-    public void log(org.ejbca.core.model.log.Admin admin, int caid, int module, java.util.Date time, java.lang.String username,
-            java.security.cert.Certificate certificate, int event, java.lang.String comment);
+    void log(Admin admin, int caid, int module, java.util.Date time, String username, Certificate certificate, int event, String comment);
 
     /**
      * Same as above but with the difference of CAid which is taken from the
      * issuerdn of given certificate.
      */
-    public void log(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate caid, int module, java.util.Date time, java.lang.String username,
-            java.security.cert.Certificate certificate, int event, java.lang.String comment);
+    void log(Admin admin, Certificate caid, int module, java.util.Date time, String username, Certificate certificate, int event, String comment);
 
     /**
      * Overloaded function that also logs an exception See function above for
@@ -60,15 +66,15 @@ public interface LogSession {
      * @param exception
      *            the exception that has occured
      */
-    public void log(org.ejbca.core.model.log.Admin admin, int caid, int module, java.util.Date time, java.lang.String username,
-            java.security.cert.Certificate certificate, int event, java.lang.String comment, java.lang.Exception exception);
+    void log(Admin admin, int caid, int module, java.util.Date time, String username, Certificate certificate, int event, String comment,
+            Exception exception);
 
     /**
      * Same as above but with the difference of CAid which is taken from the
      * issuerdn of given certificate.
      */
-    public void log(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate caid, int module, java.util.Date time, java.lang.String username,
-            java.security.cert.Certificate certificate, int event, java.lang.String comment, java.lang.Exception exception);
+    void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment,
+            Exception exception);
 
     /**
      * Method to export log records according to a customized query on the log
@@ -91,9 +97,8 @@ public interface LogSession {
      *             differs depending on the ILogExporter implementation
      * @see org.ejbca.util.query.Query
      */
-    public byte[] export(java.lang.String deviceName, org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query,
-            java.lang.String viewlogprivileges, java.lang.String capriviledges, org.ejbca.core.model.log.ILogExporter logexporter, int maxResults)
-            throws IllegalQueryException, Exception;
+    byte[] export(String deviceName, Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter,
+            int maxResults) throws IllegalQueryException, Exception;
 
     /**
      * Method to execute a customized query on the log db data. The parameter
@@ -110,15 +115,15 @@ public interface LogSession {
      *             when query parameters internal rules isn't fullfilled.
      * @see org.ejbca.util.query.Query
      */
-    public java.util.Collection<LogEntry> query(java.lang.String deviceName, org.ejbca.util.query.Query query, java.lang.String viewlogprivileges,
-            java.lang.String capriviledges, int maxResults) throws IllegalQueryException;
+    Collection<LogEntry> query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults)
+            throws IllegalQueryException;
 
     /**
      * Loads the log configuration from the database.
      * 
      * @return the logconfiguration
      */
-    public org.ejbca.core.model.log.LogConfiguration loadLogConfiguration(int caid);
+    LogConfiguration loadLogConfiguration(int caid);
 
     /**
      * Saves the log configuration to the database.
@@ -126,15 +131,16 @@ public interface LogSession {
      * @param logconfiguration
      *            the logconfiguration to save.
      */
-    public void saveLogConfiguration(org.ejbca.core.model.log.Admin admin, int caid, org.ejbca.core.model.log.LogConfiguration logconfiguration);
+    void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration);
 
-    /** Do not use, use saveLogConfiguration instead.
-     * Used internally for testing only. Updates configuration without flushing caches.
+    /**
+     * Do not use, use saveLogConfiguration instead. Used internally for testing
+     * only. Updates configuration without flushing caches.
      */
-    public void internalSaveLogConfigurationNoFlushCache(org.ejbca.core.model.log.Admin admin, int caid, org.ejbca.core.model.log.LogConfiguration logconfiguration);
+    void internalSaveLogConfigurationNoFlushCache(Admin admin, int caid, LogConfiguration logconfiguration);
 
     /**
      * Clear and reload log profile caches.
      */
-    public void flushConfigurationCache();
+    void flushConfigurationCache();
 }
