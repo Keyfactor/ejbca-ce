@@ -25,10 +25,14 @@ You can find them under src/upgrade/310_311, with an individual sql file for you
 
 EJBCA 3.10.6
 -----------
-This is a maintenance release with one new feature.
+This is a maintenance release with one new feature. 
+This release is a very small maintenance release to mark the end of the 3.10 branch, anticipating 3.11.0 to be released withing a few days.
+If you are running 3.10.5 with no issues, there is no real reason to upgrade to 3.10.6.
 
 Changes:
 - ExtendedInformation, such as issuance revocation reason, can now be added when editing users with the WebService API.
+
+The release also fixes four minor or exotic bugs.
 
 Read the full changelog for details.
 
