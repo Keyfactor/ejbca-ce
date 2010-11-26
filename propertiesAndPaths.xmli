@@ -14,6 +14,8 @@
     <property name="dist.dir" location="dist" />
     <property name="ocsp-dist.dir" location="ocsp-dist" />
 	
+	<property name="eardd.src" value="${tmp}/ear" />
+	
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="${ejbca.home}/doc/api" />
