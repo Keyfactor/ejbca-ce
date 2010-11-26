@@ -16,9 +16,9 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import org.ejbca.config.LogConfiguration;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
+import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
