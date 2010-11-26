@@ -13,12 +13,12 @@
     EJBCA 3.10.6 is now available for <a
     href="http://downloads.sourceforge.net/ejbca/ejbca_3_10_6.zip">download</a>.
     <br/>
-    SHA1 checksum: c9db9373d9e789ca64b987c1fa1e29e6b35fe5e9
+    SHA1 checksum: a8f2a3f245d1c2686380d8e01002fe1583b34317
     <br/><br/>
     Cert-cvc library 1.2.12 with full RSA and ECC support is now available for <a
     href="http://downloads.sourceforge.net/ejbca/cert-cvc-1.2.12.zip">download</a>.
     <br/>
-    SHA1 checksum: d0e382e8f4acbc655af04a1a873ed01f57c19c41
+    SHA1 checksum: e6b2a0743bbae8a58bf56f4227bd9283b30ae77d
     <br/><br/>
     External RA API is now a part of the EJBCA bundle. The old separate download bundle is only used with EJBCA 3.9.x and earlier.
     </note>
