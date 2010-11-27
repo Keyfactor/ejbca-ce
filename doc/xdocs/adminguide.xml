@@ -4334,6 +4334,9 @@ the same target where all the other info/debug output is sent to. There are no
 protection from alteration and events sent to this device cannot be fetched
 back to EJBCA for display in the Admin GUI.
 </p>
+<p>
+You can find information about configuring log4j on JBoss in the EJBCA <a href="http://wiki.ejbca.org/ejbca-install#toc5">wiki</a>.
+</p>
 </subsection>
 <subsection name="OldLogDevice">
 <p>
