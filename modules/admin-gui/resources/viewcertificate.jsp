@@ -1,4 +1,5 @@
 <!-- Version: $Id: viewcertificate.jsp 9285 2010-06-24 07:22:34Z anatom $ -->
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile,
