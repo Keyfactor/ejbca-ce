@@ -44,8 +44,8 @@
 <li>Follows X509 and PKIX (RFC5280) standards where applicable.</li>
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
 <li>Supports the Online Certificate Status Protocol (OCSP - RFC2560 and RFC5019), including AIA-extension.</li>
-<li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.
-<li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387). 
+<li>Supports RFC4387 for distribution of CA certificates and CRLs over HTTP.</li>
+<li>Validation Authority service serving OCSP responses (RFC2560/5019), CA certificates and CRLS (RFC4387).</li> 
 <li>Validation Authority and OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>External Validation Authority and OCSP responder also works with any other CA than EJBCA and support large scale OCSP deployments.</li>
 <li>Simple OCSP client in pure java.</li>
