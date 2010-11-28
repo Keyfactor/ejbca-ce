@@ -220,7 +220,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
-    	log.trace(">createCA");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">createCA: "+cainfo.getName());
+    	}
         int castatus = SecConst.CA_OFFLINE;
         // Check that administrator has superadminstrator rights.
         if(!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
@@ -417,7 +419,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Update local OCSP's CA certificate cache
         CertificateCacheInternal.getInstance().update(ca.getCACertificate());
-    	log.trace("<createCA");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<createCA: "+cainfo.getName());
+    	}
     }
 
     /**
