@@ -6,9 +6,9 @@
   </properties>
 
 <body>
-  <section name="News">
+  <section name="News and Info">
   <note>
-  <p><strong>2010-11-26: EJBCA 3.10.6 and cert-cvc 1.2.12 with EAC ePassport support is now out!</strong>
+  <p><strong>2010-11-29: EJBCA 3.11.0 and cert-cvc 1.2.12 with EAC ePassport support is now out!</strong>
   <br/>Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   </p>
   </note>
