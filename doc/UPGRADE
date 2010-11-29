@@ -70,9 +70,9 @@ and then simply update the software on the other nodes.
 
 7. Go into the Admin GUI and verify you settings.
 
-The database upgrade is normally done automatically for you when you run 'ant upgrade'. 
+The database upgrade is normally done automatically for you when you run 'ant upgrade' and 'ant post-upgrade'. 
 Some application servers will not let you deploy unless the database is in sync though, so you may have
-to run the SQL commands manually. Check src/upgrade/310_311 to find the correct sql file for your database.
+to run the SQL commands manually. Check src/upgrade/310_311 to find the correct sql files for your database.
 
 You should be able to upgrade from EJBCA 3.2.x directly to 3.11.x, by following the same instructions
 as above (this upgrade is not thoroughly tested though). 
