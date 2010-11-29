@@ -5,10 +5,27 @@
     
 <project name="ejbca" default="build" basedir=".">
 
+	<!-- Import build specific info, like version number -->
+    <property file="src/internal.properties" />
+	
+	<dirname property="ejbca.home" file="${ant.file.ejbca}"/>
+    <property environment="env" />
+	
+    <!-- set global properties for this build -->
+    <property name="tmp" value="${ejbca.home}/tmp" />
+    <property name="lib" value="${ejbca.home}/lib" />
+    
+    <property name="dist.dir" location="${ejbca.home}/dist" />
+    <property name="ocsp-dist.dir" location="${ejbca.home}/ocsp-dist" />
+	
+    <property name="hwtoken_classes" value="hwtoken"/>
+    <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
+    <property name="apidoc" value="${ejbca.home}/doc/api" />
+
+    <property name="doc.src" value="${tmp}/htdocs" />
+	
 	<!-- include the standard properties and paths -->
-    &propertiesAndPaths;
-	<!-- include the main compile targets -->
-	&compile;
+    <import file="propertyDefaults.xml"/>
 
 	<import file="bin/${appserver.type}.xml" />
 	<import file="./test.xmli" />
@@ -45,11 +62,22 @@
 		<clover-html-report outdir="clover_html" title="EJBCA"/>
 	 </target>
 
+    <!-- =================================================================== -->
+    <!-- Clean ALL                                                           -->
+    <!-- =================================================================== -->
+    <target name="clean">
+        <delete dir="${dist.dir}" />
+        <delete dir="${ocsp-dist.dir}" />
+        <delete dir="${apidoc}" />
+        <delete dir="${tmp}"/>
+        <delete file="velocity.log" />
+        <ant antfile="modules/build.xml" target="clean" inheritall="false"/>
+    </target>
 	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="testforgnujava, ejbca.ear, ejbca.clients" description="Compiles EJBCA"/>
+    <target name="build" depends="testforgnujava, ejbca.ear, ejbca.clients" description="Builds EJBCA"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -155,7 +183,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ejbca.ear" depends="ejbca.ear.module-dependencies, doc.war, create-log4config-bundle">
+	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, doc.war, create-log4config-bundle">
 	    <property name="caear" value="${dist.dir}/ejbca.ear" />
 		<property name="eardd.src" value="${tmp}/ear" />
 		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
@@ -249,7 +277,7 @@
     <!-- =================================================================== -->
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war, create-log4config-bundle">
+    <target name="ocsp-ear" depends="display-properties, ocsp-war, ocsp-jar, ocsphealthcheck.war, create-log4config-bundle">
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
@@ -489,6 +517,20 @@
         	alias="${signjar.keystorealias}" storepass="${signjar.keystorepass}" />
     </target>
 
+	<!-- ("preprocess" is not run from anywhere right now..) -->
+	<target name="preprocess">
+        <!-- 
+          Fix encoding of files for internal (log) internationalization) 
+		  TODO: This looks more like this is something the French language contributor should run before a commit. Should be combined with the diff-script to show missing and redundant translations. 
+        --> 		
+		<delete file="${tmp}/intresources/intresources.fr.properties"/>
+    	<native2ascii encoding="ISO8859-1" 
+    		src="${tmp}/intresources" 
+    		dest="${tmp}/intresources"
+    		includes="intresources.fr.properties" 
+    	/>
+	</target>
+	
 	<target name="ejbca.ear.module-dependencies">
     	<ant dir="modules" target="ejbca.ear.module-dependencies"/>
 	</target>
