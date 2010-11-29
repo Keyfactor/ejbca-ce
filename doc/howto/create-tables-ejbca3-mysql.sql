@@ -216,7 +216,7 @@ CREATE TABLE HardTokenProfileData (
 
 DROP TABLE HardTokenPropertyData;
 CREATE TABLE HardTokenPropertyData (
-    id varchar(250) binary NOT NULL DEFAULT '',
+    id varchar(80) binary NOT NULL DEFAULT '',
     property varchar(250) binary NOT NULL DEFAULT '',
     value varchar(250) binary NULL DEFAULT NULL,
     rowVersion int(11) DEFAULT 0,
