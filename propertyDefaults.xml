@@ -151,4 +151,60 @@
 
 	<!-- WS settings -->
 	<property name="ejbcaws.enabled" value="true" />
+	
+    <target name="display-properties" description="Show current configuration">
+        <echo>
+---------- ${app.version} CONFIGURATION PROPERTIES ----------
+appserver.type           = ${appserver.type}
+appserver.home           = ${appserver.home}
+ocsp.defaultresponder    = ${ocsp.defaultresponder}
+ocsp.usecasigningcert    = ${ocsp.usecasigningcert}
+ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
+datasource.jndi-name     = ${datasource.jndi-name}
+datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
+database.name            = ${database.name}
+datasource.mapping       = ${datasource.mapping}
+database.url             = ${database.url}
+database.driver          = ${database.driver}
+database.username        = ${database.username}
+database.password        = ${database.password}
+weblogic-oracle-columntype = ${weblogic-oracle-columntype}
+mail.jndi-name           = ${mail.jndi-name}
+mail.from                = ${mail.from}
+mail.user                = ${mail.user}
+mail.password            = ${mail.password}
+mail.smtp.host           = ${mail.smtp.host}
+mail.smtp.port           = ${mail.smtp.port}
+mail.smtp.auth           = ${mail.smtp.auth}
+mail.debug               = ${mail.debug}
+httpserver.pubhttp	     = ${httpserver.pubhttp}
+httpserver.pubhttps	     = ${httpserver.pubhttps}
+httpserver.privhttps     = ${httpserver.privhttps}
+httpsserver.hostname     = ${httpsserver.hostname}
+httpsserver.password     = ${httpsserver.password}
+web.contentencoding      = ${web.contentencoding}
+web.renewalenabled       = ${web.renewalenabled}
+ejbcaws.enabled          = ${ejbcaws.enabled}
+cmp.allowraverifypopo           = ${cmp.allowraverifypopo}
+cmp.defaultca                   = ${cmp.defaultca}
+cmp.extractusernamecomponent    = ${cmp.extractusernamecomponent}
+cmp.operationmode               = ${cmp.operationmode}
+cmp.responseprotection          = ${cmp.responseprotection}
+cmp.ra.authenticationsecret     = ${cmp.ra.authenticationsecret}
+cmp.ra.namegenerationscheme     = ${cmp.ra.namegenerationscheme}
+cmp.ra.namegenerationparameters = ${cmp.ra.namegenerationparameters}
+cmp.ra.namegenerationprefix     = ${cmp.ra.namegenerationprefix}
+cmp.ra.namegenerationpostfix    = ${cmp.ra.namegenerationpostfix}
+cmp.ra.endentityprofile         = ${cmp.ra.endentityprofile}
+cmp.ra.certificateprofile       = ${cmp.ra.certificateprofile}
+cmp.ra.caname                   = ${cmp.ra.caname}
+cmp.tcp.enabled                 = ${cmp.tcp.enabled}
+cmp.tcp.portno                  = ${cmp.tcp.portno}
+cmp.tcp.logdir                  = ${cmp.tcp.logdir}
+cmp.tcp.conffile                = ${cmp.tcp.conffile}
+xkms.enabled                    = ${xkms.enabled}
+xkms.serviceport                = ${xkms.serviceport}
+      </echo>
+    </target>
+
 </project>
