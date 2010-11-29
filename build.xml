@@ -157,32 +157,33 @@
     <!-- =================================================================== -->
 	<target name="ejbca.ear" depends="ejbca.ear.module-dependencies, doc.war, create-log4config-bundle">
 	    <property name="caear" value="${dist.dir}/ejbca.ear" />
-		<!-- Make sure we have an application.xml since we don't do preprocessing any longer.. -->
-		<mkdir dir="${eardd.src}/META-INF"/>
-		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
+		<property name="eardd.src" value="${tmp}/ear" />
+		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
 		<condition property="doc.war.enabled.replace-string" else="!--@doc.war@-->" value="module>&lt;web>&lt;web-uri>doc.war&lt;/web-uri>&lt;context-root>/ejbca/doc&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${doc.war.enabled}"/>
 		</condition>
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@doc.war@-->" value="${doc.war.enabled.replace-string}"/>
 		<condition property="ejbcaws.enabled.replace-string" else="!--@ejbca-ws-ejb.jar@-->" value="module>&lt;ejb>ejbca-ws-ejb.jar&lt;/ejb>&lt;/module>">
 			<istrue value="${ejbcaws.enabled}"/>
 		</condition>
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-ws-ejb.jar@-->" value="${ejbcaws.enabled.replace-string}"/>
 		<condition property="xkms.enabled.replace-string" else="!--@ejbca-xkms-ejb.jar@-->" value="module>&lt;ejb>ejbca-xkms-ejb.jar&lt;/ejb>&lt;/module>">
 			<istrue value="${xkms.enabled}"/>
 		</condition>
-    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-xkms-ejb.jar@-->" value="${xkms.enabled.replace-string}"/>
 		<condition property="renew.enabled.replace-string" else="!--@renew.war@-->" value="module>&lt;web>&lt;web-uri>renew.war&lt;/web-uri>&lt;context-root>/ejbca/renew&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${web.renewalenabled}"/>
 		</condition>
-		<replace file="${eardd.src}/META-INF/application.xml" token="!--@renew.war@-->" value="${renew.enabled.replace-string}"/>
 		<condition property="ejbca-cmp-tcp.enabled.replace-string" else="!--@ejbca-cmp-tcp.war@-->" value="module>&lt;web>&lt;web-uri>ejbca-cmp-tcp.war&lt;/web-uri>&lt;context-root>/ejbca/cmp-tcp&lt;/context-root>&lt;/web>&lt;/module>">
 			<istrue value="${cmp.tcp.enabled}"/>
 		</condition>
-		<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbca-cmp-tcp.war@-->" value="${ejbca-cmp-tcp.enabled.replace-string}"/>
-		<!-- Specify that we will use a specific WS implementation -->
-		<mkdir dir="${eardd.src}/META-INF/services"/>
-		<copy todir="${eardd.src}/META-INF/services" file="src/deploy/ear/META-INF/services/javax.xml.soap.MetaFactory" flatten="true" failonerror="true"/>
+		<mkdir dir="${eardd.src}/META-INF"/>
+		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true">
+			<filterchain>
+				<replacestring from="!--@doc.war@-->" to="${doc.war.enabled.replace-string}"/>
+				<replacestring from="!--@ejbca-ws-ejb.jar@-->" to="${ejbcaws.enabled.replace-string}"/>
+				<replacestring from="!--@ejbca-xkms-ejb.jar@-->" to="${xkms.enabled.replace-string}"/>
+				<replacestring from="!--@renew.war@-->" to="${renew.enabled.replace-string}"/>
+				<replacestring from="!--@ejbca-cmp-tcp.war@-->" to="${ejbca-cmp-tcp.enabled.replace-string}"/>
+			</filterchain>
+		</copy>
 		<!-- This dir has to exist here -->
 		<mkdir dir="${hwtoken.class.dir}"/>
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
@@ -191,9 +192,8 @@
 		</condition>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
-            <fileset dir="${eardd.src}">
-                <exclude name="META-INF/application.xml" />
-            </fileset>
+    		<!-- Specify that we will use a specific WS implementation -->
+            <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
             <zipfileset prefix="lib" dir="${lib}">
                 <include name="bcmail-jdk${java.ver}-145.jar" />
                 <include name="bcprov-jdk${java.ver}-145.jar" />
@@ -206,11 +206,8 @@
             </zipfileset>
             <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar"/>
             <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="xmlsec-1.4.3.jar xalan-2.7.1.jar serializer-2.7.1.jar"/>	<!-- XKMS -->
-            <fileset dir="${dist.dir}">
-                <include name="*-ejb.jar" />
-                <include name="*.war" />
-            </fileset>
-            <fileset dir="modules/dist">
+            <fileset dir="${dist.dir}" includes="doc.war"/>
+            <fileset dir="${ejbca.home}/modules/dist">
                 <include name="ejbca-ejb.jar" />
                 <include name="ejbca-ws-ejb.jar" />
                 <include name="ejbca-xkms-ejb.jar" />
@@ -225,20 +222,16 @@
                 <include name="renew.war" />
                 <include name="ejbca-cmp-tcp.war" />
             </fileset>
-        	<zipfileset prefix="lib" dir="modules/dist">
+        	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
                 <include name="ejbca-ejb3-interface.jar" />
                 <include name="ejbca-entity.jar" />
                 <include name="log4jconfig.jar" />
         	</zipfileset>
-        	<zipfileset prefix="lib" dir="lib/hibernate" excludes="${bundle-hibernate-exclude}"/>
-        	<zipfileset prefix="lib" dir="dist">
-                <include name="ejbca-util.jar" />
-        	</zipfileset>
+        	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
+        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
         	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
-        	<zipfileset prefix="lib" dir="${hwtoken.class.dir}">
-                <include name="*.jar" />
-        	</zipfileset>
+        	<zipfileset prefix="lib" dir="${hwtoken.class.dir}" includes="*.jar"/>
 		</ear>
     	<antcall target="signjar">
         	<param name="signjar.file" value="${caear}"/>
@@ -257,34 +250,36 @@
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
     <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war, create-log4config-bundle">
+		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
+		<condition property="bundle-hibernate-exclude" value="" else="**">
+			<isset property="bundle-hibernate-jpa"/>
+		</condition>
         <mkdir dir="${ocsp-dist.dir}"/>
-        <ear destfile="${ocsp-dist.dir}/ejbca.ear" appxml="src/deploy/ocsp-ear/META-INF/application.xml"> 
-            <fileset dir=".">
-                <include name="${lib}/bcmail-jdk${java.ver}-145.jar" />
-                <include name="${lib}/bcprov-jdk${java.ver}-145.jar" />
-                <include name="${lib}/cert-cvc.jar" />
-                <include name="${lib}/log4j-1.2.16.jar" />
-                <include name="${lib}/ldap.jar" />
-                <include name="${lib}/commons-lang-*.jar" />
-                <include name="${lib}/commons-collections-3.2.jar" />
-                <include name="${lib}/commons-fileupload-1.0.jar" />
-                <include name="${lib}/commons-configuration-1.6.jar" />
-                <include name="${lib}/commons-logging-1.1.1.jar" />
-            </fileset>
-        	<zipfileset prefix="lib" dir="lib/hibernate" excludes="${bundle-hibernate-exclude}"/>
-            <fileset dir="modules/dist">
+        <ear destfile="${ocsp-dist.dir}/ejbca.ear" appxml="${ejbca.home}/src/deploy/ocsp-ear/META-INF/application.xml"> 
+            <zipfileset prefix="lib" dir="${lib}">
+                <include name="bcmail-jdk${java.ver}-145.jar" />
+                <include name="bcprov-jdk${java.ver}-145.jar" />
+                <include name="cert-cvc.jar" />
+                <include name="log4j-1.2.16.jar" />
+                <include name="ldap.jar" />
+                <include name="commons-lang-*.jar" />
+                <include name="commons-collections-3.2.jar" />
+                <include name="commons-fileupload-1.0.jar" />
+                <include name="commons-configuration-1.6.jar" />
+                <include name="commons-logging-1.1.1.jar" />
+            </zipfileset>
+        	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
+            <fileset dir="${ejbca.home}/modules/dist">
                 <include name="healthcheck.war" />
                 <include name="ocsp.war" />
                 <include name="ocsp-ejb.jar" />
-                <include name="log4jconfig.jar" />
             </fileset>
-        	<zipfileset prefix="lib" dir="modules/dist">
+        	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="ocsp-ejb3-interface.jar" />
                 <include name="ocsp-entity.jar" />
+                <include name="log4jconfig.jar" />
         	</zipfileset>
-        	<zipfileset prefix="lib" dir="dist">
-                <include name="ejbca-util.jar" />
-        	</zipfileset>
+        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
 	</ear>
     </target>
 	
