@@ -15,7 +15,7 @@ needed to make the schema fully compatible and consistent across all supported d
 Upgrade to EJBCA 3.11 should be simple as usual, just follow the instructions in doc/UPGRADE.
 
 Noteworthy changes:
-- Possibility to configure CA not to use certificate and user store, meaning that CA can issue certificates without having to access database.
+- Possibility to configure CA not to use certificate and user store, meaning that CA can issue certificates without having to access database after service startup.
 - External OCSP responder can now function as a validation authority serving OCSP, CRLs and CA certificates.
 - Certificate store access via HTTP according to RFC4387 standard.
 - Possibility in WebService Interface to specify extended information when editing users.
