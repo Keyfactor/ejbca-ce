@@ -81,6 +81,7 @@
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyData" access="PROPERTY">
         <attributes>
+            <basic name="id"><column name="id" column-definition="VARCHAR(80)"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/></basic>
         </attributes>
     </entity>

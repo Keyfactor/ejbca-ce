@@ -65,6 +65,7 @@ public class HardTokenPropertyData implements Serializable {
         return id;
     }
 
+    /** Limited to 80 chars, because of UTF8 requirements for the primary key on MyISAM! A UTF8 char takes 3 bytes and id+property < 1000 bytes. */
     public void setId(String id) {
         this.id = id;
     }
