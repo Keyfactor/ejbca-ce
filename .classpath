@@ -83,5 +83,7 @@
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
 	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
