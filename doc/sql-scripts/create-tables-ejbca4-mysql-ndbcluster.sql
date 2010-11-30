@@ -1,10 +1,5 @@
---
--- These definitions should work for EJBCA 3.10.x, MySQL 5.1 Cluster 7.1.3-1.
---
 -- This script assumes that the tablespace 'ejbca_ts' exists.
--- 
 
-DROP TABLE IF EXISTS AccessRulesData;
 CREATE TABLE AccessRulesData (
     pK int(11) NOT NULL DEFAULT '0',
     accessRule varchar(250) binary NULL DEFAULT NULL,
@@ -16,7 +11,6 @@ CREATE TABLE AccessRulesData (
     PRIMARY KEY (pK)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS AdminEntityData;
 CREATE TABLE AdminEntityData (
     pK int(11) NOT NULL DEFAULT '0',
     matchWith int(11) NOT NULL DEFAULT '0',
@@ -29,7 +23,6 @@ CREATE TABLE AdminEntityData (
     PRIMARY KEY (pK)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS AdminGroupData;
 CREATE TABLE AdminGroupData (
     pK int(11) NOT NULL DEFAULT '0',
     adminGroupName varchar(250) binary NULL DEFAULT NULL,
@@ -39,7 +32,6 @@ CREATE TABLE AdminGroupData (
     PRIMARY KEY (pK)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS AdminPreferencesData;
 CREATE TABLE AdminPreferencesData (
     id varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
@@ -48,7 +40,6 @@ CREATE TABLE AdminPreferencesData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS ApprovalData;
 CREATE TABLE ApprovalData (
     id int(11) NOT NULL DEFAULT '0',
     approvalid int(11) NOT NULL DEFAULT '0',
@@ -68,7 +59,6 @@ CREATE TABLE ApprovalData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS AuthorizationTreeUpdateData;
 CREATE TABLE AuthorizationTreeUpdateData (
     pK int(11) NOT NULL DEFAULT '0',
     authorizationTreeUpdateNumber int(11) NOT NULL DEFAULT '0',
@@ -77,7 +67,6 @@ CREATE TABLE AuthorizationTreeUpdateData (
     PRIMARY KEY (pK)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS CAData;
 CREATE TABLE CAData (
     cAId int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -91,7 +80,6 @@ CREATE TABLE CAData (
     PRIMARY KEY (cAId)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS CRLData;
 CREATE TABLE CRLData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     cRLNumber int(11) NOT NULL DEFAULT '0',
@@ -106,7 +94,6 @@ CREATE TABLE CRLData (
     PRIMARY KEY (fingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS CertReqHistoryData;
 CREATE TABLE CertReqHistoryData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NULL DEFAULT NULL,
@@ -119,7 +106,6 @@ CREATE TABLE CertReqHistoryData (
     PRIMARY KEY (fingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS CertificateData;
 CREATE TABLE CertificateData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NULL DEFAULT NULL,
@@ -142,7 +128,6 @@ CREATE TABLE CertificateData (
     PRIMARY KEY (fingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS CertificateProfileData;
 CREATE TABLE CertificateProfileData (
     id int(11) NOT NULL DEFAULT '0',
     certificateProfileName varchar(250) binary NULL DEFAULT NULL,
@@ -152,7 +137,6 @@ CREATE TABLE CertificateProfileData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS EndEntityProfileData;
 CREATE TABLE EndEntityProfileData (
     id int(11) NOT NULL DEFAULT '0',
     profileName varchar(250) binary NULL DEFAULT NULL,
@@ -162,7 +146,6 @@ CREATE TABLE EndEntityProfileData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS GlobalConfigurationData;
 CREATE TABLE GlobalConfigurationData (
     configurationId varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
@@ -171,7 +154,6 @@ CREATE TABLE GlobalConfigurationData (
     PRIMARY KEY (configurationId)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS HardTokenCertificateMap;
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(250) binary NOT NULL DEFAULT '',
     tokenSN varchar(250) binary NULL DEFAULT NULL,
@@ -180,7 +162,6 @@ CREATE TABLE HardTokenCertificateMap (
     PRIMARY KEY (certificateFingerprint)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS HardTokenData;
 CREATE TABLE HardTokenData (
     tokenSN varchar(250) binary NOT NULL DEFAULT '',
     username varchar(250) binary NULL DEFAULT NULL,
@@ -194,7 +175,6 @@ CREATE TABLE HardTokenData (
     PRIMARY KEY (tokenSN)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS HardTokenIssuerData;
 CREATE TABLE HardTokenIssuerData (
     id int(11) NOT NULL DEFAULT '0',
     alias varchar(250) binary NULL DEFAULT NULL,
@@ -205,7 +185,6 @@ CREATE TABLE HardTokenIssuerData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS HardTokenProfileData;
 CREATE TABLE HardTokenProfileData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -216,7 +195,6 @@ CREATE TABLE HardTokenProfileData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS HardTokenPropertyData;
 CREATE TABLE HardTokenPropertyData (
     id varchar(80) binary NOT NULL DEFAULT '',
     property varchar(250) binary NOT NULL DEFAULT '',
@@ -226,7 +204,6 @@ CREATE TABLE HardTokenPropertyData (
     PRIMARY KEY (id, property)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS KeyRecoveryData;
 CREATE TABLE KeyRecoveryData (
     certSN varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NOT NULL DEFAULT '',
@@ -238,7 +215,6 @@ CREATE TABLE KeyRecoveryData (
     PRIMARY KEY (certSN, issuerDN)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS LogConfigurationData;
 CREATE TABLE LogConfigurationData (
     id int(11) NOT NULL DEFAULT '0',
     logConfiguration longblob NULL DEFAULT NULL,
@@ -248,7 +224,6 @@ CREATE TABLE LogConfigurationData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS LogEntryData;
 CREATE TABLE LogEntryData (
     id int(11) NOT NULL DEFAULT '0',
     adminType int(11) NOT NULL DEFAULT '0',
@@ -265,7 +240,6 @@ CREATE TABLE LogEntryData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS PublisherData;
 CREATE TABLE PublisherData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -276,7 +250,6 @@ CREATE TABLE PublisherData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS PublisherQueueData;
 CREATE TABLE PublisherQueueData (
     pk varchar(250) binary NOT NULL DEFAULT '',
     timeCreated bigint(20) NOT NULL DEFAULT '0',
@@ -292,7 +265,6 @@ CREATE TABLE PublisherQueueData (
     PRIMARY KEY (pk)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS ServiceData;
 CREATE TABLE ServiceData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -304,7 +276,6 @@ CREATE TABLE ServiceData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS UserData;
 CREATE TABLE UserData (
     username varchar(250) binary NOT NULL DEFAULT '',
     subjectDN varchar(250) binary NULL DEFAULT NULL,
@@ -329,7 +300,6 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
-DROP TABLE IF EXISTS UserDataSourceData;
 CREATE TABLE UserDataSourceData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
