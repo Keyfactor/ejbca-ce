@@ -40,6 +40,13 @@
 		<path refid="lib.junit.classpath"/>
 	</path>
 
+	<path id="generate.classpath">
+		<path refid="compile.classpath"/>
+		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
+		<path location="${build-test.dir}"/>
+		<path location="${mod.ejbca-entity.lib}"/>
+	</path>
+
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${build-test.dir}" />
@@ -129,6 +136,14 @@
     	<mkdir dir="${build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"/>
+    </target>
+
+    <target name="generate-dbscripts" description="Generate create and drop script for the configured database." depends="compile-test, handlepersistence">
+        <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
+    	<mkdir dir="${build-test.dir}/META-INF"/>
+		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+    	<mkdir dir="${ejbca.home}/dist"/>
+		<java classname="org.ejbca.util.DatabaseSchemaScriptCreator" classpathref="generate.classpath" args="${ejbca.home}/doc/sql-scripts ${database.name}"/>
     </target>
 
 </project>
