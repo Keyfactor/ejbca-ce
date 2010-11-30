@@ -30,6 +30,7 @@
 		<li><a href="http://www.ietf.org/rfc/rfc5055.txt">RFC 5055</a> - Server-Based Certificate Validation Protocol (SCVP)</li>
 		<li><a href="http://www.ietf.org/rfc/rfc4210.txt">RFC 4210</a> - Internet X.509 Public Key Infrastructure Certificate Management Protocol (CMP)</li>
 		<li><a href="http://www.ietf.org/rfc/rfc4211.txt">RFC 4211</a> - Internet X.509 Public Key Infrastructure Certificate Request Message Format (CRMF)</li>
+		<li><a href="http://www.ietf.org/rfc/rfc4387.txt">RFC 4387</a> - Certificate Store Access via HTTP</li>
 	</ul>
 	</p>
 	<p>
