@@ -205,7 +205,7 @@ CREATE TABLE HardTokenPropertyData (
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
 CREATE TABLE KeyRecoveryData (
-    certSN varchar(250) binary NOT NULL DEFAULT '',
+    certSN varchar(80) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NOT NULL DEFAULT '',
     username varchar(250) binary NULL DEFAULT NULL,
     markedAsRecoverable tinyint(4) NOT NULL DEFAULT '0',

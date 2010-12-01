@@ -358,7 +358,7 @@ public class DatabaseSchemaTest extends TestCase {
 	public void testKeyRecoveryData() {
 		LOG.trace(">testKeyRecoveryData");
 		KeyRecoveryData entity = new KeyRecoveryData();
-		entity.setCertSN(VARCHAR_250B);
+		entity.setCertSN(VARCHAR_80B);
 		entity.setIssuerDN(VARCHAR_250B);
 		entity.setKeyData(CLOB_1MiB);
 		entity.setMarkedAsRecoverable(false);
