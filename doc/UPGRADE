@@ -44,6 +44,14 @@ from conf/ejbca.properties instead of being read through the ENC.
 
 Note that the database.name property in database.properties changed from mssql2000 to mssql for MS-SQL Server.
 
+From EJBCA 3.11.0 to EJBCA 3.11.x
+--------------------------------
+The database mapping for KeyRecoveryData.certSN on MySQL in 3.11.0 was wrong and can be corrected by running:
+
+    ALTER TABLE KeyRecoveryData MODIFY certSN varchar(80) binary NOT NULL DEFAULT '';
+
+This only affects installations upgraded to or freshly installed on EJBCA 3.11.0. 
+
 From EJBCA 3.10.x to EJBCA 3.11.x
 --------------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
