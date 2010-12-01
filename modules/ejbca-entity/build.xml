@@ -44,7 +44,7 @@
 		<path refid="compile.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
 		<path location="${build-test.dir}"/>
-		<path location="${mod.ejbca-entity.lib}"/>
+		<path location="${build.dir}"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
@@ -55,7 +55,7 @@
     </target>
 	
     <target name="build" description="Build this module" depends="compile, handlepersistence, handleorm">
-    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml"/>
+    	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml" excludes="org/ejbca/util/DatabaseSchemaScriptCreator.class"/>
     </target>
 
     <target name="build-ocsp" description="Build this module" depends="compile, handlepersistence, handleorm-ocsp">
