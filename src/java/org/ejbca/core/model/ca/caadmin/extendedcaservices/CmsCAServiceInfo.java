@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.List;
 
 
@@ -47,7 +48,7 @@ public class CmsCAServiceInfo extends BaseSigningCAServiceInfo implements Serial
 							 String subjectaltname, 
 							 String keyspec, 
 							 String keyalgorithm,
-							 List certchain){
+							 List<Certificate> certchain){
 		super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, certchain);                       	
 	}    
     

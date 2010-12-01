@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.List;
 
 
@@ -47,7 +48,7 @@ public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Seria
     		String subjectaltname, 
     		String keyspec, 
     		String keyalgorithm,
-    		List xkmscertchain) {
+    		List<Certificate> xkmscertchain) {
     	super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, xkmscertchain);                       	
     }    
     
@@ -58,6 +59,6 @@ public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Seria
       super(status, renew);	
     }
     
-    public List getXKMSSignerCertificatePath(){ return super.getCertificatePath();}   
+    public List<Certificate> getXKMSSignerCertificatePath(){ return super.getCertificatePath();}   
 
 }

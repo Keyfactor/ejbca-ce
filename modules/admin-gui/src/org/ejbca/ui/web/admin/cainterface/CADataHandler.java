@@ -239,16 +239,16 @@ public class CADataHandler implements Serializable {
 	  try {
 		  Certificate cert = null;
 		  byte[] certbytes = FileTools.readInputStreamtoBuffer(is);
-		  Collection cachain = null;
+		  Collection<Certificate> cachain = null;
 		  try {
-			  Collection certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
-			  Iterator iter = certs.iterator();
-			  cert = (Certificate) iter.next();	
+			  Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+			  Iterator<Certificate> iter = certs.iterator();
+			  cert = iter.next();	
 			  if (iter.hasNext()) {
 				  // There is a complete certificate chain returned here
-				  cachain = new ArrayList();
+				  cachain = new ArrayList<Certificate>();
 				  while (iter.hasNext()) {
-					  Certificate chaincert = (Certificate) iter.next();
+					  Certificate chaincert = iter.next();
 					  cachain.add(chaincert);
 				  }
 			  }
