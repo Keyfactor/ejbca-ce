@@ -1018,7 +1018,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param chain
      *            an optional collection with the CA certificate(s), or null. If
      *            given the complete chain (except this CAs own certificate must
-     *            be given)
+     *            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates. 
      * @param tokenAuthenticationCode
      *            the CA token authentication code, if we need to activate new
      *            CA keys. Otherwise this can be null. This is needed if we have
@@ -1027,7 +1027,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * 
      * @throws EjbcaException
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<byte[]> cachain, String tokenAuthenticationCode)
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<?> cachain, String tokenAuthenticationCode)
             throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException {
         // check authorization
         Certificate cacert = null;
@@ -1175,7 +1175,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         int type = (iter.next()).intValue();
                         try {
                             ca.initExternalService(type, ca);
-                            ArrayList extcacertificate = new ArrayList();
+                            ArrayList<Certificate> extcacertificate = new ArrayList<Certificate>();
                             ExtendedCAServiceInfo info = null;
                             if (type == ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE) {
                                 info = (OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE);

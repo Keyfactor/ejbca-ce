@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.List;
 
 import org.ejbca.core.model.AlgorithmConstants;
@@ -32,7 +33,7 @@ public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements S
     private String subjectaltname = null;   
 	private String keyspec        = "1024"; // Default key length
     private String keyalgorithm   = AlgorithmConstants.KEYALGORITHM_RSA; // Default key algo
-    private List   certchain  = null;
+    private List<Certificate>   certchain  = null;
     
     private boolean renew = false;
            
@@ -61,7 +62,7 @@ public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements S
 							 String subjectaltname, 
 							 String keyspec, 
 							 String keyalgorithm,
-							 List certpath){
+							 List<Certificate> certpath){
 	  super(status);                       	
 	  this.subjectdn = subjectdn;
 	  this.subjectaltname = subjectaltname;    	
@@ -83,7 +84,7 @@ public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements S
     public String getKeySpec(){ return this.keyspec; }
     public String getKeyAlgorithm(){ return this.keyalgorithm; }
     public boolean getRenewFlag(){ return this.renew; } 
-    public List getCertificatePath(){ return this.certchain;}   
+    public List<Certificate> getCertificatePath(){ return this.certchain;}   
     
     
 

@@ -229,7 +229,7 @@ public interface CAAdminSession {
      * @param chain
      *            an optional collection with the CA certificate(s), or null. If
      *            given the complete chain (except this CAs own certificate must
-     *            be given)
+     *            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
      * @param tokenAuthenticationCode
      *            the CA token authentication code, if we need to activate new
      *            CA keys. Otherwise this can be null. This is needed if we have
@@ -237,7 +237,7 @@ public interface CAAdminSession {
      *            new keys immediately. See makeRequest method
      * @throws EjbcaException
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<byte[]> cachain,
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<?> cachain,
             String tokenAuthenticationCode) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException;
 
     /**
