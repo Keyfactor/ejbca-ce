@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 
 import org.hibernate.cfg.AnnotationConfiguration;
@@ -59,13 +58,15 @@ public class DatabaseSchemaScriptCreator {
 					line = line.replaceAll(", ", ",\n    ");
 				}
 				line += ";\n\n";
+				line = line.replaceAll("\\)\\);", "\\)\n\\);");
 				sb.append(line);
 			}
 			System.out.println("Writing create script to " + createScriptFileName);
 			new FileOutputStream(createScriptFileName).write(sb.toString().getBytes());
 			if (args[1].equals("mysql")) {
+				sb.insert(0, "-- This script assumes that the tablespace 'ejbca_ts' exists.\n\n");
 				System.out.println("Writing create script to " + createScriptFileNameNdb);
-				new FileOutputStream(createScriptFileNameNdb).write(sb.toString().replaceAll("\\)\\);\n", "\\)\\) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;\n").getBytes());
+				new FileOutputStream(createScriptFileNameNdb).write(sb.toString().replaceAll("\n\\);\n", "\n\\) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;\n").getBytes());
 			}
 			//String[] updateScript = hibernateConfiguration.generateSchemaUpdateScript(Dialect.getDialect(ejb3Configuration.getProperties(), ...));
 		} catch (FileNotFoundException e) {
