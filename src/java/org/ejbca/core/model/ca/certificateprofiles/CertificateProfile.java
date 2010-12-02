@@ -1126,12 +1126,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * 
      * Autoupgradable method
      */
-    public List getUsedCertificateExtensions(){ 
+    public List<Integer> getUsedCertificateExtensions(){ 
     	if(data.get(USEDCERTIFICATEEXTENSIONS) == null){
-    		return new ArrayList();
+    		return new ArrayList<Integer>();
     	}
     	
-    	return (List) data.get(USEDCERTIFICATEEXTENSIONS); 
+    	return (List<Integer>) data.get(USEDCERTIFICATEEXTENSIONS); 
     }
 
     /**
@@ -1139,9 +1139,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * a list of Integers containing CertificateExtension Id is expected
      * @param usedCertificateExtensions
      */
-    public void setUsedCertificateExtensions(List usedCertificateExtensions) {
+    public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
       if(usedCertificateExtensions==null) {
-        data.put(USEDCERTIFICATEEXTENSIONS,new ArrayList());
+        data.put(USEDCERTIFICATEEXTENSIONS,new ArrayList<Integer>());
       } else {
         data.put(USEDCERTIFICATEEXTENSIONS,usedCertificateExtensions);
       }
@@ -1151,11 +1151,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * if the value si that we should use it, the oid for this extension is returned in the list
      * @return List of oid Strings for standard certificate extensions that should be used
      */
-    public List getUsedStandardCertificateExtensions() {
-    	ArrayList ret = new ArrayList();
-    	Iterator iter = useStandardCertificateExtensions.keySet().iterator();
+    public List<String> getUsedStandardCertificateExtensions() {
+    	ArrayList<String> ret = new ArrayList<String>();
+    	Iterator<String> iter = useStandardCertificateExtensions.keySet().iterator();
     	while (iter.hasNext()) {
-    		String s = (String)iter.next();
+    		String s = iter.next();
             if ( (data.get(s) != null) && ((Boolean)data.get(s)).booleanValue() ) {
                 ret.add(useStandardCertificateExtensions.get(s));
                 if (log.isDebugEnabled()) {
