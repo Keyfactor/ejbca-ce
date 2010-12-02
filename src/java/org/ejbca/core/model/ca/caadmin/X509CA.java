@@ -684,11 +684,11 @@ public class X509CA extends CA implements Serializable {
         // Standard certificate extensions are defined in CertificateProfile and CertificateExtensionFactory
         // and implemented in package org.ejbca.core.model.certextensions.standard
         CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
-        List usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
-        Iterator certStdExtIter = usedStdCertExt.iterator();
+        List<String> usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
+        Iterator<String> certStdExtIter = usedStdCertExt.iterator();
     	overridenexts = extgen.generate();
         while(certStdExtIter.hasNext()){
-        	String oid = (String)certStdExtIter.next();
+        	String oid = certStdExtIter.next();
          	// We don't want to try to add standard extensions with the same oid if we have already added them 
         	// from the request, if AllowExtensionOverride is enabled.
         	// Two extensions with the same oid is not allowed in the standard.
@@ -710,10 +710,10 @@ public class X509CA extends CA implements Serializable {
          // Fourth, check for custom Certificate Extensions that should be added.
          // Custom certificate extensions is defined in certextensions.properties
          fact = CertificateExtensionFactory.getInstance();
-         List usedCertExt = certProfile.getUsedCertificateExtensions();
-         Iterator certExtIter = usedCertExt.iterator();
+         List<Integer> usedCertExt = certProfile.getUsedCertificateExtensions();
+         Iterator<Integer> certExtIter = usedCertExt.iterator();
          while(certExtIter.hasNext()){
-        	 Integer id = (Integer) certExtIter.next();
+        	 Integer id = certExtIter.next();
         	 CertificateExtension certExt = fact.getCertificateExtensions(id);
         	 if (certExt != null) {
              	// We don't want to try to add custom extensions with the same oid if we have already added them 
