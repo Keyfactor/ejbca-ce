@@ -110,7 +110,7 @@ public class QcStatement extends StandardCertificateExtension {
 		// ETSI Statement regarding limit on the value of transactions
 		if (certProfile.getUseQCEtsiValueLimit()) {
 			// Both value and currency must be available for this extension
-			if ( (certProfile.getQCEtsiValueLimit() > 0) && (certProfile.getQCEtsiValueLimitCurrency() != null) ) {
+			if ( (certProfile.getQCEtsiValueLimit() >= 0) && (certProfile.getQCEtsiValueLimitCurrency() != null) ) {
 				int limit = certProfile.getQCEtsiValueLimit();
 				// The exponent should be default 0
 				int exponent = certProfile.getQCEtsiValueLimitExp();
