@@ -90,7 +90,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
         /** Method to add a new admingroup to the administrator priviledges data.*/
     public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException{
 		// Authorized to edit administrative priviledges
-	  if(authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
+	  if(!authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
 	      Authorizer.throwAuthorizationException(administrator, "/system_functionality/edit_administrator_privileges", null);
 	  }
 	  adminGroupSession.addAdminGroup(administrator, name);
