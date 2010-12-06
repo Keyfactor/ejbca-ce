@@ -299,16 +299,17 @@ public class CertificateProfileTest extends TestCase {
     	
     } // test09CertificateExtensions
 
+    @SuppressWarnings("unchecked")
     public void test10UpgradeExtendedKeyUsage() throws Exception {
         CertificateProfile ep = new EndUserCertificateProfile();
         assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
         ep.setVersion((float)31.0);
-        ArrayList eku = new ArrayList();
+        ArrayList<Integer> eku = new ArrayList<Integer>();
         eku.add(Integer.valueOf(1));
         eku.add(Integer.valueOf(2));
         eku.add(Integer.valueOf(3));
         ep.setExtendedKeyUsage(eku);
-        ArrayList ar = ep.getExtendedKeyUsageArray();
+        ArrayList<Object> ar = ep.getExtendedKeyUsageArray();
         Object o = ar.get(0);
         assertTrue((o instanceof Integer));
         assertEquals(3, ar.size());

@@ -54,7 +54,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
-	public static final String ACTION                              = "action";
+    private static final long serialVersionUID = -310960445499242212L;
+  
+    public static final String ACTION                              = "action";
 	public static final String ACTION_EDIT_HARDTOKENPROFILES       = "edithardtokenprofiles";
 	public static final String ACTION_EDIT_HARDTOKENPROFILE        = "edithardtokenprofile";
     public static final String ACTION_UPLOADENVELOPETEMP           = "uploadenvelopetemp";

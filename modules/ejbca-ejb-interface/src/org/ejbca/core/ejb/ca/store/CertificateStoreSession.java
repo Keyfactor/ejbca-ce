@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.CreateException;
@@ -22,6 +23,7 @@ import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Interface for certificate store operations
@@ -314,7 +316,7 @@ public interface CertificateStoreSession {
      *            and array of publiserids (Integer) of publishers to revoke the
      *            certificate in.
      */
-    public void revokeCertificate(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate cert, java.util.Collection<Integer> publishers, int reason,
+    public void revokeCertificate(Admin admin, Certificate cert, Collection<Integer> publishers, int reason,
             java.lang.String userDataDN);
 
     /**

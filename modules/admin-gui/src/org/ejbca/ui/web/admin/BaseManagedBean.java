@@ -35,7 +35,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  */
 public abstract class BaseManagedBean implements Serializable{
 
-	private static final Map publicConstantCache = new ConcurrentHashMap();
+    private static final long serialVersionUID = -8019234011853194880L;
+    
+    private static final Map<String, Map<String, Object>> publicConstantCache = new ConcurrentHashMap<String, Map<String, Object>>();
 
 	protected EjbcaWebBean getEjbcaWebBean(){
 		return EjbcaJSFHelper.getBean().getEjbcaWebBean();
@@ -61,14 +63,14 @@ public abstract class BaseManagedBean implements Serializable{
 
 	/**
 	 * Return the public constants of classObject as a Map, so they can be referenced from the JSF page.
-	 * (The implemetation caches the Map for subsequent calls.)
+	 * (The implementation caches the Map for subsequent calls.)
 	 */
-	protected Map getPublicConstantsAsMap(Class classObject) {
-		Map result = (Map) publicConstantCache.get(classObject.getName());
+	protected Map<String, Object> getPublicConstantsAsMap(Class classObject) {
+		Map<String, Object> result = publicConstantCache.get(classObject.getName());
 		if (result != null) {
 			return result;
 		}
-		result = new HashMap();
+		result = new HashMap<String, Object>();
 		Field[] publicFields = classObject.getFields();
 		for (int i = 0; i < publicFields.length; i++) {
 			Field field = publicFields[i];

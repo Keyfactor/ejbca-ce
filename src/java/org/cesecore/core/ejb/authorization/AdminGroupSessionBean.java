@@ -211,11 +211,6 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsAdministratorInGroup(final Admin admin, final int admingrouppk) {
         boolean returnval = false;
-        /*
-        if (updateNeccessary()) {
-            updateAuthorizationTree();
-        }
-        */
         final AdminGroupData agdl = AdminGroupData.findByPrimeKey(entityManager, Integer.valueOf(admingrouppk));
         if (agdl != null) {
             for(AdminEntity ae : agdl.getAdminGroup().getAdminEntities()) {     

@@ -176,7 +176,7 @@ public class LogInterfaceBean implements java.io.Serializable {
      *
      * @param logconfiguration the logconfiguration to save.
      */    
-    public void saveLogConfiguration(int caid, LogConfiguration logconfiguration) {
+    public void saveLogConfiguration(int caid, org.ejbca.core.model.log.LogConfiguration logconfiguration) {
       logsession.saveLogConfiguration(admin, caid, logconfiguration);   
     }    
     
