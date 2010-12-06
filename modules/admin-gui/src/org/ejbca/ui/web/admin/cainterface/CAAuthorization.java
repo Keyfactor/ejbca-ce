@@ -37,13 +37,13 @@ public class CAAuthorization implements Serializable {
 
     private static final long serialVersionUID = -7397428143642714604L;
 
-    private Collection authcas = null;
-    private TreeMap profilenamesendentity = null;
-    private TreeMap profilenamessubca = null;
-    private TreeMap profilenamesrootca = null;
-    private TreeMap canames = null;
-	private TreeMap allcanames = null;
-    private TreeMap allprofilenames = null;
+    private Collection<Integer> authcas = null;
+    private TreeMap<String, Integer> profilenamesendentity = null;
+    private TreeMap<String, Integer> profilenamessubca = null;
+    private TreeMap<String, Integer> profilenamesrootca = null;
+    private TreeMap<String, Integer> canames = null;
+    private TreeMap<String, Integer> allcanames = null;
+    private TreeMap<String, Integer> allprofilenames = null;
     private Admin admin;
     private CAAdminSession caadminsession;
     private CaSession caSession;
@@ -74,16 +74,16 @@ public class CAAuthorization implements Serializable {
     
     
     
-    public TreeMap getAuthorizedEndEntityCertificateProfileNames(boolean usehardtokenprofiles){
+    public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames(boolean usehardtokenprofiles){
       if(profilenamesendentity==null){
-        profilenamesendentity = new TreeMap();  
-        Iterator iter = null;
+        profilenamesendentity = new TreeMap<String, Integer>();  
+        Iterator<Integer> iter = null;
         if(usehardtokenprofiles) {         
           iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_HARDTOKEN, getAuthorizedCAIds()).iterator();
         } else {         
 		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
         }
-        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamesendentity.put(idtonamemap.get(id),id);
@@ -92,11 +92,11 @@ public class CAAuthorization implements Serializable {
       return profilenamesendentity;  
     }
             
-    public TreeMap getAuthorizedSubCACertificateProfileNames(){
+    public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
-        profilenamessubca = new TreeMap();  
-        Iterator iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
-        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        profilenamessubca = new TreeMap<String, Integer>();  
+        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
+        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamessubca.put(idtonamemap.get(id),id);
@@ -106,11 +106,11 @@ public class CAAuthorization implements Serializable {
     }
     
     
-    public TreeMap getAuthorizedRootCACertificateProfileNames(){
+    public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
-        profilenamesrootca = new TreeMap();  
-        Iterator iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
-        HashMap idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        profilenamesrootca = new TreeMap<String, Integer>();  
+        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
+        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamesrootca.put(idtonamemap.get(id),id);
@@ -119,14 +119,14 @@ public class CAAuthorization implements Serializable {
       return profilenamesrootca;  
     }
     
-    public TreeMap getEditCertificateProfileNames(boolean includefixedhardtokenprofiles){
+    public TreeMap<String, Integer> getEditCertificateProfileNames(boolean includefixedhardtokenprofiles){
         if (allprofilenames == null) {
             // check if administrator
             boolean superadministrator = false;
 
             superadministrator = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
 
-            allprofilenames = new TreeMap();
+            allprofilenames = new TreeMap<String, Integer>();
         Iterator<Integer> iter= null;  
         if(includefixedhardtokenprofiles){
           iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, 0, getAuthorizedCAIds()).iterator();
@@ -159,11 +159,11 @@ public class CAAuthorization implements Serializable {
         
     
     
-    public TreeMap getCANames(){        
+    public TreeMap<String, Integer> getCANames(){        
       if(canames==null){        
-        canames = new TreeMap();        
-        HashMap idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
-        Iterator iter = getAuthorizedCAIds().iterator();
+        canames = new TreeMap<String, Integer>();        
+        HashMap<Integer, String> idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
+        Iterator<Integer> iter = getAuthorizedCAIds().iterator();
         while(iter.hasNext()){          
           Integer id = (Integer) iter.next();          
           canames.put(idtonamemap.get(id),id);
@@ -172,10 +172,10 @@ public class CAAuthorization implements Serializable {
       return canames;  
     }
     
-	public TreeMap getAllCANames(){              
-		allcanames = new TreeMap();        
-		HashMap idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
-		Iterator iter = idtonamemap.keySet().iterator();
+	public TreeMap<String, Integer> getAllCANames(){              
+		allcanames = new TreeMap<String, Integer>();        
+		HashMap<Integer, String> idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
+		Iterator<Integer> iter = idtonamemap.keySet().iterator();
 		while(iter.hasNext()){          
 		  Integer id = (Integer) iter.next();          
 		  allcanames.put(idtonamemap.get(id),id);

@@ -443,7 +443,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 
                                 String[] values = request.getParameterValues(SELECT_LDAPUSEFIELDINLDAPDN);
                                 if(values != null){
-                                    ArrayList usefields = new ArrayList();
+                                    ArrayList<Integer> usefields = new ArrayList<Integer>();
                                     for(int i=0;i< values.length;i++){
                                         usefields.add(Integer.valueOf(values[i]));
                                     }

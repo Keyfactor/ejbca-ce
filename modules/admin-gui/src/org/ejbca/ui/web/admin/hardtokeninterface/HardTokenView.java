@@ -28,6 +28,9 @@ import org.ejbca.util.StringTools;
  * @version $Id$
  */
 public class HardTokenView implements java.io.Serializable, Cloneable {
+  
+    private static final long serialVersionUID = 4090246269386728977L;
+
     // Public constants.
     public HardTokenView() {
         this.tokendata = new HardTokenData();        

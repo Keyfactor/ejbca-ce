@@ -57,7 +57,7 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk16-145.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk16-145.jar" sourcepath="/Users/mikek/Documents/workspace/external libs/bouncycastle/bcprov-jdk15-145/src"/>
 	<classpathentry kind="lib" path="lib/bcmail-jdk16-145.jar"/>
 	<classpathentry kind="lib" path="lib/bctsp-jdk16-145.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>

@@ -2286,7 +2286,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 		 * Test making a certificate request from a DVCA without giving the certificate chain to the CVCA. If the CVCA is imported in the database as an external CA the CVCA
 		 * certificate should be found automatically (by CAAdminSessionBean.makeRequest).
 		 */
-        byte[] request = ejbcaraws.caRenewCertRequest(caname, new ArrayList(), false, false, false, null);
+        byte[] request = ejbcaraws.caRenewCertRequest(caname, new ArrayList<byte[]>(), false, false, false, null);
         // make the mandatory junit checks...
         assertNotNull(request);
         CVCRequestMessage cvcreq = RequestMessageUtils.genCVCRequestMessage(request);
@@ -2308,7 +2308,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         Collection<java.security.cert.Certificate> cvcacerts = new ArrayList<java.security.cert.Certificate>();
         cvcacerts.add(cvcacert);
         caAdminSessionRemote.importCACertificate(intAdmin, "WSTESTCVCAIMPORTED", cvcacerts);
-        request = ejbcaraws.caRenewCertRequest(caname, new ArrayList(), false, false, false, null);
+        request = ejbcaraws.caRenewCertRequest(caname, new ArrayList<byte[]>(), false, false, false, null);
         assertNotNull(request);
         obj = CertificateParser.parseCVCObject(request);
 		authreq = (CVCAuthenticatedRequest)obj;

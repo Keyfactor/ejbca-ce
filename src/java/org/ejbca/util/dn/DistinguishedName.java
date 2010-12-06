@@ -33,12 +33,13 @@ import org.apache.log4j.Logger;
  */
 public class DistinguishedName extends LdapName {
 
-	private static final Logger logger = Logger.getLogger(DistinguishedName.class);
+    private static final long serialVersionUID = -66612792695581203L;
+    private static final Logger logger = Logger.getLogger(DistinguishedName.class);
 
     /** Public constructor.
      * @param rdns list of relative Distinguished Names.
      */
-    public DistinguishedName(List rdns) {
+    public DistinguishedName(List<Rdn> rdns) {
         super(rdns);
     }
 
@@ -85,21 +86,21 @@ public class DistinguishedName extends LdapName {
         }
 
         // This list will enclose the resulting list of RDNs.
-        List localRdns = new ArrayList();
+        List<Rdn> localRdns = new ArrayList<Rdn>();
 
         // This Map contains some lists of Rdns identified by their type.
-        Map providedRdnsMap = new HashMap();
+        Map<String, List<Rdn>> providedRdnsMap = new HashMap<String, List<Rdn>>();
 
         // init the providedRdnsMap :
-        for (ListIterator it = dn.getRdns().listIterator(dn.getRdns().size()); it.hasPrevious(); ) {
+        for (ListIterator<Rdn> it = dn.getRdns().listIterator(dn.getRdns().size()); it.hasPrevious(); ) {
             Rdn providedRdn = (Rdn) it.previous();
             if (providedRdnsMap.containsKey(providedRdn.getType())) {
                 // add the provided Rdn in the existing list for this type :
-                List rdns = (List) providedRdnsMap.get(providedRdn.getType());
+                List<Rdn> rdns = (List<Rdn>) providedRdnsMap.get(providedRdn.getType());
                 rdns.add(providedRdn);
             } else {
                 // create a new list for this type :
-                List rdns = new ArrayList();
+                List<Rdn> rdns = new ArrayList<Rdn>();
                 rdns.add(providedRdn);
                 providedRdnsMap.put(providedRdn.getType(), rdns);
             }

@@ -51,13 +51,13 @@ public interface LogSession {
      * @param comment
      *            comment of the event.
      */
-    void log(Admin admin, int caid, int module, java.util.Date time, String username, Certificate certificate, int event, String comment);
+    void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment);
 
     /**
      * Same as above but with the difference of CAid which is taken from the
      * issuerdn of given certificate.
      */
-    void log(Admin admin, Certificate caid, int module, java.util.Date time, String username, Certificate certificate, int event, String comment);
+    void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment);
 
     /**
      * Overloaded function that also logs an exception See function above for
@@ -66,7 +66,7 @@ public interface LogSession {
      * @param exception
      *            the exception that has occured
      */
-    void log(Admin admin, int caid, int module, java.util.Date time, String username, Certificate certificate, int event, String comment,
+    void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment,
             Exception exception);
 
     /**

@@ -167,7 +167,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
 
     /**
-     * Checks that the given Admin is authorized to all CAs in the given group. Will return false if the group is empty.
+     * Checks that the given Admin is authorized to all CAs in the given group. Will return true if the group is empty.
      * 
      * @param administrator Admin token to check
      * @param admingroupname Name of group to check in.
@@ -182,7 +182,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         if (adminGroupData != null) {
             Collection<AdminEntity> adminEntityObjects = adminGroupData.getAdminEntityObjects();
             if(adminEntityObjects.isEmpty()) {
-                result = false;
+                result = true;
             } else {
                 for (AdminEntity adminEntity : adminEntityObjects) {
                     int currentCaId = adminEntity.getCaId();

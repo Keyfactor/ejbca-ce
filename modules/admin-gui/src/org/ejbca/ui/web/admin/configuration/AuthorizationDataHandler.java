@@ -87,15 +87,15 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     }
 
     // Methods used with admingroup data
-        /** Method to add a new admingroup to the administrator priviledges data.*/
-    public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException{
-		// Authorized to edit administrative priviledges
-	  if(!authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
-	      Authorizer.throwAuthorizationException(administrator, "/system_functionality/edit_administrator_privileges", null);
-	  }
-	  adminGroupSession.addAdminGroup(administrator, name);
-      informationmemory.administrativePriviledgesEdited();
-	  this.authorizedadmingroups = null;
+    /** Method to add a new admingroup to the administrator privileges data. */
+    public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException {
+        // Authorized to edit administrative priviledges
+        if (!authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
+            Authorizer.throwAuthorizationException(administrator, "/system_functionality/edit_administrator_privileges", null);
+        }
+        adminGroupSession.addAdminGroup(administrator, name);
+        informationmemory.administrativePriviledgesEdited();
+        this.authorizedadmingroups = null;
     }
 
     /** Method to remove a admingroup.*/
@@ -128,7 +128,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     /**
      * Returns the given AdminGroup with it's authorization data
      * 
-     * @throws AuthorizationDeniedException if admininstrator isn't authorized to 
+     * @throws AuthorizationDeniedException if administrator isn't authorized to 
      * access admingroup.
      */
     public AdminGroup getAdminGroup(String admingroupname) throws AuthorizationDeniedException {
