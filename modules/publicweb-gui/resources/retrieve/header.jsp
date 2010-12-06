@@ -10,6 +10,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
     <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate/CRL Retrieval</title>
+	<link rel="shortcut icon" href="../images/pk-favIcon.png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="scripts/functions.js"></script>
     <script type="text/vbscript" src="scripts/functions.vbs"></script>
