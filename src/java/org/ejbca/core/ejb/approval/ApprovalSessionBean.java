@@ -560,7 +560,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     public List<ApprovalDataVO> query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
-        ArrayList<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>();
         String customQuery = "";
         // Check if query is legal.
         if (query != null && !query.isLegalQuery()) {
@@ -581,10 +580,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 customQuery += " AND " + endEntityProfileAuthorizationString;
             }
         }
-        List<ApprovalData> ads = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
-        for (ApprovalData ad : ads) {
-            returnData.add(ad.getApprovalDataVO());
-        }
+        List<ApprovalDataVO> returnData = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
         log.trace("<query()");
         return returnData;
     }

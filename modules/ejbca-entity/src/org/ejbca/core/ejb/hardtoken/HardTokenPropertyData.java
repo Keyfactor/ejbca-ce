@@ -16,16 +16,12 @@ package org.ejbca.core.ejb.hardtoken;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Lob;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
-import javax.persistence.Version;
+import javax.persistence.Transient;
 
 /**
  * Complimentary class used to assign extended properties like copyof to a hard
@@ -35,14 +31,13 @@ import javax.persistence.Version;
  */
 @Entity
 @Table(name = "HardTokenPropertyData")
-@IdClass(HardTokenPropertyDataPK.class)
 public class HardTokenPropertyData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     public static final String PROPERTY_COPYOF = "copyof=";
 
-    private String id;
-    private String property;
+    private HardTokenPropertyDataPK hardTokenPropertyDataPK;
+    
     private String value;
 	private int rowVersion = 0;
 	private String rowProtection;
@@ -51,51 +46,29 @@ public class HardTokenPropertyData implements Serializable {
      * Entity holding data of a hard token properties.
      */
     public HardTokenPropertyData(String id, String property, String value) {
-        setId(id);
-        setProperty(property);
+    	setHardTokenPropertyDataPK(new HardTokenPropertyDataPK(id, property));
         setValue(value);
     }
 
     public HardTokenPropertyData() {
     }
+    
+    //@EmbeddedId
+    public HardTokenPropertyDataPK getHardTokenPropertyDataPK() { return hardTokenPropertyDataPK; }
+    public void setHardTokenPropertyDataPK(HardTokenPropertyDataPK hardTokenPropertyDataPK) { this.hardTokenPropertyDataPK = hardTokenPropertyDataPK; }
 
-    @Id
-    @Column(name = "id")
-    public String getId() {
-        return id;
-    }
+    @Transient
+    public String getId() { return hardTokenPropertyDataPK.id; }
 
-    /** Limited to 80 chars, because of UTF8 requirements for the primary key on MyISAM! A UTF8 char takes 3 bytes and id+property < 1000 bytes. */
-    public void setId(String id) {
-        this.id = id;
-    }
+    //@Column
+    public String getValue() { return value; }
+    public void setValue(String value) { this.value = value; }
 
-    @Id
-    @Column(name = "property")
-    public String getProperty() {
-        return property;
-    }
-
-    public void setProperty(String property) {
-        this.property = property;
-    }
-
-    @Column(name = "value")
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+    //@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -116,7 +89,7 @@ public class HardTokenPropertyData implements Serializable {
     public static HardTokenPropertyData findByProperty(EntityManager entityManager, String id, String property) {
         HardTokenPropertyData ret = null;
 
-        Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.id=:id AND a.property=:property");
+        Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.hardTokenPropertyDataPK.id=:id AND a.hardTokenPropertyDataPK.property=:property");
         query.setParameter("id", id);
         query.setParameter("property", property);
         @SuppressWarnings("unchecked")
@@ -138,7 +111,7 @@ public class HardTokenPropertyData implements Serializable {
 
     /** @return return the query results as a List. */
     public static List<HardTokenPropertyData> findIdsByPropertyAndValue(EntityManager entityManager, String property, String value) {
-        Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.property=:property AND a.value=:value");
+        Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.hardTokenPropertyDataPK.property=:property AND a.value=:value");
         query.setParameter("property", property);
         query.setParameter("value", value);
         return query.getResultList();

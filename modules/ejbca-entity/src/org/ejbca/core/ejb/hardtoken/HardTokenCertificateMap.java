@@ -16,14 +16,10 @@ package org.ejbca.core.ejb.hardtoken;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 
@@ -55,22 +51,19 @@ public class HardTokenCertificateMap implements Serializable {
 	
 	public HardTokenCertificateMap() { }
 
-	@Id
-	@Column(name="certificateFingerprint")
+	//@Id @Column
 	public String getCertificateFingerprint() { return certificateFingerprint; }
 	public void setCertificateFingerprint(String certificateFingerprint) { this.certificateFingerprint = certificateFingerprint; }
 
-	@Column(name="tokenSN")
+	//@Column
 	public String getTokenSN() { return tokenSN; }
 	public void setTokenSN(String tokenSN) { this.tokenSN = tokenSN; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

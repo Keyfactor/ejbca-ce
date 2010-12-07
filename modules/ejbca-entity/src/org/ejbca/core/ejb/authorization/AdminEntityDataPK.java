@@ -15,8 +15,6 @@ package org.ejbca.core.ejb.authorization;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
-
 /**
  * The current pk in AdminEntityData and AccessRulesData is a mix of integer pk and 
  * constraints and actually works fine. 
@@ -31,19 +29,13 @@ public class AdminEntityDataPK implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public int primeKey;
+	private int primeKey;
 
 	public AdminEntityDataPK(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {
 		final int adminGroupNameHash = admingroupname == null ? 0 : admingroupname.hashCode();
 		final int matchValueHash = matchvalue == null ? 0 : matchvalue.hashCode();
 		this.primeKey = adminGroupNameHash ^ caid ^ matchwith ^ matchValueHash ^ matchtype;
 	}
-
-	public AdminEntityDataPK() { }
-
-	@Column(name="pK")
-	public int getPrimeKey() { return primeKey; }
-	public void setPrimeKey(int primeKey) { this.primeKey = primeKey; }
 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)

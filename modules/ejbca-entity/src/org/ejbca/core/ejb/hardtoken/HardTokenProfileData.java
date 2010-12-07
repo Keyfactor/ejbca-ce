@@ -18,16 +18,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
@@ -45,7 +41,7 @@ public class HardTokenProfileData implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(HardTokenProfileData.class);
 
-	private Integer id;
+	private int id;
 	private String name;
 	private int updateCounter;
 	private String data;
@@ -55,7 +51,7 @@ public class HardTokenProfileData implements Serializable {
 	/**
 	 * Entity holding data of a hard token profile.
 	 */
-	public HardTokenProfileData(Integer id, String name, HardTokenProfile profile) {
+	public HardTokenProfileData(int id, String name, HardTokenProfile profile) {
 		setId(id);
 		setName(name);
 		setUpdateCounter(0);
@@ -67,32 +63,27 @@ public class HardTokenProfileData implements Serializable {
 	
 	public HardTokenProfileData() { }
 
-	@Id
-	@Column(name="id")
-	public Integer getId() { return id; }
-	public void setId(Integer id) { this.id = id; }
+	//@Id @Column
+	public int getId() { return id; }
+	public void setId(int id) { this.id = id; }
 
-	@Column(name="name")
+	//@Column
 	public String getName() { return name; }
 	public void setName(String name) { this.name = name; }
 
-	@Column(name="updateCounter", nullable=false)
+	//@Column
 	public int getUpdateCounter() { return updateCounter; }
 	public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
-	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
-	@Column(name="data", length=1024*1024)
-	@Lob
+	//@Column @Lob
 	public String getData() { return data; }
 	public void setData(String data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

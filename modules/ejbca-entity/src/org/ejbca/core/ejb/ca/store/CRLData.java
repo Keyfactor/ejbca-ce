@@ -18,16 +18,12 @@ import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.util.Date;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.Base64;
@@ -59,7 +55,7 @@ public class CRLData implements Serializable {
 	/**
 	 * Entity holding info about a CRL. Create by sending in the CRL, which extracts (from the
 	 * crl) fingerprint (primary key), CRLNumber, issuerDN, thisUpdate, nextUpdate. CAFingerprint
-	 * are set to default values (null) and should be set using the respective set-methods.
+	 * is the hash of the CA certificate.
 	 *
 	 * @param incrl the (X509)CRL to be stored in the database.
 	 * @param number monotonically increasnig CRL number
@@ -84,58 +80,53 @@ public class CRLData implements Serializable {
 	
 	public CRLData() { }
 	
-	@Column(name="cRLNumber", nullable=false)
+	//@Column
 	public int getCrlNumber() { return cRLNumber; }
 	public void setCrlNumber(int cRLNumber) { this.cRLNumber = cRLNumber; }
 
-	@Column(name="deltaCRLIndicator", nullable=false)
+	//@Column
 	public int getDeltaCRLIndicator() { return deltaCRLIndicator; }
 	public void setDeltaCRLIndicator(int deltaCRLIndicator) { this.deltaCRLIndicator = deltaCRLIndicator; }
 
-	@Column(name="issuerDN")
+	//@Column
 	public String getIssuerDN() { return issuerDN; }
 	/**
 	 * Use setIssuer instead
 	 * @see #setIssuer(String)
 	 */
-	private void setIssuerDN(String issuerDN) { this.issuerDN = issuerDN; }
+	public void setIssuerDN(String issuerDN) { this.issuerDN = issuerDN; }
 
-	@Id
-	@Column(name="fingerprint")
+	//@Id @Column
 	public String getFingerprint() { return fingerprint; }
 	public void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
 
-	@Column(name="cAFingerprint")
+	//@Column
 	public String getCaFingerprint() { return cAFingerprint; }
 	public void setCaFingerprint(String cAFingerprint) { this.cAFingerprint = cAFingerprint; }
 
-	@Column(name="thisUpdate", nullable=false)
+	//@Column
 	public long getThisUpdate() { return thisUpdate; }
 	/**
 	 * Date formated as seconds since 1970 (== Date.getTime())
 	 */
 	public void setThisUpdate(long thisUpdate) { this.thisUpdate = thisUpdate; }
 
-	@Column(name="nextUpdate", nullable=false)
+	//@Column
 	public long getNextUpdate() { return nextUpdate; }
 	/**
 	 * Date formated as seconds since 1970 (== Date.getTime())
 	 */
 	public void setNextUpdate(long nextUpdate) { this.nextUpdate = nextUpdate; }
 
-	// DB2: CLOB(100M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR, MSSQL: TEXT [65535 chars], MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
-	@Column(name="base64Crl", length=65535)
-	@Lob
+	//@Column @Lob
 	public String getBase64Crl() { return base64Crl; }
 	public void setBase64Crl(String base64Crl) { this.base64Crl = base64Crl; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

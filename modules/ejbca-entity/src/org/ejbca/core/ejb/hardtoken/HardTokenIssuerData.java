@@ -17,16 +17,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
@@ -46,7 +42,7 @@ public class HardTokenIssuerData implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(HardTokenIssuerData.class);
 
-	private Integer id;
+	private int id;
 	private String alias;
 	private int adminGroupId;
 	private Serializable data;
@@ -56,7 +52,7 @@ public class HardTokenIssuerData implements Serializable {
 	/**
 	 * Entity holding data of a hard token issuer.
 	 */
-	public HardTokenIssuerData(Integer id, String alias, int admingroupid,  HardTokenIssuer issuerdata) {
+	public HardTokenIssuerData(int id, String alias, int admingroupid,  HardTokenIssuer issuerdata) {
 		setId(id);
 		setAlias(alias);
 		setAdminGroupId(admingroupid);
@@ -66,22 +62,19 @@ public class HardTokenIssuerData implements Serializable {
 	
 	public HardTokenIssuerData() { }
 			
-	@Id
-	@Column(name="id")
-	public Integer getId() { return id; }
-	public void setId(Integer id) { this.id = id; }
+	//@Id @Column
+	public int getId() { return id; }
+	public void setId(int id) { this.id = id; }
 
-	@Column(name="alias")
+	//@Column
 	public String getAlias() { return alias; }
 	public void setAlias(String alias) { this.alias = alias; }
 
-	@Column(name="adminGroupId", nullable=false)
+	//@Column
 	public int getAdminGroupId() { return adminGroupId; } 
 	public void setAdminGroupId(int adminGroupId) { this.adminGroupId = adminGroupId; }
 
-	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
-	@Column(name="data", length=200*1024)
-	@Lob
+	//@Column @Lob
 	public Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
@@ -92,13 +85,11 @@ public class HardTokenIssuerData implements Serializable {
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public void setDataUnsafe(Serializable data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

@@ -19,15 +19,11 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.store.CertReqHistory;
@@ -68,8 +64,7 @@ public class CertReqHistoryData implements Serializable {
 	 */
 	public CertReqHistoryData(Certificate incert, UserDataVO useradmindata) {
 		// Exctract fields to store with the certificate.
-        String fingerprint = CertTools.getFingerprintAsString(incert);
-		setFingerprint(fingerprint);
+		setFingerprint(CertTools.getFingerprintAsString(incert));
         setIssuerDN(CertTools.getIssuerDN(incert));
         if (log.isDebugEnabled()) {
         	log.debug("Creating certreqhistory data, serial=" + CertTools.getSerialNumberAsString(incert) + ", issuer=" + getIssuerDN());
@@ -100,50 +95,49 @@ public class CertReqHistoryData implements Serializable {
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return issuer dn
 	 */
-	@Column(name="issuerDN")
-	private String getIssuerDN() { return issuerDN; }
+	//@Column
+	public String getIssuerDN() { return issuerDN; }
 	/**
 	 * Use setIssuer instead
 	 * @param issuerDN issuer dn
 	 */
-	private void setIssuerDN(String issuerDN) { this.issuerDN =issuerDN; }
+	public void setIssuerDN(String issuerDN) { this.issuerDN =issuerDN; }
 
 	/**
 	 * Fingerprint of certificate
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return fingerprint
 	 */
-	@Id
-	@Column(name="fingerprint")
-	private String getFingerprint() { return fingerprint; }
+	//@Id @Column
+	public String getFingerprint() { return fingerprint; }
 	/**
 	 * Fingerprint of certificate
 	 * Shouldn't be set after creation.
 	 * @param fingerprint fingerprint
 	 */
-	private void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
+	public void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
 
 	/**
 	 * Serialnumber formated as BigInteger.toString()
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return serial number
 	 */
-	@Column(name="serialNumber")
-	private String getSerialNumber() { return serialNumber; }
+	//@Column
+	public String getSerialNumber() { return serialNumber; }
 
 	/**
 	 * Serialnumber formated as BigInteger.toString()
 	 * Shouldn't be set after creation.
 	 * @param serialNumber serial number
 	 */
-	private void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+	public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
 
 	/**
 	 * Date formated as seconds since 1970 (== Date.getTime())
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return timestamp 
 	 */
-	@Column(name="timestamp", nullable=false)
+	//@Column
 	public long getTimestamp() { return timestamp; }
 
 	/**
@@ -158,9 +152,7 @@ public class CertReqHistoryData implements Serializable {
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return  xmlencoded encoded UserDataVO
 	 */
-	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
-	@Column(name="userDataVO", length=1*1024*1024)
-	@Lob
+	//@Column @Lob
 	public String getUserDataVO() { return userDataVO; }
 
 	/**
@@ -175,23 +167,21 @@ public class CertReqHistoryData implements Serializable {
 	 * Should not be used outside of entity bean, use getCertReqHistory instead
 	 * @return username
 	 */
-	@Column(name="username")
-	private String getUsername() { return username; }
+	//@Column
+	public String getUsername() { return username; }
 
 	/**
 	 * username
 	 * Shouldn't be set after creation.
 	 * @param username username
 	 */
-	private void setUsername(String username) { this.username = StringTools.strip(username); }
+	public void setUsername(String username) { this.username = StringTools.strip(username); }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

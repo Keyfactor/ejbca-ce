@@ -17,16 +17,11 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.Base64;
@@ -39,16 +34,15 @@ import org.ejbca.util.StringTools;
  */
 @Entity
 @Table(name="KeyRecoveryData")
-@IdClass(KeyRecoveryDataPK.class)
 public class KeyRecoveryData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(KeyRecoveryData.class);
 
-	private String certSN;
-	private String issuerDN;
+	private KeyRecoveryDataPK keyRecoveryDataPK;
 	private String username;
-	private boolean markedAsRecoverable;
+	private Boolean markedAsRecoverableBool;
+	private Integer markedAsRecoverableInt;
 	private String keyData;
 	private int rowVersion = 0;
 	private String rowProtection;
@@ -62,8 +56,7 @@ public class KeyRecoveryData implements Serializable {
 	 * @param keydata the actual keydata.
 	 */
 	public KeyRecoveryData(BigInteger certificatesn, String issuerdn, String username, byte[] keydata) {
-		setCertificateSN(certificatesn);
-		setIssuerDN(issuerdn);
+		setKeyRecoveryDataPK(new KeyRecoveryDataPK(certificatesn.toString(16), issuerdn));
 		setUsername(username);
 		setMarkedAsRecoverable(false);
 		setKeyDataFromByteArray(keydata);
@@ -72,47 +65,69 @@ public class KeyRecoveryData implements Serializable {
 
 	public KeyRecoveryData() { }
 
-	@Id
-	@Column(name="certSN")
-	public String getCertSN() { return certSN; }
-	public void setCertSN(String certSN) { this.certSN = certSN; }
+	public KeyRecoveryDataPK getKeyRecoveryDataPK() { return keyRecoveryDataPK; }
+	public void setKeyRecoveryDataPK(KeyRecoveryDataPK keyRecoveryDataPK) { this.keyRecoveryDataPK = keyRecoveryDataPK; }
+	
+	@Transient
+	public String getIssuerDN() { return keyRecoveryDataPK.issuerDN; }
 
-	@Id
-	@Column(name="issuerDN")
-	public String getIssuerDN() { return issuerDN; }
-	public void setIssuerDN(String issuerDN) { this.issuerDN = issuerDN; }
-
-	@Column(name="username")
+	//@Column
 	public String getUsername() { return username; }
 	public void setUsername(String username) { this.username = StringTools.strip(username); }
 
-	@Column(name="markedAsRecoverable", nullable=false)
-	public boolean getMarkedAsRecoverable() { return markedAsRecoverable; }
-	public void setMarkedAsRecoverable(boolean markedAsRecoverable) { this.markedAsRecoverable = markedAsRecoverable; }
+	@Transient
+	public boolean getMarkedAsRecoverable() {
+		Boolean markB = getMarkedAsRecoverableBool();
+		if (markB != null) {
+			return markB.booleanValue();
+		}
+		Integer markI = getMarkedAsRecoverableInt();
+		if (markI != null) {
+			return markI.intValue() == 1;
+		}
+		throw new RuntimeException("Could not retreive KeyRecoveryData.markedAsRecoverable from database.");
+	}
+	public void setMarkedAsRecoverable(boolean markedAsRecoverable) {
+		setMarkedAsRecoverableBool(Boolean.valueOf(markedAsRecoverable));
+		setMarkedAsRecoverableInt(markedAsRecoverable ? 1 : 0);
+	}
 
-	// DB2: CLOB(1M), Derby: CLOB(1 M), Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [4GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-	@Column(name="keyData", length=1024*1024)
-	@Lob
+	/**
+	 * Use getMarkedAsRecoverable() instead of this method!
+	 * Ingres:     Transient
+	 * Non-ingres: Mapped to "markedAsRecoverable" 
+	 */
+	public Boolean getMarkedAsRecoverableBool() { return markedAsRecoverableBool; }
+	public void setMarkedAsRecoverableBool(Boolean markedAsRecoverableBool) { this.markedAsRecoverableBool = markedAsRecoverableBool; }
+
+	/**
+	 * Use getMarkedAsRecoverable() instead of this method!
+	 * Ingres:     Mapped to "markedAsRecoverable"
+	 * Non-ingres: Transient 
+	 */
+	public Integer getMarkedAsRecoverableInt() { return markedAsRecoverableInt; }
+	public void setMarkedAsRecoverableInt(Integer markedAsRecoverableInt) { this.markedAsRecoverableInt = markedAsRecoverableInt; }
+	
+	
+	//@Column @Lob
 	public String getKeyData() { return keyData; } 
 	public void setKeyData(String keyData) { this.keyData = keyData; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	public BigInteger getCertificateSN() {
-		return new BigInteger(getCertSN(), 16);
+		return new BigInteger(keyRecoveryDataPK.getCertSN(), 16);
 	}
-	public void setCertificateSN(BigInteger certificatesn) {
-		setCertSN(certificatesn.toString(16));
-	}
+	/*public void setCertificateSN(BigInteger certificatesn) {
+		keyRecoveryDataPK.setCertSN(certificatesn.toString(16));
+	}*/
 
 	@Transient
 	public byte[] getKeyDataAsByteArray() {
@@ -140,8 +155,19 @@ public class KeyRecoveryData implements Serializable {
 	 
 	/** @return return the query results as a List. */
     public static List<KeyRecoveryData> findByUserMark(EntityManager entityManager, String usermark) {
-    	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverable=TRUE");
-    	query.setParameter("usermark", usermark);
-    	return query.getResultList();
+    	List<KeyRecoveryData> ret = null;
+    	try {
+        	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableBool=TRUE");
+        	query.setParameter("usermark", usermark);
+    		ret = query.getResultList();
+    	} catch (Exception e) {
+    		if (log.isDebugEnabled()) {
+        		log.debug("If database does not support boolean (like Ingres) we would expect an Exception here. Trying to treat markedAsRecoverable as an Integer.", e);
+    		}
+        	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:usermark AND a.markedAsRecoverableInt=1");
+        	query.setParameter("usermark", usermark);
+    		ret = query.getResultList();
+    	}
+    	return ret;
     }    
 }

@@ -18,15 +18,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
@@ -70,34 +66,31 @@ public class HardTokenData implements Serializable {
 	
 	public HardTokenData() { }
 	
-	@Id
-	@Column(name="tokenSN")
+	//@Id @Column
 	public String getTokenSN() { return tokenSN; }
 	public void setTokenSN(String tokenSN) { this.tokenSN = tokenSN; }
 
-	@Column(name="username")
+	//@Column
 	public String getUsername() { return username; }
 	public void setUsername(String username) { this.username = StringTools.strip(username); }
 
-	@Column(name="cTime", nullable=false)
+	//@Column
 	public long getCtime() { return cTime; }
 	public void setCtime(long createTime) { this.cTime = createTime; }
 
-	@Column(name="mTime", nullable=false)
+	//@Column
 	public long getMtime() { return mTime; } 
 	public void setMtime(long modifyTime) { this.mTime = modifyTime; }
 
-	@Column(name="tokenType", nullable=false)
+	//@Column
 	public int getTokenType() { return tokenType; }
 	public void setTokenType(int tokenType) { this.tokenType = tokenType; }
 
-	@Column(name="significantIssuerDN")
+	//@Column
 	public String getSignificantIssuerDN() { return significantIssuerDN; }
 	public void setSignificantIssuerDN(String significantIssuerDN) { this.significantIssuerDN = significantIssuerDN; }
 
-	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
-	@Column(name="data", length=200*1024)
-	@Lob
+	//@Column @Lob
 	public Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
@@ -108,13 +101,11 @@ public class HardTokenData implements Serializable {
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public void setDataUnsafe(Serializable data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

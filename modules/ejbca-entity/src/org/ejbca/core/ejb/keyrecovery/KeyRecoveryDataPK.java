@@ -32,9 +32,11 @@ public class KeyRecoveryDataPK implements Serializable {
 		setIssuerDN(issuerDN);
 	}
 
+	//@Column
 	public String getCertSN() { return certSN; }
 	public void setCertSN(String certSN) { this.certSN = certSN; }
 
+	//@Column
 	public String getIssuerDN() { return issuerDN; }
 	public void setIssuerDN(String issuerDN) { this.issuerDN = issuerDN; }
 

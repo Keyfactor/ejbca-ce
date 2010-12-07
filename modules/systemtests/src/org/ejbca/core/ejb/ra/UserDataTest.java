@@ -543,6 +543,50 @@ public class UserDataTest extends CaTestCase {
     }
 
     /**
+     * Verify that there can be two different users with the same name, but in different case.  
+     */
+    public void test09VerifyUserNameCaseSensitivity() throws Exception {
+    	String rnd = "sens" + genRandomUserName();
+        String username1 = rnd.toLowerCase();
+        String username2 = rnd.toUpperCase();;
+        String pwd = genRandomPwd();
+        userAdminSession.addUser(admin, username1, pwd, "C=SE,O=EJBCA Sample,CN="+username1, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+        try {
+        	userAdminSession.addUser(admin, username2, pwd, "C=SE,O=EJBCA Sample,CN="+username2, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+        } catch (Exception e) {
+            userAdminSession.deleteUser(admin, username1);
+            assertTrue("Database (mapping) is not case sensitive!", false);
+        }
+        UserDataVO userDataVO1 = userAdminSession.findUser(admin, username1);
+        UserDataVO userDataVO2 = userAdminSession.findUser(admin, username2);
+        assertFalse("Returned the same user object for different usernames.", userDataVO1.getUsername().equals(userDataVO2.getUsername()));
+        userAdminSession.deleteUser(admin, username1);
+        userAdminSession.deleteUser(admin, username2);
+    }
+
+    /**
+     * Verify that there can't be two different users with the same username.  
+     */
+    public void test10VerifySameUserName() throws Exception {
+        String username = "sameun" + genRandomUserName();
+        String pwd = genRandomPwd();
+        userAdminSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN="+username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+        boolean ok = true;
+        try {
+        	userAdminSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN="+username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+        	ok = false;
+        } catch (Exception e) {
+        }
+        try {
+            userAdminSession.deleteUser(admin, username);
+        } catch (Exception e) {
+        	log.error("Delete failed: ", e);
+        	ok = false;
+        }
+        assertTrue("Two user with the same name were allowed!", ok);
+    }
+
+    /**
      * Cleans up after test JUnit tests, i.e. deletes users and CAs that we created and resets any configuration changes.
      *
      * @throws Exception on fatal error

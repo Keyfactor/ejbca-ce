@@ -19,15 +19,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
@@ -70,7 +66,7 @@ public class PublisherQueueData implements Serializable {
     private int publishType;
     private String fingerprint;
     private int publisherId;
-    private String volatileData; // LOB
+    private String volatileData;
 	private int rowVersion = 0;
 	private String rowProtection;
 
@@ -82,8 +78,7 @@ public class PublisherQueueData implements Serializable {
     public PublisherQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) {
         String pk = GUIDGenerator.generateGUID(this);
         setPk(pk);
-        Date now = new Date();
-        setTimeCreated(now.getTime());
+        setTimeCreated(new Date().getTime());
         setLastUpdate(0);
         setPublishStatus(publishStatus);
         setTryCounter(0);
@@ -94,114 +89,62 @@ public class PublisherQueueData implements Serializable {
         log.debug("Created Publisher queue data " + pk);
     }
 
-    public PublisherQueueData() {
-    }
+    public PublisherQueueData() { }
 
-    @Id
-    @Column(name = "pk")
-    public String getPk() {
-        return pk;
-    }
+    //@Id @Column
+    public String getPk() { return pk; }
+    public void setPk(String pk) { this.pk = pk; }
 
-    public void setPk(String pk) {
-        this.pk = pk;
-    }
+    //@Column
+    public long getTimeCreated() { return timeCreated; }
+    public void setTimeCreated(long timeCreated) { this.timeCreated = timeCreated; }
 
-    @Column(name = "timeCreated")
-    public long getTimeCreated() {
-        return timeCreated;
-    }
-
-    public void setTimeCreated(long timeCreated) {
-        this.timeCreated = timeCreated;
-    }
-
-    @Column(name = "lastUpdate")
-    public long getLastUpdate() {
-        return lastUpdate;
-    }
-
-    public void setLastUpdate(long lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
+    //@Column
+    public long getLastUpdate() { return lastUpdate; }
+    public void setLastUpdate(long lastUpdate) { this.lastUpdate = lastUpdate; }
 
     /**
      * PublishStatus is one of
      * org.ejbca.core.model.ca.publisher.PublisherQueueData.STATUS_PENDING,
      * FAILED or SUCCESS.
      */
-    @Column(name = "publishStatus")
-    public int getPublishStatus() {
-        return publishStatus;
-    }
+    //@Column
+    public int getPublishStatus() { return publishStatus; }
+    public void setPublishStatus(int publishStatus) { this.publishStatus = publishStatus; }
 
-    public void setPublishStatus(int publishStatus) {
-        this.publishStatus = publishStatus;
-    }
-
-    @Column(name = "tryCounter")
-    public int getTryCounter() {
-        return tryCounter;
-    }
-
-    public void setTryCounter(int tryCounter) {
-        this.tryCounter = tryCounter;
-    }
+    //@Column
+    public int getTryCounter() { return tryCounter; }
+    public void setTryCounter(int tryCounter) { this.tryCounter = tryCounter; }
 
     /**
      * PublishType is one of
      * org.ejbca.core.model.ca.publisher.PublishQueueData.PUBLISH_TYPE_CERT or
      * CRL
      */
-    @Column(name = "publishType")
-    public int getPublishType() {
-        return publishType;
-    }
-
-    public void setPublishType(int publishType) {
-        this.publishType = publishType;
-    }
+    //@Column
+    public int getPublishType() { return publishType; }
+    public void setPublishType(int publishType) { this.publishType = publishType; }
 
     /**
      * Foreign key to certificate of CRL.
      */
-    @Column(name = "fingerprint")
-    public String getFingerprint() {
-        return fingerprint;
-    }
+    //@Column
+    public String getFingerprint() { return fingerprint; }
+    public void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
 
-    public void setFingerprint(String fingerprint) {
-        this.fingerprint = fingerprint;
-    }
+    //@Column
+    public int getPublisherId() { return publisherId; }
+    public void setPublisherId(int publisherId) { this.publisherId = publisherId; }
 
-    @Column(name = "publisherId")
-    public int getPublisherId() {
-        return publisherId;
-    }
+    //@Column @Lob
+    public String getVolatileData() { return volatileData; }
+    public void setVolatileData(String volatileData) { this.volatileData = volatileData; }
 
-    public void setPublisherId(int publisherId) {
-        this.publisherId = publisherId;
-    }
-
-    // DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB [1 M], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT
-    // [2,147,483,647 bytes], MySQL: LONGTEXT [4GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]
-    @Column(name = "volatileData", length = 100*1024)
-    @Lob
-    public String getVolatileData() {
-        return volatileData;
-    }
-
-    public void setVolatileData(String volatileData) {
-        this.volatileData = volatileData;
-    }
-
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+    //@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -270,14 +213,14 @@ public class PublisherQueueData implements Serializable {
 
     /** @return the found entity instance or null if the entity does not exist */
     public static PublisherQueueData findByPk(EntityManager entityManager, String pk) {
-            return entityManager.find(PublisherQueueData.class, pk);
+    	return entityManager.find(PublisherQueueData.class, pk);
     }
     
     /** @return return the query results as a List. */
     public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
-            Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.fingerprint=:fingerprint");
-            query.setParameter("fingerprint", fingerprint);
-            return query.getResultList();
+    	Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.fingerprint=:fingerprint");
+    	query.setParameter("fingerprint", fingerprint);
+    	return query.getResultList();
     }
 
     /** 
@@ -285,14 +228,12 @@ public class PublisherQueueData implements Serializable {
      * 
      * @return return the query results as a List. */
     public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus, int maxRows) {
-            Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
-            query.setParameter("publisherId", publisherId);
-            query.setParameter("publishStatus", publishStatus);
-            if(maxRows > 0 ) {
-                query.setMaxResults(maxRows);
-            }
-            return query.getResultList();
+    	Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
+    	query.setParameter("publisherId", publisherId);
+    	query.setParameter("publishStatus", publishStatus);
+    	if(maxRows > 0 ) {
+    		query.setMaxResults(maxRows);
+    	}
+    	return query.getResultList();
     }
-    
-
 }

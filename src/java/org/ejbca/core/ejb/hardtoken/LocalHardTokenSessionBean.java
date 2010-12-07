@@ -584,7 +584,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         while (i.hasNext()) {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = i.next();
             if (authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
-                returnval.add(new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
+                returnval.add(new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer()));
             }
         }
         Collections.sort(returnval);
@@ -629,7 +629,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         while (i.hasNext()) {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = i.next();
             if (authorizedhardtokenprofiles.containsAll(htih.getHardTokenIssuer().getAvailableHardTokenProfiles())) {
-                returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih
+                returnval.put(htih.getAlias(), new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih
                         .getHardTokenIssuer()));
             }
         }
@@ -650,7 +650,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         HardTokenIssuerData returnval = null;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
-            returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
+            returnval = new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
         log.trace("<getHardTokenIssuerData()");
         return returnval;
@@ -669,7 +669,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         HardTokenIssuerData returnval = null;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id));
         if (htih != null) {
-            returnval = new HardTokenIssuerData(htih.getId().intValue(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
+            returnval = new HardTokenIssuerData(htih.getId(), htih.getAlias(), htih.getAdminGroupId(), htih.getHardTokenIssuer());
         }
         log.trace("<getHardTokenIssuerData()");
         return returnval;
@@ -699,7 +699,7 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         int returnval = NO_ISSUER;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
-            returnval = htih.getId().intValue();
+            returnval = htih.getId();
         }
         log.trace("<getHardTokenIssuerId()");
         return returnval;

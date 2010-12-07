@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
@@ -43,7 +42,9 @@ import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.hardtoken.HardTokenProfileData;
 import org.ejbca.core.ejb.hardtoken.HardTokenPropertyData;
+import org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK;
 import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.ejb.log.LogEntryData;
 import org.ejbca.core.ejb.ra.UserData;
@@ -241,14 +242,16 @@ public class DatabaseSchemaTest extends TestCase {
 		entity.setCertificateProfileId(BOGUS_INTEGER);
 		entity.setExpireDate(0L);
 		entity.setFingerprint(VARCHAR_250B);
-		setPrivateField(entity, "issuerDN", VARCHAR_250B);
+		entity.setIssuerDN(VARCHAR_250B);
+		//setPrivateField(entity, "issuerDN", VARCHAR_250B);
 		entity.setRevocationDate(0L);
 		entity.setRevocationReason(0);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		entity.setSerialNumber(VARCHAR_250B);
 		entity.setStatus(0);
-		setPrivateField(entity, "subjectDN", VARCHAR_250B);
+		entity.setSubjectDN(VARCHAR_250B);
+		//setPrivateField(entity, "subjectDN", VARCHAR_250B);
 		entity.setSubjectKeyId(VARCHAR_250B);
 		entity.setTag(VARCHAR_250B);
 		entity.setType(0);
@@ -261,14 +264,18 @@ public class DatabaseSchemaTest extends TestCase {
 	public void testCertReqHistoryData() {
 		LOG.trace(">testCertReqHistoryData");
 		CertReqHistoryData entity = new CertReqHistoryData();
-		setPrivateField(entity, "issuerDN", VARCHAR_250B);
-		setPrivateField(entity, "fingerprint", VARCHAR_250B);
+		entity.setIssuerDN(VARCHAR_250B);
+		entity.setFingerprint(VARCHAR_250B);
+		//setPrivateField(entity, "issuerDN", VARCHAR_250B);
+		//setPrivateField(entity, "fingerprint", VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
-		setPrivateField(entity, "serialNumber", VARCHAR_250B);
+		entity.setSerialNumber(VARCHAR_250B);
+		//setPrivateField(entity, "serialNumber", VARCHAR_250B);
 		entity.setTimestamp(0L);
 		entity.setUserDataVO(CLOB_1MiB);
-		setPrivateField(entity, "username", VARCHAR_250B);
+		entity.setUsername(VARCHAR_250B);
+		//setPrivateField(entity, "username", VARCHAR_250B);
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testCertReqHistoryData");
 	}
@@ -281,7 +288,8 @@ public class DatabaseSchemaTest extends TestCase {
 		entity.setCrlNumber(0);
 		entity.setDeltaCRLIndicator(0);
 		entity.setFingerprint(VARCHAR_250B);
-		setPrivateField(entity, "issuerDN", VARCHAR_250B);
+		entity.setIssuerDN(VARCHAR_250B);
+		//setPrivateField(entity, "issuerDN", VARCHAR_250B);
 		entity.setNextUpdate(0L);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
@@ -346,8 +354,8 @@ public class DatabaseSchemaTest extends TestCase {
 	public void testHardTokenPropertyData() {
 		LOG.trace(">testHardTokenPropertyData");
 		HardTokenPropertyData entity = new HardTokenPropertyData();
-		entity.setId(VARCHAR_80B);	// Combined primary key id+property has to be less than 1000 bytes on MyISAM (UTF8: 3*(80+250) < 1000 bytes)
-		entity.setProperty(VARCHAR_250B);
+		// Combined primary key id+property has to be less than 1000 bytes on MyISAM (UTF8: 3*(80+250) < 1000 bytes)
+		entity.setHardTokenPropertyDataPK(new HardTokenPropertyDataPK(VARCHAR_80B, VARCHAR_250B));
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		entity.setValue(VARCHAR_250B);
@@ -358,8 +366,7 @@ public class DatabaseSchemaTest extends TestCase {
 	public void testKeyRecoveryData() {
 		LOG.trace(">testKeyRecoveryData");
 		KeyRecoveryData entity = new KeyRecoveryData();
-		entity.setCertSN(VARCHAR_80B);
-		entity.setIssuerDN(VARCHAR_250B);
+		entity.setKeyRecoveryDataPK(new KeyRecoveryDataPK(VARCHAR_80B, VARCHAR_250B));
 		entity.setKeyData(CLOB_1MiB);
 		entity.setMarkedAsRecoverable(false);
 		entity.setRowProtection(CLOB_10KiB);
@@ -535,7 +542,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<storeAndRemoveEntity");
 	}
 	
-	/** Used in order to bypass validity check of different private fields that are access via transient setters. */
+	/* * Used in order to bypass validity check of different private fields that are access via transient setters. * /
 	private void setPrivateField(Object entity, String fieldName, Object value) {
 		LOG.trace(">setPrivateField");
 		try {
@@ -548,4 +555,5 @@ public class DatabaseSchemaTest extends TestCase {
 		}
 		LOG.trace("<setPrivateField");
 	}
+	*/
 }

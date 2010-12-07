@@ -20,16 +20,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.UpgradeableDataHashMap;
@@ -59,11 +55,11 @@ public class CAData implements Serializable {
 	private Integer cAId;
 	private String name;
 	private String subjectDN;
-	private int status;
-	private long expireTime;
-	private long updateTime;
+	private int status = 0;			// not null, we need a default
+	private long expireTime = 0;	// not null, we need a default
+	private long updateTime = 0;	// not null, we need a default
 	private String data;
-	private int rowVersion = 0;
+	private int rowVersion = 0;		// not null, we need a default
 	private String rowProtection;
 
 	/**
@@ -76,7 +72,7 @@ public class CAData implements Serializable {
 	public CAData(String subjectdn, String name, int status, CA ca) {
 		try {
     		setCaId(Integer.valueOf(subjectdn.hashCode()));
-    		setName(name);        
+    		setName(name);
     		setSubjectDN(subjectdn);
     		if (ca.getCertificateChain().size() != 0) {
     			Certificate cacert = ca.getCACertificate();
@@ -98,45 +94,40 @@ public class CAData implements Serializable {
 	
 	public CAData() { }
 	
-	@Id
-	@Column(name="cAId")
+	//@Id @Column
 	public Integer getCaId() { return cAId; }
 	public void setCaId(Integer cAId) { this.cAId = cAId; }
 
-	@Column(name="name")
+	//@Column
 	public String getName() { return name; }
 	public void setName(String name) { this.name = name; }
 
-	@Column(name="subjectDN")
+	//@Column
 	public String getSubjectDN() { return subjectDN; }
 	public void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
 
-	@Column(name="status", nullable=false)
+	//@Column
 	public int getStatus() { return status; }
 	public void setStatus(int status) { this.status = status; }
 
-	@Column(name="expireTime", nullable=false)
+	//@Column
 	public long getExpireTime() { return expireTime; }
 	public void setExpireTime(long expireTime) { this.expireTime = expireTime; }
 
 	/** When was this CA updated in the database */
-	@Column(name="updateTime", nullable=false)
+	//@Column
 	public long getUpdateTime() { return updateTime; }
 	public void setUpdateTime(long updateTime){ this.updateTime = updateTime; }
 
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB [2,147,483,647 characters], Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [4GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-	@Column(name="data", length=65535)
-	@Lob
+	//@Column @Lob
 	public String getData() { return data; }
 	public void setData(String data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

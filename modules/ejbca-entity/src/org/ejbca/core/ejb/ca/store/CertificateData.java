@@ -26,27 +26,23 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.ValueExtractor;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.ValueExtractor;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -117,8 +113,7 @@ public class CertificateData implements Serializable {
     		int type, int certprofileid, String tag, long updatetime) {
 		// Extract all fields to store with the certificate.
 		try {
-            String b64Cert = new String(Base64.encode(incert.getEncoded()));
-            setBase64Cert(b64Cert);
+            setBase64Cert(new String(Base64.encode(incert.getEncoded())));
 
             String fp = CertTools.getFingerprintAsString(incert);
             setFingerprint(fp);
@@ -156,47 +151,19 @@ public class CertificateData implements Serializable {
             setSubjectKeyId(keyId);
             setTag(tag);
 		} catch (CertificateEncodingException cee) {
-			log.error("Can't extract DER encoded certificate information.", cee);
-			// TODO should throw an exception
+			final String msg = "Can't extract DER encoded certificate information.";
+			log.error(msg, cee);
+			throw new RuntimeException(msg);
 		}
 	}
 
 	public CertificateData() { }
 
 	/**
-	 * DN of issuer of certificate
-	 * @return issuer dn
-	 */
-	@Column(name="issuerDN")
-	public String getIssuerDN() { return issuerDN; }
-
-	/**
-	 * Use setIssuer instead
-	 * @param issuerDN issuer dn
-	 * @see #setIssuer(String)
-	 */
-	private void setIssuerDN(String issuerDN) { this.issuerDN = issuerDN; }
-
-	/**
-	 * DN of subject in certificate
-	 * @return subject dn
-	 */
-	@Column(name="subjectDN")
-	public String getSubjectDN() { return subjectDN; }
-
-	/**
-	 * Use setSubject instead
-	 * @param subjectDN subject dn
-	 * @see #setSubject(String)
-	 */
-	private void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
-
-	/**
 	 * Fingerprint of certificate
 	 * @return fingerprint
 	 */
-	@Id
-	@Column(name="fingerprint")
+	//@Id @Column
 	public String getFingerprint() { return fingerprint; }
 
 	/**
@@ -206,10 +173,38 @@ public class CertificateData implements Serializable {
 	public void setFingerprint(String fingerprint) { this.fingerprint = fingerprint; }
 
 	/**
+	 * DN of issuer of certificate
+	 * @return issuer dn
+	 */
+	//@Column
+	public String getIssuerDN() { return issuerDN; }
+
+	/**
+	 * Use setIssuer instead
+	 * @param issuerDN issuer dn
+	 * @see #setIssuer(String)
+	 */
+	public void setIssuerDN(String issuerDN) { this.issuerDN = issuerDN; }
+
+	/**
+	 * DN of subject in certificate
+	 * @return subject dn
+	 */
+	//@Column
+	public String getSubjectDN() { return subjectDN; }
+
+	/**
+	 * Use setSubject instead
+	 * @param subjectDN subject dn
+	 * @see #setSubject(String)
+	 */
+	public void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
+
+	/**
 	 * Fingerprint of CA certificate
 	 * @return fingerprint
 	 */
-	@Column(name="cAFingerprint")
+	//@Column
 	public String getCaFingerprint() { return cAFingerprint; }
 
 	/**
@@ -222,7 +217,7 @@ public class CertificateData implements Serializable {
 	 * status of certificate, ex CertificateData.CERT_ACTIVE
 	 * @return status
 	 */
-	@Column(name="status", nullable=false)
+	//@Column
 	public int getStatus() { return status; }
 
 	/**
@@ -235,7 +230,7 @@ public class CertificateData implements Serializable {
 	 * What type of user the certificate belongs to, ex SecConst.USER_ENDUSER
 	 * @return user type
 	 */
-	@Column(name="type", nullable=false)
+	//@Column
 	public int getType() { return type; }
 
 	/**
@@ -248,7 +243,7 @@ public class CertificateData implements Serializable {
 	 * Serialnumber formated as BigInteger.toString()
 	 * @return serial number
 	 */
-	@Column(name="serialNumber")
+	//@Column
 	public String getSerialNumber() { return serialNumber; }
 
 	/**
@@ -261,7 +256,7 @@ public class CertificateData implements Serializable {
 	 * Date formated as seconds since 1970 (== Date.getTime())
 	 * @return expire date
 	 */
-	@Column(name="expireDate", nullable=false)
+	//@Column
 	public long getExpireDate() { return expireDate; }
 
 	/**
@@ -274,7 +269,7 @@ public class CertificateData implements Serializable {
 	 * Set to date when revocation occured if status == CERT_REVOKED. Format == Date.getTime()
 	 * @return revocation date
 	 */
-	@Column(name="revocationDate", nullable=false)
+	//@Column
 	public long getRevocationDate() { return revocationDate; }
 
 	/**
@@ -287,7 +282,7 @@ public class CertificateData implements Serializable {
 	 * Set to revocation reason if status == CERT_REVOKED
 	 * @return revocation reason
 	 */
-	@Column(name="revocationReason", nullable=false)
+	//@Column
 	public int getRevocationReason() { return revocationReason; }
 
 	/**
@@ -300,9 +295,7 @@ public class CertificateData implements Serializable {
 	 * The certificate itself
 	 * @return base64 encoded certificate
 	 */
-	// DB2: CLOB(1M), Derby: CLOB(1 M), Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [2GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-	@Column(name="base64Cert", length=1024*1024*1024)
-	@Lob
+	//@Column @Lob
 	public String getBase64Cert() { return base64Cert; } 
 
 	/**
@@ -315,7 +308,7 @@ public class CertificateData implements Serializable {
 	 * username in database
 	 * @return username
 	 */
-	@Column(name="username")
+	//@Column
 	public String getUsername() { return username; }
 
 	/**
@@ -328,7 +321,7 @@ public class CertificateData implements Serializable {
 	 * tag in database. This field was added for the 3.9.0 release, but is not used yet.
 	 * @return tag
 	 */
-	@Column(name="tag")
+	//@Column
 	public String getTag() { return tag; }
 
 	/**
@@ -342,7 +335,7 @@ public class CertificateData implements Serializable {
      *
      * @return certificateProfileId
      */
-	@Column(name="certificateProfileId")
+	//@Column
     public Integer getCertificateProfileId() { return certificateProfileId; }
 
     /**
@@ -357,19 +350,19 @@ public class CertificateData implements Serializable {
      *
      * @return updateTime
      */
-	@Column(name="updateTime", nullable=false)
+    //@Column
     public Long getUpdateTime() { return updateTime; }
 
     /**
      * The time this row was last updated.
      */
-	// Hibernate + Oracle ignores nullable=false so we can expect null-objects as input after upgrade
+	// Hibernate + Oracle ignores nullable=false so we can expect null-objects as input after upgrade. TODO: Verify if still true!
     public void setUpdateTime(Long updateTime) { this.updateTime = (updateTime==null?this.updateTime:updateTime); }
 
     /**
      * The ID of the public key of the certificate
      */
-	@Column(name="subjectKeyId")
+    //@Column
     public String getSubjectKeyId() { return subjectKeyId; }
 
     /**
@@ -377,13 +370,11 @@ public class CertificateData implements Serializable {
      */
 	public void setSubjectKeyId(String subjectKeyId) { this.subjectKeyId = subjectKeyId; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
