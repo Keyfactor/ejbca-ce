@@ -23,15 +23,11 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.approval.Approval;
@@ -43,6 +39,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.ValueExtractor;
 
 /**
  * Representation of approval data used to control request and their approvals.
@@ -56,7 +53,7 @@ public class ApprovalData implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ApprovalData.class);
 
-	private Integer id;
+	private int id;
 	private int approvalid;
 	private int approvaltype;
 	private int endentityprofileid;
@@ -73,9 +70,11 @@ public class ApprovalData implements Serializable {
 	private String rowProtection;
 
 	/**
-	 * Entity holding data of a approval data
+	 * Entity holding data of a approval data.
+	 * 
+	 * The constructor is responsible for populating all non-nullable fields!
 	 */
-	public ApprovalData(Integer id, ApprovalRequest approvalRequest) {
+	public ApprovalData(int id, ApprovalRequest approvalRequest) {
 		setId(id);
 		setApprovalid(approvalRequest.generateApprovalId());
 		setApprovaltype(approvalRequest.getApprovalType());
@@ -96,23 +95,18 @@ public class ApprovalData implements Serializable {
 
 	public ApprovalData() { }
 			
-	/**
-	 * unique row id
-	 */
-	@Id
-	@Column(name="id")
-	public Integer getId() { return id; }
+	/** unique row id */
+	//@Id @Column
+	public int getId() { return id; }
 
-	/**
-	 * unique row id
-	 */
-	public void setId(Integer id) { this.id = id; }
+	/** unique row id */
+	public void setId(int id) { this.id = id; }
 
 	/**
 	 * Constructed from action data as actiontype, admin, username etc. It should
 	 * result in the same approvalid if the admin tries to request the same action twice.
 	 */
-	@Column(name="approvalid", nullable=false)
+	//@Column
 	public int getApprovalid() { return approvalid; }
 	/**
 	 * Constructed from action data as actiontype, admin, username etc. It should
@@ -124,7 +118,7 @@ public class ApprovalData implements Serializable {
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
 	 * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
 	 */
-	@Column(name="approvaltype", nullable=false)
+	//@Column
 	public int getApprovaltype() { return approvaltype; }
 	/**
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
@@ -136,7 +130,7 @@ public class ApprovalData implements Serializable {
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
 	 */
-	@Column(name="endentityprofileid", nullable=false)
+	//@Column
 	public int getEndentityprofileid() { return endentityprofileid; }
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
@@ -148,7 +142,7 @@ s	 */
 	 * For CA specific approval requests should the related ca id be specified
 	 * for non ca request should this field be set to ApprovalDataVO.ANY_CA
 	 */
-	@Column(name="caid", nullable=false)
+	//@Column
 	public int getCaid() { return caid; }
 	/**
 	 * For CA specific approval requests should the related ca id be specified
@@ -159,7 +153,7 @@ s	 */
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
 	 */
-	@Column(name="reqadmincertissuerdn")
+	//@Column
 	public String getReqadmincertissuerdn() { return reqadmincertissuerdn; }
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
@@ -169,7 +163,7 @@ s	 */
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
 	 */
-	@Column(name="reqadmincertsn")
+	//@Column
 	public String getReqadmincertsn() { return reqadmincertsn; }
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
@@ -180,7 +174,7 @@ s	 */
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
 	 * STATUS_REJECTED, STATUS_EXPIRED
 	 */
-	@Column(name="status", nullable=false)
+	//@Column
 	public int getStatus() { return status; }
 	/**
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
@@ -191,9 +185,7 @@ s	 */
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	// DB2: CLOB(1M), Derby: CLOB(1 M), Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: LONGTEXT, Oracle: VARCHAR2(4000), Sybase: TEXT 
-	@Column(name="approvaldata", length=1024*1024*1024)
-	@Lob
+	//@Column @Lob
 	public String getApprovaldata() { return approvaldata; }
 
 	/**
@@ -204,9 +196,7 @@ s	 */
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	// DB2: CLOB(1M), Derby: CLOB(1 M), Informix: TEXT, Ingres: CLOB, Hsql: VARCHAR [Integer.MAXVALUE], MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
-	@Column(name="requestdata", length=1024*1024*1024)
-	@Lob
+	//@Column @Lob
 	public String getRequestdata() { return requestdata; }
 
 	/**
@@ -217,7 +207,7 @@ s	 */
 	/**
 	 * Date the request for approval were added
 	 */
-	@Column(name="requestdate", nullable=false)
+	//@Column
 	public long getRequestdate() { return requestdate; }
 	/**
 	 * Date the request for approval were added
@@ -228,7 +218,7 @@ s	 */
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
-	@Column(name="expiredate", nullable=false)
+	//@Column
 	public long getExpiredate() { return expiredate; }
 	/**
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
@@ -239,20 +229,18 @@ s	 */
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
 	 */
-	@Column(name="remainingapprovals", nullable=false)
+	//@Column
 	public int getRemainingapprovals() { return remainingapprovals; }
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
 	public void setRemainingapprovals(int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -287,7 +275,7 @@ s	 */
 
 	@Transient
 	public ApprovalRequest getApprovalRequest() {
-		return ApprovalDataUtil.getApprovalRequest(getRequestdata());
+		return ApprovalDataUtil.getApprovalRequest(requestdata);	//getRequestdata()
 	}
 
 	public void setApprovalRequest(ApprovalRequest approvalRequest){
@@ -357,7 +345,7 @@ s	 */
 	@Transient
 	public ApprovalDataVO getApprovalDataVO() {
 		haveRequestOrApprovalExpired();
-		return new ApprovalDataVO(getId().intValue(),getApprovalid(),getApprovaltype(),
+		return new ApprovalDataVO(getId(), getApprovalid(),getApprovaltype(),
 				getEndentityprofileid(),getCaid(),getReqadmincertissuerdn(),
 				getReqadmincertsn(), getStatus(),getApprovals(), getApprovalRequest(),
 				getRequestDate(),getExpireDate(),getRemainingapprovals());
@@ -519,18 +507,19 @@ s	 * @throws ApprovalRequestExpiredException
 	}
 
 	/** @return return the query results as a List<ApprovalData>. */
-	public static List<ApprovalData> findByCustomQuery(EntityManager entityManager, int index, int numberofrows, String customQuery) {
-		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults  
-		Query query = entityManager.createNativeQuery("SELECT id, approvalid, approvaltype, endentityprofileid, caid, reqadmincertissuerdn, reqadmincertsn, status, "
-				+ "approvaldata, requestdata, requestdate, expiredate, remainingapprovals, rowVersion, rowProtection FROM ApprovalData WHERE " + customQuery, ApprovalData.class);
+	public static List<ApprovalDataVO> findByCustomQuery(EntityManager entityManager, int index, int numberofrows, String customQuery) {
+		List<ApprovalDataVO> ret = new ArrayList<ApprovalDataVO>();
+		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
+		// Ingres wont let us access a LOB in a List using a native query for all fields.
+		// -> So we will get a list of primary keys and the fetch the whole entities one by one...
+		Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
 		query.setFirstResult(index);
 		query.setMaxResults(numberofrows);
-		return query.getResultList();
+		List<Object> ids = query.getResultList();
+		for (Object object : ids) {
+			int id = ValueExtractor.extractIntValue(object);
+			ret.add(entityManager.find(ApprovalData.class, id).getApprovalDataVO());
+		}
+		return ret;
 	}
-
-	/* * @return return the query results as a List. * /
-	public static List<ApprovalData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a");
-		return query.getResultList();
-	}*/
 }

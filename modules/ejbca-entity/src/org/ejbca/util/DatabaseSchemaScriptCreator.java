@@ -52,9 +52,13 @@ public class DatabaseSchemaScriptCreator {
 			final String[] createScript = hibernateConfiguration.generateSchemaCreationScript(Dialect.getDialect(ejb3Configuration.getProperties()));
 			sb = new StringBuilder();
 			for (String line : createScript) {
-				// Format nicely
+				// Format nicely, so it looks more like the old, manually created ones.
 				if (line.startsWith("create")) {
+					line = line.replaceAll("create table", "CREATE TABLE");
+					line = line.replaceAll("primary key", "PRIMARY KEY");
+					line = line.replaceAll("not null", "NOT NULL");
 					line = line.replaceAll("Data \\(", "Data \\(\n    ");
+					line = line.replaceAll("Map \\(", "Map \\(\n    ");
 					line = line.replaceAll(", ", ",\n    ");
 				}
 				line += ";\n\n";

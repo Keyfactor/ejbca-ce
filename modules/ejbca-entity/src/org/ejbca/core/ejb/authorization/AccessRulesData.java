@@ -16,16 +16,11 @@ package org.ejbca.core.ejb.authorization;
 import java.io.Serializable;
 import java.math.BigInteger;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -37,7 +32,6 @@ import org.ejbca.core.model.authorization.AccessRule;
  */
 @Entity
 @Table(name="AccessRulesData")
-@IdClass(AccessRulesDataPK.class)
 public class AccessRulesData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -46,13 +40,13 @@ public class AccessRulesData implements Serializable {
 	private int pK;
 	private String accessRule;
 	private int rule;
-	private boolean isRecursive;
+	private Boolean isRecursiveBool;
+	private Integer isRecursiveInt;
 	private int rowVersion = 0;
 	private String rowProtection;
 	
 	public AccessRulesData(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) {
-		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive));
-		setPrimKey(accessRulesDataPK.primKey);
+		setPrimKey(generatePrimaryKey(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive)));
 		setAccessRule(accessrule);
 		setRule(rule);
 		setIsRecursive(isrecursive);
@@ -61,35 +55,76 @@ public class AccessRulesData implements Serializable {
 	
 	public AccessRulesData() { }
 	
-	@Id
-	@Column(name="pK")
+	//@Id @Column
 	public int getPrimKey() { return pK; }
 	public void setPrimKey(int primKey) { this.pK = primKey; }
 
-	@Column(name="accessRule")
+	//@Column
 	public String getAccessRule() { return accessRule; }
 	public void setAccessRule(String accessRule) { this.accessRule = accessRule; }
 
 	/** Return the status of the rule. One of AccessRule.RULE_... */
-	// TODO: "rule" is a reserved word on MS SQL Server and Sybase. Perhaps we should rename this to "ruleStatus".
-	@Column(name="rule", nullable=false)
+	//@Column	"rule" is a reserved word on MS SQL Server and Sybase
 	public int getRule() { return rule; }
 	public void setRule(int rule) { this.rule = rule; }
 
-	@Column(name="isRecursive", nullable=false)
-	public boolean getIsRecursive() { return isRecursive; }
-	public void setIsRecursive(boolean isRecursive) { this.isRecursive = isRecursive; }
+	@Transient
+	public boolean getIsRecursive() {
+		Boolean isRecB = getIsRecursiveBool();
+		if (isRecB != null) {
+			return isRecB.booleanValue();
+		}
+		Integer isRecI = getIsRecursiveInt();
+		if (isRecI != null) {
+			return isRecI.intValue() == 1;
+		}
+		throw new RuntimeException("Could not retreive AccessRulesData.isRecursive from database.");
+	}
+	public void setIsRecursive(boolean isRecursive) {
+		setIsRecursiveBool(Boolean.valueOf(isRecursive));
+		setIsRecursiveInt(isRecursive ? 1 : 0);
+	}
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	/**
+	 * Use getIsRecursive() instead of this method!
+	 * Ingres:     Transient
+	 * Non-ingres: Mapped to "isRecursive" 
+	 */
+	public Boolean getIsRecursiveBool() { return isRecursiveBool; }
+	/** Use setIsRecursive(boolean) instead of this method! */
+	public void setIsRecursiveBool(Boolean isRecursiveBool) { this.isRecursiveBool = isRecursiveBool; }
+
+	/**
+	 * Use getIsRecursive() instead of this method!
+	 * Ingres:     Mapped to "isRecursive"
+	 * Non-ingres: Transient
+	 */
+	public Integer getIsRecursiveInt() { return isRecursiveInt; }
+	/** Use setIsRecursive(boolean) instead of this method! */
+	public void setIsRecursiveInt(Integer isRecursiveInt) { this.isRecursiveInt = isRecursiveInt; }
+
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
+	/**
+	 * The current pk in AdminEntityData and AccessRulesData is a mix of integer pk and 
+	 * constraints and actually works fine. 
+	 * It's used like a primitive int primary key in the db, but embeds logic for 
+	 * enforcing constraints, which would otherwise have to be programatically added to the beans.
+	 * If needed it can easily be replaced with an int pk and programatic logic to handle 
+	 * constraints. From the database view the pk is just an int.
+	 */
+	private static int generatePrimaryKey(String admingroupname, int caid, AccessRule accessrule) {
+		final int adminGroupNameHash = admingroupname == null ? 0 : admingroupname.hashCode();
+		final int accessRuleHash = accessrule.getAccessRule() == null ? 0 : accessrule.getAccessRule().hashCode();
+		return adminGroupNameHash ^ caid ^ accessRuleHash;
+	}
+	
 	/**
 	 * Return the access rule transfer object
 	 * @return the access rule transfer object
@@ -104,17 +139,11 @@ public class AccessRulesData implements Serializable {
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static AccessRulesData findByPrimeKey(EntityManager entityManager, AccessRulesDataPK accessRulesDataPK) {
-		return entityManager.find(AccessRulesData.class, accessRulesDataPK);
-	}
-
-	/** @return the found entity instance or null if the entity does not exist */
 	public static AccessRulesData findByPrimeKey(EntityManager entityManager, String admingroupname, int caid, AccessRule accessrule) {
-		AccessRulesDataPK accessRulesDataPK = new AccessRulesDataPK(admingroupname, caid, accessrule); 
-		return findByPrimeKey(entityManager, accessRulesDataPK);
+		return entityManager.find(AccessRulesData.class, generatePrimaryKey(admingroupname, caid, accessrule));
 	}
 
-	/** @return return the count. */
+	/** @return return the count. isRecursive should never be referenced in the WHERE clause. */
 	public static long findCountByCustomQuery(EntityManager entityManager, String whereClause) {
 		Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
 		BigInteger v = (BigInteger)query.getSingleResult();

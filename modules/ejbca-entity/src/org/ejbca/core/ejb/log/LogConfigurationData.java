@@ -15,14 +15,10 @@ package org.ejbca.core.ejb.log;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -39,7 +35,7 @@ public class LogConfigurationData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Integer id;
+	private int id;
 	private Serializable logConfiguration;
 	private int logEntryRowNumber;
 	private int rowVersion = 0;
@@ -51,7 +47,7 @@ public class LogConfigurationData implements Serializable {
 	 * @param id the unique id of the log configuration.
 	 * @param logConfiguration is the serialized representation of the log configuration.
 	 */
-	public LogConfigurationData(Integer id, LogConfiguration logConfiguration) {
+	public LogConfigurationData(int id, LogConfiguration logConfiguration) {
 		setId(id);
 		setLogConfiguration(logConfiguration);
 		setLogEntryRowNumber(0);
@@ -59,14 +55,11 @@ public class LogConfigurationData implements Serializable {
 
 	public LogConfigurationData() { }
 
-	@Id
-	@Column(name="id")
-	public Integer getId() { return id; }
-	public void setId(Integer id) { this.id = id; }
+	//@Id @Column
+	public int getId() { return id; }
+	public void setId(int id) { this.id = id; }
 
-	// DB2: BLOB(200K), Derby: , Informix: , Ingres: , MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
-	@Column(name="logConfiguration", length=200*1024)
-	@Lob
+	//@Column @Lob
 	public Serializable getLogConfigurationUnsafe() {
 		LogConfiguration h = JBossUnmarshaller.extractObject(LogConfiguration.class, logConfiguration);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
@@ -81,17 +74,15 @@ public class LogConfigurationData implements Serializable {
 	private LogConfiguration getLogConfiguration() { return (LogConfiguration) getLogConfigurationUnsafe(); }
 	private void setLogConfiguration(LogConfiguration logConfiguration) { setLogConfigurationUnsafe(logConfiguration); }
 
-	@Column(name="logEntryRowNumber", nullable=false)
+	//@Column
 	public int getLogEntryRowNumber() { return logEntryRowNumber; }
 	public void setLogEntryRowNumber(int logEntryRowNumber) { this.logEntryRowNumber = logEntryRowNumber; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

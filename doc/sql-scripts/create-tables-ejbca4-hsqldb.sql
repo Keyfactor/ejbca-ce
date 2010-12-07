@@ -1,8 +1,8 @@
 CREATE TABLE AccessRulesData (
     pK INTEGER NOT NULL,
     accessRule VARCHAR(256) NOT NULL,
-    isRecursive SMALLINT NOT NULL,
-    rowProtection CLOB(10 K),
+    isRecursive BOOLEAN NOT NULL,
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     rule INTEGER NOT NULL,
     AdminGroupData_accessRules INTEGER,
@@ -15,7 +15,7 @@ CREATE TABLE AdminEntityData (
     matchType INTEGER NOT NULL,
     matchValue VARCHAR(256),
     matchWith INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     AdminGroupData_adminEntities INTEGER,
     PRIMARY KEY (pK)
@@ -25,22 +25,22 @@ CREATE TABLE AdminGroupData (
     pK INTEGER NOT NULL,
     adminGroupName VARCHAR(256) NOT NULL,
     cAId INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (pK)
 );
 
 CREATE TABLE AdminPreferencesData (
     id VARCHAR(256) NOT NULL,
-    data BLOB NOT NULL,
-    rowProtection CLOB(10 K),
+    data VARBINARY NOT NULL,
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE ApprovalData (
     id INTEGER NOT NULL,
-    approvaldata CLOB NOT NULL,
+    approvaldata VARCHAR NOT NULL,
     approvalid INTEGER NOT NULL,
     approvaltype INTEGER NOT NULL,
     caid INTEGER NOT NULL,
@@ -49,9 +49,9 @@ CREATE TABLE ApprovalData (
     remainingapprovals INTEGER NOT NULL,
     reqadmincertissuerdn VARCHAR(256),
     reqadmincertsn VARCHAR(256),
-    requestdata CLOB NOT NULL,
+    requestdata VARCHAR NOT NULL,
     requestdate BIGINT NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -60,17 +60,17 @@ CREATE TABLE ApprovalData (
 CREATE TABLE AuthorizationTreeUpdateData (
     pK INTEGER NOT NULL,
     authorizationTreeUpdateNumber INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (pK)
 );
 
 CREATE TABLE CAData (
     cAId INTEGER NOT NULL,
-    data CLOB NOT NULL,
+    data VARCHAR NOT NULL,
     expireTime BIGINT NOT NULL,
     name VARCHAR(256),
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
     subjectDN VARCHAR(256),
@@ -80,13 +80,13 @@ CREATE TABLE CAData (
 
 CREATE TABLE CRLData (
     fingerprint VARCHAR(256) NOT NULL,
-    base64Crl CLOB NOT NULL,
+    base64Crl VARCHAR NOT NULL,
     cAFingerprint VARCHAR(256) NOT NULL,
     cRLNumber INTEGER NOT NULL,
     deltaCRLIndicator INTEGER NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
     nextUpdate BIGINT NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     thisUpdate BIGINT NOT NULL,
     PRIMARY KEY (fingerprint)
@@ -95,25 +95,25 @@ CREATE TABLE CRLData (
 CREATE TABLE CertReqHistoryData (
     fingerprint VARCHAR(256) NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(256) NOT NULL,
     timestamp BIGINT NOT NULL,
-    userDataVO CLOB NOT NULL,
+    userDataVO VARCHAR NOT NULL,
     username VARCHAR(256) NOT NULL,
     PRIMARY KEY (fingerprint)
 );
 
 CREATE TABLE CertificateData (
     fingerprint VARCHAR(256) NOT NULL,
-    base64Cert CLOB,
+    base64Cert VARCHAR,
     cAFingerprint VARCHAR(256),
     certificateProfileId INTEGER NOT NULL,
     expireDate BIGINT NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
     revocationDate BIGINT NOT NULL,
     revocationReason INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(256) NOT NULL,
     status INTEGER NOT NULL,
@@ -129,32 +129,32 @@ CREATE TABLE CertificateData (
 CREATE TABLE CertificateProfileData (
     id INTEGER NOT NULL,
     certificateProfileName VARCHAR(256) NOT NULL,
-    data BLOB NOT NULL,
-    rowProtection CLOB(10 K),
+    data VARBINARY NOT NULL,
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE EndEntityProfileData (
     id INTEGER NOT NULL,
-    data BLOB NOT NULL,
+    data VARBINARY NOT NULL,
     profileName VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE GlobalConfigurationData (
     configurationId VARCHAR(256) NOT NULL,
-    data BLOB NOT NULL,
-    rowProtection CLOB(10 K),
+    data VARBINARY NOT NULL,
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (configurationId)
 );
 
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     tokenSN VARCHAR(256) NOT NULL,
     PRIMARY KEY (certificateFingerprint)
@@ -163,9 +163,9 @@ CREATE TABLE HardTokenCertificateMap (
 CREATE TABLE HardTokenData (
     tokenSN VARCHAR(256) NOT NULL,
     cTime BIGINT NOT NULL,
-    data BLOB,
+    data VARBINARY,
     mTime BIGINT NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     significantIssuerDN VARCHAR(256),
     tokenType INTEGER NOT NULL,
@@ -177,17 +177,17 @@ CREATE TABLE HardTokenIssuerData (
     id INTEGER NOT NULL,
     adminGroupId INTEGER NOT NULL,
     alias VARCHAR(256) NOT NULL,
-    data BLOB NOT NULL,
-    rowProtection CLOB(10 K),
+    data VARBINARY NOT NULL,
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE HardTokenProfileData (
     id INTEGER NOT NULL,
-    data CLOB,
+    data VARCHAR,
     name VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     updateCounter INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -196,7 +196,7 @@ CREATE TABLE HardTokenProfileData (
 CREATE TABLE HardTokenPropertyData (
     id VARCHAR(256) NOT NULL,
     property VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     value VARCHAR(256),
     PRIMARY KEY (id,
@@ -206,9 +206,9 @@ CREATE TABLE HardTokenPropertyData (
 CREATE TABLE KeyRecoveryData (
     certSN VARCHAR(256) NOT NULL,
     issuerDN VARCHAR(256) NOT NULL,
-    keyData CLOB NOT NULL,
-    markedAsRecoverable SMALLINT NOT NULL,
-    rowProtection CLOB(10 K),
+    keyData VARCHAR NOT NULL,
+    markedAsRecoverable BOOLEAN NOT NULL,
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     username VARCHAR(256),
     PRIMARY KEY (certSN,
@@ -217,9 +217,9 @@ CREATE TABLE KeyRecoveryData (
 
 CREATE TABLE LogConfigurationData (
     id INTEGER NOT NULL,
-    logConfiguration BLOB NOT NULL,
+    logConfiguration VARBINARY NOT NULL,
     logEntryRowNumber INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
@@ -233,7 +233,7 @@ CREATE TABLE LogEntryData (
     event INTEGER NOT NULL,
     logComment VARCHAR(256),
     module INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     time BIGINT NOT NULL,
     username VARCHAR(256),
@@ -242,9 +242,9 @@ CREATE TABLE LogEntryData (
 
 CREATE TABLE PublisherData (
     id INTEGER NOT NULL,
-    data CLOB,
+    data VARCHAR,
     name VARCHAR(256),
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     updateCounter INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -257,20 +257,20 @@ CREATE TABLE PublisherQueueData (
     publishStatus INTEGER NOT NULL,
     publishType INTEGER NOT NULL,
     publisherId INTEGER NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     timeCreated BIGINT NOT NULL,
     tryCounter INTEGER NOT NULL,
-    volatileData CLOB,
+    volatileData VARCHAR,
     PRIMARY KEY (pk)
 );
 
 CREATE TABLE ServiceData (
     id INTEGER NOT NULL,
-    data CLOB,
+    data VARCHAR,
     name VARCHAR(256) NOT NULL,
     nextRunTimeStamp BIGINT NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     runTimeStamp BIGINT NOT NULL,
     PRIMARY KEY (id)
@@ -283,11 +283,11 @@ CREATE TABLE UserData (
     certificateProfileId INTEGER NOT NULL,
     clearPassword VARCHAR(256),
     endEntityProfileId INTEGER NOT NULL,
-    extendedInformationData CLOB,
+    extendedInformationData VARCHAR,
     hardTokenIssuerId INTEGER NOT NULL,
     keyStorePassword VARCHAR(256),
     passwordHash VARCHAR(256),
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
     subjectAltName VARCHAR(256),
@@ -302,9 +302,9 @@ CREATE TABLE UserData (
 
 CREATE TABLE UserDataSourceData (
     id INTEGER NOT NULL,
-    data CLOB,
+    data VARCHAR,
     name VARCHAR(256) NOT NULL,
-    rowProtection CLOB(10 K),
+    rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     updateCounter INTEGER NOT NULL,
     PRIMARY KEY (id)

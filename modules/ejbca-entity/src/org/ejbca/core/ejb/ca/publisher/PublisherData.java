@@ -18,16 +18,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -44,39 +40,52 @@ public class PublisherData implements Serializable {
 
 	private BasePublisher publisher = null;
 
-	private Integer id;
+	private int id;
 	private String name;
 	private int updateCounter;
 	private String data;
 	private int rowVersion = 0;
 	private String rowProtection;
 
-	@Id
-	@Column(name="id")
-	public Integer getId() { return id; }
-	public void setId(Integer id) { this.id = id; }
+	/**
+	 * Entity Bean holding data of a publisher.
+	 *
+	 * @return null
+	 * @ejb.create-method view-type="local"
+	 */
+	public PublisherData(int id, String name, BasePublisher publisher) {
+		setId(id);
+		setName(name);
+		setUpdateCounter(0);
+		if (publisher != null) {
+			setPublisher(publisher);
+		}
+		log.debug("Created Hard Token Profile " + name);
+	}
 
-	@Column(name="name")
+	public PublisherData() { }
+
+	//@Id @Column
+	public int getId() { return id; }
+	public void setId(int id) { this.id = id; }
+
+	//@Column
 	public String getName() { return name; }
 	public void setName(String name) { this.name = name; }
 
-	@Column(name="updateCounter", nullable=false)
+	//@Column
 	public int getUpdateCounter() { return updateCounter; }
 	public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB(1 M), Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [2GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-	@Column(name="data", length=100*1024)
-	@Lob
+	//@Column @Lob
 	public String getData() { return data; }
 	public void setData(String data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -111,30 +120,12 @@ public class PublisherData implements Serializable {
 		setUpdateCounter(getUpdateCounter() + 1);
 	}
 
-	/**
-	 * Entity Bean holding data of a publisher.
-	 *
-	 * @return null
-	 * @ejb.create-method view-type="local"
-	 */
-	public PublisherData(Integer id, String name, BasePublisher publisher) {
-		setId(id);
-		setName(name);
-		this.setUpdateCounter(0);
-		if (publisher != null) {
-			setPublisher(publisher);
-		}
-		log.debug("Created Hard Token Profile " + name);
-	}
-
-	public PublisherData() { }
-
 	//
 	// Search functions. 
 	// 
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static PublisherData findById(EntityManager entityManager, Integer id) {	    
+	public static PublisherData findById(EntityManager entityManager, int id) {	    
 	    return entityManager.find(PublisherData.class, id);
 	}
 

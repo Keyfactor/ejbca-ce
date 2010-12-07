@@ -288,7 +288,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveNewLogConfiguration(final int caid, final LogConfiguration logConfiguration) {
-		entityManager.persist(new LogConfigurationData(Integer.valueOf(caid), logConfiguration));
+		entityManager.persist(new LogConfigurationData(caid, logConfiguration));
         // Update cache
 		logConfCache.put(Integer.valueOf(caid), logConfiguration);
     }
@@ -316,7 +316,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         	if (lcd == null) {
         		final String msg = INTRES.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
         		LOG.info(msg);
-        		entityManager.persist(new LogConfigurationData(Integer.valueOf(caid), logconfiguration));
+        		entityManager.persist(new LogConfigurationData(caid, logconfiguration));
         	} else { 
         		lcd.saveLogConfiguration(logconfiguration);
         	}

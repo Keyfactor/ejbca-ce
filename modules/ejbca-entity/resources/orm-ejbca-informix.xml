@@ -4,175 +4,342 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
 
-    <!-- This is based on the Informix CMP:
-        boolean: BOOLEAN (Informix92, SMALLINT in InformixDB)
-        long: DECIMAL(18,0) (even though NUMERIC(18,0) was specified in the CMP mapping..)
-        "CLOB": TEXT
-        Object: BLOB
+    <!-- 
+         This file contains mappings specific to Informix.
+
+         Keep this in sync with orm-{ejbca|ocsp}-{database}.xml!
+
+         boolean: BOOLEAN
+         int:     INTEGER
+         long:    DECIMAL(18,0)
+         String:  VARCHAR(255,0)
+         CLOB:    TEXT
+         Object:  BLOB
+
+         Exceptions:
+         - 
+         
+         Notes:
+         - Community supported and not well tested.
     -->
 
-    <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="approvaldata"><column name="approvaldata" column-definition="TEXT"/></basic>
-            <basic name="requestdata"><column name="requestdata" column-definition="TEXT"/></basic>
-            <basic name="expiredate"><column name="expiredate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="requestdate"><column name="requestdate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="approvalid"><column name="approvalid" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="approvaltype"><column name="approvaltype" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="endentityprofileid"><column name="endentityprofileid" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="caid"><column name="caid" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="reqadmincertissuerdn"><column name="reqadmincertissuerdn" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="reqadmincertsn"><column name="reqadmincertsn" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="approvaldata"><column name="approvaldata" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="requestdata"><column name="requestdata" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="requestdate"><column name="requestdate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="expiredate"><column name="expiredate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="remainingapprovals"><column name="remainingapprovals" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY">
+    <!-- See JavaDoc for notes about AccessRulesData.isRecursive -->
+    <entity class="org.ejbca.core.ejb.authorization.AccessRulesData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="isRecursive"><column name="isRecursive" column-definition="BOOLEAN"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="primKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="accessRule"><column name="accessRule" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="rule"><column name="rule" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="isRecursiveBool"><column name="isRecursive" column-definition="BOOLEAN" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+            <transient name="isRecursiveInt"/>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.authorization.AdminEntityData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.authorization.AdminEntityData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="primeKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="matchWith"><column name="matchWith" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="matchType"><column name="matchType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="matchValue"><column name="matchValue" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.authorization.AdminGroupData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.authorization.AdminGroupData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="primeKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="adminGroupName"><column name="adminGroupName" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+            <one-to-many name="accessRules" fetch="EAGER"><join-column name="AdminGroupData_accessRules" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
+            <one-to-many name="adminEntities" fetch="EAGER"><join-column name="AdminGroupData_adminEntities" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateData" access="PROPERTY" metadata-complete="false">
         <attributes>
+            <id name="primKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="authorizationTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CAData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="caId"><column name="cAId" column-definition="INTEGER"/></id>
+            <basic name="name"><column name="name" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="expireTime"><column name="expireTime" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="certificateProfileName"><column name="certificateProfileName" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="name"><column name="name" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
             <basic name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic name="expireTime"><column name="expireTime" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.caadmin.CertificateProfileData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="pk"><column name="pk" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="timeCreated"><column name="timeCreated" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="lastUpdate"><column name="lastUpdate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="publishStatus"><column name="publishStatus" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="tryCounter"><column name="tryCounter" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="publishType"><column name="publishType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="publisherId"><column name="publisherId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="volatileData"><column name="volatileData" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="type"><column name="type" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="expireDate"><column name="expireDate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="revocationDate"><column name="revocationDate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
+            <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
+            <basic name="base64Cert"><column name="base64Cert" column-definition="TEXT"/><lob/></basic>
+            <basic name="username"><column name="username" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="tag"><column name="tag" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="lastUpdate"><column name="lastUpdate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="timeCreated"><column name="timeCreated" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="volatileData"><column name="volatileData" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="timestamp"><column name="timestamp" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="userDataVO"><column name="userDataVO" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="username"><column name="username" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="base64Cert"><column name="base64Cert" column-definition="TEXT"/></basic>
-            <basic name="expireDate"><column name="expireDate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="revocationDate"><column name="revocationDate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="crlNumber"><column name="cRLNumber" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="thisUpdate"><column name="thisUpdate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="nextUpdate"><column name="nextUpdate" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="deltaCRLIndicator"><column name="deltaCRLIndicator" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="base64Crl"><column name="base64Crl" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="timestamp"><column name="timestamp" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="userDataVO"><column name="userDataVO" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="certificateFingerprint"><column name="certificateFingerprint" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="tokenSN"><column name="tokenSN" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.store.CRLData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="base64Crl"><column name="base64Crl" column-definition="TEXT"/></basic>
-            <basic name="nextUpdate"><column name="nextUpdate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="thisUpdate"><column name="thisUpdate" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap" access="PROPERTY">
-        <attributes>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY">
-        <attributes>
-            <basic name="ctime"><column name="cTime" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/></basic>
-            <basic name="mtime"><column name="mTime" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY">
-        <attributes>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenProfileData" access="PROPERTY">
-        <attributes>
-            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyData" access="PROPERTY">
-        <attributes>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY">
-        <attributes>
-            <basic name="keyData"><column name="keyData" column-definition="TEXT"/></basic>
-            <basic name="markedAsRecoverable"><column name="markedAsRecoverable" column-definition="BOOLEAN"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY">
-        <attributes>
-            <basic name="logConfigurationUnsafe"><column name="logConfiguration" column-definition="BLOB"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.log.LogEntryData" access="PROPERTY">
-        <attributes>
-            <basic name="time"><column name="time" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY">
-        <attributes>
-            <basic name="extendedInformationData"><column name="extendedInformationData" column-definition="TEXT"/></basic>
-            <basic name="timeCreated"><column name="timeCreated" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="timeModified"><column name="timeModified" column-definition="DECIMAL(18,0)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
-        </attributes>
-    </entity>
-    <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY">
-        <attributes>
+            <id name="tokenSN"><column name="tokenSN" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="username"><column name="username" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="ctime"><column name="cTime" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="mtime"><column name="mTime" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="tokenType"><column name="tokenType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="significantIssuerDN"><column name="significantIssuerDN" column-definition="VARCHAR(255,0)"/></basic>
             <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="alias"><column name="alias" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="adminGroupId"><column name="adminGroupId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenProfileData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="name"><column name="name" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY">
+    <entity class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+        	<embedded-id name="hardTokenPropertyDataPK">
+        		<attribute-override name="id"><column name="id" column-definition="VARCHAR(255,0)"/></attribute-override>
+        		<attribute-override name="property"><column name="property" column-definition="VARCHAR(255,0)"/></attribute-override>
+        	</embedded-id>
+            <basic name="value"><column name="value" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY">
+    <!-- See JavaDoc for notes about KeyRecoveryData.markedAsRecoverable -->
+    <entity class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryData" access="PROPERTY" metadata-complete="false">
         <attributes>
-            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
+        	<embedded-id name="keyRecoveryDataPK">
+        		<attribute-override name="certSN"><column name="certSN" column-definition="VARCHAR(255,0)"/></attribute-override>
+        		<attribute-override name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(255,0)"/></attribute-override>
+        	</embedded-id>
+            <basic name="username"><column name="username" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="markedAsRecoverableBool"><column name="markedAsRecoverable" column-definition="BOOLEAN" nullable="false"/></basic>
+            <basic name="keyData"><column name="keyData" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+            <transient name="markedAsRecoverableInt"/>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="logConfigurationUnsafe"><column name="logConfiguration" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic name="logEntryRowNumber"><column name="logEntryRowNumber" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.log.LogEntryData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="adminType"><column name="adminType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="adminData"><column name="adminData" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="caId"><column name="caId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="module"><column name="module" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="time"><column name="time" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="username"><column name="username" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="certificateSNR"><column name="certificateSNR" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="event"><column name="event" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="logComment"><column name="logComment" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="username"><column name="username" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="type"><column name="type" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="clearPassword"><column name="clearPassword" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="passwordHash"><column name="passwordHash" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="timeCreated"><column name="timeCreated" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="timeModified"><column name="timeModified" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="endEntityProfileId"><column name="endEntityProfileId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="tokenType"><column name="tokenType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="extendedInformationData"><column name="extendedInformationData" column-definition="TEXT"/><lob/></basic>
+            <basic name="keyStorePassword"><column name="keyStorePassword" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="cardNumber"><column name="cardNumber" column-definition="VARCHAR(255,0)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="profileName"><column name="profileName" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="configurationId"><column name="configurationId" column-definition="VARCHAR(255,0)"/></id>
+            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="name"><column name="name" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="name"><column name="name" column-definition="VARCHAR(255,0)" nullable="false"/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
+            <basic name="nextRunTimeStamp"><column name="nextRunTimeStamp" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="runTimeStamp"><column name="runTimeStamp" column-definition="DECIMAL(18,0)" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
 

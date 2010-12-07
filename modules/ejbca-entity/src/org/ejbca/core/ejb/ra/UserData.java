@@ -20,17 +20,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException; // NOPMD imported from javadoc
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -104,7 +100,7 @@ public class UserData implements Serializable {
     public UserData(String username, String password, boolean clearpwd, String dn, int caid, String cardnumber, String altname, String email,
     		int type, int eeprofileid, int certprofileid, int tokentype, int hardtokenissuerid, ExtendedInformation extendedInformation) 
     throws NoSuchAlgorithmException {
-        long time = (new Date()).getTime();
+        long time = new Date().getTime();
         setUsername(StringTools.strip(username));
         if (clearpwd) {
         	setOpenPassword(password);
@@ -133,46 +129,45 @@ public class UserData implements Serializable {
 
     public UserData()  { }
 
-    @Id
-    @Column(name="username")
+    //@Id @Column
     public String getUsername() { return username; }
     /**
      * username must be called 'striped' using StringTools.strip()
      */
     public void setUsername(String username) { this.username = username; }
 
-    @Column(name="subjectDN")
+    //@Column
     public String getSubjectDN() { return subjectDN; }
     public void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
 
-    @Column(name="caId")
+    //@Column
     public int getCaId() { return caId; }
     public void setCaId(int caId) { this.caId = caId; }
 
-    @Column(name="subjectAltName")
+    //@Column
     public String getSubjectAltName() { return subjectAltName; }
     public void setSubjectAltName(String subjectAltName) { this.subjectAltName = subjectAltName; }
 
-    @Column(name="cardNumber")
+    //@Column
     public String getCardNumber() { return cardNumber; }
     public void setCardNumber(String cardNumber) { this.cardNumber = cardNumber; }
 
-    @Column(name="subjectEmail")
+    //@Column
     public String getSubjectEmail() { return subjectEmail; }
     public void setSubjectEmail(String subjectEmail) { this.subjectEmail = subjectEmail; }
 
-    @Column(name="status")
+    //@Column
     public int getStatus() { return this.status; }
     public void setStatus(int status) { this.status = status; }
 
-    @Column(name="type")
+    //@Column
     public int getType() { return type; }
     public void setType(int type) { this.type = type; }
 
     /**
      * Returns clear text password or null.
      */
-    @Column(name="clearPassword")
+    //@Column
     public String getClearPassword() { return clearPassword; }
     /**
      * Sets clear text password, the preferred method is setOpenPassword().
@@ -182,7 +177,7 @@ public class UserData implements Serializable {
     /**
      * Returns hashed password or null.
      */
-    @Column(name="passwordHash")
+    //@Column
     public String getPasswordHash() { return passwordHash; }
     /**
      * Sets hash of password, this is the normal way to store passwords, but use the method setPassword() instead.
@@ -192,7 +187,7 @@ public class UserData implements Serializable {
     /**
      * Returns the time when the user was created.
      */
-    @Column(name="timeCreated")
+    //@Column
     public long getTimeCreated() { return timeCreated; }
     /**
      * Sets the time when the user was created.
@@ -202,7 +197,7 @@ public class UserData implements Serializable {
     /**
      * Returns the time when the user was last modified.
      */
-    @Column(name="timeModified")
+    //@Column
     public long getTimeModified() { return timeModified; }
     /**
      * Sets the time when the user was last modified.
@@ -212,7 +207,7 @@ public class UserData implements Serializable {
     /**
      * Returns the end entity profile id the user belongs to.
      */
-    @Column(name="endEntityProfileId")
+    //@Column
     public int getEndEntityProfileId() { return endEntityProfileId; }
     /**
      * Sets the end entity profile id the user should belong to. 0 if profileid is not applicable.
@@ -222,7 +217,7 @@ public class UserData implements Serializable {
     /**
      * Returns the certificate profile id that should be generated for the user.
      */
-    @Column(name="certificateProfileId")
+    //@Column
     public int getCertificateProfileId() { return certificateProfileId; }
     /**
      * Sets the certificate profile id that should be generated for the user. 0 if profileid is not applicable.
@@ -232,7 +227,7 @@ public class UserData implements Serializable {
     /**
      * Returns the token type id that should be generated for the user.
      */
-    @Column(name="tokenType")
+    //@Column
     public int getTokenType() { return tokenType; }
     /**
      * Sets the token type  that should be generated for the user. Available token types can be found in SecConst.
@@ -242,7 +237,7 @@ public class UserData implements Serializable {
     /**
      * Returns the hard token issuer id that should genererate for the users hard token.
      */
-    @Column(name="hardTokenIssuerId")
+    //@Column
     public int getHardTokenIssuerId() { return hardTokenIssuerId; }
     /**
      * Sets the hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
@@ -252,26 +247,24 @@ public class UserData implements Serializable {
     /**
      * Non-searchable information about a user.
      */
-	// DB2: CLOB(1M), Derby: CLOB, Informix: TEXT, Ingres: CLOB, MSSQL: TEXT, MySQL: LONGTEXT, Oracle: CLOB, Sybase: TEXT
-    @Column(name="extendedInformationData", length=1*1024*1024)
-    @Lob
+    //@Column @Lob
     public String getExtendedInformationData() { return extendedInformationData; }
     /**
      * Non-searchable information about a user.
      */
     public void setExtendedInformationData(String extendedInformationData) { this.extendedInformationData = extendedInformationData; }
 
-    @Column(name="keyStorePassword" )
+    @Deprecated	// Can't find any references to this field. Please un-deprecate if an use is discovered! =) 
+    //@Column
     public String getKeyStorePassword() { return keyStorePassword; }
+    @Deprecated	// Can't find any references to this field. Please un-deprecate if an use is discovered! =)
     public void setKeyStorePassword(String keyStorePassword) { this.keyStorePassword = keyStorePassword; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+    //@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

@@ -21,20 +21,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
-import javax.persistence.OneToMany;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
@@ -48,10 +40,6 @@ import org.ejbca.core.model.authorization.AdminGroup;
  */
 @Entity
 @Table(name="AdminGroupData")
-/*@SecondaryTables({
-	@SecondaryTable(name="AdminEntityData", pkJoinColumns={@PrimaryKeyJoinColumn(name="AdminGroupData_adminEntities")}),
-	@SecondaryTable(name="AccessRulesData", pkJoinColumns={@PrimaryKeyJoinColumn(name="AdminGroupData_accessRules")})
-})*/
 public class AdminGroupData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -60,8 +48,8 @@ public class AdminGroupData implements Serializable {
 	private Integer pK;
 	private String adminGroupName;
 	private int cAId;
-	private Set<AdminEntityData> adminEntityDatas = new HashSet<AdminEntityData>();
-	private Set<AccessRulesData> accessRulesDatas = new HashSet<AccessRulesData>();
+	private Set<AdminEntityData> adminEntityDatas;
+	private Set<AccessRulesData> accessRulesDatas;
 	private int rowVersion = 0;
 	private String rowProtection;
 
@@ -73,33 +61,32 @@ public class AdminGroupData implements Serializable {
 		setPrimeKey(pk);
 		setAdminGroupName(admingroupname);
 		setCaId(0);
+		setAdminEntities(new HashSet<AdminEntityData>());
+		setAccessRules(new HashSet<AccessRulesData>());
 		log.debug("Created admingroup : " + admingroupname);
 	}
 
 	public AdminGroupData() { }
 
-	@Id
-	@Column(name="pK")
+	//@Id @Column
 	public Integer getPrimeKey() { return pK; }
 	public void setPrimeKey(Integer primeKey) { this.pK = primeKey; }
 
-	@Column(name="adminGroupName")
+	//@Column
 	public String getAdminGroupName() { return adminGroupName; }
 	public void setAdminGroupName(String adminGroupName) { this.adminGroupName = adminGroupName; }
 
 	@Deprecated
-	@Column(name="cAId", nullable=false)
+	//@Column
 	public int getCaId() { return cAId; }
 	@Deprecated
 	public void setCaId(int cAId) { this.cAId = cAId; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -123,8 +110,7 @@ public class AdminGroupData implements Serializable {
 	 * target="AdminEntityData.AdminGroupData_adminEntities"
 	 */
 	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
-	@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER)
-	@JoinColumn(name="AdminGroupData_adminEntities")
+	//@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER) @JoinColumn(name="AdminGroupData_adminEntities")
 	public Set<AdminEntityData> getAdminEntities() { return adminEntityDatas; }
 	public void setAdminEntities(Set<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
 
@@ -146,8 +132,7 @@ public class AdminGroupData implements Serializable {
 	 * target="AccessRulesData.AdminGroupData_accessRules"
 	 */
 	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
-	@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER)
-	@JoinColumn(name="AdminGroupData_accessRules")
+	//@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER) @JoinColumn(name="AdminGroupData_accessRules")
 	public Set<AccessRulesData> getAccessRules() { return accessRulesDatas; }
 	public void setAccessRules(Set<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
 

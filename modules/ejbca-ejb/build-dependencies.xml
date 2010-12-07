@@ -67,6 +67,7 @@
 					<include name="org/ejbca/util/FileTools.java"/>
 					<include name="org/ejbca/util/Base64.java"/>
 					<include name="org/ejbca/core/ejb/InitialContextBuilder.java"/>
+					<include name="org/ejbca/util/ValueExtractor.java"/> 
 					<!-- <include name="org/ejbca/core/ejb/JNDINames.java"/> -->
 					<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
 					<include name="org/ejbca/core/ejb/ServiceLocatorException.java"/>
@@ -263,7 +264,6 @@
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/ca/publisher/*QueueSessionBean.java"/>
 					<include name="org/ejbca/core/model/ca/publisher/*.java"/>
-					<include name="org/ejbca/util/ValueExtractor.java"/> 
 					<!-- Use by the LDAP Publisher -->
 					<include name="org/ejbca/util/TCPTool.java"/>
 					<!-- Use by the OCSP Publisher -->

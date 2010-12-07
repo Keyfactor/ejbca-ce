@@ -15,13 +15,9 @@ package org.ejbca.core.ejb.authorization;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Table;
-import javax.persistence.Version;
 
 /**
  * @version $Id$
@@ -38,8 +34,12 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	private int rowVersion = 0;
 	private String rowProtection;
 	
-	@Id
-	@Column(name="pK")
+	public AuthorizationTreeUpdateData() {
+		setPrimKey(AUTHORIZATIONTREEUPDATEDATA);
+		setAuthorizationTreeUpdateNumber(0);
+	}
+
+	//@Id @Column
 	public Integer getPrimKey() { return pK; }
 	public void setPrimKey(Integer primKey) { this.pK = primKey; }
 
@@ -48,24 +48,17 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	 * time the authorization tree is built.
 	 * @return the newest accessruleset number.
 	 */
-	@Column(name="authorizationTreeUpdateNumber", nullable=false)
+	//@Column
 	public int getAuthorizationTreeUpdateNumber() { return authorizationTreeUpdateNumber; }
 	public void setAuthorizationTreeUpdateNumber(int authorizationTreeUpdateNumber) { this.authorizationTreeUpdateNumber = authorizationTreeUpdateNumber; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
-
-	public AuthorizationTreeUpdateData() {
-		setPrimKey(AUTHORIZATIONTREEUPDATEDATA);
-		setAuthorizationTreeUpdateNumber(0);
-	}
 
 	/**
 	 * Method used check if a reconstruction of authorization tree is needed in the
@@ -78,7 +71,6 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	public boolean updateNeccessary(int currentauthorizationtreeupdatenumber){
 		return getAuthorizationTreeUpdateNumber() != currentauthorizationtreeupdatenumber;
 	}
-
 
 	/**
 	 * Method incrementing the authorizationtreeupdatenumber and thereby signaling

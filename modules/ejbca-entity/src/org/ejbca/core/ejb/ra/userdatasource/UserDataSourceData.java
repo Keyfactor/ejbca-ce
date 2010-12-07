@@ -18,16 +18,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
@@ -45,7 +41,7 @@ public class UserDataSourceData implements Serializable {
 
     private BaseUserDataSource userdatasource = null;
 
-    private Integer id;
+    private int id;
     private String name;
     private int updateCounter;
     private String data;
@@ -56,7 +52,7 @@ public class UserDataSourceData implements Serializable {
      * Entity holding data of a userdatasource.
      * @throws UnsupportedEncodingException 
      */
-    public UserDataSourceData(Integer id, String name, BaseUserDataSource userdatasource) throws UnsupportedEncodingException {
+    public UserDataSourceData(int id, String name, BaseUserDataSource userdatasource) throws UnsupportedEncodingException {
         setId(id);
         setName(name);
         this.setUpdateCounter(0);
@@ -69,35 +65,30 @@ public class UserDataSourceData implements Serializable {
     public UserDataSourceData()  { }
 
     /** Primary key. */
-    @Id
-    @Column(name="id")
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    //@Id @Column
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
     /** Name of the user data source. */
-    @Column(name="name")
+    //@Column
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
     /** Counter incremented each update used to check if a user data source proxy class should update its data. */
-    @Column(name="updateCounter")
+    //@Column
     public int getUpdateCounter() { return updateCounter; }
     public void setUpdateCounter(int updateCounter) { this.updateCounter = updateCounter; }
 
     /** Data saved concerning the user data source. */
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB, Informix: TEXT (2147483648 b?), Ingres: , MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [4GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-    @Column(name="data", length=100*1024)
-    @Lob
+    //@Column @Lob
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+    //@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

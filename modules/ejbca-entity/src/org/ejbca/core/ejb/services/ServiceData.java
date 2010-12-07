@@ -45,7 +45,7 @@ public class ServiceData implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ServiceData.class);
 
-	private Integer id;
+	private int id;
 	private String name;
 	private long runTimeStamp;
 	private long nextRunTimeStamp;
@@ -56,7 +56,7 @@ public class ServiceData implements Serializable {
     /**
      * Entity Bean holding data of a service configuration.
      */
-    public ServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration) {
+    public ServiceData(int id, String name, ServiceConfiguration serviceConfiguration) {
         setId(id);
         setName(name);
         setNextRunTimeStamp(0); // defaults to 0 until we activate the service
@@ -70,13 +70,12 @@ public class ServiceData implements Serializable {
     public ServiceData() { }
 
     /** Primary key. */
-	@Id
-	@Column(name="id")
-	public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    //@Id @Column
+	public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
     /** Name of the service. */
-	@Column(name="name")
+    //@Column
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
@@ -85,7 +84,7 @@ public class ServiceData implements Serializable {
      *
      * @return runTimeStamp the time the was running last time
      */
-	@Column(name="runTimeStamp")
+    //@Column
     public long getRunTimeStamp() { return runTimeStamp; }
     public void setRunTimeStamp(long runTimeStamp) { this.runTimeStamp = runTimeStamp; }
 
@@ -94,24 +93,20 @@ public class ServiceData implements Serializable {
      *
      * @return nextRunTimeStamp the time the service will run next time
      */
-	@Column(name="nextRunTimeStamp")
+    //@Column
     public long getNextRunTimeStamp() { return nextRunTimeStamp; }
     public void setNextRunTimeStamp(long nextRunTimeStamp) { this.nextRunTimeStamp = nextRunTimeStamp; }
 
     /** Data saved concerning the service. */
-	// DB2: CLOB(100K) [100K (2GBw/o)], Derby: CLOB(1 M), Informix: TEXT (2147483648 b?), Ingres: CLOB [2GB], MSSQL: TEXT [2,147,483,647 bytes], MySQL: LONGTEXT [4GB], Oracle: CLOB [4G chars], Sybase: TEXT [2,147,483,647 chars]  
-	@Column(name="data", length=32700)
-	@Lob
+    //@Column @Lob
     public String getData() { return data; }
     public void setData(String data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+    //@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -186,5 +181,4 @@ public class ServiceData implements Serializable {
 		query.setParameter("oldNextRunTimeStamp", oldNextRunTimeStamp);
 		return query.executeUpdate() == 1;
 	}
-
 }

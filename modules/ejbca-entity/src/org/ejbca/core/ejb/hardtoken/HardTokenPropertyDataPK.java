@@ -20,6 +20,8 @@ import java.io.Serializable;
  */
 public class HardTokenPropertyDataPK implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	public String id;
 	public String property;
 
@@ -30,9 +32,11 @@ public class HardTokenPropertyDataPK implements Serializable {
 		setProperty(property);
 	}
 
+    //@Column
 	public String getId() { return id; }
 	public void setId(String id) { this.id = id; }
 	
+    //@Column
 	public String getProperty() { return property; }
 	public void setProperty(String property) { this.property = property; }
 

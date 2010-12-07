@@ -16,14 +16,10 @@ package org.ejbca.core.ejb.ra.raadmin;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
@@ -60,14 +56,11 @@ public class GlobalConfigurationData implements Serializable {
 	
 	public GlobalConfigurationData() { }
 
-	@Id
-	@Column(name="configurationId")
+	//@Id @Column
 	public String getConfigurationId() { return configurationId; }
 	public void setConfigurationId(String configurationId) { this.configurationId = configurationId; }
 
-	// DB2: BLOB(200K), Derby: , Informix: , Ingres: BLOB, MSSQL: , MySQL: , Oracle: , Postgres: BYTEA, Sybase: IMAGE
-	@Column(name="data", length=200*1024)
-	@Lob
+	//@Column @Lob
 	public Serializable getDataUnsafe() {
 		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
@@ -78,13 +71,11 @@ public class GlobalConfigurationData implements Serializable {
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public void setDataUnsafe(Serializable data) { this.data = data; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 

@@ -15,16 +15,11 @@ package org.ejbca.core.ejb.authorization;
 
 import java.io.Serializable;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.IdClass;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -36,7 +31,6 @@ import org.ejbca.core.model.authorization.AdminEntity;
  */
 @Entity
 @Table(name="AdminEntityData")
-@IdClass(AdminEntityDataPK.class)
 public class AdminEntityData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -52,7 +46,7 @@ public class AdminEntityData implements Serializable {
 
 	public AdminEntityData(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {
 		AdminEntityDataPK adminEntityDataPK = new AdminEntityDataPK(admingroupname, caid, matchwith, matchtype, matchvalue);
-		setPrimeKey(adminEntityDataPK.getPrimeKey());
+		setPrimeKey(adminEntityDataPK.hashCode());
 		setMatchWith(matchwith);
 		setMatchType(matchtype);
 		setMatchValue(matchvalue);
@@ -62,34 +56,32 @@ public class AdminEntityData implements Serializable {
 	
 	public AdminEntityData() { }
 
-	@Id
-	@Column(name="pK")
+	// TODO: Rename method PrimeKey is a company. A Primary Key is used to find an entity. 
+	//@Id @Column
 	public int getPrimeKey() { return pK; }
 	public void setPrimeKey(int primKey) { this.pK = primKey; } 
 
-	@Column(name="matchWith", nullable=false)
+	//@Column
 	public int getMatchWith() { return matchWith; }
 	public void setMatchWith(int matchWith) { this.matchWith = matchWith; }
 
-	@Column(name="matchType", nullable=false)
+	//@Column
 	public int getMatchType() { return matchType; }
 	public void setMatchType(int matchType) { this.matchType = matchType; }
 
-	@Column(name="matchValue")
+	//@Column
 	public String getMatchValue() { return matchValue; }
 	public void setMatchValue(String matchValue) { this.matchValue = matchValue; }
 	
-	@Column(name="cAId")
+	//@Column
 	public Integer getCaId() { return cAId; }
 	public void setCaId(Integer caId) { this.cAId = caId; }
 
-	@Version
-	@Column(name = "rowVersion", nullable = false, length = 5)
+	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
-	@Column(name = "rowProtection", length = 10*1024)
-	@Lob
+	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
@@ -104,7 +96,7 @@ public class AdminEntityData implements Serializable {
 
 	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminEntityData findByPrimeKey(EntityManager entityManager, AdminEntityDataPK adminEntityDataPK) {
-		return entityManager.find(AdminEntityData.class, adminEntityDataPK);
+		return entityManager.find(AdminEntityData.class, adminEntityDataPK.hashCode());
 	}
 	
 	/** @return the found entity instance or null if the entity does not exist */
