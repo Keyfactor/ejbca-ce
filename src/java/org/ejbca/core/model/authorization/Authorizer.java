@@ -105,11 +105,7 @@ public class Authorizer implements Serializable {
             return false;
         }
         // Check in accesstree.
-        boolean dbg = (authorizationProxy.isAuthorized(admin.getAdminInformation(), resource)  || authorizationProxy.isAuthorized(admin.getAdminInformation(), "/super_administrator"));
-        if(dbg == false) 
-            {
-            System.err.println("mapapapappapa"); 
-            }
+
         return (authorizationProxy.isAuthorized(admin.getAdminInformation(), resource)  || authorizationProxy.isAuthorized(admin.getAdminInformation(), "/super_administrator"));
   
     }
