@@ -23,7 +23,6 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -395,7 +394,7 @@ public class UserData implements Serializable {
     }
 
 	/**
-	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
     public static UserData findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
