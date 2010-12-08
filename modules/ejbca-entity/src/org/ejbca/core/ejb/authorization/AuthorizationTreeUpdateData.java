@@ -41,7 +41,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 
 	//@Id @Column
 	public Integer getPrimKey() { return pK; }
-	public void setPrimKey(Integer primKey) { this.pK = primKey; }
+	public final void setPrimKey(final Integer primKey) { this.pK = primKey; }
 
 	/**
 	 * Method returning the newest authorizationtreeupdatenumber. Should be used after each
@@ -50,15 +50,15 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	 */
 	//@Column
 	public int getAuthorizationTreeUpdateNumber() { return authorizationTreeUpdateNumber; }
-	public void setAuthorizationTreeUpdateNumber(int authorizationTreeUpdateNumber) { this.authorizationTreeUpdateNumber = authorizationTreeUpdateNumber; }
+	public final void setAuthorizationTreeUpdateNumber(final int authorizationTreeUpdateNumber) { this.authorizationTreeUpdateNumber = authorizationTreeUpdateNumber; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
-	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
-	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	/**
 	 * Method used check if a reconstruction of authorization tree is needed in the
@@ -68,7 +68,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	 * @param currentauthorizationtreeupdatenumber indicates which authorizationtreeupdatenumber is currently used.
 	 * @return true if update is needed.
 	 */
-	public boolean updateNeccessary(int currentauthorizationtreeupdatenumber){
+	public boolean updateNeccessary(final int currentauthorizationtreeupdatenumber){
 		return getAuthorizationTreeUpdateNumber() != currentauthorizationtreeupdatenumber;
 	}
 
@@ -85,7 +85,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static AuthorizationTreeUpdateData findByPrimeKey(EntityManager entityManager, Integer primeKey) {
+	public static AuthorizationTreeUpdateData findByPrimeKey(final EntityManager entityManager, final Integer primeKey) {
 		return entityManager.find(AuthorizationTreeUpdateData.class,  primeKey);
 	}
 }

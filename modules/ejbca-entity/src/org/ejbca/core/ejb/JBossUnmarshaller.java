@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
  * Helper class for extracting objects Serialized on JBoss under J2EE.
  * @version $Id$
  */
-public class JBossUnmarshaller {
+public final class JBossUnmarshaller {
 	
 	private static final Logger log = Logger.getLogger(JBossUnmarshaller.class);
 
@@ -40,14 +40,14 @@ public class JBossUnmarshaller {
 	 * @param object An object implementing java.lang.Serializable interface
 	 * @return The unmarshalled or original object of type T
 	 */
-	public static <T> T extractObject(Class<T> t, Serializable object) {
+	public static <T> T extractObject(final Class<T> t, final Serializable object) {
 		T ret = null;
-		String className = object.getClass().getName();
+		final String className = object.getClass().getName();
 		if (className.equals(t.getName())) {
 			// Return null, no update is needed
-		} else if (className.equals("org.jboss.invocation.MarshalledValue")) {
+		} else if ("org.jboss.invocation.MarshalledValue".equals(className)) {
 			try {
-				Method m = object.getClass().getMethod("get", new Class[0]);
+				final Method m = object.getClass().getMethod("get", new Class[0]);
 				ret = (T) m.invoke(object, new Object[0]);
 			} catch (Exception e) {
 				log.error("", e);

@@ -57,7 +57,7 @@ public class AdminGroupData implements Serializable {
 	 * Entity holding data of admin profile groups.
 	 * @param admingroupname
 	 */
-	public AdminGroupData(Integer pk, String admingroupname) {
+	public AdminGroupData(final Integer pk, final String admingroupname) {
 		setPrimeKey(pk);
 		setAdminGroupName(admingroupname);
 		setCaId(0);
@@ -70,25 +70,25 @@ public class AdminGroupData implements Serializable {
 
 	//@Id @Column
 	public Integer getPrimeKey() { return pK; }
-	public void setPrimeKey(Integer primeKey) { this.pK = primeKey; }
+	public final void setPrimeKey(final Integer primeKey) { this.pK = primeKey; }
 
 	//@Column
 	public String getAdminGroupName() { return adminGroupName; }
-	public void setAdminGroupName(String adminGroupName) { this.adminGroupName = adminGroupName; }
+	public final void setAdminGroupName(final String adminGroupName) { this.adminGroupName = adminGroupName; }
 
 	@Deprecated
 	//@Column
 	public int getCaId() { return cAId; }
 	@Deprecated
-	public void setCaId(int cAId) { this.cAId = cAId; }
+	public final void setCaId(final int cAId) { this.cAId = cAId; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
-	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
-	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	/*
 	 * TODO: Mapping between admins and group ok?
@@ -112,7 +112,7 @@ public class AdminGroupData implements Serializable {
 	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
 	//@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER) @JoinColumn(name="AdminGroupData_adminEntities")
 	public Set<AdminEntityData> getAdminEntities() { return adminEntityDatas; }
-	public void setAdminEntities(Set<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
+	public final void setAdminEntities(final Set<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
 
 	/*
 	 * @ejb.relation
@@ -134,21 +134,21 @@ public class AdminGroupData implements Serializable {
 	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
 	//@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER) @JoinColumn(name="AdminGroupData_accessRules")
 	public Set<AccessRulesData> getAccessRules() { return accessRulesDatas; }
-	public void setAccessRules(Set<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
+	public final void setAccessRules(final Set<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
 
 	/**
 	 * Adds a Collection of AccessRule to the database. Changing their values if they already exists
 	 */
-	public void addAccessRules(EntityManager entityManager, Collection<AccessRule> accessrules) {
-		Iterator<AccessRule> iter = accessrules.iterator();
+	public void addAccessRules(final EntityManager entityManager, final Collection<AccessRule> accessrules) {
+		final Iterator<AccessRule> iter = accessrules.iterator();
 		while (iter.hasNext()) {
-			AccessRule accessrule = iter.next();
+			final AccessRule accessrule = iter.next();
 			try {
-				AccessRulesData data = new AccessRulesData(getAdminGroupName(), 0, accessrule.getAccessRule(), accessrule.getRule(), accessrule.isRecursive());
+				final AccessRulesData data = new AccessRulesData(getAdminGroupName(), 0, accessrule.getAccessRule(), accessrule.getRule(), accessrule.isRecursive());
 				entityManager.persist(data);
-				Iterator<AccessRulesData> i = getAccessRules().iterator();
+				final Iterator<AccessRulesData> i = getAccessRules().iterator();
 				while (i.hasNext()) {
-					AccessRulesData ar = i.next();
+					final AccessRulesData ar = i.next();
 					if (ar.getAccessRuleObject().getAccessRule().equals(accessrule.getAccessRule())) {
 						getAccessRules().remove(ar);
 						entityManager.remove(ar);
@@ -165,13 +165,13 @@ public class AdminGroupData implements Serializable {
 	/**
 	 * Removes a Collection of (String) accessrules from the database.
 	 */
-	public void removeAccessRules(EntityManager entityManager, Collection<String> accessrules) {
-		Iterator<String> iter = accessrules.iterator();
+	public void removeAccessRules(final EntityManager entityManager, final Collection<String> accessrules) {
+		final Iterator<String> iter = accessrules.iterator();
 		while (iter.hasNext()) {
-			String accessrule = iter.next();
-			Iterator<AccessRulesData> i = getAccessRules().iterator();
+			final String accessrule = iter.next();
+			final Iterator<AccessRulesData> i = getAccessRules().iterator();
 			while (i.hasNext()) {
-				AccessRulesData ar = i.next();
+				final AccessRulesData ar = i.next();
 				if (ar.getAccessRuleObject().getAccessRule().equals(accessrule)) {
 					getAccessRules().remove(ar);
 					entityManager.remove(ar);
@@ -185,13 +185,13 @@ public class AdminGroupData implements Serializable {
      * Removes a Collection of (AccessRules) accessrules from the database.
      * Only used during upgrade.
      */
-    public void removeAccessRulesObjects(EntityManager entityManager, Collection<AccessRule> accessrules) {
-		Iterator<AccessRule> iter = accessrules.iterator();
+    public void removeAccessRulesObjects(final EntityManager entityManager, final Collection<AccessRule> accessrules) {
+    	final Iterator<AccessRule> iter = accessrules.iterator();
 		while (iter.hasNext()) {
-			AccessRule accessrule = iter.next();
-			Iterator<AccessRulesData> i = getAccessRules().iterator();
+			final AccessRule accessrule = iter.next();
+			final Iterator<AccessRulesData> i = getAccessRules().iterator();
             while (i.hasNext()) {
-				AccessRulesData ar = i.next();
+            	final AccessRulesData ar = i.next();
                 if (accessrule.getAccessRule().equals(ar.getAccessRule()) && accessrule.getRule() == ar.getRule() && accessrule.isRecursive() == ar.getIsRecursive()) {
                     getAccessRules().remove(ar);
 					entityManager.remove(ar);
@@ -215,10 +215,10 @@ public class AdminGroupData implements Serializable {
 	@Transient
 	public Collection<AccessRule> getAccessRuleObjects() {
 		final Collection<AccessRulesData> rules = getAccessRules();
-		ArrayList<AccessRule> objects = new ArrayList<AccessRule>(rules.size());
-		Iterator<AccessRulesData> i = rules.iterator();
+		final ArrayList<AccessRule> objects = new ArrayList<AccessRule>(rules.size());
+		final Iterator<AccessRulesData> i = rules.iterator();
 		while (i.hasNext()) {
-			AccessRulesData ar = i.next();
+			final AccessRulesData ar = i.next();
 			objects.add(ar.getAccessRuleObject());
 		}
 		return objects;
@@ -229,13 +229,13 @@ public class AdminGroupData implements Serializable {
 	 * 
 	 * FIXME: Move this method to AdminEntitySessionBean perhaps?
 	 */
-	public void addAdminEntities(EntityManager entityManager, Collection<AdminEntity> adminentities) {
+	public void addAdminEntities(final EntityManager entityManager, final Collection<AdminEntity> adminentities) {
 		for(AdminEntity adminentity : adminentities) {	
-				AdminEntityData data = new AdminEntityData(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(),adminentity.getMatchType(), adminentity.getMatchValue());
+			final AdminEntityData data = new AdminEntityData(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(),adminentity.getMatchType(), adminentity.getMatchValue());
 				entityManager.persist(data);
-				AdminEntityDataPK datapk = new AdminEntityDataPK(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
+				final AdminEntityDataPK datapk = new AdminEntityDataPK(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
 				for(AdminEntityData aed : getAdminEntities()) {
-					AdminEntityDataPK uepk = new AdminEntityDataPK(getAdminGroupName(), aed.getCaId(), aed.getMatchWith(), aed.getMatchType(), aed.getMatchValue());
+					final AdminEntityDataPK uepk = new AdminEntityDataPK(getAdminGroupName(), aed.getCaId(), aed.getMatchWith(), aed.getMatchType(), aed.getMatchValue());
 					if (uepk.equals(datapk)) {
 						getAdminEntities().remove(aed);
 						entityManager.remove(aed);
@@ -249,19 +249,17 @@ public class AdminGroupData implements Serializable {
 	/**
 	 * Removes a Collection if AdminEntity from the database.
 	 */
-	public void removeAdminEntities(EntityManager entityManager, Collection<AdminEntity> adminentities) {
-		Iterator<AdminEntity> iter = adminentities.iterator();
+	public void removeAdminEntities(final EntityManager entityManager, final Collection<AdminEntity> adminentities) {
+		final Iterator<AdminEntity> iter = adminentities.iterator();
 		while (iter.hasNext()) {
-			AdminEntity adminentity = iter.next();
-			AdminEntityDataPK dataAdminEntityDataPK = new AdminEntityDataPK(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
-			Iterator<AdminEntityData> i = getAdminEntities().iterator();
+			final AdminEntity adminentity = iter.next();
+			final AdminEntityDataPK dataAdminEntityDataPK = new AdminEntityDataPK(getAdminGroupName(), adminentity.getCaId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
+			final Iterator<AdminEntityData> i = getAdminEntities().iterator();
 			while (i.hasNext()) {
-				AdminEntityData ue = i.next();
-				AdminEntityDataPK uepk = new AdminEntityDataPK(getAdminGroupName(), ue.getCaId(), ue.getMatchWith(), ue.getMatchType(), ue.getMatchValue());
+				final AdminEntityData ue = i.next();
+				final AdminEntityDataPK uepk = new AdminEntityDataPK(getAdminGroupName(), ue.getCaId(), ue.getMatchWith(), ue.getMatchType(), ue.getMatchValue());
 				if (uepk.equals(dataAdminEntityDataPK)) {
 					getAdminEntities().remove(ue);
-					entityManager.remove(ue);
-					
 					break;
 				}
 			}
@@ -283,8 +281,8 @@ public class AdminGroupData implements Serializable {
 	 */
 	@Transient
 	public Collection<AdminEntity> getAdminEntityObjects() {
-		ArrayList<AdminEntity> returnval = new ArrayList<AdminEntity>();
-		Iterator<AdminEntityData> i = getAdminEntities().iterator();
+		final ArrayList<AdminEntity> returnval = new ArrayList<AdminEntity>();
+		final Iterator<AdminEntityData> i = getAdminEntities().iterator();
 		while (i.hasNext()) {
 			returnval.add(i.next().getAdminEntity());
 		}
@@ -296,13 +294,13 @@ public class AdminGroupData implements Serializable {
 	 */
 	@Transient
 	public AdminGroup getAdminGroup() {
-		ArrayList<AccessRule> accessrules = new ArrayList<AccessRule>();
-		ArrayList<AdminEntity> adminentities = new ArrayList<AdminEntity>();
-		Iterator<AdminEntityData> i = getAdminEntities().iterator();
+		final ArrayList<AccessRule> accessrules = new ArrayList<AccessRule>();
+		final ArrayList<AdminEntity> adminentities = new ArrayList<AdminEntity>();
+		final Iterator<AdminEntityData> i = getAdminEntities().iterator();
 		while (i.hasNext()) {
 			adminentities.add(i.next().getAdminEntity());
 		}
-		Iterator<AccessRulesData> i2 = getAccessRules().iterator();
+		final Iterator<AccessRulesData> i2 = getAccessRules().iterator();
 		while (i2.hasNext()) {
 			accessrules.add(i2.next().getAccessRuleObject());
 		}
@@ -322,7 +320,7 @@ public class AdminGroupData implements Serializable {
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static AdminGroupData findByPrimeKey(EntityManager entityManager, Integer primeKey) {
+	public static AdminGroupData findByPrimeKey(final EntityManager entityManager, final Integer primeKey) {
 		return entityManager.find(AdminGroupData.class, primeKey);
 	}
 	
@@ -330,20 +328,21 @@ public class AdminGroupData implements Serializable {
 	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
-	public static AdminGroupData findByGroupName(EntityManager entityManager, String adminGroupName) {
+	public static AdminGroupData findByGroupName(final EntityManager entityManager, final String adminGroupName) {
 		AdminGroupData ret = null;
 		try {
-			Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE adminGroupName=:adminGroupName");
+			final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE adminGroupName=:adminGroupName");
 			query.setParameter("adminGroupName", adminGroupName);
 			ret = (AdminGroupData) query.getSingleResult();
 		} catch (NoResultException e) {
+			// return null
 		}
 		return ret;
 	}
 
 	/** @return return the query results as a List. */
-	public static List<AdminGroupData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a");
+	public static List<AdminGroupData> findAll(final EntityManager entityManager) {
+		final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a");
 		return query.getResultList();
 	}
 }

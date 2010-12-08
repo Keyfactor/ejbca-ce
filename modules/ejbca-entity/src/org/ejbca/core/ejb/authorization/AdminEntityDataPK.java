@@ -29,9 +29,9 @@ public class AdminEntityDataPK implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private int primeKey;
+	private final int primeKey;
 
-	public AdminEntityDataPK(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {
+	public AdminEntityDataPK(final String admingroupname, final int caid, final int matchwith, final int matchtype, final String matchvalue) {
 		final int adminGroupNameHash = admingroupname == null ? 0 : admingroupname.hashCode();
 		final int matchValueHash = matchvalue == null ? 0 : matchvalue.hashCode();
 		this.primeKey = adminGroupNameHash ^ caid ^ matchwith ^ matchValueHash ^ matchtype;
@@ -40,11 +40,11 @@ public class AdminEntityDataPK implements Serializable {
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public boolean equals(java.lang.Object otherOb) {
+	public boolean equals(final java.lang.Object otherOb) {
 		if (!(otherOb instanceof AdminEntityDataPK)) {
 			return false;
 		}
-		AdminEntityDataPK other = (AdminEntityDataPK) otherOb;
+		final AdminEntityDataPK other = (AdminEntityDataPK) otherOb;
 		return (this.primeKey == other.primeKey);
 	}
 

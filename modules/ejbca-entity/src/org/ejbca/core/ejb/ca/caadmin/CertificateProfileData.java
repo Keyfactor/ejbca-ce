@@ -53,7 +53,7 @@ public class CertificateProfileData implements Serializable {
 	/**
 	 * Entity holding data of a certificate profile.
 	 */
-	public CertificateProfileData(Integer id, String certificateprofilename, CertificateProfile certificateProfile) {
+	public CertificateProfileData(final Integer id, final String certificateprofilename, final CertificateProfile certificateProfile) {
 		setId(id);
 		setCertificateProfileName(certificateprofilename);
 		setCertificateProfile(certificateProfile);
@@ -64,34 +64,34 @@ public class CertificateProfileData implements Serializable {
 
 	//@Id @Column
 	public Integer getId() { return id; }
-	public void setId(Integer id) { this.id = id; }
+	public final void setId(final Integer id) { this.id = id; }
 
 	//@Column
 	public String getCertificateProfileName() { return certificateProfileName; }
-	public void setCertificateProfileName(String certificateProfileName) { this.certificateProfileName = certificateProfileName; }
+	public final void setCertificateProfileName(final String certificateProfileName) { this.certificateProfileName = certificateProfileName; }
 
 	//@Column @Lob
 	public Serializable getDataUnsafe() {
-		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
+		final HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
 		if (h != null) {
 			setDataUnsafe(h);
 		}
 		return data;
 	}
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
-	public void setDataUnsafe(Serializable data) { this.data = data; }
+	public final void setDataUnsafe(final Serializable data) { this.data = data; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
-	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
-	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	private HashMap getData() { return (HashMap) getDataUnsafe(); }
-	private void setData(HashMap data) { setDataUnsafe(data); }
+	private final void setData(final HashMap data) { setDataUnsafe(data); }
 	
 	/**
 	 * Method that returns the certificate profiles and updates it if necessary.
@@ -104,7 +104,7 @@ public class CertificateProfileData implements Serializable {
 	/**
 	 * Method that saves the certificate profile to database.
 	 */
-	public void setCertificateProfile(CertificateProfile profile) {
+	public final void setCertificateProfile(final CertificateProfile profile) {
 		setData((HashMap) profile.saveData());
 	}
 
@@ -136,10 +136,10 @@ public class CertificateProfileData implements Serializable {
             default :
                 returnval = new EndUserCertificateProfile();
         }
-        HashMap data = getData();
+        final HashMap data = getData();
         // If CertificateProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data 
         // and perhaps upgrading
-        float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+        final float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
         // Load the profile data, this will potentially upgrade the CertificateProfile
         returnval.loadData(data);
         if (Float.compare(oldversion, returnval.getVersion()) != 0) {
@@ -154,7 +154,7 @@ public class CertificateProfileData implements Serializable {
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static CertificateProfileData findById(EntityManager entityManager, Integer id) {
+	public static CertificateProfileData findById(final EntityManager entityManager, final Integer id) {
 		return entityManager.find(CertificateProfileData.class, id);
 	}
 	
@@ -162,10 +162,10 @@ public class CertificateProfileData implements Serializable {
 	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
-	public static CertificateProfileData findByProfileName(EntityManager entityManager, String certificateProfileName) {
+	public static CertificateProfileData findByProfileName(final EntityManager entityManager, final String certificateProfileName) {
 		CertificateProfileData ret = null;
 		try {
-			Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
+			final Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
 			query.setParameter("certificateProfileName", certificateProfileName);
 			ret = (CertificateProfileData) query.getSingleResult();
 		} catch (NoResultException e) {
@@ -174,8 +174,8 @@ public class CertificateProfileData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static List<CertificateProfileData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a");
+	public static List<CertificateProfileData> findAll(final EntityManager entityManager) {
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a");
 		return query.getResultList();
 	}
 }
