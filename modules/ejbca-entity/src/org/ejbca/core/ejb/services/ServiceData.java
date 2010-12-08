@@ -17,15 +17,11 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.Version;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.UpgradeableDataHashMap;
