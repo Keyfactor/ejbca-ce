@@ -69,13 +69,13 @@ public class CAData implements Serializable {
 	 * @param status initial status
 	 * @param ca CA to store
 	 */
-	public CAData(String subjectdn, String name, int status, CA ca) {
+	public CAData(final String subjectdn, final String name, final int status, final CA ca) {
 		try {
     		setCaId(Integer.valueOf(subjectdn.hashCode()));
     		setName(name);
     		setSubjectDN(subjectdn);
     		if (ca.getCertificateChain().size() != 0) {
-    			Certificate cacert = ca.getCACertificate();
+    			final Certificate cacert = ca.getCACertificate();
     			setExpireTime(CertTools.getNotAfter(cacert).getTime());  
     			ca.setExpireTime(CertTools.getNotAfter(cacert)); 
     		}  
@@ -96,40 +96,40 @@ public class CAData implements Serializable {
 	
 	//@Id @Column
 	public Integer getCaId() { return cAId; }
-	public void setCaId(Integer cAId) { this.cAId = cAId; }
+	public final void setCaId(final Integer cAId) { this.cAId = cAId; }
 
 	//@Column
 	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
+	public final void setName(final String name) { this.name = name; }
 
 	//@Column
 	public String getSubjectDN() { return subjectDN; }
-	public void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
+	public final void setSubjectDN(final String subjectDN) { this.subjectDN = subjectDN; }
 
 	//@Column
 	public int getStatus() { return status; }
-	public void setStatus(int status) { this.status = status; }
+	public final void setStatus(final int status) { this.status = status; }
 
 	//@Column
 	public long getExpireTime() { return expireTime; }
-	public void setExpireTime(long expireTime) { this.expireTime = expireTime; }
+	public final void setExpireTime(final long expireTime) { this.expireTime = expireTime; }
 
 	/** When was this CA updated in the database */
 	//@Column
 	public long getUpdateTime() { return updateTime; }
-	public void setUpdateTime(long updateTime){ this.updateTime = updateTime; }
+	public final void setUpdateTime(final long updateTime){ this.updateTime = updateTime; }
 
 	//@Column @Lob
 	public String getData() { return data; }
-	public void setData(String data) { this.data = data; }
+	public final void setData(final String data) { this.data = data; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
-	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
-	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	public Date getUpdateTimeAsDate() {
@@ -161,7 +161,7 @@ public class CAData implements Serializable {
      * @throws java.io.UnsupportedEncodingException
      * @throws IllegalKeyStoreException
      */
-    private CA readAndUpgradeCAInternal() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
+    private final CA readAndUpgradeCAInternal() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
         CA ca = null;
         // First check if we already have a cached instance of the CA
         ca = CACacheManager.instance().getAndUpdateCA(getCaId().intValue(), getStatus(), getExpireTime(), getName(), getSubjectDN());
@@ -170,26 +170,30 @@ public class CAData implements Serializable {
         	if (log.isDebugEnabled()) {
         		log.debug("Found CA ('"+ca.getName()+"', "+getCaId().intValue()+") in cache.");
         	}
-        	long update = ca.getCAInfo().getUpdateTime().getTime();
-        	long t = getUpdateTime();
+        	final long update = ca.getCAInfo().getUpdateTime().getTime();
+        	final long t = getUpdateTime();
         	//log.debug("updateTime from ca = "+update);
         	//log.debug("updateTime from db = "+t);
         	if (update < t) {
-        		log.debug("CA '"+ca.getName()+"' has been updated in database, need to refresh cache");
+            	if (log.isDebugEnabled()) {
+            		log.debug("CA '"+ca.getName()+"' has been updated in database, need to refresh cache");
+            	}
         		isUpdated = true;
         	}
         }
         if ( (ca == null) || isUpdated) {
-        	log.debug("Re-reading CA from database: "+getCaId().intValue());
-            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-            HashMap h = (HashMap) decoder.readObject();
+        	if (log.isDebugEnabled()) {
+        		log.debug("Re-reading CA from database: "+getCaId().intValue());
+        	}
+        	final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+        	final HashMap h = (HashMap) decoder.readObject();
             decoder.close();
             // Handle Base64 encoded string values
-            HashMap<String, ?> data = new Base64GetHashMap(h);
+            final HashMap<String, ?> data = new Base64GetHashMap(h);
             
             // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
             // and perhaps upgrading
-            float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+            final float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
             switch(((Integer)(data.get(CA.CATYPE))).intValue()){
                 case CAInfo.CATYPE_X509:
                     ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
@@ -198,7 +202,7 @@ public class CAData implements Serializable {
                     ca = new CVCCA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
                     break;
             }
-            boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
             // Compare old version with current version and save the data if there has been a change
             if ( ((ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0)) || upgradedExtendedService) {
             	// Make sure we upgrade the CAToken as well, if needed
@@ -217,17 +221,19 @@ public class CAData implements Serializable {
 	 * Method that saves the CA to database.
 	 * @ejb.interface-method
 	 */
-	public void setCA(CA ca) throws UnsupportedEncodingException {
+	public final void setCA(final CA ca) throws UnsupportedEncodingException {
         // We must base64 encode string for UTF safety
-        HashMap a = new Base64PutHashMap();
+		final HashMap a = new Base64PutHashMap();
         a.putAll((HashMap)ca.saveData());
         
-        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
         encoder.writeObject(a);
         encoder.close();
-        String data = baos.toString("UTF8");
-        log.debug("Saving CA data with length: "+data.length()+" for CA '"+ca.getName()+"'.");
+        final String data = baos.toString("UTF8");
+        if (log.isDebugEnabled()) {
+        	log.debug("Saving CA data with length: "+data.length()+" for CA '"+ca.getName()+"'.");
+        }
         setData(data);
         setUpdateTime(new Date().getTime());
         // We have to update status as well, because it is kept in it's own database column, but only do that if it was actually provided in the request
@@ -250,7 +256,7 @@ public class CAData implements Serializable {
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static CAData findById(EntityManager entityManager, Integer cAId) {
+	public static CAData findById(final EntityManager entityManager, final Integer cAId) {
 		return entityManager.find(CAData.class, cAId);
 	}
 	
@@ -258,8 +264,8 @@ public class CAData implements Serializable {
 	 * @throws CADoesntExistsException if the entity does not exist
 	 * @return the found entity instance
 	 */
-	public static CAData findByIdOrThrow(EntityManager entityManager, Integer cAId) throws CADoesntExistsException {
-		CAData ret = findById(entityManager, cAId);
+	public static CAData findByIdOrThrow(final EntityManager entityManager, final Integer cAId) throws CADoesntExistsException {
+		final CAData ret = findById(entityManager, cAId);
 		if (ret == null) {
 			throw new CADoesntExistsException("CA id: " + cAId);
 		}
@@ -270,13 +276,14 @@ public class CAData implements Serializable {
 	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
-	public static CAData findByName(EntityManager entityManager, String name) {
+	public static CAData findByName(final EntityManager entityManager, final String name) {
 		CAData ret = null;
 		try {
-			Query query = entityManager.createQuery("SELECT a FROM CAData a WHERE a.name=:name");
+			final Query query = entityManager.createQuery("SELECT a FROM CAData a WHERE a.name=:name");
 			query.setParameter("name", name);
 			ret = (CAData) query.getSingleResult();
 		} catch (NoResultException e) {
+			// return null
 		}
 		return ret;
 	}
@@ -286,8 +293,8 @@ public class CAData implements Serializable {
 	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance
 	 */
-	public static CAData findByNameOrThrow(EntityManager entityManager, String name) throws CADoesntExistsException {
-		CAData ret = findByName(entityManager, name);
+	public static CAData findByNameOrThrow(final EntityManager entityManager, final String name) throws CADoesntExistsException {
+		final CAData ret = findByName(entityManager, name);
 		if (ret == null) {
 			throw new CADoesntExistsException("CA name: " + name);
 		}
@@ -295,14 +302,14 @@ public class CAData implements Serializable {
 	}
 
 	/** @return return the query results as a List<CAData>. */
-	public static List<CAData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a FROM CAData a");
+	public static List<CAData> findAll(final EntityManager entityManager) {
+		final Query query = entityManager.createQuery("SELECT a FROM CAData a");
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<Integer>. */
-	public static List<Integer> findAllCaIds(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a.caId FROM CAData a");
+	public static List<Integer> findAllCaIds(final EntityManager entityManager) {
+		final Query query = entityManager.createQuery("SELECT a.caId FROM CAData a");
 		return query.getResultList();
 	}
 }

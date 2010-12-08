@@ -74,7 +74,7 @@ public class ApprovalData implements Serializable {
 	 * 
 	 * The constructor is responsible for populating all non-nullable fields!
 	 */
-	public ApprovalData(int id, ApprovalRequest approvalRequest) {
+	public ApprovalData(final int id, final ApprovalRequest approvalRequest) {
 		setId(id);
 		setApprovalid(approvalRequest.generateApprovalId());
 		setApprovaltype(approvalRequest.getApprovalType());
@@ -87,20 +87,22 @@ public class ApprovalData implements Serializable {
 		setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);        
 		setApprovals(new ArrayList<Approval>());
 		setApprovalRequest(approvalRequest);                
-		setRequestDate(new Date());
+		setRequestdate(System.currentTimeMillis());
 		setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
 		setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
 		log.debug("Created approval with id " + id);
 	}
 
-	public ApprovalData() { }
-			
+	public ApprovalData() { 
+		// used from test code
+	}
+
 	/** unique row id */
 	//@Id @Column
 	public int getId() { return id; }
 
 	/** unique row id */
-	public void setId(int id) { this.id = id; }
+	public final void setId(final int id) { this.id = id; }
 
 	/**
 	 * Constructed from action data as actiontype, admin, username etc. It should
@@ -112,7 +114,7 @@ public class ApprovalData implements Serializable {
 	 * Constructed from action data as actiontype, admin, username etc. It should
 	 * result in the same approvalid if the admin tries to request the same action twice.
 	 */
-	public void setApprovalid(int approvalid) { this.approvalid = approvalid; } 
+	public final void setApprovalid(final int approvalid) { this.approvalid = approvalid; } 
 
 	/**   
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
@@ -124,7 +126,7 @@ public class ApprovalData implements Serializable {
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
 	 * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
 	 */
-	public void setApprovaltype(int approvaltype) { this.approvaltype = approvaltype; }
+	public final void setApprovaltype(final int approvaltype) { this.approvaltype = approvaltype; }
 
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
@@ -136,7 +138,7 @@ public class ApprovalData implements Serializable {
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
 s	 */
-	public void setEndentityprofileid(int endentityprofileid) { this.endentityprofileid = endentityprofileid; }
+	public final void setEndentityprofileid(final int endentityprofileid) { this.endentityprofileid = endentityprofileid; }
 
 	/**
 	 * For CA specific approval requests should the related ca id be specified
@@ -148,7 +150,7 @@ s	 */
 	 * For CA specific approval requests should the related ca id be specified
 	 * for non ca request should this field be set to ApprovalDataVO.ANY_CA    
 	 */
-	public void setCaid(int caid) { this.caid = caid; }
+	public final void setCaid(final int caid) { this.caid = caid; }
 
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
@@ -158,7 +160,7 @@ s	 */
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
 	 */
-	public void setReqadmincertissuerdn(String reqadmincertissuerdn) { this.reqadmincertissuerdn = reqadmincertissuerdn; }
+	public final void setReqadmincertissuerdn(final String reqadmincertissuerdn) { this.reqadmincertissuerdn = reqadmincertissuerdn; }
 
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
@@ -168,7 +170,7 @@ s	 */
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
 	 */
-	public void setReqadmincertsn(String reqadmincertsn) { this.reqadmincertsn = reqadmincertsn; }
+	public final void setReqadmincertsn(final String reqadmincertsn) { this.reqadmincertsn = reqadmincertsn; }
 
 	/**
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
@@ -180,7 +182,7 @@ s	 */
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
 	 * STATUS_REJECTED, STATUS_EXPIRED
 	 */
-	public void setStatus(int status) { this.status = status; }
+	public final void setStatus(final int status) { this.status = status; }
 
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
@@ -191,7 +193,7 @@ s	 */
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	public void setApprovaldata(String approvaldata) { this.approvaldata = approvaldata; }
+	public final void setApprovaldata(final String approvaldata) { this.approvaldata = approvaldata; }
 
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
@@ -202,7 +204,7 @@ s	 */
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	public void setRequestdata(String requestdata) { this.requestdata = requestdata; }            
+	public final void setRequestdata(final String requestdata) { this.requestdata = requestdata; }            
 
 	/**
 	 * Date the request for approval were added
@@ -212,7 +214,7 @@ s	 */
 	/**
 	 * Date the request for approval were added
 	 */
-	public void setRequestdate(long requestdate) { this.requestdate = requestdate; }
+	public final void setRequestdate(final long requestdate) { this.requestdate = requestdate; }
 
 	/**
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
@@ -224,7 +226,7 @@ s	 */
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
-	public void setExpiredate(long expiredate) { this.expiredate = expiredate; }
+	public final void setExpiredate(final long expiredate) { this.expiredate = expiredate; }
 
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
@@ -234,15 +236,15 @@ s	 */
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
-	public void setRemainingapprovals(int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
+	public final void setRemainingapprovals(final int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
-	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
-	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
 	public Collection<Approval> getApprovals() {   
@@ -254,15 +256,15 @@ s	 */
 	 * @param approvals cannot be null.
 	 * @throws IOException
 	 */
-	private void setApprovals(Collection<Approval> approvals){
+	private final void setApprovals(final Collection<Approval> approvals){
 		try{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			int size = approvals.size();
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final ObjectOutputStream oos = new ObjectOutputStream(baos);
+			final int size = approvals.size();
 			oos.writeInt(size);
-			Iterator<Approval> iter = approvals.iterator();
+			final Iterator<Approval> iter = approvals.iterator();
 			while(iter.hasNext()){
-				Approval next = iter.next();
+				final Approval next = iter.next();
 				oos.writeObject(next);
 			}
 			oos.flush();
@@ -278,10 +280,10 @@ s	 */
 		return ApprovalDataUtil.getApprovalRequest(requestdata);	//getRequestdata()
 	}
 
-	public void setApprovalRequest(ApprovalRequest approvalRequest){
+	public final void setApprovalRequest(final ApprovalRequest approvalRequest){
 		try{
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(approvalRequest);
 			oos.flush();
 			setRequestdata(new String(Base64.encode(baos.toByteArray(),false)));
@@ -296,10 +298,6 @@ s	 */
 		return new Date(getRequestdate());
 	}
 
-	private void setRequestDate(Date requestDate){
-		setRequestdate(requestDate.getTime());
-	}
-
 	@Transient
 	private Date getExpireDate(){    
 		return new Date(getExpiredate());
@@ -308,7 +306,7 @@ s	 */
 	/**
 	 * Method used to set the expire date of the request
 	 */
-	public void setExpireDate(Date expireDate){
+	public void setExpireDate(final Date expireDate){
 		setExpiredate(expireDate.getTime());
 	}
 
@@ -318,7 +316,7 @@ s	 */
 	 * @return true of the request or approval have expired
 	 */
 	private boolean haveRequestOrApprovalExpired(){
-		Date currentDate = new Date();
+		final Date currentDate = new Date();
 		boolean retval = false;
 		if(currentDate.after(getExpireDate())){
 			if(getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL ||
@@ -361,23 +359,23 @@ s	 */
 	 * @throws ApprovalRequestExecutionException 
 	 * @throws ApprovalException 
 	 */
-	public void approve(Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
+	public void approve(final Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, ApprovalException {
 		if(haveRequestOrApprovalExpired()){
 			throw new ApprovalRequestExpiredException();
 		}
 		if(getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
 			throw new ApprovalException("Wrong status of approval request.");
 		}
-		int numberofapprovalsleft = getRemainingapprovals() -1;
+		final int numberofapprovalsleft = getRemainingapprovals() -1;
 		if(numberofapprovalsleft < 0){
 			throw new ApprovalException("Error already enough approvals have been done on this request.");
 		}
 		setRemainingapprovals(numberofapprovalsleft);
-		Collection<Approval> approvals = getApprovals();
+		final Collection<Approval> approvals = getApprovals();
 		approvals.add(approval);
 		setApprovals(approvals);
 		if(numberofapprovalsleft == 0){
-			ApprovalRequest approvalRequest = getApprovalRequest();
+			final ApprovalRequest approvalRequest = getApprovalRequest();
 			if(approvalRequest.isExecutable()){
 				try{
 					approvalRequest.execute();
@@ -403,19 +401,19 @@ s	 * @throws ApprovalRequestExpiredException
 	 * @throws ApprovalRequestExecutionException 
 	 * @throws ApprovalException 
 	 */
-	public void reject(Approval approval) throws ApprovalRequestExpiredException,  ApprovalException {
+	public void reject(final Approval approval) throws ApprovalRequestExpiredException,  ApprovalException {
 		if(haveRequestOrApprovalExpired()){
 			throw new ApprovalRequestExpiredException();
 		}
 		if(getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
 			throw new ApprovalException("Wrong status of approval request.");
 		}
-		int numberofapprovalsleft = getRemainingapprovals() -1;
+		final int numberofapprovalsleft = getRemainingapprovals() -1;
 		if(numberofapprovalsleft < 0){
 			throw new ApprovalException("Error already enough approvals have been done on this request.");
 		}
 		setRemainingapprovals(0);
-		Collection<Approval> approvals = getApprovals();
+		final Collection<Approval> approvals = getApprovals();
 		approvals.add(approval);
 		setApprovals(approvals);
 		if(getApprovalRequest().isExecutable()){
@@ -434,7 +432,7 @@ s	 * @throws ApprovalRequestExpiredException
 	 * @throws ApprovalRequestExpiredException if the request or approval have expired, the status will be EXPIREDANDNOTIFIED in this case. 
 	 */
 	@Transient
-	public int isApproved(int step) throws ApprovalRequestExpiredException {    	
+	public int isApproved(final int step) throws ApprovalRequestExpiredException {    	
 		if(getApprovalRequest().isStepDone(step)){
 			return ApprovalDataVO.STATUS_EXPIRED;
 		}
@@ -461,8 +459,8 @@ s	 * @throws ApprovalRequestExpiredException
 	 *
 	 * @throws ApprovalRequestExpiredException if the step have already been executed
 	 */
-	public void markStepAsDone(int step) throws ApprovalRequestExpiredException {
-		ApprovalRequest ar = getApprovalRequest();
+	public void markStepAsDone(final int step) throws ApprovalRequestExpiredException {
+		final ApprovalRequest ar = getApprovalRequest();
 		if (!ar.isExecutable() && getStatus() == ApprovalDataVO.STATUS_APPROVED) {
 			if (!ar.isStepDone(step)) {
 				ar.markStepAsDone(step);
@@ -481,43 +479,43 @@ s	 * @throws ApprovalRequestExpiredException
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static ApprovalData findById(EntityManager entityManager, Integer id) {
+	public static ApprovalData findById(final EntityManager entityManager, final Integer id) {
 		return entityManager.find(ApprovalData.class, id);
 	}
 	
 	/** @return return the query results as a List. */
-	public static List<ApprovalData> findByApprovalId(EntityManager entityManager, int approvalid) {
-		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid");
+	public static List<ApprovalData> findByApprovalId(final EntityManager entityManager, final int approvalid) {
+		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid");
 		query.setParameter("approvalid", approvalid);
 		return query.getResultList();
 	}
 	
 	/** @return return the query results as a List. */
-	public static List<ApprovalData> findByApprovalIdNonExpired(EntityManager entityManager, int approvalid) {
-		Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
+	public static List<ApprovalData> findByApprovalIdNonExpired(final EntityManager entityManager, final int approvalid) {
+		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
 		query.setParameter("approvalid", approvalid);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<Integer>. */
-	public static List<Integer> findByApprovalIdsByStatus(EntityManager entityManager, int status) {
-		Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
+	public static List<Integer> findByApprovalIdsByStatus(final EntityManager entityManager, final int status) {
+		final Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
 		query.setParameter("status", status);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<ApprovalData>. */
-	public static List<ApprovalDataVO> findByCustomQuery(EntityManager entityManager, int index, int numberofrows, String customQuery) {
-		List<ApprovalDataVO> ret = new ArrayList<ApprovalDataVO>();
+	public static List<ApprovalDataVO> findByCustomQuery(final EntityManager entityManager, final int index, final int numberofrows, final String customQuery) {
+		final List<ApprovalDataVO> ret = new ArrayList<ApprovalDataVO>();
 		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
 		// Ingres wont let us access a LOB in a List using a native query for all fields.
 		// -> So we will get a list of primary keys and the fetch the whole entities one by one...
-		Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
+		final Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
 		query.setFirstResult(index);
 		query.setMaxResults(numberofrows);
-		List<Object> ids = query.getResultList();
+		final List<Object> ids = query.getResultList();
 		for (Object object : ids) {
-			int id = ValueExtractor.extractIntValue(object);
+			final int id = ValueExtractor.extractIntValue(object);
 			ret.add(entityManager.find(ApprovalData.class, id).getApprovalDataVO());
 		}
 		return ret;

@@ -45,42 +45,44 @@ public class AccessRulesData implements Serializable {
 	private int rowVersion = 0;
 	private String rowProtection;
 	
-	public AccessRulesData(String admingroupname, int caid, String accessrule, int rule, boolean isrecursive) {
+	public AccessRulesData(final String admingroupname, final int caid, final String accessrule, final int rule, final boolean isrecursive) {
 		setPrimKey(generatePrimaryKey(admingroupname, caid, new AccessRule(accessrule, rule, isrecursive)));
 		setAccessRule(accessrule);
 		setRule(rule);
 		setIsRecursive(isrecursive);
-		log.debug("Created accessrule : "+ accessrule);
+		if (log.isDebugEnabled()) {
+			log.debug("Created accessrule : "+ accessrule);
+		}
 	}
 	
 	public AccessRulesData() { }
 	
 	//@Id @Column
 	public int getPrimKey() { return pK; }
-	public void setPrimKey(int primKey) { this.pK = primKey; }
+	public final void setPrimKey(final int primKey) { this.pK = primKey; }
 
 	//@Column
 	public String getAccessRule() { return accessRule; }
-	public void setAccessRule(String accessRule) { this.accessRule = accessRule; }
+	public final void setAccessRule(final String accessRule) { this.accessRule = accessRule; }
 
 	/** Return the status of the rule. One of AccessRule.RULE_... */
 	//@Column	"rule" is a reserved word on MS SQL Server and Sybase
 	public int getRule() { return rule; }
-	public void setRule(int rule) { this.rule = rule; }
+	public final void setRule(final int rule) { this.rule = rule; }
 
 	@Transient
 	public boolean getIsRecursive() {
-		Boolean isRecB = getIsRecursiveBool();
+		final Boolean isRecB = getIsRecursiveBool();
 		if (isRecB != null) {
 			return isRecB.booleanValue();
 		}
-		Integer isRecI = getIsRecursiveInt();
+		final Integer isRecI = getIsRecursiveInt();
 		if (isRecI != null) {
 			return isRecI.intValue() == 1;
 		}
 		throw new RuntimeException("Could not retreive AccessRulesData.isRecursive from database.");
 	}
-	public void setIsRecursive(boolean isRecursive) {
+	public final void setIsRecursive(final boolean isRecursive) {
 		setIsRecursiveBool(Boolean.valueOf(isRecursive));
 		setIsRecursiveInt(isRecursive ? 1 : 0);
 	}
@@ -92,7 +94,7 @@ public class AccessRulesData implements Serializable {
 	 */
 	public Boolean getIsRecursiveBool() { return isRecursiveBool; }
 	/** Use setIsRecursive(boolean) instead of this method! */
-	public void setIsRecursiveBool(Boolean isRecursiveBool) { this.isRecursiveBool = isRecursiveBool; }
+	public void setIsRecursiveBool(final Boolean isRecursiveBool) { this.isRecursiveBool = isRecursiveBool; }
 
 	/**
 	 * Use getIsRecursive() instead of this method!
@@ -101,15 +103,15 @@ public class AccessRulesData implements Serializable {
 	 */
 	public Integer getIsRecursiveInt() { return isRecursiveInt; }
 	/** Use setIsRecursive(boolean) instead of this method! */
-	public void setIsRecursiveInt(Integer isRecursiveInt) { this.isRecursiveInt = isRecursiveInt; }
+	public void setIsRecursiveInt(final Integer isRecursiveInt) { this.isRecursiveInt = isRecursiveInt; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
-	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
+	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
 	public String getRowProtection() { return rowProtection; }
-	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	/**
 	 * The current pk in AdminEntityData and AccessRulesData is a mix of integer pk and 
@@ -119,7 +121,7 @@ public class AccessRulesData implements Serializable {
 	 * If needed it can easily be replaced with an int pk and programatic logic to handle 
 	 * constraints. From the database view the pk is just an int.
 	 */
-	private static int generatePrimaryKey(String admingroupname, int caid, AccessRule accessrule) {
+	private static int generatePrimaryKey(final String admingroupname, final int caid, final AccessRule accessrule) {
 		final int adminGroupNameHash = admingroupname == null ? 0 : admingroupname.hashCode();
 		final int accessRuleHash = accessrule.getAccessRule() == null ? 0 : accessrule.getAccessRule().hashCode();
 		return adminGroupNameHash ^ caid ^ accessRuleHash;
@@ -139,14 +141,14 @@ public class AccessRulesData implements Serializable {
 	//
 
 	/** @return the found entity instance or null if the entity does not exist */
-	public static AccessRulesData findByPrimeKey(EntityManager entityManager, String admingroupname, int caid, AccessRule accessrule) {
+	public static AccessRulesData findByPrimeKey(final EntityManager entityManager, final String admingroupname, final int caid, final AccessRule accessrule) {
 		return entityManager.find(AccessRulesData.class, generatePrimaryKey(admingroupname, caid, accessrule));
 	}
 
 	/** @return return the count. isRecursive should never be referenced in the WHERE clause. */
-	public static long findCountByCustomQuery(EntityManager entityManager, String whereClause) {
-		Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
-		BigInteger v = (BigInteger)query.getSingleResult();
+	public static long findCountByCustomQuery(final EntityManager entityManager, final String whereClause) {
+		final Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
+		final BigInteger v = (BigInteger)query.getSingleResult();
 		return v.longValue();
 	}
 
