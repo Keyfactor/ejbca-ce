@@ -10,7 +10,7 @@
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("pk-favIcon.png")%>" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
 </head>
