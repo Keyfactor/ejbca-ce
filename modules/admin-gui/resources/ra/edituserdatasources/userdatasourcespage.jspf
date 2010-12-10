@@ -5,86 +5,82 @@
 
 
 <h1><%= ejbcawebbean.getText("EDITUSERDATASOURCES") %></h1>
- <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#userdatasources"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
 
-  <form name="edituserdatasources" method="post"  action="<%= THIS_FILENAME%>">
-    <input type="hidden" name='<%= userdatasourcehelper.ACTION %>' value='<%=userdatasourcehelper.ACTION_EDIT_USERDATASOURCES %>'>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <% if(userdatasourcehelper.userdatasourceexists){ 
-          userdatasourcehelper.userdatasourceexists= false;%> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("USERDATASOURCEALREADY") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(userdatasourcehelper.userdatasourcedeletefailed){
-          userdatasourcehelper.userdatasourcedeletefailed = false; 
-          %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEUSERDATASOURCE") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H3><%= ejbcawebbean.getText("CURRENTUSERDATASOURCES") %></H3></td>
-        <td width="35%"></td>
-      </tr>
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%">
-          <select name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCE%>" style="width: 50em" size="15"  >
-            <% Iterator iter = userdatasourcenames.keySet().iterator();
-               while(iter.hasNext()){
-                 String userdatasourcename = (String) iter.next(); %>
-                 
-              <option value="<%=userdatasourcename%>"> 
-                  <%= userdatasourcename %>
-               </option>
-            <%}%>
-          </select>
-          </td>
-      </tr>
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"> 
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td>
-                <input type="submit" name="<%= userdatasourcehelper.BUTTON_EDIT_USERDATASOURCE %>" value="<%= ejbcawebbean.getText("EDITUSERDATASOURCE") %>">
-              </td>
-              <td>
-             &nbsp; 
-              </td>
-              <td>
-                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= userdatasourcehelper.BUTTON_DELETE_USERDATASOURCE %>" value="<%= ejbcawebbean.getText("DELETEUSERDATASOURCE") %>">
-              </td>
-            </tr>
-          </table> 
-        </td>
-        <td width="35%"> </td>
-      </tr>
-    </table>
-   
-  <p align="left"> </p>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tr> 
-        <td width="5%"></td>
-        <td width="95%"><H3><%= ejbcawebbean.getText("ADD") %></H3></td>
-      </tr>
-      <tr> 
-        <td width="5%"></td>
-        <td width="95%"> 
-          <input type="text" name="<%= userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>" size="40" maxlength="255">   
-          <input type="submit" name="<%= userdatasourcehelper.BUTTON_ADD_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= userdatasourcehelper.BUTTON_RENAME_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= userdatasourcehelper.BUTTON_CLONE_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
-        </td>
-      </tr>
-    </table>
-  </form>
-</div>
+<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#userdatasources"%>")'>
+     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
+
+<form name="edituserdatasources" method="post"  action="<%= THIS_FILENAME%>">
+
+  <input type="hidden" name='<%= userdatasourcehelper.ACTION %>' value='<%=userdatasourcehelper.ACTION_EDIT_USERDATASOURCES %>'>
+
+  <table class="list">
+  <% if(userdatasourcehelper.userdatasourceexists){ 
+        userdatasourcehelper.userdatasourceexists= false;%> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("USERDATASOURCEALREADY") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(userdatasourcehelper.userdatasourcedeletefailed){
+        userdatasourcehelper.userdatasourcedeletefailed = false; 
+        %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEUSERDATASOURCE") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+    <tr> 
+      <td width="40%"><h3><%= ejbcawebbean.getText("CURRENTUSERDATASOURCES") %></h3></td>
+      <td width="60%"></td>
+    </tr>
+    <tr> 
+      <td width="40%">
+        <select name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCE%>" style="width: 50em" size="15"  >
+          <% Iterator iter = userdatasourcenames.keySet().iterator();
+             while(iter.hasNext()){
+               String userdatasourcename = (String) iter.next(); %>
+               
+            <option value="<%=userdatasourcename%>"> 
+                <%= userdatasourcename %>
+             </option>
+          <%}%>
+        </select>
+      </td>
+      <td width="60%"></td>
+    </tr>
+    <tr> 
+      <td width="40%"> 
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="left">
+              <input type="submit" name="<%= userdatasourcehelper.BUTTON_EDIT_USERDATASOURCE %>" value="<%= ejbcawebbean.getText("EDITUSERDATASOURCE") %>">
+            </td>
+            <td align="center">
+              &nbsp;
+            </td>
+            <td align="right">
+              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURE",true) %>');" name="<%= userdatasourcehelper.BUTTON_DELETE_USERDATASOURCE %>" value="<%= ejbcawebbean.getText("DELETEUSERDATASOURCE") %>">
+            </td>
+          </tr>
+        </table> 
+      </td>
+      <td width="60%"></td>
+    </tr>
+  </table>
+
+  <table class="add">
+    <tr> 
+      <td width="100%"><h3><%= ejbcawebbean.getText("ADDDATASOURCE") %></h3></td>
+    </tr>
+    <tr> 
+      <td width="100%"> 
+        <input type="text" name="<%= userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>" size="40" maxlength="255">   
+        <input type="submit" name="<%= userdatasourcehelper.BUTTON_ADD_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("ADD") %>">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= userdatasourcehelper.BUTTON_RENAME_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= userdatasourcehelper.BUTTON_CLONE_USERDATASOURCE%>" onClick='return checkfieldforlegalchars("document.edituserdatasources.<%=userdatasourcehelper.TEXTFIELD_USERDATASOURCENAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("USESELECTEDASTEMPLATE") %>">
+      </td>
+    </tr>
+  </table>
+
+</form>
 
