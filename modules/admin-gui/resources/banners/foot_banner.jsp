@@ -3,8 +3,10 @@
 <%@page errorPage="../errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<%   // Initialize environment
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/administrator"); 
+<%	// Initialize environment
+	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/administrator"); 
 %>
 
-<div id="footer"><span><%=ejbcawebbean.getText("MADEBYPRIMEKEY") %></span></div>
+<div id="footer">
+	<span><%=ejbcawebbean.getText("MADEBYPRIMEKEY") %></span>
+</div>

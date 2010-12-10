@@ -1,3 +1,13 @@
+/*
+ * EJBCA - Enterprise Java Bean Certificate Authority
+ *
+ * Style : CSS (Cascading Style Sheets)
+ * Media : all
+ * Theme : default
+ *
+ */
+
+
 /* The css items below between "Tigris begin" and "Tigris end" tags have been copied from the
    Tigris style project, http://style.tigris.org/. */ 
 /* Tigris begin */
@@ -70,8 +80,23 @@ h3, h4 {
 }
 /* Tigris end */
 
-body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
-H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
+
+/*--------------------------------------------------------------------------*/
+/* GLOBAL */
+
+* {
+	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
+}
+body {
+	margin: .5em 1em .5em 2em;
+	padding: 0em;
+	background-color: #FFF;
+	color: #000;
+	font-size: 11pt;
+}
+code, code *, pre, pre * {
+	font-family: "Courier New", Courier, monospace;
+}
 
 
 /*--------------------------------------------------------------------------*/
@@ -161,13 +186,16 @@ body#menu {
 /* HEADER & FOOTER */
 
 /* Header */
-img[src*="ejbcaheader"] {
-	margin-left: -36px;
+body#header {
+	margin: .5em .75em;
+	padding: 0em;
+	background-color: #FFF;
+	color: #000;
 }
 
 /* Footer */
 div#footer {
-	margin-top: 2em;
+	margin-top: 1.5em;
 	text-align: center;
 }
 #footer a:link,
@@ -216,6 +244,10 @@ a:hover,
 a:focus,
 a:active {
 	color: #A00;
+}
+input,
+select {
+	font-size: 11pt;
 }
 select option:hover,
 select option:focus,
@@ -298,7 +330,7 @@ div#information {
 	margin-top: .5em;
 }
 div#information code {
-	font-size: 1em;
+	font-size: 1.15em;
 /*	font-weight: bold;	/**/
 }
 div#projecthome {
@@ -483,35 +515,27 @@ form#groupList table td a:active {
 
 /*--------------------------------------------------------------------------*/
 
-#alert {color: red; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
-.alert {color: red;
-    font-size: 12pt;
-	font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;
-	background-color: white;
-}
+#alert, .alert { color: red; font-size: 11pt; background-color: white; }
 
-#Row0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
-#Row1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
+#Row0 { color: black; font-size: 9pt; background-color: white; }
+#Row1 { color: black; font-size: 9pt; background-color: #e5ecff; }
 
-td#InfoRow0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
-td#InfoRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #ccffcc }
-td#ErrorRow0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
-td#ErrorRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #ffcccc }
+td#InfoRow0 { color: black; font-size: 9pt; background-color: white; }
+td#InfoRow1 { color: black; font-size: 9pt; background-color: #ccffcc; }
+td#ErrorRow0 { color: black; font-size: 9pt; background-color: white; }
+td#ErrorRow1 { color: black; font-size: 9pt; background-color: #ffcccc; }
 
-tr#LogTextRow0 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
-tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
-.jsfrow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
-.jsfrow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
-.header {
-  color: black; text-align: center; font-size: x-large
-}
-.subheader {
-	color: black;  font-size: medium;  font-weight: bold
-}
+tr#LogTextRow0 { color: black; font-size: 7pt; background-color: white; }
+tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #e5ecff; }
+.jsfrow1 { color: black; font-size: 9pt; background-color: white; }
+.jsfrow2 { color: black; font-size: 9pt; background-color: #e5ecff; }
 
-.listHeader { color: black; font-size: 14pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; font-weight: bold; text-align: left; }
-.listRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; text-align: left; background-color: white; }
-.listRow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; text-align: left; background-color: #e5ecff; }
+.header { color: black; font-size: x-large; text-align: center; }
+.subheader { color: black; font-size: medium; font-weight: bold; }
+
+.listHeader { color: black; font-size: 13pt; font-weight: bold; text-align: left; }
+.listRow1 { color: black; font-size: 9pt; text-align: left; background-color: white; }
+.listRow2 { color: black; font-size: 9pt; text-align: left; background-color: #e5ecff; }
 
 .leftColumn { vertical-align: top; text-align: right; width: 50%; }
 
@@ -524,9 +548,12 @@ tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Ge
 .valueColumn { text-align: left; width: 20%; }
 .commandColumn { text-align: left; width: 5%; }
 
-.commandLink { font-size: 10pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: 0.4cm; margin-right: 0.4cm; }
-.commandButton { vertical-align: bottom; font-size: 10pt; margin-left: 0.4cm; margin-right: 0.4cm; }
+.commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: 0.4cm; margin-right: 0.4cm; }
+.commandButton { font-size: 9pt; vertical-align: bottom; margin-left: 0.4cm; margin-right: 0.4cm; }
 
-select option.lightgreen { background-color: #80FF80 }
-select option.lightyellow { background-color: #FFFFB3 }
-select option.lightred { background-color: #FFB8B8 }
+select option.lightgreen { background-color: #80FF80; }
+select option.lightyellow { background-color: #FFFFB3; }
+select option.lightred { background-color: #FFB8B8; }
+
+/*--------------------------------------------------------------------------*/
+/* EOF */
