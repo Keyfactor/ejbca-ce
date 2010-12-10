@@ -232,8 +232,8 @@ div#footer {
 
 /* Page: ALL */
 h1 {
-	width: 25em;		/* (50em)/2 */
-	text-align: center;
+	margin-bottom: .4em;
+	text-align: left;
 	font-size: 2em;
 	color: #686868;
 	text-shadow: .05em .05em 0em rgba(0,0,0,.1);
@@ -243,10 +243,14 @@ h1 {
 	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
 }
 h2 {
-	width: 33.33em;		/* (50em)/1.5 */
-	text-align: center;
+	text-align: left;
 	font-size: 1.5em;
 	color: #686868;
+}
+h3 {
+	text-align: left;
+	font-size: 1.2em;
+	color: #000;
 }
 a {
 	background-color: transparent;
@@ -309,6 +313,27 @@ table.grid td {
 	margin: 0px;
 	padding: 2px 3px;
 	border: 1px solid #6F9AD3;
+}
+
+/* Page: ALL List/Add forms */
+table.list,
+table.add {
+	width: 100%;
+	margin: 0em;
+	padding: 0em;
+	border: 0px;
+}
+table.add {
+	margin-top: .5em;
+}
+table.list tr td,
+table.add tr td {
+	padding-bottom: .2em;
+	line-height: 2em;
+}
+table.list tr td h3,
+table.add tr td h3 {
+	margin-bottom: -.25em;
 }
 
 /* Page: ALL Edit forms */

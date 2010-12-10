@@ -5,160 +5,146 @@
 
 %>
 
-<body>
-<h1><%= ejbcawebbean.getText("EDITCAS") %></h1>
- <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
 
-  <form name="editcas" method="post"  action="<%= THIS_FILENAME%>">
-    <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CAS %>'>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    <% if(caexists){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CAALREADY") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(cadeletefailed){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETECA") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(caactivated){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(catokenoffline){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CATOKENISOFFLINE") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(catokenauthfailed){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CATOKENAUTHFAILED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(xkmsrenewed){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(cmsrenewed){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(illegaldnoraltname){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("INVALIDSUBJECTDN") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(errorrecievingfile){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("ERRORRECIEVINGFILE") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(carenewed){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CARENEWED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(capublished){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-    <% if(errormessage != null){ %> 
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H4 id="alert"><%= errormessage %></H4></td>
-        <td width="35%"></td>
-      </tr>
-    <% } %>
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"><H3><%= ejbcawebbean.getText("CURRENTCAS") %></H3></td>
-        <td width="35%"></td>
-      </tr>
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%">
-          <select name="<%=SELECT_CAS%>" style="width: 50em" size="15"  >
-            <% Iterator iter = canames.keySet().iterator();               
-               while(iter.hasNext()){                 
-                   String nameofca = (String) iter.next();
-                   CAInfo cainfo = cabean.getCAInfo(((Integer) canames.get(nameofca)).intValue()).getCAInfo();
-                   String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo.getStatus()]) + ")"; %>
-              <option value="<%= canames.get(nameofca)%>"> 
-                  <%= nameandstatus %>
-               </option>
-               <%}%>
-          </select>
-          </td>
-      </tr>
-      <tr> 
-        <td width="5%"></td>
-        <td width="60%"> 
-          <table width="100%" border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td width="25%">
-                <input type="submit" name="<%= BUTTON_EDIT_CA %>" value="<%= ejbcawebbean.getText("EDIT") %>">
-              </td>
-              <td width="25%">
-                <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
-              </td>
-              <td width="25%">
-		          <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+"..." %>">
-              </td>
-              <td width="25%">
-		          <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCACERT")+"..." %>">
-              </td>
-            </tr>
-          </table> 
-        </td>
-        <td width="35%"> </td>
-      </tr>
-    </table>
-   
-  <p align="left"> </p>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tr> 
-        <td width="5%"></td>
-        <td width="95%"><H3><%= ejbcawebbean.getText("ADD") %></H3></td>
-      </tr>
-      <tr> 
-        <td width="5%"></td>
-        <td width="95%"> 
-          <input type="text" name="<%=TEXTFIELD_CANAME%>" size="40" maxlength="255">   
-          <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("CREATE") %>...">&nbsp;&nbsp;&nbsp;
-          <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br>
-          <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
-          <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("SIGNREQUEST") %>">
-        </td>
-      </tr>
-    </table>
-  </form>
-</div>
+<h1><%= ejbcawebbean.getText("EDITCAS") %></h1>
+
+<!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
+     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
+
+<form name="editcas" method="post"  action="<%= THIS_FILENAME%>">
+
+  <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CAS %>'>
+
+  <table class="list">
+  <% if(caexists){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CAALREADY") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(cadeletefailed){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETECA") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(caactivated){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(catokenoffline){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CATOKENISOFFLINE") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(catokenauthfailed){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CATOKENAUTHFAILED") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(xkmsrenewed){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(cmsrenewed){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(illegaldnoraltname){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("INVALIDSUBJECTDN") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(errorrecievingfile){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("ERRORRECIEVINGFILE") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(carenewed){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CARENEWED") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(capublished){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+  <% if(errormessage != null){ %> 
+    <tr> 
+      <td width="40%"><h4 id="alert"><%= errormessage %></h4></td>
+      <td width="60%"></td>
+    </tr>
+  <% } %>
+    <tr> 
+      <td width="40%"><h3><%= ejbcawebbean.getText("CURRENTCAS") %></h3></td>
+      <td width="60%"></td>
+    </tr>
+    <tr> 
+      <td width="40%">
+        <select name="<%=SELECT_CAS%>" style="width: 50em" size="15"  >
+          <% Iterator iter = canames.keySet().iterator();               
+             while(iter.hasNext()){                 
+                 String nameofca = (String) iter.next();
+                 CAInfo cainfo = cabean.getCAInfo(((Integer) canames.get(nameofca)).intValue()).getCAInfo();
+                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo.getStatus()]) + ")"; %>
+            <option value="<%= canames.get(nameofca)%>"> 
+                <%= nameandstatus %>
+             </option>
+             <%}%>
+        </select>
+      </td>
+      <td width="60%"></td>
+    </tr>
+    <tr> 
+      <td width="40%"> 
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="25%" align="left">
+              <input type="submit" name="<%= BUTTON_EDIT_CA %>" value="<%= ejbcawebbean.getText("EDITCA") %>">
+            </td>
+            <td width="25%" align="left">
+              <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
+            </td>
+            <td width="25%" align="left">
+              <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+"..." %>">
+            </td>
+            <td width="25%" align="right">
+              <input type="submit" name="<%= BUTTON_IMPORTCACERT%>" value="<%= ejbcawebbean.getText("IMPORTCACERT")+"..." %>">
+            </td>
+          </tr>
+        </table> 
+      </td>
+      <td width="60%"></td>
+    </tr>
+  </table>
+
+  <table class="add">
+    <tr> 
+      <td width="100%"><h3><%= ejbcawebbean.getText("ADDCA") %></h3></td>
+    </tr>
+    <tr> 
+      <td width="100%"> 
+        <input type="text" name="<%=TEXTFIELD_CANAME%>" size="40" maxlength="255">   
+        <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("CREATE") %>...">&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br>
+        <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
+        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("SIGNREQUEST") %>">
+      </td>
+    </tr>
+  </table>
+
+</form>
 
