@@ -4,15 +4,15 @@
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<%   // Initialize environment
-  GlobalConfiguration  globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+<%	// Initialize environment
+	GlobalConfiguration  globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
 %>
 <head>
-  <title><%= globalconfiguration .getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
- </head>
-<body>
-<img src="<%= ejbcawebbean.getImagefileInfix(org.ejbca.config.InternalConfiguration.getAppNameLower()+"header.jpg") %>" border="0">
+	<title><%= globalconfiguration .getEjbcaTitle() %></title>
+	<base href="<%= ejbcawebbean.getBaseUrl() %>" />
+	<link rel="stylesheet" type="text/css" media="all" href="<%= ejbcawebbean.getCssFile() %>" />
+</head>
+<body id="header">
+	<img src="<%= ejbcawebbean.getImagefileInfix("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin.png") %>" border="0" />
 </body>
 </html>
