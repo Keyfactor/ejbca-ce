@@ -97,6 +97,9 @@ body {
 code, code *, pre, pre * {
 	font-family: "Courier New", Courier, monospace;
 }
+a img {
+	border-width: 0px;
+}
 
 
 /*--------------------------------------------------------------------------*/
@@ -191,6 +194,19 @@ body#header {
 	padding: 0em;
 	background-color: #FFF;
 	color: #000;
+	overflow: hidden;
+}
+#header div#banner {
+	height: 84px;
+}
+#header div#banner img {
+	max-height: 84px;
+	margin-top: 0px;
+	/* For ALT */
+	color: #404040;
+	font-size: 3em;
+	line-height: 1.9em;
+	white-space: nowrap;
 }
 
 /* Footer */
