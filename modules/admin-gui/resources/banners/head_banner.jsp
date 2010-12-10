@@ -13,6 +13,8 @@
 	<link rel="stylesheet" type="text/css" media="all" href="<%= ejbcawebbean.getCssFile() %>" />
 </head>
 <body id="header">
-	<img src="<%= ejbcawebbean.getImagefileInfix("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin.png") %>" border="0" />
+	<div id="banner">
+		<img src="<%= ejbcawebbean.getImagefileInfix("banner_"+org.ejbca.config.InternalConfiguration.getAppNameLower()+"-admin.png") %>" alt="<%= globalconfiguration .getEjbcaTitle() %>" />
+	</div>
 </body>
 </html>
