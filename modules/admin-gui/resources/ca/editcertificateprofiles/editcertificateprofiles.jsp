@@ -164,6 +164,8 @@
           // Display  profilepage.jsp
          certprofile = request.getParameter(SELECT_CERTIFICATEPROFILES);
          if(certprofile != null){
+           // clear any stored temporary certificate profile
+           cabean.setTempCertificateProfile(null);
            if(!certprofile.trim().equals("")){
              if(!certprofile.endsWith("(FIXED)")){ 
                includefile="certificateprofilepage.jspf"; 
