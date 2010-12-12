@@ -260,6 +260,7 @@ public class AdminGroupData implements Serializable {
 				final AdminEntityDataPK uepk = new AdminEntityDataPK(getAdminGroupName(), ue.getCaId(), ue.getMatchWith(), ue.getMatchType(), ue.getMatchValue());
 				if (uepk.equals(dataAdminEntityDataPK)) {
 					getAdminEntities().remove(ue);
+					entityManager.remove(ue);
 					break;
 				}
 			}
