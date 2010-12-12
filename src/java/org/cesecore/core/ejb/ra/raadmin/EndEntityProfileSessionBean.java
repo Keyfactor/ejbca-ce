@@ -386,7 +386,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     		// We need to clone the profile, otherwise the cache contents will be modifyable from the outside
         	EndEntityProfile eep = getProfileCacheInternal().get(Integer.valueOf(id));
     		try {
-    			returnval = (EndEntityProfile)eep.clone();
+    			if (eep != null) {
+    				returnval = (EndEntityProfile)eep.clone();
+    			}
     		} catch (CloneNotSupportedException e) {
     			LOG.error("Should never happen: ", e);
     			throw new RuntimeException(e);
