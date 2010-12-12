@@ -355,7 +355,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", profileName, dn, udfp.getMessage());
                 logSession.log(admin, userdata.getCAId(), LogConstants.MODULE_RA, new java.util.Date(), userdata.getUsername(), null,
                         LogConstants.EVENT_ERROR_ADDEDENDENTITY, msg);
-                throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
+                throw udfp;
             }
 
             // Check if administrator is authorized to add user.
