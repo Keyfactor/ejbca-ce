@@ -54,15 +54,15 @@ class DNFields {
         }
     }
     private static void addIfNotEmptyOrNotLast(List<Field> input, List<Field> output) {
-        final Field next = input.remove(0);
-        // input.contains is true if it is at least one field in the remaining fields (input) with one key that is not null.
-        if ( next.value!=null || input.contains(next) ) {
-            output.add(next);
-        }
-        if ( input.size()>0 ) {
-            // examine the rest
-            addIfNotEmptyOrNotLast(input, output);
-        }
+    	if ( input.size()>0 ) {
+    		final Field next = input.remove(0);
+    		// input.contains is true if it is at least one field in the remaining fields (input) with one key that is not null.
+    		if ( next.value!=null || input.contains(next) ) {
+    			output.add(next);
+    		}
+    		// examine the rest
+    		addIfNotEmptyOrNotLast(input, output);
+    	}
     }
     private static boolean isLastBackSlash( String s ) {
         if ( s.length()<1 || s.charAt(s.length()-1)!='\\' ) {
@@ -77,6 +77,9 @@ class DNFields {
     }
     private static List<Field> getLinkedList( String sDN ) throws Exception {
         final LinkedList<Field> input = new LinkedList<Field>();
+        if (sDN == null) {
+        	return input;
+        }
         final String sArray[] = sDN.split(",");
         String s="";
         for ( int i=0; i<sArray.length; i++) {
