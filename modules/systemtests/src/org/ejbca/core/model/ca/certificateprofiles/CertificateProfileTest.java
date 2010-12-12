@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -468,5 +469,26 @@ public class CertificateProfileTest extends TestCase {
         certificateProfileSession.removeCertificateProfile(admin, "TESTCPCACHE1");
 
     } // test12CertificateProfileCache
+
+    public void test13Clone() throws Exception {
+        CertificateProfile profile = new CertificateProfile();
+        CertificateProfile clone = (CertificateProfile)profile.clone();
+        HashMap profmap = (HashMap)profile.saveData();
+        HashMap clonemap = (HashMap)clone.saveData();
+        assertEquals(profmap.size(), clonemap.size());
+        clonemap.put("FOO", "BAR");
+        assertEquals(profmap.size()+1, clonemap.size());
+        profmap.put("FOO", "BAR");
+        assertEquals(profmap.size(), clonemap.size());
+        profmap.put("FOO", "FAR");
+        String profstr = (String)profmap.get("FOO");
+        String clonestr = (String)clonemap.get("FOO");
+        assertEquals("FAR", profstr);
+        assertEquals("BAR", clonestr);
+        CertificateProfile clone2 = (CertificateProfile)clone.clone();
+        HashMap clonemap2 = (HashMap)clone2.saveData();
+        assertEquals(clonemap2.size(), profmap.size());
+        log.trace("<test08FieldIds()");
+    }
 
 }
