@@ -5,13 +5,10 @@
 <html>
 <head>
   <title><c:out value="<%= gc.getEjbcaTitle() %>"/></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
-</head>
-
-<body>
-<SCRIPT language="JavaScript">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript">
 <!--  
 
 function checkuseapprovalnotifications(){
@@ -48,21 +45,26 @@ function checkuseautoenroll(){
   }
 }
 -->
-</SCRIPT>
+  </script>
+</head>
+
+<body>
 
 <h1><c:out value="<%= ejbcawebbean.getText(\"EJBCAWEBCONFIGURATION\") %>"/></h1> 
 
 <form name="webconfiguration" method="post" action="<%= globalconfiguration .getConfigPath() + "/" + THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
+<!--
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
         &nbsp;
       </td>
       <td width="50%" valign="top"> 
-     <!--   <div align="right"><A  onclick='displayHelpWindow("/<%=gc.getAdminWebPath() %>/help/configuration_help.en.html#mainconfig")'>
-        <u>Help</u> </A> </div> -->
+        <div align="right"><A  onclick='displayHelpWindow("/<%=gc.getAdminWebPath() %>/help/configuration_help.en.html#mainconfig")'>
+        <u>Help</u> </A> </div>
       </td>
     </tr>
+-->
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"EJBCATITLE\") %>"/></h3>

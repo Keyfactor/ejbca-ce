@@ -65,13 +65,10 @@
 %>
 <head>
   <title><%= globalconfiguration .getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
-</head>
-<body>
-<SCRIPT language="JavaScript">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript">
 <!--  
 function viewcacert(caid){   
     var link = "<%=VIEWCERTIFICATE_LINK%>?caid="+caid;
@@ -96,7 +93,9 @@ function getPasswordAndSubmit(formname) {
 	}
 }
 -->
-</SCRIPT>
+  </script>
+</head>
+<body>
   <h1><%= ejbcawebbean.getText("CAFUNCTIONS") %></h1>
 <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 

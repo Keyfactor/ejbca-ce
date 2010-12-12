@@ -232,6 +232,7 @@ div#footer {
 
 /* Page: ALL */
 h1 {
+	margin-top: 0em;
 	margin-bottom: .4em;
 	text-align: left;
 	font-size: 2em;
@@ -555,6 +556,31 @@ form#groupList table td a:active {
 
 
 /*--------------------------------------------------------------------------*/
+/* POPUPS */
+
+/* Popup: ALL */
+body.popup {
+	margin: 1em;
+	padding: 0em;
+	background-color: #FFF;
+	color: #000;
+	font-size: 11pt;
+}
+.popup h2,
+.popup h3,
+.popup h4 {
+		text-align: center;
+}
+
+/* Popup: View History */
+.popup#history h2,
+.popup#history h3,
+.popup#history h4 {
+		text-align: left;
+}
+
+
+/*--------------------------------------------------------------------------*/
 
 #alert, .alert { color: red; font-size: 11pt; background-color: white; }
 
@@ -571,12 +597,9 @@ tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #e5ecff; }
 .jsfrow1 { color: black; font-size: 9pt; background-color: white; }
 .jsfrow2 { color: black; font-size: 9pt; background-color: #e5ecff; }
 
-.header { color: black; font-size: x-large; text-align: center; }
-.subheader { color: black; font-size: medium; font-weight: bold; }
-
-.listHeader { color: black; font-size: 13pt; font-weight: bold; text-align: left; }
-.listRow1 { color: black; font-size: 9pt; text-align: left; background-color: white; }
-.listRow2 { color: black; font-size: 9pt; text-align: left; background-color: #e5ecff; }
+.listHeader { color: black; font-size: 1.2em; font-weight: bold; text-align: left; }
+.listRow1 { color: black; font-size: .85em; text-align: left; background-color: white; }
+.listRow2 { color: black; font-size: .85em; text-align: left; background-color: #e5ecff; }
 
 .leftColumn { vertical-align: top; text-align: right; width: 50%; }
 
@@ -589,8 +612,8 @@ tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #e5ecff; }
 .valueColumn { text-align: left; width: 20%; }
 .commandColumn { text-align: left; width: 5%; }
 
-.commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: 0.4cm; margin-right: 0.4cm; }
-.commandButton { font-size: 9pt; vertical-align: bottom; margin-left: 0.4cm; margin-right: 0.4cm; }
+.commandLink { font-size: 9pt; font-weight: bold; text-decoration: none; text-align: right; margin-left: .5em; margin-right: .5em; }
+.commandButton { font-size: 9pt; vertical-align: bottom; margin-left: .5em; margin-right: .5em; }
 
 select option.lightgreen { background-color: #80FF80; }
 select option.lightyellow { background-color: #FFFFB3; }

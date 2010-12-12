@@ -39,7 +39,7 @@
 
 <h1><h:outputText value="#{web.text.ADMINPRIVILEGES}" /></h1>
 
-<div align="center">
+<div>
 	<p><h:messages layout="table" errorClass="alert"/></p>
 
 	<h:form id="groupList">
@@ -83,7 +83,7 @@
 			</h:commandLink>
 		</h:column>
 	</h:dataTable>
-	<p style="text-align: center;">
+	<p>
 	<h:commandLink action="#{adminGroupsManagedBean.addGroup}" styleClass="commandLink" title="#{web.text.ADDADMINGROUP}"
 		onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}');" >
 		<h:outputText value="#{web.text.ADD}"/>

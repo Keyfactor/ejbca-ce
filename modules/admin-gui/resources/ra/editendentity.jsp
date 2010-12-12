@@ -968,10 +968,10 @@ function checkUseInBatch(){
   </script>
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-<body onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
+<body class="popup" onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
                  fillCAField();'>
-  <h2 align="center"><%= ejbcawebbean.getText("EDITENDENTITYTITLE") %></h2>
+  <h2><%= ejbcawebbean.getText("EDITENDENTITYTITLE") %></h2>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#editendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
   </div>
