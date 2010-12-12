@@ -296,7 +296,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
      * 
      * @param admin
      *            Administrator performing the operation
-     * @return CertificateProfiles or null if it can not be found.
+     * @return CertificateProfile (cloned) or null if it can not be found.
      */
     public CertificateProfile getCertificateProfile(final Admin admin, final int id) {
         if (LOG.isTraceEnabled()) {
@@ -336,7 +336,14 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                 returnval = new EndUserCertificateProfile();
             }
         } else {
-            returnval = getProfileCacheInternal().get(Integer.valueOf(id));
+    		// We need to clone the profile, otherwise the cache contents will be modifyable from the outside
+        	CertificateProfile cprofile = getProfileCacheInternal().get(Integer.valueOf(id));
+    		try {
+    			returnval = (CertificateProfile)cprofile.clone();
+    		} catch (CloneNotSupportedException e) {
+    			LOG.error("Should never happen: ", e);
+    			throw new RuntimeException(e);
+    		}
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getCertificateProfile(" + id + "): " + (returnval == null ? "null" : "not null"));

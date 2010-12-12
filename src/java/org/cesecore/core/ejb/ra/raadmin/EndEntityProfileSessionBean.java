@@ -312,7 +312,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval = new EndEntityProfile(true);
         } else {
         	final Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
-            returnval = (EndEntityProfile) getProfileCacheInternal().get(id);
+            returnval = getEndEntityProfile(admin, id);
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
@@ -372,7 +372,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     /**
      * Finds a end entity profile by id.
      * 
-     * @return EndEntityProfile or null if it does not exist
+     * @return EndEntityProfile (cloned) or null if it does not exist
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public EndEntityProfile getEndEntityProfile(final Admin admin, final int id) {
@@ -383,7 +383,14 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
             returnval = new EndEntityProfile(true);
         } else {
-            returnval = (EndEntityProfile) getProfileCacheInternal().get(Integer.valueOf(id));
+    		// We need to clone the profile, otherwise the cache contents will be modifyable from the outside
+        	EndEntityProfile eep = getProfileCacheInternal().get(Integer.valueOf(id));
+    		try {
+    			returnval = (EndEntityProfile)eep.clone();
+    		} catch (CloneNotSupportedException e) {
+    			LOG.error("Should never happen: ", e);
+    			throw new RuntimeException(e);
+    		}
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
