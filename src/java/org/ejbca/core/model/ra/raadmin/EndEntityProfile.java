@@ -193,7 +193,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 			}        	
         }
         // Common initialization of profile
-        log.debug("The highest number in dataConstants is: "+max);
+        if (log.isDebugEnabled()) {
+        	log.debug("The highest number in dataConstants is: "+max);
+        }
         ArrayList numberoffields = new ArrayList(max);
         for(int i =0; i <= max; i++){
           numberoffields.add(Integer.valueOf(0));
@@ -863,7 +865,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		String email,  int certificateprofileid, boolean keyrecoverable, boolean sendnotification,
     		int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
 			throws UserDoesntFullfillEndEntityProfile {
-    	log.trace(">doesUserFullfillEndEntityProfileWithoutPassword()");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">doesUserFullfillEndEntityProfileWithoutPassword()");
+    	}
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       if (subjectdnfields.isIllegal()) {
           throw new UserDoesntFullfillEndEntityProfile("Subject DN is illegal.");
@@ -1134,10 +1138,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  if ( (ei == null) || !getValue(MAXFAILEDLOGINS,0).equals(Integer.toString(ei.getMaxLoginAttempts())) ) {
     		  throw new UserDoesntFullfillEndEntityProfile("Max failed logins is not modifyable.");
     	  }
-      }
-      
-  	log.trace("<doesUserFullfillEndEntityProfileWithoutPassword()");
-
+      }      
+  	if (log.isTraceEnabled()) {
+  		log.trace("<doesUserFullfillEndEntityProfileWithoutPassword()");
+  	}
     } // doesUserFullfillEndEntityProfileWithoutPassword
     
     /**
@@ -1282,14 +1286,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     public Object clone() throws CloneNotSupportedException {
       EndEntityProfile clone = new EndEntityProfile();
+      // We need to make a deep copy of the hashmap here
       HashMap clonedata = (HashMap) clone.saveData();
-
       Iterator i = (data.keySet()).iterator();
       while(i.hasNext()){
         Object key = i.next();
         clonedata.put(key,data.get(key));
       }
-
       clone.loadData(clonedata);
       return clone;
     }
