@@ -29,7 +29,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 public interface EndEntityProfileSession {
 
     final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
-    final String EMPTY_ENDENTITYPROFILE = EMPTY_ENDENTITYPROFILENAME;
     final int EMPTY_ENDENTITYPROFILEID = SecConst.EMPTY_ENDENTITYPROFILE;
 
     /**

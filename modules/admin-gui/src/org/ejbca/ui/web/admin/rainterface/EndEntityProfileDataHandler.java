@@ -45,7 +45,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     private CaSession caSession;
     private InformationMemory info;
 
-    public static final String EMPTY_PROFILE        = EndEntityProfileSession.EMPTY_ENDENTITYPROFILE;    
+    public static final String EMPTY_PROFILE        = EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME;    
     /** Creates a new instance of EndEntityProfileDataHandler */
     public EndEntityProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, InformationMemory info) {
        this.endEntityProfileSession = endEntityProfileSession;        
