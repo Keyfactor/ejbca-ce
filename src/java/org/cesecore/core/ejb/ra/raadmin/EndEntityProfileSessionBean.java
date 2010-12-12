@@ -312,7 +312,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval = new EndEntityProfile(true);
         } else {
         	final Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
-            returnval = getEndEntityProfile(admin, id);
+        	if (id != null) {
+        		returnval = getEndEntityProfile(admin, id);
+        	}
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
