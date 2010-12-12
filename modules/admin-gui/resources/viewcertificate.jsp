@@ -302,8 +302,8 @@ function confirmrepublish(){
 </script>
 
 </head>
-<body >
-  <h2 align="center"><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
+<body class="popup">
+  <h2><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
  <!-- 
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>  

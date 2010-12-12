@@ -86,8 +86,8 @@
 <head>
 <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 <body>
@@ -95,15 +95,17 @@
 <h2><c:out value="<%= ejbcawebbean.getText(\"FORADMIN\")+\" \" + ejbcawebbean.getUsersCommonName() %>" /></h2>
 <form name="defaultmypreferences" method="post" action="<%=THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
+<!--
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
         &nbsp;
       </td>
       <td width="50%" valign="top"> 
-      <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("mypreferences_help.html") %>")'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></u> </A></div> -->
+        <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("mypreferences_help.html") %>")'>
+        <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></u> </A></div>
       </td>
     </tr>
+-->
     <tr  id="Row0"> 
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE\") %>" /></h3>

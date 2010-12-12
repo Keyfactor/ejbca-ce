@@ -260,9 +260,9 @@ function viewcert(row){
 </script>
 </head>
 
-<body>
-<h2 align="center"><%= ejbcawebbean.getText("VIEWENDENTITYHISTORY") %></h2>
-<h3 align="center"><%= ejbcawebbean.getText("FORENDENTITY") + " : " + username %></h3>
+<body class="popup" id="history">
+<h2><%= ejbcawebbean.getText("VIEWENDENTITYHISTORY") %></h2>
+<h3><%= ejbcawebbean.getText("FORENDENTITY") + " : " + username %></h3>
     <div align="right">
    <!--  <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") +"#viewhistory" %>")'>
      <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
