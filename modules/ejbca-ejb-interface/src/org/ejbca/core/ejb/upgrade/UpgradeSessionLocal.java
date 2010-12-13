@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
+import java.util.List;
+
 import javax.ejb.Local;
 
 /**
@@ -20,5 +22,8 @@ import javax.ejb.Local;
 @Local
 public interface UpgradeSessionLocal  extends UpgradeSession{
 
-
+	/** For internal user from UpgradeSessionBean only! */
+	void postMigrateDatabase400SmallTables();
+	/** For internal user from UpgradeSessionBean only! */
+	void postMigrateDatabase400HardTokenData(List<String> subSet);
 }

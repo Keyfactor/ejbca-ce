@@ -143,4 +143,9 @@ public class HardTokenData implements Serializable {
     	query.setMaxResults(maxResults);
     	return query.getResultList();
 	}
+
+	/** @return return the query results as a List. */
+    public static List<String> findAllTokenSN(EntityManager entityManager) {
+    	return entityManager.createQuery("SELECT a.tokenSN FROM HardTokenData a").getResultList();
+    }
 }
