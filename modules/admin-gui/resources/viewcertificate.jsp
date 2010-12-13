@@ -270,9 +270,9 @@
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-  <script language=javascript>
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript">
 <!--
 function confirmrevokation(){
   var returnval = false;
@@ -299,16 +299,19 @@ function confirmrepublish(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSUREREPUBLISH") %>");
 }
 -->
-</script>
-
+  </script>
 </head>
+
 <body class="popup" id="viewcertificate">
+
   <h2><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
- <!-- 
+
+<!-- 
   <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>  
   </div> 
-  -->
+-->
+
   <%if(noparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></h4></div> 
   <% } 
@@ -324,6 +327,8 @@ function confirmrepublish(){
    if(message != null){ %>
       <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(message) %></h4></div> 
   <% } %>
+
+
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
     <% if(username != null){ %>
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'> 
@@ -331,7 +336,6 @@ function confirmrepublish(){
      if(tokensn != null){ %>
      <input type="hidden" name='<%= HARDTOKENSN_PARAMETER%>' value='<%=tokensn %>'> 
      <% }       
-
     if(certificateserno != null){ %>
      <input type="hidden" name='<%= CERTSERNO_PARAMETER %>' value='<%=certificateserno %>'> 
      <% } 
@@ -339,95 +343,123 @@ function confirmrepublish(){
      <input type="hidden" name='<%= CACERT_PARAMETER %>' value='<%=caid %>'> 
      <% } %>
      <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<%=currentindex %>'>
-     <table border="0" cellpadding="0" cellspacing="2" width="500">
+
+
+     <table border="0" cellpadding="0" cellspacing="2" width="100%">
+
+      <!-- ---------- Title ---------- -->
+
       <% if(username != null){%>
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
-	<td><c:out value="<%= certificatedata.getUsername() %>"/>
-        </td>
+      <tr id="Row<%=(row++)%2%>" class="title">
+		<td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td>
+		<td><strong><c:out value="<%= certificatedata.getUsername() %>"/></strong></td>
       </tr>
+      <% } else { %>
+<!--
+      <tr id="Row<%=(row++)%2%>" class="title">
+		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CANAME") %></strong></td>
+		 <td><strong><c:out value="TODO"/></strong></td>
+      </tr>
+-->
+      <% } // if(username != null) %>
+
+      <!-- ---------- Index ---------- -->
+
+      <% if(username != null){%>
       <% if(tokensn != null){ %>
        <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENSN") %></td>
-	<td><%= tokensn %>
-        </td>
+		<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENSN") %></td>
+		<td><%= tokensn %></td>
       </tr> 
       <% } %> 
+
       <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATENR") %></td>
-	<td><%= (currentindex +1) + " " + ejbcawebbean.getText("OF") + " " + numberofcertificates %>
-        </td>
+		<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATENR") %></td>
+		<td><%= (currentindex +1) + " " + ejbcawebbean.getText("OF") + " " + numberofcertificates %></td>
       </tr>
-      <% } %>
+      <% } // if(username != null) %>
+
       <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATEVERSION") %></td>
-	<td> <%= certificatedata.getType() + " " + ejbcawebbean.getText("VER") + certificatedata.getVersion() %>
-        </td>
+         <td  align="right" width="<%=columnwidth%>"> 
+           &nbsp;
+           <% if(currentindex > 0 ){ %>
+           <input type="submit" name="<%= BUTTON_VIEW_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWPREVIOUS") %>" tabindex="1" />
+           <% } %>
+         </td>
+         <td>
+           <% if(currentindex < numberofcertificates -1 ){ %>
+           <input type="submit" name="<%= BUTTON_VIEW_NEXT %>" value="<%= ejbcawebbean.getText("VIEWNEXT") %>" tabindex="3" />
+           <% } %>
+           &nbsp;
+         </td>
+      </tr> 
+
+
+      <!-- ---------- Certificate content ---------- -->
+
+      <tr id="Row<%=(row++)%2%>">
+		<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATEVERSION") %></td>
+		<td> <%= certificatedata.getType() + " " + ejbcawebbean.getText("VER") + certificatedata.getVersion() %></td>
       </tr>
       
      <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMBER") %></td>
-		 <td><%= certificatedata.getSerialNumber() %> 
-         </td>
+		 <td><%= certificatedata.getSerialNumber() %></td>
      </tr>
        
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ISSUERDN") %></td>
-	 <td><%= certificatedata.getIssuerDN()%> 
-         </td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ISSUERDN") %></td>
+		 <td><%= certificatedata.getIssuerDN() %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDFROM") %></td>
-	 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidFrom())  %> 
-         </td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDFROM") %></td>
+		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidFrom()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDTO") %></td>
-	 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidTo()) %>
-         </td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDTO") %></td>
+		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidTo()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBJECTDN") %></td>
-	 <td><%= certificatedata.getSubjectDN() %> 
-         </td>
+		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("SUBJECTDN") %></strong></td>
+		 <td><strong><%= certificatedata.getSubjectDN() %></strong></td>
        </tr>
        
       <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
-	       <tr id="Row<%=(row++)%2%>">
+       <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBALTNAME") %></td>
 		 <td><% if(certificatedata.getSubjectAltName() == null)
 	                  out.write(ejbcawebbean.getText("NONE"));
 	                else
 	                  out.write(certificatedata.getSubjectAltName());%> 
 	         </td>
-	       </tr>
-	       <tr id="Row<%=(row++)%2%>">
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBDIRATTR") %></td>
 		 <td><% if(certificatedata.getSubjectDirAttr() == null)
 	                  out.write(ejbcawebbean.getText("NONE"));
 	                else
 	                  out.write(certificatedata.getSubjectDirAttr());%> 
 	         </td>
-	       </tr>
+       </tr>
      <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
        
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
-	 <td><%= certificatedata.getPublicKeyAlgorithm() %> 
-	 	 <% out.write(" (" + certificatedata.getKeySpec(ejbcawebbean.getText("BITS")) + ")");
-	 	    if (certificatedata.getPublicKeyModulus() != null) {
-	 	    	out.write(": "+certificatedata.getPublicKeyModulus());  
-            } %>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
+		 <td><%= certificatedata.getPublicKeyAlgorithm() %> 
+		 	 <% out.write(" (" + certificatedata.getKeySpec(ejbcawebbean.getText("BITS")) + ")");
+		 	    if (certificatedata.getPublicKeyModulus() != null) {
+		 	    	out.write(": "+certificatedata.getPublicKeyModulus());  
+	            } %>
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("BASICCONSTRAINTS") %></td>
-	 <td><%=  certificatedata.getBasicConstraints(ejbcawebbean.getText("NONE"), ejbcawebbean.getText("CANOLIMIT"), ejbcawebbean.getText("ENDENTITY"), ejbcawebbean.getText("CAPATHLENGTH"))  %>
+		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("BASICCONSTRAINTS") %></strong></td>
+		 <td><strong><%= certificatedata.getBasicConstraints(ejbcawebbean.getText("NONE"), ejbcawebbean.getText("CANOLIMIT"), ejbcawebbean.getText("ENDENTITY"), ejbcawebbean.getText("CAPATHLENGTH")) %></strong>
          </td>
        </tr>
        
      <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
-	       <tr id="Row<%=(row++)%2%>">
+       <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("KEYUSAGE") %></td>
 		 <td><% boolean first= true;
 	                boolean none = true;
@@ -489,8 +521,8 @@ function confirmrepublish(){
 	              }
 	%>
 	         </td>
-	       </tr>
-	       <tr id="Row<%=(row++)%2%>">
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %></td>
 		 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts();
 	                for(int i=0; i<extendedkeyusage.length; i++){
@@ -502,83 +534,75 @@ function confirmrepublish(){
 	                  out.write(ejbcawebbean.getText("NOEXTENDEDKEYUSAGESPECIFIED"));                       
 	%>
 	         </td>
-	       </tr>
-	       <tr id="Row<%=(row++)%2%>">
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("QUALIFIEDCERTSTATEMENT") %></td>
 		 <td><% if (certificatedata.hasQcStatement()) {
-			 out.write(ejbcawebbean.getText("YES"));
-		 } else {
-			 out.write(ejbcawebbean.getText("NO"));
-		 }
-	%>
-	         </td>
-	       </tr>
+				 out.write(ejbcawebbean.getText("YES"));
+			 } else {
+				 out.write(ejbcawebbean.getText("NO"));
+			 }
+			 %></td>
+       </tr>
      <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
        
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SIGNATUREALGORITHM") %></td>
-	 <td> <%= certificatedata.getSignatureAlgoritm() %>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SIGNATUREALGORITHM") %></td>
+		 <td><%= certificatedata.getSignatureAlgoritm() %></td>
+       </tr>
+
+
+      <!-- ---------- Certificate information ---------- -->
+
+       <tr  id="Row<%=(row++)%2%>"> 
+         <td  align="right" width="<%=columnwidth%>"> 
+           <%= ejbcawebbean.getText("SHA1FINGERPRINT") %>
          </td>
+         <td ><%= certificatedata.getSHA1Fingerprint() %></td>
        </tr>
        <tr  id="Row<%=(row++)%2%>"> 
-        <td  align="right" width="<%=columnwidth%>"> 
-          <%= ejbcawebbean.getText("SHA1FINGERPRINT") %> <br>
-        </td>
-        <td >  <%= certificatedata.getSHA1Fingerprint() %>
-        </td>
+         <td  align="right" width="<%=columnwidth%>"> 
+           <%= ejbcawebbean.getText("MD5FINGERPRINT") %>
+         </td>
+         <td ><%= certificatedata.getMD5Fingerprint() %></td>
        </tr>
+
        <tr  id="Row<%=(row++)%2%>"> 
-        <td  align="right" width="<%=columnwidth%>"> 
-          <%= ejbcawebbean.getText("MD5FINGERPRINT") %> <br>
-        </td>
-        <td >  <%= certificatedata.getMD5Fingerprint() %>
-        </td>
-       </tr>
-       <tr  id="Row<%=(row++)%2%>"> 
-        <td  align="right" width="<%=columnwidth%>"> 
-          <%= ejbcawebbean.getText("REVOKED") %> <br>
-        </td>
-        <td >  <% if(certificatedata.isRevoked()){
-                    out.write(ejbcawebbean.getText("YES") + "<br>" + ejbcawebbean.getText("REVOKATIONDATE") +
-                              ejbcawebbean.printDate(certificatedata.getRevokationDate()) + "<br>" + ejbcawebbean.getText("REVOKATIONREASONS"));
+         <td  align="right" width="<%=columnwidth%>"> 
+           <%= ejbcawebbean.getText("REVOKED") %>
+         </td>
+         <td ><%  if(certificatedata.isRevoked()){
+                    out.write(ejbcawebbean.getText("YES") + "<br/>"
+                    		+ ejbcawebbean.getText("REVOKATIONDATE") + " "
+                    		+ ejbcawebbean.printDate(certificatedata.getRevokationDate()) + "<br/>"
+                    		+ ejbcawebbean.getText("REVOKATIONREASONS") + " ");
                     String[] reasons = certificatedata.getRevokationReasons();
                     for(int i = 0; i < reasons.length; i++){
                       out.write(ejbcawebbean.getText(reasons[i]));
                       if(i+1 < reasons.length)
                         out.write(", ");
                     }
-                  }
-                  else{
+                  } else {
                     out.write(ejbcawebbean.getText("NO"));
-                  }%>
-        </td>
+                  } %>
+         </td>
        </tr>
-       <tr id="Row<%=(row++)%2%>">
-          <td>&nbsp;</td>
-          <td>
-          <% if(currentindex > 0 ){ %>
-           <input type="submit" name="<%= BUTTON_VIEW_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWPREVIOUS") %>" tabindex="1">&nbsp;&nbsp;&nbsp;
-          <% } %>
-            <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="2"
-                   onClick='self.close()'>  
-          <% if(currentindex < numberofcertificates -1 ){ %>
-          &nbsp;&nbsp;&nbsp;<input type="submit" name="<%= BUTTON_VIEW_NEXT %>" value="<%= ejbcawebbean.getText("VIEWNEXT") %>" tabindex="3">
-          <% } %>
-          &nbsp;
-          </td>
-       </tr> 
+
+
+      <!-- ---------- Actions ---------- -->
+
        <tr id="Row<%=(row++)%2%>">
           <td>  
-       <% 
+            <% 
             if(!cacerts &&  rabean.keyRecoveryPossible(certificatedata.getCertificate(), certificatedata.getUsername()) && usekeyrecovery){ %>
-        <input type="submit" name="<%=BUTTON_RECOVERKEY %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
-               onClick='return confirmkeyrecovery()'><br>
-       <% }
+            <input type="submit" name="<%=BUTTON_RECOVERKEY %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
+                   onClick='return confirmkeyrecovery()'>
+            <% }
             if(!cacerts &&  rabean.userExist(certificatedata.getUsername()) && rabean.isAuthorizedToEditUser(certificatedata.getUsername())){ %>
-        <input type="submit" name="<%=BUTTON_REPUBLISH %>" value="<%= ejbcawebbean.getText("REPUBLISH") %>"
-               onClick='return confirmrepublish()'>
-       <% } %>
-         &nbsp;
+            <input type="submit" name="<%=BUTTON_REPUBLISH %>" value="<%= ejbcawebbean.getText("REPUBLISH") %>"
+                   onClick='return confirmrepublish()'>
+            <% } %>
+            &nbsp;
           </td>
           <td>
        <%  try{
@@ -586,8 +610,6 @@ function confirmrepublish(){
 				if ( !certificatedata.isRevoked() ){
 					//-- Certificate can be revoked or suspended
 		%>    
-        <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
-               onClick='return confirmrevokation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>
@@ -595,6 +617,8 @@ function confirmrepublish(){
           <%   } 
              }%>
         </select>
+        <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
+               onClick='return confirmrevokation()'>
 <% 
 			  }else if ( certificatedata.isRevoked() && "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0]) ){
 				//-- Certificate can be unrevoked
@@ -608,19 +632,26 @@ function confirmrepublish(){
           &nbsp;
           </td>
        </tr> 
-         <% if(!cacerts){ %>
-         <tr id="Row<%=row%2%>">
-            <td>&nbsp;</td>
-            <td>               
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a><br>
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br>
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
-            </td>   
-         </tr> 
-         <% } %>
+
+       <tr id="Row<%=row%2%>">
+          <td>               
+            <% if(!cacerts){ %>
+            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a><br/>
+            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br/>
+            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+            <% } %>
+            &nbsp;
+          </td>   
+          <td align="right" style="vertical-align: bottom;">
+            <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="2"
+                   onClick='self.close()' />  
+          </td>
+       </tr> 
+
      </table> 
+
    </form>
-   <p></p>
+
    <%   }
       }
     }%>
