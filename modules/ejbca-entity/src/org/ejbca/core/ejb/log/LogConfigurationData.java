@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.log;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -124,5 +125,10 @@ public class LogConfigurationData implements Serializable {
 	/** @return the found entity instance or null if the entity does not exist */
 	public static LogConfigurationData findByPK(EntityManager entityManager, Integer id) {
 		return entityManager.find(LogConfigurationData.class, id);
+	}
+
+	/** @return return the query results as a List. */
+	public static List<LogConfigurationData> findAll(final EntityManager entityManager) {
+		return entityManager.createQuery("SELECT a FROM LogConfigurationData a").getResultList();
 	}
 }

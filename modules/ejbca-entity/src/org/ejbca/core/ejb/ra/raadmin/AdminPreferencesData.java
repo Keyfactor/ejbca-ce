@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -106,5 +107,10 @@ public class AdminPreferencesData implements Serializable {
 	/** @return the found entity instance or null if the entity does not exist */
 	public static AdminPreferencesData findById(EntityManager entityManager, String id) {
 		return entityManager.find(AdminPreferencesData.class, id);
+	}
+
+	/** @return return the query results as a List. */
+	public static List<AdminPreferencesData> findAll(final EntityManager entityManager) {
+		return entityManager.createQuery("SELECT a FROM AdminPreferencesData a").getResultList();
 	}
 }

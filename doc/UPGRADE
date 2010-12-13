@@ -44,6 +44,31 @@ from conf/ejbca.properties instead of being read through the ENC.
 
 Note that the database.name property in database.properties changed from mssql2000 to mssql for MS-SQL Server.
 
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+If you are upgrading a cluster, update the software on all the nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+4. Start up JBoss.
+
+5. If you are upgrading on JBoss, do 'ant post-upgrade' on one of the nodes. This will convert all
+   JBoss serialized objects into regular Java serialized objects and allow you to switch
+   application server in the future.
+
+6. Restart JBoss again to flush all caches.
+
+7. Go into the Admin GUI and verify you settings.
+
+New in EJBCA 4.0 is that we have a well defined database schema, that is functionally equal for all
+supported databases. You can verify that your database schema is correct by comparing it to the SQL
+table create script for your database ('doc/sql-scripts/create-tables-ejbca4-{database name}.sql').
+
+
 From EJBCA 3.11.0 to EJBCA 3.11.x
 --------------------------------
 The database mapping for KeyRecoveryData.certSN on MySQL in 3.11.0 was wrong and can be corrected by running:

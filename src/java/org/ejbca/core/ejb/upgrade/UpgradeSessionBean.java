@@ -16,26 +16,13 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -45,24 +32,16 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
-import org.ejbca.core.ejb.authorization.AdminEntityData;
-import org.ejbca.core.ejb.authorization.AdminGroupData;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.ejb.services.ServiceSessionLocal;
-import org.ejbca.core.model.approval.Approval;
-import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.authorization.AccessRule;
-import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
+import org.ejbca.core.ejb.hardtoken.HardTokenData;
+import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
+import org.ejbca.core.ejb.log.LogConfigurationData;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
+import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * The upgrade session bean is used to upgrade the database between ejbca
@@ -83,16 +62,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     @Resource
     private SessionContext sessionContext;
 
-    @EJB
-    private CAAdminSessionLocal caAdminSession;
-    @EJB
-    private ApprovalSessionLocal approvalSession;
-    @EJB
-    private UserAdminSessionLocal userAdminSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private ServiceSessionLocal serviceSession;
     private UpgradeSessionLocal upgradeSession;
 
     @PostConstruct
@@ -102,12 +71,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * Upgrades the database
-     * 
-     * @jboss.method-attributes transaction-timeout="3600"
-     * 
+     *
      * @param admin
      * @return true or false if upgrade was done or not
      */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost) {
         if (log.isTraceEnabled()) {
             log.trace(">upgrade(" + admin.toString() + ")");
@@ -116,10 +84,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             log.debug("Upgrading from version=" + sOldVersion);
             final int oldVersion;
             {
-                final String[] oldVersionArray = sOldVersion.split("\\."); // Split
-                                                                           // around
-                                                                           // the
-                                                                           // '.'-char
+                final String[] oldVersionArray = sOldVersion.split("\\."); // Split around the '.'-char
                 oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
             }
             if (isPost) {
@@ -132,62 +97,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     private boolean postUpgrade(String dbtype, int oldVersion) {
-        // Upgrade database change between ejbca 3.9.x and 3.10.x if needed
-        if (oldVersion <= 309) {
-            return postMigrateDatabase310();
+        if (oldVersion < 311) {
+            log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
+            return false;
         }
-        // Upgrade database change between ejbca 3.10.x and 3.11.x if needed
-        if (oldVersion <= 310) {
-            return postMigrateDatabase311(dbtype);
+        // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
+        if (oldVersion <= 400) {
+            return postMigrateDatabase400();
         }
         return false;
     }
 
     private boolean upgrade(Admin admin, String dbtype, int oldVersion) {
-        // Upgrade database change between ejbca 3.1.x and 3.2.x if needed
-        if (oldVersion <= 301) {
-            log.error("Upgrade from EJBCA 3.1.x is no longer supported in EJBCA 3.9.x and later.");
+        if (oldVersion <= 311) {
+            log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
             return false;
         }
-
-        // Upgrade database change between ejbca 3.3.x and 3.4.x if needed
-        if (oldVersion <= 303) {
-            if (!migrateDatabase33(dbtype)) {
-                return false;
-            }
-        }
-        // Upgrade database change between ejbca 3.5.x and 3.6.x if needed
-        if (oldVersion <= 305) {
-            if (!migrateDatabase36(dbtype)) {
-                return false;
-            }
-        }
-        // Upgrade database change between ejbca 3.7.x and 3.8.x if needed
-        if (oldVersion <= 307) {
-            if (!migrateDatabase38(dbtype, admin)) {
-                return false;
-            }
-        }
-        // Upgrade database change between ejbca 3.8.x and 3.9.x if needed
-        if (oldVersion <= 308) {
-            if (!migrateDatabase39(dbtype)) {
-                return false;
-            }
-        }
-        // Upgrade database change between ejbca 3.9.x and 3.10.x if needed
-        if (oldVersion <= 309) {
-            if (!migrateDatabase310(dbtype)) {
-                return false;
-            }
-        }
-
-        // Upgrade database change between ejbca 3.10.x and 3.11.x if needed
-        if (oldVersion <= 310) {
-        	if (!migrateDatabase311(dbtype)) {
-        		return false;
-        	}
-        }
-        
+        // Seamless upgrade between EJBCA 3.11.x and EJBCA 4.0.x
         return true;
     }
 
@@ -195,7 +121,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Called from other migrate methods, don't call this directly, call from an
      * interface-method
      */
-    private boolean migradeDatabase(String resource) {
+    private boolean migrateDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables
         InputStream in = this.getClass().getResourceAsStream(resource);
         if (in == null) {
@@ -203,7 +129,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             // no error
             return true;
         }
-
         // Migrate database tables to new columns etc
         Connection con = null;
         log.info("Start migration of database.");
@@ -224,274 +149,90 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return true;
     }
 
-    private boolean migrateDatabase33(String dbtype) {
-        log.error("(this is not an error) Starting upgrade from ejbca 3.3.x to ejbca 3.4.x");
-        boolean ret = migradeDatabase("/33_34/33_34-upgrade-" + dbtype + ".sql");
-        log.error("(this is not an error) Finished migrating database.");
-        return ret;
-    }
-
-    private boolean migrateDatabase36(String dbtype) {
-        log.error("(this is not an error) Starting upgrade from ejbca 3.5.x to ejbca 3.6.x");
-        boolean ret = migradeDatabase("/35_36/35_36-upgrade-" + dbtype + ".sql");
-        log.error("(this is not an error) Finished migrating database.");
-        return ret;
-    }
-
     /**
-     * This upgrade will move the CA Id from the admin groups, to each
-     * administrator Admingroups with similar names will be renamed with the CA
-     * Id as postfix to avoid collisions Also removes the CAId from access rules
-     * primary key (since only group name is neccesary now)
-     */
-    private boolean migrateDatabase38(String dbtype, Admin administrator) {
-        log.error("(this is not an error) Starting upgrade from ejbca 3.7.x to ejbca 3.8.x");
-        boolean ret = migradeDatabase("/37_38/37_38-upgrade-" + dbtype + ".sql");
-
-        // Change the name of AdminGroups with conflicting names
-        Collection<AdminGroupData> adminGroupDatas = AdminGroupData.findAll(entityManager);
-        Iterator<AdminGroupData> i = adminGroupDatas.iterator();
-        ArrayList<String> groupNames = new ArrayList<String>();
-        while (i.hasNext()) {
-            AdminGroupData adminGroupData = i.next();
-            String currentName = adminGroupData.getAdminGroupName();
-            if (groupNames.contains(currentName)) {
-                if (currentName.equals(AdminGroup.PUBLICWEBGROUPNAME)) {
-                    // We don't need a group for each CA any longer
-                    try {
-                        adminGroupData.removeAccessRulesObjects(entityManager, adminGroupData.getAccessRuleObjects());
-                        adminGroupData.removeAdminEntities(entityManager, adminGroupData.getAdminEntityObjects());
-                        entityManager.remove(adminGroupData);
-                        // adminGroupData.remove();
-                    } catch (EJBException e) {
-                        log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
-                    } catch (IllegalArgumentException e) {
-                        log.error("Failed to remove duplicate \"" + AdminGroup.PUBLICWEBGROUPNAME + "\"", e);
-                    }
-                } else {
-                    // Conflicting name. We need to change it.
-                    adminGroupData.setAdminGroupName(currentName + "_" + caAdminSession.getCAIdToNameMap(administrator).get(adminGroupData.getCaId()));
-                }
-            } else {
-                groupNames.add(currentName);
-            }
-        }
-        // Read the CA Id from each AdminGroup and write it to each entity
-        Iterator<AdminGroupData> iter = AdminGroupData.findAll(entityManager).iterator();
-        while (iter.hasNext()) {
-            AdminGroupData adminGroupData = iter.next();
-            Collection<AdminEntityData> adminEntityObjects = adminGroupData.getAdminEntities();
-            Iterator<AdminEntityData> i2 = adminEntityObjects.iterator();
-            while (i2.hasNext()) {
-                AdminEntityData adminEntityData = i2.next();
-                adminEntityData.setCaId(adminGroupData.getCaId());
-            }
-        }
-        // Update access rules to not use a caid in the primary key
-        Iterator<AdminGroupData> i3 = AdminGroupData.findAll(entityManager).iterator();
-        while (i3.hasNext()) {
-            AdminGroupData adminGroupData = i3.next();
-            Collection<AccessRule> accessRules = adminGroupData.getAccessRuleObjects();
-            adminGroupData.removeAccessRulesObjects(entityManager, accessRules);
-            adminGroupData.addAccessRules(entityManager, accessRules);
-        }
-        log.error("(this is not an error) Finished migrating database.");
-        return ret;
-    }
-
-    private boolean migrateDatabase39(String dbtype) {
-        log.error("(this is not an error) Starting upgrade from ejbca 3.8.x to ejbca 3.9.x");
-        boolean ret = migradeDatabase("/38_39/38_39-upgrade-" + dbtype + ".sql");
-        log.error("(this is not an error) Finished migrating database.");
-        return ret;
-    }
-
-    /**
-     * We need to update all pending ApprovalsRequests since the Admin objects'
-     * now have username and email. We need to update all pending Approvals
-     * since the it now stores an Admin object instead of pure information on
-     * the admin certificate.
-     */
-    private boolean migrateDatabase310(String dbtype) {
-        log.error("(this is not an error) Starting upgrade from ejbca 3.9.x to ejbca 3.10.x");
-        boolean ret = migradeDatabase("/39_310/39_310-upgrade-" + dbtype + ".sql");
-        if (ret) {
-            List<Integer> approvalIds = approvalSession.getAllPendingApprovalIds();
-            for (int i = 0; i < approvalIds.size(); i++) {
-                Integer approvalId = approvalIds.get(i);
-                Collection<ApprovalData> approvalDatas = ApprovalData.findByApprovalId(entityManager, approvalId.intValue());
-                if (approvalDatas.size() < 1 || approvalDatas.size() > 1) {
-                    log.warn("There is an error in the database. You have " + approvalDatas.size() + " entries w approvalId " + approvalId.intValue());
-                }
-                final Iterator<ApprovalData> iterator = approvalDatas.iterator();
-                while (iterator.hasNext()) {
-                    final ApprovalData approvalData = iterator.next();
-                    final ApprovalRequest approvalRequest = approvalData.getApprovalRequest();
-                    final Admin requestAdmin = approvalRequest.getRequestAdmin();
-                    if (requestAdmin.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
-                        // Upgrade the request admin if it of type
-                        // CLIENT_CERT_USER
-                        final Certificate adminCert = requestAdmin.getAdminInformation().getX509Certificate();
-                        approvalRequest.setRequestAdmin(userAdminSession.getAdmin(adminCert));
-                        approvalData.setApprovalRequest(approvalRequest);
-
-                    } else {
-                        log.debug("Ignoring upgrade of approval request initialed by admin of type " + requestAdmin.getAdminType());
-                    }
-                    final Collection<Approval> approvals = approvalData.getApprovals();
-                    final Iterator<Approval> iterator2 = approvals.iterator();
-                    while (iterator2.hasNext()) {
-                        final Approval approval = iterator2.next();
-                        // Lookup admin certificate that was used to approve
-                        // this request and set a proper Admin that includes the
-                        // admin certificate
-                        final String issuerDN = approval.getAdminCertIssuerDN();
-                        final BigInteger serialNumber = approval.getAdminCertSerialNumber();
-                        if (issuerDN != null && serialNumber != null) {
-                            final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER),
-                                    issuerDN, serialNumber);
-                            if (certificate == null) {
-                                // The approval was created with a certificate
-                                // does not exist in the EJBCA database (an
-                                // external Admin)
-                                log
-                                        .warn("External Admin with issuerDN '"
-                                                + issuerDN
-                                                + "' and serialNumer '"
-                                                + serialNumber
-                                                + "' does not have a certificate in the EJBCA database. Approval Admin will be set to Admin.TYPE_INTERNALUSER as a workaround.");
-                                approval.setApprovalAdmin(approval.isApproved(), new Admin(Admin.TYPE_INTERNALUSER));
-                            } else {
-                                // Create a new Admin object from the
-                                // certificate
-                                approval.setApprovalAdmin(approval.isApproved(), userAdminSession.getAdmin(certificate));
-                            }
-                        } else {
-                            log.error("Approval in ApprovalData w approvalId " + approvalId + " lacks issuerDN or serialNumber");
-                        }
-                    }
-                }
-            }
-        }
-        log.error("(this is not an error) Finished migrating database.");
-        return ret;
-    }
-
-	/** In 3.10 we can upgrade and set subject key id on all certificate entry rows.
-	 * On large installations this may not be possible to do in reasonable time.
-	 * 
-	 */
-    private boolean postMigrateDatabase310() {
-        log.error("(this is not an error) Starting post upgrade from ejbca 3.9.x to ejbca 3.10.x");
-        final String lKeyID = "subjectKeyId";
-        final String lCert = "base64Cert";
-        final String lFingerPrint = "fingerprint";
-        final Connection connection = JDBCUtil.getDBConnection();
-        try {
-            final Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            final ResultSet srs = stmt.executeQuery("select " + lFingerPrint + "," + lKeyID + "," + lCert + " from CertificateData where " + lKeyID
-                    + " IS NULL");
-            final int iKeyID; // it should be faster to use column number
-                              // instead of column label.
-            final int iCert;
-            {
-                final ResultSetMetaData rsmd = srs.getMetaData();
-                final Map<String, Integer> map = new HashMap<String, Integer>();
-                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                    map.put(rsmd.getColumnLabel(i).toLowerCase(), Integer.valueOf(i));
-                }
-                iKeyID = map.get(lKeyID.toLowerCase()).intValue();
-                iCert = map.get(lCert.toLowerCase()).intValue();
-            }
-            while (srs.next()) {
-                final Certificate cert;
-                try {
-                    cert = CertTools.getCertfromByteArray(Base64.decode(srs.getString(iCert).getBytes()));
-                } catch (CertificateException e) {
-                    log.error("Certificate could not be parsed.", e);
-                    continue;
-                }
-                srs.updateString(iKeyID, new String(Base64.encode(KeyTools.createSubjectKeyId(cert.getPublicKey()).getKeyIdentifier(), false)));
-                srs.updateRow();
-            }
-            srs.close();
-            stmt.close();
-            log.error("(this is not an error) Finished post upgrade.");
-            return true;
-        } catch (SQLException e) {
-            log.error("post upgrade failed. See exception:", e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    // just ignore. other exception has been thrown before for
-                    // the problem
-                }
-            }
-        }
-        return false;
-    }
-
-	private boolean migrateDatabase311(String dbtype) {
-		log.error("(this is not an error) Starting upgrade from ejbca 3.10.x to ejbca 3.11.x");
-		boolean ret = migradeDatabase("/310_311/310_311-upgrade-"+dbtype+".sql");
-        log.error("(this is not an error) Finished migrating database.");
-        return ret;
-	}
-
-    private boolean postMigrateDatabase311(String dbtype) {
-    	log.error("(this is not an error) Starting post upgrade from ejbca 3.10.x to ejbca 3.11.x");
-    	boolean ret = true; // we want to run service migration even if !exists
-    	boolean exists = upgradeSession.checkColumnExists311();
-    	if (!exists) {
-    		ret = migradeDatabase("/310_311/310_311-post-upgrade-"+dbtype+".sql");			
-    	}
-    	if (ret == true) {
-    		// Make sure services are upgraded and time stamps copied to new columns
-    		Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-			HashMap<Integer,String> ids = serviceSession.getServiceIdToNameMap(admin);
-			Collection<Integer> allServiceIds = ids.keySet();
-			Iterator<Integer> i = allServiceIds.iterator();
-    		while (i.hasNext()) {
-    			int id = i.next().intValue();
-    			// Load serviceConfiguration, this will populate new columns if needed
-    			serviceSession.getServiceConfiguration(admin, id);
-    		}
-    		ret = true;
-    	}
-    	log.error("(this is not an error) Finished post upgrade from ejbca 3.10.x to ejbca 3.11.x with result: "+ret);    	
-        return ret;
-    }
-    
-    /** Checks if the column rowVersion exists in table PublisherQueueData
+     * (ECA-200:) In EJB 2.1 JBoss CMP used it's own serialization method for all Object/BLOB fields.
      * 
-     * @return true or false if the column exists or not
+     * This affects the following entity fields:
+     * - CertificateProfileData.data
+     * - HardTokenData.data
+     * - HardTokenIssuerData.data
+     * - LogConfigurationData.logConfiguration
+     * - AdminPreferencesData.data
+     * - EndEntityProfileData.data
+     * - GlobalConfigurationData.data
+     * 
+     * Each of these entities will seamlessly migrate the BLOB when the field is read, so we need
+     * to read each BLOB-field and then merge the entity.
+     * 
+     * NOTE: You only need to run this if you upgrade a JBoss installation.
      */
-    public boolean checkColumnExists311() {
-		// Try to find out if rowVersion exists and upgrade the PublisherQueueData in that case
-		// This is needed since PublisherQueueData is a rather new table so it may have been created when the server started 
-		// and we are upgrading from a not so new version
-        final Connection connection = JDBCUtil.getDBConnection();
-		boolean exists = false;
-		try {
-			final PreparedStatement stmt = connection.prepareStatement("select rowVersion from PublisherQueueData where pk='foo'");
-			stmt.executeQuery();
-			// If it did not throw an exception the column exists and we do not want to run the post upgrade sql
-			exists = true; 
-			log.info("rowVersion column already exists in PublisherQueueData");
-		} catch (SQLException e) {
-			// Column did not exist
-			log.info("rowVersion column does not exist in PublisherQueueData");
-			log.error(e);
-		} finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// do nothing
-			}
-		}
-		return exists;
+    private boolean postMigrateDatabase400() {
+    	log.error("(this is not an error) Starting post upgrade from ejbca 3.11.x to ejbca 4.0.x");
+    	boolean ret = true;
+    	upgradeSession.postMigrateDatabase400SmallTables();	// Migrate small tables in a new transaction 
+    	log.info(" Processing HardTokenData entities.");
+    	log.info(" - Building a list of entities.");
+    	final List<String> tokenSNs = HardTokenData.findAllTokenSN(entityManager);
+    	int position = 0;
+    	final int chunkSize = 1000;
+    	while (position < tokenSNs.size()) {
+        	log.info(" - Processing entity " + position + " to " + Math.min(position+chunkSize-1, tokenSNs.size()-1) + ".");
+        	// Migrate HardTokenData table in chunks, each running in a new transaction
+    		upgradeSession.postMigrateDatabase400HardTokenData(getSubSet(tokenSNs, position, chunkSize));
+    		position += chunkSize;
+    	}
+    	log.error("(this is not an error) Finished post upgrade from ejbca 3.11.x to ejbca 4.0.x with result: "+ret);
+        return ret;
     }
     
+    /** @return a subset of the source list with index as its first item and index+count-1 as its last. */
+    private <T> List<T> getSubSet(final List<T> source, final int index, final int count) {
+    	List<T> ret = new ArrayList<T>(count);
+    	for (int i=0; i<count; i++) {
+    		ret.add(source.get(index + i));
+    	}
+    	return ret;
+    }
+
+    public void postMigrateDatabase400SmallTables() {
+    	log.info(" Processing CertificateProfileData entities.");
+    	final List<CertificateProfileData> cpds = CertificateProfileData.findAll(entityManager);
+    	for (CertificateProfileData cpd : cpds) {
+    		cpd.getDataUnsafe();
+    	}
+    	log.info(" Processing HardTokenIssuerData entities.");
+    	final List<HardTokenIssuerData> htids = HardTokenIssuerData.findAll(entityManager);
+    	for (HardTokenIssuerData htid : htids) {
+    		htid.getDataUnsafe();
+    	}
+    	log.info(" Processing LogConfigurationData entities.");
+    	final List<LogConfigurationData> lcds = LogConfigurationData.findAll(entityManager);
+    	for (LogConfigurationData lcd : lcds) {
+    		lcd.getLogConfigurationUnsafe();
+    	}
+    	log.info(" Processing AdminPreferencesData entities.");
+    	final List<AdminPreferencesData> apds = AdminPreferencesData.findAll(entityManager);
+    	for (AdminPreferencesData apd : apds) {
+    		apd.getDataUnsafe();
+    	}
+    	log.info(" Processing EndEntityProfileData entities.");
+    	final List<EndEntityProfileData> eepds = EndEntityProfileData.findAll(entityManager);
+    	for (EndEntityProfileData eepd : eepds) {
+    		eepd.getDataUnsafe();
+    	}
+    	log.info(" Processing GlobalConfigurationData entities.");
+    	GlobalConfigurationData gcd = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
+    	gcd.getDataUnsafe();
+    }
+    
+    public void postMigrateDatabase400HardTokenData(List<String> subSet) {
+    	for (String tokenSN : subSet) {
+    		HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokenSN);
+    		if (htd != null) {
+        		htd.getDataUnsafe();
+    		} else {
+    	    	log.warn("Hard token was removed during processing. Ignoring token with serial number '" + tokenSN + "'.");
+    		}
+    	}
+    }
 }
