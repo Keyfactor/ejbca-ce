@@ -47,6 +47,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @version $Id$
  */
 public class AdminGroupsManagedBean extends BaseManagedBean {
+	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(AdminGroupsManagedBean.class);
 
 	public AdminGroupsManagedBean() { }
@@ -151,7 +152,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	}
 
 	/** @return the  public constants of AdminEntity as a Map  */
-	public Map getAdminEntityConstants() {
+	public Map<String, Object> getAdminEntityConstants() {
 		return getPublicConstantsAsMap(AdminEntity.class);
 	}
 
@@ -294,7 +295,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	}
 
 	/** @return the public constants of BasicAccessRuleSet as a Map  */
-	public Map getBasicAccessRuleSetConstants() {
+	public Map<String, Object> getBasicAccessRuleSetConstants() {
 		return getPublicConstantsAsMap(BasicAccessRuleSet.class);
 	}
 
@@ -422,7 +423,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		}
 		// Check if it is a CA rule, then replace CA id with CA name.
 		if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
-			Map caIdToNameMap = EjbcaJSFHelper.getBean().getCAAdminSession().getCAIdToNameMap(getAdmin());
+			Map<Integer, String> caIdToNameMap = EjbcaJSFHelper.getBean().getCAAdminSession().getCAIdToNameMap(getAdmin());
 			if(resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
 				return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(Integer.valueOf(resource.substring(AccessRulesConstants.CAPREFIX.length())));
 			} else {

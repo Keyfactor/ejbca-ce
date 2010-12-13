@@ -30,7 +30,8 @@ import java.util.Vector;
  * @version $Id$
  */
 public class AddedUserMemory implements Serializable {
-    // Public Constants
+	private static final long serialVersionUID = 1L;
+	// Public Constants
     public static final int MEMORY_SIZE = 100; // Remember the 100 last users. 
 
     // Public Methods
@@ -39,7 +40,7 @@ public class AddedUserMemory implements Serializable {
      * Creates a new instance of AddedUserMemory
      */
     public AddedUserMemory() {
-        memory = new Vector();
+        memory = new Vector<UserView>();
     }
 
     /**
@@ -80,7 +81,7 @@ public class AddedUserMemory implements Serializable {
         int j = 0;
 
         for (int i = memory.size() - 1; i >= endindex; i--) {
-            returnval[j] = (UserView) memory.elementAt(i);
+            returnval[j] = memory.elementAt(i);
             j++;
         }
 
@@ -97,7 +98,7 @@ public class AddedUserMemory implements Serializable {
 
         // Find user in memory.
         for (i = 0; i < memory.size(); i++) {
-            if (((UserView) memory.elementAt(i)).getUsername().equals(user.getUsername())) {
+            if ((memory.elementAt(i)).getUsername().equals(user.getUsername())) {
                 memory.set(i, user);
 
                 break;
@@ -106,5 +107,5 @@ public class AddedUserMemory implements Serializable {
     }
 
     // Private fields
-    private Vector memory = null;
+    private Vector<UserView> memory = null;
 }
