@@ -25,9 +25,11 @@ import java.util.List;
  *
  * @version $Id$
  */
-public class AdminGroup implements Serializable, Comparable<Object> {
+public class AdminGroup implements Serializable, Comparable<AdminGroup> {
                                
-    public static final String DEFAULTGROUPNAME = "DEFAULT";
+	private static final long serialVersionUID = 1L;
+	
+	public static final String DEFAULTGROUPNAME = "DEFAULT";
     public static final String PUBLICWEBGROUPNAME = "Public Web Users";
     public static final String TEMPSUPERADMINGROUP = "Temporary Super Administrator Group";
     
@@ -118,7 +120,7 @@ public class AdminGroup implements Serializable, Comparable<Object> {
       return nonusedaccessrules;
     }
 
-    public int compareTo(Object o) {
-        return admingroupname.compareTo(((AdminGroup)o).getAdminGroupName());              
+    public int compareTo(AdminGroup o) {
+        return admingroupname.compareTo(o.getAdminGroupName());              
     }    
 }

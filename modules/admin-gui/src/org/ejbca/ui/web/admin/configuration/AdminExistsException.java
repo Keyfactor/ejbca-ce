@@ -22,9 +22,12 @@ package org.ejbca.ui.web.admin.configuration;
  * An exception thown when trying to add a user to the database that already exists.
  *
  * @author Philip Vendil
+ * @version $Id$
  */
 public class AdminExistsException extends java.lang.Exception {
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * Creates a new instance of <code>AdminExistsException</code> without detail message.
      */
     public AdminExistsException() {

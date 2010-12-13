@@ -28,29 +28,31 @@ import java.util.List;
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	private boolean forceadvanced = false;
 		
 	private int currentrole = BasicAccessRuleSet.ROLE_NONE;
-	private Collection availableroles = new ArrayList();
-	private HashSet currentcas = new HashSet();
-	private HashSet availablecas = new HashSet();
-	private HashSet currentendentityrules = new HashSet();
-	private ArrayList availableendentityrules = new ArrayList();
-	private HashSet currentendentityprofiles = new HashSet();
-	private HashSet availableendentityprofiles = new HashSet();
-	private HashSet currentotherrules = new HashSet();
+	private Collection<Integer> availableroles = new ArrayList<Integer>();
+	private HashSet<Integer> currentcas = new HashSet<Integer>();
+	private HashSet<Integer> availablecas = new HashSet<Integer>();
+	private HashSet<Integer> currentendentityrules = new HashSet<Integer>();
+	private ArrayList<Integer> availableendentityrules = new ArrayList<Integer>();
+	private HashSet<Integer> currentendentityprofiles = new HashSet<Integer>();
+	private HashSet<Integer> availableendentityprofiles = new HashSet<Integer>();
+	private HashSet<Integer> currentotherrules = new HashSet<Integer>();
 	private List<Integer> availableotherrules = new ArrayList<Integer>();
     
     /**
      * Tries to encode a advanced ruleset into basic ones. 
      * Sets the forceadvanced flag if encoding isn't possible.
      */
-    public BasicAccessRuleSetEncoder(Collection currentaccessrules, Collection availableaccessrules, boolean usehardtokens, boolean usekeyrecovery){
-    	 HashSet aar = new HashSet();
+    public BasicAccessRuleSetEncoder(Collection<AccessRule> currentaccessrules, Collection<String> availableaccessrules, boolean usehardtokens, boolean usekeyrecovery){
+    	 HashSet<String> aar = new HashSet<String>();
     	 aar.addAll(availableaccessrules);
-    	 Iterator iter = currentaccessrules.iterator();
+    	 Iterator<AccessRule> iter = currentaccessrules.iterator();
     	 while(iter.hasNext()) {
-    		 aar.add(((AccessRule) iter.next()).getAccessRule());    	 
+    		 aar.add(iter.next().getAccessRule());    	 
     	 }
     	 initAvailableRoles(aar);    	 
     	 initAvailableRules(usehardtokens, usekeyrecovery, aar);    	 
@@ -82,56 +84,56 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
      *
      * @return a Collection of BasicAccessRuleSet.ROLE_constants (Integer)
      */   
-    public Collection getAvailableRoles(){
+    public Collection<Integer> getAvailableRoles(){
     	return availableroles;
     }    
 
     /**
      * @return a Collection of CAids the administratorgroup is authorized to or BasicAccessRuleSet.CA_ALL for all cas.
      */       
-    public HashSet getCurrentCAs(){
+    public HashSet<Integer> getCurrentCAs(){
     	return currentcas;
     }
 
     /**
      * @return a Collection of available CAids or BasicAccessRuleSet.CA_ALL for all cas.
      */          
-    public Collection getAvailableCAs(){
+    public Collection<Integer> getAvailableCAs(){
     	return availablecas;
     }
 
     /**
      * @return a Collection of EndEntityRules the administratorgroup is authorized to, BasicAccessRuleSet.ENDENTITY_ constants (Integer).
      */           
-	public HashSet getCurrentEndEntityRules(){
+	public HashSet<Integer> getCurrentEndEntityRules(){
 		return currentendentityrules;		
 	}
 	
 	/**
 	 * @return a Collection of available EndEntityRules,  BasicAccessRuleSet.ENDENTITY_ constants (Integer)
 	 */ 	
-	public Collection getAvailableEndEntityRules(){
+	public Collection<Integer> getAvailableEndEntityRules(){
 		return availableendentityrules;		
 	}
 	
 	/**
 	 * @return a Collection of authorized EndEntityProfileIds or BasicAccessRuleSet.ENDENTITYPROFILE_ALL for all
 	 */          
-	public HashSet getCurrentEndEntityProfiles(){
+	public HashSet<Integer> getCurrentEndEntityProfiles(){
 		return currentendentityprofiles;
 	}
 
 	/**
 	 * @return a Collection of available EndEntityProfileIds or BasicAccessRuleSet.ENDENTITYPROFILE_ALL for all and entity profiles.
 	 */ 		
-	public Collection getAvailableEndEntityProfiles(){
+	public Collection<Integer> getAvailableEndEntityProfiles(){
 	   return availableendentityprofiles;	
 	}
 	
 	/**
-	 * @return a Collection of auhtorized other rules. (Integer).
+	 * @return a Collection of authorized other rules. (Integer).
 	 */          
-	public HashSet getCurrentOtherRules(){
+	public HashSet<Integer> getCurrentOtherRules(){
 		return currentotherrules;		
 	}
 	
@@ -142,7 +144,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	   return availableotherrules;	
 	}
     
-	private void initAvailableRoles(HashSet availableruleset){		
+	private void initAvailableRoles(HashSet<String> availableruleset){		
 		availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_NONE));
         availableroles.add(Integer.valueOf(BasicAccessRuleSet.ROLE_CAADMINISTRATOR));
         
@@ -155,7 +157,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
 	}
 	
-	private void initCurrentRole(Collection currentaccessrules){		
+	private void initCurrentRole(Collection<AccessRule> currentaccessrules){		
 		// Check if administrator is superadministrator
 		
 		if(currentaccessrules.size() >0){
@@ -182,11 +184,11 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		}	        
 	}
 		
-	private boolean isSuperAdministrator(Collection currentaccessrules){
+	private boolean isSuperAdministrator(Collection<AccessRule> currentaccessrules){
 		
 		boolean returnval = false;
 		if(currentaccessrules.size() ==1){
-			AccessRule ar = (AccessRule) currentaccessrules.iterator().next();
+			AccessRule ar = currentaccessrules.iterator().next();
 			if(ar.getAccessRule().equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR) && 
 					                                   ar.getRule() == AccessRule.RULE_ACCEPT &&
 													   !ar.isRecursive()) {
@@ -197,25 +199,25 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		return returnval;
 	}
 	
-	private boolean isCAAdministrator(Collection currentaccessrules){
+	private boolean isCAAdministrator(Collection<AccessRule> currentaccessrules){
 	   boolean returnval = false;
 	 	   	   	   
 	   if(currentaccessrules.size() >= 7){
-	     HashSet requiredacceptrecrules = new HashSet();
+	     HashSet<String> requiredacceptrecrules = new HashSet<String>();
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_CAFUNCTIONALTY);
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY);
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_RAFUNCTIONALITY);
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY);	     
 	     requiredacceptrecrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-	     HashSet requiredacceptnonrecrules = new HashSet();
+	     HashSet<String> requiredacceptnonrecrules = new HashSet<String>();
 	     requiredacceptnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
 	     requiredacceptnonrecrules.add(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS);
 	     requiredacceptnonrecrules.add(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES);
 	     
-	     Iterator iter = currentaccessrules.iterator();
+	     Iterator<AccessRule> iter = currentaccessrules.iterator();
 	     boolean illegal = false;
 	     while(iter.hasNext()){
-	     	AccessRule ar = (AccessRule) iter.next();
+	     	AccessRule ar = iter.next();
 	     	if(!isAllowedCAAdministratorRule(ar)) {
 	     	  if(ar.getRule() == AccessRule.RULE_ACCEPT && ar.isRecursive() && requiredacceptrecrules.contains(ar.getAccessRule())) {
 	     	  		requiredacceptrecrules.remove(ar.getAccessRule());
@@ -262,17 +264,17 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		return returnval;
 	}
 	
-	private boolean isRAAdministrator(Collection currentaccessrules){
+	private boolean isRAAdministrator(Collection<AccessRule> currentaccessrules){
 		boolean returnval = false;
 		
 		if(currentaccessrules.size() >= 4){
-			HashSet requiredaccepnonrecrules = new HashSet();
+			HashSet<String> requiredaccepnonrecrules = new HashSet<String>();
 			requiredaccepnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
 			requiredaccepnonrecrules.add(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
 			requiredaccepnonrecrules.add(AccessRulesConstants.REGULAR_STORECERTIFICATE);
 			requiredaccepnonrecrules.add(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
 						
-			Iterator iter = currentaccessrules.iterator();
+			Iterator<AccessRule> iter = currentaccessrules.iterator();
 			boolean illegal = false;
 			while(iter.hasNext()){
 				AccessRule ar = (AccessRule) iter.next();	     	
@@ -325,16 +327,16 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		return returnval;
 	}	
 	
-	private boolean isSupervisor(Collection currentaccessrules){
+	private boolean isSupervisor(Collection<AccessRule> currentaccessrules){
 		boolean returnval = false;
 		
 		if(currentaccessrules.size() >= 2){
-			HashSet requiredacceptrecrules = new HashSet();
+			HashSet<String> requiredacceptrecrules = new HashSet<String>();
 			requiredacceptrecrules.add(AccessRulesConstants.REGULAR_VIEWLOG);
-			HashSet requiredacceptnonrecrules = new HashSet();
+			HashSet<String> requiredacceptnonrecrules = new HashSet<String>();
 			requiredacceptnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
 			requiredacceptnonrecrules.add(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);			
-			Iterator iter = currentaccessrules.iterator();
+			Iterator<AccessRule> iter = currentaccessrules.iterator();
 			boolean illegal = false;
 			while(iter.hasNext()){
 				AccessRule ar = (AccessRule) iter.next();	     	
@@ -388,7 +390,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		return returnval;				
 	}
 			
-	private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection availableaccessrules){
+	private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection<String> availableaccessrules){
 		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEW));
 		availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
 		if(usehardtokens) {
@@ -403,9 +405,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		if(usekeyrecovery) {
 		  availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
 		}
-		Iterator iter = availableaccessrules.iterator();
+		Iterator<String> iter = availableaccessrules.iterator();
 		while(iter.hasNext()){
-			String nextrule = (String) iter.next();
+			String nextrule = iter.next();
 			if (nextrule.equals(AccessRulesConstants.CABASE)) {
 				this.availablecas.add(Integer.valueOf(BasicAccessRuleSet.CA_ALL));
 			} else if(nextrule.startsWith(AccessRulesConstants.CAPREFIX)) {
@@ -428,14 +430,13 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		}
 	}
 	
-	private void initCurrentRules(Collection currentaccessrules){		
-		Iterator iter = currentaccessrules.iterator();
-		HashMap endentityrules = new HashMap();
+	private void initCurrentRules(Collection<AccessRule> currentaccessrules){		
+		HashMap<Integer, Integer> endentityrules = new HashMap<Integer, Integer>();
 		
 		Integer general = Integer.valueOf(0);
 		endentityrules.put(general, Integer.valueOf(0));
 		
-		
+		Iterator<AccessRule> iter = currentaccessrules.iterator();		
 		while(iter.hasNext()){
 			AccessRule ar = (AccessRule) iter.next();			
 									
@@ -588,13 +589,13 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		
 						
 		
-		int endentityruleval = ((Integer) endentityrules.get(general)).intValue();	
+		int endentityruleval = endentityrules.get(general).intValue();	
 		
-		iter = endentityrules.keySet().iterator();
-		while(iter.hasNext()){
-			Integer next = (Integer) iter.next();
+		Iterator<Integer> eriter = endentityrules.keySet().iterator();
+		while(eriter.hasNext()){
+			Integer next = eriter.next();
 			if(!next.equals(general)){
-				if(((Integer) endentityrules.get(next)).intValue() == endentityruleval ){
+				if(endentityrules.get(next).intValue() == endentityruleval ){
 					this.currentendentityprofiles.add(next);
 				}else {
 					this.forceadvanced = true;

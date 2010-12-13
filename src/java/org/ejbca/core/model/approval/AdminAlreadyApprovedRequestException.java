@@ -21,6 +21,8 @@ package org.ejbca.core.model.approval;
  */
 public class AdminAlreadyApprovedRequestException extends Exception {
 
+	private static final long serialVersionUID = 1L;
+
 	public AdminAlreadyApprovedRequestException(String message) {
 		super(message);
 	}

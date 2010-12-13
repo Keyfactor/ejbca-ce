@@ -178,7 +178,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      *
      * @returns a Collection of String with available access rules.
      */
-    public Collection getAvailableAccessRules(){
+    public Collection<String> getAvailableAccessRules(){
       return this.informationmemory.getAuthorizedAccessRules();
     }
     

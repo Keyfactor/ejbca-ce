@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -80,15 +81,15 @@ public class InformationMemory implements Serializable {
     
     HashMap<Integer, String> endentityprofileidtonamemap = null;
     HashMap<Integer, String>  caidtonamemap = null;
-    HashMap certificateprofileidtonamemap = null;    
+    HashMap<Integer, String> certificateprofileidtonamemap = null;    
     HashMap<Integer, HashMap<Integer, List>> endentityavailablecas = null;
-    HashMap publisheridtonamemap = null;
+    HashMap<Integer,String> publisheridtonamemap = null;
 
-    TreeMap authgroups = null;
-    TreeMap publishernames = null;
-    HashMap admingrpidmap = null;
+    TreeMap<String, Integer> authgroups = null;
+    TreeMap<String, Integer> publishernames = null;
+    HashMap<Integer, String> admingrpidmap = null;
     
-    HashSet authorizedaccessrules = null;
+    HashSet<String> authorizedaccessrules = null;
     
     GlobalConfiguration globalconfiguration = null;
     EndEntityProfileNameProxy endentityprofilenameproxy = null;
@@ -138,7 +139,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns a Map of certificate profile id (Integer) -> certificate name (String).
      */
-    public HashMap getCertificateProfileIdToNameMap(){
+    public HashMap<Integer, String> getCertificateProfileIdToNameMap(){
       if(certificateprofileidtonamemap == null){
         certificateprofileidtonamemap = this.certificateProfileSession.getCertificateProfileIdToNameMap(administrator); 
       }
@@ -160,21 +161,21 @@ public class InformationMemory implements Serializable {
 	/**
 	 * Returns a Map of hard token profile id (Integer) -> hard token profile name (String).
 	 */
-	public HashMap getHardTokenProfileIdToNameMap(){      
+	public HashMap<Integer, String> getHardTokenProfileIdToNameMap(){      
 	  return this.hardtokenauthorization.getHardTokenProfileIdToNameMap();
 	}            
     
     /**
      * Returns authorized end entity profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap getAuthorizedEndEntityProfileNames(){
+    public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(){
       return this.raauthorization.getAuthorizedEndEntityProfileNames();   
     }
     
 	/**
 	 * Returns end entity profile names with create rights as a treemap of name (String) -> id (Integer)
 	 */    
-    public TreeMap getCreateAuthorizedEndEntityProfileNames(){
+    public TreeMap<String, Integer> getCreateAuthorizedEndEntityProfileNames(){
 		if(globalconfiguration.getEnableEndEntityProfileLimitations()) {
 		  return this.raauthorization.getCreateAuthorizedEndEntityProfileNames();
 		}
@@ -184,7 +185,7 @@ public class InformationMemory implements Serializable {
 	/**
 	 * Returns end entity profile names with view rights as a treemap of name (String) -> id (Integer)
 	 */    
-	public TreeMap getViewAuthorizedEndEntityProfileNames(){
+	public TreeMap<String, Integer> getViewAuthorizedEndEntityProfileNames(){
 		if(globalconfiguration.getEnableEndEntityProfileLimitations()) {
 		  return this.raauthorization.getViewAuthorizedEndEntityProfileNames();
 		}
@@ -195,28 +196,28 @@ public class InformationMemory implements Serializable {
     /**
      * Returns authorized end entity certificate profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap getAuthorizedEndEntityCertificateProfileNames(){
+    public TreeMap<String, Integer> getAuthorizedEndEntityCertificateProfileNames(){
       return this.caauthorization.getAuthorizedEndEntityCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());   
     }    
 
     /**
      * Returns authorized sub CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap getAuthorizedSubCACertificateProfileNames(){
+    public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames(){
       return this.caauthorization.getAuthorizedSubCACertificateProfileNames();   
     } 
     
     /**
      * Returns authorized root CA certificate profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap getAuthorizedRootCACertificateProfileNames(){
+    public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames(){
       return this.caauthorization.getAuthorizedRootCACertificateProfileNames();   
     } 
     
     /**
      * Returns all authorized certificate profile names as a treemap of name (String) -> id (Integer)
      */
-    public TreeMap getEditCertificateProfileNames(){
+    public TreeMap<String, Integer> getEditCertificateProfileNames(){
       return this.caauthorization.getEditCertificateProfileNames(getGlobalConfiguration().getIssueHardwareTokens());   
     }     
     
@@ -224,7 +225,7 @@ public class InformationMemory implements Serializable {
      * Returns a CA names as a treemap of name (String) -> id (Integer).
      * Doesn't include external CAs.
      */
-    public TreeMap getCANames(){
+    public TreeMap<String, Integer> getCANames(){
       return this.caauthorization.getCANames();   
     }     
  
@@ -232,7 +233,7 @@ public class InformationMemory implements Serializable {
 	 * Returns a CA names as a treemap of name (String) -> id (Integer).
 	 * Also includes external CAs
 	 */
-	public TreeMap getAllCANames(){
+	public TreeMap<String, Integer> getAllCANames(){
 	  return this.caauthorization.getAllCANames();   
 	}     
 
@@ -254,7 +255,7 @@ public class InformationMemory implements Serializable {
     /**
      *  Returns a collection of module ids the administrator is authorized to view log of.
      */
-    public Collection getAuthorizedModules(){
+    public Collection<Integer> getAuthorizedModules(){
         return this.logauthorization.getAuthorizedModules();       	
     }
     
@@ -312,7 +313,7 @@ public class InformationMemory implements Serializable {
      * 
      * @return the publisheridtonamemap (HashMap)
      */
-    public HashMap getPublisherIdToNameMap(){
+    public HashMap<Integer,String> getPublisherIdToNameMap(){
     	if(publisheridtonamemap == null) {
     	   publisheridtonamemap = publishersession.getPublisherIdToNameMap(administrator);
     	}
@@ -322,13 +323,13 @@ public class InformationMemory implements Serializable {
     /**
      * Returns all authorized publishers names as a treemap of name (String) -> id (Integer).
      */
-    public TreeMap getAuthorizedPublisherNames(){
+    public TreeMap<String, Integer> getAuthorizedPublisherNames(){
     	if(publishernames==null){
-    		publishernames = new TreeMap();  
-    		Iterator iter = caadminsession.getAuthorizedPublisherIds(administrator).iterator();      
-    		HashMap idtonamemap = getPublisherIdToNameMap();
+    		publishernames = new TreeMap<String, Integer>();  
+    		Iterator<Integer> iter = caadminsession.getAuthorizedPublisherIds(administrator).iterator();      
+    		HashMap<Integer,String> idtonamemap = getPublisherIdToNameMap();
     		while(iter.hasNext()){
-    			Integer id = (Integer) iter.next();
+    			Integer id = iter.next();
     			publishernames.put(idtonamemap.get(id),id);
     		}
     	}
@@ -349,11 +350,11 @@ public class InformationMemory implements Serializable {
     public HashMap<Integer, List> getEndEntityAvailableCAs(int endentityprofileid){
       if(endentityavailablecas == null){
         // Build new structure.  
-        Collection authorizedcas = getAuthorizedCAIds();  
+        Collection<Integer> authorizedcas = getAuthorizedCAIds();  
           
-        HashMap certproftemp = new HashMap();
+        HashMap<Integer, CertificateProfile> certproftemp = new HashMap<Integer, CertificateProfile>();
           
-        endentityavailablecas = new HashMap();
+        endentityavailablecas = new HashMap<Integer, HashMap<Integer, List>>();
     
         for(Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator)){
            EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(administrator,nextendentityprofileid.intValue());
@@ -378,15 +379,15 @@ public class InformationMemory implements Serializable {
                certproftemp.put(nextcertprofileid,certprofile);
              }
              
-             Collection certprofilesavailablecas = certprofile.getAvailableCAs();
+             Collection<Integer> certprofilesavailablecas = certprofile.getAvailableCAs();
              if(certprofilesavailablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))){
-               ArrayList authorizedcastemp = new ArrayList(authorizedcas);
+               ArrayList<Integer> authorizedcastemp = new ArrayList<Integer>(authorizedcas);
                if(!endentityprofileallcas) {
                  authorizedcastemp.retainAll(endentityprofileavailcas);
                }
                certificateprofilemap.put(nextcertprofileid,authorizedcastemp);
              }else{
-               ArrayList authorizedcastemp = new ArrayList(authorizedcas);               
+               ArrayList<Integer> authorizedcastemp = new ArrayList<Integer>(authorizedcas);               
                if(!endentityprofileallcas) {
                  authorizedcastemp.retainAll(endentityprofileavailcas);
                }
@@ -407,9 +408,9 @@ public class InformationMemory implements Serializable {
      * @return A HashSet containing the administrators authorized available accessrules.
      */
 
-    public HashSet getAuthorizedAccessRules(){
+    public HashSet<String> getAuthorizedAccessRules(){
       if(authorizedaccessrules == null) {
-	    authorizedaccessrules = new HashSet(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caSession.getAvailableCAs(administrator),
+	    authorizedaccessrules = new HashSet<String>(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caSession.getAvailableCAs(administrator),
 	    		globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
 	    		endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
       }
@@ -419,7 +420,7 @@ public class InformationMemory implements Serializable {
 	/**
 	 *  @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
 	 */	
-	public TreeMap getHardTokenProfiles(){	  	    
+	public TreeMap<String, Integer> getHardTokenProfiles(){	  	    
 	   return hardtokenauthorization.getHardTokenProfiles();
 	}
 	
@@ -433,7 +434,7 @@ public class InformationMemory implements Serializable {
 	/**
 	 *  @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
 	 */	
-	public TreeMap getHardTokenIssuers(){	  	    
+	public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(){	  	    
 	   return hardtokenauthorization.getHardTokenIssuers();
 	}
 	
@@ -448,7 +449,7 @@ public class InformationMemory implements Serializable {
 	/**
 	 *  @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
 	 */	
-	public Collection getHardTokenIssuingAdminGroups(){
+	public Collection<AdminGroup> getHardTokenIssuingAdminGroups(){
 	  return hardtokenauthorization.getHardTokenIssuingAdminGroups();	
 	}
 
@@ -456,12 +457,12 @@ public class InformationMemory implements Serializable {
      * Returns a sorted map with authorized admingroupname -> admingroupid
      */
 
-    public TreeMap getAuthorizedAdminGroups(){
+    public TreeMap<String, Integer> getAuthorizedAdminGroups(){
       if(authgroups == null){
-        authgroups = new TreeMap();
-        Iterator iter = this.adminGroupSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator)).iterator();
+        authgroups = new TreeMap<String, Integer>();
+        Iterator<AdminGroup> iter = this.adminGroupSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator)).iterator();
         while(iter.hasNext()){
-          AdminGroup admingroup = (AdminGroup) iter.next();	
+          AdminGroup admingroup = iter.next();	
           authgroups.put(admingroup.getAdminGroupName(),Integer.valueOf(admingroup.getAdminGroupId()));
         }              		
       }
@@ -473,14 +474,14 @@ public class InformationMemory implements Serializable {
 	 * Returns a map with authorized admingroupid -> admingroupname
 	 */
     
-    public HashMap getAdminGroupIdToNameMap(){
+    public HashMap<Integer, String> getAdminGroupIdToNameMap(){
       if(admingrpidmap == null){
-      	TreeMap admingrpnames = getAuthorizedAdminGroups();
-		admingrpidmap = new HashMap();
-      	Iterator iter = admingrpnames.keySet().iterator();
+      	TreeMap<String, Integer> admingrpnames = getAuthorizedAdminGroups();
+		admingrpidmap = new HashMap<Integer, String>();
+      	Iterator<String> iter = admingrpnames.keySet().iterator();
       	while(iter.hasNext()){
-      		Object next = iter.next();
-			admingrpidmap.put(admingrpnames.get(next) ,next);	
+      		String next = iter.next();
+			admingrpidmap.put(admingrpnames.get(next), next);	
       	}			
       	
       }

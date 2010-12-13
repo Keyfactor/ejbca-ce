@@ -29,7 +29,8 @@ import java.security.cert.Certificate;
  */
 public class AdminInformation implements java.io.Serializable {
 
-    // Public Methods
+	private static final long serialVersionUID = 1L;
+	// Public Methods
     /** Creates a new instance of AdminInformation */
     public AdminInformation(Certificate certificate){
       this.certificate=certificate;

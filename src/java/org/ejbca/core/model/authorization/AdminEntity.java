@@ -34,7 +34,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class AdminEntity implements Serializable, Comparable {
+public class AdminEntity implements Serializable, Comparable<AdminEntity> {
 
     private static final long serialVersionUID = 1L;
     // Special Users. (Constants cannot have 0 value).
@@ -294,8 +294,8 @@ public class AdminEntity implements Serializable, Comparable {
       return matchwith;
     }
 
-     public int compareTo(Object obj) {
-      return matchvalue.compareTo(((AdminEntity)obj).getMatchValue());
+     public int compareTo(AdminEntity obj) {
+      return matchvalue.compareTo(obj.getMatchValue());
     }
      
      public int getCaId() {

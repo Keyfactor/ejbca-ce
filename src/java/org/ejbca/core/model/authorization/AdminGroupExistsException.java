@@ -27,7 +27,10 @@ package org.ejbca.core.model.authorization;
  */
 public class AdminGroupExistsException extends java.lang.Exception {
 
-    /**
+	private static final long serialVersionUID = 1L;
+
+
+	/**
      * Creates a new instance of <code>AdmingroupExistsException</code> without detail message.
      */
     public AdminGroupExistsException() {
