@@ -41,7 +41,7 @@ import org.ejbca.util.keystore.KeyTools;
  * 
  * @version $Id$
  */
-public class AlgorithmTools {
+public final class AlgorithmTools {
 	
 	/** Log4j instance */
 	private static final Logger log = Logger.getLogger(AlgorithmTools.class);
@@ -50,25 +50,25 @@ public class AlgorithmTools {
 	public static final String KEYSPEC_UNKNOWN = "unknown";
 
 	/** Signature algorithms supported by RSA keys */
-	private static final Collection SIG_ALGS_RSA;
+	private static final Collection<String> SIG_ALGS_RSA;
 	
 	/** Signature algorithms supported by DSA keys */
-	private static final Collection SIG_ALGS_DSA;
+	private static final Collection<String> SIG_ALGS_DSA;
 	
 	/** Signature algorithms supported by ECDSA keys */
-	private static final Collection SIG_ALGS_ECDSA;
+	private static final Collection<String> SIG_ALGS_ECDSA;
 	
 	static {
-		SIG_ALGS_RSA = new LinkedList();
+		SIG_ALGS_RSA = new LinkedList<String>();
 		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1);
 		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 		SIG_ALGS_RSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
 		
-		SIG_ALGS_DSA = new LinkedList();
+		SIG_ALGS_DSA = new LinkedList<String>();
 		SIG_ALGS_DSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
 		
-		SIG_ALGS_ECDSA = new LinkedList();
+		SIG_ALGS_ECDSA = new LinkedList<String>();
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA);
 		SIG_ALGS_ECDSA.add(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
@@ -84,7 +84,7 @@ public class AlgorithmTools {
 	 * @see AlgorithmConstants#KEYALGORITHM_DSA
 	 * @see AlgorithmConstants#KEYALGORITHM_ECDSA
 	 */
-	public static String getKeyAlgorithm(PublicKey publickey) {
+	public static String getKeyAlgorithm(final PublicKey publickey) {
 		String keyAlg = null;
 		if ( publickey instanceof RSAPublicKey ) {
 			keyAlg  = AlgorithmConstants.KEYALGORITHM_RSA;
@@ -103,7 +103,7 @@ public class AlgorithmTools {
 	 * @return Collection of zero or more signature algorithm names
 	 * @see AlgorithmConstants
 	 */
-	public static Collection getSignatureAlgorithms(PublicKey publickey) {
+	public static Collection<String> getSignatureAlgorithms(final PublicKey publickey) {
 		if ( publickey instanceof RSAPublicKey ) {
 			return SIG_ALGS_RSA;
 		} else if ( publickey instanceof DSAPublicKey ) {
@@ -121,7 +121,7 @@ public class AlgorithmTools {
 	 * the default if no matching was found.
 	 * @see AlgorithmConstants 
 	 */
-	public static String getKeyAlgorithmFromSigAlg(String signatureAlgorithm) {
+	public static String getKeyAlgorithmFromSigAlg(final String signatureAlgorithm) {
 		if ( signatureAlgorithm.contains("ECDSA") ) {
 			return AlgorithmConstants.KEYALGORITHM_ECDSA;
 		} else if ( signatureAlgorithm.contains("DSA") ) {
@@ -138,8 +138,10 @@ public class AlgorithmTools {
 	 * @return The key specification, "unknown" if it could not be determined and
 	 * null if the key algorithm is not supported
 	 */
-	public static String getKeySpecification(PublicKey publicKey) {
-		log.trace(">getKeySpecification");
+	public static String getKeySpecification(final PublicKey publicKey) {
+		if (log.isTraceEnabled()) {
+			log.trace(">getKeySpecification");			
+		}
 		String keyspec = null;
 		if ( publicKey instanceof RSAPublicKey ) {
 			keyspec = Integer.toString( ((RSAPublicKey) publicKey).getModulus().bitLength() );
@@ -152,8 +154,9 @@ public class AlgorithmTools {
 				keyspec = KEYSPEC_UNKNOWN;
 			}
 		}
-		log.debug("KeySpecification: "+keyspec);
-		log.trace("<getKeySpecification");
+		if (log.isTraceEnabled()) {
+			log.trace("<getKeySpecification: "+keyspec);
+		}
 		return keyspec;
 	}
 
@@ -166,7 +169,7 @@ public class AlgorithmTools {
 	 * @return an other encryption algorithm or same as signature algorithm if it 
 	 * can be used for encryption
 	 */
-	public static String getEncSigAlgFromSigAlg(String signatureAlgorithm) {
+	public static String getEncSigAlgFromSigAlg(final String signatureAlgorithm) {
 		String encSigAlg = signatureAlgorithm;
 		if ( signatureAlgorithm.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ) {
 			encSigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
@@ -186,7 +189,7 @@ public class AlgorithmTools {
 	 * @param signatureAlgorithm algorithm to test
 	 * @return true if signature algorithm can be used with the public key algorithm
 	 */
-	public static boolean isCompatibleSigAlg(PublicKey publicKey, String signatureAlgorithm) {
+	public static boolean isCompatibleSigAlg(final PublicKey publicKey, final String signatureAlgorithm) {
 		if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_RSA)) {
 			if (publicKey instanceof RSAPublicKey) {
 				return true;

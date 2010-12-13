@@ -30,24 +30,30 @@ import java.security.spec.ECPoint;
 class AlgorithmToolsHelper {
 	
 	static class MockPublicKey implements PublicKey {
+		private static final long serialVersionUID = 1L;
 		public String getAlgorithm() { return null; }
 		public byte[] getEncoded() { return null; }
 		public String getFormat() { return null; }		
 	}
 	
-	static class MockNotSupportedPublicKey extends MockPublicKey {}
+	static class MockNotSupportedPublicKey extends MockPublicKey {
+		private static final long serialVersionUID = 1L;
+	}
 	
 	static class MockRSAPublicKey extends MockPublicKey implements RSAPublicKey {
+		private static final long serialVersionUID = 1L;
 		public BigInteger getPublicExponent() { return null; }
 		public BigInteger getModulus() { return null; }
 	}
 	
 	static class MockDSAPublicKey extends MockPublicKey implements DSAPublicKey {
+		private static final long serialVersionUID = 1L;
 		public BigInteger getY() { return null; }
 		public DSAParams getParams() { return null; }
 	}
 	
 	static class MockECDSAPublicKey extends MockPublicKey implements ECPublicKey {
+		private static final long serialVersionUID = 1L;
 		public ECPoint getW() { return null; }
 		public ECParameterSpec getParams() { return null; }
 	}

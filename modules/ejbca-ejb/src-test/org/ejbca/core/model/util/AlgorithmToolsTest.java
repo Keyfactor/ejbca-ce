@@ -32,31 +32,31 @@ public class AlgorithmToolsTest extends TestCase {
 	}
 
 	public void testGetSignatureAlgorithms() {
-		Collection algs = AlgorithmTools.getSignatureAlgorithms(new MockNotSupportedPublicKey()); 
+		Collection<String> algs = AlgorithmTools.getSignatureAlgorithms(new MockNotSupportedPublicKey()); 
 		assertNotNull("should not return null", algs);
 		assertTrue("no supported algs", algs.isEmpty());
 	}
 
 	public void testGetKeyAlgorithmFromSigAlg() {
 		
-		Collection sigAlgs;
+		Collection<String> sigAlgs;
 		
 		// Test that key algorithm is RSA for all of its signature algorithms
 		sigAlgs = AlgorithmTools.getSignatureAlgorithms(new MockRSAPublicKey());
-		for(Iterator i = sigAlgs.iterator(); i.hasNext();) {
-			assertEquals(AlgorithmTools.getKeyAlgorithm(new MockRSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg((String)i.next()));
+		for(Iterator<String> i = sigAlgs.iterator(); i.hasNext();) {
+			assertEquals(AlgorithmTools.getKeyAlgorithm(new MockRSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(i.next()));
 		}
 		
 		// Test that key algorithm is DSA for all of its signature algorithms
 		sigAlgs = AlgorithmTools.getSignatureAlgorithms(new MockDSAPublicKey());
-		for(Iterator i = sigAlgs.iterator(); i.hasNext();) {
-			assertEquals(AlgorithmTools.getKeyAlgorithm(new MockDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg((String)i.next()));
+		for(Iterator<String> i = sigAlgs.iterator(); i.hasNext();) {
+			assertEquals(AlgorithmTools.getKeyAlgorithm(new MockDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(i.next()));
 		}
 		
 		// Test that key algorithm is ECDSA for all of its signature algorithms
 		sigAlgs = AlgorithmTools.getSignatureAlgorithms(new MockDSAPublicKey());
-		for(Iterator i = sigAlgs.iterator(); i.hasNext();) {
-			assertEquals(AlgorithmTools.getKeyAlgorithm(new MockDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg((String)i.next()));
+		for(Iterator<String> i = sigAlgs.iterator(); i.hasNext();) {
+			assertEquals(AlgorithmTools.getKeyAlgorithm(new MockDSAPublicKey()), AlgorithmTools.getKeyAlgorithmFromSigAlg(i.next()));
 		}
 		
 		// should return a default value
