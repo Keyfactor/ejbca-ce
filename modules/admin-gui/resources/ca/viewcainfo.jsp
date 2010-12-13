@@ -30,7 +30,7 @@
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-<body class="popup">
+<body class="popup" id="viewcainfo">
   <h2><%= ejbcawebbean.getText("CAINFORMATION") %></h2>
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 

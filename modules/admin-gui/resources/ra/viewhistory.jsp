@@ -260,7 +260,7 @@ function viewcert(row){
 </script>
 </head>
 
-<body class="popup" id="history">
+<body class="popup" id="viewhistory">
 <h2><%= ejbcawebbean.getText("VIEWENDENTITYHISTORY") %></h2>
 <h3><%= ejbcawebbean.getText("FORENDENTITY") + " : " + username %></h3>
     <div align="right">
@@ -502,12 +502,8 @@ function viewcert(row){
      </select>  
   </form> 
 
-  <%// Include Footer 
-     }  
-   }
-
-   String footurl =   globalconfiguration.getFootBanner(); %>
+  <% }  
+   } %>
    
-  <jsp:include page="<%= footurl %>" />
 </body>
 </html>

@@ -73,14 +73,14 @@
 function viewcacert(caid){   
     var link = "<%=VIEWCERTIFICATE_LINK%>?caid="+caid;
     link = encodeURI(link);     
-    win_popup = window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=550,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 } 
 
 function viewcainfo(caid){        
     var link = "<%=VIEWINFO_LINK%>?caid="+caid;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_info','height=450,width=450,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_info','height=550,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 

@@ -233,7 +233,7 @@ div#footer {
 /* Page: ALL */
 h1 {
 	margin-top: 0em;
-	margin-bottom: .4em;
+	margin-bottom: .2em;
 	text-align: left;
 	font-size: 2em;
 	color: #284E81;
@@ -244,13 +244,24 @@ h1 {
 	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.1);
 }
 h2 {
+	margin-top: .5em;
+	margin-bottom: .5em;
 	text-align: left;
 	font-size: 1.5em;
 	color: #284E81;
 }
 h3 {
+	margin-top: .5em;
+	margin-bottom: 0em;
 	text-align: left;
 	font-size: 1.2em;
+	color: #000;
+}
+h4 {
+	margin-top: .5em;
+	margin-bottom: 0em;
+	text-align: left;
+	font-size: 1em;
 	color: #000;
 }
 a {
@@ -316,9 +327,6 @@ table.add {
 	margin: 0em;
 	padding: 0em;
 	border: 0px;
-}
-table.add {
-	margin-top: .5em;
 }
 table.list tr td,
 table.add tr td {
@@ -404,6 +412,9 @@ div#publishqueuestatus {
 }
 
 /* Page: CA > CA Activation */
+div#activation {
+	margin-top: 1em;
+}
 #activation table tbody tr:nth-child(2n) {
 	background-color: #F7F9FD;
 }
@@ -569,14 +580,38 @@ body.popup {
 .popup h2,
 .popup h3,
 .popup h4 {
-		text-align: center;
+	text-align: center;
+}
+.popup h2 {
+	margin-top: .5em;
+	margin-bottom: .5em;
+}
+.popup h3 {
+	margin-top: .5em;
+	margin-bottom: .5em;
+}
+.popup h4 {
+	margin-top: .5em;
+	margin-bottom: .5em;
+}
+.popup table {
+	width: 100%;
+}
+.popup table tr td {
+	padding: .1em .25em .1em .2em;
+}
+.popup table tr td:first-child {
+	white-space: nowrap;
 }
 
 /* Popup: View History */
-.popup#history h2,
-.popup#history h3,
-.popup#history h4 {
-		text-align: left;
+.popup#viewhistory h2,
+.popup#viewhistory h3,
+.popup#viewhistory h4 {
+	text-align: left;
+}
+.popup#viewhistory table tr td:first-child {
+	white-space: normal;
 }
 
 

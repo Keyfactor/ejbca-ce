@@ -234,7 +234,7 @@ function viewcopies(link){
 -->
 </script>
 </head>
-<body class="popup">
+<body class="popup" id="viewtoken">
   <h2><%= ejbcawebbean.getText("VIEWHARDTOKEN") %></h2>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html")  + "#viewhardtoken"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>

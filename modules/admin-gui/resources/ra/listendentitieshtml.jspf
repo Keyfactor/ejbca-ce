@@ -11,7 +11,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_user','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_user','height=650,width=650,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -20,7 +20,7 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'edit_user','height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'edit_user','height=650,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -29,7 +29,7 @@ function viewhistory(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWHISTORY_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_history','height=600,width=800,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_history','height=650,width=900,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -38,7 +38,7 @@ function viewcert(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_cert','height=650,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -47,7 +47,7 @@ function viewtoken(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWTOKEN_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_token','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_token','height=650,width=650,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 

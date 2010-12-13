@@ -36,7 +36,7 @@
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-<body class="popup">
+<body class="popup" id="viewendentity">
   <h2><%= ejbcawebbean.getText("VIEWENDENTITY2") %></h2>
   <%if(viewendentityhelper.nouserparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
@@ -366,7 +366,7 @@
        </tr> 
      </table> 
    </form>
-   <p></p>
+
    <% }
      }
     }
