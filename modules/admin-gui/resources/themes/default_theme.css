@@ -596,9 +596,13 @@ body.popup {
 }
 .popup table {
 	width: 100%;
+	border: 0px none;
 }
 .popup table tr td {
 	padding: .1em .25em .1em .2em;
+}
+.popup table tr.title td {
+	font-size: 1.2em;
 }
 .popup table tr td:first-child {
 	white-space: nowrap;
