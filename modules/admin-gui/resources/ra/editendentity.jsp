@@ -968,7 +968,8 @@ function checkUseInBatch(){
   </script>
   <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-<body class="popup" onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
+<body class="popup" id="editendentity"
+      onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
                  fillCAField();'>
   <h2><%= ejbcawebbean.getText("EDITENDENTITYTITLE") %></h2>
@@ -1700,12 +1701,9 @@ function checkUseInBatch(){
      </table> 
   </form>
 
-  <%// Include Footer 
-      }
+  <%  }
     }    
-   }
-   String footurl =   globalconfiguration .getFootBanner(); %>
+   } %>
    
-  <jsp:include page="<%= footurl %>" />
 </body>
 </html>
