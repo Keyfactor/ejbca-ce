@@ -57,7 +57,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     private static final InternalResources INTRES = InternalResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
-    private transient EntityManager entityManager;
+    private EntityManager entityManager;
     
     @EJB
     private LogSessionLocal logSession;

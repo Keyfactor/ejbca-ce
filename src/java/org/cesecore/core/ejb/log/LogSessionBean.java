@@ -77,7 +77,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     private static volatile ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
 
     @PersistenceContext(unitName="ejbca")
-    private transient EntityManager entityManager;
+    private EntityManager entityManager;
 
     @Resource
     private SessionContext sessionContext;

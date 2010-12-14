@@ -39,7 +39,7 @@ public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTree
     private static final InternalResources INTRES = InternalResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
-    private transient EntityManager entityManager;
+    private EntityManager entityManager;
 
     /**
      * Cache this local bean, because it will cause many many database lookups
