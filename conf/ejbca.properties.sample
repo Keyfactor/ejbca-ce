@@ -236,3 +236,9 @@
 #
 # Default: false
 #certtools.dnorderreverse=false
+
+# When upgrading a 100% up-time cluster, all nodes should be deployed with the affective version
+# of the oldest still running EJBCA version.
+# Default: ${app.version.number}
+#app.version.effective=3.11.x
+

@@ -91,13 +91,7 @@ public class HardTokenData implements Serializable {
 	public void setSignificantIssuerDN(String significantIssuerDN) { this.significantIssuerDN = significantIssuerDN; }
 
 	//@Column @Lob
-	public Serializable getDataUnsafe() {
-		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
-		if (h != null) {
-			setDataUnsafe(h);
-		}
-		return data;
-	}
+	public Serializable getDataUnsafe() { return data; }
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public void setDataUnsafe(Serializable data) { this.data = data; }
 
@@ -110,8 +104,8 @@ public class HardTokenData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	public HashMap getData() { return (HashMap) getDataUnsafe(); }
-	public void setData(HashMap data) { setDataUnsafe(data); }
+	public HashMap getData() { return JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()); }
+	public void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	@Transient
 	public Date getCreateTime() { return new Date(getCtime()); }

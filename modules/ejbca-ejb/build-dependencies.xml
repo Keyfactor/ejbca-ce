@@ -60,6 +60,7 @@
 					<include name="org/ejbca/config/ConfigurationHolder.java"/>
 					<include name="org/ejbca/config/DatabaseConfiguration.java"/>
 					<include name="org/ejbca/config/EjbcaConfiguration.java"/>
+					<include name="org/ejbca/config/InternalConfiguration.java"/>
 					<include name="org/ejbca/util/CryptoProviderTools.java"/>
 					<include name="org/ejbca/util/GUIDGenerator.java"/>
 					<include name="org/ejbca/util/JDBCUtil.java"/>
@@ -222,7 +223,6 @@
 					<include name="org/ejbca/core/model/approval/**/*.java"/>
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
 					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
-					<include name="org/ejbca/config/InternalConfiguration.java"/>
 					<include name="org/ejbca/config/WebConfiguration.java"/>
 					<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>

@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -31,6 +32,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
@@ -40,6 +42,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
@@ -161,9 +164,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * - EndEntityProfileData.data
      * - GlobalConfigurationData.data
      * 
-     * Each of these entities will seamlessly migrate the BLOB when the field is read, so we need
-     * to read each BLOB-field and then merge the entity.
-     * 
      * NOTE: You only need to run this if you upgrade a JBoss installation.
      */
     private boolean postMigrateDatabase400() {
@@ -198,38 +198,38 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	log.info(" Processing CertificateProfileData entities.");
     	final List<CertificateProfileData> cpds = CertificateProfileData.findAll(entityManager);
     	for (CertificateProfileData cpd : cpds) {
-    		cpd.getDataUnsafe();
+    		cpd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, cpd.getDataUnsafe()));
     	}
     	log.info(" Processing HardTokenIssuerData entities.");
     	final List<HardTokenIssuerData> htids = HardTokenIssuerData.findAll(entityManager);
     	for (HardTokenIssuerData htid : htids) {
-    		htid.getDataUnsafe();
+    		htid.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, htid.getDataUnsafe()));
     	}
     	log.info(" Processing LogConfigurationData entities.");
     	final List<LogConfigurationData> lcds = LogConfigurationData.findAll(entityManager);
     	for (LogConfigurationData lcd : lcds) {
-    		lcd.getLogConfigurationUnsafe();
+    		lcd.setLogConfigurationUnsafe(JBossUnmarshaller.extractObject(LogConfiguration.class, lcd.getLogConfigurationUnsafe()));
     	}
     	log.info(" Processing AdminPreferencesData entities.");
     	final List<AdminPreferencesData> apds = AdminPreferencesData.findAll(entityManager);
     	for (AdminPreferencesData apd : apds) {
-    		apd.getDataUnsafe();
+    		apd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, apd.getDataUnsafe()));
     	}
     	log.info(" Processing EndEntityProfileData entities.");
     	final List<EndEntityProfileData> eepds = EndEntityProfileData.findAll(entityManager);
     	for (EndEntityProfileData eepd : eepds) {
-    		eepd.getDataUnsafe();
+    		eepd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, eepd.getDataUnsafe()));
     	}
     	log.info(" Processing GlobalConfigurationData entities.");
     	GlobalConfigurationData gcd = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
-    	gcd.getDataUnsafe();
+    	gcd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, gcd.getDataUnsafe()));
     }
     
     public void postMigrateDatabase400HardTokenData(List<String> subSet) {
     	for (String tokenSN : subSet) {
     		HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokenSN);
     		if (htd != null) {
-        		htd.getDataUnsafe();
+        		htd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, htd.getDataUnsafe()));
     		} else {
     	    	log.warn("Hard token was removed during processing. Ignoring token with serial number '" + tokenSN + "'.");
     		}

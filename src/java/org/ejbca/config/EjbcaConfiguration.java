@@ -327,4 +327,15 @@ public class EjbcaConfiguration {
 		}
 		return time;
 	}
+	
+	/**
+	 * Parameter to specify how to treat data in the database, when running in a clustered environment with different EJBCA versions.
+	 */
+	public static int getEffectiveApplicationVersion() {
+		String readVersion = ConfigurationHolder.getString("app.version.effective", InternalConfiguration.getAppVersionNumber());
+		if (readVersion.startsWith("3.11")) {
+			return 311;
+		}
+		return 400;
+	}
 }
