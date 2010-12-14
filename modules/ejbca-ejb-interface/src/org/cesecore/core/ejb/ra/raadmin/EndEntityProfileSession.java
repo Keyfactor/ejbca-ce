@@ -15,7 +15,6 @@ package org.cesecore.core.ejb.ra.raadmin;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -28,8 +27,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
  */
 public interface EndEntityProfileSession {
 
-    final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
-    final int EMPTY_ENDENTITYPROFILEID = SecConst.EMPTY_ENDENTITYPROFILE;
+    static final String EMPTY_ENDENTITYPROFILENAME = "EMPTY";
 
     /**
      * Adds a profile to the database.

@@ -30,7 +30,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
@@ -57,17 +56,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     private static final Random RANDOM = new Random(new Date().getTime());
 
-    /**
-     * help variable used to control that profiles update (read from database)
-     * isn't performed to often.
-     */
-    private static volatile long lastCacheUpdateTime = -1;
-    /** Cache of mappings between profileId and profileName */
-    private static volatile HashMap<Integer, String> idNameMapCache = null;
-    /** Cache of mappings between profileName and profileId */
-    private static volatile Map<String, Integer> nameIdMapCache = null;
-    /** Cache of end entity profiles, with Id as keys */
-    private static volatile Map<Integer, EndEntityProfile> profileCache = null;
+    /** Cache of end entity profiles and id-name mappings */
+    private static final EndEntityProfileCache profileCache = new EndEntityProfileCache();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -263,32 +253,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        final HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
-        final HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
-        final HashMap<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
-        idNameCache.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EMPTY_ENDENTITYPROFILENAME);
-        nameIdCache.put(EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
-        try {
-            final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found " + result.size() + " end entity profiles.");
-            }
-            final Iterator<EndEntityProfileData> i = result.iterator();
-            while (i.hasNext()) {
-                final EndEntityProfileData next = i.next();
-                // debug("Added "+next.getId()+ ", "+next.getProfileName());
-                idNameCache.put(next.getId(), next.getProfileName());
-                nameIdCache.put(next.getProfileName(), next.getId());
-                profCache.put(next.getId(), next.getProfile());
-            }
-        } catch (Exception e) {
-            final String msg = INTRES.getLocalizedMessage("ra.errorreadprofiles");
-            LOG.error(msg, e);
-        }
-        idNameMapCache = idNameCache;
-        nameIdMapCache = nameIdCache;
-        profileCache = profCache;
-        lastCacheUpdateTime = System.currentTimeMillis();
+        profileCache.updateProfileCache(entityManager);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache");
         }
@@ -559,26 +524,24 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     private HashMap<Integer, String> getEndEntityProfileIdNameMapInternal() {
-        if ((idNameMapCache == null)
-                || (lastCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
-            flushProfileCache();
-        }
-        return idNameMapCache;
+    	if (profileCache.needsUpdate()) {
+    		flushProfileCache();
+    	}
+        return profileCache.getIdNameMapCache();
     }
 
     private Map<String, Integer> getEndEntityProfileNameIdMapInternal() {
-        if ((nameIdMapCache == null)
-                || (lastCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
-            flushProfileCache();
-        }
-        return nameIdMapCache;
+    	if (profileCache.needsUpdate()) {
+    		flushProfileCache();
+    	}
+    	return profileCache.getNameIdMapCache();
     }
 
     private Map<Integer, EndEntityProfile> getProfileCacheInternal() {
-        if ((profileCache == null) || (lastCacheUpdateTime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
-            flushProfileCache();
-        }
-        return profileCache;
+    	if (profileCache.needsUpdate()) {
+    		flushProfileCache();
+    	}
+        return profileCache.getProfileCache();
     }
 
     private boolean isFreeEndEntityProfileId(final int id) {
