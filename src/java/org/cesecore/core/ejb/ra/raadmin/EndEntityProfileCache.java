@@ -109,7 +109,7 @@ public final class EndEntityProfileCache {
 
 	public boolean needsUpdate() {
         if ((nameIdMapCache == null) || (idNameMapCache == null) || (profileCache == null)
-                || (lastupdatetime + EjbcaConfiguration.getCacheCertificateProfileTime() < System.currentTimeMillis())) {
+                || (lastupdatetime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
             return true;
         }
         return false;
