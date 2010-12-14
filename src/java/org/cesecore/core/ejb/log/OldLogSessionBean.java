@@ -49,7 +49,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 	private static final Logger log = Logger.getLogger(OldLogSessionBean.class);
 	
     @PersistenceContext(unitName="ejbca")
-    private transient EntityManager entityManager;
+    private EntityManager entityManager;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
