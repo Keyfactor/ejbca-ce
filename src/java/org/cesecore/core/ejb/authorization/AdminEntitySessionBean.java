@@ -47,7 +47,7 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
     private static final InternalResources INTRES = InternalResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
-    private transient EntityManager entityManager;
+    private EntityManager entityManager;
 
     @EJB
     private AuthorizationTreeUpdateDataSessionRemote authTreeSession;

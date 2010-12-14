@@ -70,7 +70,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private static volatile Map<Integer, EndEntityProfile> profileCache = null;
 
     @PersistenceContext(unitName = "ejbca")
-    private transient EntityManager entityManager;
+    private EntityManager entityManager;
 
     @EJB
     private AuthorizationSessionLocal authSession;
