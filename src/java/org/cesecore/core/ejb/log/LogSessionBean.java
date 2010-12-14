@@ -74,7 +74,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
      * changes to configuration is visible almost immediately.
      */
-    private static volatile ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
+    private static final ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
@@ -331,7 +331,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushConfigurationCache() {
-    	logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
+    	logConfCache.emptyCache();
     	if (LOG.isDebugEnabled()) {
     		LOG.debug("Flushed log configuration cache.");
     	}

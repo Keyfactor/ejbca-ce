@@ -17,15 +17,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** A simple object cache that can be used to cache object for a limited time. By default object are cached for 5 seconds.
+ * Uses synchronized collections.
  * 
  * @version $Id$
  */
 public class ObjectCache {
 
 	/** The objects */
-	private final Map objects;
+	private final Map<Object, Object> objects;
 	/** map holding expire times for the object, so we know when we should not cache them any more */
-	private final Map expire;
+	private final Map<Object, Long> expire;
 
 	/** expiration time in milliseconds*/
 	private long expireTime;
@@ -41,19 +42,24 @@ public class ObjectCache {
 	 * Constructor with expire as argument.
 	 * @param expireTime expiration time in milliseconds
 	 */
-	public ObjectCache(long expireTime) {
-		this.objects = Collections.synchronizedMap(new HashMap());
-		this.expire = Collections.synchronizedMap(new HashMap());
+	public ObjectCache(final long expireTime) {
+		this.objects = Collections.synchronizedMap(new HashMap<Object, Object>());
+		this.expire = Collections.synchronizedMap(new HashMap<Object, Long>());
 		this.expireTime = expireTime;
 	}
 
+	/** empties the cache completely */
+	public synchronized void emptyCache() {
+		this.objects.clear();
+		this.expire.clear();
+	}
 	/**
 	 * Put an object into the cache, the expiration time will be set.
 	 * 
 	 * @param key the key for the object in the cache
 	 * @param o the cached object
 	 */
-	public void put(Object key, Object o) {
+	public void put(final Object key, final Object o) {
 		this.objects.put(key, o);
 		this.expire.put(key, Long.valueOf(System.currentTimeMillis() + expireTime));
 	}
@@ -64,7 +70,7 @@ public class ObjectCache {
 	 * @param key the key for the object in the cache
 	 * @return the cached object
 	 */
-	public Object get(Object key) {
+	public Object get(final Object key) {
 		final Long expiresAt = (Long)this.expire.get(key);
 		Object ret = null;
 		if (expiresAt != null) {
