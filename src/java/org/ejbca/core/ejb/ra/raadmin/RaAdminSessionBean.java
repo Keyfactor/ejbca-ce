@@ -13,8 +13,6 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
-import java.util.Date;
-
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -25,7 +23,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -53,11 +50,9 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     /**
      * Cache variable containing the global configuration. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
-     * threads in the same VM. Set volatile to make it thread friendly.
+     * threads in the same VM. Uses volatile internal to make it thread friendly.
      */
-    private static volatile GlobalConfiguration globalconfigurationCache = null;
-    /** help variable used to control that GlobalConfiguration update isn't performed to often. */
-    private static volatile long lastupdatetime = -1;  
+    private static final GlobalConfigurationCache globalconfigurationCache = new GlobalConfigurationCache();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -233,8 +228,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         GlobalConfiguration result = null;
         if (gcdata != null) {
             result = gcdata.getGlobalConfiguration();
-            globalconfigurationCache = result;
-            lastupdatetime = new Date().getTime();
+            globalconfigurationCache.setGlobalconfiguration(result);
         }
 
         return result;
@@ -258,8 +252,8 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
             }
             // Only do the actual SQL query if we might update the configuration
             // due to cache time anyhow
-            if (globalconfigurationCache != null && lastupdatetime + EjbcaConfiguration.getCacheGlobalConfigurationTime() > new Date().getTime()) {
-                result = globalconfigurationCache;
+            if (!globalconfigurationCache.needsUpdate()) {
+                result = globalconfigurationCache.getGlobalconfiguration();
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Reading GlobalConfiguration");
@@ -267,15 +261,13 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
                 GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
                 if (gcdata != null) {
                     result = gcdata.getGlobalConfiguration();
-                    globalconfigurationCache = result;
-                    lastupdatetime = new Date().getTime();
+                    globalconfigurationCache.setGlobalconfiguration(result);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
                     result = new GlobalConfiguration();
                     saveGlobalConfiguration(admin, result);
-                    lastupdatetime = new Date().getTime();
                 }
             }
             return result;
@@ -316,7 +308,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
                         LogConstants.EVENT_ERROR_EDITSYSTEMCONFIGURATION, msg);
             }
         }
-        globalconfigurationCache = globconf;
+        globalconfigurationCache.setGlobalconfiguration(globconf);
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
         }
@@ -329,7 +321,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     	if (log.isTraceEnabled()) {
     		log.trace(">flushGlobalConfigurationCache()");
     	}
-    	globalconfigurationCache = null;
+    	globalconfigurationCache.clearCache();
     	getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER, "internal"));
     	if (log.isDebugEnabled()) {
     		log.debug("Flushed global configuration cache.");
