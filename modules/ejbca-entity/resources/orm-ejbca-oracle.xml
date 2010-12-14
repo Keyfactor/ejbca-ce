@@ -342,5 +342,17 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
+     <embeddable class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK">
+        <attributes>
+            <basic name="id"><column name="id" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic name="property"><column name="property" column-definition="VARCHAR2(255 byte)"/></basic>
+        </attributes>
+    </embeddable>
+    <embeddable class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK">
+        <attributes>
+            <basic name="certSN"><column name="certSN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)"/></basic>
+        </attributes>
+    </embeddable>
 
 </entity-mappings>
