@@ -23,7 +23,6 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -46,7 +45,6 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
@@ -117,7 +115,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-	static private Boolean isUniqueCertificateSerialNumberIndex;
     /**
      * Default create for SessionBean without any creation Arguments.
      */
@@ -134,10 +131,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // The serial number generator is a Singleton, so it can be initialized here and 
             // used by X509CA
             SernoGenerator.instance().setAlgorithm(EjbcaConfiguration.getRNGAlgorithm());
-            SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());            	
-            if ( isUniqueCertificateSerialNumberIndex==null ) {
-            	isUniqueCertificateSerialNumberIndex = new Boolean( testUniqueCertificateSerialNumberIndex() );
-            }
+            SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());
+            UniqueSernoHelper.testUniqueCertificateSerialNumberIndex(certificateStoreSession);
         } catch (Exception e) {
             log.debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
@@ -146,83 +141,12 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     		log.trace("<ejbCreate()");
     	}
     }
-	/**
-	 * @return true if index could be generated
+
+	/** returns true if there is a database index for unique certificate serial number / issuer DN.
 	 */
-	public boolean isUniqueCertificateSerialNumberIndex() {
-		return isUniqueCertificateSerialNumberIndex!=null && isUniqueCertificateSerialNumberIndex.booleanValue();
-	}
-	private boolean testUniqueCertificateSerialNumberIndex() throws Exception {
-		final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
-		// Loading two dummy certificates. These certificates has same serial number and issuer.
-		// It should not be possible to store both of them in the DB.
-		final X509Certificate cert1;
-		final X509Certificate cert2;
-		{
-			final byte certEncoded1[];
-			final byte certEncoded2[];
-			{
-				final String certInBase64 =
-					"MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
-					"QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU0OTM2WhcN"+
-					"MjAwNjI2MDU0OTM2WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
-					"YWwgbnVtYmVyIG92ZXJyaWRlIDEwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAnnIj"+
-					"y8A6CJzASedM5MbZk/ld8R3P0aWfRSW2UUDaskm25oK5SsjwVZD3KEc3IJgyl1/D"+
-					"lWdywxEduWwc2nzGGQIDAQABo2AwXjAdBgNVHQ4EFgQUPL3Au/wYZbD3TpNGW1G4"+
-					"+Ck4A2swDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
-					"7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAPMWjE5hv3G5T"+
-					"q/fzPQlRMCQDoM5EgVwJYQu1S+wns/mKPI/bDv9s5nybKoro70LKpqLb1+f2TaD+"+
-					"W2Ro+ni8zYm5+H6okXRIc5Kd4LlD3tjsOF7bS7fixvMCSCUgLxQOt2creOqfDVjm"+
-					"i6MA48AhotWmx/rlzQXhnvuKnMI3m54=";
-				certEncoded1= Base64.decode(certInBase64);
-			}{
-				final String certInBase64 =
-					"MIIB8zCCAVygAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADApMScwJQYDVQQDDB5D"+
-					"QSBmb3IgRUpCQ0EgdGVzdCBjZXJ0aWZpY2F0ZXMwHhcNMTAwNjI2MDU1MDA4WhcN"+
-					"MjAwNjI2MDU1MDA4WjA1MTMwMQYDVQQDDCpBbGxvdyBjZXJ0aWZpY2F0ZSBzZXJp"+
-					"YWwgbnVtYmVyIG92ZXJyaWRlIDIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAn2H4"+
-					"IAMYZyXqkSTY4Slq9LKZ/qB5wc+3hbEHNawdOoMBBkhLGi2q49sbCdcI8AZi3med"+
-					"sm8+A8Q4NHFRKdOYuwIDAQABo2AwXjAdBgNVHQ4EFgQUhWVwIsv18DIYszvRzqDg"+
-					"AkGO8QkwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBQ/TRpUbLxt6j6EC3olHGWJ"+
-					"7XZqETAOBgNVHQ8BAf8EBAMCBwAwDQYJKoZIhvcNAQEFBQADgYEAM8laLm4bgMTz"+
-					"e9TLmwcmhwqevPrfea9jdiNafHCyb+JVppoLVHqAZjPs3Lvlxdt2d75au5+QcJ/Z"+
-					"9RgakF8Vq29Tz3xrYYIQe9VtlaUzw/dgsDfZi6V8W57uHLpU65fe5afwfi+5XDZk"+
-					"TaTsNgFz8NorE2f7ILSm2FcfIpC+GPI=";
-				certEncoded2 = Base64.decode(certInBase64);
-			}
-			try {
-				final CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
-				cert1 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded1));
-				cert2 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded2));
-			} catch( Exception e ) {
-				throw new Exception( "Not possible to generate predefined dummy certificate. Should never happen", e );
-			}
-		}
-		final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-		Certificate c1 = certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert1));
-		Certificate c2 = certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert2));
-		if ( (c1 != null) && (c2 != null) ) {
-			log.info( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
-			return false; // already proved that not checking index for serial number.
-		}
-		if (c1 == null) {// storing initial certificate if no test certificate created.
-			try {
-			    certificateStoreSession.storeCertificate(admin, cert1, userName, "abcdef0123456789", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-			} catch (Throwable e) {
-				throw new Exception("It should always be possible to store initial dummy certificate.", e);
-			}
-		}
-		if (c2 == null) { // storing a second certificate with same issuer 
-			try { 
-				certificateStoreSession.storeCertificate(admin, cert2, userName, "fedcba9876543210", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-			} catch (Throwable e) {
-				log.info("Unique index in CertificateData table for certificate serial number");
-				return true;// Exception is thrown when unique index is working and a certificate with same serial number is in the database.
-			}
-		}
-		log.info( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
-		return false;// It was possible to store a second certificate with same serial number. Unique number not working.
-	}
+    public boolean isUniqueCertificateSerialNumberIndex() {
+    	return UniqueSernoHelper.isUniqueCertificateSerialNumberIndex();
+    }
 
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
