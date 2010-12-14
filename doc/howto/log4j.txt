@@ -68,8 +68,7 @@ To get debug level logging instead of INFO.
 The part 'additivity=false' configures the logging so that the EJBCA log only goes to ejbca.log and not to server.log. 
 If you remove this part the EJBCA log will go both to ejbca.log and server.log.
 
-Log4j logging in Glassfish
-==========================
-
-For glassfish you must provide you own log4j configuration. You can enter the path to you configuration file in
-the entry 'logging.log4j.config' in conf/ejbca.properties.
+Log4j logging in other application servers
+==========================================
+For applications servers that does not come with Log4J, you must provide you own log4j
+configuration. Edit conf/log4j-${appserver.type}.xml, rebuild and redeploy EJBCA.
