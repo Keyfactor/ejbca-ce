@@ -66,18 +66,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private LogSessionLocal logSession;
 
     /** Cache for authorization data */
-    private static volatile Authorizer authorizer = null;
-
-    /**
-     * help variable used to check that authorization trees are updated.
-     */
-    private static volatile int authorizationtreeupdate = -1;
-    /**
-     * help variable used to control that update isn't performed to often.
-     */
-    private static volatile long lastupdatetime = -1;
-
-
+    private static final AuthorizationCache authCache = new AuthorizationCache();
+    
     private String[] customaccessrules = null;
     
     /**
@@ -85,17 +75,21 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      */
     @PostConstruct
     public void ejbCreate() {
-        log.trace(">ejbCreate()");
+    	if (log.isTraceEnabled()) {
+            log.trace(">ejbCreate()");    		
+    	}
         String customrules = ConfigurationHolder.getString("ejbca.customavailableaccessaules", "");
         customaccessrules = StringUtils.split(customrules, ';');
-        log.trace("<ejbCreate()");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<ejbCreate()");
+    	}
     }
 
     private Authorizer getAuthorizer() {
-        if (authorizer == null) {
-            authorizer = new Authorizer(getAdminGroups(), logSession, LogConstants.MODULE_AUTHORIZATION);
+        if (authCache.getAuthorizer() == null) {
+            authCache.setAuthorizer(new Authorizer(getAdminGroups(), logSession, LogConstants.MODULE_AUTHORIZATION));
         }
-        return authorizer;
+        return authCache.getAuthorizer();
     }
 
 
@@ -277,7 +271,9 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
-        log.trace(">existsEndEntityProfileInRules()");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">existsEndEntityProfileInRules()");
+    	}
         String whereClause = "accessRule  LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "%'";
         return AccessRulesData.findCountByCustomQuery(entityManager, whereClause) > 0;
     }
@@ -351,12 +347,11 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private boolean updateNeccessary() {
         boolean ret = false;
         // Only do the actual SQL query if we might update the configuration due to cache time anyhow
-        if (lastupdatetime < (System.currentTimeMillis() - EjbcaConfiguration.getCacheAuthorizationTime())) {
+        if (authCache.needsUpdate()) {
             if (log.isDebugEnabled()) {
                 log.debug("Checking if update neccessary");
             }
-            ret = authorizationTreeUpdateDataSession.getAuthorizationTreeUpdateData().updateNeccessary(authorizationtreeupdate);
-            lastupdatetime = System.currentTimeMillis(); 
+            ret = authorizationTreeUpdateDataSession.getAuthorizationTreeUpdateData().updateNeccessary(authCache.getAuthorizationTreeUpdateNumber());
             // we don't want to run the above query often
         }
         return ret;
@@ -381,9 +376,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         if (log.isDebugEnabled()) {
             log.debug("updateAuthorizationTree");
         }
-        getAuthorizer().buildAccessTree(getAdminGroups());
-        authorizationtreeupdate = authorizationTreeUpdateDataSession.getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
-        lastupdatetime = System.currentTimeMillis();
+        int authorizationtreeupdatenumber = authorizationTreeUpdateDataSession.getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
+        authCache.updateAuthorizationCache(getAdminGroups(), authorizationtreeupdatenumber);
     }
 
 
