@@ -148,7 +148,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
      */
     private boolean authorizedToProfileId(int profileid, boolean editcheck) throws AuthorizationDeniedException{      	    	
       EndEntityProfile profile = null;	
-      if(profileid == EndEntityProfileSession.EMPTY_ENDENTITYPROFILEID) {
+      if(profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
         profile = null;
       } else {  
        profile = endEntityProfileSession.getEndEntityProfile(administrator, profileid);
