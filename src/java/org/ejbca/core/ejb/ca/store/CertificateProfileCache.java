@@ -140,25 +140,12 @@ public final class CertificateProfileCache {
 		return profileCache;
 	}
 
-	public void setProfileCache(final Map<Integer, CertificateProfile> profileCache) {
-		this.profileCache = profileCache;
-	}
-
 	public HashMap<Integer, String> getIdNameMapCache() {
 		return idNameMapCache;
-	}
-
-	public void setIdNameMapCache(final HashMap<Integer, String> idNameMapCache) {
-		this.idNameMapCache = idNameMapCache;
 	}
 
 	public Map<String, Integer> getNameIdMapCache() {
 		return nameIdMapCache;
 	}
-
-	public void setNameIdMapCache(final Map<String, Integer> nameIdMapCache) {
-		this.nameIdMapCache = nameIdMapCache;
-	}
-	
 	
 }
