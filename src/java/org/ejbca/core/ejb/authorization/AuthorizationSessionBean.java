@@ -375,6 +375,10 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         if (log.isDebugEnabled()) {
             log.debug("updateAuthorizationTree");
         }
+        // We must call getAuthorizer here, in order to make sure that we have the authorization cache updated with an 
+        // authorizer object, otherwise we will get NullPointerException. 
+        // Do not remove!
+        getAuthorizer();
         int authorizationtreeupdatenumber = authorizationTreeUpdateDataSession.getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
         authCache.updateAuthorizationCache(getAdminGroups(), authorizationtreeupdatenumber);
     }
