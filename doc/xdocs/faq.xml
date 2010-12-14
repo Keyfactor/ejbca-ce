@@ -5,6 +5,18 @@
     <title>FAQ</title>
   </properties>
   <faqsection title="General">
+    <faq id="illegalKeyLength">
+     <question>
+      I get an error with "Illegal key length" when using EJBCA.
+      </question>
+      <answer>
+      <p>
+      This is because you have not installed the "Unlimited Strength Crypto Policy Files" in the Oracle JDK.
+      See the <a href="installation.html#Quick%20start%20guide">prerequisites</a> section in the the installation guide.
+      <br/>Even if you think you have installed them, you have not. This error is simple and unique.
+      </p>
+      </answer>    
+    </faq>
     <faq id="certificateTypes">
      <question>
       What certificates does EJBCA support?
@@ -60,7 +72,7 @@
       </answer>    
     </faq>
     
-    <faq id="heapSpaceError">
+    <faq id="startFromScratch">
      <question>
       My installation failed for some reason that is now fixed, how do I proceed?
       </question>
