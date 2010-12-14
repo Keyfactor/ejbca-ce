@@ -43,13 +43,13 @@ public final class UniqueSernoHelper {
 	/** returns true if there is a database index for unique certificate serial number / issuer DN.
 	 * @return true if index exists
 	 */
-	public static final boolean isUniqueCertificateSerialNumberIndex() {
+	protected static final boolean isUniqueCertificateSerialNumberIndex() {
 		return isUniqueCertificateSerialNumberIndex!=null && isUniqueCertificateSerialNumberIndex.booleanValue();
 	}
 	
 	/** sets variables (but only once) that can be checked with isUniqueCertificateSerialNumberIndex(). This method must be called first (at least once)
 	 */
-	public static final void testUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) throws Exception {
+	protected static final void testUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) throws Exception {
 		if (isUniqueCertificateSerialNumberIndex == null) {
 			final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
 			// Loading two dummy certificates. These certificates has same serial number and issuer.
