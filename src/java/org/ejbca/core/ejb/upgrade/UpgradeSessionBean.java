@@ -88,15 +88,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
             }
             if (isPost) {
-                return postUpgrade(dbtype, oldVersion);
+                return postUpgrade(oldVersion);
             }
-            return upgrade(admin, dbtype, oldVersion);
+            return upgrade(dbtype, oldVersion);
         } finally {
             log.trace("<upgrade()");
         }
     }
 
-    private boolean postUpgrade(String dbtype, int oldVersion) {
+    private boolean postUpgrade(int oldVersion) {
         if (oldVersion < 311) {
             log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
             return false;
@@ -108,7 +108,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return false;
     }
 
-    private boolean upgrade(Admin admin, String dbtype, int oldVersion) {
+    private boolean upgrade(String dbtype, int oldVersion) {
         if (oldVersion <= 311) {
             log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
             return false;
