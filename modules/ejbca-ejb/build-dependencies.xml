@@ -552,6 +552,7 @@
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/ca/sign/*SessionBean.java"/>
+					<include name="org/ejbca/core/ejb/ca/sign/*Helper.java"/>
 					<include name="org/ejbca/core/model/ca/sign/**/*.java"/>
 					<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
