@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
