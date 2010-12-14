@@ -355,7 +355,6 @@
 		<echo>
 			Configure ocsp.properties:
 			 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
-			 ocsp.usecasigningcert=false
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
 			 ocsp.untilNextUpdate=5

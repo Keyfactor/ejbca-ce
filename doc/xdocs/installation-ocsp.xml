@@ -73,7 +73,6 @@ conf/web.properties.sample (if ssl or different ports should be configured).
 All options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
 <br/>
 The ocsp.keys.* preferences (that has no meaning for EJBCA) has also to be configured.<br/> 
-ocsp.usecasigningcert should be set to false.<br/> 
 If card keys (see below) should be used then the property 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.
 </p><p>
 The responder is then built and deployed with:

@@ -87,7 +87,6 @@
     <property name="ocspHardTokenClasses" value="${ejbca.home}/ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
-    <property name="ocsp.usecasigningcert" value="true"/>
     <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA"/>
 	<property name="datasource.jndi-name" value="EjbcaDS" />
 	<property name="datasource.jndi-name-prefix" value="java:/" />
@@ -158,7 +157,6 @@
 appserver.type           = ${appserver.type}
 appserver.home           = ${appserver.home}
 ocsp.defaultresponder    = ${ocsp.defaultresponder}
-ocsp.usecasigningcert    = ${ocsp.usecasigningcert}
 ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
 datasource.jndi-name     = ${datasource.jndi-name}
 datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
