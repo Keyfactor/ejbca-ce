@@ -62,13 +62,7 @@ public class AdminPreferencesData implements Serializable {
 	public void setId(String id) { this.id = id; }
 
 	//@Column @Lob
-	public Serializable getDataUnsafe() {
-		HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
-		if (h != null) {
-			setDataUnsafe(h);
-		}
-		return data;
-	}
+	public Serializable getDataUnsafe() { return data; }
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public void setDataUnsafe(Serializable data) { this.data = data; }
 
@@ -81,8 +75,8 @@ public class AdminPreferencesData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private HashMap getData() { return (HashMap) getDataUnsafe(); }
-	private void setData(HashMap data) { setDataUnsafe(data); }
+	private HashMap getData() { return JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()); }
+	private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	/**
 	 * Method that returns the admin's preferences and updates it if necessary.

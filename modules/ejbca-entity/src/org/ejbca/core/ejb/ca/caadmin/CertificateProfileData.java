@@ -71,13 +71,7 @@ public class CertificateProfileData implements Serializable {
 	public final void setCertificateProfileName(final String certificateProfileName) { this.certificateProfileName = certificateProfileName; }
 
 	//@Column @Lob
-	public Serializable getDataUnsafe() {
-		final HashMap h = JBossUnmarshaller.extractObject(HashMap.class, data);	// This is a workaround for JBoss J2EE CMP Serialization
-		if (h != null) {
-			setDataUnsafe(h);
-		}
-		return data;
-	}
+	public Serializable getDataUnsafe() { return data; }
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
 	public final void setDataUnsafe(final Serializable data) { this.data = data; }
 
@@ -90,8 +84,8 @@ public class CertificateProfileData implements Serializable {
 	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private HashMap getData() { return (HashMap) getDataUnsafe(); }
-	private final void setData(final HashMap data) { setDataUnsafe(data); }
+	private HashMap getData() { return JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()); }
+	private final void setData(final HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 	
 	/**
 	 * Method that returns the certificate profiles and updates it if necessary.

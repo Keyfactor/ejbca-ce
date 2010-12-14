@@ -61,19 +61,13 @@ public class LogConfigurationData implements Serializable {
 	public void setId(int id) { this.id = id; }
 
 	//@Column @Lob
-	public Serializable getLogConfigurationUnsafe() {
-		LogConfiguration h = JBossUnmarshaller.extractObject(LogConfiguration.class, logConfiguration);	// This is a workaround for JBoss J2EE CMP Serialization
-		if (h != null) {
-			setLogConfigurationUnsafe(h);
-		}
-		return logConfiguration;
-	}
+	public Serializable getLogConfigurationUnsafe() { return logConfiguration; }
 	/** DO NOT USE! Stick with saveLogConfiguration(LogConfiguration logConfiguration) instead. */
 	public void setLogConfigurationUnsafe(Serializable logConfiguration) { this.logConfiguration = logConfiguration; }
 
 	@Transient
-	private LogConfiguration getLogConfiguration() { return (LogConfiguration) getLogConfigurationUnsafe(); }
-	private void setLogConfiguration(LogConfiguration logConfiguration) { setLogConfigurationUnsafe(logConfiguration); }
+	private LogConfiguration getLogConfiguration() { return JBossUnmarshaller.extractObject(LogConfiguration.class, getLogConfigurationUnsafe()); }
+	private void setLogConfiguration(LogConfiguration logConfiguration) { setLogConfigurationUnsafe(JBossUnmarshaller.serializeObject(logConfiguration)); }
 
 	//@Column
 	public int getLogEntryRowNumber() { return logEntryRowNumber; }
