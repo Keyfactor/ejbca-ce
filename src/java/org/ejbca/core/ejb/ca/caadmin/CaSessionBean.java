@@ -18,9 +18,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -65,17 +63,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    /**
-     * help variable used to control that CA info update (read from database)
-     * isn't performed to often.
-     */
-    private static volatile long lastCACacheUpdateTime = -1;
-
-    /**
-     * Caching of CA IDs with CA cert hash as ID
-     */
-    private final Map<Integer, Integer> caCertToCaId = new HashMap<Integer, Integer>();
-
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -91,7 +78,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      * next time we try to access it.
      */
     public void flushCACache() {
-        lastCACacheUpdateTime = -1;
+    	CaHelperCache.lastCACacheUpdateTime = -1;
         CACacheManager.instance().removeAll();
         if (log.isDebugEnabled()) {
             log.debug("Flushed CA cache.");
@@ -252,7 +239,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         // This should only be done if we have enabled caching, meaning that
         // we will not update the CA values until cache time expires
         CA ca = null;
-        if (lastCACacheUpdateTime + EjbcaConfiguration.getCacheCaTimeInCaAdminSession() > new Date().getTime()) {
+        if (CaHelperCache.lastCACacheUpdateTime + EjbcaConfiguration.getCacheCaTimeInCaAdminSession() > System.currentTimeMillis()) {
             if (caid != -1) {
                 ca = CACacheManager.instance().getCA(caid);
             } else {
@@ -275,7 +262,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             } catch (IllegalKeyStoreException e) {
                 throw new EJBException(e);
             }
-            lastCACacheUpdateTime = new Date().getTime();
+            CaHelperCache.lastCACacheUpdateTime = System.currentTimeMillis();
         }
         // Check if CA has expired, cadata (CA in database) will only be updated
         // if aggressive caching is not enabled
@@ -393,7 +380,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             if (caid != -1) {
                 // subject DN of the CA certificate might not have all objects
                 // that is the DN of the certificate data.
-                final Integer oRealCAId = (Integer) this.caCertToCaId.get(Integer.valueOf(caid));
+                final Integer oRealCAId = (Integer) CaHelperCache.caCertToCaId.get(Integer.valueOf(caid));
                 // has the "real" CAID been mapped to the certificate subject
                 // hash by a previous call?
                 if (oRealCAId != null) {
@@ -409,7 +396,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                             cadata = tmp; // found. Do also cache it if
                             // someone else is needing it
                             // later
-                            this.caCertToCaId.put(new Integer(caid), new Integer(cadata.getSubjectDN().hashCode()));
+                            CaHelperCache.caCertToCaId.put(new Integer(caid), new Integer(cadata.getSubjectDN().hashCode()));
                         }
                     }
                 }
