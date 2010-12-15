@@ -83,12 +83,6 @@
     </target>
 	
     <target name="build" description="Build this module" depends="compile-ejbca-ejb">
-    	<copy todir="${build.dir}" failonerror="true">
-    		<fileset dir="${resources.dir}" includes="META-INF/ejb-jar.xml"/>
-			<filterchain>
-				<expandproperties/>
-			</filterchain>
-		</copy>
         <jar destfile="${mod.ejbca-ejb.lib}">
         	<fileset dir="${build.dir}">
             	<!-- Include files that are not already present in ejbca-util.jar -->
@@ -110,12 +104,6 @@
     </target>
 
     <target name="build-ocsp" description="Build this module" depends="compile-ocsp-ejb">
-    	<copy todir="${build-ocsp.dir}" failonerror="true">
-    		<fileset dir="${resources-ocsp.dir}" includes="META-INF/ejb-jar.xml"/>
-			<filterchain>
-				<expandproperties/>
-			</filterchain>
-		</copy>
     	<mkdir dir="${ocsp.hardToken.classes}"/>	<!-- If it doesn't exist.. -->
         <jar destfile="${mod.ocsp-ejb.lib}">
         	<fileset dir="${build-ocsp.dir}">
