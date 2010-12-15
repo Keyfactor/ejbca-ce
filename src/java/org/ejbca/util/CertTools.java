@@ -113,6 +113,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.cvc.AlgorithmUtil;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
+import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCPublicKey;
 import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -1197,7 +1198,7 @@ public class CertTools {
             CertificateFactory cf = CertTools.getCertificateFactory(prov);
             ret = cf.generateCertificate(new ByteArrayInputStream(cert));        	
         } catch (CertificateException e) {
-        	log.debug("Certificate exception trying to read X509Certificate.");
+        	log.debug("CertificateException trying to read X509Certificate.");
         }
         if (ret == null) {
         	// We could not create an X509Certificate, see if it is a CVC certificate instead
@@ -1205,13 +1206,13 @@ public class CertTools {
             	CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
             	ret = new CardVerifiableCertificate(parsedObject);
 			} catch (ParseException e) {
-	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+	        	log.debug("ParseException trying to read CVCCertificate.");
 	        	throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
 			} catch (ConstructionException e) {
-	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+	        	log.debug("ConstructionException trying to read CVCCertificate.");
 	        	throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
 			} catch (IllegalArgumentException e) {
-	        	log.info("Certificate exception trying to read CVCCertificate: ", e);
+	        	log.debug("CertificateException trying to read CVCCertificate.");
 	        	throw new CertificateException("Certificate exception trying to read CVCCertificate", e);
 			}
         }
@@ -2971,6 +2972,35 @@ public class CertTools {
     		}
     	}
     	return true;
+    }
+
+    /**
+     * Dumps a certificate (cvc or x.509) to string format, suitable for manual inspection/debugging.
+     *
+     * @param cert Certificate
+     *
+     * @return String with cvc or asn.1 dump.
+     */
+    public static String dumpCertificateAsString(Certificate cert) {
+    	String ret = null;
+    	if (cert instanceof X509Certificate) {
+    		try {
+        		Certificate c = getCertfromByteArray(cert.getEncoded());
+        		ret = c.toString();
+//    			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
+//    			DERObject obj = ais.readObject();
+//    			ret = ASN1Dump.dumpAsString(obj);
+    		} catch (CertificateException e) {
+    			ret = e.getMessage();
+			}
+		} else if (StringUtils.equals(cert.getType(), "CVC")) {
+			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
+			CVCObject obj = cvccert.getCVCertificate();
+			ret = obj.getAsText("");
+		} else {
+			throw new IllegalArgumentException("dumpCertificateAsString: Certificate of type "+cert.getType()+" is not implemented");			
+		}
+        return ret;
     }
 
 } // CertTools
