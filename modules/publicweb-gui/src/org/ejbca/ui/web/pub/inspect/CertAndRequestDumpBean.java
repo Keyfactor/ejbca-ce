@@ -50,7 +50,7 @@ public class CertAndRequestDumpBean {
 	public CertAndRequestDumpBean() {
 	}
 
-	public void setBytes(byte[] b) {
+	public void setBytes(final byte[] b) {
 		if (b.length < 10000) {
 			// don't accept anything too large
 			this.bytes = b;
@@ -70,15 +70,15 @@ public class CertAndRequestDumpBean {
 		if (bytes == null) {
 			return null;
 		}
-		byte[] requestBytes = RequestMessageUtils.getDecodedBytes(bytes);
+		final byte[] requestBytes = RequestMessageUtils.getDecodedBytes(bytes);
 		ret = getCvcDump(false);
 		if ((ret == null) && (requestBytes != null) && (requestBytes.length > 0)) {
 			// Not a CVC request, perhaps a PKCS10 request
 			try {
-				PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest(requestBytes);
+				final PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest(requestBytes);
 //				ret = pkcs10.toString();
-				ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(pkcs10.getEncoded()));
-				DERObject obj = ais.readObject();
+				final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(pkcs10.getEncoded()));
+				final DERObject obj = ais.readObject();
 				ret = ASN1Dump.dumpAsString(obj);
 				type = "PKCS#10";
 			} catch (IOException e1) {
@@ -94,14 +94,14 @@ public class CertAndRequestDumpBean {
 		if (ret == null) {
 			// Not a CVC object or PKCS10 request message, perhaps a X.509 certificate?
 			try {
-				Certificate cert = getCert(bytes);
+				final Certificate cert = getCert(bytes);
 				ret = CertTools.dumpCertificateAsString(cert);
 				type = "X.509";
 			} catch (Exception e) {
 				// Not a X.509 certificate either...try to simply decode asn.1
 				try {
-					ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(bytes));
-					DERObject obj = ais.readObject();
+					final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(bytes));
+					final DERObject obj = ais.readObject();
 					if (obj != null) {
 						ret = ASN1Dump.dumpAsString(obj);
 						type = "ASN.1";						
@@ -119,11 +119,11 @@ public class CertAndRequestDumpBean {
 		return type;
 	}
 
-	public String getCvcDump(boolean returnMessageOnError) {
+	public String getCvcDump(final boolean returnMessageOnError) {
 		String ret = null;
-		byte[] requestBytes = RequestMessageUtils.getDecodedBytes(bytes);
+		final byte[] requestBytes = RequestMessageUtils.getDecodedBytes(bytes);
 		try {
-			CVCObject obj = getCVCObject(requestBytes);
+			final CVCObject obj = getCVCObject(requestBytes);
 			ret = obj.getAsText("");
 		} catch (Exception e) {
 			// Not a CVC request, perhaps a PKCS10 request
@@ -134,37 +134,37 @@ public class CertAndRequestDumpBean {
 		return ret;
 	}
 
-	private static CVCObject getCVCObject(byte[] cvcdata) throws IOException, CvcException, CertificateException {
+	private static CVCObject getCVCObject(final byte[] cvcdata) throws IOException, CvcException, CertificateException {
 		CVCObject ret = null;
 		try {
 			ret = CertificateParser.parseCVCObject(cvcdata);
 		} catch (Exception e) {
 			try {
 				// this was not parseable, try to see it it was a PEM certificate
-				Collection col = CertTools.getCertsFromPEM(new ByteArrayInputStream(cvcdata));
-				Certificate cert = (Certificate)col.iterator().next();
+				final Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(cvcdata));
+				final Certificate cert = col.iterator().next();
 	        	ret = CertificateParser.parseCVCObject(cert.getEncoded());
 			} catch (Exception ie) {
 				// this was not a PEM cert, try to see it it was a PEM certificate req
-				byte[] req = RequestMessageUtils.getRequestBytes(cvcdata);
+				final byte[] req = RequestMessageUtils.getRequestBytes(cvcdata);
 				ret = CertificateParser.parseCVCObject(req);
 			}
 		}
 		return ret;
 	}
 
-	private Certificate getCert(byte[] certbytes) throws CertificateException {
+	private Certificate getCert(final byte[] certbytes) throws CertificateException {
 		  Certificate cert = null;
-		  Collection cachain = null;
+		  Collection<Certificate> cachain = null;
 		  try {
-			  Collection certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
-			  Iterator iter = certs.iterator();
+			  final Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+			  final Iterator<Certificate> iter = certs.iterator();
 			  cert = (Certificate) iter.next();	
 			  if (iter.hasNext()) {
 				  // There is a complete certificate chain returned here
-				  cachain = new ArrayList();
+				  cachain = new ArrayList<Certificate>();
 				  while (iter.hasNext()) {
-					  Certificate chaincert = (Certificate) iter.next();
+					  final Certificate chaincert = iter.next();
 					  cachain.add(chaincert);
 				  }
 			  }
