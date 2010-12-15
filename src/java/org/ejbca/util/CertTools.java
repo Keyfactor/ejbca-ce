@@ -2866,7 +2866,7 @@ public class CertTools {
     			}
     		} else {
     			// Normal X509 certificates
-    			HashSet trustancors = new HashSet();
+    			HashSet<TrustAnchor> trustancors = new HashSet<TrustAnchor>();
     			TrustAnchor trustanchor = null;
     			trustanchor = new TrustAnchor((X509Certificate)rootcert, null);
     			trustancors.add(trustanchor);
@@ -2981,11 +2981,11 @@ public class CertTools {
      *
      * @return String with cvc or asn.1 dump.
      */
-    public static String dumpCertificateAsString(Certificate cert) {
+    public static String dumpCertificateAsString(final Certificate cert) {
     	String ret = null;
     	if (cert instanceof X509Certificate) {
     		try {
-        		Certificate c = getCertfromByteArray(cert.getEncoded());
+        		final Certificate c = getCertfromByteArray(cert.getEncoded());
         		ret = c.toString();
 //    			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
 //    			DERObject obj = ais.readObject();
@@ -2994,8 +2994,8 @@ public class CertTools {
     			ret = e.getMessage();
 			}
 		} else if (StringUtils.equals(cert.getType(), "CVC")) {
-			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
-			CVCObject obj = cvccert.getCVCertificate();
+			final CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cert;
+			final CVCObject obj = cvccert.getCVCertificate();
 			ret = obj.getAsText("");
 		} else {
 			throw new IllegalArgumentException("dumpCertificateAsString: Certificate of type "+cert.getType()+" is not implemented");			
