@@ -1990,7 +1990,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
         Collection<UserDataVO> returnval = null;
         try {
-            returnval = query(admin, query, false, null, null, false, 0);
+            returnval = query(admin, query, false, null, null, 0);
         } catch (IllegalQueryException e) {
         }
         if (log.isDebugEnabled()) {
@@ -2022,7 +2022,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         query.add(UserMatch.MATCH_WITH_CA, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(caid));
         Collection<UserDataVO> returnval = null;
         try {
-            returnval = query(admin, query, false, null, null, false, 0);
+            returnval = query(admin, query, false, null, null, 0);
         } catch (IllegalQueryException e) {
             // Ignore ??
             log.debug("Illegal query", e);
@@ -2085,7 +2085,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         Collection<UserDataVO> returnval = null;
         try {
-            returnval = query(admin, null, true, null, null, false, 0);
+            returnval = query(admin, null, true, null, null, 0);
         } catch (IllegalQueryException e) {
         }
         if (log.isTraceEnabled()) {
@@ -2095,23 +2095,20 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     /**
-     * Finds all users with a specified status and returns the first
-     * MAXIMUM_QUERY_ROWCOUNT.
+     * Finds all batch users with a specified status and returns the first UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT.
      * 
-     * @param status
-     *            the new status, from 'UserData'.
+     * @param status the status, from 'UserData'.
+     * @return all UserDataVO objects or an empty list
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public Collection<UserDataVO> findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
+    public List<UserDataVO> findAllBatchUsersByStatusWithLimit(int status) {
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatusWithLimit()");
         }
-        Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(status));
-        Collection<UserDataVO> returnval = null;
-        try {
-            returnval = query(admin, query, false, null, null, onlybatchusers, 0);
-        } catch (IllegalQueryException e) {
+        final List<UserData> userDataList = UserData.findAllBatchUsersByStatus(entityManager, status, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
+        final List<UserDataVO> returnval = new ArrayList<UserDataVO>(userDataList.size());
+        for (UserData ud : userDataList) {
+        	returnval.add(ud.toUserDataVO());
         }
         if (log.isTraceEnabled()) {
             log.trace("<findAllUsersByStatusWithLimit()");
@@ -2145,7 +2142,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public Collection<UserDataVO> query(Admin admin, Query query, String caauthorizationstring, String endentityprofilestring, int numberofrows)
             throws IllegalQueryException {
-        return query(admin, query, true, caauthorizationstring, endentityprofilestring, false, numberofrows);
+        return query(admin, query, true, caauthorizationstring, endentityprofilestring, numberofrows);
     }
     
   
@@ -2159,8 +2156,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      *            the number of rows to fetch, use 0 for default
      *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
      */
-    private Collection<UserDataVO> query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, boolean onlybatchusers,
-            int numberofrows) throws IllegalQueryException {
+    private Collection<UserDataVO> query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, int numberofrows) throws IllegalQueryException {
         if (log.isTraceEnabled()) {
             log.trace(">query(): withlimit=" + withlimit);
         }
@@ -2214,14 +2210,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 authorizedtoanyprofile = false;
             }
         }
-        if (onlybatchusers) {
-        	String onlybatchquery = "( clearPassword is not null )";
-            if (caauthstring.trim().equals("") && query == null) {
-                sqlquery = sqlquery + onlybatchquery;
-            } else {
-                sqlquery = sqlquery + " AND " + onlybatchquery;
-            }        	
-        }
         // Finally order the return values
         sqlquery += " ORDER BY " + USERDATA_CREATED_COL + " DESC";
         if (log.isDebugEnabled()) {
@@ -2231,7 +2219,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         	List<UserData> userDataList = UserData.findByCustomQuery(entityManager, sqlquery, fetchsize+1);
         	for (UserData userData : userDataList) {
         		UserDataVO userDataVO = userData.toUserDataVO();
-        		if (!onlybatchusers || (userDataVO.getPassword() != null && userDataVO.getPassword().length() > 0)) {
+        		if (userDataVO.getPassword() != null && userDataVO.getPassword().length() > 0) {
         			returnval.add(userDataVO);
         		}
         	}

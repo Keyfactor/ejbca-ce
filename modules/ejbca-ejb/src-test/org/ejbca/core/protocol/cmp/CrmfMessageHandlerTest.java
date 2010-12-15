@@ -69,6 +69,9 @@ import org.ejbca.util.query.Query;
  * by mocks in future versions of EJBCA. Note that the stubs merely produce
  * deterministic data and perform no validation.
  * 
+ * TODO: How about using a Proxy instead for the relevant functions?
+ * So we don't have to change this class every time we change the interface.
+ * 
  * @author mikek
  * @version $Id$
  */
@@ -355,8 +358,7 @@ public class CrmfMessageHandlerTest extends TestCase {
             return null;
         }
 
-        public Collection findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers) throws FinderException {
-
+        public List<UserDataVO> findAllBatchUsersByStatusWithLimit(int status) {
             return null;
         }
 

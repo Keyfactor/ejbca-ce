@@ -28,7 +28,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
@@ -494,23 +493,18 @@ public class BatchMakeP12 extends BaseCommand {
         if (getLogger().isTraceEnabled()) {
             getLogger().trace(">createAllWithStatus: " + status);
         }
-        CertTools.installBCProviderIfNotAvailable(); // If this is invoked
-                                                     // directly
-        ArrayList<UserDataVO> result;
+        CryptoProviderTools.installBCProviderIfNotAvailable(); // If this is invoked directly
+        ArrayList<UserDataVO> result = new ArrayList<UserDataVO>();
 
         boolean stopnow = false;
         do {
-            result = new ArrayList<UserDataVO>();
-            
-           
-            for(UserDataVO data : (Collection<UserDataVO>) userAdminSession.findAllUsersByStatusWithLimit(getAdmin(), status, true)) {
+            for(UserDataVO data : userAdminSession.findAllBatchUsersByStatusWithLimit(status)) {
                 if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
                         || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
                     result.add(data);
                 }
             }
-            
-          
+
             String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
             getLogger().info(iMsg);
 

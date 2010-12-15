@@ -560,14 +560,12 @@ public interface UserAdminSession {
     public java.util.Collection<UserDataVO> findAllUsersByCaId(Admin admin, int caid);
 
     /**
-     * Finds all users with a specified status and returns the first
-     * MAXIMUM_QUERY_ROWCOUNT.
+     * Finds all batch users with a specified status and returns the first UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT.
      * 
-     * @param status
-     *            the new status, from 'UserData'.
+     * @param status the status, from 'UserData'.
+     * @return all UserDataVO objects or an empty list
      */
-    public java.util.Collection<UserDataVO> findAllUsersByStatusWithLimit(Admin admin, int status, boolean onlybatchusers)
-            throws FinderException;
+    public List<UserDataVO> findAllBatchUsersByStatusWithLimit(int status);
 
     /**
      * Method to execute a customized query on the ra user data. The parameter
