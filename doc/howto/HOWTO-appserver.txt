@@ -1,6 +1,7 @@
 
 For information how to configure EJBCA for different application servers, see the Installation
-documentation at ejbca.org, or build it with 'ant doc'. It will be located under ejbca/tmp/htdocs.
+documentation at ejbca.org, or build it with 'ant doc'. The output from the Ant command will
+show the location of the built documents.
 
 This document describes the steps developers need to take when updating EJBCA for different application servers. 
 
