@@ -10,7 +10,6 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
     <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate/CRL Retrieval</title>
-	<link rel="shortcut icon" href="../images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="scripts/functions.js"></script>
     <script type="text/vbscript" src="scripts/functions.vbs"></script>
@@ -46,13 +45,13 @@
           <li><div class="menuheader">Retrieve</div>
             <ul>
               <li>
-                <a href="ca_certs.jsp">Fetch CA &amp; OCSP Certificates</a>
+                <a href="../retrieve/ca_certs.jsp">Fetch CA &amp; OCSP Certificates</a>
               </li>
               <li>
-                <a href="ca_crls.jsp">Fetch CA CRLs</a>
+                <a href="../retrieve/ca_crls.jsp">Fetch CA CRLs</a>
               </li>
               <li>
-                <a href="latest_cert.jsp">Fetch User's Latest Certificate</a>
+                <a href="../retrieve/latest_cert.jsp">Fetch User's Latest Certificate</a>
               </li>
             </ul>
           </li>  
@@ -66,10 +65,10 @@
           <li><div class="menuheader">Miscellaneous</div>
             <ul>
               <li>
-                <a href="list_certs.jsp">List  User's Certificates</a>
+                <a href="../retrieve/list_certs.jsp">List  User's Certificates</a>
               </li>
               <li>
-                <a href="check_status.jsp">Check Certificate Status</a>
+                <a href="../retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
               <li>
                 <% java.net.URL adminURL = new java.net.URL("https",request.getServerName(),

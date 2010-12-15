@@ -120,7 +120,12 @@ public class RequestMessageUtils {
 		return new CVCRequestMessage(buffer);
 	} // genCvcRequestMessageFromPEM
 	
-	private static byte[] getDecodedBytes(byte[] bytes) {
+	/** Tries to get decoded, if needed, bytes from a certificate request or certificate
+	 * 
+	 * @param bytes pem (with headers), plain base64, or binary bytes with a CSR of certificate 
+	 * @return binary bytes
+	 */
+	public static byte[] getDecodedBytes(byte[] bytes) {
 		byte[] buffer = null;
 		try {
 			 buffer = getRequestBytes(bytes); 
@@ -131,6 +136,11 @@ public class RequestMessageUtils {
 		return buffer;
 	}
 
+	/** Tries to get decoded bytes from a certificate request or certificate
+	 * 
+	 * @param bytes pem (with headers) or plain base64 with a CSR of certificate 
+	 * @return binary bytes
+	 */
 	public static byte[] getRequestBytes(byte[] b64Encoded) throws IOException {
 		byte[] buffer = null;
 		try {
@@ -145,14 +155,21 @@ public class RequestMessageUtils {
 				String endKey = CertTools.END_KEYTOOL_CERTIFICATE_REQUEST;
 				buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
 			} catch (IOException ioe) {
-				// IE PKCS10 Base64 coded request
 				try {
-					buffer = Base64.decode(b64Encoded);
-					if (buffer == null) {
-						throw new IOException("Base64 decode of buffer returns null");
+					// CSR can be a PEM encoded certificate instead of "certificate request"
+					String beginKey = CertTools.BEGIN_CERTIFICATE;
+					String endKey = CertTools.END_CERTIFICATE;
+					buffer = FileTools.getBytesFromPEM(b64Encoded, beginKey, endKey);
+				} catch (IOException ioe2) {
+					// IE PKCS10 Base64 coded request
+					try {
+						buffer = Base64.decode(b64Encoded);
+						if (buffer == null) {
+							throw new IOException("Base64 decode of buffer returns null");
+						}					
+					} catch (ArrayIndexOutOfBoundsException ae) {
+						throw new IOException("Base64 decode fails, message not base64 encoded: "+ae.getMessage());
 					}					
-				} catch (ArrayIndexOutOfBoundsException ae) {
-					throw new IOException("Base64 decode fails, message not base64 encoded: "+ae.getMessage());
 				}
 			}
 		}

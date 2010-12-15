@@ -52,6 +52,13 @@
               </li>
             </ul>
           </li>  
+          <li><div class="menuheader">Inspect</div>
+            <ul>
+              <li>
+                <a href="../inspect/request.jsp">Inspect certificate/CSR</a>
+              </li>
+            </ul>
+          </li>
           <li><div class="menuheader">Miscellaneous</div>
             <ul>
               <li>

@@ -14,6 +14,10 @@
 	  <li>Fetch CA CRLs - Download Certificate Revocation Lists.</li>
 	  <li>Fetch User's Latest Certificate - Download the last issued certificate for a user for whom you know the certificate Distinguished Name.</li>
   </ul>
+  <h2>Inspect</h2>
+  <ul>
+	  <li>Inspect certificate/CSR - Inspect a dump of a CSR or a certificate. This gives an output of a CVC or ASN.1 dump, suitable for technical inspection and debugging.</li>
+  </ul>
   <h2>Miscellaneous</h2>
   <ul>
 	  <li>List User's Certificates - List certificates for a user for whom you know the certificate Distinguished Name.</li>
