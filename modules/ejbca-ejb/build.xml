@@ -13,8 +13,6 @@
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
 	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
-	<property name="resources.dir" location="${this.dir}/resources"/>
-	<property name="resources-ocsp.dir" location="${this.dir}/resources-ocsp"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
