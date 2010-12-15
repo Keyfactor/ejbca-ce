@@ -599,7 +599,7 @@ body.popup {
 	border: 0px none;
 }
 .popup table tr td {
-	padding: .1em .25em .1em .2em;
+	padding: .1em .4em .1em .3em;
 }
 .popup table tr.title td {
 	font-size: 1.2em;
