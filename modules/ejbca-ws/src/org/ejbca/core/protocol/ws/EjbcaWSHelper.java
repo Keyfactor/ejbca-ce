@@ -529,10 +529,8 @@ public class EjbcaWSHelper {
 	 * @param usermatch a usermatch containing names of profiles
 	 * @return a query containg id's of profiles.
 	 * @throws NumberFormatException
-	 * @throws ClassCastException
-	 * @throws CreateException
 	 */
-	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException, ClassCastException/*, RemoteException*/ {
+	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException {
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
@@ -555,8 +553,6 @@ public class EjbcaWSHelper {
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),usermatch.getMatchvalue());
 			  break;
 		}
-		
-		
 		return retval;
 	}
 	

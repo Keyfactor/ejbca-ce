@@ -444,6 +444,14 @@ public class UserData implements Serializable {
     	return query.getResultList();
     }
 
+	/** @return return the query results as a List. */
+	public static List<UserData> findAllBatchUsersByStatus(EntityManager entityManager, int status, int maximumQueryRowcount) {
+    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
+    	query.setParameter("status", status);
+    	query.setMaxResults(maximumQueryRowcount);
+    	return query.getResultList();
+	}
+
 	/** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
 	public static List<UserData> findNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId, int maxResults) {
     	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
