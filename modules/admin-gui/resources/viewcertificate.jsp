@@ -349,23 +349,22 @@ function confirmrepublish(){
 
       <!-- ---------- Title ---------- -->
 
-      <% if(username != null){%>
+      <% if(username != null){ %>
       <tr id="Row<%=(row++)%2%>" class="title">
 		<td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td>
 		<td><strong><c:out value="<%= certificatedata.getUsername() %>"/></strong></td>
       </tr>
-      <% } else { %>
-<!--
+      <% } %>
+      <% if(caid != 0){ %>
       <tr id="Row<%=(row++)%2%>" class="title">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CANAME") %></strong></td>
-		 <td><strong><c:out value="TODO"/></strong></td>
+		 <td><strong><c:out value="<%= cabean.getName(caid) %>"/></strong> (<c:out value="<%= caid %>"/>)</td>
       </tr>
--->
-      <% } // if(username != null) %>
+      <% } %>
 
       <!-- ---------- Index ---------- -->
 
-      <% if(username != null){%>
+      <% if(username != null){ %>
       <% if(tokensn != null){ %>
        <tr id="Row<%=(row++)%2%>">
 		<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENSN") %></td>
