@@ -6,6 +6,8 @@
 %>
 
 
+<body>
+
 <h1><%= ejbcawebbean.getText("EDITCAS") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
@@ -112,8 +114,11 @@
       <td width="40%"> 
         <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
-            <td width="25%" align="left">
+            <td width="20%" align="left">
               <input type="submit" name="<%= BUTTON_EDIT_CA %>" value="<%= ejbcawebbean.getText("EDITCA") %>">
+            </td>
+            <td width="5%" align="center">
+              &nbsp;
             </td>
             <td width="25%" align="left">
               <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA", true) %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
