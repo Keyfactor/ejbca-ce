@@ -123,6 +123,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * Called from other migrate methods, don't call this directly, call from an
      * interface-method
+     * 
+     * Not used in EJBCA 4.0.x, but will probably be in EJBCA 4.1.x
      */
     private boolean migrateDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables

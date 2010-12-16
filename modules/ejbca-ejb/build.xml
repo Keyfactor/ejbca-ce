@@ -81,6 +81,11 @@
     </target>
 	
     <target name="build" description="Build this module" depends="compile-ejbca-ejb">
+    	<copy todir="${build.dir}" file="${ejbca.home}/src/internal.properties">
+    		<filterchain>
+    			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
+    		</filterchain>
+    	</copy>
         <jar destfile="${mod.ejbca-ejb.lib}">
         	<fileset dir="${build.dir}">
             	<!-- Include files that are not already present in ejbca-util.jar -->
@@ -88,10 +93,7 @@
         	</fileset>
             <fileset dir="${ejbca.home}">
 				<include name="conf/**/*.properties"/>
-			</fileset>	
-            <fileset dir="${ejbca.home}/src">
-				<include name="internal.properties"/>
-			</fileset>	
+			</fileset>
             <fileset dir="${ejbca.home}/src/upgrade"/>
         	<!--
             <fileset dir="${tmp}/caTokenClasses">

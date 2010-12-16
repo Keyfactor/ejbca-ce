@@ -60,7 +60,7 @@
         <contains string="${jboss.home}" substring="JBOSS_HOME"/>
     </condition>
 	
-	<!-- Auto-detect supported application server type (also still present in ../propertiesAndPaths.xmli) -->
+	<!-- Auto-detect supported application server type -->
 	<echo message="appserver.home: ${appserver.home}" level="${customejbca.message.level}"/>
 	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
@@ -78,7 +78,12 @@
 			<!-- ... -->
 		</or>
 	</condition>
-	
+
+	<!-- Automatically determine DataSource JNDI name prefix from application server type -->
+	<condition property="datasource.jndi-name-prefix" value="java:/"><equals arg1="jboss" arg2="${appserver.type}"/></condition>
+	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="glassfish" arg2="${appserver.type}"/></condition>
+	<condition property="datasource.jndi-name-prefix" value=""><equals arg1="weblogic" arg2="${appserver.type}"/></condition>
+
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />
 	<property name="ejbca.productionmode" value="true"/>
@@ -89,7 +94,6 @@
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
     <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA"/>
 	<property name="datasource.jndi-name" value="EjbcaDS" />
-	<property name="datasource.jndi-name-prefix" value="java:/" />
 	<property name="database.name" value="hsqldb" />
 	<property name="datasource.mapping" value="Hypersonic SQL" />
 	<property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}localDB" />
