@@ -12,7 +12,7 @@
 
 # Application server home directory. Currently only JBoss is supported.
 # Default: $APPSRV_HOME
-#appserver.home=/home/jboss/jboss-4.2.3.GA
+#appserver.home=/home/jboss/jboss-5.1.0.GA
 #appserver.home=${env.APPSRV_HOME}
 
 # HTTP bind port configuration.
