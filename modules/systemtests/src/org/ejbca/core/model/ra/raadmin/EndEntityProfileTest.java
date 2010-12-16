@@ -13,13 +13,18 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
+import java.rmi.RemoteException;
 import java.util.HashMap;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -263,6 +268,56 @@ public class EndEntityProfileTest extends TestCase {
         EndEntityProfile clone2 = (EndEntityProfile)clone.clone();
         HashMap clonemap2 = (HashMap)clone2.saveData();
         assertEquals(clonemap2.size(), profmap.size());
+    }
+    
+    /**
+     * Test if the cardnumber is required in an end entity profile, and if check it is set if it was required.
+     * @throws RemoteException 
+     * @throws UserDoesntFullfillEndEntityProfile 
+     * @throws CertificateProfileExistsException 
+     * @throws AuthorizationDeniedException 
+     */
+    public void test10CardnumberRequired() throws RemoteException, CertificateProfileExistsException, AuthorizationDeniedException {
+    	log.trace(">test10CardnumberRequired()");
+
+        int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();
+    	
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTCARDNUMBER");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(EndEntityProfile.CARDNUMBER);
+        profile.setRequired(EndEntityProfile.CARDNUMBER, 0, true);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(caid));
+
+        String cardnumber = "foo123";
+        boolean ret = false;
+        try {
+            endEntityProfileSession.addEndEntityProfile(admin, "TESTCARDNUMBER", profile);
+        } catch (EndEntityProfileExistsException pee) {}    
+            
+        profile = endEntityProfileSession.getEndEntityProfile(admin, "TESTCARDNUMBER");
+            
+        UserDataVO userdata = new UserDataVO("foo", "CN=foo", caid, "", "", SecConst.USER_ENDUSER, endEntityProfileSession.getEndEntityProfileId(admin, "TESTCARDNUMBER"), SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        userdata.setPassword("foo123");
+        try {
+			profile.doesUserFullfillEndEntityProfile(userdata, false);
+		} catch (UserDoesntFullfillEndEntityProfile e) {
+			log.debug(e.getMessage());
+	        ret = true;
+		}
+		assertTrue("User fullfilled the End Entity Profile even though the cardnumber was not sett", ret);
+            
+		ret = false;
+        userdata.setCardNumber(cardnumber);
+        try {
+			profile.doesUserFullfillEndEntityProfile(userdata, false);
+			ret = true;
+		} catch (UserDoesntFullfillEndEntityProfile e) {
+			log.debug(e.getMessage());
+			ret = false;
+		}
+        assertTrue("User did not full fill the End Entity Profile even though the card number was sett", ret);
+        
+        log.trace("<test10CardnumberRequired()");
     }
 
 }
