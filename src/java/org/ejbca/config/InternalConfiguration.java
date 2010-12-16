@@ -19,7 +19,9 @@ package org.ejbca.config;
  * @version $Id$
  */
 public class InternalConfiguration {
-	
+
+	public static final String CONFIG_DATASOURCENAMEPREFIX       = "datasource.jndi-name-prefix";
+
 	/**
 	 * Lower case application name
 	 */
@@ -62,5 +64,7 @@ public class InternalConfiguration {
 		return ConfigurationHolder.getExpandedString("app.version", getAppNameCapital() + " " + getAppVersionNumber() + " (" + getSvnRevision() + ")");
 	}
 
-
+	public static String getDataSourceJndiNamePrefix(){
+		return ConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "java:/");
+	}
 }

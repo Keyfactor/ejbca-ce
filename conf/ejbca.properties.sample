@@ -8,11 +8,6 @@
 # and customize at will.
 #
 
-# Which application server is used? Normally this is auto-detected from 'appserver.home' and should not be configured. 
-# Possible values: jboss, glassfish (, geronimo, weblogic, websphere)
-# Default jboss
-#appserver.type=jboss
-
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: $APPSRV_HOME
 #appserver.home=/home/jboss/jboss-5.1.0.GA
@@ -21,6 +16,11 @@
 
 # See also the section 'cluster configuration' for other JBoss options, for example
 # for deploying on JBoss EAP.
+
+# Which application server is used? Normally this is auto-detected from 'appserver.home' and should not be configured. 
+# Possible values: jboss, glassfish (, geronimo, weblogic, websphere)
+# Default: <auto-detect>
+#appserver.type=jboss
 
 # To prevent accidental runs of tests or deploying the wrong thing in a production environment, we
 # could prevent this by setting this variable to either "ca" or "ocsp".
@@ -39,11 +39,6 @@
 #
 # Default: false
 #allow.external-dynamic.configuration=false
-
-# Custom Available Access Rules. Use ';' to separate multiple accessrules
-# Available values are the Access Rules strings in Advanced mode of 'Access Rules' in 'Edit Administrator Privileges'
-# Default: ""
-#ejbca.customavailableaccessrules=''
 
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
@@ -236,6 +231,11 @@
 #
 # Default: false
 #certtools.dnorderreverse=false
+
+# Custom Available Access Rules. Use ';' to separate multiple accessrules
+# Available values are the Access Rules strings in Advanced mode of 'Access Rules' in 'Edit Administrator Privileges'
+# Default: ""
+#ejbca.customavailableaccessrules=''
 
 # When upgrading a 100% up-time cluster, all nodes should be deployed with the affective version
 # of the oldest still running EJBCA version.

@@ -21,6 +21,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.DatabaseConfiguration;
+import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
@@ -275,7 +276,7 @@ public class PublisherTest extends TestCase {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ExternalOCSPPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            String jndiName = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
+            String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
             	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
             log.debug("jndiName=" + jndiName);
             publisher.setPropertyData("dataSource " + jndiName);
@@ -308,7 +309,7 @@ public class PublisherTest extends TestCase {
 		try {
 			ExternalOCSPPublisher publisher = new ExternalOCSPPublisher();
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            String jndiName = configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
+            String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
             	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
             log.debug("jndiName=" + jndiName);
             publisher.setDataSource(jndiName);

@@ -1,24 +1,10 @@
 # ------------- Database configuration ------------------------
 
-# jndi name of the datasource to use in deployment descriptors of ejbs.
+# JNDI name of the DataSource used for EJBCA's database access. The prefix
+# (e.g. 'java:/', '' or 'jdbc/')is automatically determined for each
+# application server.
 # default: EjbcaDS
 #datasource.jndi-name=EjbcaDS
-
-# Prefix for the jndi name of the datasource to use in deployment descriptors of ejbs. 
-# JBoss requires 'java:/' as prefix, while Weblogic does not want anything (''), and Glassfish wants jdbc/
-# Oracle Application Server usually uses jdbc/ as well.
-# For Websphere use jdbc/.
-# default: java:/
-#datasource.jndi-name-prefix=java:/
-#datasource.jndi-name-prefix=
-#datasource.jndi-name-prefix=jdbc/
-
-# Weblogic in combination with Oracle requires special handling of LONG/BLOB columns
-# If, and only if, you are using Weblogic and Oracle, uncomment the row below.
-# Use OracleBlob in Weblogic 8.x and Blob in Weblogic 9.x
-# Note: This setting is not needed in Weblogic 9.2. Leave it commented out.
-# default: 
-#weblogic-oracle-columntype=@weblogic.dbms-column-type Blob
 
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added
