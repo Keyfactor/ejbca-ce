@@ -2108,7 +2108,10 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final List<UserData> userDataList = UserData.findAllBatchUsersByStatus(entityManager, status, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
         final List<UserDataVO> returnval = new ArrayList<UserDataVO>(userDataList.size());
         for (UserData ud : userDataList) {
-        	returnval.add(ud.toUserDataVO());
+        	UserDataVO userDataVO = ud.toUserDataVO();
+    		if (userDataVO.getPassword() != null && userDataVO.getPassword().length() > 0) {
+            	returnval.add(userDataVO);
+    		}
         }
         if (log.isTraceEnabled()) {
             log.trace("<findAllUsersByStatusWithLimit()");
@@ -2218,10 +2221,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (authorizedtoanyprofile) {
         	List<UserData> userDataList = UserData.findByCustomQuery(entityManager, sqlquery, fetchsize+1);
         	for (UserData userData : userDataList) {
-        		UserDataVO userDataVO = userData.toUserDataVO();
-        		if (userDataVO.getPassword() != null && userDataVO.getPassword().length() > 0) {
-        			returnval.add(userDataVO);
-        		}
+    			returnval.add(userData.toUserDataVO());
         	}
         } else {
         	if (log.isDebugEnabled()) {
