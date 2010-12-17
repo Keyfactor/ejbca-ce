@@ -1512,7 +1512,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void getAvailableCertificateProfiles() throws Exception {
 
         int id = endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
-        List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(id);
+    	// First try to get something that does not exist, it should return array with size 0, not throw an exception
+        List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(000222);
+        assertEquals(0, profs.size());
+        // Now find the real one instead
+        profs = ejbcaraws.getAvailableCertificateProfiles(id);
+    	
         assertNotNull(profs);
         for (NameAndId n : profs) {
             log.info("name: " + n.getName());
@@ -1528,10 +1533,16 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         int id = endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
         log.info("id: " + id);
-        List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(id);
+    	// First try to get something that does not exist, it should return array with size 0, not throw an exception
+        List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(000222);
+        assertEquals(0, cas.size());
+        // Now find the real one instead
+        cas = ejbcaraws.getAvailableCAsInProfile(id);
         assertNotNull(cas);
         // This profile only has ALLCAS available, so this list will be empty
         assertTrue(cas.size() == 0);
+        
+        // TODO: make a test that actually returns something
 
     } // test24GetAvailableCAsInProfile
 
