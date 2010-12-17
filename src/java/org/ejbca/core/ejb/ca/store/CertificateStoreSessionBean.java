@@ -584,7 +584,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         return findCertificatesByType(admin, type, issuerDN, entityManager);
     }
 
-    /** Method that sets status CertificateDataBean.CERT_ARCHIVED on the certificate data, only used for testing.
+    /** Method that sets status CertificateDataBean.CERT_ARCHIVED on the certificate data, only used from CreateCRLSessionBean and for testing.
      * Can only be performed by an Admin.TYPE_INTERNALUSER. 
      * Normally ARCHIVED is set by the CRL creation job, after a certificate has expired and been added to a CRL 
      * (expired certificates that are revoked must be present on at least one CRL).
