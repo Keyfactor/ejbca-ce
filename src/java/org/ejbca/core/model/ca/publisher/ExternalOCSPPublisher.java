@@ -167,7 +167,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate
      */
     public boolean storeCertificate(Admin admin, Certificate incert,
-                                    String username, String password,
+                                    String username, String password, String userDN,
                                     String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
                                     ExtendedInformation extendedinformation)
     throws PublisherException {
@@ -218,7 +218,7 @@ public class ExternalOCSPPublisher extends BasePublisher implements ICustomPubli
     /* Does nothing, this publisher only publishes Certificates.
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCRL(se.anatom.ejbca.log.Admin, byte[], java.lang.String, int)
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp)
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN)
     throws PublisherException {
         return true;
     }

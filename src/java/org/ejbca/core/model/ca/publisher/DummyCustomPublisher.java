@@ -47,7 +47,7 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
 		return true;
 	}
@@ -55,7 +55,7 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin, byte[], java.lang.String, int)
 	 */
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp) throws PublisherException {
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing CRL");
 		return true;
 	}

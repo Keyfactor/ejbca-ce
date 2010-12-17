@@ -162,14 +162,6 @@ public class LdapPublisher extends BasePublisher {
 	// Public Methods
 
 
-
-
-    /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, java.lang.String, int, int, long, int, java.lang.String, int, long, org.ejbca.core.model.ra.ExtendedInformation)
-     */
-    protected boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
-		throw new Error("This method should never be called since the method with 'userDN' is implemented.");
-    }
 	/**
 	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certificate is revoked, nothing is done
 	 * and the publishing is counted as successful (i.e. returns true).
@@ -566,9 +558,6 @@ public class LdapPublisher extends BasePublisher {
 			log.trace("<storeCRL");
 		}
 		return true;
-	}
-	protected boolean storeCRL(Admin admin, byte[] incrl, String cafp ) {
-		throw new Error("This method should never be called since the method with 'userDN' is implemented.");
 	}
 
 	/**

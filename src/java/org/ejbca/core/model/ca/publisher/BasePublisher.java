@@ -142,7 +142,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param username Username of end entity owning the certificate.
      * @param password Password given to the user, may be null if no password exists for the user.
-     * @param userDN if an DN object is not found in the certificate use object from user data instead.
+     * @param userDN if an DN object is not found in the certificate use object from user data instead, can be null.
      * @param status Status of the certificate (from CertificateDataBean.CERT_ACTIVE, CERT_REVOKED etc).
      * @param type Type of certificate (from CertificateDataBean.CERTTYPE_ENDENTITY etc).
      * @param revocationDate Date for revocation (of revoked), like System.currentTimeMillis(), or -1 if not revoked.
@@ -153,15 +153,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @throws PublisherException if a communication or other error occurs.
      */    
-    public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
-        return storeCertificate(admin, incert, username, password, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
-    }
-	
-    /**
-     * Used for backward compatibility, so that old working publishers do not have to be changed.
-     * @deprecated since 3.9.3 will be removed in 4.0. Implement {@link #storeCertificate(Admin, Certificate, String, String, String, String, int, int, long, int, String, int, long, ExtendedInformation)} in your publisher.
-     */
-    protected abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
+    public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
 
     /**
      * Published a CRL to a CRL store.
@@ -169,21 +161,13 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param incrl The DER coded CRL to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
-     * @param userDN if an DN object is not found in the certificate use object from user data instead.
+     * @param userDN if an DN object is not found in the certificate use object from user data instead, can be null.
      *
      * @return true if storage was successful.
      *
      * @throws PublisherException if a communication or other error occurs.
      */    
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException {
-    	return storeCRL(admin, incrl, cafp);
-    }
-    
-    /**
-     * Used for backward compatibility, so that old working publishers do not have to be changed.
-     * @deprecated since 3.9.3 will be removed in 4.0. Implement {@link #storeCRL(Admin, byte[], String, int, String)} in your publisher.
-     */
-    protected abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp ) throws PublisherException;
+    public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.
