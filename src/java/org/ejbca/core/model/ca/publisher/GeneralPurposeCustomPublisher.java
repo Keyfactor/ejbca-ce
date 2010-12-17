@@ -114,7 +114,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      *      java.security.cert.Certificate, java.lang.String, java.lang.String,
      *      int, int)
      */
-    public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate,
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
             int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificate, Storing Certificate for user: " + username);
@@ -160,7 +160,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
      *      byte[], java.lang.String, int)
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp) throws PublisherException {
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException {
         if (log.isTraceEnabled()) {
         	log.trace(">storeCRL, Storing CRL");
         }

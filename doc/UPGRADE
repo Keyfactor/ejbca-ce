@@ -71,6 +71,9 @@ New in EJBCA 4.0 is that we have a well defined database schema, that is functio
 supported databases. You can verify that your database schema is correct by comparing it to the SQL
 table create script for your database ('doc/sql-scripts/create-tables-ejbca4-{database name}.sql').
 
+Note: Some deprecated methods have been removed in 4.0. For example in the publisher API. If you used those methods
+to create custom publishers you need to update your code to match the new interfaces. To make it easy there is only
+new parameters that are not needed to use.
 
 From EJBCA 3.11.0 to EJBCA 3.11.x
 --------------------------------
