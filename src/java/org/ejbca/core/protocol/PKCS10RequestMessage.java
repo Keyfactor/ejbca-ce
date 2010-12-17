@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Date;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Set;
@@ -259,26 +260,24 @@ public class PKCS10RequestMessage implements IRequestMessage {
         if (username != null) {
             return username;
         }
-        String name = CertTools.getPartFromDN(getRequestDN(), "CN");
-        if (name == null) {
-            log.error("No CN in DN: "+getRequestDN());
-            return null;
-        }
         // Special if the DN contains unstructuredAddress where it becomes: 
         // CN=pix.primekey.se + unstructuredAddress=pix.primekey.se
         // We only want the CN and not the oid-part.
-        String ret = name;
-        if (name != null) {
-            int index = name.indexOf(' ');
-            if (index > 0) {
-                ret = name.substring(0, index);
-            } else {
-                // Perhaps there is no space, only +
-                index = name.indexOf('+');
-                if (index > 0) {
-                    ret = name.substring(0, index);
-                }            	
-            }
+        // Luckily for us this is handles automatically by BC X509Name class
+        X509Name xname = getRequestX509Name();
+        Vector cnValues = xname.getValues(X509Name.CN);
+
+        String ret = null;
+        if (cnValues.size() == 0) {
+        	log.error("No CN in DN: "+xname.toString());
+        } else {
+            ret = cnValues.firstElement().toString();         	
+            // If we have a CN with a normal name like "Test Testsson" we only want to 
+            // use the first part as the username
+        	int index = ret.indexOf(' ');
+        	if (index > 0) {
+        		ret = ret.substring(0, index);
+        	}
         }
         if (log.isDebugEnabled()) {
         	log.debug("UserName='" + ret + "'");
