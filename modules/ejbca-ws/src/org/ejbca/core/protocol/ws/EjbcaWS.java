@@ -2413,12 +2413,14 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, entityProfileId);
-			String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
-			if (value != null) {
-				String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);				
-				for (String id : availablecertprofilesId) {
-					int i = Integer.parseInt(id);
-					ret.put(certificateProfileSession.getCertificateProfileName(admin,i), i);
+			if (profile != null) {				
+				String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
+				if (value != null) {
+					String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);				
+					for (String id : availablecertprofilesId) {
+						int i = Integer.parseInt(id);
+						ret.put(certificateProfileSession.getCertificateProfileName(admin,i), i);
+					}
 				}
 			}
 		} catch (EJBException e) {
@@ -2444,14 +2446,16 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, entityProfileId);
-			Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
-			HashMap<Integer,String> map = caAdminSession.getCAIdToNameMap(admin);
-			for (String id : cas ) {
-				Integer i = Integer.valueOf(id);
-				String name = (String)map.get(i);
-				if (name != null) {
-					ret.put(name, i);
-				}
+			if (profile != null) {
+				Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
+				HashMap<Integer,String> map = caAdminSession.getCAIdToNameMap(admin);
+				for (String id : cas ) {
+					Integer i = Integer.valueOf(id);
+					String name = (String)map.get(i);
+					if (name != null) {
+						ret.put(name, i);
+					}
+				}				
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
