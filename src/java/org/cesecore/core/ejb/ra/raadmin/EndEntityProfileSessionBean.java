@@ -265,7 +265,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     /**
      * Finds a end entity profile by id.
      * 
-     * @return EndEntityProfile or null if it does not exist
+     * @return EndEntityProfile (cloned) or null if it does not exist
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public EndEntityProfile getEndEntityProfile(final Admin admin, final String profilename) {

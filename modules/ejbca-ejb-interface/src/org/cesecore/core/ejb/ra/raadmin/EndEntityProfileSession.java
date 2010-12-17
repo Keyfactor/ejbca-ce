@@ -109,13 +109,14 @@ public interface EndEntityProfileSession {
 
     /**
      * Finds a end entity profile by id.
+     * @return EndEntityProfile (cloned) or null if it does not exist
      */
     EndEntityProfile getEndEntityProfile(Admin admin, int id);
 
     /**
      * Finds a end entity profile by id.
      * 
-     * @return null if profile isn't found
+     * @return EndEntityProfile (cloned) or null if it does not exist
      */
     EndEntityProfile getEndEntityProfile(Admin admin, java.lang.String profilename);
 
