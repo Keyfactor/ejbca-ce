@@ -996,11 +996,11 @@ function checkallfields(){
            <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseAuthorityInformationAccess() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 
-                    else 
-                      if(!certificateprofiledata.getOCSPServiceLocatorURI().equals(""))
-                       out.write(" value=\"" + certificateprofiledata.getOCSPServiceLocatorURI() + "\""); 
-                      else
-                       out.write(" value=\"" + globalconfiguration.getStandardOCSPServiceLocatorURI()+ "\"");%>>
+                    else {
+                       String ocspuri = certificateprofiledata.getOCSPServiceLocatorURI();
+                       out.write(" value=\"" + (ocspuri == null ? "":ocspuri) + "\"");
+                    } 
+           %>>
       </td>
     </tr>
     <%-- caIssuers part of authority information access (aia) extension --%>
