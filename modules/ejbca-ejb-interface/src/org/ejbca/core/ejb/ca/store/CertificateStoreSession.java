@@ -124,7 +124,14 @@ public interface CertificateStoreSession {
      */
     public java.util.Collection<Certificate> findCertificatesBySubject(org.ejbca.core.model.log.Admin admin, java.lang.String subjectDN);
 
-    public java.util.Collection<Certificate> findCertificatesByExpireTime(org.ejbca.core.model.log.Admin admin, java.util.Date expireTime);
+    /**
+     * Finds certificates  expiring within a specified time and that has
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
+     * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of Certificate, never null
+     */
+    public java.util.Collection<Certificate> findCertificatesByExpireTimeWithLimit(org.ejbca.core.model.log.Admin admin, java.util.Date expireTime);
 
     /**
      * Finds usernames of users having certificate(s) expiring within a
@@ -132,8 +139,9 @@ public interface CertificateStoreSession {
      * 
      * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
      * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of String, never null
      */
-    public java.util.Collection<String> findCertificatesByExpireTimeWithLimit(org.ejbca.core.model.log.Admin admin, java.util.Date expiretime);
+    public java.util.Collection<String> findUsernamesByExpireTimeWithLimit(org.ejbca.core.model.log.Admin admin, java.util.Date expiretime);
 
     /**
      * Finds a certificate specified by issuer DN and serial number.

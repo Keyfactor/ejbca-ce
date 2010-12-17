@@ -331,13 +331,20 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         return ret;
     }
 
-    public Collection<Certificate> findCertificatesByExpireTime(Admin admin, Date expireTime) {
+    /**
+     * Finds certificates  expiring within a specified time and that has
+     * status "active" or "notifiedaboutexpiration".
+     * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
+     * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of Certificate, never null
+     */
+    public Collection<Certificate> findCertificatesByExpireTimeWithLimit(Admin admin, Date expireTime) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByExpireTime(), time=" + expireTime);
     	}
         // First make expiretime in well know format
         log.debug("Looking for certs that expire before: " + expireTime);
-        Collection<CertificateData> coll = CertificateData.findByExpireDate(entityManager, expireTime.getTime());
+        Collection<CertificateData> coll = CertificateData.findByExpireDateWithLimit(entityManager, expireTime.getTime());
         Collection<Certificate> ret = new ArrayList<Certificate>();
         if (log.isDebugEnabled()) {
         	log.debug("Found "+coll.size()+" certificates that expire before "+expireTime);            		
@@ -357,8 +364,9 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
      * status "active" or "notifiedaboutexpiration".
      * @see org.ejbca.core.model.SecConst#CERT_ACTIVE
      * @see org.ejbca.core.model.SecConst#CERT_NOTIFIEDABOUTEXPIRATION
+     * @return Collection of String, never null
      */
-    public Collection<String>  findCertificatesByExpireTimeWithLimit(Admin admin, Date expiretime) {
+    public Collection<String>  findUsernamesByExpireTimeWithLimit(Admin admin, Date expiretime) {
     	if (log.isTraceEnabled()) {
         	log.trace(">findCertificatesByExpireTimeWithLimit: "+expiretime);    		
     	}

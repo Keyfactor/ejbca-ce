@@ -547,13 +547,6 @@ public class CertificateData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static List<CertificateData> findByExpireDate(EntityManager entityManager, long expireDate) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate");
-		query.setParameter("expireDate", expireDate);
-		return query.getResultList();
-	}
-
-	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
 		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
 		query.setParameter("subjectDN", subjectDN);
@@ -695,6 +688,16 @@ public class CertificateData implements Serializable {
 	    return revokedCertInfos;
 	}
 	
+	/** @return return the query results as a List. */
+	public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
+		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2)");
+		query.setParameter("expireDate", expireDate);
+		query.setParameter("status1", SecConst.CERT_ACTIVE);
+		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+		query.setMaxResults(SecConst.MAXIMUM_QUERY_ROWCOUNT);
+		return query.getResultList();
+	}
+
 	public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
 		// TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
 		Query query = entityManager.createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username NOT NULL");
