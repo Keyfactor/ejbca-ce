@@ -570,7 +570,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Gets a Collection of available CA Ids (as Strings). 
      * Use String.valueOf(caidstring) to get the int value of the CA id.
      * 
-     * @return a Collection of String, where the string is an integer.
+     * @return a Collection of String, where the string is an integer (never null).
      */
     public Collection<String> getAvailableCAs(){
         ArrayList<String> availablecaids = new ArrayList<String>();
