@@ -31,7 +31,8 @@ import org.ejbca.util.keystore.KeyTools;
  * Testing various aspects of request messages
  *
  * @version $Id$
- */public class RequestMessageTest extends TestCase {
+ */
+public class RequestMessageTest extends TestCase {
 
 	 private final KeyPair keyPair;
 
