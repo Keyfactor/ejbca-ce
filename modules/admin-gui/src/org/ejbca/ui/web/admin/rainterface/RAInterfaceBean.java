@@ -423,7 +423,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       long millis = (d * 86400000); // One day in milliseconds.
       finddate.setTime(finddate.getTime() + millis);
 
-      Collection usernames =certificatesession.findCertificatesByExpireTimeWithLimit(administrator, finddate);
+      Collection usernames =certificatesession.findUsernamesByExpireTimeWithLimit(administrator, finddate);
       if(!usernames.isEmpty()){
         Iterator i = usernames.iterator();
         while(i.hasNext() && userlist.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT +1 ){
