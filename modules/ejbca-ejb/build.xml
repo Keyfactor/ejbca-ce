@@ -104,6 +104,11 @@
     </target>
 
     <target name="build-ocsp" description="Build this module" depends="compile-ocsp-ejb">
+    	<copy todir="${build-ocsp.dir}" file="${ejbca.home}/src/internal.properties">
+    		<filterchain>
+    			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
+    		</filterchain>
+    	</copy>
     	<mkdir dir="${ocsp.hardToken.classes}"/>	<!-- If it doesn't exist.. -->
         <jar destfile="${mod.ocsp-ejb.lib}">
         	<fileset dir="${build-ocsp.dir}">
@@ -111,10 +116,7 @@
             	<present present="srconly" targetdir="${build-util.dir}"/>
         	</fileset>
             <fileset dir="${ocsp.hardToken.classes}"/>
-        	<fileset dir="${ejbca.home}/src">
-        	    <include name="intresources/*.properties"/>
-				<include name="internal.properties"/>
-        	</fileset>	
+        	<fileset dir="${ejbca.home}/src" includes="intresources/*.properties"/>
         	<fileset dir="${ejbca.home}/src/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
