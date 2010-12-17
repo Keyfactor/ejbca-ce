@@ -265,19 +265,22 @@ public class PKCS10RequestMessage implements IRequestMessage {
         // We only want the CN and not the oid-part.
         // Luckily for us this is handles automatically by BC X509Name class
         X509Name xname = getRequestX509Name();
-        Vector cnValues = xname.getValues(X509Name.CN);
-
         String ret = null;
-        if (cnValues.size() == 0) {
-        	log.error("No CN in DN: "+xname.toString());
+        if (xname == null) {
+        	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
         } else {
-            ret = cnValues.firstElement().toString();         	
-            // If we have a CN with a normal name like "Test Testsson" we only want to 
-            // use the first part as the username
-        	int index = ret.indexOf(' ');
-        	if (index > 0) {
-        		ret = ret.substring(0, index);
-        	}
+            Vector cnValues = xname.getValues(X509Name.CN);
+            if (cnValues.size() == 0) {
+            	log.info("No CN in DN: "+xname.toString());
+            } else {
+                ret = cnValues.firstElement().toString();         	
+                // If we have a CN with a normal name like "Test Testsson" we only want to 
+                // use the first part as the username
+            	int index = ret.indexOf(' ');
+            	if (index > 0) {
+            		ret = ret.substring(0, index);
+            	}
+            }        	
         }
         if (log.isDebugEnabled()) {
         	log.debug("UserName='" + ret + "'");
