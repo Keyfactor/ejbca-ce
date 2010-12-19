@@ -26,15 +26,19 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
+
 <body class="popup" id="viewcainfo">
+
   <h2><%= ejbcawebbean.getText("CAINFORMATION") %></h2>
+
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
   </div>-->
+
   <%if(viewcainfohelper.generalerrormessage != null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></h4></div> 
   <% } 
@@ -46,23 +50,28 @@
               <div align="center"><h4><%=ejbcawebbean.getText(viewcainfohelper.activationmessage) %></h4></div> 
      <%  }%>
 
+
   <form name="viewcainfo" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= viewcainfohelper.CA_PARAMETER %>' value='<%=viewcainfohelper.caid %>'>
-     <table border="0" cellpadding="0" cellspacing="2" width="400">
+
+     <table border="0" cellpadding="0" cellspacing="2" width="100%">
+
+     <!-- ---------- Data ---------- -->
+
      <% for(int i=0; i < viewcainfohelper.cainfo.getCAInfoData().length; i++){ %>
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right" width="<%=columnwidth%>"><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %></td>
-	<td>&nbsp;&nbsp;
-		<% String datatext = viewcainfohelper.cainfo.getCAInfoData()[i];
-		   if (datatext == null) {
-			   datatext = "";
-		   }
-		%>
-		<%=datatext%>
-        </td>
+      <tr id="Row<%=(row++)%2%>"<% if(i==0){ %> class="title"<% } %>>
+		<td align="right" width="<%=columnwidth%>"><% if(i==0||i==1){ %><strong><% } %><%= viewcainfohelper.cainfo.getCAInfoDataText()[i] %><% if(i==0||i==1){ %></strong><% } %></td>
+		<td><% if(i==0||i==1){ %><strong><% } %><% 
+			   String datatext = viewcainfohelper.cainfo.getCAInfoData()[i];
+			   if (datatext == null) {
+				   datatext = "";
+			   }
+			%><%=datatext%><% if(i==0||i==1){ %></strong><% } %></td>
       </tr>    
       <% } %>
-     
+
+     <!-- ---------- Actions ---------- -->
+
      <tr id="Row<%=(row++)%2%>">
   	    <td align="right" width="<%=columnwidth%>">
   	    	<%= ejbcawebbean.getText("INCLUDEINHEALTHCHECK") %>
@@ -72,7 +81,7 @@
 	         <%  if(viewcainfohelper.cainfo.getCAInfo().getIncludeInHealthCheck() )
                  out.write(" CHECKED ");
            %>>
-          <input type="submit" name="<%= viewcainfohelper.SUBMITHS %>" value="Submit">
+          <input type="submit" name="<%= viewcainfohelper.SUBMITHS %>" value="<%= ejbcawebbean.getText("APPLY") %>">
         </td>
       </tr> 
 
@@ -86,8 +95,9 @@
 
         </td>
       </tr> 
-     <% }
-        if(viewcainfohelper.can_activate && viewcainfohelper.status == SecConst.CA_ACTIVE){ %>     
+     <% } %>
+
+     <% if(viewcainfohelper.can_activate && viewcainfohelper.status == SecConst.CA_ACTIVE){ %>     
      <tr id="Row<%=(row++)%2%>">
 	 <td width="<%=columnwidth%>"></td>
 	 <td>
@@ -95,16 +105,18 @@
          </td>
       </tr>           
      <% } %>      
+
       <tr id="Row<%=(row++)%2%>">
 	    <td width="<%=columnwidth%>"></td>
-	    <td>
+	    <td align="right" style="vertical-align: bottom;">
              <input type="button" name="<%= viewcainfohelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" 
                     onClick='self.close()'>
         </td>
       </tr> 
+
      </table> 
+
    </form>
-   <p></p>
    <% }%>
 
 </body>
