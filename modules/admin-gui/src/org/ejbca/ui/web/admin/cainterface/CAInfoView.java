@@ -45,7 +45,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    public static final int SUBJECTALTNAME          = 2;
    public static final int CATYPE                  = 3;
    
-   private static final int CASPACER              = 4;
+   private static final int CASPACER               = 4;
    
    public static final int EXPIRETIME              = 5;
    public static final int STATUS                  = 6;
@@ -66,11 +66,11 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
   
     
    /** A info text strings must contain:
-    * NAME, SUBJECTDN, SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRLPERIOD, CRLISSUEINTERVAL, CRLOVERLAPTIME, DELTACRLPERIOD
+    * CANAME, SUBJECTDN, SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRLPERIOD, CRLISSUEINTERVAL, CRLOVERLAPTIME, DELTACRLPERIOD
     * It must also have "" in pos nr 4 (CASPACER) 
     * It must also have "" in pos nr 9 (CRLSPACER) 
     */
-   public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
+   public static String[] X509CA_CAINFODATATEXTS = {"CANAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
                                                     "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
                                                     "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "DELTACRLPERIOD", "CRLPUBLISHERS", "", "OCSPSERVICE"};
 
