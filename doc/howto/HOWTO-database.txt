@@ -347,7 +347,7 @@ $ createdb ejbca -page_size=16384
 Indexes for higher performance
 ==============================
 
-This is a starting point for collecting indexes to create in the database to optimize performance (and cpu and disc usage):
+Database indexes will improve your performance when the database grows large (at least 100.000 certificates).
 (you can start messing with this when you notice some slowdown, for normal installations it's rarely needed)
 
 Indexes are listed as a script in create-index-ejbca3.sql.
@@ -355,7 +355,7 @@ You can run this script to boost your database performance, if you have many rec
 
 Indexes are in MySQL syntax, it should be general enough though.
 
-On external OCSP responders you should create the following index:
+On external OCSP responders (_NOT_ on CAs) you should create the following index:
 create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
 
 Indexes for extra security
@@ -364,7 +364,7 @@ Indexes for extra security
 In a X.509 PKI every issuerDN, serialNumber pair must be unique. That means that a CA can not issue two certificates
 with the same serialNumber. The default installation has a very, very, very small chance that that can occur.
 SerialNumber are 64 bit random numbers, so the chance of a collision should be virtually nil, unless you issue
-billions of certificates. In any case, the index over (issuerDN, serialNumber) on CertificateData assures that 
+billions of certificates. In any case, a unique index over (issuerDN, serialNumber) on CertificateData assures that 
 even this slim chance will never occur.
 
 Note that this is the same index as for performance, and that it is unique.
