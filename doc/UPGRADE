@@ -77,11 +77,31 @@ new parameters that are not needed to use.
 
 From EJBCA 3.11.0 to EJBCA 3.11.x
 --------------------------------
-The database mapping for KeyRecoveryData.certSN on MySQL in 3.11.0 was wrong and can be corrected by running:
+Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade.
 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation (if not using ejbca-custom).
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
+See Admin Guide
+
+* There is one issue that only affects installations upgraded to or freshly installed on EJBCA 3.11.0. 
+
+The database mapping for KeyRecoveryData.certSN on _MySQL_ in 3.11.0 was wrong and can be corrected
+by running:
     ALTER TABLE KeyRecoveryData MODIFY certSN varchar(80) binary NOT NULL DEFAULT '';
 
-This only affects installations upgraded to or freshly installed on EJBCA 3.11.0. 
+The database mapping for UserData.cardNumber in the table create script on _MySQL_ in 3.11.0 was
+wrong and can be corrected by running:
+    ALTER TABLE UserData MODIFY cardNumber varchar(250) binary NOT NULL DEFAULT '';
+
+The database mapping for ServiceData.nextRunTimeStamp and runTimeStamp was inconsistent on _Sybase_
+in 3.11.0 and can be corrected by running:
+    ALTER TABLE ServiceData MODIFY nextRunTimeStamp DECIMAL(20,0) DEFAULT 0 NOT NULL;
+    ALTER TABLE ServiceData MODIFY runTimeStamp DECIMAL(20,0) DEFAULT 0 NOT NULL;
 
 From EJBCA 3.10.x to EJBCA 3.11.x
 --------------------------------
