@@ -1190,6 +1190,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         				throw new UserDoesntFullfillEndEntityProfile(DnComponents.dnIdToProfileName(dnid) + " does not seem to be in something@somthingelse format.");
         			}
         			fieldValue = fieldValue.split("@")[1];
+    			} else {
+        			// Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
+        			if ( DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnid))) {
+        				if (!StringUtils.startsWith(fieldValue, "#30")) {
+            				throw new UserDoesntFullfillEndEntityProfile(DnComponents.dnIdToProfileName(dnid) + " ("+fieldValue+") does not seem to be in #der_encoding_in_hex format. See \"http://ejbca.org/userguide.html#End Entity Profile fields\" for more information about the postalAddress (2.5.4.16) field.");        					
+        				}
+        			}    				
     			}
     			subjectsToProcess[j] = fieldValue;
     		}
