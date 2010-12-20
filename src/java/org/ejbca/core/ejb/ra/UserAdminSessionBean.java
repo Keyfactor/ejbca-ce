@@ -2246,9 +2246,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid) {
         if (log.isTraceEnabled()) {
-            log.trace(">checkForEndEntityProfileId()");
+        	log.trace(">checkForEndEntityProfileId("+endentityprofileid+")");
         }
-        return UserData.countByEndEntityProfileId(entityManager, endentityprofileid) > 0;
+        long count = UserData.countByEndEntityProfileId(entityManager, endentityprofileid);
+        if (log.isTraceEnabled()) {
+        	log.trace("<checkForEndEntityProfileId("+endentityprofileid+"): "+count);
+        }
+        return count > 0;
     }
 
     /**
@@ -2263,9 +2267,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid) {
         if (log.isTraceEnabled()) {
-            log.trace(">checkForCertificateProfileId()");
+        	log.trace(">checkForCertificateProfileId("+certificateprofileid+")");
         }
-        return UserData.countByCertificateProfileId(entityManager, certificateprofileid) > 0;
+        long count = UserData.countByCertificateProfileId(entityManager, certificateprofileid);
+        if (log.isTraceEnabled()) {
+        	log.trace("<checkForCertificateProfileId("+certificateprofileid+"): "+count);
+        }
+        return count > 0;
     }
 
     /**

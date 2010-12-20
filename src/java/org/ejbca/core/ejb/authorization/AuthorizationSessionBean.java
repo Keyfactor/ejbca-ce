@@ -271,10 +271,14 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
     	if (log.isTraceEnabled()) {
-    		log.trace(">existsEndEntityProfileInRules()");
+        	log.trace(">existsEndEntityProfileInRules("+profileid+")");    		
     	}
         String whereClause = "accessRule  LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "%'";
-        return AccessRulesData.findCountByCustomQuery(entityManager, whereClause) > 0;
+        long count = AccessRulesData.findCountByCustomQuery(entityManager, whereClause);
+    	if (log.isTraceEnabled()) {
+        	log.trace("<existsEndEntityProfileInRules("+profileid+"): "+count);
+    	}
+    	return count > 0;
     }
 
     /**
@@ -316,22 +320,34 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     }
 
     /**
-     * Help function to existsCAInRules, checks if caid axists among entities in
+     * Help function to existsCAInRules, checks if caid exists among entities in
      * admingroups.
      */
     private boolean existsCAInAdminGroups(int caid) {
-        log.trace(">existsCAInAdminGroups()");
-        return AdminEntityData.findCountByCaId(entityManager, caid) > 0;
+    	if (log.isTraceEnabled()) {
+            log.trace(">existsCAInAdminGroups("+caid+")");    		
+    	}
+        long count = AdminEntityData.findCountByCaId(entityManager, caid);
+    	if (log.isTraceEnabled()) {
+            log.trace("<existsCAInAdminGroups("+caid+"): "+count);
+    	}
+    	return count > 0;
     }
 
     /**
-     * Help function to existsCAInRules, checks if caid axists among
+     * Help function to existsCAInRules, checks if caid exists among
      * accessrules.
      */
     private boolean existsCAInAccessRules(int caid) {
-        log.trace(">existsCAInAccessRules()");
+    	if (log.isTraceEnabled()) {
+            log.trace(">existsCAInAccessRules("+caid+")");    		
+    	}
         String whereClause = "accessRule LIKE '" + AccessRulesConstants.CABASE + "/" + caid + "%'";
-        return AccessRulesData.findCountByCustomQuery(entityManager, whereClause) > 0;
+        long count = AccessRulesData.findCountByCustomQuery(entityManager, whereClause);
+    	if (log.isTraceEnabled()) {
+            log.trace("<existsCAInAccessRules("+caid+"): "+count);
+    	}
+    	return count > 0;
     }
 
 
