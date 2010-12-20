@@ -63,12 +63,12 @@ public class AccessRulesData implements Serializable {
 
 	//@Column
 	public String getAccessRule() { return accessRule; }
-	public final void setAccessRule(final String accessRule) { this.accessRule = accessRule; }
+	public void setAccessRule(String accessRule) { this.accessRule = accessRule; }
 
 	/** Return the status of the rule. One of AccessRule.RULE_... */
 	//@Column	"rule" is a reserved word on MS SQL Server and Sybase
 	public int getRule() { return rule; }
-	public final void setRule(final int rule) { this.rule = rule; }
+	public void setRule(int rule) { this.rule = rule; }
 
 	@Transient
 	public boolean getIsRecursive() {

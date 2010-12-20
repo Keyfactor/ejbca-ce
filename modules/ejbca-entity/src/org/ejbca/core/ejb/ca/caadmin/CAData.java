@@ -100,28 +100,28 @@ public class CAData implements Serializable {
 
 	//@Column
 	public String getName() { return name; }
-	public final void setName(final String name) { this.name = name; }
+	public void setName(String name) { this.name = name; }
 
 	//@Column
 	public String getSubjectDN() { return subjectDN; }
-	public final void setSubjectDN(final String subjectDN) { this.subjectDN = subjectDN; }
+	public void setSubjectDN(String subjectDN) { this.subjectDN = subjectDN; }
 
 	//@Column
 	public int getStatus() { return status; }
-	public final void setStatus(final int status) { this.status = status; }
+	public void setStatus(int status) { this.status = status; }
 
 	//@Column
 	public long getExpireTime() { return expireTime; }
-	public final void setExpireTime(final long expireTime) { this.expireTime = expireTime; }
+	public void setExpireTime(long expireTime) { this.expireTime = expireTime; }
 
 	/** When was this CA updated in the database */
 	//@Column
 	public long getUpdateTime() { return updateTime; }
-	public final void setUpdateTime(final long updateTime){ this.updateTime = updateTime; }
+	public void setUpdateTime(long updateTime){ this.updateTime = updateTime; }
 
 	//@Column @Lob
 	public String getData() { return data; }
-	public final void setData(final String data) { this.data = data; }
+	public void setData(String data) { this.data = data; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
