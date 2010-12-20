@@ -74,13 +74,13 @@ public class AdminGroupData implements Serializable {
 
 	//@Column
 	public String getAdminGroupName() { return adminGroupName; }
-	public final void setAdminGroupName(final String adminGroupName) { this.adminGroupName = adminGroupName; }
+	public void setAdminGroupName(String adminGroupName) { this.adminGroupName = adminGroupName; }
 
 	@Deprecated
 	//@Column
 	public int getCaId() { return cAId; }
 	@Deprecated
-	public final void setCaId(final int cAId) { this.cAId = cAId; }
+	public void setCaId(int cAId) { this.cAId = cAId; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
@@ -112,7 +112,7 @@ public class AdminGroupData implements Serializable {
 	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
 	//@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER) @JoinColumn(name="AdminGroupData_adminEntities")
 	public Set<AdminEntityData> getAdminEntities() { return adminEntityDatas; }
-	public final void setAdminEntities(final Set<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
+	public void setAdminEntities(Set<AdminEntityData> adminEntityDatas) { this.adminEntityDatas = adminEntityDatas; }
 
 	/*
 	 * @ejb.relation
@@ -134,7 +134,7 @@ public class AdminGroupData implements Serializable {
 	// If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for Hibernate.
 	//@OneToMany(cascade={CascadeType.ALL}, fetch=FetchType.EAGER) @JoinColumn(name="AdminGroupData_accessRules")
 	public Set<AccessRulesData> getAccessRules() { return accessRulesDatas; }
-	public final void setAccessRules(final Set<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
+	public void setAccessRules(Set<AccessRulesData> accessRulesDatas) { this.accessRulesDatas = accessRulesDatas; }
 
 	/**
 	 * Adds a Collection of AccessRule to the database. Changing their values if they already exists

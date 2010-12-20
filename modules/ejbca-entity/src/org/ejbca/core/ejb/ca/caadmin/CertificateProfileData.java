@@ -68,12 +68,12 @@ public class CertificateProfileData implements Serializable {
 
 	//@Column
 	public String getCertificateProfileName() { return certificateProfileName; }
-	public final void setCertificateProfileName(final String certificateProfileName) { this.certificateProfileName = certificateProfileName; }
+	public void setCertificateProfileName(String certificateProfileName) { this.certificateProfileName = certificateProfileName; }
 
 	//@Column @Lob
 	public Serializable getDataUnsafe() { return data; }
 	/** DO NOT USE! Stick with setData(HashMap data) instead. */
-	public final void setDataUnsafe(final Serializable data) { this.data = data; }
+	public void setDataUnsafe(Serializable data) { this.data = data; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }

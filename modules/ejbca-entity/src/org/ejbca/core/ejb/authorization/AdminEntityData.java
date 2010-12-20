@@ -67,19 +67,19 @@ public class AdminEntityData implements Serializable {
 
 	//@Column
 	public int getMatchWith() { return matchWith; }
-	public final void setMatchWith(final int matchWith) { this.matchWith = matchWith; }
+	public void setMatchWith(int matchWith) { this.matchWith = matchWith; }
 
 	//@Column
 	public int getMatchType() { return matchType; }
-	public final void setMatchType(final int matchType) { this.matchType = matchType; }
+	public void setMatchType(int matchType) { this.matchType = matchType; }
 
 	//@Column
 	public String getMatchValue() { return matchValue; }
-	public final void setMatchValue(final String matchValue) { this.matchValue = matchValue; }
+	public void setMatchValue(String matchValue) { this.matchValue = matchValue; }
 	
 	//@Column
 	public Integer getCaId() { return cAId; }
-	public final void setCaId(final Integer caId) { this.cAId = caId; }
+	public void setCaId(Integer caId) { this.cAId = caId; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }

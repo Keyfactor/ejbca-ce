@@ -114,7 +114,7 @@ public class ApprovalData implements Serializable {
 	 * Constructed from action data as actiontype, admin, username etc. It should
 	 * result in the same approvalid if the admin tries to request the same action twice.
 	 */
-	public final void setApprovalid(final int approvalid) { this.approvalid = approvalid; } 
+	public void setApprovalid(int approvalid) { this.approvalid = approvalid; } 
 
 	/**   
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
@@ -126,7 +126,7 @@ public class ApprovalData implements Serializable {
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
 	 * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
 	 */
-	public final void setApprovaltype(final int approvaltype) { this.approvaltype = approvaltype; }
+	public void setApprovaltype(int approvaltype) { this.approvaltype = approvaltype; }
 
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
@@ -138,7 +138,7 @@ public class ApprovalData implements Serializable {
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
 s	 */
-	public final void setEndentityprofileid(final int endentityprofileid) { this.endentityprofileid = endentityprofileid; }
+	public void setEndentityprofileid(int endentityprofileid) { this.endentityprofileid = endentityprofileid; }
 
 	/**
 	 * For CA specific approval requests should the related ca id be specified
@@ -150,7 +150,7 @@ s	 */
 	 * For CA specific approval requests should the related ca id be specified
 	 * for non ca request should this field be set to ApprovalDataVO.ANY_CA    
 	 */
-	public final void setCaid(final int caid) { this.caid = caid; }
+	public void setCaid(int caid) { this.caid = caid; }
 
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
@@ -160,7 +160,7 @@ s	 */
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
 	 */
-	public final void setReqadmincertissuerdn(final String reqadmincertissuerdn) { this.reqadmincertissuerdn = reqadmincertissuerdn; }
+	public void setReqadmincertissuerdn(String reqadmincertissuerdn) { this.reqadmincertissuerdn = reqadmincertissuerdn; }
 
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
@@ -170,7 +170,7 @@ s	 */
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
 	 */
-	public final void setReqadmincertsn(final String reqadmincertsn) { this.reqadmincertsn = reqadmincertsn; }
+	public void setReqadmincertsn(String reqadmincertsn) { this.reqadmincertsn = reqadmincertsn; }
 
 	/**
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
@@ -182,7 +182,7 @@ s	 */
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
 	 * STATUS_REJECTED, STATUS_EXPIRED
 	 */
-	public final void setStatus(final int status) { this.status = status; }
+	public void setStatus(int status) { this.status = status; }
 
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
@@ -193,7 +193,7 @@ s	 */
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	public final void setApprovaldata(final String approvaldata) { this.approvaldata = approvaldata; }
+	public void setApprovaldata(String approvaldata) { this.approvaldata = approvaldata; }
 
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
@@ -204,7 +204,7 @@ s	 */
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	public final void setRequestdata(final String requestdata) { this.requestdata = requestdata; }            
+	public void setRequestdata(String requestdata) { this.requestdata = requestdata; }            
 
 	/**
 	 * Date the request for approval were added
@@ -214,7 +214,7 @@ s	 */
 	/**
 	 * Date the request for approval were added
 	 */
-	public final void setRequestdate(final long requestdate) { this.requestdate = requestdate; }
+	public void setRequestdate(long requestdate) { this.requestdate = requestdate; }
 
 	/**
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
@@ -226,7 +226,7 @@ s	 */
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
-	public final void setExpiredate(final long expiredate) { this.expiredate = expiredate; }
+	public void setExpiredate(long expiredate) { this.expiredate = expiredate; }
 
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
@@ -236,7 +236,7 @@ s	 */
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
-	public final void setRemainingapprovals(final int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
+	public void setRemainingapprovals(int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }

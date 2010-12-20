@@ -50,7 +50,7 @@ public class AuthorizationTreeUpdateData implements Serializable {
 	 */
 	//@Column
 	public int getAuthorizationTreeUpdateNumber() { return authorizationTreeUpdateNumber; }
-	public final void setAuthorizationTreeUpdateNumber(final int authorizationTreeUpdateNumber) { this.authorizationTreeUpdateNumber = authorizationTreeUpdateNumber; }
+	public void setAuthorizationTreeUpdateNumber(int authorizationTreeUpdateNumber) { this.authorizationTreeUpdateNumber = authorizationTreeUpdateNumber; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
