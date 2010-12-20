@@ -594,6 +594,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="40%" valign="top" align="right" class="title"> 
         <strong><%= ejbcawebbean.getText("SUBJECTDNFIELDS") %></strong>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#End%20Entity%20Profile%20fields") %>
       </td>
       <td width="50%"> 
         &nbsp;   
