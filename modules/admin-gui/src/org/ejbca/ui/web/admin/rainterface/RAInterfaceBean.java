@@ -558,6 +558,8 @@ public class RAInterfaceBean implements java.io.Serializable {
 
         if(!profileused){
           profiles.removeEndEntityProfile(name);
+        } else {
+        	log.info("EndEntityProfile "+name+" is used by either user (UserData table) or access rules (AccessRulesData table), and can not be removed.");
         }
 
         return !profileused;
