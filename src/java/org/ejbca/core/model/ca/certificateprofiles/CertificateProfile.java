@@ -295,13 +295,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       
       setPublisherList(new ArrayList());
 
-      setUseCaIssuers(false);
-      setCaIssuers(new ArrayList());
-
       setUseOcspNoCheck(false);
-	  setUseOCSPServiceLocator(false);	  
-	  setUseDefaultOCSPServiceLocator(false);
-	  setOCSPServiceLocatorURI("");
 
 	  setUseLdapDnOrder(true);	  
 
@@ -339,6 +333,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       
       setUseSubjectDirAttributes(false);
       setUseAuthorityInformationAccess(false);
+      setCaIssuers(new ArrayList<String>());
+	  setUseDefaultOCSPServiceLocator(false);
+	  setOCSPServiceLocatorURI("");
+
       setUseCRLDistributionPointOnCRL(false);
       setUseOcspNoCheck(false);
       setUseFreshestCRL(false);
@@ -959,26 +957,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 		data.put(PATHLENGTHCONSTRAINT, Integer.valueOf(pathlength));			
 	}   
 
-    /**
-	 * @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead
-     * @param use
-     */
-    public void setUseCaIssuers(boolean use) {
-        data.put(USECAISSUERS, Boolean.valueOf(use));
-    }
-
-    /**
-	 * @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead
-     * @return
-     */
-    public boolean getUseCaIssuers() {
-        if(data.get(USECAISSUERS) == null) {
-            return false; 
-        } else {
-            return ((Boolean) data.get(USECAISSUERS)).booleanValue();
-        }
-    }
-
     public void setCaIssuers(List<String> caIssuers) {
         data.put(CAISSUERS, caIssuers);
     }
@@ -1026,11 +1004,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseAuthorityInformationAccess(){ return ((Boolean) data.get(USEAUTHORITYINFORMATIONACCESS)).booleanValue(); }
 	public void setUseAuthorityInformationAccess(boolean useauthorityinformationaccess) { data.put(USEAUTHORITYINFORMATIONACCESS, Boolean.valueOf(useauthorityinformationaccess));}
 
-	/** @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead */
-	public boolean getUseOCSPServiceLocator(){ return ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue(); }
-	/** @deprecated setUseAuthorityInformationAccess in combination with getOCSPServiceLocator and getCaIssuer instead */
-	public void setUseOCSPServiceLocator(boolean useocspservicelocator) { data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(useocspservicelocator));}
-    
 	public boolean getUseDefaultOCSPServiceLocator(){ return ((Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR)).booleanValue(); }
 	public void setUseDefaultOCSPServiceLocator(boolean usedefaultocspservicelocator) { data.put(USEDEFAULTOCSPSERVICELOCATOR, Boolean.valueOf(usedefaultocspservicelocator));}
 
