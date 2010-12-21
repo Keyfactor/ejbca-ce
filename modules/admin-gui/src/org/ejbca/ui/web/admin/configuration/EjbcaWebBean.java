@@ -180,7 +180,9 @@ public class EjbcaWebBean implements Serializable {
     		
     		// Check if certificate and user is an RA Admin
     		userdn = CertTools.getSubjectDN(certificates[0]);
-    		log.debug("Verifying authorization of '"+userdn);    		
+    		if (log.isDebugEnabled()) {
+    			log.debug("Verifying authorization of '"+userdn+"'");
+    		}
     		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
     		String comment = "";
     		if(certificateStoreSession.findCertificateByIssuerAndSerno(administrator, CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0])) == null){
