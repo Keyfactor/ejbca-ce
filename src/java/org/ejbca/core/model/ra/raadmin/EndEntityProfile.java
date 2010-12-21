@@ -61,7 +61,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 12;
+    public static final float LATEST_VERSION = 13;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -1463,6 +1463,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             	setModifyable(MAXFAILEDLOGINS, 0, true);
             	setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
             }
+            
+            // Fix a bug with the value of CARDNUMBER field integer value (in dataConstants).
+            if(getVersion() < 13) {
+                int cardnumberOldValue = 39;
+                int cardnumberNewValue = 91;
+                int size =  getNumberOfField(cardnumberOldValue);
+                for(int fieldnumber=0; fieldnumber<size; fieldnumber++){
+                	addField(cardnumberNewValue);
+                	setRequired(cardnumberNewValue, fieldnumber, isRequired(cardnumberOldValue, fieldnumber));
+                	setUse(cardnumberNewValue, fieldnumber, getUse(cardnumberOldValue, fieldnumber));
+                	setModifyable(cardnumberNewValue, fieldnumber, isModifyable(cardnumberOldValue, fieldnumber));
+                	setValue(cardnumberNewValue, fieldnumber, getValue(cardnumberOldValue, fieldnumber));
+                	removeField(cardnumberOldValue, fieldnumber);
+                }
+            }
+
 
             data.put(VERSION, new Float(LATEST_VERSION));
         }
