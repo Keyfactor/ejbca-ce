@@ -989,25 +989,25 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     		return;
     	}
         if (data.get(CAISSUERS) == null) {
-            List caIssuers = new ArrayList();
+            List<String> caIssuers = new ArrayList<String>();
             caIssuers.add(caIssuer);
             this.setCaIssuers(caIssuers);
         } else {
-            ((List) data.get(CAISSUERS)).add(caIssuer);
+            ((List<String>) data.get(CAISSUERS)).add(caIssuer);
         }
     }
 
-    public List getCaIssuers() {
+    public List<String> getCaIssuers() {
         if(data.get(CAISSUERS) == null) {
-            return new ArrayList(); 
+            return new ArrayList<String>(); 
         } else {
-            return (List) data.get(CAISSUERS);
+            return (List<String>) data.get(CAISSUERS);
         }
     }
 
     public void removeCaIssuer(String caIssuer) {
         if (data.get(CAISSUERS) != null) {
-            ((List) data.get(CAISSUERS)).remove(caIssuer);
+            ((List<String>) data.get(CAISSUERS)).remove(caIssuer);
         }
     }
 

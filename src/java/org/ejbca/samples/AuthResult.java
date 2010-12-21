@@ -34,7 +34,7 @@ public class AuthResult {
     private String reason = ""; //No reason
 
     /** This Hashtable keeps all the name-value pairs in the result. */
-    private Hashtable resultHash = new Hashtable();
+    private Hashtable<String, String> resultHash = new Hashtable<String, String>();
 
     /**
      * Adds a new key, value pair to the grant response.
@@ -60,7 +60,7 @@ public class AuthResult {
      *
      * @return hash table of results
      */
-    public Hashtable getResult() {
+    public Hashtable<String, String> getResult() {
         return resultHash;
     }
 

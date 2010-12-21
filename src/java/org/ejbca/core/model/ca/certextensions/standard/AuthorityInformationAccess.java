@@ -73,10 +73,10 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
         String url;
 
         // caIssuers
-        List caIssuers = certProfile.getCaIssuers();
+        List<String> caIssuers = certProfile.getCaIssuers();
         if (caIssuers != null) {
-        	for(Iterator it = caIssuers.iterator(); it.hasNext(); ) {
-        		url = (String) it.next();
+        	for(Iterator<String> it = caIssuers.iterator(); it.hasNext(); ) {
+        		url = it.next();
         		if(StringUtils.isNotEmpty(url)) {
         			accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
         			accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers,

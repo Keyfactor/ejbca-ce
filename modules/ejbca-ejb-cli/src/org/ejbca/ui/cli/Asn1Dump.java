@@ -14,7 +14,7 @@
 package org.ejbca.ui.cli;
 
 import java.io.FileInputStream;
-import java.security.cert.X509Certificate;
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -22,6 +22,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Dumps PEM or DER file as readable ASN1'
@@ -42,8 +43,8 @@ public class Asn1Dump extends BaseCommand {
     	try {
     		String filename = args[1];
     		boolean iscert = true;
-    		Collection coll = null;
-    		CertTools.installBCProvider();
+    		Collection<Certificate> coll = null;
+    		CryptoProviderTools.installBCProvider();
     		try {
         		coll = CertTools.getCertsFromPEM(filename);
         		if (coll.isEmpty()) {
@@ -58,9 +59,9 @@ public class Asn1Dump extends BaseCommand {
         		String dump = ASN1Dump.dumpAsString(obj);
         		getLogger().info(dump);    			
     		} else {
-        		Iterator iter = coll.iterator();
+        		Iterator<Certificate> iter = coll.iterator();
         		while (iter.hasNext()) {
-        			X509Certificate cert = (X509Certificate)iter.next();
+        			Certificate cert = iter.next();
             		String dump = ASN1Dump.dumpAsString(cert);
             		getLogger().info(dump);    			
         		}
