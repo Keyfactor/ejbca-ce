@@ -315,10 +315,10 @@ public class CertificateProfileTest extends TestCase {
         assertTrue((o instanceof Integer));
         assertEquals(3, ar.size());
 
-        ar = ep.getExtendedKeyUsageOids();
-        o = ar.get(0);
+        ArrayList<String> arstr = ep.getExtendedKeyUsageOids();
+        o = arstr.get(0);
         assertTrue((o instanceof String));
-        assertEquals(3, ar.size());
+        assertEquals(3, arstr.size());
 
         ep.upgrade();
         ar = ep.getExtendedKeyUsageArray();
