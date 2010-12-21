@@ -680,22 +680,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /**
      * Extended Key Usage is an arraylist of oid Strings.
      * Usually oids comes from KeyPurposeId in BC.
+     * Keep the unchecked java stuff for now, since we have the fallback conversion below in getExtendedKeyUsageAsOIDStrings
      */
     public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
         data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
     }
-    /** Only used for JUnit testing */
+    /** Only used for JUnit testing 
+     * Keep the unchecked java stuff for now, since we have the fallback conversion below in getExtendedKeyUsageAsOIDStrings
+     */
     protected ArrayList getExtendedKeyUsageArray() {
     	return (ArrayList) data.get(EXTENDEDKEYUSAGE);    	
     }
     /**
      * Extended Key Usage is an arraylist of Strings with eku oids.
      */
-    public ArrayList getExtendedKeyUsageOids(){
+    public ArrayList<String> getExtendedKeyUsageOids(){
     	return getExtendedKeyUsageAsOIDStrings(false);
     }
-    private ArrayList getExtendedKeyUsageAsOIDStrings(boolean fromupgrade){
-    	ArrayList returnval = new ArrayList();
+    private ArrayList<String> getExtendedKeyUsageAsOIDStrings(boolean fromupgrade){
+    	ArrayList<String> returnval = new ArrayList<String>();
+    	// Keep the unchecked java stuff for now, since we have the fallback conversion below
     	ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
     	if ((eku != null) && (eku.size() > 0)) {
         	Object o = eku.get(0);
@@ -704,15 +708,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     			// This is the new extended key usage in the profile, simply return the array with oids
     			returnval = eku;
     		} else {
-            	Iterator i = eku.iterator();
-            	List oids = getAllExtendedKeyUsageOIDStrings();
+            	Iterator<Integer> i = eku.iterator();
+            	List<String> oids = getAllExtendedKeyUsageOIDStrings();
             	while(i.hasNext()) {
             		// We fell through to this conversion from Integer to String, which we should not have to 
             		// if upgrade() had done it's job. This is an error!
             		if (!fromupgrade) {
             			log.error("We're forced to convert between old extended key usage format and new. This is an error that we handle so it should work for now. It should be reported as we can not guarantee that it will work in the future. "+getVersion());
             		}
-            		int index = ((Integer)i.next()).intValue();
+            		int index = (i.next()).intValue();
             		returnval.add(oids.get(index));
             	}    		    			
     		}
@@ -787,8 +791,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * which subject dn fields that should be used in certificate.
      * 
      */
-    public Collection getSubjectDNSubSet(){
-    	return (Collection) data.get(SUBJECTDNSUBSET);	
+    public Collection<Integer> getSubjectDNSubSet(){
+    	return (Collection<Integer>) data.get(SUBJECTDNSUBSET);	
     }
 
     /**
@@ -796,7 +800,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * which subject dn fields that should be used in certificate.
      * 
      */
-    public void setSubjectDNSubSet(Collection subjectdns) {
+    public void setSubjectDNSubSet(Collection<Integer> subjectdns) {
 		data.put(SUBJECTDNSUBSET, subjectdns);	
 		
 	}
@@ -827,8 +831,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * which subject altnames fields that should be used in certificate.
      * 
      */
-    public Collection getSubjectAltNameSubSet(){
-    	return (Collection) data.get(SUBJECTALTNAMESUBSET);	
+    public Collection<Integer> getSubjectAltNameSubSet(){
+    	return (Collection<Integer>) data.get(SUBJECTALTNAMESUBSET);	
     }
     
     /**
@@ -836,7 +840,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * which subject altnames fields that should be used in certificate.
      * 
      */
-    public void setSubjectAltNameSubSet(Collection subjectaltnames) {
+    public void setSubjectAltNameSubSet(Collection<Integer> subjectaltnames) {
 		data.put(SUBJECTALTNAMESUBSET, subjectaltnames);	
 		
 	}
@@ -860,16 +864,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param usefields
      * @return
      */
-    protected String constructUserData(DNFieldExtractor extractor, Collection usefields, boolean subjectdn){
+    protected String constructUserData(DNFieldExtractor extractor, Collection<Integer> usefields, boolean subjectdn){
         String retval = "";
                        
-        if(usefields instanceof List){
-          Collections.sort((List) usefields);
+        if(usefields instanceof List<?>){
+          Collections.sort((List<Integer>) usefields);
         }
-        Iterator iter = usefields.iterator(); 
+        Iterator<Integer> iter = usefields.iterator(); 
         String dnField = null;
         while(iter.hasNext()){
-        	Integer next = (Integer) iter.next();
+        	Integer next = iter.next();
         	dnField = extractor.getFieldString(next.intValue());
         	if (StringUtils.isNotEmpty(dnField)) {
             	if(retval.length() == 0) {
@@ -907,7 +911,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     
     public boolean isApplicableToAnyCA(){
-    	return ((Collection) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
+    	return ((Collection<Integer>) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
     }
     
     /**
@@ -1103,7 +1107,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	if(data.get(USEDCERTIFICATEEXTENSIONS) == null){
     		return new ArrayList<Integer>();
     	}
-    	
     	return (List<Integer>) data.get(USEDCERTIFICATEEXTENSIONS); 
     }
 
@@ -1149,15 +1152,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 * 
 	 * Never null
 	 */
-	public Collection getApprovalSettings() {
-		return (Collection) data.get(APPROVALSETTINGS);
+    @SuppressWarnings("unchecked")
+	public Collection<Integer>getApprovalSettings() {
+		return (Collection<Integer>) data.get(APPROVALSETTINGS);
 	}
 	
 	/**
 	 * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
 	 * action that requires approvals
 	 */
-	public void setApprovalSettings(Collection approvalSettings) {
+	public void setApprovalSettings(Collection<Integer> approvalSettings) {
 		data.put(APPROVALSETTINGS, approvalSettings);
 	}
 	
@@ -1180,11 +1184,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	 * Returns true if the action requires approvals.
 	 * @param action, on of the CAInfo.REQ_APPROVAL_ constants
 	 */
+    @SuppressWarnings("unchecked")
 	public boolean isApprovalRequired(int action){
-		Collection approvalSettings = (Collection) data.get(APPROVALSETTINGS);
+		Collection<Integer> approvalSettings = (Collection<Integer>) data.get(APPROVALSETTINGS);
 		return approvalSettings.contains(Integer.valueOf(action));
 	}
 
+    @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -1236,12 +1242,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
             }
             if(data.get(AVAILABLECAS) == null) {
-                ArrayList availablecas = new ArrayList();
+                ArrayList<Integer> availablecas = new ArrayList<Integer>();
                 availablecas.add(Integer.valueOf(ANYCA));
                 data.put(AVAILABLECAS, availablecas);
             }
             if(data.get(USEDPUBLISHERS) == null) {
-                data.put(USEDPUBLISHERS, new ArrayList());   
+                data.put(USEDPUBLISHERS, new ArrayList<Integer>());   
             }            
             if(data.get(USEOCSPSERVICELOCATOR) == null) {
                 // setUseOCSPServiceLocator(false);            
@@ -1261,9 +1267,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             
             if(data.get(USESUBJECTDNSUBSET) == null){
           	  setUseSubjectDNSubSet(false);
-        	  setSubjectDNSubSet(new ArrayList());
+        	  setSubjectDNSubSet(new ArrayList<Integer>());
         	  setUseSubjectAltNameSubSet(false);
-        	  setSubjectAltNameSubSet(new ArrayList());
+        	  setSubjectAltNameSubSet(new ArrayList<Integer>());
             }
             
             if(data.get(USEPATHLENGTHCONSTRAINT) == null){
@@ -1361,7 +1367,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(data.get(USECAISSUERS) == null) {
             	//setUseCaIssuers(false); // v24
             	data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
-            	setCaIssuers(new ArrayList());
+            	setCaIssuers(new ArrayList<String>());
             }
             if ( (data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null) ) {
             	boolean ocsp = false;
@@ -1415,7 +1421,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	setNumOfReqApprovals(1);
             }
             if (data.get(APPROVALSETTINGS) == null) { // v 33
-            	setApprovalSettings(Collections.EMPTY_LIST);
+            	setApprovalSettings(new ArrayList<Integer>());
             }
 
             if (data.get(SIGNATUREALGORITHM) == null) { // v 34
