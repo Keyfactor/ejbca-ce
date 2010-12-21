@@ -61,7 +61,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 if (caName == null) {
                     caName = "Unknown CA with id " + adminEntity.getCaId();
                 }
-                String matchWith = adminEntity.MATCHWITHTEXTS[adminEntity.getMatchWith()];
+                String matchWith = AdminEntity.MATCHWITHTEXTS[adminEntity.getMatchWith()];
                 String matchType = "SPECIAL";
                 if (adminEntity.getMatchType() < AdminEntity.SPECIALADMIN_PUBLICWEBUSER) {
                     matchType = AdminEntity.MATCHTYPETEXTS[adminEntity.getMatchType() - 1000];

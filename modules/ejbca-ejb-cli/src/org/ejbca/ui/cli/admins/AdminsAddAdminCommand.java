@@ -67,7 +67,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                     availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getAdminGroupName() + "\"";
                 }
                 getLogger().info("Available Admin groups: " + availableGroups);
-                Map caIdToNameMap = caAdminSession.getCAIdToNameMap(getAdmin());
+                Map<Integer, String> caIdToNameMap = caAdminSession.getCAIdToNameMap(getAdmin());
                 Collection<Integer> caids = caSession.getAvailableCAs(getAdmin());
                 String availableCas = "";
                 for (Integer caid : caids) {

@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ca.caadmin;
 
 import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.util.CertTools;
@@ -56,12 +58,12 @@ public class X509CAInfo extends CAInfo{
      * Constructor that should be used when creating CA and retrieving CA info.
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
-                    long validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
+                    long validity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List<CertificatePolicy> policies,
-                    long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, Collection crlpublishers,
+                    long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, Collection<Integer> crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
-                    Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
+                    Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, boolean useUTF8PolicyText, Collection<Integer> approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder,
                     boolean useCrlDistributionPointOnCrl, boolean crlDistributionPointOnCrlCritical, boolean includeInHealthCheck,
                     boolean _doEnforceUniquePublicKeys, boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
                     boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage, String _cmpRaAuthSecret) {

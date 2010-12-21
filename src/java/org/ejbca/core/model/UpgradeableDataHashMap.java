@@ -41,7 +41,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      * Creates a new UpgradeableDataHashMap object.
      */
     public UpgradeableDataHashMap() {
-        data = new HashMap();
+        data = new HashMap<Object, Object>();
         data.put(VERSION, new Float(getLatestVersion()));
     }
 
@@ -74,7 +74,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      * @param data DOCUMENT ME!
      */
     public void loadData(Object data) {
-    	this.data = (HashMap) data;
+    	this.data = (HashMap<Object, Object>) data;
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
     		upgrade();     
     		isUpgraded = true;
@@ -95,7 +95,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      */
     public abstract void upgrade();
 
-    protected HashMap data;
+    protected HashMap<Object, Object> data;
     private boolean isUpgraded = false;
 	public static final String VERSION = "version";
 }
