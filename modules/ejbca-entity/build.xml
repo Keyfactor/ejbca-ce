@@ -69,6 +69,7 @@
     </target>
 
     <target name="handlepersistence">
+    	<!-- Specify Hibernate dialect -->
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"><equals arg1="${database.name}" arg2="derby"/></condition>
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"><equals arg1="${database.name}" arg2="hsqldb"/></condition>
@@ -80,6 +81,9 @@
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
     	<condition property="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"><equals arg1="${database.name}" arg2="sybase"/></condition>
     	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/>
+    	<!-- Specify JTA lookup if Weblogic -->
+    	<condition property="persistence.enable-weblogic-jta-lookup1" value="-->"><equals arg1="${appserver.type}" arg2="weblogic"/></condition>
+    	<condition property="persistence.enable-weblogic-jta-lookup2" value="&lt;!--"><equals arg1="${appserver.type}" arg2="weblogic"/></condition>
     	<mkdir dir="${build.dir}/META-INF"/>
     	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
