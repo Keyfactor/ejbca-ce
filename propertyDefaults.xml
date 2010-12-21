@@ -64,11 +64,11 @@
 	<echo message="appserver.home: ${appserver.home}" level="${customejbca.message.level}"/>
 	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
+	<available file="${appserver.home}/wlserver_10.3/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
 	<!-- Not yet tested:
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
-		<available file="${appserver.home}/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
 	-->
-	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1 and JBoss 5.1.0.GA are currently supported. (Normally you should not have to configure this.)" unless="appserver.type"/>
+	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA and WebLogic 10.3.3 are currently supported. (Normally you should not have to configure this.)" unless="appserver.type"/>
 	<echo message="appserver.type: ${appserver.type}" level="${customejbca.message.level}"/>
 	
 	<condition property="bundle-hibernate-jpa">

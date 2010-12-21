@@ -2,6 +2,5 @@
 # Weblogic properties
 java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
 java.naming.provider.url=t3://127.0.0.1:7001
-#java.naming.security.principal=weblogic
-java.naming.security.principal=system
+java.naming.security.principal=weblogic
 java.naming.security.credentials=weblogic

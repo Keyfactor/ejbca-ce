@@ -15,6 +15,7 @@
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 	<property name="internalresources.base.dir" location="${ejbca.home}/src"/>
 
@@ -99,7 +100,8 @@
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
         	</fileset>
-        	-->	
+        	-->
+        	<zipfileset prefix="META-INF" dir="${resources.dir}" includes="weblogic-ejb-jar.xml"/>
         </jar>
     </target>
 
