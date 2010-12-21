@@ -177,11 +177,11 @@ public class ApplyBean implements java.io.Serializable {
 
         if (useradmindata != null) {
             EndEntityProfile eprof = ejb.getEndEntityProfileSession().getEndEntityProfile(administrator, useradmindata.getEndEntityProfileId());
-            Collection c = eprof.getAvailableCertificateProfileIds();
+            Collection<String> c = eprof.getAvailableCertificateProfileIds();
             if (!c.isEmpty()) {
             	ArrayList<String> names = new ArrayList<String>();
-                for (Iterator i = c.iterator(); i.hasNext(); ) {
-                	int id = Integer.valueOf((String)i.next());
+                for (Iterator<String> i = c.iterator(); i.hasNext(); ) {
+                	int id = Integer.valueOf(i.next());
                     String name = ejb.getCertificateProfileSession().getCertificateProfileName(administrator, id);
                 	names.add(name);
                 }

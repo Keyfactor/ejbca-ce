@@ -38,7 +38,7 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 
-public class Approval implements Comparable, Externalizable { 
+public class Approval implements Comparable<Approval>, Externalizable { 
 	
 	private static final long serialVersionUID = -1L;
 	
@@ -129,8 +129,8 @@ public class Approval implements Comparable, Externalizable {
     /**
      * Sort by approval date
      */
-	public int compareTo(Object arg0) {				
-		return approvalDate.compareTo(((Approval) arg0).approvalDate);
+	public int compareTo(Approval arg0) {				
+		return approvalDate.compareTo(arg0.approvalDate);
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {

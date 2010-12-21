@@ -45,6 +45,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -403,7 +404,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(System
                 .currentTimeMillis()
                 + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10,
-                0, new ArrayList(), true, false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true, false, false,
+                0, new ArrayList<Integer>(), true, false, true, false, "", "", "", "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1, false, true, false, false,
                 true, true, true, false, true, true, true, null);
         int caID = cainfo.getCAId();
         try {
