@@ -1,3 +1,26 @@
+3.11.1, 2010-12-23
+---
+Improvement
+    * [ECA-1908] - Certificate popup layout improved
+    * [ECA-1952] - Add favicon to public and admin web
+    * [ECA-1958] - Add message "Integrated by"
+    * [ECA-1961] - Header, Footer, and global layout improved
+    * [ECA-1972] - CA information popup layout improved
+
+Bug
+    * [ECA-1946] - cert-cvc 1.2.12 maven pom still has version tag 1.2.11
+    * [ECA-1948] - MySQL mapping for KeyRecoveryData.certSN is incorrect
+    * [ECA-1949] - MySQL mapping for UserData.cardNumber is inconsistent in in SQL create script and mapping files.
+    * [ECA-1950] - ETSI QC value limit can not have 0 value
+    * [ECA-1953] - Sybase ServiceData.nextRunTimeStamp and runTimeStamp was inconsistent compared with other long fields
+    * [ECA-1955] - Error upgrading from EJBCA 3.6.x to 3.11.x
+    * [ECA-1962] - Editing certificate profile, session information spills over to other edits when using the "Back to certificate profiles" link
+    * [ECA-1963] - Trying to use Cardnumber in EE profile gives error about missing UNSTRUCTUREDADDRESS
+    * [ECA-1964] - Ugly NPE in log for field error during add end entity
+    * [ECA-1965] - UserDoesntFullfillEndEntityProfile is wrapped twice in LocalUserAdminSessionBean
+    * [ECA-1966] - Add end entity modifies cached end entity profiles
+    * [ECA-1985] - UnstructuredAddress dn field does not work
+
 3.11.0, 2010-11-29
 ---
 New Feature
