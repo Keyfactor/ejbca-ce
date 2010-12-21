@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.log;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 /** This interface is used for exporting a number of log entries to 
@@ -21,7 +22,7 @@ import java.util.Collection;
  * @author tomas
  * @version $Id$
  */
-public interface ILogExporter {
+public interface ILogExporter extends Serializable {
 
 	/** Sets the entries to be exported. Entries can also be set in the constructor if it is more suitable for 
 	 * the implementing class.  

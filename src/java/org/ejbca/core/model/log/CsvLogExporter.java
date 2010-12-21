@@ -31,6 +31,8 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 
 public class CsvLogExporter implements ILogExporter {
 	
+	private static final long serialVersionUID = 1L;
+
 	/** Log4j logging */
 	private static final Logger log = Logger.getLogger(CsvLogExporter.class);
 	
