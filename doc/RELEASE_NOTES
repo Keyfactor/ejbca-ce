@@ -5,6 +5,34 @@ method. Any custom classes implementing this interface need to be modified in tu
 
 Ant 1.7.1 or higher is required from this version on.
 
+EJBCA 3.11.1
+-----------
+This is a maintenance release – 16 issues have been resolved. Only fixes and layout improvements, no new features. 
+This release fixes an upgrade issue from 3.6.x to 3.11.x and also a MySQL/MyISAM related issue in the 3.11.0 release.
+A few uncaught regressions from 3.10.x and 3.11.0 were fixed, and as usual David Carella of Linagora added some 
+Admin GUI layout improvements.
+
+Changes:
+- It is now possible to easily upgrade from EJBCA 3.6.x to 3.11.x
+- Fixed a MySQL mapping that did not work when using the MyISAM storage engine and UTF-8 encoding.
+- ETSI QC value limit can now have the value zero.
+- Admin GUI improvements from David Carella of Linagora.
+- Added a favicon to the EJBCA web interfaces. 
+- Fixed an issue causing cached end entity profiles (not default) to be changed for some actions in the admin GUI.
+- Fixed an issue where session information spilled over to other edits when using the "Back to certificate profiles" link.
+- Fixed an issue where using the required flag on Cardnumber in a end entity profile gave error about missing unstructured address.
+  This also resolved an issue where the DN field Unstructured Address did not work.
+
+Read the full changelog for details.
+
+For upgrade instructions, please see UPGRADE. 
+
+NOTE: If you have been using the SEIS Cardnumber extension in End Entity Profiles (not default), this setting had an internal collision
+with the UnstructuredAddress DN field, so they could not be used at the same time. There was a problem using the UnstructuredAddress lately.
+The issue was resolved by changing the internal number for Cardnumber. This is not possible to upgrade automatically.
+* If you used SEIS Cardnumber * you must manually edit your end entity profiles and re-check the 'use' checkbox after upgrade to 3.11.1.
+This should affect a very small number of users.
+
 EJBCA 3.11.0
 -----------
 This is a major release with several new features – 47 issues have been resolved. 
