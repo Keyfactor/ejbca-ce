@@ -31,13 +31,15 @@ class DataBaseConfig {
 	final private Properties dbProps;
 	final private String propertiesFile;
 	final private URI uri;
+	final String dbName;
 	/**
 	 * Loads properties from the database properties of EJBCA.
 	 * @param ejbcaHome the root directory of the EJBCA
 	 * @throws IOException
 	 */
-	DataBaseConfig(String ejbcaHome) throws IOException {
-		this.propertiesFile = ejbcaHome+"/conf/database.properties";
+	DataBaseConfig(String ejbcaHome, boolean isVA) throws IOException {
+		final String vaPrefix = isVA?"ocsp-":"";
+		this.propertiesFile = ejbcaHome+"/conf/"+(isVA?"va-publisher":"database")+".properties";
 		this.dbProps = new Properties();
 		try {
 			this.dbProps.load(new FileInputStream(this.propertiesFile));
@@ -45,24 +47,22 @@ class DataBaseConfig {
 			System.out.println("File '"+this.propertiesFile+"' is not existing.");
 			System.exit(-1); // NOPMD, it's not a JEE app
 		}
-		this.uri = getURI();
+		this.dbName = getValue(vaPrefix+"database.name", "mysql");
+		this.uri = getURI(vaPrefix+"database.url");
 	}
-	private String getValue(String key) {
+	private String getValue(String key, String defaultValue) {
 		final String value = this.dbProps.getProperty(key);
-		if ( value==null ) {
+		if ( value==null && defaultValue==null ) {
 			System.out.println("no key ("+key+") in properties file "+this.propertiesFile);
 			System.exit(-1); // NOPMD, it's not a JEE app
 		}
+		if ( value==null ) {
+			return defaultValue;
+		}
 		return value;
 	}
-	/**
-	 * @return Get the name of the type of database that is used.
-	 */
-	String getDataBaseName() {
-		return getValue("database.name");
-	}
-	private URI getURI() {
-		String sUrl = getValue("database.url");
+	private URI getURI(String keyName) {
+		String sUrl = getValue(keyName, null);
 		sUrl = sUrl.replaceFirst("^[a-zA-Z:]*:@", "thin://");
 		while ( sUrl.indexOf(":")<sUrl.indexOf("://") ) {
 			sUrl = sUrl.replaceFirst("^[a-zA-Z]*:", "");

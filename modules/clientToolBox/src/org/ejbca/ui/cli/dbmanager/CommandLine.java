@@ -36,13 +36,16 @@ class CommandLine {
 	private static final String PASSWORD_PROMPT_SUFFIX = "_password";
 	private static final String RESOURCE_INPUT_SUFFIX = "_resource_input_name";
 	private static final String COMMAND_SUFFIX = "_command";
+	private static final String NEXT_COMMAND_SUFFIX = "_nextCommand";
 
 	final private DataBaseConfig dataBaseConfig;
 	final private String commandLine;
+	final private String nextCommandLine;
 	final private String command;
 	final private String gzipInput;
 	final private String gzipOutput;
 	final private String resourceInputName;
+	final private String ejbcaHome;
 	/**
 	 * The text to be showed to the user when he should give a password.
 	 */
@@ -54,9 +57,11 @@ class CommandLine {
 	 * @param _command the command label
 	 * @throws IOException should not be thrown
 	 */
-	CommandLine(String ejbcaHome, String _command) throws IOException {
+	CommandLine(String _ejbcaHome, String _command) throws IOException {
+		this.ejbcaHome = _ejbcaHome;
 		this.command = _command;
-		this.dataBaseConfig = new DataBaseConfig(ejbcaHome);
+		final String vaPrefix = "va-";
+		this.dataBaseConfig = new DataBaseConfig(this.ejbcaHome, this.command!=null && this.command.substring(0, vaPrefix.length()).equals(vaPrefix));
 		final Properties properties = new Properties();
 		properties.load(getResourceInputStream("config.properties"));
 		if ( this.command==null ) {
@@ -65,6 +70,7 @@ class CommandLine {
 			System.exit(-1); // NOPMD, this is not a JEE app
 		}
 		this.commandLine=properties.getProperty(this.command+COMMAND_SUFFIX);
+		this.nextCommandLine=properties.getProperty(this.command+NEXT_COMMAND_SUFFIX);
 		if ( this.commandLine==null ) {
 			System.err.println("Command '"+this.command+"' not available.");
 			listAvailableCommands(properties);
@@ -80,7 +86,7 @@ class CommandLine {
 		}
 	}
 	private InputStream getResourceInputStream(String name) {
-		final String resourcePropertiesName = "/DBCommands/"+this.dataBaseConfig.getDataBaseName()+"/"+name;
+		final String resourcePropertiesName = "/DBCommands/"+this.dataBaseConfig.dbName+"/"+name;
 		return DBManager.class.getResourceAsStream(resourcePropertiesName);
 	}
 	InputStream getInputStream() throws IOException {
@@ -136,5 +142,15 @@ class CommandLine {
 	 */
 	String getIt(String password) {
 		return this.dataBaseConfig.parseCommandline(this.commandLine, password);
+	}
+	/**
+	 * @return
+	 * @throws IOException
+	 */
+	CommandLine getNext() throws IOException {
+		if ( this.nextCommandLine==null ) {
+			return null;
+		}
+		return new CommandLine(this.ejbcaHome, this.nextCommandLine);
 	}
 }

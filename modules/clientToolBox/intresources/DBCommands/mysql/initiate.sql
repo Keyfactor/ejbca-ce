@@ -4,11 +4,11 @@
 drop database if exists ${url.path};
 create database ${url.path};
 
-revoke ALL PRIVILEGES, GRANT OPTION from '${database.username}'@'${url.host}';
-DROP USER '${database.username}'@'${url.host}';
+revoke ALL PRIVILEGES, GRANT OPTION from '${database.username}'@'%';
+DROP USER '${database.username}'@'%';
 
-grant ALL on ${url.path}.* to '${database.username}'@'${url.host}' identified by '${database.password}';
+grant ALL on ${url.path}.* to '${database.username}'@'%' identified by '${database.password}';
 
 flush privileges;
-show grants for '${database.username}'@'${url.host}';
+show grants for '${database.username}'@'%';
 exit

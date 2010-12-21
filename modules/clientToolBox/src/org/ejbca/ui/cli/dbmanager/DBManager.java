@@ -44,13 +44,15 @@ public class DBManager extends ClientToolBox {
 		}
 		try {
 			final Arguments arguments = new Arguments(args);
-			doIt(arguments.commandLine.getIt(arguments.password), arguments.inputFile, arguments.outputFile, arguments.commandLine.getInputStream());
+			doIt(arguments.commandLine.getIt(arguments.password), arguments.inputFile,
+			     arguments.outputFile, arguments.commandLine.getInputStream(), arguments.commandLine.getNext());
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(-1); // NOPMD, this is not a JEE component
 		}
 	}
-	private void doIt(String commandLine, File inputFile, File outputFile, InputStream is) throws IOException {
+	private void doIt(String commandLine, File inputFile, File outputFile, InputStream is,
+	                  CommandLine nextCommandLine) throws IOException {
 		System.err.println("Executing: "+commandLine);
 		final Process process = Runtime.getRuntime().exec(commandLine);
 		if ( inputFile!=null ) {
@@ -59,7 +61,9 @@ public class DBManager extends ClientToolBox {
 		} else if ( is!=null ) {
 			in2out(is,process.getOutputStream());
 		}
-		if ( outputFile!=null ) {
+		if ( nextCommandLine!=null ) {
+			doIt(nextCommandLine.getIt(null), null, outputFile, process.getInputStream(), null);
+		} else if ( outputFile!=null ) {
 			System.err.println("Output file: "+outputFile);
 			zipIt(process.getInputStream(), outputFile);
 		} else {
