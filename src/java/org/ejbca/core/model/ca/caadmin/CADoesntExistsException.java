@@ -18,9 +18,12 @@ import org.ejbca.core.ErrorCode;
 
 
 /**
- * An exception thrown when someone tries to change a CA that doesn't already exits
+ * An exception thrown when someone tries to get/edit/save a CA that does not exist.
+ * 
+ * Should really be called CADoesntExistsException, but changing this name have ripple effects down 
+ * to the WS-API, and it's not worth breaking any backwards compatibility to change this name. 
  *
- * @author  Philip Vendil
+ * @author  Philip Vendil et al., PrimeKey Solutions AB
  * @version $Id$
  */
 public class CADoesntExistsException extends EjbcaException {
