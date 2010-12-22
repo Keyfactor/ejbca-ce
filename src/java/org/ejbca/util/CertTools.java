@@ -2711,25 +2711,23 @@ public class CertTools {
      * @param ordering Vector of DERObjectIdentifier defining the desired order of components
      * @return X509Name with ordered conmponents according to the orcering vector
      */
-
-    private static X509Name getOrderedX509Name( X509Name x509Name, Vector ordering, X509NameEntryConverter converter ){
-        
+    private static X509Name getOrderedX509Name( X509Name x509Name, Vector<DERObjectIdentifier> ordering, X509NameEntryConverter converter ){
         //-- Null prevent
-        if ( ordering == null ){ ordering = new Vector(); }
+        if ( ordering == null ) { 
+        	ordering = new Vector<DERObjectIdentifier>(); 
+        }
         
         //-- New order for the X509 Fields
         Vector<DERObjectIdentifier> newOrdering  = new Vector<DERObjectIdentifier>();
         Vector<Object> newValues    = new Vector<Object>();
         
         Hashtable<DERObjectIdentifier, Object> ht = new Hashtable<DERObjectIdentifier, Object>();
-        Iterator it = ordering.iterator();
+        Iterator<DERObjectIdentifier> it = ordering.iterator();
         
         //-- Add ordered fields
         while( it.hasNext() ){
-            DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
-            
+            DERObjectIdentifier oid = it.next();
             if ( !ht.containsKey(oid) ){
-                @SuppressWarnings("unchecked")
                 Vector<Object> valueList = getX509NameFields(x509Name, oid);
                 //-- Only add the OID if has not null value
                 if ( valueList != null ){
@@ -2748,16 +2746,12 @@ public class CertTools {
         
         //-- Add unexpected fields to the end
         for ( int i=0; i<allOids.size(); i++ ) {
-            
             DERObjectIdentifier oid = (DERObjectIdentifier) allOids.get(i);
-            
-            
             if ( !ht.containsKey(oid) ){
-                Vector valueList = getX509NameFields(x509Name, oid);
-                
+                Vector<Object> valueList = getX509NameFields(x509Name, oid);
                 //-- Only add the OID if has not null value
                 if ( valueList != null ){
-                    Iterator itVals = valueList.iterator();
+                    Iterator<Object> itVals = valueList.iterator();
                     
                     while( itVals.hasNext() ){
                         Object value = itVals.next();
@@ -2768,8 +2762,7 @@ public class CertTools {
                     }
                 }
             } 
-        } 
-        
+        }         
         //-- Create X509Name with the ordered fields
         X509Name orderedName = new X509Name(newOrdering, newValues, converter);
         
@@ -2785,21 +2778,19 @@ public class CertTools {
      * @param id
      * @return
      */
-    private static Vector getX509NameFields( X509Name name, DERObjectIdentifier id ){
-      
-      Vector oids = name.getOIDs();
-      Vector values = name.getValues();
-      Vector vRet = null;
-      
-      for ( int i=0; i<oids.size(); i++ ){
-        
-        if ( id.equals(oids.elementAt(i)) ){
-          if ( vRet == null ){ vRet = new Vector(); }
-          vRet.add(values.get(i));
-        }
-        
-      }
-      return vRet;
+    private static Vector<Object> getX509NameFields( X509Name name, DERObjectIdentifier id ){
+    	@SuppressWarnings("unchecked")
+    	Vector oids = name.getOIDs();
+    	@SuppressWarnings("unchecked")
+    	Vector values = name.getValues();
+    	Vector<Object> vRet = null;
+    	for ( int i=0; i<oids.size(); i++ ){
+    		if ( id.equals(oids.elementAt(i)) ){
+    			if ( vRet == null ){ vRet = new Vector<Object>(); }
+    			vRet.add(values.get(i));
+    		}
+    	}
+    	return vRet;
     } // getX509NameFields
     
     
