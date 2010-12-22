@@ -32,6 +32,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -117,7 +118,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
      */
     protected boolean strongCryptoInstalled() throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException,
             InvalidKeySpecException {
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
