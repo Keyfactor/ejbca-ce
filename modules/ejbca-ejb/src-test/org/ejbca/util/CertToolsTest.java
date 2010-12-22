@@ -1068,11 +1068,13 @@ public class CertToolsTest extends TestCase {
 		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
         X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), false);
 		assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", dn5.toString());
+		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
 		String dn6 = "dc=tld,dc=domain,cn=titi,cn=toto";
 		String revdn6 = CertTools.reverseDN(dn6);
 		assertEquals("cn=toto,cn=titi,dc=domain,dc=tld", revdn6);
-		
+		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
+
         X509Name dn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), true);
 		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn7.toString());
         X509Name revdn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), false);
@@ -1093,21 +1095,24 @@ public class CertToolsTest extends TestCase {
         X509Name xdn9x500 = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), false);
 		assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn9ldap.toString());
 		assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn9x500.toString());
-        
+		assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", CertTools.stringToBCDNString(dn8));
+		assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", CertTools.stringToBCDNString(dn9));
+
 		// Test reversing DNs with multiple OU
-        X509Name x509dn = CertTools.stringToBcX509Name("CN=something,OU=A,OU=B,O=someO,C=SE", new X509DefaultEntryConverter(), true);
-        String str = x509dn.toString();
-        assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", str);
-        
-        // When we order backwards (X.509, !LdapOrder) from the beginning, we should not reorder anything
-        x509dn = CertTools.stringToBcX509Name("C=SE,O=someO,OU=B,OU=A,CN=something", new X509DefaultEntryConverter(), false);
-        str = x509dn.toString();
-        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", str);
+		String dn10 = "CN=something,OU=A,OU=B,O=someO,C=SE";
+        X509Name x509dn10 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), true);
+        assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", x509dn10.toString());
+		assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn10));
 
         // When we order forwards (LdapOrder) from the beginning, and request !LdapOrder, everything should be reversed
-        x509dn = CertTools.stringToBcX509Name("CN=something,OU=A,OU=B,O=someO,C=SE", new X509DefaultEntryConverter(), false);
-        str = x509dn.toString();
-        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", str);
+        X509Name ldapdn11 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), false);
+        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", ldapdn11.toString());
+
+        // When we order backwards (X.509, !LdapOrder) from the beginning, we should not reorder anything
+		String dn11 = "C=SE,O=someO,OU=B,OU=A,CN=something";
+		X509Name x509dn11 = CertTools.stringToBcX509Name(dn11, new X509DefaultEntryConverter(), false);
+        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", x509dn11.toString());
+		assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn11));
 
 		log.trace("<test09TestReverse()");
 	}
