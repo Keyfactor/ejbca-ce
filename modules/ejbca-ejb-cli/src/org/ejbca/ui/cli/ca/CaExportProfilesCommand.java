@@ -19,9 +19,6 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -34,10 +31,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
 
-    private CaSessionRemote caSession = ejb.getCaSession();
-    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
-    private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "exportprofiles"; }
 	public String getDescription() { return "Export profiles from the database to XML-files."; }
@@ -54,20 +47,20 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection certprofids = certificateProfileSession.getAuthorizedCertificateProfileIds(getAdmin(),0, caSession.getAvailableCAs(getAdmin()));                                               
-			Collection endentityprofids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin());
+            Collection<Integer> certprofids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(),0, ejb.getCaSession().getAvailableCAs(getAdmin()));                                               
+			Collection<Integer> endentityprofids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
-            Iterator iter = certprofids.iterator();
+            Iterator<Integer> iter = certprofids.iterator();
             while (iter.hasNext()) {
-            	int profileid = ((Integer) iter.next()).intValue();
+            	int profileid = iter.next().intValue();
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
                 	getLogger().error("Couldn't find certificate profile '"+profileid+"' in database.");
                 } else if (SecConst.isFixedCertificateProfile(profileid)) {
                     //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
-					String profilename = certificateProfileSession.getCertificateProfileName(getAdmin(), profileid);									
-                    CertificateProfile profile = certificateProfileSession.getCertificateProfile(getAdmin(),profileid);
+					String profilename = ejb.getCertificateProfileSession().getCertificateProfileName(getAdmin(), profileid);									
+                    CertificateProfile profile = ejb.getCertificateProfileSession().getCertificateProfile(getAdmin(),profileid);
                     if (profile == null) {
                     	getLogger().error("Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
@@ -88,8 +81,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
                     //getLogger().debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
-                	String profilename = endEntityProfileSession.getEndEntityProfileName(getAdmin(), profileid);
-                    EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(getAdmin(), profileid);
+                	String profilename = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), profileid);
+                    EndEntityProfile profile = ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(), profileid);
                     if (profile == null) {
                     	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

@@ -20,10 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -34,11 +30,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class AdminsAddAdminCommand extends BaseAdminsCommand {
 
-    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
-    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CaSessionRemote caSession = ejb.getCaSession();
-    
     public String getMainCommand() {
         return MAINCOMMAND;
     }
@@ -59,16 +50,16 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             if (args.length < 6) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<AdminGroup> adminGroups = adminGroupSession.getAuthorizedAdminGroupNames(getAdmin(),
-                        caSession.getAvailableCAs(getAdmin()));
+                Collection<AdminGroup> adminGroups = ejb.getAdminGroupSession().getAuthorizedAdminGroupNames(getAdmin(),
+                        ejb.getCaSession().getAvailableCAs(getAdmin()));
                 Collections.sort((List<AdminGroup>) adminGroups);
                 String availableGroups = "";
                 for (AdminGroup adminGroup : adminGroups) {
                     availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getAdminGroupName() + "\"";
                 }
                 getLogger().info("Available Admin groups: " + availableGroups);
-                Map<Integer, String> caIdToNameMap = caAdminSession.getCAIdToNameMap(getAdmin());
-                Collection<Integer> caids = caSession.getAvailableCAs(getAdmin());
+                Map<Integer, String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
+                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin());
                 String availableCas = "";
                 for (Integer caid : caids) {
                     availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caIdToNameMap.get(caid) + "\"";
@@ -87,12 +78,12 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            if (adminGroupSession.getAdminGroup(getAdmin(), groupName) == null) {
+            if (ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName) == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = caAdminSession.getCAInfo(getAdmin(), caName);
+            CAInfo caInfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
@@ -112,7 +103,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             AdminEntity adminEntity = new AdminEntity(matchWith, matchType, matchValue, caid);
             Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
             adminEntities.add(adminEntity);
-            adminEntitySession.addAdminEntities(getAdmin(), groupName, adminEntities);
+            ejb.getAdminEntitySession().addAdminEntities(getAdmin(), groupName, adminEntities);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

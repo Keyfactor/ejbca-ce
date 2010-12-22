@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -29,8 +28,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaListUsersCommand extends BaseRaAdminCommand {
 
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listusers"; }
 	public String getDescription() { return "List users with a specified status"; }
@@ -46,14 +43,14 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             int status = Integer.parseInt(args[1]);
             Collection<UserDataVO> coll = null;
             if (status==0) {
-                coll = userAdminSession.findAllUsersByStatus(getAdmin(), 10);
-                coll.addAll(userAdminSession.findAllUsersByStatus(getAdmin(), 11));
-                coll.addAll(userAdminSession.findAllUsersByStatus(getAdmin(), 20));
-                coll.addAll(userAdminSession.findAllUsersByStatus(getAdmin(), 30));
-                coll.addAll(userAdminSession.findAllUsersByStatus(getAdmin(), 40));
-                coll.addAll(userAdminSession.findAllUsersByStatus(getAdmin(), 50));
+                coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 10);
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 11));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 20));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 30));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 40));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 50));
             } else {
-                coll = userAdminSession.findAllUsersByStatus(getAdmin(), status);
+                coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), status);
             }
             Iterator<UserDataVO> iter = coll.iterator();
             while (iter.hasNext()) {

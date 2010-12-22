@@ -29,13 +29,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -70,14 +63,6 @@ public class BatchMakeP12 extends BaseCommand {
     private String mainStoreDir = "";
     private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private Boolean usekeyrecovery = null;
-
-    private AuthenticationSessionRemote authenticationSession = ejb.getAuthenticationSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
-    private KeyRecoverySessionRemote keyRecoverySession = ejb.getKeyRecoverySession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
-    private SignSessionRemote signSession = ejb.getSignSession();
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
 
     public String getMainCommand() {
         return null;
@@ -143,7 +128,7 @@ public class BatchMakeP12 extends BaseCommand {
 
     private boolean getUseKeyRecovery() throws RemoteException {
         if (usekeyrecovery == null) {
-            usekeyrecovery = (raAdminSession.getCachedGlobalConfiguration(getAdmin())).getEnableKeyRecovery();
+            usekeyrecovery = (ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin())).getEnableKeyRecovery();
         }
         return usekeyrecovery;
     }
@@ -155,7 +140,7 @@ public class BatchMakeP12 extends BaseCommand {
      */
     private Certificate[] getCACertChain(int caid) throws Exception {
         getLogger().trace(">getCACertChain()");
-        Certificate[] chain = (Certificate[]) signSession.getCertificateChain(getAdmin(), caid).toArray(new Certificate[0]);
+        Certificate[] chain = (Certificate[]) ejb.getSignSession().getCertificateChain(getAdmin(), caid).toArray(new Certificate[0]);
         getLogger().trace("<getCACertChain()");
         return chain;
     }
@@ -268,10 +253,10 @@ public class BatchMakeP12 extends BaseCommand {
 
         if (orgCert != null) {
             cert = orgCert;
-            boolean finishUser = caAdminSession.getCAInfo(getAdmin(), caid).getFinishUser();
+            boolean finishUser = ejb.getCAAdminSession().getCAInfo(getAdmin(), caid).getFinishUser();
             if (finishUser) {
-            	UserDataVO userdata = userAdminSession.findUser(admin, username);
-                authenticationSession.finishUser(userdata);
+            	UserDataVO userdata = ejb.getUserAdminSession().findUser(admin, username);
+                ejb.getAuthenticationSession().finishUser(userdata);
             }
 
         } else {
@@ -285,7 +270,7 @@ public class BatchMakeP12 extends BaseCommand {
             }
 
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);
-            cert = (X509Certificate) signSession.createCertificate(getAdmin(), username, password, selfcert);
+            cert = (X509Certificate) ejb.getSignSession().createCertificate(getAdmin(), username, password, selfcert);
         }
 
         // System.out.println("issuer " + CertTools.getIssuerDN(cert) + ", " +
@@ -324,7 +309,7 @@ public class BatchMakeP12 extends BaseCommand {
 
         if (getUseKeyRecovery() && savekeys) {
             // Save generated keys to database.
-            keyRecoverySession.addKeyRecoveryData(getAdmin(), cert, username, rsaKeys);
+            ejb.getKeyRecoverySession().addKeyRecoveryData(getAdmin(), cert, username, rsaKeys);
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username
@@ -368,12 +353,12 @@ public class BatchMakeP12 extends BaseCommand {
         KeyPair rsaKeys = null;
         X509Certificate orgCert = null;
         if (getUseKeyRecovery() && keyrecoverflag) {
-            boolean reusecertificate = endEntityProfileSession.getEndEntityProfile(getAdmin(), data.getEndEntityProfileId()).getReUseKeyRevoceredCertificate();
+            boolean reusecertificate = ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(), data.getEndEntityProfileId()).getReUseKeyRevoceredCertificate();
             // Recover Keys
 
-            KeyRecoveryData recoveryData = keyRecoverySession.keyRecovery(getAdmin(), data.getUsername(), data.getEndEntityProfileId());
+            KeyRecoveryData recoveryData = ejb.getKeyRecoverySession().keyRecovery(getAdmin(), data.getUsername(), data.getEndEntityProfileId());
             if (reusecertificate) {
-                keyRecoverySession.unmarkUser(getAdmin(), data.getUsername());
+                ejb.getKeyRecoverySession().unmarkUser(getAdmin(), data.getUsername());
             }
             if (recoveryData != null) {
                 rsaKeys = recoveryData.getKeyPair();
@@ -418,14 +403,14 @@ public class BatchMakeP12 extends BaseCommand {
             // request counter
             // meaning that we should not reset the clear text password yet.
 
-            UserDataVO vo = userAdminSession.findUser(getAdmin(), data.getUsername());
+            UserDataVO vo = ejb.getUserAdminSession().findUser(getAdmin(), data.getUsername());
             if ((vo.getStatus() == UserDataConstants.STATUS_NEW) || (vo.getStatus() == UserDataConstants.STATUS_FAILED)
                     || (vo.getStatus() == UserDataConstants.STATUS_KEYRECOVERY)) {
-                userAdminSession.setClearTextPassword(getAdmin(), data.getUsername(), data.getPassword());
+                ejb.getUserAdminSession().setClearTextPassword(getAdmin(), data.getUsername(), data.getPassword());
             } else {
                 // Delete clear text password, if we are not letting status be
                 // the same as originally
-                userAdminSession.setClearTextPassword(getAdmin(), data.getUsername(), null);
+                ejb.getUserAdminSession().setClearTextPassword(getAdmin(), data.getUsername(), null);
             }
             ret = true;
             String iMsg = intres.getLocalizedMessage("batch.generateduser", data.getUsername());
@@ -498,7 +483,7 @@ public class BatchMakeP12 extends BaseCommand {
 
         boolean stopnow = false;
         do {
-            for(UserDataVO data : userAdminSession.findAllBatchUsersByStatusWithLimit(status)) {
+            for(UserDataVO data : ejb.getUserAdminSession().findAllBatchUsersByStatusWithLimit(status)) {
                 if (data.getTokenType() == SecConst.TOKEN_SOFT_JKS || data.getTokenType() == SecConst.TOKEN_SOFT_PEM
                         || data.getTokenType() == SecConst.TOKEN_SOFT_P12) {
                     result.add(data);
@@ -532,9 +517,9 @@ public class BatchMakeP12 extends BaseCommand {
                             failedusers += (":" + data.getUsername());
                             failcount++;
                             if (status == UserDataConstants.STATUS_KEYRECOVERY) {
-                                userAdminSession.setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
+                                ejb.getUserAdminSession().setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                             } else {
-                                userAdminSession.setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_FAILED);
+                                ejb.getUserAdminSession().setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_FAILED);
                             }
                         }
                     } else {
@@ -570,7 +555,7 @@ public class BatchMakeP12 extends BaseCommand {
         if (getLogger().isTraceEnabled()) {
             getLogger().trace(">createUser(" + username + ")");
         }
-        UserDataVO data = userAdminSession.findUser(getAdmin(), username);
+        UserDataVO data = ejb.getUserAdminSession().findUser(getAdmin(), username);
         if (data == null) {
             getLogger().error(intres.getLocalizedMessage("batch.errorunknown", username));
             return;
@@ -586,9 +571,9 @@ public class BatchMakeP12 extends BaseCommand {
                     String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
                     getLogger().error(errMsg, e);
                     if (status == UserDataConstants.STATUS_KEYRECOVERY) {
-                        userAdminSession.setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
+                        ejb.getUserAdminSession().setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                     } else {
-                        userAdminSession.setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_FAILED);
+                        ejb.getUserAdminSession().setUserStatus(getAdmin(), data.getUsername(), UserDataConstants.STATUS_FAILED);
                     }
                     errMsg = intres.getLocalizedMessage("batch.errorbatchfaileduser", username);
                     throw new Exception(errMsg);

@@ -18,13 +18,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -69,14 +62,6 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private static final String SUPERADMINTOKENNAME = "SuperAdminToken";
     private static final String ADMINTOKENENDENTITYPROFILE = "Administration Token End Entity Profile";
 
-    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
-    private EndEntityProfileSessionRemote endEntityProfileSession = ejb.getEndEntityProfileSession();
-    private HardTokenSessionRemote hardTokenSession = ejb.getHardTokenSession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
     public String getMainCommand() {
         return "setup";
     }
@@ -108,8 +93,8 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      */
     private void runSetup(String caname) throws Exception {
         getLogger().info("Adding Hard Token Super Administrator .....\n\n");
-        int caid = caAdminSession.getCAInfo(getAdmin(), caname).getCAId();
-        int admingroupid = adminGroupSession.getAdminGroup(getAdmin(), AdminGroup.TEMPSUPERADMINGROUP).getAdminGroupId();
+        int caid = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname).getCAId();
+        int admingroupid = ejb.getAdminGroupSession().getAdminGroup(getAdmin(), AdminGroup.TEMPSUPERADMINGROUP).getAdminGroupId();
 
         configureGlobalConfiguration();
         createAdministratorTokenProfile();
@@ -131,9 +116,9 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void configureGlobalConfiguration() throws Exception {
-        GlobalConfiguration config = raAdminSession.getCachedGlobalConfiguration(getAdmin());
+        GlobalConfiguration config = ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin());
         config.setIssueHardwareTokens(true);
-        this.raAdminSession.saveGlobalConfiguration(getAdmin(), config);
+        this.ejb.getRAAdminSession().saveGlobalConfiguration(getAdmin(), config);
     }
 
     /**
@@ -158,7 +143,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         ((IPINEnvelopeSettings) admintokenprofile).setPINEnvelopeData(filecontent);
         ((IPINEnvelopeSettings) admintokenprofile).setPINEnvelopeTemplateFilename(SVGPINFILENAME);
 
-        this.hardTokenSession.addHardTokenProfile(getAdmin(), ADMINTOKENPROFILENAME, admintokenprofile);
+        this.ejb.getHardTokenSession().addHardTokenProfile(getAdmin(), ADMINTOKENPROFILENAME, admintokenprofile);
     }
 
     /**
@@ -172,10 +157,10 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         localissuer.setDescription("Issuer created by installation script, used to create the first administration token");
 
         ArrayList<Integer> availableprofiles = new ArrayList<Integer>();
-        availableprofiles.add(Integer.valueOf(hardTokenSession.getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME)));
+        availableprofiles.add(Integer.valueOf(ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME)));
         localissuer.setAvailableHardTokenProfiles(availableprofiles);
 
-        this.hardTokenSession.addHardTokenIssuer(getAdmin(), ISSUERALIAS, admingroupid, localissuer);
+        this.ejb.getHardTokenSession().addHardTokenIssuer(getAdmin(), ISSUERALIAS, admingroupid, localissuer);
 
     }
 
@@ -185,8 +170,8 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void createAdminTokenEndEntityProfile(int caid) throws Exception {
-        int tokenid = hardTokenSession.getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME);
-        int hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(getAdmin(), ISSUERALIAS);
+        int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME);
+        int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(), ISSUERALIAS);
         EndEntityProfile profile = new EndEntityProfile();
 
         // Set autogenerated password
@@ -216,7 +201,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         profile.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, "" + hardtokenissuerid);
 
         // Save Profile
-        this.endEntityProfileSession.addEndEntityProfile(getAdmin(), ADMINTOKENENDENTITYPROFILE, profile);
+        this.ejb.getEndEntityProfileSession().addEndEntityProfile(getAdmin(), ADMINTOKENENDENTITYPROFILE, profile);
     }
 
     /**
@@ -226,12 +211,12 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void createSuperAdminTokenUser(int caid) throws Exception {
-        int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(getAdmin(), ADMINTOKENENDENTITYPROFILE);
+        int endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(), ADMINTOKENENDENTITYPROFILE);
         int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
-        int tokenid = hardTokenSession.getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME);
-        int hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(getAdmin(), ISSUERALIAS);
+        int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME);
+        int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(), ISSUERALIAS);
 
-        this.userAdminSession.addUser(getAdmin(), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true, endentityprofileid,
+        this.ejb.getUserAdminSession().addUser(getAdmin(), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true, endentityprofileid,
                 certificateprofileid, 65, tokenid, hardtokenissuerid, caid);
     }
 
@@ -243,6 +228,6 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private void addSuperAdminTokenUserToTemporarySuperAdminGroup(int caid) throws Exception {
         List<AdminEntity> adminentities = new ArrayList<AdminEntity>();
         adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, SUPERADMINTOKENNAME, caid));
-        adminEntitySession.addAdminEntities(getAdmin(), "Temporary Super Administrator Group", adminentities);
+        ejb.getAdminEntitySession().addAdminEntities(getAdmin(), "Temporary Super Administrator Group", adminentities);
     }
 }

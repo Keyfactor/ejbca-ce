@@ -13,11 +13,10 @@
  
 package org.ejbca.ui.cli.ra;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -33,9 +32,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "unrevokeuser"; }
 	public String getDescription() { return "Reactivates a user if the revocation reason is 'on hold'"; }
@@ -49,7 +45,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
                 return;
             }
             String username = args[1];
-            UserDataVO data = userAdminSession.findUser(getAdmin(), username);
+            UserDataVO data = ejb.getUserAdminSession().findUser(getAdmin(), username);
             getLogger().info("Found user:");
             getLogger().info("username=" + data.getUsername());
             getLogger().info("dn=\"" + data.getDN() + "\"");
@@ -58,14 +54,14 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             try {
             	boolean foundCertificateOnHold = false;
             	// Find all user certs
-            	Iterator i = certificateStoreSession.findCertificatesByUsername(getAdmin(), username).iterator();
+            	Iterator<Certificate> i = ejb.getCertStoreSession().findCertificatesByUsername(getAdmin(), username).iterator();
             	while (i.hasNext()) {
             		X509Certificate cert = (X509Certificate) i.next();
-            		if (certificateStoreSession.getStatus(cert.getIssuerDN().toString(),
+            		if (ejb.getCertStoreSession().getStatus(cert.getIssuerDN().toString(),
             				cert.getSerialNumber()).revocationReason == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
             			foundCertificateOnHold = true;
             			try {
-            				userAdminSession.revokeCert(getAdmin(), cert.getSerialNumber(), cert.getIssuerDN().toString(), username, RevokedCertInfo.NOT_REVOKED);
+            				ejb.getUserAdminSession().revokeCert(getAdmin(), cert.getSerialNumber(), cert.getIssuerDN().toString(), username, RevokedCertInfo.NOT_REVOKED);
                         } catch (AlreadyRevokedException e) {
                         	getLogger().error("The user was already reactivated while the request executed.");
                         } catch (ApprovalException e) {
@@ -78,7 +74,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             	if (!foundCertificateOnHold) {
             		getLogger().error("No certificates with status 'On hold' were found for this user.");
             	} else {
-	                data = userAdminSession.findUser(getAdmin(), username);
+	                data = ejb.getUserAdminSession().findUser(getAdmin(), username);
 	                getLogger().info("New status=" + data.getStatus());
             	}
             } catch (AuthorizationDeniedException e) {

@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.FileTools;
 
@@ -29,8 +28,6 @@ import org.ejbca.util.FileTools;
  */
 public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "restorekeystore"; }
 	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
@@ -68,10 +65,10 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				FileInputStream fis = new FileInputStream(p12file);
 				ks.load(fis, kspwd.toCharArray());
 				fis.close();
-				Enumeration/*String*/ aliases = ks.aliases();
+				Enumeration<String> aliases = ks.aliases();
 				int length = 0;
 				while (aliases.hasMoreElements()) {
-					alias = (String) aliases.nextElement();
+					alias = aliases.nextElement();
 					getLogger().info("Keystore contains alias: " + alias);
 					length++;
 				}
@@ -82,7 +79,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				}
 				// else alias already contains the only alias, so we can use that
 			}
-			caAdminSession.restoreCAKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+			ejb.getCAAdminSession().restoreCAKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 		} catch (ErrorAdminCommandException e) {
 			throw e;
 		} catch (Exception e) {

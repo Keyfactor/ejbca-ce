@@ -15,13 +15,11 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Changes the signature algorithm and possible keyspec of a CA token.
@@ -31,16 +29,13 @@ import org.ejbca.util.CertTools;
  */
 public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CaSessionRemote caSession = ejb.getCaSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "changecatokensignalg"; }
 	public String getDescription() { return "Changes the signature algorithm and possible keyspec of a CA token"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
-		CertTools.installBCProvider(); // need this for CVC certificate
+		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
 		if ( args.length<3 ) {
 			usage();
 			return;
@@ -48,7 +43,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
 		try {
 			String caName = args[1];
-			CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caName);
+			CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caName);
 			String signAlg = args[2];
 			getLogger().info("Setting new signature algorithm: " + signAlg);
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo();
@@ -64,7 +59,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 				}
 			}
 			cainfo.setCATokenInfo(tokeninfo);
-			caAdminSession.editCA(getAdmin(), cainfo);
+			ejb.getCAAdminSession().editCA(getAdmin(), cainfo);
 			getLogger().info("CA token signature algorithm for CA changed.");
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
@@ -81,9 +76,9 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = caSession.getAvailableCAs(getAdmin());
+			Collection<Integer> cas = ejb.getCaSession().getAvailableCAs(getAdmin());
 			for (Integer caid : cas) {
-				CAInfo info = caAdminSession.getCAInfo(getAdmin(), caid);
+				CAInfo info = ejb.getCAAdminSession().getCAInfo(getAdmin(), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCATokenInfo().getSignatureAlgorithm());				
 			}
 		} catch (Exception e) {

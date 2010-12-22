@@ -13,17 +13,12 @@
 
 package org.ejbca.ui.cli.ca;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -40,13 +35,6 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
-    private PublisherSessionRemote publisherSession = ejb.getPublisherSession();
-    private CrlSessionRemote createCrlSession = ejb.getCrlSession();
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
-    
     public String getMainCommand() {
         return MAINCOMMAND;
     }
@@ -75,29 +63,29 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
             if (cainfo == null) {
                 getLogger().info("CA with name '" + caname + "' does not exist.");
                 return;
             }
             // Publish the CAs certificate and CRL
-            Collection cachain = cainfo.getCertificateChain();
-            Iterator caiter = cachain.iterator();
+            Collection<Certificate> cachain = cainfo.getCertificateChain();
+            Iterator<Certificate> caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 X509Certificate cacert = (X509Certificate) caiter.next();
-                byte[] crlbytes = createCrlSession.getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
-                Collection capublishers = cainfo.getCRLPublishers();
+                byte[] crlbytes = ejb.getCrlSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
+                Collection<Integer> capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if (capublishers != null) {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
-                    String username = certificateStoreSession.findUsernameByCertSerno(getAdmin(), cacert.getSerialNumber(), cacert.getIssuerDN().getName());
-                    CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(getAdmin(), fingerprint);
-                    publisherSession.storeCertificate(getAdmin(), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
+                    String username = ejb.getCertStoreSession().findUsernameByCertSerno(getAdmin(), cacert.getSerialNumber(), cacert.getIssuerDN().getName());
+                    CertificateInfo certinfo = ejb.getCertStoreSession().getCertificateInfo(getAdmin(), fingerprint);
+                    ejb.getPublisherSession().storeCertificate(getAdmin(), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
                             .getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
                             certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
                     getLogger().info("Certificate published for " + caname);
                     if ((crlbytes != null) && (crlbytes.length > 0)) {
-                        publisherSession.storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, cainfo.getSubjectDN());
+                        ejb.getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, cainfo.getSubjectDN());
                         getLogger().info("CRL published for " + caname);
                     } else {
                         getLogger().info("CRL not published, no CRL createed for CA?");
@@ -110,10 +98,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
 
             // Get all users for this CA
-            Collection coll = userAdminSession.findAllUsersByCaId(getAdmin(), cainfo.getCAId());
-            Iterator iter = coll.iterator();
+            Collection<UserDataVO> coll = ejb.getUserAdminSession().findAllUsersByCaId(getAdmin(), cainfo.getCAId());
+            Iterator<UserDataVO> iter = coll.iterator();
             while (iter.hasNext()) {
-                UserDataVO data = (UserDataVO) iter.next();
+                UserDataVO data = iter.next();
                 getLogger().info(
                         "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", "
                                 + data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId() + ", "
@@ -121,13 +109,13 @@ public class CARepublishCommand extends BaseCaAdminCommand {
 
                 if (data.getCertificateProfileId() > 0) { // only if we find a
                     // certificate profile
-                    CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(getAdmin(), data.getCertificateProfileId());
+                    CertificateProfile certProfile = ejb.getCertificateProfileSession().getCertificateProfile(getAdmin(), data.getCertificateProfileId());
                     if (certProfile == null) {
                         getLogger().error("Can not get certificate profile with id: " + data.getCertificateProfileId());
                         continue;
                     }
-                    Collection certCol = certificateStoreSession.findCertificatesByUsername(getAdmin(), data.getUsername());
-                    Iterator certIter = certCol.iterator();
+                    Collection<Certificate> certCol = ejb.getCertStoreSession().findCertificatesByUsername(getAdmin(), data.getUsername());
+                    Iterator<Certificate> certIter = certCol.iterator();
                     X509Certificate cert = null;
                     if (certIter.hasNext()) {
                         cert = (X509Certificate) certIter.next();
@@ -146,7 +134,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                             getLogger().info("Re-publishing user " + data.getUsername());
                             if (addAll) {
                                 getLogger().info("Re-publishing all certificates (" + certCol.size() + ").");
-                                Iterator i = certCol.iterator();
+                                Iterator<Certificate> i = certCol.iterator();
                                 while (i.hasNext()) {
                                     X509Certificate c = (X509Certificate) i.next();
                                     publishCert(data, certProfile, c);
@@ -173,9 +161,9 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     private void publishCert(UserDataVO data, CertificateProfile certProfile, X509Certificate cert) {
         try {
             String fingerprint = CertTools.getFingerprintAsString(cert);
-            CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(getAdmin(), fingerprint);
+            CertificateInfo certinfo = ejb.getCertStoreSession().getCertificateInfo(getAdmin(), fingerprint);
             final String userDataDN = data.getDN();
-            publisherSession.storeCertificate(getAdmin(), certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN,
+            ejb.getPublisherSession().storeCertificate(getAdmin(), certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN,
                     fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo
                             .getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
         } catch (Exception e) {

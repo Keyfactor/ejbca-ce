@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -32,8 +31,6 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaListExpiredCommand extends BaseCaAdminCommand {
 
-    private CertificateStoreSessionRemote certificateStoreSession = ejb.getCertStoreSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listexpired"; }
 	public String getDescription() { return "List certificates that will expire within the given number of days"; }
@@ -52,11 +49,11 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
             findDate.setTime(findDate.getTime() +  millis);
             getLogger().info("Looking for certificates that expire before " + findDate + ".");
 
-            Collection certs = getExpiredCerts(findDate);
-            Iterator iter = certs.iterator();
+            Collection<Certificate> certs = getExpiredCerts(findDate);
+            Iterator<Certificate> iter = certs.iterator();
 
             while (iter.hasNext()) {
-                Certificate cert = (Certificate) iter.next();
+                Certificate cert = iter.next();
                 Date retDate;
                 if (cert instanceof CardVerifiableCertificate) {
                     retDate = ((CardVerifiableCertificate)cert).getCVCertificate().getCertificateBody().getValidTo();
@@ -73,10 +70,10 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
         }
     }
 
-    private Collection getExpiredCerts(Date findDate) {
+    private Collection<Certificate> getExpiredCerts(Date findDate) {
         try {
         	getLogger().debug("Looking for cert with expireDate=" + findDate);
-            Collection certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(getAdmin(), findDate);
+            Collection<Certificate> certs = ejb.getCertStoreSession().findCertificatesByExpireTimeWithLimit(getAdmin(), findDate);
             getLogger().debug("Found " + certs.size() + " certs.");
             return certs;
         } catch (Exception e) {

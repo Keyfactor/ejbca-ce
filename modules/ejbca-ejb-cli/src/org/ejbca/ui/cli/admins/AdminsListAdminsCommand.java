@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.admins;
 
 import java.util.Collection;
 
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -26,9 +24,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @version $Id$
  */
 public class AdminsListAdminsCommand extends BaseAdminsCommand {
-
-    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -50,14 +45,14 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = adminGroupSession.getAdminGroup(getAdmin(), groupName);
+            AdminGroup adminGroup = ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
             Collection<AdminEntity> list = adminGroup.getAdminEntities();
             for (AdminEntity adminEntity : list) {
-                String caName = (String) caAdminSession.getCAIdToNameMap(getAdmin()).get(adminEntity.getCaId());
+                String caName = (String) ejb.getCAAdminSession().getCAIdToNameMap(getAdmin()).get(adminEntity.getCaId());
                 if (caName == null) {
                     caName = "Unknown CA with id " + adminEntity.getCaId();
                 }
