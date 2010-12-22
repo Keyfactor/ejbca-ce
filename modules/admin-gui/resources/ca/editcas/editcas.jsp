@@ -1463,10 +1463,7 @@
                                                                       
               boolean useutf8policytext = false;
               boolean useprintablestringsubjectdn = false;
-              boolean useldapdnorder = true;
-              if (DnComponents.isReverseOrder()) {
-                  useldapdnorder = false;            	  
-              }
+              boolean useldapdnorder = true; // Default value
               boolean usecrldistpointoncrl = false;
               boolean crldistpointoncrlcritical = false;
                             
