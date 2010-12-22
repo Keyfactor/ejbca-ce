@@ -212,25 +212,7 @@
 # ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
 
 #------------------- Debug and special settings -------------
-# 
-# Specifies if the DN order should be constructed in forward (standard and default)
-# or reverse order.
-# NOTE: What is called forward or reverse depends if you reference LDAP or X.500, our notion is LDAP and is explained below.
 #
-# Forward is: CN=Tomas Gustavsson, O=PrimeKey, C=SE
-# Reverse is: C=SE, O=PrimeKey, CN=Tomas Gustavsson
-# 
-# Do not change this unless you really know what you are doing.
-# You can NOT install a CA in one order and then change the order, you have to re-install completely,
-# otherwise strange phenomenon will happen.
-#
-# NOTE!
-# Deprecated: Use the CA setting "Use LDAP DN order" in the Admin-GUI instead to configure this per CA.
-# Unless you are upgrading and had this setting in the old installation.
-#
-# Default: false
-#certtools.dnorderreverse=false
-
 # Custom Available Access Rules. Use ';' to separate multiple accessrules
 # Available values are the Access Rules strings in Advanced mode of 'Access Rules' in 'Edit Administrator Privileges'
 # Default: ""

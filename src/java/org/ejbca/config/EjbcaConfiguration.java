@@ -232,14 +232,6 @@ public class EjbcaConfiguration {
 		return ConfigurationHolder.getExpandedString("ecdsa.implicitlyca.n", "883423532389192164791648750360308884807550341691627752275345424702807307");
 	}
 	
-	/**
-	 * Specifies if the DN order should be constructed in forward (standard and default) or reverse order.
-	 * @deprecated use soft configuration on CA instead
-	 */
-	public static boolean getCertToolsDnOrderReverse() {
-		return "true".equalsIgnoreCase(ConfigurationHolder.getString("certtools.dnorderreverse", "false"));
-	}
-	
     /**
      * Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
      * this is needed so you don't have to restart JBoss all the time. 

@@ -134,7 +134,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
-import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
 
 /**
@@ -1513,7 +1512,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             boolean useutf8policytext = false;
             boolean useprintablestringsubjectdn = false;
-            boolean useldapdnorder = !DnComponents.isReverseOrder();
+            boolean useldapdnorder = true; // Default value
             boolean usecrldistpointoncrl = false;
             boolean crldistpointoncrlcritical = false;
 
