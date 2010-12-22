@@ -1259,7 +1259,7 @@ You should also try the different roles and privileges to see the differences be
     </subsection>
     
     <subsection name="Comment">
-      <p>You can chose to see all the logs created with a specific comment. Note that the comment is case sensitive and should be exact, tex. searching for a text that is supposedly part of the comment will not find the correct logs.</p>
+      <p>You can chose to see all the logs created with a specific comment.</p>
     </subsection>
     
     <subsection name="Administrator Type">
