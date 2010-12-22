@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -283,6 +284,11 @@ public class ScepServlet extends HttpServlet {
             log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
+        } catch (EjbcaException ee) {
+    		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
+            log.error(errMsg, ee);
+            // TODO: Send back proper Failure Response
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ee.getMessage());
         } catch (Exception e) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
             log.error(errMsg, e);
