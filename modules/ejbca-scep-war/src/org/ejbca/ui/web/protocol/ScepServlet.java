@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -38,6 +37,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
@@ -284,7 +284,7 @@ public class ScepServlet extends HttpServlet {
             log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
-        } catch (EjbcaException ee) {
+        } catch (CATokenOfflineException ee) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
             log.error(errMsg, ee);
             // TODO: Send back proper Failure Response
