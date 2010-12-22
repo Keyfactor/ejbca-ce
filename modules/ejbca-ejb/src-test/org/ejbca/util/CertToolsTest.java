@@ -1064,22 +1064,48 @@ public class CertToolsTest extends TestCase {
 		String revdn3 = CertTools.reverseDN(dn3);
 		assertEquals("dc=tld,dc=domain,cn=titi,cn=toto", revdn3);
 		
-        Vector<DERObjectIdentifier> dnorder = CertTools.getX509FieldOrder(true);
-        X509Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
+        X509Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), true);
 		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
-        dnorder = CertTools.getX509FieldOrder(false);
-        X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
-		// This ordering is not optimal...
-		assertEquals("DC=domain,DC=tld,CN=toto,CN=titi", dn5.toString());
+        X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), false);
+		assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", dn5.toString());
 
-		// Test reversing DNs
-        dnorder = CertTools.getX509FieldOrder(true);
-        X509Name x509dn = CertTools.stringToBcX509Name("CN=something,OU=A,OU=B,O=someO,C=SE", new X509DefaultEntryConverter(), dnorder);
+		String dn6 = "dc=tld,dc=domain,cn=titi,cn=toto";
+		String revdn6 = CertTools.reverseDN(dn6);
+		assertEquals("cn=toto,cn=titi,dc=domain,dc=tld", revdn6);
+		
+        X509Name dn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), true);
+		assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn7.toString());
+        X509Name revdn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), false);
+		assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", revdn7.toString());
+
+		// Test the test strings from ECA-1699, to prove that we fixed this issue
+        String dn8 = "dc=org,dc=foo,o=FOO,cn=FOO Root CA";
+        String dn9 = "cn=FOO Root CA,o=FOO,dc=foo,dc=org";
+		String revdn8 = CertTools.reverseDN(dn8);
+		assertEquals("cn=FOO Root CA,o=FOO,dc=foo,dc=org", revdn8);
+		String revdn9 = CertTools.reverseDN(dn9);
+		assertEquals("dc=org,dc=foo,o=FOO,cn=FOO Root CA", revdn9);
+        X509Name xdn8ldap = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), true);
+        X509Name xdn8x500 = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), false);
+		assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn8ldap.toString());
+		assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn8x500.toString());
+        X509Name xdn9ldap = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), true);
+        X509Name xdn9x500 = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), false);
+		assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn9ldap.toString());
+		assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn9x500.toString());
+        
+		// Test reversing DNs with multiple OU
+        X509Name x509dn = CertTools.stringToBcX509Name("CN=something,OU=A,OU=B,O=someO,C=SE", new X509DefaultEntryConverter(), true);
         String str = x509dn.toString();
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", str);
         
-        dnorder = CertTools.getX509FieldOrder(false);
-        x509dn = CertTools.stringToBcX509Name("C=SE,O=someO,OU=B,OU=A,CN=something", new X509DefaultEntryConverter(), dnorder);
+        // When we order backwards (X.509, !LdapOrder) from the beginning, we should not reorder anything
+        x509dn = CertTools.stringToBcX509Name("C=SE,O=someO,OU=B,OU=A,CN=something", new X509DefaultEntryConverter(), false);
+        str = x509dn.toString();
+        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", str);
+
+        // When we order forwards (LdapOrder) from the beginning, and request !LdapOrder, everything should be reversed
+        x509dn = CertTools.stringToBcX509Name("CN=something,OU=A,OU=B,O=someO,C=SE", new X509DefaultEntryConverter(), false);
         str = x509dn.toString();
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", str);
 

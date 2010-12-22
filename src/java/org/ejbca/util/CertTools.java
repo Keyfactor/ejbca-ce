@@ -58,6 +58,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -220,8 +221,8 @@ public class CertTools {
     protected CertTools() {
     }
 
-    /** See stringToBcX509Name(String, X509NameEntryConverter), this method uses the default BC converter (X509DefaultEntryConverter)
-     * @see #stringToBcX509Name(String, X509NameEntryConverter)
+    /** See stringToBcX509Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap order
+     * @see #stringToBcX509Name(String, X509NameEntryConverter, boolean)
      * @param dn String containing DN that will be transformed into X509Name, The
      *          DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *          the string will be added to the end positions of OID array.
@@ -230,7 +231,7 @@ public class CertTools {
      */
     public static X509Name stringToBcX509Name(String dn) {
     	X509NameEntryConverter converter = new X509DefaultEntryConverter();
-    	return stringToBcX509Name(dn, converter);    	
+    	return stringToBcX509Name(dn, converter, true);    	
     }
 
     /**
@@ -247,16 +248,15 @@ public class CertTools {
      *          DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *          the string will be added to the end positions of OID array.
      * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
+     * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500 order is the reverse
      * @return X509Name or null if input is null
      */
-    private static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {
-    	return stringToBcX509Name(dn, converter, getDefaultX509FieldOrder());
-    }
-    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, Vector<DERObjectIdentifier> dnOrder) {
+    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, boolean ldaporder) {
 
       if (dn == null) {
         return null;
       }
+
       Vector<DERObjectIdentifier> defaultOrdering = new Vector<DERObjectIdentifier>();
       Vector<String> values = new Vector<String>();
       X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
@@ -298,7 +298,7 @@ public class CertTools {
       X509Name x509Name = new X509Name(defaultOrdering, values, converter);
 
       //-- Reorder fields
-      X509Name orderedX509Name = getOrderedX509Name(x509Name, dnOrder, converter);
+      X509Name orderedX509Name = getOrderedX509Name(x509Name, ldaporder, converter);
 
       //log.trace("<stringToBcX509Name");
       return orderedX509Name;
@@ -2674,24 +2674,11 @@ public class CertTools {
 
     /**
      * Obtains a Vector with the DERObjectIdentifiers for 
-     * dNObjects names.
-     * 
-     * @return Vector with DERObjectIdentifiers defining the known order we require
-     */
-    private static Vector<DERObjectIdentifier> getDefaultX509FieldOrder(){
-      Vector<DERObjectIdentifier> fieldOrder = new Vector<DERObjectIdentifier>();
-      String[] dNObjects = DnComponents.getDnObjects(true);
-      for (int i = 0; i < dNObjects.length; i++) {
-          fieldOrder.add(DnComponents.getOid(dNObjects[i]));
-      }
-      return fieldOrder;
-    }
-    /**
-     * Obtains a Vector with the DERObjectIdentifiers for 
      * dNObjects names, in the specified order
      * 
      * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500 (C=SE,O=bar,CN=foo).
      * @return Vector with DERObjectIdentifiers defining the known order we require
+     * @see org.ejbca.util.dn.DnComponents#getDnObjects(boolean)
      */
     public static Vector<DERObjectIdentifier> getX509FieldOrder(boolean ldaporder){
       Vector<DERObjectIdentifier> fieldOrder = new Vector<DERObjectIdentifier>();
@@ -2708,14 +2695,16 @@ public class CertTools {
      * in the original order.
      *   
      * @param x509Name the X509Name that is unordered 
-     * @param ordering Vector of DERObjectIdentifier defining the desired order of components
+     * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500 order is the reverse
      * @return X509Name with ordered conmponents according to the orcering vector
      */
-    private static X509Name getOrderedX509Name( X509Name x509Name, Vector<DERObjectIdentifier> ordering, X509NameEntryConverter converter ){
+    private static X509Name getOrderedX509Name( X509Name x509Name, boolean ldaporder, X509NameEntryConverter converter ){
         //-- Null prevent
-        if ( ordering == null ) { 
-        	ordering = new Vector<DERObjectIdentifier>(); 
-        }
+    	// Guess order of the input name
+    	boolean isLdapOrder = !isDNReversed(x509Name.toString());
+    	// If we think the DN is in LDAP order, first order it as a LDAP DN, if we don't think it's LDAP order
+    	// order it as a X.500 DN
+        Vector<DERObjectIdentifier> ordering = CertTools.getX509FieldOrder(isLdapOrder);
         
         //-- New order for the X509 Fields
         Vector<DERObjectIdentifier> newOrdering  = new Vector<DERObjectIdentifier>();
@@ -2723,7 +2712,6 @@ public class CertTools {
         
         Hashtable<DERObjectIdentifier, Object> ht = new Hashtable<DERObjectIdentifier, Object>();
         Iterator<DERObjectIdentifier> it = ordering.iterator();
-        
         //-- Add ordered fields
         while( it.hasNext() ){
             DERObjectIdentifier oid = it.next();
@@ -2758,14 +2746,25 @@ public class CertTools {
                         ht.put(oid, value);
                         newOrdering.add(oid);
                         newValues.add(value);
-                        log.debug("added --> " + oid + " val: " + value);
+                    	if (log.isDebugEnabled()) {
+                    		log.debug("added --> " + oid + " val: " + value);
+                    	}
                     }
                 }
             } 
-        }         
+        }
+        
+        // If the requested ordering was the reverse of the ordering the input string was in (by our guess in the beginning)
+        // we have to reverse the vectors
+        if (ldaporder != isLdapOrder) {
+        	if (log.isDebugEnabled()) {
+        		log.debug("Reversing order of DN, ldaporder="+ldaporder+", isLdapOrder="+isLdapOrder);
+        	}
+        	Collections.reverse(newOrdering);
+        	Collections.reverse(newValues);
+        }
         //-- Create X509Name with the ordered fields
         X509Name orderedName = new X509Name(newOrdering, newValues, converter);
-        
         return orderedName;
     } // getOrderedX509Name
     
