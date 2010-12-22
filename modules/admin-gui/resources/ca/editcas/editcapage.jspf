@@ -832,7 +832,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
-            <% if ( (editca && x509cainfo.getUseLdapDnOrder()) || (!editca && !DnComponents.isReverseOrder()) )
+            <% if ( (editca && x509cainfo.getUseLdapDnOrder()) || (!editca) ) // default value when createCA = true (checked)
                  out.write("CHECKED");%>>         
       </td>
     </tr>
