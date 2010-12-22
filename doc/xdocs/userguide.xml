@@ -1229,6 +1229,57 @@ You should also try the different roles and privileges to see the differences be
 </subsection>
 </section>
 
+<section name="View Log options">
+  <p>When viewing the log, you can chose what logs to see by chosing an option from a list.</p>
+  
+    <subsection name="Event">
+      <p>
+      You can chose what kind of event to see. For example, Administrators logged in, CA related activities, certificate related activities, End Entity related activities, activities that caused error... etc.
+      </p>
+    </subsection>
+    
+    <subsection name="CA">
+      <p>You can chose to see all the logs related to a specific CA.</p>
+    </subsection>
+    
+    <subsection name="Module">
+      <p>You can chose to see all the logs related to a specific module, tex. CA, RA, Public Web, Hard Token, Approval, Service... etc. </p>
+    </subsection>
+    
+    <subsection name="Username">
+      <p>You can chose to see all the logs related to a specific username.</p>
+    </subsection>
+    
+    <subsection name="Certificate">
+      <p>You can chose to see all the logs related  to a specific certificate. The certificate is specified by its serialnumber written in hexadecimal format.</p>
+    </subsection>
+    
+    <subsection name="Administrator Certificate">
+      <p>You can chose to see all the logs created by a specific administrator. The administrator is specified by his certificate serialnumber written in hexadecimal format.</p>
+    </subsection>
+    
+    <subsection name="Comment">
+      <p>You can chose to see all the logs created with a specific comment. Note that the comment is case sensitive and should be exact, tex. searching for a text that is supposedly part of the comment will not find the correct logs.</p>
+    </subsection>
+    
+    <subsection name="Administrator Type">
+      <p>
+        You can chose to see all the logs created by a specific type of administrator. There are six types of administrators:
+        <ul>
+          <li>An administrator who logs in with a certificate. Typically an administrator who logs into the Admin GUI to perfom tacks that need administrator privileges.
+              An administrator who logs in with a certificate is loged with his certificate serialnumber and SubjectDN.</li>
+          <li>An administrator who logs into the public web using only username and password. An administrator who logs into the public web is loges with his IP address.</li>
+          <li>An RA user. The RA user is loged with his IP address.</li>
+          <li>An administrator performing administrative tasks through commandline.</li>
+          <li>An administrator performing administrative tasks through batch commandline.</li>
+          <li>An internal user performing tasks within Ejbca.</li>
+        </ul>
+      </p>
+    </subsection>
+    
+</section>
+
+
 <section name="EJBCA client toolbox">
 <p>
 There is a set of tools that could be used without an EJBCA. Built from the EJBCA source, but the resulting distribution package can be moved to any machine. The client toolbox provides commands to function as a Web Service RA, to manage keys on PKCS#11 HSM, to perform EJBCA health checks, to enroll CVC EAC certificates, to test CMP and SCEP protocol, and much much more.  
