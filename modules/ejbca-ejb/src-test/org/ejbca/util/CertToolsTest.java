@@ -1045,7 +1045,7 @@ public class CertToolsTest extends TestCase {
 	 * @throws Exception
 	 *             if error...
 	 */
-	public void test09TestReverse() throws Exception {
+	public void test09TestReverseDN() throws Exception {
 		log.trace(">test09TestReverse()");
 		// We try to examine the that we handle modern dc components for ldap
 		// correctly
@@ -1071,6 +1071,17 @@ public class CertToolsTest extends TestCase {
         X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), dnorder);
 		// This ordering is not optimal...
 		assertEquals("DC=domain,DC=tld,CN=toto,CN=titi", dn5.toString());
+
+		// Test reversing DNs
+        dnorder = CertTools.getX509FieldOrder(true);
+        X509Name x509dn = CertTools.stringToBcX509Name("CN=something,OU=A,OU=B,O=someO,C=SE", new X509DefaultEntryConverter(), dnorder);
+        String str = x509dn.toString();
+        assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", str);
+        
+        dnorder = CertTools.getX509FieldOrder(false);
+        x509dn = CertTools.stringToBcX509Name("C=SE,O=someO,OU=B,OU=A,CN=something", new X509DefaultEntryConverter(), dnorder);
+        str = x509dn.toString();
+        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", str);
 
 		log.trace("<test09TestReverse()");
 	}

@@ -27,7 +27,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.ejbca.config.EjbcaConfiguration;
 
 /** Class holding information and utilities for handling different DN components, CN, O etc
  * 
@@ -177,16 +176,6 @@ public class DnComponents {
     static {
         DnComponents.load();
     }
-    /** This property is true if reverse DN order should be used. Default value is false (forward order).
-     * This setting is changed from ejbca.properties, but should NOT be used, since there
-     * is nowadays a configuration setting for the CA instead.
-     * @deprecated use soft configuration on CA instead
-     */
-    private static final boolean reverseOrder = EjbcaConfiguration.getCertToolsDnOrderReverse();
-    
-    public static boolean isReverseOrder() {
-    	return reverseOrder == true;
-    }
     
     public static DERObjectIdentifier getOid(String o) {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
@@ -295,15 +284,7 @@ public class DnComponents {
     	}
     	return val.intValue();
     }
-    /**
-     * Returns the dnObjects (forward or reverse) that is in use
-     */
-    public static String[]getDnObjects() {
-        if (!reverseOrder) {
-            return dNObjectsForward;
-        }
-        return getDnObjectsReverse();
-    }
+
     /**
      * Returns the dnObjects (forward or reverse). 
      * ldaproder = true is the default order in EJBCA. 

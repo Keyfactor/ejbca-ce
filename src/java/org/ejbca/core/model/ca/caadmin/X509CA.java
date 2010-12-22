@@ -111,7 +111,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
-import org.ejbca.util.dn.DnComponents;
 
 
 
@@ -921,7 +920,7 @@ public class X509CA extends CA implements Serializable {
     	if (distPoints == null) {
     		distPoints = "";
     	}
-        // Multiple CDPs are spearated with the ';' sign
+        // Multiple CDPs are separated with the ';' sign
     	Iterator/*String*/ it = StringTools.splitURIs(distPoints).iterator();
     	ArrayList result = new ArrayList();
         while (it.hasNext()) {
@@ -985,11 +984,7 @@ public class X509CA extends CA implements Serializable {
             	setDefaultCRLIssuer(null);
             }
             if (data.get(USELDAPDNORDER) == null) {
-            	if (DnComponents.isReverseOrder()) {
-            		setUseLdapDNOrder(false);
-            	} else {
-                	setUseLdapDNOrder(true);            		
-            	}
+            	setUseLdapDNOrder(true); // Default value         		
             }            
             if (data.get(DELTACRLPERIOD) == null) {
             	setDeltaCRLPeriod(0); // v14

@@ -39,7 +39,7 @@ public class DnComponentsTest extends TestCase {
     }
 
     public void test01CheckObjects() throws Exception {
-        String[] s = DnComponents.getDnObjects();
+        String[] s = DnComponents.getDnObjects(true);
         assertEquals(28, s.length);
         int i = 0;
         assertEquals("street",s[i++]);
@@ -74,7 +74,7 @@ public class DnComponentsTest extends TestCase {
         assertEquals("t",s1[6]);
         assertEquals("c",s1[0]);
 
-        String[] s2 = DnComponents.getDnObjects();
+        String[] s2 = DnComponents.getDnObjects(true);
         assertEquals(28, s2.length);
         assertEquals("businesscategory",s2[4]);
         assertEquals("postalcode",s2[5]);

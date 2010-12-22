@@ -135,7 +135,7 @@ public class CertTools {
     
     // Initialize dnComponents
     static { 
-        DnComponents.getDnObjects();
+        DnComponents.getDnObjects(true);
     }
     public static final String EMAIL = "rfc822name";
     public static final String EMAIL1 = "email";
@@ -487,10 +487,8 @@ public class CertTools {
      * Tries to determine if a DN is in reversed form. It does this by taking the last attribute 
      * and the first attribute. If the last attribute comes before the first in the dNObjects array
      * the DN is assumed to be in reversed order.
-     * The check if a DN is revered is relative to the default ordering, so if the default ordering is:
-     * "C=SE, O=PrimeKey, CN=Tomas" (dNObjectsReverse ordering in EJBCA) a dn or form "CN=Tomas, O=PrimeKey, C=SE" is reversed.
      * 
-     * if the default ordering is:
+     * The default ordering is:
      * "CN=Tomas, O=PrimeKey, C=SE" (dNObjectsForward ordering in EJBCA) a dn or form "C=SE, O=PrimeKey, CN=Tomas" is reversed.
      * 
      *
@@ -513,7 +511,7 @@ public class CertTools {
             while (xt.hasMoreTokens()) {
                 last = xt.nextToken();
             }
-            String[] dNObjects = DnComponents.getDnObjects();
+            String[] dNObjects = DnComponents.getDnObjects(true);
             if ( (first != null) && (last != null) ) {
             	first = first.substring(0,first.indexOf('='));
             	last = last.substring(0,last.indexOf('='));
@@ -2682,7 +2680,7 @@ public class CertTools {
      */
     private static Vector<DERObjectIdentifier> getDefaultX509FieldOrder(){
       Vector<DERObjectIdentifier> fieldOrder = new Vector<DERObjectIdentifier>();
-      String[] dNObjects = DnComponents.getDnObjects();
+      String[] dNObjects = DnComponents.getDnObjects(true);
       for (int i = 0; i < dNObjects.length; i++) {
           fieldOrder.add(DnComponents.getOid(dNObjects[i]));
       }
