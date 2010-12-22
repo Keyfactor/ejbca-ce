@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.cli.admins;
 
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 
@@ -23,8 +22,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  *
  */
 public class AdminsAddGroupCommand extends BaseAdminsCommand {
-
-    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -49,7 +46,7 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            adminGroupSession.addAdminGroup(getAdmin(), groupName);
+            ejb.getAdminGroupSession().addAdminGroup(getAdmin(), groupName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

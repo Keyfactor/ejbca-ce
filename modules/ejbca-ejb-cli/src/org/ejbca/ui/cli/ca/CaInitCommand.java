@@ -20,8 +20,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -53,9 +51,6 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private CertificateProfileSessionRemote certificateProfileSession = ejb.getCertificateProfileSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "init"; }
 	public String getDescription() { return "Create a CA and its first CRL. Publishes the CRL and CA certificate"; }
@@ -122,7 +117,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final String keytype = args[6];
             final int validity = Integer.parseInt(args[7]);
             String policyId = args[8];
-            final ArrayList policies = new ArrayList(1);
+            final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             if ( (policyId != null) && (policyId.toLowerCase().trim().equals("null")) ) {
             	policyId = null;
             } else {
@@ -162,13 +157,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     profileId = SecConst.CERTPROFILE_FIXED_SUBCA;
             	}
             } else {                
-                profileId = certificateProfileSession.getCertificateProfileId(getAdmin(), profileName);
+                profileId = ejb.getCertificateProfileSession().getCertificateProfileId(getAdmin(), profileName);
             	if (profileId == 0) {
             		getLogger().info("Error: Certificate profile with name '"+profileName+"' does not exist.");
             		return;
             	}
             	
-                CertificateProfile certificateProfile  = certificateProfileSession.getCertificateProfile(getAdmin(), profileName);
+                CertificateProfile certificateProfile  = ejb.getCertificateProfileSession().getCertificateProfile(getAdmin(), profileName);
                 if(certificateProfile.getType() != CertificateProfile.TYPE_ROOTCA && certificateProfile.getType() != CertificateProfile.TYPE_SUBCA) {
                     getLogger().info("Error: Certificate profile " + profileName + " is not of type ROOTCA or SUBCA.");
                     return;
@@ -203,7 +198,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("CA token properties: "+catokenproperties);
             getLogger().info("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
-            	CAInfo signedBy = caAdminSession.getCAInfo(getAdmin(), signedByCAId);
+            	CAInfo signedBy = ejb.getCAAdminSession().getCAInfo(getAdmin(), signedByCAId);
             	if (signedBy == null) {
                 	throw new IllegalArgumentException("CA with id "+signedByCAId+" does not exist.");            		
             	}
@@ -305,9 +300,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 );
             
             getLogger().info("Creating CA...");
-            caAdminSession.createCA(getAdmin(), cainfo);
+            ejb.getCAAdminSession().createCA(getAdmin(), cainfo);
             
-            CAInfo newInfo = caAdminSession.getCAInfo(getAdmin(), caname);
+            CAInfo newInfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
             int caid = newInfo.getCAId();
             getLogger().info("CAId for created CA: " + caid);
             getLogger().info("-Created and published initial CRL.");

@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.config;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -26,8 +25,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @version $Id$
  */
 public class ConfigDumpCommand extends BaseCommand {
-
-    private ConfigurationSessionRemote configurationSession = ejb.getConfigurationSession();
 
     public String getMainCommand() {
         return "config";
@@ -47,8 +44,8 @@ public class ConfigDumpCommand extends BaseCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         getLogger().info("Trying to fetch currently used server properties..");
 
-        Properties properties = configurationSession.getAllProperties();
-        Enumeration enumeration = properties.keys();
+        Properties properties = ejb.getConfigurationSession().getAllProperties();
+        Enumeration<Object> enumeration = properties.keys();
         while (enumeration.hasMoreElements()) {
             String key = (String) enumeration.nextElement();
             getLogger().info(" " + key + " = " + properties.getProperty(key));

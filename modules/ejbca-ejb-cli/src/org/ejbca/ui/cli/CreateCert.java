@@ -34,8 +34,6 @@ import org.ejbca.util.RequestMessageUtils;
  */
 public class CreateCert extends BaseCommand {
 	
-    private SignSessionRemote signSession = ejb.getSignSession();
-    
 	public String getMainCommand() { return null; }
 	public String getSubCommand() { return "createcert"; }
 	public String getDescription() { return "Issue a certificate for a user based on a CSR"; }
@@ -63,7 +61,7 @@ public class CreateCert extends BaseCommand {
 				return;
 			}
 			// Call signsession to create a certificate
-			IResponseMessage resp = signSession.createCertificate(getAdmin(), req, X509ResponseMessage.class, null);
+			IResponseMessage resp = ejb.getSignSession().createCertificate(getAdmin(), req, X509ResponseMessage.class, null);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);

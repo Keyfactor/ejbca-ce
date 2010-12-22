@@ -41,6 +41,7 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public abstract class BaseCommand implements CliCommandPlugin {
 
+	/** This helper will cache interfaces. Don't use static instantiation. */
 	protected EjbRemoteHelper ejb = new EjbRemoteHelper();
 
     //private static Logger baseLog = Logger.getLogger(BaseCommand.class);

@@ -27,7 +27,6 @@ import java.util.Date;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
@@ -48,8 +47,6 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcvcca"; }
 	public String getDescription() { return "Imports a PKCS#8 file and created a new CVC CA from it"; }
@@ -81,8 +78,8 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        Certificate cert = null;
 	        try {
 	            // First check if it was a PEM formatted certificate
-	        	Collection certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
-	        	cert = (Certificate)certs.iterator().next();
+	        	Collection<Certificate> certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes));
+	        	cert = certs.iterator().next();
 	        } catch (IOException e) {
 	        	// This was not a PEM certificate, I hope it's binary...
 		        cert = CertTools.getCertfromByteArray(certbytes);
@@ -128,7 +125,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
-        	caAdminSession.importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
+        	ejb.getCAAdminSession().importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
         } catch (ErrorAdminCommandException e) {
         	throw e;
         } catch (Exception e) {

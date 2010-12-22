@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -42,8 +41,6 @@ import org.ejbca.util.keystore.KeyStoreContainerFactory;
 // TODO: Is this really used???? The arguments does not to be in synch with the description..
 public class HwCaInitCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "inithw"; }
 	public String getDescription() { return "(Deprecated) Create a CA and its first CRL. Publishes the CRL and CA certificate"; }
@@ -133,9 +130,9 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
 			                                 );
             
             getLogger().info("Creating CA...");
-            caAdminSession.createCA(getAdmin(), cainfo);
+            ejb.getCAAdminSession().createCA(getAdmin(), cainfo);
             
-            CAInfo newInfo = caAdminSession.getCAInfo(getAdmin(), caname);
+            CAInfo newInfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
             int caid = newInfo.getCAId();
             getLogger().info("CAId for created CA: " + caid);
             getLogger().info("-Created and published initial CRL.");

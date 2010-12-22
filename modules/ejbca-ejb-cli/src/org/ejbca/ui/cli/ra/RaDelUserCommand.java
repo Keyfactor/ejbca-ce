@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ra;
 
 import java.util.List;
 
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -28,8 +27,6 @@ import org.ejbca.util.CliTools;
  */
 public class RaDelUserCommand extends BaseRaAdminCommand {
 
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "deluser"; }
 	public String getDescription() { return "Deletes a user"; }
@@ -55,7 +52,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
             }
             if ((inp == 121) || (inp == 89)) {
                 try {
-                    userAdminSession.deleteUser(getAdmin(), username);
+                    ejb.getUserAdminSession().deleteUser(getAdmin(), username);
                     getLogger().info("Deleted user " + username);
                 } catch (AuthorizationDeniedException e) {
                 	getLogger().error("Not authorized to remove user.");

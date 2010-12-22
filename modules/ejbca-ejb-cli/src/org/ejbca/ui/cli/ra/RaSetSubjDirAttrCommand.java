@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.ra;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -28,8 +27,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
 
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "setsubjectdirattr"; }
 	public String getDescription() { return "Set the Subject Directory Attributes for a user"; }
@@ -50,14 +47,14 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subject directory attributes '" + attributes + "' for user " + username);
             try {
-            	UserDataVO uservo = userAdminSession.findUser(getAdmin(), username);
+            	UserDataVO uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
             	ExtendedInformation ext = uservo.getExtendedinformation();
             	if (ext == null) {
             		ext = new ExtendedInformation();
             	}
             	ext.setSubjectDirectoryAttributes(attributes);
             	uservo.setExtendedinformation(ext);
-            	userAdminSession.changeUser(getAdmin(), uservo, false);
+            	ejb.getUserAdminSession().changeUser(getAdmin(), uservo, false);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -30,10 +27,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * @version $Id$
  */
 public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
-
-    private AdminEntitySessionRemote adminEntitySession = ejb.getAdminEntitySession();
-    private AdminGroupSessionRemote adminGroupSession = ejb.getAdminGroupSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -55,13 +48,13 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = adminGroupSession.getAdminGroup(getAdmin(), groupName);
+            AdminGroup adminGroup = ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = caAdminSession.getCAInfo(getAdmin(), caName);
+            CAInfo caInfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
@@ -77,7 +70,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String matchValue = args[5];
-            int caid = caAdminSession.getCAInfo(getAdmin(), caName).getCAId();
+            int caid = ejb.getCAAdminSession().getCAInfo(getAdmin(), caName).getCAId();
             AdminEntity adminEntity = new AdminEntity(matchWith, matchType, matchValue, caid);
 
             Collection<AdminEntity> list = adminGroup.getAdminEntities();
@@ -86,7 +79,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                         && currentAdminEntity.getMatchType() == adminEntity.getMatchType() && currentAdminEntity.getCaId() == adminEntity.getCaId()) {
                     Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
                     adminEntities.add(adminEntity);
-                    adminEntitySession.removeAdminEntities(getAdmin(), groupName, adminEntities);
+                    ejb.getAdminEntitySession().removeAdminEntities(getAdmin(), groupName, adminEntities);
                     return;
                 }
             }

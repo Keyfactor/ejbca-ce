@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -30,18 +29,16 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "listnewusers"; }
 	public String getDescription() { return "List users with status 'NEW'"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            Collection coll = userAdminSession.findAllUsersByStatus(getAdmin(), UserDataConstants.STATUS_NEW);
-            Iterator iter = coll.iterator();
+            Collection<UserDataVO> coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), UserDataConstants.STATUS_NEW);
+            Iterator<UserDataVO> iter = coll.iterator();
             while (iter.hasNext()) {
-                UserDataVO data = (UserDataVO) iter.next();
+                UserDataVO data = iter.next();
                 getLogger().info("New User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType());

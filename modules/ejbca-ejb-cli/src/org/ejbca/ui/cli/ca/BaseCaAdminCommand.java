@@ -28,11 +28,6 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -55,11 +50,6 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     protected String privKeyAlias = "privateKey";
     protected char[] privateKeyPass = null;
 
-    private CaSessionRemote caSession = ejb.getCaSession();
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
-    private CrlSessionRemote crlSession = ejb.getCrlSession();
-    private CrlCreateSessionRemote crlCreateSession = ejb.getCrlStoreSession();    
     /**
      * Retrieves the complete certificate chain from the CA
      * 
@@ -71,7 +61,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">getCertChain()");
         Collection<Certificate> returnval = new ArrayList<Certificate>();
         try {
-            CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
             if (cainfo != null) {
                 returnval = cainfo.getCertificateChain();
             }
@@ -124,20 +114,20 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">createCRL()");
         try {
             if (issuerdn != null) {
-                CA ca = caSession.getCA(getAdmin(), issuerdn.hashCode());
+                CA ca = ejb.getCaSession().getCA(getAdmin(), issuerdn.hashCode());
                 if (!deltaCRL) {
-                    crlCreateSession.run(getAdmin(), ca);
-                    int number = crlSession.getLastCRLNumber(getAdmin(), issuerdn, false);
+                    ejb.getCrlStoreSession().run(getAdmin(), ca);
+                    int number = ejb.getCrlSession().getLastCRLNumber(getAdmin(), issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    crlCreateSession.runDeltaCRL(getAdmin(), ca, -1, -1);
-                    int number = crlSession.getLastCRLNumber(getAdmin(), issuerdn, true);
+                    ejb.getCrlStoreSession().runDeltaCRL(getAdmin(), ca, -1, -1);
+                    int number = ejb.getCrlSession().getLastCRLNumber(getAdmin(), issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = crlCreateSession.createCRLs(getAdmin());
+                int createdcrls = ejb.getCrlStoreSession().createCRLs(getAdmin());
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = crlCreateSession.createDeltaCRLs(getAdmin());
+                int createddeltacrls = ejb.getCrlStoreSession().createDeltaCRLs(getAdmin());
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {
@@ -147,14 +137,14 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     }
 
     protected String getIssuerDN(String caname) throws Exception {
-        CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caname);
+        CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
         return cainfo != null ? cainfo.getSubjectDN() : null;
     }
 
     protected CAInfo getCAInfo(String caname) throws Exception {
         CAInfo result;
         try {
-            result = caAdminSession.getCAInfo(getAdmin(), caname);
+            result = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
         } catch (Exception e) {
             getLogger().debug("Error retriving CA " + caname + " info.", e);
             throw new Exception("Error retriving CA " + caname + " info.");
@@ -168,6 +158,6 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 
     protected void initAuthorizationModule(int caid, String superAdminCN) throws AdminGroupExistsException {
         getLogger().info("Initalizing Temporary Authorization Module.");
-        adminGroupSession.init(getAdmin(), caid, superAdminCN);     
+        ejb.getAdminGroupSession().init(getAdmin(), caid, superAdminCN);     
     } // initAuthorizationModule
 }

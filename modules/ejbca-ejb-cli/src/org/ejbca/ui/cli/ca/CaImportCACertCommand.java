@@ -8,7 +8,6 @@ import java.util.List;
 
 import javax.ejb.CreateException;
 
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
@@ -20,8 +19,6 @@ import org.ejbca.util.CryptoProviderTools;
  */
 public class CaImportCACertCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "importcacert"; }
 	public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
@@ -53,17 +50,17 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 
 		try {
 			CryptoProviderTools.installBCProvider();
-			Collection certs = CertTools.getCertsFromPEM(pemFile);
+			Collection<Certificate> certs = CertTools.getCertsFromPEM(pemFile);
 			if (certs.size() != 1) {
 				throw new ErrorAdminCommandException("PEM file must only contain one CA certificate, this PEM file contains "+certs.size()+".");
 			}
 			if (initAuth) {
-				String subjectdn = CertTools.getSubjectDN((Certificate)certs.iterator().next());
+				String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
 				Integer caid = Integer.valueOf(subjectdn.hashCode());
 				getLogger().info("Initializing authorization module for caid: "+caid);
 				initAuthorizationModule(caid.intValue(), superAdminCN);
 			}
-			caAdminSession.importCACertificate(getAdmin(), caName, certs);
+			ejb.getCAAdminSession().importCACertificate(getAdmin(), caName, certs);
 			getLogger().info("Imported CA "+caName);			
 		} catch (CertificateException e) {
 			getLogger().error(e.getMessage());

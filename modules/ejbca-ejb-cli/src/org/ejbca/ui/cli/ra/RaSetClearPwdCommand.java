@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.cli.ra;
 
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -26,8 +25,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 
-    private UserAdminSessionRemote userAdminSession = ejb.getUserAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "setclearpwd"; }
 	public String getDescription() { return "Set a clear text password for a user for batch generation"; }
@@ -44,7 +41,7 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
             getLogger().info("Setting clear text password " + password + " for user " + username);
 
             try {
-                userAdminSession.setClearTextPassword(getAdmin(), username, password);
+                ejb.getUserAdminSession().setClearTextPassword(getAdmin(), username, password);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

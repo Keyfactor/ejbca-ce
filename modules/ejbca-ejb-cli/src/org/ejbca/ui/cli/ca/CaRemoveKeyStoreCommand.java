@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -24,8 +23,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  */
 public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "removekeystore"; }
 	public String getDescription() { return "Remove the CA token keystore from a CA"; }
@@ -38,7 +35,7 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 		}
 		try {
 			String caName = args[1];
-			caAdminSession.removeCAKeyStore(getAdmin(), caName);
+			ejb.getCAAdminSession().removeCAKeyStore(getAdmin(), caName);
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);
 		}

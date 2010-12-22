@@ -15,8 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import javax.security.auth.login.FailedLoginException;
 
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -33,9 +31,6 @@ import org.ejbca.util.CryptoProviderTools;
  *          $
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
-
-    private CAAdminSessionRemote caAdminSession = ejb.getCAAdminSession();
-    private RaAdminSessionRemote raAdminSession = ejb.getRAAdminSession();
 
     public String getMainCommand() {
         return MAINCOMMAND;
@@ -69,7 +64,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = caAdminSession.getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
             if (cainfo == null) {
                 getLogger().error("Error: CA " + caname + " cannot be found");
                 return;
@@ -77,7 +72,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) {
                 try {
-                    caAdminSession.activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, raAdminSession.getCachedGlobalConfiguration(getAdmin()));
+                    ejb.getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin()));
                     getLogger().info("CA token activated.");
 
                 } catch (CATokenAuthenticationFailedException e) {
