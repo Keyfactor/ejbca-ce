@@ -468,11 +468,11 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (IllegalKeyException ke) {
             log.error("Key is of unknown type: ", ke);
             throw ke;
-        } catch (IllegalKeyStoreException e) {
-            throw new IllegalKeyException(e);
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            throw new CADoesntExistsException(msg);
+        	CATokenOfflineException ex = new CATokenOfflineException(msg);
+        	ex.initCause(ctoe);
+        	throw ex;
         } catch (EjbcaException e) {
             throw e;
         } catch (NoSuchProviderException e) {
