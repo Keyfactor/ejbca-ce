@@ -18,7 +18,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
