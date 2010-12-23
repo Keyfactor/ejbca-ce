@@ -398,6 +398,9 @@ EJBCA should run on any on any JEE5 compliant application server in theory. In r
 Currently EJBCA has been tested with Glassfish v2.1.1.
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
+<note>
+Hot redeployment on Glassfish 2.1.1 does not work due to conflicting version of the Xerces library (<a href="https://jira.primekey.se/browse/ECA-1887">ECA-1887</a>). 
+</note>
 
 <subsubsection name="Derby">
 <p>
