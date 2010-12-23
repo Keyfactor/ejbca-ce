@@ -65,7 +65,7 @@
 	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/wlserver_10.3/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
-	<available file="${appserver.home}/lib/j2ee.jar" property="appserver.type" value="websphere"/>
+	<available file="${appserver.home}/lib/commandlineutils.jar" property="appserver.type" value="websphere"/>
 	<!-- Not yet tested:
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
