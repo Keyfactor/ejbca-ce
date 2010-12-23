@@ -65,16 +65,18 @@
 	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/wlserver_10.3/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
+	<available file="${appserver.home}/lib/j2ee.jar" property="appserver.type" value="websphere"/>
 	<!-- Not yet tested:
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
-	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA and WebLogic 10.3.3 are currently supported. (Normally you should not have to configure this.)" unless="appserver.type"/>
+	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Normally you should not have to configure this.)" unless="appserver.type"/>
 	<echo message="appserver.type: ${appserver.type}" level="${customejbca.message.level}"/>
 	
 	<condition property="bundle-hibernate-jpa">
 		<or>
 			<matches pattern="glassfish" string="${appserver.type}"/>
 			<matches pattern="weblogic" string="${appserver.type}"/>
+			<matches pattern="websphere" string="${appserver.type}"/>
 			<!-- ... -->
 		</or>
 	</condition>
@@ -83,6 +85,7 @@
 	<condition property="datasource.jndi-name-prefix" value="java:/"><equals arg1="jboss" arg2="${appserver.type}"/></condition>
 	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="glassfish" arg2="${appserver.type}"/></condition>
 	<condition property="datasource.jndi-name-prefix" value=""><equals arg1="weblogic" arg2="${appserver.type}"/></condition>
+	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
 
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />

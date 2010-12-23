@@ -383,12 +383,12 @@ ctrl-c
 <p>
 EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't.
 <ol>
-<li>JBoss 5.1.0.GA / JBoss EAP 5.1: Works well. Professional support available.</li>
-<li>Glassfish 2.1.1: Works. Professional support available.</li>
-<li>WebLogic 10.3.3: Work in progress. Community supported.</li>
-<li>WebSphere: Not supported.</li>
-<li>Geronimo: Not supported.</li>
-<li>JoNaS: Not supported.</li>
+<li>JBoss 5.1.0.GA / JBoss EAP 5.1: Works well. Community and professional support available.</li>
+<li>Glassfish 2.1.1: Works. Community and professional support available.</li>
+<li>WebLogic 10.3.3: Not supported yet.</li>
+<li>WebSphere 7.0.0.13: Not supported yet.</li>
+<li>Geronimo: Not supported yet.</li>
+<li>JoNaS: Not supported yet.</li>
 <li>OC4J: Not supported. Not JEE5 compliant and never will be.</li>
 </ol>
 </p>
