@@ -23,6 +23,12 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+EJBCA 4.0alpha1 NOTE
+--------------------
+There is no guarantee that there will be an upgrade path between the alpha release and EJBCA 4.0.0.
+You can try the upgrade process, but backup you database first and roll it back before trying to
+upgrade to the real release.
+
 From EJBCA 3.11.x to EJBCA 4.0.x
 --------------------------------
 Support for ProtectedLog that was deprecated in EJBCA 3.10.0 has been dropped. If you use this feature,

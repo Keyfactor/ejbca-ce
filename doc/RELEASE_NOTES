@@ -1,9 +1,23 @@
-EJBCA 4.0
----------
+EJBCA 4.0alpha1
+---------------
+EJBCA 4 used Java Enterprise Edition (JEE) 5 instead of J2EE. This a major improvement of the core,
+modularization, portability and packaging, but you will not notice many functional differences.
+
+The database schema is fully defined through the Java Persistence API and table create scripts are
+provided for all the supported databases.
+
+The Ingres database can now be used with EJBCA without patching the code.
+
+Many bugs have been corrected. For example EJBCA Services will run more stable in a clustered
+environment.
+
 Interface ICustomPublisher has been modified, via removal of the number parameter from the storeCRL
 method. Any custom classes implementing this interface need to be modified in turn.
 
-Ant 1.7.1 or higher is required from this version on.
+Java 1.6 and Ant 1.7.1 or higher is required from this version on.
+
+This is and alpha release, so expect a few rough edges. Have in mind that there will not
+necessarily be an upgrade path from this release to EJBCA 4.0.0.
 
 EJBCA 3.11.1
 -----------
