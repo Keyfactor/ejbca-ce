@@ -19,7 +19,10 @@
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
             <!-- Enabled when bundling Hibernate on Weblogic .. ${persistence.enable-weblogic-jta-lookup1}
             <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.WeblogicTransactionManagerLookup"/>
-            ${persistence.enable-weblogic-jta-lookup2} -->
+            ${persistence.enable-websphere-jta-lookup2} -->
+            <!-- Enabled when bundling Hibernate on Websphere .. ${persistence.enable-weblogic-jta-lookup1}
+            <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.WebSphereTransactionManagerLookup"/>
+            ${persistence.enable-websphere-jta-lookup2} -->
         </properties>
     </persistence-unit>
 </persistence>

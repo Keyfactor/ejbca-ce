@@ -203,7 +203,8 @@
 			<include name="lib/javaee.jar"/>
 			<!-- WebLogic 10.3.3 -->
 			<include name="modules/javax.servlet_1.0.0.0_2-5.jar"/>
-			<!-- WebSphere ? -->
+			<!-- WebSphere 7.0.0.13 -->
+			<include name="lib/j2ee.jar"/>
 		</fileset>
 		<!--fileset dir="${ejbca.home}/lib/ext" includes="servlet-*.jar"/-->
 	</path>
