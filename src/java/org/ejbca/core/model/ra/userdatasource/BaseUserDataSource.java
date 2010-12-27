@@ -59,10 +59,10 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
     public BaseUserDataSource() {
       setDescription("");	
       
-      ArrayList applicablecas = new ArrayList();
+      ArrayList<Integer> applicablecas = new ArrayList<Integer>();
       setApplicableCAs(applicablecas);
       
-      HashSet modifyableFields = new HashSet();
+      HashSet<Integer> modifyableFields = new HashSet<Integer>();
       for(int i=0; i< UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS.length; i++){
     	  modifyableFields.add(Integer.valueOf(UserDataSourceVO.AVAILABLEMODIFYABLEFIELDS[i]));
       }
@@ -87,8 +87,9 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      *
      * If it contains the constant ANYCA then the user data source is applicable to all CAs
      */
-    public Collection getApplicableCAs(){
-      return (Collection) data.get(APPLICABLECAS);   
+    @SuppressWarnings("unchecked")
+	public Collection<Integer> getApplicableCAs(){
+      return (Collection<Integer>) data.get(APPLICABLECAS);   
     }
     
     /**
@@ -97,7 +98,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * @param applicablecas a Collection of caids (Integer)
      */
     
-    public void setApplicableCAs(Collection applicablecas){
+    public void setApplicableCAs(Collection<Integer> applicablecas){
       data.put(APPLICABLECAS, applicablecas);   
     }
     
@@ -105,8 +106,9 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * 
      * @return true if user data source is applicable for all CAs
      */
-    public boolean isApplicableToAnyCA(){
-    	return ((Collection) data.get(APPLICABLECAS)).contains(Integer.valueOf(ANYCA));
+    @SuppressWarnings("unchecked")
+	public boolean isApplicableToAnyCA(){
+    	return ((Collection<Integer>) data.get(APPLICABLECAS)).contains(Integer.valueOf(ANYCA));
     } 
     
     /**
@@ -114,8 +116,9 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * indicating if the field should be modifyable by the CA or not.
      *
      */
-    public Set getModifiableFields(){
-      return (Set) data.get(MODIFYABLEFIELDS);   
+    @SuppressWarnings("unchecked")
+	public Set<Integer> getModifiableFields(){
+      return (Set<Integer>) data.get(MODIFYABLEFIELDS);   
     }
     
     /**
@@ -123,7 +126,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * The set should only contain UserDataSourceVO.ISMODIFYABLE_ and DNFIELDExtractor constants (Integer)
      */
     
-    public void setModifiableFields(Set modifiableFields){	
+    public void setModifiableFields(Set<Integer> modifiableFields){	
       data.put(MODIFYABLEFIELDS, modifiableFields);   
     }
     
@@ -134,7 +137,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
     public  Collection<UserDataSourceVO> fetchUserDataSourceVOs(Admin admin, String searchstring) throws UserDataSourceException{
     	Collection<UserDataSourceVO> result = fetch(admin,searchstring);
     	
-    	Set isModifyable = getModifiableFields();
+    	Set<Integer> isModifyable = getModifiableFields();
     	Iterator<UserDataSourceVO> iter = result.iterator();
     	while(iter.hasNext()){
     		UserDataSourceVO next = iter.next();
@@ -154,7 +157,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      *
      * @throws UserDataSourceException if a communication or other error occurs.
      */    
-    protected abstract Collection fetch(Admin admin, String searchstring) throws UserDataSourceException;
+    protected abstract Collection<UserDataSourceVO> fetch(Admin admin, String searchstring) throws UserDataSourceException;
 	
     /**
      * Optional method used to remove user data from a user data source.

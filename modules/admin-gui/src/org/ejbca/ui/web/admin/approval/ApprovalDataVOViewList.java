@@ -30,7 +30,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
  * @version $Id$
  */
 
-public class ApprovalDataVOViewList extends AbstractList implements java.io.Serializable {
+public class ApprovalDataVOViewList extends AbstractList<ApprovalDataVOView> implements java.io.Serializable {
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -57,7 +57,7 @@ public class ApprovalDataVOViewList extends AbstractList implements java.io.Seri
 
     }
 
-    public Object get(int arg0) {
+    public ApprovalDataVOView get(int arg0) {
         return listData.get(arg0);
     }
 
@@ -71,10 +71,8 @@ public class ApprovalDataVOViewList extends AbstractList implements java.io.Seri
      */
     protected void sort(final String column, final boolean ascending) {
 
-        Comparator comparator = new Comparator() {
-            public int compare(Object o1, Object o2) {
-                ApprovalDataVOView c1 = (ApprovalDataVOView) o1;
-                ApprovalDataVOView c2 = (ApprovalDataVOView) o2;
+        Comparator<ApprovalDataVOView> comparator = new Comparator<ApprovalDataVOView>() {
+            public int compare(ApprovalDataVOView c1, ApprovalDataVOView c2) {
                 if (column == null) {
                     return 0;
                 }
@@ -126,12 +124,12 @@ public class ApprovalDataVOViewList extends AbstractList implements java.io.Seri
         sort(_sort);
     }
 
-    public List getData() {
+    public List<ApprovalDataVOView> getData() {
         sort(getSort(), isAscending());
         return this;
     }
 
-    public void setData(List data) {
+    public void setData(List<ApprovalDataVOView> data) {
 
     }
 
