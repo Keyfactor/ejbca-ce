@@ -102,6 +102,7 @@
 
     <target name="handleorm">
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" tofile="${build-test.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
 	</target>
 
     <target name="handleorm-ocsp">
@@ -114,7 +115,7 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
 
-    <target name="test-dbschema" description="Perform database schema validation." depends="compile-test, handlepersistence">
+    <target name="test-dbschema" description="Perform database schema validation." depends="compile-test, handlepersistence, handleorm">
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
 		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
     	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
