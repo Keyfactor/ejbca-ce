@@ -509,36 +509,42 @@ public class DatabaseSchemaTest extends TestCase {
 	 */
 	private void storeAndRemoveEntity(Object entity) {
 		LOG.trace(">storeAndRemoveEntity");
-		Class<?> entityClass = entity.getClass();
-		LOG.info("  - verifying that all getter has an assigned value for " + entityClass.getName());
-		boolean allOk = true;
-		for (Method m : entityClass.getDeclaredMethods()) {
-			for (Annotation a :m.getAnnotations()) {
-				if (a.annotationType().equals(javax.persistence.Column.class) && m.getName().startsWith("get")) {
-					try {
-						m.setAccessible(true);
-						if (m.invoke(entity) == null) {
-							LOG.warn(m.getName() + " was annotated with @Column, but value was null. Test should be updated!");
+		try {
+			Class<?> entityClass = entity.getClass();
+			LOG.info("  - verifying that all getter has an assigned value for " + entityClass.getName());
+			boolean allOk = true;
+			for (Method m : entityClass.getDeclaredMethods()) {
+				for (Annotation a :m.getAnnotations()) {
+					if (a.annotationType().equals(javax.persistence.Column.class) && m.getName().startsWith("get")) {
+						try {
+							m.setAccessible(true);
+							if (m.invoke(entity) == null) {
+								LOG.warn(m.getName() + " was annotated with @Column, but value was null. Test should be updated!");
+								allOk = false;
+							}
+						} catch (Exception e) {
+							LOG.error(m.getName() + " was annotated with @Column and could not be read. " + e.getMessage());
 							allOk = false;
 						}
-					} catch (Exception e) {
-						LOG.error(m.getName() + " was annotated with @Column and could not be read. " + e.getMessage());
-						allOk = false;
 					}
 				}
 			}
+			assertTrue("There is a problem with a @Column annotated getter. Please refer to log output for further info.", allOk);
+			LOG.info("  - adding entity.");
+			EntityTransaction transaction = entityManager.getTransaction();
+			transaction.begin();
+			entityManager.persist(entity);
+			transaction.commit();
+			LOG.info("  - removing entity.");
+			transaction = entityManager.getTransaction();
+			transaction.begin();
+			entityManager.remove(entity);
+			transaction.commit();
+		} finally {
+			if (entityManager.getTransaction().isActive()) {
+				entityManager.getTransaction().rollback();
+			}
 		}
-		assertTrue("There is a problem with a @Column annotated getter. Please refer to log output for further info.", allOk);
-		LOG.info("  - adding entity.");
-		EntityTransaction transaction = entityManager.getTransaction();
-		transaction.begin();
-		entityManager.persist(entity);
-		transaction.commit();
-		LOG.info("  - removing entity.");
-		transaction = entityManager.getTransaction();
-		transaction.begin();
-		entityManager.remove(entity);
-		transaction.commit();
 		LOG.trace("<storeAndRemoveEntity");
 	}
 	
