@@ -27,8 +27,7 @@ import org.ejbca.util.CryptoProviderTools;
 /**
  * Activates the specified HSM CA.
  * 
- * @version $Id: CaActivateCACommand.java 9345 2010-07-01 15:51:20Z mikekushner
- *          $
+ * @version $Id: CaActivateCACommand.java 9345 2010-07-01 15:51:20Z mikekushner$
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
 
