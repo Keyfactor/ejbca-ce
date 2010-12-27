@@ -398,7 +398,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeySpec("1024");
-        List<Integer> approvalSettings = Arrays.asList(approvalRequirementTypes);
+        List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);
 
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(System
