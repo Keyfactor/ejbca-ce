@@ -98,7 +98,6 @@
     <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA"/>
 	<property name="datasource.jndi-name" value="EjbcaDS" />
 	<property name="database.name" value="hsqldb" />
-	<property name="datasource.mapping" value="Hypersonic SQL" />
 	<property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}localDB" />
 	<property name="database.driver" value="org.hsqldb.jdbcDriver" />
 	<property name="database.username" value="sa" />
