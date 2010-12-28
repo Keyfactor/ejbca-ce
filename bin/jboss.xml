@@ -24,10 +24,10 @@
             otherwise, try to pick the one from environment if it exists
             -->
         <fail message="Please set the property 'appserver.home' for this project" unless="appserver.home"/>
-		<!-- jboss-j2ee.jar is JBoss 4.2.x, jboss-javaee.jar is JBoss 5.0.x. Available does not touch the property
+		<!-- jboss-j2ee.jar is JBoss 4.2.x, jboss-appclient.jar is JBoss 5.x and 6.x. Available does not touch the property
 		     if the file does not exist, which is why this works. -->
         <available file="${appserver.home}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
-        <available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.home.valid"/>
+        <available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.home.valid"/>
         <fail message="'appserver.home' (${appserver.home}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
         <echo message="Using appserver.home : ${appserver.home}"/>
 	</target>

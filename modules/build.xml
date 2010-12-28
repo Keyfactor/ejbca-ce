@@ -43,6 +43,7 @@
 		<ant antfile="${mod.scep-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.webdist-war.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.appserver-ext.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	    <delete dir="${modules.basedir}/dist" />
 	</target>
 	
 	<target name="ejbca-entity" description="Build EJBCA JPA entity library">

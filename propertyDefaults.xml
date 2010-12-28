@@ -62,14 +62,15 @@
 	
 	<!-- Auto-detect supported application server type -->
 	<echo message="appserver.home: ${appserver.home}" level="${customejbca.message.level}"/>
-	<available file="${appserver.home}/client/jboss-javaee.jar" property="appserver.type" value="jboss"/>
+	<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.type" value="jboss"/>
+	<available file="${appserver.home}/client/cxf-api.jar" property="appserver.subtype" value="jboss6"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/wlserver_10.3/server/lib/wlclient.jar" property="appserver.type" value="weblogic"/>
 	<available file="${appserver.home}/lib/commandlineutils.jar" property="appserver.type" value="websphere"/>
 	<!-- Not yet tested:
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
-	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Normally you should not have to configure this.)" unless="appserver.type"/>
+	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA, JBoss 6.0.0, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Normally you should not have to configure this.)" unless="appserver.type"/>
 	<echo message="appserver.type: ${appserver.type}" level="${customejbca.message.level}"/>
 	
 	<condition property="bundle-hibernate-jpa">
@@ -77,6 +78,27 @@
 			<matches pattern="glassfish" string="${appserver.type}"/>
 			<matches pattern="weblogic" string="${appserver.type}"/>
 			<matches pattern="websphere" string="${appserver.type}"/>
+			<!-- ... -->
+		</or>
+	</condition>
+
+	<condition property="exclude-xerces">
+		<or>
+			<matches pattern="jboss6" string="${appserver.subtype}"/>
+			<!-- ... -->
+		</or>
+	</condition>
+
+	<condition property="exclude-xalan">
+		<or>
+			<matches pattern="jboss6" string="${appserver.subtype}"/>
+			<!-- ... -->
+		</or>
+	</condition>
+
+	<condition property="exclude-serializer">
+		<or>
+			<matches pattern="jboss6" string="${appserver.subtype}"/>
 			<!-- ... -->
 		</or>
 	</condition>
