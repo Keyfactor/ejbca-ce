@@ -38,7 +38,7 @@
 	<path id="compile-ejbca-ejb.classpath">
 		<path refid="compile-util.classpath"/>
 		<path refid="lib.ejbca-util.classpath"/>
-		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.quickserver.classpath"/>
 	</path>
@@ -55,7 +55,7 @@
 		<path location="${mod.ejbca-ejb.lib}" />	<!-- TODO: Refactor so this isn't neccessary for building the tests..? -->
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.junit.classpath"/>
-		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 	</path>
 	
@@ -63,7 +63,7 @@
 		<path location="${build-test.dir}" />
 		<path location="${mod.ejbca-ejb.lib}" />
 		<path location="${mod.ejbca-util.lib}" />
-		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="compile-test.classpath"/>
 		<path refid="lib.junit.classpath"/>
 	</path>
@@ -117,7 +117,7 @@
 		 -->
 		<condition property="generate-stubs-script-extension" value="cmd" else="sh"><os family="windows"/></condition>
 		<exec executable="${appserver.home}/bin/createEJBStubs.${generate-stubs-script-extension}">
-			<arg line="${mod.ejbca-ejb.lib} -verbose -cp ${mod.ejbca-ejb-interface_ejb3.lib}:${mod.ejbca-util.lib}:${mod.ejbca-entity.lib} -updatefile ${mod.ejbca-ejb-interface_ejb3.lib}" />
+			<arg line="${mod.ejbca-ejb.lib} -verbose -cp ${mod.ejbca-ejb-interface.lib}:${mod.ejbca-util.lib}:${mod.ejbca-entity.lib} -updatefile ${mod.ejbca-ejb-interface.lib}" />
 		</exec>
     </target>
 

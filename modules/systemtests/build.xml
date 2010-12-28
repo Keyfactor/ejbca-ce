@@ -23,7 +23,7 @@
     	<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
     	<path refid="lib.idn.classpath"/>	<!-- Use by XKMS -->
 		<path refid="lib.commons-logging.classpath"/>
-    	<pathelement location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+    	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
     	<pathelement location="${mod.ejbca-entity.lib}"/>
     	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
     	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>

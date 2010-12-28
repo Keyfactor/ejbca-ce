@@ -20,7 +20,7 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>
 
 	<path id="compile-library.classpath">
