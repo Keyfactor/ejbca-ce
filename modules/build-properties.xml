@@ -173,7 +173,7 @@
 			-->
 			
 			<!-- JBoss 5.1.0 for Remote EJB-->
-	    	<include name="client/jboss-ejb-*.jar"/>
+	    	<include name="client/jboss-ejb*.jar"/>
 	    	<include name="client/jboss-aop-client.jar"/>
 	    	<include name="client/jboss-aspect-jdk50-client.jar"/>
 
