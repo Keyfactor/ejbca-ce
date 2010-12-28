@@ -409,9 +409,12 @@
     	<antcall target="j2ee:deploy" />
         <antcall target="showtime" />
     </target>
-    <target name="va-deploy" depends="failinproduction-va,va-ear,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the standalone OCSP reponder" >
+    <target name="va-deploy" depends="failinproduction-va,va-ear,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the stand alone Verification Authority (VA)" >
         <antcall target="j2ee:deployva" />
         <antcall target="showtime" />
+    </target>
+    <target name="ocsp-deploy" depends="va-deploy" description="Depricated, use va-deploy instead" >
+        <echo message="Depricated use va-deploy instead." />
     </target>
 
     <!-- ======================================================================= -->
