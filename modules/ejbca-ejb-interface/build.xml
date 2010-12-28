@@ -9,7 +9,7 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="ejb3.build.dir" location="${this.dir}/ejb3build"/>
-	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
+	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 
 	<path id="compile.classpath">
@@ -23,21 +23,21 @@
   	 	<jar destfile="${mod.ejbca-ejb-interface_ejb3.lib}" basedir="${ejb3.build.dir}"/> 
     </target>
 
-    <target name="build-ocsp" description="Build this module" depends="compile-ocsp">
-    	<jar destfile="${mod.ocsp-ejb-interface.lib}" basedir="${build-ocsp.dir}"/>
+    <target name="build-va" description="Build this module" depends="compile-va">
+    	<jar destfile="${mod.va-ejb-interface.lib}" basedir="${build-va.dir}"/>
     </target>
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
     	<delete dir="${ejb3.build.dir}" />
-		<delete dir="${build-ocsp.dir}" />
+		<delete dir="${build-va.dir}" />
     	<delete file="${mod.ejbca-ejb-interface_ejb3.lib}"/>
-		<delete file="${mod.ocsp-ejb-interface.lib}"/>
+		<delete file="${mod.va-ejb-interface.lib}"/>
     </target>
 
-	<target name="compile-ocsp" depends="ejbca-util">
-    	<mkdir dir="${build-ocsp.dir}" />
-        <javac destdir="${build-ocsp.dir}" debug="on" includeantruntime="no"
+	<target name="compile-va" depends="ejbca-util">
+    	<mkdir dir="${build-va.dir}" />
+        <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src.dir}"/>
 			<include name="org/ejbca/core/ejb/**/CertificateStoreOnlyDataSession*.java"/>

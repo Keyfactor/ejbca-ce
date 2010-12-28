@@ -137,17 +137,17 @@
 		<chmod file="${dist.dir}/ejbca.ear" perm="600"/>
 	</target>
 
-	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
-		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external ocsp responder -->
+	<target name="j2ee:deploy" if="va-datasource.jndi-name" depends="j2ee:deployBase">
+		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external va responder -->
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
-                <include name="ocsp-ds.xml"/>
+                <include name="va-ds.xml"/>
             </fileset>
             <filterchain>
                 <expandproperties/>
             </filterchain>
         </copy>
-		<chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
+		<chmod file="${jboss.farm.dir}/va-ds.xml" perm="600"/>
 	</target>
 
 	<target name="j2ee:deploy-scep-war" depends="j2ee:check">
@@ -166,14 +166,14 @@
         <copy todir="${tomcat.dir}" overwrite="true" file="dist/externalra-gui/server.xml"/>
 	</target>
 
-	<target name="j2ee:ocspbasewebdeploy" if="j2ee.web-noconfigure">
+	<target name="j2ee:vabasewebdeploy" if="j2ee.web-noconfigure">
 		<!-- Deploys a standard http setup for JBoss, without SSL -->
         <property name="definitions_away_begin" value="&#x3C;!--" />
         <property name="definitions_away_end" value="-->" />
         <antcall target="deploytomcat" />
 	</target>
 		
-	<target name="j2ee:deployocsp" depends="j2ee:ocspbasewebdeploy, j2ee:configure">
+	<target name="j2ee:deployva" depends="j2ee:vabasewebdeploy, j2ee:configure">
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
             	<include name="ejbca-ds.xml"/>
@@ -185,7 +185,7 @@
 		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
 		
     	<copy todir="${jboss.farm.dir}">
-    		<fileset dir="${ocsp-dist.dir}" includes="ejbca.ear"/>
+    		<fileset dir="${va-dist.dir}" includes="ejbca.ear"/>
     	</copy>
 		<chmod file="${jboss.farm.dir}/ejbca.ear" perm="600"/>
 	</target>

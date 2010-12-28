@@ -51,15 +51,15 @@
 		<delete dir="${build.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-entity.lib}" />
-		<delete file="${mod.ocsp-entity.lib}" />
+		<delete file="${mod.va-entity.lib}" />
     </target>
 	
     <target name="build" description="Build this module" depends="compile, handlepersistence, handleorm">
     	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml" excludes="org/ejbca/util/DatabaseSchemaScriptCreator.class"/>
     </target>
 
-    <target name="build-ocsp" description="Build this module" depends="compile, handlepersistence, handleorm-ocsp">
-    	<jar destfile="${mod.ocsp-entity.lib}" basedir="${build.dir}" includes="**/CertificateData.class **/*.xml"/>
+    <target name="build-va" description="Build this module" depends="compile, handlepersistence, handleorm-ocsp">
+    	<jar destfile="${mod.va-entity.lib}" basedir="${build.dir}" includes="**/CertificateData.class **/*.xml"/>
     </target>
 
     <target name="compile" depends="ejbca-util">
@@ -109,7 +109,7 @@
 		<copy file="${resources.dir}/orm-ocsp-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
 	</target>
 
-    <target name="compile-ocsp" depends="ejbca-util">
+    <target name="compile-va" depends="ejbca-util">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>

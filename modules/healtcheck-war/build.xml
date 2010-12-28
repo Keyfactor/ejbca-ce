@@ -29,9 +29,9 @@
 	
 	<path id="compile-ocsp.classpath">
 		<path refid="compile-common.classpath"/>
-		<path location="${mod.ocsp-ejb-interface.lib}"/>
-		<path location="${mod.ocsp-ejb.lib}"/>
-		<path location="${mod.ocsp-war-ocsp-build.path}"/>
+		<path location="${mod.va-ejb-interface.lib}"/>
+		<path location="${mod.va-ejb.lib}"/>
+		<path location="${mod.va-war-va-build.path}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 		
@@ -45,7 +45,7 @@
         <war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml" basedir="${build.dir}"/>
     </target>
 
-	<target name="ocsp-build" description="Build this module" depends="ocsp-compile">
+	<target name="va-build" description="Build this module" depends="va-compile">
 		<war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml" basedir="${build-ocsp.dir}"/>
 	</target>
 
@@ -56,7 +56,7 @@
     		
     </target>
 
-	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb, ocsp-ocsp-war">
+	<target name="va-compile" depends="va-ejb-interface, va-ejb, va-va-war">
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-ocsp.classpath"/>

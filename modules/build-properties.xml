@@ -13,7 +13,7 @@
 	<import file="${build-properties.basedir}/../propertyDefaults.xml"/>
 	
     <property name="ejbca.dist.path" location="${ejbca.home}/dist" />
-    <property name="ocsp.dist.path" location="${ejbca.home}/ocsp-dist" />
+    <property name="va.dist.path" location="${ejbca.home}/va-dist" />
     <!-- Define the different modules -->
     <property name="mod.path" location="${ejbca.home}/modules" />
     <property name="mod.common.path" location="${mod.path}/common" />
@@ -22,16 +22,16 @@
     <property name="mod.dist.path" location="${mod.path}/dist" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
-    <property name="mod.ocsp-entity.lib" location="${mod.dist.path}/ocsp-entity.jar" />
+    <property name="mod.va-entity.lib" location="${mod.dist.path}/va-entity.jar" />
     <property name="mod.ejbca-ejb.lib" location="${mod.dist.path}/ejbca-ejb.jar" />
-    <property name="mod.ocsp-ejb.lib" location="${mod.dist.path}/ocsp-ejb.jar" />
+    <property name="mod.va-ejb.lib" location="${mod.dist.path}/va-ejb.jar" />
     <property name="mod.ejbca-ejb.path" location="${mod.path}/ejbca-ejb" />
     <property name="mod.ejbca-ejb-cli.dist" location="${ejbca.dist.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
 	<property name="mod.ejbca-ejb-interface_ejb3.lib" location="${mod.dist.path}/ejbca-ejb3-interface.jar" />
-    <property name="mod.ocsp-ejb-interface.lib" location="${mod.dist.path}/ocsp-ejb3-interface.jar" />
+    <property name="mod.va-ejb-interface.lib" location="${mod.dist.path}/va-ejb3-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
     <property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
@@ -59,9 +59,9 @@
     <property name="mod.clearcache-war.war" location="${mod.dist.path}/clearcache.war" />
     <property name="mod.publicweb-gui.path" location="${mod.path}/publicweb-gui" />
     <property name="mod.publicweb-gui.war" location="${mod.dist.path}/publicweb.war" />
-    <property name="mod.ocsp-war.path" location="${mod.path}/ocsp-war" />
-    <property name="mod.ocsp-war.war" location="${mod.dist.path}/ocsp.war" />
-    <property name="mod.ocsp-war-ocsp-build.path" location="${mod.path}/ocsp-war/build-ocsp/WEB-INF/classes" />
+    <property name="mod.va-war.path" location="${mod.path}/va-war" />
+    <property name="mod.va-war.war" location="${mod.dist.path}/va.war" />
+    <property name="mod.va-war-va-build.path" location="${mod.path}/va-war/build-va/WEB-INF/classes" />
     <property name="mod.renew-war.path" location="${mod.path}/ejbca-renew-war" />
     <property name="mod.renew-war.war" location="${mod.dist.path}/renew.war" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />

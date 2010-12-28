@@ -9,18 +9,18 @@
     <description>OCSP responder</description>
     <display-name>OCSP responder</display-name>
     <module>
-        <ejb>ocsp-ejb.jar</ejb>
+        <ejb>va-ejb.jar</ejb>
     </module>
     <module>
         <web>
-            <web-uri>ocsp.war</web-uri>
+            <web-uri>va.war</web-uri>
             <context-root>/ejbca/publicweb/status</context-root>
         </web>
     </module>
     <module>
         <web>
             <web-uri>healthcheck.war</web-uri>
-            <context-root>/ejbca/publicweb/ocsphealthcheck</context-root>
+            <context-root>/ejbca/publicweb/vahealthcheck</context-root>
         </web>
     </module>
 </application>

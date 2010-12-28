@@ -61,15 +61,15 @@
         </exec>
 	</target>
 
-	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
-		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external ocsp responder -->
+	<target name="j2ee:deploy" if="va-datasource.jndi-name" depends="j2ee:deployBase">
+		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external va responder -->
 		<!-- 
 		TODO 
 		-->
 		<echo>You still have to configure DataSources manually for Glassfish</echo>
 	</target>
 
-	<target name="j2ee:deployocsp" depends="j2ee:configure">
+	<target name="j2ee:deployva" depends="j2ee:configure">
 		<!-- 
 		TODO 
 		-->

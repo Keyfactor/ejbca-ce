@@ -16,7 +16,7 @@
     <property name="lib" value="${ejbca.home}/lib" />
     
     <property name="dist.dir" location="${ejbca.home}/dist" />
-    <property name="ocsp-dist.dir" location="${ejbca.home}/ocsp-dist" />
+    <property name="va-dist.dir" location="${ejbca.home}/va-dist" />
 	
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
@@ -67,7 +67,7 @@
     <!-- =================================================================== -->
     <target name="clean">
         <delete dir="${dist.dir}" />
-        <delete dir="${ocsp-dist.dir}" />
+        <delete dir="${va-dist.dir}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
@@ -105,10 +105,10 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Compile ocsp resonder java sources                                  -->
+    <!-- Compile va resonder java sources                                  -->
     <!-- =================================================================== -->
-    <target name="ocsp-compile" depends="ejbca-util.jar, ocsp-entity, ocsp-ejb-interface">
-    	<echo message="THIS TARGET (ocsp-compile) SHOULD NO LONGER BE USED!"/>
+    <target name="va-compile" depends="ejbca-util.jar, va-entity, va-ejb-interface">
+    	<echo message="THIS TARGET (va-compile) SHOULD NO LONGER BE USED!"/>
     </target>
 
     <!-- =================================================================== -->
@@ -136,12 +136,12 @@
     <target name="failinproduction-ca">
 		<fail message="You cannot deploy EJBCA as a CA reponder in a OCSP production environment.">
 			<condition>
-				<equals arg1="${ejbca.productionmode}" arg2="ocsp" casesensitive="false"/>
+				<equals arg1="${ejbca.productionmode}" arg2="va" casesensitive="false"/>
 			</condition>
 		</fail>
     </target>
 
-    <target name="failinproduction-ocsp">
+    <target name="failinproduction-va">
 		<fail message="You cannot deploy EJBCA as a OCSP Responder in a CA production environment.">
 			<condition>
 				<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
@@ -174,10 +174,10 @@
     </target>    	
 
     <!-- =================================================================== -->
-    <!-- Build ocsp ejb part                                                    -->
+    <!-- Build va ejb part                                                    -->
     <!-- =================================================================== -->
-    <target name="ocsp-jar">
-    	<ant antfile="build.xml" dir="modules" target="ocsp-ejb" />
+    <target name="va-jar">
+    	<ant antfile="build.xml" dir="modules" target="va-ejb" />
     </target>
 
     <!-- =================================================================== -->
@@ -247,7 +247,7 @@
                 <include name="healthcheck.war" />
                 <include name="clearcache.war" />
                 <include name="webdist.war" />
-                <include name="ocsp.war" />
+                <include name="va.war" />
                 <include name="renew.war" />
                 <include name="ejbca-cmp-tcp.war" />
             </fileset>
@@ -278,13 +278,13 @@
     <!-- =================================================================== -->
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ocsp-ear" depends="display-properties, ocsp-war, ocsp-jar, ocsphealthcheck.war, create-log4config-bundle">
+    <target name="va-ear" depends="display-properties, va-war, va-jar, vahealthcheck.war, create-log4config-bundle">
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
 		</condition>
-        <mkdir dir="${ocsp-dist.dir}"/>
-        <ear destfile="${ocsp-dist.dir}/ejbca.ear" appxml="${ejbca.home}/src/deploy/ocsp-ear/META-INF/application.xml"> 
+        <mkdir dir="${va-dist.dir}"/>
+        <ear destfile="${va-dist.dir}/ejbca.ear" appxml="${ejbca.home}/src/deploy/va-ear/META-INF/application.xml"> 
             <zipfileset prefix="lib" dir="${lib}">
                 <include name="bcmail-jdk${java.ver}-145.jar" />
                 <include name="bcprov-jdk${java.ver}-145.jar" />
@@ -300,12 +300,12 @@
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="healthcheck.war" />
-                <include name="ocsp.war" />
-                <include name="ocsp-ejb.jar" />
+                <include name="va.war" />
+                <include name="va-ejb.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
-                <include name="ocsp-ejb3-interface.jar" />
-                <include name="ocsp-entity.jar" />
+                <include name="va-ejb3-interface.jar" />
+                <include name="va-entity.jar" />
                 <include name="log4jconfig.jar" />
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
@@ -393,8 +393,8 @@
     	<antcall target="j2ee:deploy" />
         <antcall target="showtime" />
     </target>
-    <target name="ocsp-deploy" depends="failinproduction-ocsp,ocsp-ear,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the standalone OCSP reponder" >
-        <antcall target="j2ee:deployocsp" />
+    <target name="va-deploy" depends="failinproduction-va,va-ear,inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the standalone OCSP reponder" >
+        <antcall target="j2ee:deployva" />
         <antcall target="showtime" />
     </target>
 
@@ -426,12 +426,12 @@
 		    	<exclude name="**/CVS/**" />
 		    	<exclude name="tmp/**" />
 		    	<exclude name="dist/**" />
-		    	<exclude name="ocsp-dist/**" />
+		    	<exclude name="va-dist/**" />
 		    	<exclude name="bin/META_INF/**" />
 		    	<exclude name="out/**" />
 		    	<exclude name="p12*/**" />
 		    	<exclude name="hwtoken/**" />
-		        <exclude name="ocspHardTokenClasses/**" />
+		        <exclude name="vaHardTokenClasses/**" />
 		    	<exclude name="**/*.class" />
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
@@ -544,8 +544,8 @@
     	<ant dir="modules" target="ejbca-entity" />
     </target>
 
-    <target name="ocsp-entity">
-    	<ant dir="modules" target="ocsp-entity" />
+    <target name="va-entity">
+    	<ant dir="modules" target="va-entity" />
     </target>
 
     <target name="generate-dbscripts" description="Generate create and drop script for the configured database.">
@@ -556,8 +556,8 @@
        	<ant dir="modules" target="ejbca-ejb-interface" />
     </target>
 
-	<target name="ocsp-ejb-interface">
-       	<ant dir="modules" target="ocsp-ejb-interface" />
+	<target name="va-ejb-interface">
+       	<ant dir="modules" target="va-ejb-interface" />
     </target>
 
     <target name="ejbca-ejb-cli" description="Builds EJBCA command line interface">
@@ -584,8 +584,8 @@
     	<ant dir="modules" target="clearcache-ejbca-war" />
     </target>
 		
-    <target name="ocsphealthcheck.war">
-    	<ant dir="modules" target="healthcheck-ocsp-war" />
+    <target name="vahealthcheck.war">
+    	<ant dir="modules" target="healthcheck-va-war" />
     </target>	
 
     <target name="renew.war" if="renew.war.enabled">
@@ -597,11 +597,11 @@
     </target>
 
     <target name="status.war">
-    	<ant dir="modules" target="ocsp-ejbca-war" />
+    	<ant dir="modules" target="va-ejbca-war" />
     </target>
 	
-    <target name="ocsp-war">
-    	<ant dir="modules" target="ocsp-ocsp-war" />
+    <target name="va-war">
+    	<ant dir="modules" target="va-va-war" />
     </target>
 
     <target name="webdist.war">
