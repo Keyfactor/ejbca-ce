@@ -20,7 +20,7 @@
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
-  	 	<jar destfile="${mod.ejbca-ejb-interface_ejb3.lib}" basedir="${ejb3.build.dir}"/> 
+  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}"/> 
     </target>
 
     <target name="build-va" description="Build this module" depends="compile-va">
@@ -31,7 +31,7 @@
 		<delete dir="${build.dir}" />
     	<delete dir="${ejb3.build.dir}" />
 		<delete dir="${build-va.dir}" />
-    	<delete file="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+    	<delete file="${mod.ejbca-ejb-interface.lib}"/>
 		<delete file="${mod.va-ejb-interface.lib}"/>
     </target>
 

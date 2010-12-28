@@ -20,7 +20,7 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
-		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
 		<path refid="lib.xmlsec.classpath"/>	
 	</path>

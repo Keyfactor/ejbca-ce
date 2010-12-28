@@ -30,7 +30,7 @@
     <property name="mod.ejbca-ejb-cli.lib" location="${mod.ejbca-ejb-cli.dist}/ejbca-ejb-cli.jar" />
     <property name="mod.ejbca-ejb-cli.path" location="${mod.path}/ejbca-ejb-cli" />
     <property name="mod.ejbca-ejb-interface.path" location="${mod.path}/ejbca-ejb-interface" />
-	<property name="mod.ejbca-ejb-interface_ejb3.lib" location="${mod.dist.path}/ejbca-ejb3-interface.jar" />
+	<property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
     <property name="mod.va-ejb-interface.lib" location="${mod.dist.path}/va-ejb3-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />

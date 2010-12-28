@@ -12,7 +12,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
-		<path location="${mod.ejbca-ejb-interface_ejb3.lib}"/>
+		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.servlet.classpath"/>
