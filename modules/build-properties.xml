@@ -215,6 +215,8 @@
 		<include name="server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
 		<include name="server/default/deploy/jbossweb.sar/jstl.jar"/>
 		<include name="common/lib/el-api.jar"/>
+		<!-- JBoss 6.0.0 -->
+		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
 		<!-- Glassfish 2.1.1 -->
 		<include name="lib/jsf-impl.jar" />
 		<!-- WebLogic 10.3.3 -->
@@ -308,8 +310,5 @@
 
     <!-- Now when everything is set up, we can load the old property defaults -->
     <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
-
-	<!-- JSP validation currently only works on JBoss -->
-	<condition property="validatejsp"><matches pattern="jboss" string="${appserver.type}"/></condition>
 
 </project>

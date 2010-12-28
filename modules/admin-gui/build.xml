@@ -56,6 +56,11 @@
         	classpathref="compile.classpath"/>
     </target>
 	
+	<!-- JSP validation currently only works on JBoss, but not jboss 6 -->
+	<condition property="validatejsp">
+			<available classname="org.apache.jasper.JspC" classpathref="jasper.classpath"/>
+	</condition>
+
     <target name="validate" depends="compile" if="validatejsp">
         <!--
             Since Jasper might not be compatible with all application servers, we discard the compiled JSP when we are done.

@@ -218,6 +218,18 @@
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
 		</condition>
+		<!-- Include Xerces library if it don't exist in the current application server (jboss6 won't start with it). -->
+		<condition property="bundle-xerces-exclude" value="xerces*.jar, xml-apis*.jar" else="">
+			<isset property="exclude-xerces"/>
+		</condition>
+		<!-- Include Xalan library if it don't exist in the current application server (jboss6 won't start with it). -->
+		<condition property="bundle-xalan-exclude" value="xalan*.jar" else="">
+			<isset property="exclude-xalan"/>
+		</condition>
+		<!-- Include serializer library if it don't exist in the current application server (jboss6 won't start with it). -->
+		<condition property="bundle-serializer-exclude" value="serializer*.jar" else="">
+			<isset property="exclude-serializer"/>
+		</condition>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
     		<!-- Specify that we will use a specific WS implementation -->
@@ -233,8 +245,8 @@
                 <include name="commons-*.jar" />
                 <include name="libidn.jar" />	<!-- XKMS -->
             </zipfileset>
-            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar"/>
-            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="xmlsec-1.4.3.jar xalan-2.7.1.jar serializer-2.7.1.jar"/>	<!-- XKMS -->
+            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
+            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="*.jar" excludes="${bundle-xalan-exclude},${bundle-serializer-exclude}"/>	<!-- XKMS -->
             <fileset dir="${dist.dir}" includes="doc.war"/>
             <fileset dir="${ejbca.home}/modules/dist">
                 <include name="ejbca-ejb.jar" />
@@ -270,7 +282,11 @@
 	<target name="create-log4config-bundle">
 		<mkdir dir="tmp"/>
 		<!-- For appservers that don't come with Log4J we need to bundle a configuration file in the classpath (in the EARs lib/ directory in a JAR) -->
-		<copy file="conf/log4j-${appserver.type}.xml" tofile="tmp/log4j.xml" failonerror="false"/>
+		<copy file="conf/log4j-${appserver.type}.xml.sample" overwrite="true" tofile="tmp/log4j.xml" failonerror="false"/>
+		<copy file="conf/log4j-${appserver.type}.xml" overwrite="true" tofile="tmp/log4j.xml" failonerror="false"/>
+		<!-- If we don't have a specific file for an appserver, perhaps we have one for the subtype (i.e. jboss and jboss6) -->
+		<copy file="conf/log4j-${appserver.subtype}.xml.sample" overwrite="true" tofile="tmp/log4j.xml" failonerror="false"/>
+		<copy file="conf/log4j-${appserver.subtype}.xml" overwrite="true" tofile="tmp/log4j.xml" failonerror="false"/>
 		<jar destfile="modules/dist/log4jconfig.jar" whenempty="skip" basedir="tmp" includes="log4j.xml"/>
 		<delete file="tmp/log4j.xml"/>
 	</target>
