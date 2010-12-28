@@ -53,7 +53,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -768,7 +767,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param caid
      *            id of the CA that should create the request
      * @param cachain
-     *            A Collection of CA-certificates.
+     *            A Collection of CA-certificates, can be empty or null
      * @param regenerateKeys
      *            if renewing a CA this is used to also generate a new KeyPair,
      *            if this is true and activatekey is false, the new key will not
@@ -786,7 +785,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            be null if regenerateKeys and activatekey is false.
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
-    public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
+    public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachainin, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
         if (log.isTraceEnabled()) {
@@ -816,10 +815,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CA ca = cadata.getCA();
             String caname = ca.getName();
 
+            Collection<byte[]> cachain = cachainin;
+            if (cachain == null) {
+            	cachain = new ArrayList<byte[]>(); // create empty list if input was null
+            }
             // AR+ patch to make SPOC independent of external CVCA certs for automatic renewals
             // i.e. if we don't pass a ca certificate as parameter we try to find a suitable CA certificate in the database, among existing CAs 
             // (can be a simple imported CA-certificate of external CA)
-            if (CollectionUtils.isEmpty(cachain) &&
+            if (cachain.isEmpty() &&
             	ca.getCAType() == CAInfo.CATYPE_CVC &&
                 ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA &&
                 ca.getStatus() == SecConst.CA_ACTIVE){
