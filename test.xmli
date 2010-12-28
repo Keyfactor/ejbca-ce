@@ -19,8 +19,8 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" />
     </target>
 
-    <target name="test:rungfver-ocsp" description="run Glassfish JEE validation tool on the OCSP EAR" depends="ocsp-ear">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver-ocsp" />
+    <target name="test:rungfver-va" description="run Glassfish JEE validation tool on the OCSP EAR" depends="va-ear">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver-va" />
     </target>
 
     <target name="test:runone" description="run a single JUnit-test specified -Dtest.runone=classname">
@@ -70,12 +70,12 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="runcmp" />
     </target>
 
-    <target name="test:runocsp" description="run JUnit standalone OCSP system tests">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp" />
+    <target name="test:runva" description="run JUnit standalone OCSP system tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runva" />
     </target>
 
-    <target name="test:runocsp.setuptest" description="setup some a basic environment for the standalone OCSP tests">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp.setuptest" />
+    <target name="test:runva.setuptest" description="setup some a basic environment for the standalone OCSP tests">
+    	<ant antfile="build.xml" dir="modules/systemtests" target="runva.setuptest" />
     </target>
 
     <target name="test:logstress" description="run JUnit log stress test">

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ocsp-war" default="ejbca-build">
+<project name="va-war" default="ejbca-build">
     <description>
             Build file for the OCSP Web components
     </description>
 
-	<dirname property="this.dir" file="${ant.file.ocsp-war}"/>
+	<dirname property="this.dir" file="${ant.file.va-war}"/>
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
-	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
+	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
@@ -27,25 +27,25 @@
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 	
-	<path id="compile-ocsp.classpath">
+	<path id="compile-va.classpath">
 		<path refid="compile-common.classpath"/>
-		<path location="${mod.ocsp-ejb-interface.lib}"/>
-		<path location="${mod.ocsp-ejb.lib}"/>
+		<path location="${mod.va-ejb-interface.lib}"/>
+		<path location="${mod.va-ejb.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 		
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${build-ocsp.dir}" />
-    	<delete file="${mod.ocsp-war.war}" />
+		<delete dir="${build-va.dir}" />
+    	<delete file="${mod.va-war.war}" />
     </target>
 
     <target name="ejbca-build" description="Build this module" depends="ejbca-compile">
-        <war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml" basedir="${build.dir}"/>
+        <war destfile="${mod.va-war.war}" webxml="${resources.dir}/WEB-INF/web-ejbca.xml" basedir="${build.dir}"/>
     </target>
 
-	<target name="ocsp-build" description="Build this module" depends="ocsp-compile">
-		<war destfile="${mod.ocsp-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml" basedir="${build-ocsp.dir}"/>
+	<target name="va-build" description="Build this module" depends="va-compile">
+		<war destfile="${mod.va-war.war}" webxml="${resources.dir}/WEB-INF/web-va.xml" basedir="${build-va.dir}"/>
 	</target>
 
     <target name="ejbca-compile" depends="ejbca-ejb">
@@ -54,11 +54,11 @@
 			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone*.java" classpathref="compile-ejbca.classpath"/>
     </target>
 
-	<target name="ocsp-compile" depends="ocsp-ejb-interface, ocsp-ejb">
-		<echo message="${mod.ocsp-ejb.lib}"/>
-		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
-		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java" classpathref="compile-ocsp.classpath"/>
+	<target name="va-compile" depends="va-ejb-interface, va-ejb">
+		<echo message="${mod.va-ejb.lib}"/>
+		<mkdir dir="${build-va.dir}/WEB-INF/classes" />
+		<javac srcdir="${src.dir}" destdir="${build-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java" classpathref="compile-va.classpath"/>
 	</target>
 
 </project>

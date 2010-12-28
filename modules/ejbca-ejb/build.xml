@@ -11,7 +11,7 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
-	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
+	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
@@ -43,11 +43,11 @@
 		<path refid="lib.quickserver.classpath"/>
 	</path>
 
-	<path id="compile-ocsp-ejb.classpath">
+	<path id="compile-va-ejb.classpath">
 		<path refid="compile-util.classpath"/>
 		<path refid="lib.ejbca-util.classpath"/>
-		<path location="${mod.ocsp-ejb-interface.lib}"/>
-		<path location="${mod.ocsp-entity.lib}"/>
+		<path location="${mod.va-ejb-interface.lib}"/>
+		<path location="${mod.va-entity.lib}"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -73,11 +73,11 @@
 
     <target name="clean" depends="dependecy-check-clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
-		<delete dir="${build-ocsp.dir}" />
+		<delete dir="${build-va.dir}" />
 		<delete dir="${build-util.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
-		<delete file="${mod.ocsp-ejb.lib}" />
+		<delete file="${mod.va-ejb.lib}" />
 		<delete file="${mod.ejbca-util.lib}" />
     </target>
 	
@@ -121,15 +121,15 @@
 		</exec>
     </target>
 
-    <target name="build-ocsp" description="Build this module" depends="compile-ocsp-ejb">
-    	<copy todir="${build-ocsp.dir}" file="${ejbca.home}/src/internal.properties">
+    <target name="build-va" description="Build this module" depends="compile-va-ejb">
+    	<copy todir="${build-va.dir}" file="${ejbca.home}/src/internal.properties">
     		<filterchain>
     			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
     		</filterchain>
     	</copy>
     	<mkdir dir="${ocsp.hardToken.classes}"/>	<!-- If it doesn't exist.. -->
-        <jar destfile="${mod.ocsp-ejb.lib}">
-        	<fileset dir="${build-ocsp.dir}">
+        <jar destfile="${mod.va-ejb.lib}">
+        	<fileset dir="${build-va.dir}">
             	<!-- Include files that are not already present in ejbca-util.jar -->
             	<present present="srconly" targetdir="${build-util.dir}"/>
         	</fileset>
@@ -194,11 +194,11 @@
         </copy>
     </target>
 
-    <target name="compile-ocsp-ejb" depends="build-util, ocsp-entity, ocsp-ejb-interface">
-    	<mkdir dir="${build-ocsp.dir}"/>
-        <javac destdir="${build-ocsp.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" >
+    <target name="compile-va-ejb" depends="build-util, va-entity, va-ejb-interface">
+    	<mkdir dir="${build-va.dir}"/>
+        <javac destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" >
             <classpath>
-            	<path refid="compile-ocsp-ejb.classpath" />
+            	<path refid="compile-va-ejb.classpath" />
             </classpath>
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
@@ -221,7 +221,7 @@
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${src.dir}" />
         </javac>
-        <copy todir="${build-ocsp.dir}">
+        <copy todir="${build-va.dir}">
             <fileset dir="${internalresources.base.dir}">
                 <include name="intresources/*.properties"/>
             </fileset>	
