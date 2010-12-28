@@ -51,7 +51,6 @@
 	<classpathentry kind="lib" path="lib/batik/batik-util.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/batik/xml-apis-ext.jar"/>
-	<classpathentry kind="lib" path="lib/ext/junit-3.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/htmlunit-1.14.jar"/>
 	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
@@ -85,5 +84,6 @@
 	<classpathentry kind="var" path="JBOSS5_HOME"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
+	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
