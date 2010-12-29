@@ -319,14 +319,16 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
         final byte crl[] = crlSession.getLastCRL(admin, issuerDN, false);
         if ( crl!=null ) {
-                publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, caDataDN);
+                final int nr = crlSession.getLastCRLInfo(admin, issuerDN, false).getLastCRLNumber();
+                publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
         }
         if ( !doPublishDeltaCRL ) {
                 return;
         }
         final byte deltaCrl[] = crlSession.getLastCRL(admin, issuerDN, true);
         if ( deltaCrl!=null ) {
-                publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, caDataDN);
+                final int nr = crlSession.getLastCRLInfo(admin, issuerDN, true).getLastCRLNumber();
+                publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
         }
     }
     

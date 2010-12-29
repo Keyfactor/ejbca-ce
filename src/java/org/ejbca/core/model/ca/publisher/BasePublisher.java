@@ -167,7 +167,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @throws PublisherException if a communication or other error occurs.
      */    
-    public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException;
+    public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.

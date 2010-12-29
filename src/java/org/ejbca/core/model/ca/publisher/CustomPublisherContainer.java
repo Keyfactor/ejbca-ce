@@ -101,8 +101,8 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException{
-		return this.getCustomPublisher().storeCRL(admin,incrl,cafp,userDN);		
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
+		return this.getCustomPublisher().storeCRL(admin,incrl,cafp,number,userDN);		
 	}
     
 	/**

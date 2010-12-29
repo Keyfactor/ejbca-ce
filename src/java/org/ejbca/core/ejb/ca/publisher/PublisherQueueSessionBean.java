@@ -333,7 +333,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                     if (crlData == null) {
                         throw new FinderException();
                     }
-                    published = publisher.storeCRL(admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), userDataDN);
+                    published = publisher.storeCRL(admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), crlData.getCrlNumber(), userDataDN);
                 } else {
                     String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);
                     log.error(msg);
