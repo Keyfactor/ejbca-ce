@@ -42,8 +42,7 @@ import org.ejbca.util.InterfaceCache;
  * keystore can be restored using caAdminSessionBean.restoreCAKeyStore().
  * 
  * @author Markus Kilås
- * @version $Id: CAKeystoreExportRemoveRestoreTest.java 9435 2010-07-14
- *          15:18:39Z mikekushner $
+ * @version $Id$
  */
 public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
