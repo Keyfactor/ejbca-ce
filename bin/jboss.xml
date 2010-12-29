@@ -137,7 +137,7 @@
 		<chmod file="${dist.dir}/ejbca.ear" perm="600"/>
 	</target>
 
-	<target name="j2ee:deploy" if="va-datasource.jndi-name" depends="j2ee:deployBase">
+	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
 		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external va responder -->
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
