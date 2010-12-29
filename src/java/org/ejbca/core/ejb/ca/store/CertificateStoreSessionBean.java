@@ -628,7 +628,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
      * @param issuerdn   Issuer of certificate to be removed.
      * @param serno      the serno of certificate to revoke.
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -659,7 +659,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
      * @param admin      Administrator performing the operation
      * @param certificate the certificate to revoke or activate.
      * @param publishers and array of publiserids (Integer) of publishers to revoke/re-publish the certificate in.
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @throws FinderException 
      */
@@ -682,7 +682,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     	
     	// A normal revocation
     	if ( (rev.getStatus() != SecConst.CERT_REVOKED) 
-    			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
+    			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ) {
     		rev.setStatus(SecConst.CERT_REVOKED);
     		rev.setRevocationDate(now);
     		rev.setUpdateTime(now.getTime());
@@ -692,8 +692,8 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     		// Revoke in all related publishers
     		publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
             // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
-    	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
-    			&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
+    	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) 
+    			&& (rev.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) ) {
     		// Only allow unrevocation if the certificate is revoked and the revocation reason is CERTIFICATE_HOLD
     		int status = SecConst.CERT_ACTIVE;
     		rev.setStatus(status);
@@ -739,7 +739,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
      * @param admin      Administrator performing the operation
      * @param cert       The DER coded Certificate that has been revoked.
      * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
-     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param reason     the reason of the revocation. (One of the RevokedCertInfo.REVOCATION_REASON constants.)
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)

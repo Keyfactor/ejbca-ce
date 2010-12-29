@@ -23,24 +23,22 @@ import java.util.Date;
  * @version $Id$
  **/
 public class RevokedCertInfo implements java.io.Serializable {
-    
 
 	/** Version number for serialization */
 	private static final long serialVersionUID = 1L;
 
-	
-	/** Constants defining different revokation reasons. */
+	/** Constants defining different revocation reasons. */
     public static final int NOT_REVOKED                            = -1;
-    public static final int REVOKATION_REASON_UNSPECIFIED          = 0;
-    public static final int REVOKATION_REASON_KEYCOMPROMISE        = 1;
-    public static final int REVOKATION_REASON_CACOMPROMISE         = 2;
-    public static final int REVOKATION_REASON_AFFILIATIONCHANGED   = 3;
-    public static final int REVOKATION_REASON_SUPERSEDED           = 4;
-    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = 5;
-    public static final int REVOKATION_REASON_CERTIFICATEHOLD      = 6;
-    public static final int REVOKATION_REASON_REMOVEFROMCRL        = 8;
-    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = 9;
-    public static final int REVOKATION_REASON_AACOMPROMISE         = 10;
+    public static final int REVOCATION_REASON_UNSPECIFIED          = 0;
+    public static final int REVOCATION_REASON_KEYCOMPROMISE        = 1;
+    public static final int REVOCATION_REASON_CACOMPROMISE         = 2;
+    public static final int REVOCATION_REASON_AFFILIATIONCHANGED   = 3;
+    public static final int REVOCATION_REASON_SUPERSEDED           = 4;
+    public static final int REVOCATION_REASON_CESSATIONOFOPERATION = 5;
+    public static final int REVOCATION_REASON_CERTIFICATEHOLD      = 6;
+    public static final int REVOCATION_REASON_REMOVEFROMCRL        = 8;
+    public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = 9;
+    public static final int REVOCATION_REASON_AACOMPROMISE         = 10;
     
 
     private BigInteger  userCertificate;
@@ -58,7 +56,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     	userCertificate = null;
     	revocationDate = null;
     	expireDate = null;
-    	reason = REVOKATION_REASON_UNSPECIFIED;
+    	reason = REVOCATION_REASON_UNSPECIFIED;
     }
 
     /**
@@ -180,25 +178,25 @@ public class RevokedCertInfo implements java.io.Serializable {
     	switch (reason) {
     	case NOT_REVOKED:
     		return "the certificate is not revoked";
-    	case REVOKATION_REASON_UNSPECIFIED:
+    	case REVOCATION_REASON_UNSPECIFIED:
     		return "unspecified";
-    	case REVOKATION_REASON_KEYCOMPROMISE:
+    	case REVOCATION_REASON_KEYCOMPROMISE:
     		return "key compromise";
-    	case REVOKATION_REASON_CACOMPROMISE:
+    	case REVOCATION_REASON_CACOMPROMISE:
     		return "CA compromise";
-    	case REVOKATION_REASON_AFFILIATIONCHANGED:
+    	case REVOCATION_REASON_AFFILIATIONCHANGED:
     		return "affiliation changed";
-    	case REVOKATION_REASON_SUPERSEDED:
+    	case REVOCATION_REASON_SUPERSEDED:
     		return "superseded";
-    	case REVOKATION_REASON_CESSATIONOFOPERATION:
+    	case REVOCATION_REASON_CESSATIONOFOPERATION:
     		return "cessation of operation";
-    	case REVOKATION_REASON_CERTIFICATEHOLD:
+    	case REVOCATION_REASON_CERTIFICATEHOLD:
     		return "certificate hold";
-    	case REVOKATION_REASON_REMOVEFROMCRL:
+    	case REVOCATION_REASON_REMOVEFROMCRL:
     		return "remove from CRL";
-    	case REVOKATION_REASON_PRIVILEGESWITHDRAWN:
+    	case REVOCATION_REASON_PRIVILEGESWITHDRAWN:
     		return "privileges withdrawn";
-    	case REVOKATION_REASON_AACOMPROMISE:
+    	case REVOCATION_REASON_AACOMPROMISE:
     		return "AA compromise";
     	default:
     		return "unknown";

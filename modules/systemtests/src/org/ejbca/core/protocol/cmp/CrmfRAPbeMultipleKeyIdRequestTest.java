@@ -255,7 +255,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN1, userDN1, cacert1, nonce, transid, false, PBEPASSWORD);
         checkCmpRevokeConfirmMessage(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, resp, true);
         int reason = checkRevokeStatus(issuerDN1, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);
+        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
 
         // Create a revocation request for a non existing cert, chould fail!
         rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid, true);
@@ -440,7 +440,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN2, userDN2, cacert2, nonce, transid, false, PBEPASSWORD);
         checkCmpRevokeConfirmMessage(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, resp, true);
         int reason = checkRevokeStatus(issuerDN2, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);
+        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
     }
 
     public void test06CrmfTcpOkUserKeyId3() throws Exception {

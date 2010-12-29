@@ -210,7 +210,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
 		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
 		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION);
+		assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
 
 	}
 

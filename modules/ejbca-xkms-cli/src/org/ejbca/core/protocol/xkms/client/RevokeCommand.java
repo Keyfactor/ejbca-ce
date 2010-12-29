@@ -45,11 +45,8 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	
 	private static final int ARG_CERT               = 1;
 	private static final int ARG_CERTENCODING       = 2;
-	private static final int ARG_REVOKATIONCODE     = 3;	
-	
-	    
-   
-	
+	private static final int ARG_REVOCATIONCODE     = 3;	
+
     /**
      * Creates a new instance of RaAddUserCommand
      *
@@ -76,7 +73,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
   
             String certEncoding = getCertEncoding(args[ARG_CERTENCODING]);            
             Certificate orgCert = getCert(args[ARG_CERT],certEncoding);
-            String revokationCode = args[ARG_REVOKATIONCODE];
+            String revokationCode = args[ARG_REVOCATIONCODE];
                                                             
             String reqId = genId();
             RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();

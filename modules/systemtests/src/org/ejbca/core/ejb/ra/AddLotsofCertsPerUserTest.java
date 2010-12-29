@@ -132,7 +132,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
-                        RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                        RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
 
             int cid = certificateProfileSession.getCertificateProfileId(administrator, certificateProfileName);
@@ -158,7 +158,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
-                        RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                        RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
             // Create some expired and archived
             for (int j = 0; j < CERTS_OF_EACH_KIND; j++) {
@@ -166,7 +166,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
-                        RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                        RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 storeSession.setArchivedStatus(administrator, CertTools.getFingerprintAsString(certificate));
             }
             endEntityProfileSession.removeEndEntityProfile(administrator, endEntityProfileName);

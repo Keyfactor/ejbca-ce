@@ -149,7 +149,7 @@ public class DeltaCRLTest extends CaTestCase {
 
         // Do some revoke
         X509Certificate cert = createUserAndCert();
-        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);
+        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
         // Sleep 1 second so we don't issue the next CRL at the exact same time
         // as the revocation
         Thread.sleep(1000);
@@ -167,7 +167,7 @@ public class DeltaCRLTest extends CaTestCase {
     }
 
     public void test04RevokeAndUnrevoke() throws Exception {
-        // Test revocation and un-revokation of certificates
+        // Test revocation and reactivation of certificates
         log.trace(">test04RevokeAndUnrevoke()");
 
         X509Certificate cert = createUserAndCert();
@@ -187,7 +187,7 @@ public class DeltaCRLTest extends CaTestCase {
             }
         } // If no revoked certificates exist at all, this test passed...
 
-        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);
+        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
         // Sleep 1 second so we don't issue the next CRL at the exact same time
         // as the revocation
         Thread.sleep(1000);
@@ -236,7 +236,7 @@ public class DeltaCRLTest extends CaTestCase {
         // delta CRL
         // When we create a new full CRL it will be present there, and not on
         // the next delta CRL
-        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, null);
+        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, null);
         // Sleep 1 second so we don't issue the next CRL at the exact same time
         // as the revocation
         Thread.sleep(1000);

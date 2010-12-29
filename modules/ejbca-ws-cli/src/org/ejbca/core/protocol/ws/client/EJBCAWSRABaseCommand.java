@@ -17,9 +17,9 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
 
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.provider.TLSProvider;
@@ -45,17 +45,17 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
         "CERTIFICATEHOLD","REMOVEFROMCRL","PRIVILEGESWITHDRAWN",
     "AACOMPROMISE"};
     
-    public static final int NOT_REVOKED = RevokedCertInfo.NOT_REVOKED;
-    public static final int REVOKATION_REASON_UNSPECIFIED = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
-    public static final int REVOKATION_REASON_KEYCOMPROMISE = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
-    public static final int REVOKATION_REASON_CACOMPROMISE = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
-    public static final int REVOKATION_REASON_AFFILIATIONCHANGED = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
-    public static final int REVOKATION_REASON_SUPERSEDED = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
-    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
-    public static final int REVOKATION_REASON_CERTIFICATEHOLD = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
-    public static final int REVOKATION_REASON_REMOVEFROMCRL = RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL;
-    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
-    public static final int REVOKATION_REASON_AACOMPROMISE = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
+    public static final int NOT_REVOKED = RevokeStatus.NOT_REVOKED;
+    public static final int REVOKATION_REASON_UNSPECIFIED = RevokeStatus.REVOKATION_REASON_UNSPECIFIED;
+    public static final int REVOKATION_REASON_KEYCOMPROMISE = RevokeStatus.REVOKATION_REASON_KEYCOMPROMISE;
+    public static final int REVOKATION_REASON_CACOMPROMISE = RevokeStatus.REVOKATION_REASON_CACOMPROMISE;
+    public static final int REVOKATION_REASON_AFFILIATIONCHANGED = RevokeStatus.REVOKATION_REASON_AFFILIATIONCHANGED;
+    public static final int REVOKATION_REASON_SUPERSEDED = RevokeStatus.REVOKATION_REASON_SUPERSEDED;
+    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokeStatus.REVOKATION_REASON_CESSATIONOFOPERATION;
+    public static final int REVOKATION_REASON_CERTIFICATEHOLD = RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD;
+    public static final int REVOKATION_REASON_REMOVEFROMCRL = RevokeStatus.REVOKATION_REASON_REMOVEFROMCRL;
+    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN = RevokeStatus.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
+    public static final int REVOKATION_REASON_AACOMPROMISE = RevokeStatus.REVOKATION_REASON_AACOMPROMISE;
     
     protected static final int[] REASON_VALUES = {NOT_REVOKED,REVOKATION_REASON_UNSPECIFIED, 
          REVOKATION_REASON_KEYCOMPROMISE, REVOKATION_REASON_CACOMPROMISE,

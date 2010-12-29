@@ -114,7 +114,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 			log.debug("deleted user: foo3");
 		} catch (Exception e) {}
 
-		certificateStoreSession.revokeAllCertByCA(admin, caSession.getCA(admin, rsacaid).getSubjectDN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+		certificateStoreSession.revokeAllCertByCA(admin, caSession.getCA(admin, rsacaid).getSubjectDN(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 	}
 
 

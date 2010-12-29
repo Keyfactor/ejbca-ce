@@ -183,7 +183,7 @@ public class CreateCRLSessionTest extends CaTestCase {
     }
 
     /**
-     * Test revocation and un-revokation of certificates
+     * Test revocation and reactivation of certificates
      * 
      * @throws Exception
      *             error
@@ -234,7 +234,7 @@ public class CreateCRLSessionTest extends CaTestCase {
             }
         } // If no revoked certificates exist at all, this test passed...
 
-        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, userDN);
+        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, userDN);
         // Create a new CRL again...
         crlStoreSession.run(admin, ca);
         // Check that our newly signed certificate IS present in a new CRL
@@ -276,7 +276,7 @@ public class CreateCRLSessionTest extends CaTestCase {
             assertFalse(found);
         } // If no revoked certificates exist at all, this test passed...
 
-        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, userDN);
+        certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, userDN);
         assertTrue("Failed to revoke certificate!", certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
         // Create a new CRL again...
         crlStoreSession.run(admin, ca);
@@ -369,7 +369,7 @@ public class CreateCRLSessionTest extends CaTestCase {
                         endEntityProfileSession.getEndEntityProfileId(admin, TESTPROFILE), certprofileid, new Date(), new Date(), SecConst.TOKEN_SOFT_PEM, 0, ei);
                 userdata.setPassword("foo123");
                 try {
-                    userAdminSession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+                    userAdminSession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
                 } catch (NotFoundException nfe) {
                 }
                 userAdminSession.addUser(admin, userdata, false);
@@ -390,7 +390,7 @@ public class CreateCRLSessionTest extends CaTestCase {
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
             // Revoke the user
-            certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, userDN);
+            certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, userDN);
             // Change CRLPeriod
             cainfo.setCRLPeriod(Long.MAX_VALUE);
             caAdminSession.editCA(admin, cainfo);
@@ -406,7 +406,7 @@ public class CreateCRLSessionTest extends CaTestCase {
             caAdminSession.editCA(admin, cainfo);
             ca = caSession.getCA(admin, caid);
             // Delete and revoke User
-            userAdminSession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+            userAdminSession.revokeAndDeleteUser(admin, TESTUSERNAME, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
             // Delete end entity profile
 
             certificateProfileSession.removeCertificateProfile(admin, TESTPROFILE);

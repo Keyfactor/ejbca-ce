@@ -1099,7 +1099,7 @@ public class XKMSKISSTest extends TestCase {
 
         // Revoke certificate
         Admin administrator = new Admin(Admin.TYPE_RA_USER);
-        certificateStoreSession.revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, null);
+        certificateStoreSession.revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         // Validate with revoked certificate
         validateRequestType = xKMSObjectFactory.createValidateRequestType();
         validateRequestType.setId("203");

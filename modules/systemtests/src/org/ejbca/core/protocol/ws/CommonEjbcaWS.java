@@ -280,7 +280,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         List<ExtendedInformationWS> ei = new ArrayList<ExtendedInformationWS> ();
 		ei.add(new ExtendedInformationWS (ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON,
-                                          Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD)));
+                                          Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)));
 		ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
 
 		user.setExtendedInformation(ei);
@@ -315,7 +315,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         boolean founddirattrs = false;
         for (ExtendedInformationWS item : userei) {
         	if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
-		        assertEquals(Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD), item.getValue());
+		        assertEquals(Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), item.getValue());
 		        foundrevreason = true;
 			}
 			if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
@@ -343,7 +343,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         founddirattrs = false;
         for (ExtendedInformationWS item : userei) {
 			if (StringUtils.equals(item.getName(), ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON)) {
-		        assertEquals(Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD), item.getValue());
+		        assertEquals(Integer.toString(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD), item.getValue());
 		        foundrevreason = true;
 			}
 			if (StringUtils.equals(item.getName(), ExtendedInformation.SUBJECTDIRATTRIBUTES)) {
@@ -384,7 +384,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.addField(DnComponents.DATEOFBIRTH);
             profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(SecConst.ALLCAS));
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
-            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON,0,""+RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+            profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON,0,""+RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
             endEntityProfileSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
         } catch (EndEntityProfileExistsException pee) {
@@ -882,7 +882,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         String issuerdn = CertTools.getIssuerDN(gencert);
         String serno = CertTools.getSerialNumberAsString(gencert);
 
-        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         foundcerts = ejbcaraws.findCerts(CA1_WSTESTUSER1, true);
         assertTrue(foundcerts != null);
@@ -931,11 +931,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         String issuerdn = cert.getIssuerDN().toString();
         String serno = cert.getSerialNumber().toString(16);
 
-        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 
         RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
         assertNotNull(revokestatus);
-        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 
         assertTrue(revokestatus.getCertificateSN().equals(serno));
         assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
@@ -947,11 +947,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNotNull(revokestatus);
         assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
 
-        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
         assertNotNull(revokestatus);
-        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         try {
             ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.NOT_REVOKED);
@@ -1052,11 +1052,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNotNull(revokestatus);
         assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
 
-        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         revokestatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
         assertNotNull(revokestatus);
-        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         assertTrue(revokestatus.getCertificateSN().equals(serno));
         assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
         assertNotNull(revokestatus.getRevocationDate());
@@ -1097,7 +1097,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void revokeUser() throws Exception {
 
         // Revoke and delete
-        ejbcaraws.revokeUser(CA1_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, true);
+        ejbcaraws.revokeUser(CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
 
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
@@ -2350,10 +2350,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 }
             }
             // Remove user
-            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
         if (userAdminSession.existsUser(intAdmin, TEST_NONADMIN_USERNAME)) {
-            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
         if (new File("p12/" + TEST_ADMIN_USERNAME + ".jks").exists()) {
             new File("p12/" + TEST_ADMIN_USERNAME + ".jks").delete();
@@ -2364,42 +2364,42 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // Remove test user
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	log.error("", e);
         }

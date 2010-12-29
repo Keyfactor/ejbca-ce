@@ -66,7 +66,7 @@ function confirmdeleterevoke(){
   return returnval;
 }
 
-function confirmrevokation(){
+function confirmrevocation(){
   var returnval = false;
   if(document.form.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
@@ -431,7 +431,7 @@ function confirmrevokation(){
       <% try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKESELECTED\") %>"/>'
-               onClick='return confirmrevokation()'>&nbsp;&nbsp;&nbsp;
+               onClick='return confirmrevocation()'>&nbsp;&nbsp;&nbsp;
       <% try{
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_DELETE_RIGHTS)){ %>
         <input type="submit" name="<%=BUTTON_DELETEREVOKE_USERS %>" value='<c:out value="<%= ejbcawebbean.getText(\"REVOKEANDDELETE\") %>"/>'

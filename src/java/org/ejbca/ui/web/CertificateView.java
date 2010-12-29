@@ -290,15 +290,15 @@ public class CertificateView implements Serializable {
       return revokedinfo != null  && revokedinfo.isRevoked();     
     }
 
-    public String[] getRevokationReasons(){
+    public String[] getRevocationReasons(){
       String[] returnval = null;
       if(revokedinfo != null) {
-        returnval = revokedinfo.getRevokationReasons();
+        returnval = revokedinfo.getRevocationReasons();
       }
       return returnval;
     }
 
-    public Date getRevokationDate(){
+    public Date getRevocationDate(){
       Date returnval = null;
       if(revokedinfo != null) {
         returnval = revokedinfo.getRevocationDate();

@@ -1606,7 +1606,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * Method that revokes a certificate for a user. It can also be used to
      * un-revoke a certificate that has been revoked with reason ON_HOLD. This
      * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
-     * RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL).
+     * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
      * 
      * @param admin
      *            the administrator performing the action
@@ -1660,8 +1660,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new FinderException(msg);
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
-        if ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) {
-            if (revinfo.revocationReason != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
+        if ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) {
+            if (revinfo.revocationReason != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));
                 logSession.log(admin, caid, LogConstants.MODULE_RA, new java.util.Date(), username, null, LogConstants.EVENT_INFO_REVOKEDENDENTITY, msg);
                 throw new AlreadyRevokedException(msg);

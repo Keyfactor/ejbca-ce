@@ -195,7 +195,8 @@ public class CAImportExportTest extends TestCase  {
                 null, // certificatechain
                 catokeninfo,
                 "Used for testing CA import and export",
-                -1, null, // revokationreason, revokationdate
+                -1, // revocationReason
+                null, //revocationDate
                 new ArrayList<CertificatePolicy>(), // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssuePeriod

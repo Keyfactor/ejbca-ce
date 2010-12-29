@@ -280,7 +280,7 @@ public class AutoEnrollServletTest extends TestCase {
 
 	private void cleanUp(String username, String profileName) throws RemoteException{
 		try {
-			userAdminSession.revokeAndDeleteUser(admin, username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+			userAdminSession.revokeAndDeleteUser(admin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		} catch (Exception e) {
 			log.debug(e);
 		}

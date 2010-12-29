@@ -2429,7 +2429,7 @@ public class CertTools {
      * @return int according to org.ejbca.core.model.ca.crl.RevokedCertInfo
      */
     public static int bitStringToRevokedCertInfo(DERBitString reasonFlags) {
-        int ret = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+        int ret = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
     	if (reasonFlags == null) {
     		return ret;
     	}
@@ -2438,31 +2438,31 @@ public class CertTools {
         	log.debug("Int value of bitString revocation reason: "+val);    		
     	}
     	if ( (val & ReasonFlags.aACompromise) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
+    		ret = RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE;
     	}
     	if ( (val & ReasonFlags.affiliationChanged) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
+    		ret = RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED;
     	}
     	if ( (val & ReasonFlags.cACompromise) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
+    		ret = RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE;
     	}
     	if ( (val & ReasonFlags.certificateHold) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
+    		ret = RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
     	}
     	if ( (val & ReasonFlags.cessationOfOperation) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
+    		ret = RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION;
     	}
     	if ( (val & ReasonFlags.keyCompromise) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
+    		ret = RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE;
     	}
     	if ( (val & ReasonFlags.privilegeWithdrawn) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
+    		ret = RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN;
     	}
     	if ( (val & ReasonFlags.superseded) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
+    		ret = RevokedCertInfo.REVOCATION_REASON_SUPERSEDED;
     	}
     	if ( (val & ReasonFlags.unused) != 0) {
-    		ret = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+    		ret = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
     	}
         return ret;
     }

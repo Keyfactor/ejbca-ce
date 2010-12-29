@@ -23,7 +23,7 @@
   static final String BUTTON_VIEW_PREVIOUS     = "buttonviewprevious"; 
   static final String BUTTON_VIEW_NEXT         = "buttonviewnext";
 
-  static final String SELECT_REVOKE_REASON       = "selectrevokationreason";
+  static final String SELECT_REVOKE_REASON       = "selectrevocationreason";
 
   static final String CHECKBOX_VALUE             = "true";  
 
@@ -200,7 +200,7 @@
   <script language=javascript>
 <!--
   <% if(token!=null){ %>
-function confirmrevokation(){
+function confirmrevocation(){
   var returnval = false;
   if(document.viewtoken.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
@@ -405,7 +405,7 @@ function viewcopies(link){
        <%    if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
                && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(),username)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
-               onClick='return confirmrevokation()'><br>
+               onClick='return confirmrevocation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>

@@ -192,7 +192,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
 		checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
 		int reason = InterfaceCache.getCertificateStoreSession().getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
-		assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, reason);
+		assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
 		LOG.trace("<testIssueConfirmRevoke");
 	}
 

@@ -38,7 +38,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  *   
  *   List<ExtendedInformationWS> ei = new ArrayList<ExtendedInformationWS> ();
  *   ei.add(new ExtendedInformationWS (ExtendedInformation.CUSTOMDATA+ExtendedInformation.CUSTOM_REVOCATIONREASON,
- *                                     Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD)));
+ *                                     Integer.toString(RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD)));
  *   ei.add(new ExtendedInformationWS (ExtendedInformation.SUBJECTDIRATTRIBUTES, "DATEOFBIRTH=19761123"));
  *   user.setExtendedInformation(ei);
  *</pre>
@@ -403,7 +403,7 @@ public class UserDataVOWS implements Serializable{
 
     /**
      * Generic setter for extendedInformation. Set with values from ExtendedInformation such as:
-     * ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer.toString(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD)
+     * ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer.toString(RevokeStatus.REVOCATION_REASON_CERTIFICATEHOLD)
      * @param extendedInformation
      */
 	public void setExtendedInformation(List<ExtendedInformationWS> extendedInformation) {

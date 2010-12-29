@@ -446,7 +446,7 @@ public interface UserAdminSession {
 
     /**
      * Method that revokes a certificate for a user.
-     * It can also be used to un-revoke a certificate that has been revoked with reason ON_HOLD. This is done by giving reason RevokedCertInfo.NOT_REVOKED (or RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL).
+     * It can also be used to un-revoke a certificate that has been revoked with reason ON_HOLD. This is done by giving reason RevokedCertInfo.NOT_REVOKED (or RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
      * 
      * @param admin
      *            the administrator performing the action
@@ -455,7 +455,7 @@ public interface UserAdminSession {
      * @param username
      *            the username to revoke.
      * @param reason
-     *            the reason of revokation, one of the RevokedCertInfo.XX
+     *            the reason of revocation, one of the RevokedCertInfo.XX
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a certificate on hold.
      * @throws AlreadyRevokedException
      *             if the certificate was already revoked

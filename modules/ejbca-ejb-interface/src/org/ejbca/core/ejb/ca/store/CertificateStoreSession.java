@@ -306,8 +306,8 @@ public interface CertificateStoreSession {
      *            and array of publiserids (Integer) of publishers to revoke the
      *            certificate in.
      * @param reason
-     *            the reason of the revokation. (One of the
-     *            RevokedCertInfo.REVOKATION_REASON constants.)
+     *            the reason of the revocation. (One of the
+     *            RevokedCertInfo.REVOCATION_REASON constants.)
      * @param userDataDN
      *            if an DN object is not found in the certificate, the object
      *            could be taken from user data instead.
@@ -338,7 +338,7 @@ public interface CertificateStoreSession {
      * @param issuerdn
      *            the dn of CA about to be revoked
      * @param reason
-     *            the reason of revokation.
+     *            the reason of revocation.
      */
     public void revokeAllCertByCA(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, int reason);
 

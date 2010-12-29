@@ -379,7 +379,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         removeApprovalAdmins();
         hardTokenSessionRemote.removeHardToken(intAdmin, "12345678");
-        userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+        userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 
     }
 
