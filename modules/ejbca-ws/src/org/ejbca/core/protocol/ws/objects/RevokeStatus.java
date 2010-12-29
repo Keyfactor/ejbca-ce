@@ -50,16 +50,16 @@ public class RevokeStatus {
 	
     /** Constants defining different revocation reasons. */
     public static final int NOT_REVOKED                            = RevokedCertInfo.NOT_REVOKED;
-    public static final int REVOKATION_REASON_UNSPECIFIED          = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
-    public static final int REVOKATION_REASON_KEYCOMPROMISE        = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
-    public static final int REVOKATION_REASON_CACOMPROMISE         = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
-    public static final int REVOKATION_REASON_AFFILIATIONCHANGED   = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
-    public static final int REVOKATION_REASON_SUPERSEDED           = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
-    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
-    public static final int REVOKATION_REASON_CERTIFICATEHOLD      = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
-    public static final int REVOKATION_REASON_REMOVEFROMCRL        = RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL;
-    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
-    public static final int REVOKATION_REASON_AACOMPROMISE         = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
+    public static final int REVOKATION_REASON_UNSPECIFIED          = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
+    public static final int REVOKATION_REASON_KEYCOMPROMISE        = RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE;
+    public static final int REVOKATION_REASON_CACOMPROMISE         = RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE;
+    public static final int REVOKATION_REASON_AFFILIATIONCHANGED   = RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED;
+    public static final int REVOKATION_REASON_SUPERSEDED           = RevokedCertInfo.REVOCATION_REASON_SUPERSEDED;
+    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION;
+    public static final int REVOKATION_REASON_CERTIFICATEHOLD      = RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
+    public static final int REVOKATION_REASON_REMOVEFROMCRL        = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
+    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN;
+    public static final int REVOKATION_REASON_AACOMPROMISE         = RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE;
     
 	private String               issuerDN;
     private String               certificateSN;

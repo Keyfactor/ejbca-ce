@@ -213,7 +213,7 @@ public abstract class CertificateDataUtil {
     	// If the certificate have status ARCHIVED, BUT revocationReason is REMOVEFROMCRL or NOTREVOKED, the certificate is OK
     	// Otherwise it is a revoked certificate that has been archived and we must return REVOKED
     	final int revReason = data.getRevocationReason(); // Read revocationReason from database if we really need to..
-    	if ( revReason==RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL || revReason==RevokedCertInfo.NOT_REVOKED ) {
+    	if ( revReason==RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL || revReason==RevokedCertInfo.NOT_REVOKED ) {
     		return new CertificateStatus(CertificateStatus.OK.toString(), pId);
     	}
     	return new CertificateStatus(data.getRevocationDate(), revReason, pId);

@@ -1096,7 +1096,7 @@ public class XKMSKRSSTest extends TestCase {
                 assertTrue(ERRORNOTSENTFORAPPROVAL, revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_RECIEVER));
                 assertTrue(ERRORNOTSENTFORAPPROVAL, revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
                 // Approve revocation and verify success
-                approveRevocation(administrator, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED,
+                approveRevocation(administrator, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
                         ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, caID);
                 // Try to reactivate user
             } finally {
@@ -1105,7 +1105,7 @@ public class XKMSKRSSTest extends TestCase {
         } finally {
             // Nuke CA
             try {
-                caAdminSession.revokeCA(administrator, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                caAdminSession.revokeCA(administrator, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } finally {
                 caSession.removeCA(administrator, caID);
             }

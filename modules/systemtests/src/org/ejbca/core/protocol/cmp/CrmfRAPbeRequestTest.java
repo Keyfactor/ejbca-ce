@@ -262,7 +262,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
         checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
         int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         // Create a revocation request for a non existing cert, should fail!
         rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid, true);
@@ -365,7 +365,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // Approve revocation and verify success
             Admin approvingAdmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, APPROVINGADMINNAME).iterator().next(),
                     APPROVINGADMINNAME, null);
-            approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION,
+            approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, cainfo.getCAId());
             // try to revoke the now revoked cert via CMP and verify error
             nonce = CmpMessageHelper.createSenderNonce();
@@ -387,7 +387,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             userAdminSession.deleteUser(admin, username);
             // Nuke CA
             try {
-                caAdminSession.revokeCA(admin, cainfo.getCAId(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                caAdminSession.revokeCA(admin, cainfo.getCAId(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } finally {
                 caSession.removeCA(admin, cainfo.getCAId());
             }

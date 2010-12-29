@@ -297,7 +297,7 @@ public class PublisherTest extends TestCase {
         ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        publisherSession.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
+        publisherSession.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
 	    log.trace("<test14ExternalOCSPPublisherCustom()");
     }
     
@@ -337,7 +337,7 @@ public class PublisherTest extends TestCase {
         assertEquals(date, info.getUpdateTime().getTime());
 
         date = date + 12345;
-        publisherSession.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
+        publisherSession.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
 
         info = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
         assertEquals(12345, info.getCertificateProfileId());

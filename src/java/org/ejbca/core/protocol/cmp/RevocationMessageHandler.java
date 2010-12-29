@@ -148,7 +148,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					// Get the revocation reason. 
 					// For CMPv1 this can be a simple DERBitString or it can be a requested CRL Entry Extension
 					// If there exists CRL Entry Extensions we will use that, because it's the only thing allowed in CMPv2
-					int reason = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+					int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
 					DERBitString reasonbits = rd.getRevocationReason();
 					if (reasonbits != null) {
 						reason = CertTools.bitStringToRevokedCertInfo(reasonbits);						
@@ -164,7 +164,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 								ASN1InputStream ai = new ASN1InputStream(ext.getValue().getOctets());
 								DERObject obj = ai.readObject();
 								DEREnumerated crlreason = DEREnumerated.getInstance(obj);
-								// RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code
+								// RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code
 								reason = crlreason.getValue().intValue();
 								LOG.debug("CRLReason extension: "+reason);
 							} catch (IOException e) {

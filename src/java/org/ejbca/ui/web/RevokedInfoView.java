@@ -33,6 +33,12 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
  */
 public class RevokedInfoView implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
+	// Private fields.
+    private CertificateStatus revokedcertinfo;
+    private BigInteger certserno;
+
     /**
      * Creates a new instance of RevokedInfoView
      *
@@ -71,25 +77,19 @@ public class RevokedInfoView implements Serializable {
      *
      * @return DOCUMENT ME!
      */
-    public String[] getRevokationReasons() {
+    public String[] getRevocationReasons() {
         String[] dummy = { "" };
-        ArrayList reasons = new ArrayList();
+        ArrayList<String> reasons = new ArrayList<String>();
         int reason = this.revokedcertinfo.revocationReason;
 
         if ((reason >= 0) && (reason < SecConst.HIGN_REASON_BOUNDRARY)) {
             // Add this reason.
             reasons.add(SecConst.reasontexts[reason]);
         }
-
         return (String[]) reasons.toArray(dummy);
     }
 
     public boolean isRevoked(){
     	return this.revokedcertinfo.revocationReason != RevokedCertInfo.NOT_REVOKED;
     }
-
-
-    // Private fields.
-    private CertificateStatus revokedcertinfo;
-    private BigInteger certserno;
 }

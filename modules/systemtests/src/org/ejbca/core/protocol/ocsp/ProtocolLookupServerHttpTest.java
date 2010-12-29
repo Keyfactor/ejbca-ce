@@ -177,7 +177,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     public void test02OcspBadWithFnr() throws Exception {
-        certificateStoreSession.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
+        certificateStoreSession.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -203,7 +203,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         RevokedStatus rev = (RevokedStatus) status;
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
     }
 
     /** Tests ocsp message with good status and invalid unid

@@ -1641,7 +1641,7 @@ public class SignSessionTest extends CaTestCase {
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
         profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
-        profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         endEntityProfileSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
         pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
 
@@ -1660,7 +1660,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Now add extended information with the revocation reason
         ExtendedInformation ei = new ExtendedInformation();
-        ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+        ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         user.setExtendedinformation(ei);
         userAdminSession.changeUser(admin, user, false);
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -1670,7 +1670,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Check that it is revoked
         CertificateStatus rev = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
         log.trace("<test27IssuanceRevocationReason()");
     }
 

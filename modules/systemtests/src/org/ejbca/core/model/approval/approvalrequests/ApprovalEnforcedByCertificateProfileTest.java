@@ -408,7 +408,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 true, true, true, false, true, true, true, null);
         int caID = cainfo.getCAId();
         try {
-            caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+            caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             caSession.removeCA(internalAdmin, caID);
         } catch (Exception e) {
         }

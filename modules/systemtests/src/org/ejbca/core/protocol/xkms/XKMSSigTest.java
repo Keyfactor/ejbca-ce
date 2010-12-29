@@ -312,7 +312,7 @@ public class XKMSSigTest extends TestCase {
 
     public void test04SendRevokedRequest() throws Exception {
     	log.trace(">test04SendRevokedRequest");
-        userAdminSession.revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        userAdminSession.revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         KeyStore clientKeyStore = KeyStore.getInstance("JKS");
         keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");

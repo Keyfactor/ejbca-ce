@@ -1870,40 +1870,40 @@ function checkallfields(){
                 if(revstatus == RevokedCertInfo.NOT_REVOKED) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"ACTIVE\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD %>"/>' class="lightyellow" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD %>"/>' class="lightyellow" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"SUSPENDED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"CERTIFICATEHOLD\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"UNSPECIFIED\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"KEYCOMPROMISE\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"CACOMPROMISE\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"AFFILIATIONCHANGED\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_SUPERSEDED %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_SUPERSEDED) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_SUPERSEDED %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"SUPERSEDED\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"CESSATIONOFOPERATION\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"PRIVILEGESWITHDRAWN\") %>"/></option>
 
-          <option value='<c:out value="<%= RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE %>"/>' class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE) out.write(" selected ");
+          <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE %>"/>' class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) out.write(" selected ");
           %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"AACOMPROMISE\") %>"/></option>
 					
         </select>

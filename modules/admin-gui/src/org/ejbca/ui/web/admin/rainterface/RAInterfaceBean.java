@@ -208,7 +208,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     /**
      * Revokes the given user.
      * @param users an array of usernames to revoke.
-     * @param reason reason(s) of revokation.
+     * @param reason reason(s) of revocation.
      * @return false if administrator wasn't authorized to revoke all of the given users.
      */
     public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
@@ -229,7 +229,7 @@ public class RAInterfaceBean implements java.io.Serializable {
      *
      * @param serno serial number of certificate to revoke.
      * @param issuerdn the issuerdn of certificate to revoke.
-     * @param reason reason(s) of revokation.
+     * @param reason reason(s) of revocation.
      * @return false if administrator wasn't authorized to revoke the given certificate.
      */
     public boolean revokeCert(BigInteger serno, String issuerdn, String username, int reason) throws ApprovalException, WaitingForApprovalException {

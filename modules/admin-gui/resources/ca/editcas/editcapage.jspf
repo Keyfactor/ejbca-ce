@@ -248,7 +248,7 @@ function gendefaultocsplocator(){
 }
 <% } 
    if(revokable){ %>
-function confirmrevokation(){
+function confirmrevocation(){
   var returnval = false;
   if(document.ca.<%= SELECT_REVOKEREASONS %>.options.selectedIndex == -1){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
@@ -1296,7 +1296,7 @@ function checkallfields(){
           <%   } 
              } %>
         </select>
-        <input type="submit" name="<%= BUTTON_REVOKECA %>" value="<%= ejbcawebbean.getText("REVOKE") %>" onClick='return confirmrevokation()'>     
+        <input type="submit" name="<%= BUTTON_REVOKECA %>" value="<%= ejbcawebbean.getText("REVOKE") %>" onClick='return confirmrevocation()'>     
       </td>
     </tr>
         <% } %>   

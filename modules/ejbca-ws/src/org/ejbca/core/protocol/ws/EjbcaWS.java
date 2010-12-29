@@ -1690,7 +1690,7 @@ public class EjbcaWS implements IEjbcaWS {
 					while(iter.hasNext()){
 						java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
 						try {
-							userAdminSession.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), currentHardToken.getUsername(), RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+							userAdminSession.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), currentHardToken.getUsername(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
 						} catch (AlreadyRevokedException e) {
 							// Ignore previously revoked certificates
 						} catch (FinderException e) {
@@ -1722,7 +1722,7 @@ public class EjbcaWS implements IEjbcaWS {
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
 										if(WebServiceConfiguration.getSuspendAllCertificates() || next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_smartcardlogon.getId())){
-											userAdminSession.revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), userDataWS.getUsername(),  RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+											userAdminSession.revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), userDataWS.getUsername(),  RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 										}
 									}catch(CertificateParsingException e){
 										log.error(e);
@@ -1733,7 +1733,7 @@ public class EjbcaWS implements IEjbcaWS {
 						
 
 						}else{
-							revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, logger);
+							revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, logger);
 						}
 					}catch(AlreadyRevokedException e){
 						// Do nothing

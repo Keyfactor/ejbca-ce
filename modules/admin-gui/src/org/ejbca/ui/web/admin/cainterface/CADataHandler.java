@@ -347,7 +347,7 @@ public class CADataHandler implements Serializable {
 		  	List xkmscerts = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 		  	if (xkmscerts != null) {
 			  	X509Certificate xkmscert = (X509Certificate)xkmscerts.get(0);
-				certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
+				certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 		  	}
 		  	caadminsession.initExternalCAService(administrator, caid, next);
 		  }
@@ -363,7 +363,7 @@ public class CADataHandler implements Serializable {
 			  List cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
 			  if (cmscerts != null) {
 				  	X509Certificate cmscert = (X509Certificate)cmscerts.get(0);
-					certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
+					certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
 			  }
 			  caadminsession.initExternalCAService(administrator, caid, next);
 		  }

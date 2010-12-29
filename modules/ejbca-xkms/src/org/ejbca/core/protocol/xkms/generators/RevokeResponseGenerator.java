@@ -133,7 +133,7 @@ public class RevokeResponseGenerator extends
 		if(revocationCode.equals(password)){				
 			// revoke cert
 			try {								
-			    userAdminSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+			    userAdminSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 				retval = cert;
 			} catch (WaitingForApprovalException e) {
 				// The request has been sent for approval. -> Only part of the information requested could be provided.

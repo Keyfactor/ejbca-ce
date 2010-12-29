@@ -155,7 +155,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 			checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET);
 			checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
 			int reason = InterfaceCache.getCertificateStoreSession().getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
-			assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, reason);
+			assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
 		}
 		// Clean up what we can
 		if (useUserStorage) {

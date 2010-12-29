@@ -317,7 +317,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     public void test03OcspRevoked() throws Exception {
         log.trace(">test03OcspRevoked()");
         // Now revoke the certificate and try again
-        certificateStoreSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
+        certificateStoreSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -335,7 +335,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         RevokedStatus rev = (RevokedStatus) status;
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
-        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         log.trace("<test03OcspRevoked()");
     }
 

@@ -256,12 +256,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 String serno = cert.getSerialNumber().toString(16);
                 // revoke via WS and verify response
                 try {
-                    ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+                    ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (WaitingForApprovalException_Exception e1) {
                 }
                 try {
-                    ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+                    ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (ApprovalException_Exception e1) {
                 }
@@ -269,7 +269,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertNotNull(revokestatus);
                 assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
                 // Approve revocation and verify success
-                approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+                approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
                         ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, caID);
                 // Try to unrevoke certificate
                 try {
@@ -287,17 +287,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                         certificateStoreSession, approvalSessionRemote, caID);
                 // Revoke user
                 try {
-                    ejbcaraws.revokeUser(username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, false);
+                    ejbcaraws.revokeUser(username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, false);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (WaitingForApprovalException_Exception e) {
                 }
                 try {
-                    ejbcaraws.revokeUser(username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, false);
+                    ejbcaraws.revokeUser(username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, false);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (ApprovalException_Exception e) {
                 }
                 // Approve revocation and verify success
-                approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+                approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
                         ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSessionRemote, caID);
                 // Try to reactivate user
                 try {
@@ -314,17 +314,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 assertTrue(ejbcaraws.existsHardToken(TOKENSERIALNUMBER));
                 // Revoke token
                 try {
-                    ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+                    ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (WaitingForApprovalException_Exception e) {
                 }
                 try {
-                    ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+                    ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                     assertTrue(ERRORNOTSENTFORAPPROVAL, false);
                 } catch (ApprovalException_Exception e) {
                 }
                 // Approve actions and verify success
-                approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+                approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
                         ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, caID);
             } finally {
                 hardTokenSessionRemote.removeHardToken(intAdmin, TOKENSERIALNUMBER);
@@ -332,7 +332,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         } finally {
             // Nuke CA
             try {
-                caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+                caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } finally {
                 caSession.removeCA(intAdmin, caID);
             }

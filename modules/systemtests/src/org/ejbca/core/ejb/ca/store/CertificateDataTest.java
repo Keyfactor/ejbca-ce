@@ -127,9 +127,9 @@ public class CertificateDataTest extends TestCase {
         Date now = new Date();
         assertNotNull(info.getUpdateTime());
         assertTrue(now.after(info.getUpdateTime()));
-        certificateStoreSession.revokeCertificate(admin, ce, null, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, null);
+        certificateStoreSession.revokeCertificate(admin, ce, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         CertificateInfo info1 = certificateStoreSession.getCertificateInfo(admin, fp);
-        assertEquals("revocation reason does not match.", RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, info1.getRevocationReason());
+        assertEquals("revocation reason does not match.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, info1.getRevocationReason());
         log.info("revocationdate (after rev)=" + info1.getRevocationDate());
         assertTrue("Revocation date in future.", new Date().compareTo(info1.getRevocationDate()) >= 0);
 
@@ -166,7 +166,7 @@ public class CertificateDataTest extends TestCase {
             log.debug("revoking cert with fp=" + fp);
             // Revoke all foos certificates, note that revokeCertificate will
             // not change status of certificates that are already revoked
-            certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED, null);
+            certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, null);
             log.debug("Revoked cert " + fp);
         }
         log.trace("<test03listAndRevoke()");
@@ -227,7 +227,7 @@ public class CertificateDataTest extends TestCase {
         log.debug("expiredate=" + data3.getExpireDate());
         log.debug("revocationdate=" + data3.getRevocationDate());
         log.debug("revocationreason=" + data3.getRevocationReason());
-        assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
         Collection certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert),
@@ -331,13 +331,13 @@ public class CertificateDataTest extends TestCase {
         log.debug("expiredate=" + data3.getExpireDate());
         log.debug("revocationdate=" + data3.getRevocationDate());
         log.debug("revocationreason=" + data3.getRevocationReason());
-        assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertEquals("wrong reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         log.debug("Checking if cert is revoked DN:'" + CertTools.getIssuerDN(cert) + "', serno:'" + cert.getSerialNumber().toString() + "'.");
         CertificateStatus revinfo = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), cert.getSerialNumber());
         assertNotNull("Certificate not found, it should be!", revinfo);
         int reason = revinfo.revocationReason;
-        assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, reason);
+        assertEquals("Certificate not revoked, it should be!", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
         assertTrue("Wrong revocationDate!", revinfo.revocationDate.compareTo(data3.getRevocationDate()) == 0);
         assertEquals("Wrong reason!", revinfo.revocationReason, data3.getRevocationReason());
         log.debug("Removed it!");
@@ -455,10 +455,10 @@ public class CertificateDataTest extends TestCase {
         // Revoke certificate and set to ON HOLD, this will change status from
         // ARCHIVED to REVOKED
         certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
-                RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
         // Check the revocation date once, it must be within one minute diff
         // from current time
         Calendar cal1 = Calendar.getInstance();
@@ -476,20 +476,20 @@ public class CertificateDataTest extends TestCase {
         certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
         assertEquals(revDate, status.revocationDate);
 
         // Now unrevoke the certificate, REMOVEFROMCRL
         certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
-                RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL, null);
+                RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
         // Revoke certificate and set to ON HOLD again, this will change status to REVOKED (again)
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, null);
+        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, status.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Now unrevoke the certificate, NOT_REVOKED
         certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
@@ -505,24 +505,24 @@ public class CertificateDataTest extends TestCase {
         // Finally revoke for real, this will change status from ARCHIVED to
         // REVOKED
         certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
-                RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN, null);
+                RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
         revDate = status.revocationDate;
 
         // Try to unrevoke the certificate, should not work, because it is permanently revoked
         certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return REVOKED.
         certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
+        assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
         assertTrue(revDate.compareTo(status.revocationDate) == 0);
     }
 

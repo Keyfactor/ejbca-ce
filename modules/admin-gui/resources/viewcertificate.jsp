@@ -35,7 +35,7 @@
   static final String CHECKBOX_ENCIPHERONLY      = "checkboxencipheronly";
   static final String CHECKBOX_DECIPHERONLY      = "checkboxdecipheronly";
 
-  static final String SELECT_REVOKE_REASON       = "selectrevokationreason";
+  static final String SELECT_REVOKE_REASON       = "selectrevocationreason";
 
   static final String CHECKBOX_VALUE             = "true";
 
@@ -158,7 +158,7 @@
 
 		if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) 
 			&& ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && certificatedata.isRevoked()
-			&& "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0])){
+			&& "CERTIFICATEHOLD".equals(certificatedata.getRevocationReasons()[0])){
 				//-- call to unrevoke method
 				try {
 					rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername());
@@ -275,7 +275,7 @@
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--
-function confirmrevokation(){
+function confirmrevocation(){
   var returnval = false;
   if(document.viewcertificate.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
      alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
@@ -286,7 +286,7 @@ function confirmrevokation(){
   return returnval;
 }
 
-function confirmunrevokation(){
+function confirmunrevocation(){
   var returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREUNREVOKECERT",true) %>");
   return returnval;
 }
@@ -574,9 +574,9 @@ function confirmrepublish(){
          <td ><%  if(certificatedata.isRevoked()){
                     out.write(ejbcawebbean.getText("YES") + "<br/>"
                     		+ ejbcawebbean.getText("REVOKATIONDATE") + " "
-                    		+ ejbcawebbean.printDate(certificatedata.getRevokationDate()) + "<br/>"
+                    		+ ejbcawebbean.printDate(certificatedata.getRevocationDate()) + "<br/>"
                     		+ ejbcawebbean.getText("REVOKATIONREASONS") + " ");
-                    String[] reasons = certificatedata.getRevokationReasons();
+                    String[] reasons = certificatedata.getRevocationReasons();
                     for(int i = 0; i < reasons.length; i++){
                       out.write(ejbcawebbean.getText(reasons[i]));
                       if(i+1 < reasons.length)
@@ -618,13 +618,13 @@ function confirmrepublish(){
              }%>
         </select>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
-               onClick='return confirmrevokation()'>
+               onClick='return confirmrevocation()'>
 <% 
-			  }else if ( certificatedata.isRevoked() && "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0]) ){
+			  }else if ( certificatedata.isRevoked() && "CERTIFICATEHOLD".equals(certificatedata.getRevocationReasons()[0]) ){
 				//-- Certificate can be unrevoked
 %>
 				<input type="submit" name="<%=BUTTON_UNREVOKE %>" value="<%= ejbcawebbean.getText("UNREVOKE") %>"
-                onClick='return confirmunrevokation()'><br>	
+                onClick='return confirmunrevocation()'><br>	
 <%
 			  }
 		   }

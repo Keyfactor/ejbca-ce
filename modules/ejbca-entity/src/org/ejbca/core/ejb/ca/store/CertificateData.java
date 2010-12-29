@@ -97,7 +97,7 @@ public class CertificateData implements Serializable {
 	 * extracts (from the cert) fingerprint (primary key), subjectDN, issuerDN, serial number,
 	 * expiration date. Status, Type, CAFingerprint, revocationDate and revocationReason are set
 	 * to default values (CERT_UNASSIGNED, USER_INVALID, null, null and
-	 * REVOKATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
+	 * REVOCATION_REASON_UNSPECIFIED) and should be set using the respective set-methods.
 	 *
 	 * @param incert the (X509)Certificate to be stored in the database.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have parameters. Can be null if RSA or certificate public key contains all parameters.
@@ -667,7 +667,7 @@ public class CertificateData implements Serializable {
 			query.setParameter("revocationDate", lastbasecrldate);
 			query.setParameter("status1", SecConst.CERT_REVOKED);
 			query.setParameter("status2", SecConst.CERT_ACTIVE);
-			query.setParameter("revocationReason", RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL);
+			query.setParameter("revocationReason", RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
 		} else {
 			query = entityManager.createNativeQuery("SELECT a.fingerprint, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason FROM CertificateData a WHERE "
 					+ "a.issuerDN=:issuerDN AND a.status=:status", "RevokedCertInfoSubset");

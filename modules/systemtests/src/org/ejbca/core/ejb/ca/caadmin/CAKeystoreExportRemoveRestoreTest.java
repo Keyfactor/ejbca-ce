@@ -510,8 +510,9 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
                 .currentTimeMillis()
                 + 364 * 24 * 3600 * 1000), // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, // certificatechain
-                catokeninfo, "Used for testing CA keystore export, remove and restore", -1, null, // revokationreason,
-                // revokationdate
+                catokeninfo, "Used for testing CA keystore export, remove and restore",
+                -1, // revocationReason
+                null, // revocationDate
                 new ArrayList<CertificatePolicy>(), // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssuePeriod

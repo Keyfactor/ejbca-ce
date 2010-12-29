@@ -294,7 +294,7 @@ public interface CAAdminSession {
      * this CA revoked and a final CRL is created.
      * 
      * @param reason
-     *            one of RevokedCertInfo.REVOKATION_REASON values.
+     *            one of RevokedCertInfo.REVOCATION_REASON values.
      */
     public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException;
 
