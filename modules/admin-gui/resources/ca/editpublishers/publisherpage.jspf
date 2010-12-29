@@ -8,9 +8,9 @@
   int[] publishertypes = {PublisherConst.TYPE_LDAPPUBLISHER, 
                           PublisherConst.TYPE_LDAPSEARCHPUBLISHER,
                           PublisherConst.TYPE_ADPUBLISHER,
-                          PublisherConst.TYPE_EXTOCSPPUBLISHER,
+                          PublisherConst.TYPE_VAPUBLISHER,
                           PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER};
-  String[] publishertypetexts = {"LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER", "EXTERNALOCSPPUBLISHER", "CUSTOMPUBLISHER"};
+  String[] publishertypetexts = {"LDAPPUBLISHER", "LDAPSEARCHPUBLISHER", "ACTIVEDIRECTORYPUBLISHER", "VAPUBLISHER", "CUSTOMPUBLISHER"};
 
   int row = 0;
 %>
@@ -105,14 +105,18 @@ function checkallfields(){
       }
     
  <% } %>
- <% if( publisherdata instanceof ExternalOCSPPublisher){ %>
+ <% if( publisherdata instanceof ValidationAuthorityPublisher){ %>
 
-	if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_EXTOCSP_DATASOURCE%>.value == ""){
+	if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_VA_DATASOURCE%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("DATASOURCE", true)%>");
       illegalfields++;
     }
-	if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_EXTOCSP_STORECERT%>.value == ""){
+	if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_STORECERT%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("STORECERT", true)%>");
+      illegalfields++;
+	}
+	if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_STORECRL%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("STORECRL", true)%>");
       illegalfields++;
     }
 <% } %>
@@ -144,9 +148,9 @@ function checkallfields(){
      publisherhelper.connectionmessage = false;
      if(publisherhelper.connectionsuccessful){
         publisherhelper.connectionsuccessful = false;
-        out.write("<h3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</h3>");
+        out.write("<H3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</H3>");
      }else{
-       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + publisherhelper.connectionerrormessage +"</h3>");
+       out.write("<H3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + publisherhelper.connectionerrormessage +"</H3>");
      }
    } %>
 </div>
@@ -213,8 +217,8 @@ function checkallfields(){
       if(publisherhelper.publisherdata instanceof ActiveDirectoryPublisher){%>
          <%@ include file="adpublisherpage.jspf" %> 
     <% }
-       if(publisherhelper.publisherdata instanceof ExternalOCSPPublisher){%>
-         <%@ include file="externalocsppublisherpage.jspf" %>
+       if(publisherhelper.publisherdata instanceof ValidationAuthorityPublisher){%>
+         <%@ include file="vapublisherpage.jspf" %>
     <% }
        if(publisherhelper.publisherdata instanceof CustomPublisherContainer){%>
          <%@ include file="custompublisherpage.jspf" %> 

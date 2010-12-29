@@ -29,7 +29,7 @@ import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher;
+import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
@@ -155,7 +155,7 @@ public class PublisherQueueTest extends TestCase {
         ret = false;
 		try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath(ExternalOCSPPublisher.class.getName());
+            publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
 		    // We use a datasource that we know don't exist, so we know publishing will fail
             String jndiNamePrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/");
             log.debug("jndiNamePrefix=" + jndiNamePrefix);
@@ -197,7 +197,7 @@ public class PublisherQueueTest extends TestCase {
         ret = false;
 		try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath(ExternalOCSPPublisher.class.getName());
+            publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
 		    // We use a datasource that we know don't exist, so we know publishing will be successful
             String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
             	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
@@ -237,7 +237,7 @@ public class PublisherQueueTest extends TestCase {
         ret = false;
 		try {
 			CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath(ExternalOCSPPublisher.class.getName());
+            publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
             String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
         		+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");

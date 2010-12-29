@@ -61,7 +61,7 @@ public interface PublisherSession {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public boolean storeCRL(org.ejbca.core.model.log.Admin admin, java.util.Collection<Integer> publisherids, byte[] incrl, java.lang.String cafp,
-            java.lang.String userDN);
+                            int number, java.lang.String userDN);
 
     /**
      * Test the connection to of a publisher

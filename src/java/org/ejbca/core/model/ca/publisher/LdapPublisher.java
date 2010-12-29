@@ -442,7 +442,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
 	 */    
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException{
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCRL");
 		}

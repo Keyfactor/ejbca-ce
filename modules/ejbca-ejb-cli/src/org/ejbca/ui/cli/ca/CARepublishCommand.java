@@ -72,9 +72,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Collection<Certificate> cachain = cainfo.getCertificateChain();
             Iterator<Certificate> caiter = cachain.iterator();
             if (caiter.hasNext()) {
-                X509Certificate cacert = (X509Certificate) caiter.next();
-                byte[] crlbytes = ejb.getCrlSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
-                Collection<Integer> capublishers = cainfo.getCRLPublishers();
+                final X509Certificate cacert = (X509Certificate) caiter.next();
+                final int crlNumber = ejb.getCrlSession().getLastCRLNumber(getAdmin(), cainfo.getSubjectDN(), false);
+                final byte[] crlbytes = ejb.getCrlSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
+                final Collection<Integer> capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if (capublishers != null) {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
@@ -84,8 +85,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                             .getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
                             certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
                     getLogger().info("Certificate published for " + caname);
-                    if ((crlbytes != null) && (crlbytes.length > 0)) {
-                        ejb.getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, cainfo.getSubjectDN());
+                    if ( crlbytes!=null && crlbytes.length>0 && crlNumber>0 ) {
+                        ejb.getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
                         getLogger().info("CRL published for " + caname);
                     } else {
                         getLogger().info("CRL not published, no CRL createed for CA?");

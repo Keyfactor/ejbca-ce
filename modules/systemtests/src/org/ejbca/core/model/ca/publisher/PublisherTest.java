@@ -261,7 +261,7 @@ public class PublisherTest extends TestCase {
         
         ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
-        boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, null);
+        boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, 1, null);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
         log.trace("<test08storeCRLToDummy()");
@@ -274,7 +274,7 @@ public class PublisherTest extends TestCase {
         ret = false;
 		try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath(ExternalOCSPPublisher.class.getName());
+            publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
             String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
             	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
@@ -307,7 +307,7 @@ public class PublisherTest extends TestCase {
 
         ret = false;
 		try {
-			ExternalOCSPPublisher publisher = new ExternalOCSPPublisher();
+			ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
             String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
             	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
@@ -345,8 +345,8 @@ public class PublisherTest extends TestCase {
         assertEquals(date, info.getUpdateTime().getTime());
 
         // Test storing and updating CRLs as well
-        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", null);
-        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", null);
+        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", 1, null);
+        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", 1, null);
         
         log.trace("<test15ExternalOCSPPublisher()");
     }

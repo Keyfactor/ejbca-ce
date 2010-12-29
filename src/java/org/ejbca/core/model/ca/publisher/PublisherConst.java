@@ -33,7 +33,7 @@ public class PublisherConst {
 	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
 	
 	/** External OCSP Publisher*/
-    public static final int TYPE_EXTOCSPPUBLISHER = 5;
+    public static final int TYPE_VAPUBLISHER = 5;
 
 	
 	

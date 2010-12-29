@@ -160,7 +160,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
      *      byte[], java.lang.String, int)
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, String userDN) throws PublisherException {
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
         if (log.isTraceEnabled()) {
         	log.trace(">storeCRL, Storing CRL");
         }

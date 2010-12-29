@@ -46,6 +46,8 @@
     <property file="${ejbca.home}/conf/externalra.properties" />
     <property file="${ejbca.home}/conf/scep.properties" />
     <property file="${ejbca.home}/conf/externalra-gui.properties" />
+    <property file="conf/va.properties" />
+    <property file="conf/va-publisher.properties" />
 
     <!-- httpsserver.hostname must be set cause it's used in preprocess. It will only be set here if not set in any property file -->
     <property name="httpsserver.hostname" value="localhost"/>

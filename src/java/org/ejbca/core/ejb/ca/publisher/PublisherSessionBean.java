@@ -43,7 +43,7 @@ import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.ExternalOCSPPublisher;
+import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -205,7 +205,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * @return true if sucessfull result on all given publishers
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCRL(Admin admin, Collection<Integer> publisherids, byte[] incrl, String cafp, String userDN) {
+    public boolean storeCRL(Admin admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String userDN) {
         log.trace(">storeCRL");
         Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
@@ -217,7 +217,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
-                        if (getPublisher(pdl).storeCRL(admin, incrl, cafp, userDN)) {
+                        if (getPublisher(pdl).storeCRL(admin, incrl, cafp, number, userDN)) {
                             publishStatus = PublisherConst.STATUS_SUCCESS;
                         }
                         String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());
@@ -643,8 +643,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             case PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER:
                 publisher = new CustomPublisherContainer();
                 break;
-            case PublisherConst.TYPE_EXTOCSPPUBLISHER:
-                publisher = new ExternalOCSPPublisher();
+            case PublisherConst.TYPE_VAPUBLISHER:
+                publisher = new ValidationAuthorityPublisher();
                 break;
             }
             publisher.loadData(data);
