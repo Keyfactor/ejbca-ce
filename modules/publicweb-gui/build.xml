@@ -50,9 +50,12 @@
         	classpathref="compile.classpath"/>
     </target>
 	
-	<!-- JSP validation currently only works on JBoss, but not jboss 6 -->
+	<!-- JSP validation currently only works on JBoss 5.1.0, but not jboss 6 -->
 	<condition property="validatejsp">
+		<and>
+			<equals arg1="jboss" arg2="${appserver.type}"/>
 			<available classname="org.apache.jasper.JspC" classpathref="jasper.classpath"/>
+		</and>
 	</condition>
 
     <target name="validate" depends="compile" if="validatejsp">
