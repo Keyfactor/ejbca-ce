@@ -330,14 +330,17 @@ configure Ingres with JBoss.
 
 It is very important that you specify the lock level and isolation level.
 $ export TERM_INGRES='konsole'; cbf
-	DBMS Server -> system_lock_level = row
-	               connect_limit = 64
+	DBMS Server -> connect_limit = 64
 	               qsf_guideline = large
 	               table_auto_structure = on
 	               system_isolation = read_committed
+	               system_lock_level = row
 
 We also recommend setting DBMS cache on 16k pages to on.
     DBMS Server -> Configure -> Cache -> DMF Cache 16k = on
+    
+To be able to handle huge CRLs, you need a larger transaction log than the 256MiB default:
+    "Transaction Log |II_LOG_FILE" -> Configure -> Destroy -> Create (512MiB)
 
 Also make 16k pages default before creating the ejbca database or set it manually when creating
 the database by using the command:
