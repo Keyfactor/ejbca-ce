@@ -38,7 +38,8 @@ be dropped.
 Support for table protection (configured in proptecion.properties) that was deprecated in EJBCA 3.11
 has now been dropped. If you don't have any data in these tables, the indexes and tables can be dropped.
 
-EJBCA 4.0 requires an application server supporting JEE5. For JBoss this means at least JBoss 5.1.x. 
+EJBCA 4.0 requires an application server supporting JEE5. For JBoss this means at least JBoss 5.1.x.
+For details on how the application server should be configured, see the installation document.
 
 *Notes for on-line upgrades*
 1. If you were running an earlier version of EJBCA on an older JBoss (4.2.3 was recommended for EJBCA 3.x), 

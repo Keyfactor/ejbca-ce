@@ -879,6 +879,9 @@ The functionality currently available through the Web Service Interface are docu
 There is also a cli tool that can be used for remote scripting. See following section for more information.
 Note: All these calls are not available through the CLI.
 </p>
+<p>
+If you are running on JBoss 5.x, make sure that you configured JBoss WS correctly as described in the <a href="installation.html#Configure">installation</a> document.
+</p>
 
 <subsection name="Web Services authentication">
 <p>
