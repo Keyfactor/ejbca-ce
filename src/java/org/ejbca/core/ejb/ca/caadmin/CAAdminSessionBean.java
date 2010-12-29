@@ -1475,10 +1475,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAInfo cainfo = null;
 
         // Parameters common for both X509 and CVC CAs
-        ArrayList approvalsettings = new ArrayList();
+        ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
         int numofreqapprovals = 1;
         boolean finishuser = false;
-        ArrayList crlpublishers = new ArrayList();
+        Collection<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+        ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
         long crlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
         long crlIssueInterval = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
         long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
@@ -1523,7 +1524,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_EXTERNAL, new Date(), subjectaltname, certprofileid, validity, CertTools
                     .getNotAfter(x509CaCertificate), CAInfo.CATYPE_X509, signedby, null, null, description, -1, null, policies, crlperiod, crlIssueInterval,
                     crlOverlapTime, deltacrlperiod, crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical, usecrlnumber, crlnumbercritical,
-                    "", "", "", "", finishuser, new ArrayList(), useutf8policytext, approvalsettings, numofreqapprovals, useprintablestringsubjectdn,
+                    "", "", "", "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings, numofreqapprovals, useprintablestringsubjectdn,
                     useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
@@ -1534,7 +1535,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             );
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
             cainfo = new CVCCAInfo(subjectdn, caname, 0, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC, signedby, null, null, description, -1,
-                    null, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, finishuser, new ArrayList<ExtendedCAServiceInfo>(), approvalsettings,
+                    null, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, finishuser, extendedcaserviceinfos, approvalsettings,
                     numofreqapprovals, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
@@ -2320,6 +2321,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CA ca = null;
         int validity = (int) ((CertTools.getNotAfter(caSignatureCertificate).getTime() - CertTools.getNotBefore(caSignatureCertificate).getTime()) / (24 * 3600 * 1000));
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
+        ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
         if (caSignatureCertificate instanceof X509Certificate) {
             // Create an X509CA
             // Create and active extended CA Services (OCSP, XKMS, CMS).
@@ -2340,7 +2343,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssuePeriod
                     10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                     0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                    new ArrayList(), // CRL publishers
+                    crlpublishers, // CRL publishers
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
@@ -2351,7 +2354,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     "", // CA defined freshest CRL
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    approvalsettings, // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -2374,9 +2377,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, SecConst.CA_ACTIVE, new Date(), certprof, validity, CertTools
                     .getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby, certificatechain, catoken.getCATokenInfo(), description, -1,
                     (Date) null, 24, 0, 10, 0, // CRL periods
-                    new ArrayList(), // CRL publishers
+                    crlpublishers, // CRL publishers
                     true, // Finish user
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, approvalsettings, // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in HealthCheck
                     true, // isDoEnforceUniquePublicKeys
@@ -2967,9 +2970,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             returnval.addAll(publisherSession.getAllPublisherIds(admin));
         } catch (AuthorizationDeniedException e1) {
             // If regular CA-admin return publishers he is authorized to
-            Iterator authorizedcas = caSession.getAvailableCAs(admin).iterator();
+            Iterator<Integer> authorizedcas = caSession.getAvailableCAs(admin).iterator();
             while (authorizedcas.hasNext()) {
-                returnval.addAll(getCAInfo(admin, ((Integer) authorizedcas.next()).intValue()).getCRLPublishers());
+                returnval.addAll(getCAInfo(admin, authorizedcas.next().intValue()).getCRLPublishers());
             }
         }
         return returnval;
@@ -3110,7 +3113,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         Iterator<ExtendedCAServiceInfo> iter = extendedCAServiceInfos.iterator();
         while (iter.hasNext()) {
             ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
-            ArrayList certificate = new ArrayList();
+            ArrayList<Certificate> certificate = new ArrayList<Certificate>();
             if (info instanceof OCSPCAServiceInfo) {
                 try {
                     ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
