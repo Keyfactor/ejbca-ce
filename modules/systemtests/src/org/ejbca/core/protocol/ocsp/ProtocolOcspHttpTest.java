@@ -234,7 +234,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     }
 
     public ProtocolOcspHttpTest(String name, String httpPort, String resourceOcsp) throws CertificateException {
-        super(name);
+        super(name, false);
         this.httpPort = httpPort;
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         this.resourceOcsp = resourceOcsp;
