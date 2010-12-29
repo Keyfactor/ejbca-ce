@@ -23,8 +23,10 @@ import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
@@ -194,12 +196,12 @@ public class CAImportExportTest extends TestCase  {
                 catokeninfo,
                 "Used for testing CA import and export",
                 -1, null, // revokationreason, revokationdate
-                new ArrayList(), // PolicyId
+                new ArrayList<CertificatePolicy>(), // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssuePeriod
                 10, // CRLOverlapTime
                 0, //DeltaCRLOverlapTime                
-                new ArrayList(),
+                new ArrayList<Integer>(), // crlpublishers
                 true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
@@ -209,9 +211,9 @@ public class CAImportExportTest extends TestCase  {
                 "", // Default OCSP Service Locator  
                 null, // defaultfreshestcrl
                 true, // Finish User
-                new ArrayList(), //extendedcaservices
+                new ArrayList<ExtendedCAServiceInfo>(), //extendedcaservices
                 false, // use default utf8 settings
-                new ArrayList(), // Approvals Settings
+                new ArrayList<Integer>(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
                 true, // Use LDAP DN order by default
