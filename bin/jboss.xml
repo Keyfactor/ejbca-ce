@@ -141,13 +141,13 @@
 		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external va responder -->
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
-                <include name="va-ds.xml"/>
+                <include name="ocsp-ds.xml"/>
             </fileset>
             <filterchain>
                 <expandproperties/>
             </filterchain>
         </copy>
-		<chmod file="${jboss.farm.dir}/va-ds.xml" perm="600"/>
+		<chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
 	</target>
 
 	<target name="j2ee:deploy-scep-war" depends="j2ee:check">
