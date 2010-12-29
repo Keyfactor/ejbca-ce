@@ -16,6 +16,8 @@ import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+
 /**
  * @author tomas
  * @version $Id$
@@ -28,14 +30,14 @@ public class CACacheManagerTest extends TestCase {
 
 	public void testCACacheManager() {
 		X509CAInfo cainfo1 = new X509CAInfo();
-		cainfo1.setExtendedCAServiceInfos(new ArrayList());
+		cainfo1.setExtendedCAServiceInfos(new ArrayList<ExtendedCAServiceInfo>());
 
 		CA ca1 = new X509CA(cainfo1);
 		ca1.setCAId(12);
 		ca1.setName("CA1");
 
 		X509CAInfo cainfo2 = new X509CAInfo();
-		cainfo2.setExtendedCAServiceInfos(new ArrayList());
+		cainfo2.setExtendedCAServiceInfos(new ArrayList<ExtendedCAServiceInfo>());
 		CA ca2 = new X509CA(cainfo2);
 		ca2.setCAId(13);
 		ca2.setName("CA2");
