@@ -35,7 +35,7 @@ public class CVCCAInfo extends CAInfo {
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
 			long validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-			CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate,
+			CATokenInfo catokeninfo, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection crlpublishers,boolean finishuser,Collection extendedcaserviceinfos, 
 			Collection approvalSettings, int numOfReqApprovals,
@@ -54,8 +54,8 @@ public class CVCCAInfo extends CAInfo {
         this.certificatechain = certificatechain;	
 		this.catokeninfo = catokeninfo; 
 		this.description = description;
-		this.revokationreason = revokationreason;
-		this.revokationdate = revokationdate;
+		this.revocationReason = revocationReason;
+		this.revocationDate = revocationDate;
 		this.crlperiod = crlperiod;
 		this.crlIssueInterval = crlIssueInterval;
 		this.crlOverlapTime = crlOverlapTime;

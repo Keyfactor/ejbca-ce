@@ -1138,7 +1138,7 @@ public class EjbcaWS implements IEjbcaWS {
 			  log.debug("loadkeys: "+loadkeys);
 			  int endEntityProfileId = userdata.getEndEntityProfileId();
 			  EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileId);
-			  boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
+			  boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 			  log.debug("reusecertificate: "+reusecertificate);
 
 			  try {
@@ -1548,7 +1548,7 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#genTokenCertificates(org.ejbca.core.protocol.ws.objects.UserDataVOWS, java.util.List, org.ejbca.core.protocol.ws.objects.HardTokenDataWS)
 	 */
-	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revocePreviousCards)
+	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revokePreviousCards)
 		throws CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
 		final ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();
 
@@ -1706,7 +1706,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 
 
-			if(revocePreviousCards){
+			if(revokePreviousCards){
 				List<HardTokenDataWS> htd = getHardTokenDatas(admin,userDataWS.getUsername(), false, true, logger);
 				Iterator<HardTokenDataWS> htdIter = htd.iterator();
 

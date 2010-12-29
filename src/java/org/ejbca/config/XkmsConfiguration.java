@@ -96,7 +96,7 @@ public class XkmsConfiguration {
 	/**
 	 * End entity should be able to revoke his certificate using the revoke call and a revocation code identifier
 	 */
-	public static boolean getKrssAllowRevokation() {
+	public static boolean getKrssAllowRevocation() {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getExpandedString("xkms.krss.allowrevokation", "true"));
 	}
 

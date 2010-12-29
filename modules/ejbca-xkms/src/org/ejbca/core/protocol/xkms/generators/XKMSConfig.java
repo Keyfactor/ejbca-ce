@@ -130,8 +130,8 @@ public class XKMSConfig {
      * Method that returns the parameter in the propertyfile
      * xkms.krss.allowrevokation
      */
-    public static boolean isRevokationAllowed(){
-    	return XkmsConfiguration.getKrssAllowRevokation();
+    public static boolean isRevocationAllowed(){
+    	return XkmsConfiguration.getKrssAllowRevocation();
     }
     
     /**

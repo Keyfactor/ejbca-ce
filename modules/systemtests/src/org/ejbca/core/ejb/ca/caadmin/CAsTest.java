@@ -1646,15 +1646,15 @@ public class CAsTest extends CaTestCase {
         createTestCA(caname);
         CAInfo info = caAdminSession.getCAInfo(admin, caname);
         assertEquals(SecConst.CA_ACTIVE, info.getStatus());
-        assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevokationReason());
-        assertNull(info.getRevokationDate());
+        assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevocationReason());
+        assertNull(info.getRevocationDate());
 
         // Revoke the CA
         caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
         info = caAdminSession.getCAInfo(admin, caname);
         assertEquals(SecConst.CA_REVOKED, info.getStatus());
-        assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, info.getRevokationReason());
-        assertTrue(info.getRevokationDate().getTime() > 0);
+        assertEquals(RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE, info.getRevocationReason());
+        assertTrue(info.getRevocationDate().getTime() > 0);
     } // test14RevokeCA
     
     /**

@@ -662,17 +662,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     // User notifications - end
 
     /**
-     * @return indicationg if the keyreccovered certificate should be reused or not.
+     * @return true if the key-recovered certificate should be reused.
      */
-    public boolean getReUseKeyRevoceredCertificate(){
+    public boolean getReUseKeyRecoveredCertificate(){
     	if(data.get(REUSECERTIFICATE) == null){
     		return false;
     	}
-    	
     	return ((Boolean) data.get(REUSECERTIFICATE)).booleanValue();
     }
     
-    public void setReUseKeyRevoceredCertificate(boolean reuse){
+    public void setReUseKeyRecoveredCertificate(boolean reuse){
     	data.put(REUSECERTIFICATE, new Boolean(reuse));
     }
     
