@@ -375,7 +375,7 @@ public class XKMSInvoker {
 	/**
 	 * Method that verifies the response signature,
 	 * 
-	 * doesn't check the revokation status of the server certificate.
+	 * doesn't check the revocation status of the server certificate.
 	 * 
 	 * @param response, the response from the service
 	 * @throws {@link XKMSResponseSignatureException} if the signature doesn't verify

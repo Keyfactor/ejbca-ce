@@ -437,7 +437,7 @@
              profiledata.setRequired(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_KEYRECOVERABLE)));
              profiledata.setUse(EndEntityProfile.KEYRECOVERABLE, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_KEYRECOVERABLE)));
              
-             profiledata.setReUseKeyRevoceredCertificate(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REUSECERTIFICATE)));
+             profiledata.setReUseKeyRecoveredCertificate(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REUSECERTIFICATE)));
              
              if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_CARDNUMBER)))
                  profiledata.setValue(EndEntityProfile.CARDNUMBER, 0 ,EndEntityProfile.TRUE);

@@ -32,12 +32,9 @@ import org.ejbca.util.CertTools;
  */
 public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
-	
 	private static final int ARG_ISSUERDN                 = 1;
 	private static final int ARG_CERTSN                   = 2;
-	
-	
-	
+
     /**
      * Creates a new instance of RevokeCertCommand
      *
@@ -55,7 +52,6 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {   
-           
             if(args.length != 3){
             	usage();
             	System.exit(-1); // NOPMD, this is not a JEE app
@@ -70,7 +66,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
             	if(status == null){
             		getPrintStream().println("Error, No certificate found in database.");
             	}else{
-            		getPrintStream().println("Revokation status :");
+            		getPrintStream().println("Revocation status :");
             		getPrintStream().println("  IssuerDN      : " + status.getIssuerDN());
             		getPrintStream().println("  CertificateSN : " + status.getCertificateSN());
             		if(status.getReason() == RevokedCertInfo.NOT_REVOKED){
@@ -89,7 +85,6 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
         }
     }
 
-
 	private String getCertSN(String certsn) {
 		try{
 			new BigInteger(certsn,16);
@@ -103,9 +98,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
 
 	protected void usage() {
 		getPrintStream().println("Command used check the status of certificate");
-		getPrintStream().println("Usage : checkrevokationstatus <issuerdn> <certificatesn (HEX)>  \n\n");
+		getPrintStream().println("Usage : checkrevocationstatus <issuerdn> <certificatesn (HEX)>  \n\n");
 
-   }
-
-
+	}
 }

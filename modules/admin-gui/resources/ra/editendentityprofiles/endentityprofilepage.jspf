@@ -1259,7 +1259,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            %>>
            <%= ejbcawebbean.getText("REUSEOLDCERTIFICATE") %> 
            <input type="checkbox" name="<%=CHECKBOX_REUSECERTIFICATE%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
-           <% if(profiledata.getReUseKeyRevoceredCertificate() && used)
+           <% if(profiledata.getReUseKeyRecoveredCertificate() && used)
                    out.write("CHECKED");
            %> ><br>
         <%= ejbcawebbean.getText("DEFAULT") %> 

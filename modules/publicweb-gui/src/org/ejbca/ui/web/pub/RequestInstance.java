@@ -153,7 +153,7 @@ public class RequestInstance {
 			int endEntityProfileId = data.getEndEntityProfileId();
 			int certificateProfileId = data.getCertificateProfileId();
 			EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(administrator, endEntityProfileId);
-			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
+			boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 			// Set a new certificate profile, if we have requested one specific
 			if (StringUtils.isNotEmpty(certprofile)) {
 				boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());

@@ -59,8 +59,8 @@ public class EJBCAWSRACommandFactory {
             return new RevokeTokenCommand(args);
         } else if (args[0].equals("revokeuser")) {
             return new RevokeUserCommand(args);
-        } else if (args[0].equals("checkrevokationstatus")) {
-            return new CheckRevokeStatusCommand(args);        
+        } else if (args[0].equals("checkrevokationstatus") || args[0].equals("checkrevocationstatus")) {
+            return new CheckRevokeStatusCommand(args);
         }else if (args[0].equals("generatenewuser")) {
             return new GenerateNewUserCommand(args);        
         }else if (args[0].equals("createcrl")) {

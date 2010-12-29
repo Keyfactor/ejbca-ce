@@ -382,7 +382,7 @@ public class CADataHandler implements Serializable {
 	 boolean retval = false;
 	 
 	 if(cainfo != null){
-	   retval = cainfo.getRevokationReason() != RevokedCertInfo.NOT_REVOKED;
+	   retval = cainfo.getRevocationReason() != RevokedCertInfo.NOT_REVOKED;
 	 }
 	 return retval;
  }

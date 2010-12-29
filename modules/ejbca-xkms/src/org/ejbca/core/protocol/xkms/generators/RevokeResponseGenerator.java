@@ -75,12 +75,12 @@ public class RevokeResponseGenerator extends
 					boolean isCertValid = certIsValid(cert);
 					if(isCertValid){						
 						UserDataVO userData = findUserData(cert);
-						String revokationCodeId = getRevokationCodeFromUserData(userData);
-						if(userData != null && revokationCodeId != null){
+						String revocationCodeId = getRevocationCodeFromUserData(userData);
+						if(userData != null && revocationCodeId != null){
 							String revokeCode = getRevocationCode(req);
-							if(XKMSConfig.isRevokationAllowed()){
+							if(XKMSConfig.isRevocationAllowed()){
 							  if(revokeCode != null ){
-								X509Certificate newCert = revoke(userData,revokeCode, revokationCodeId, cert);
+								X509Certificate newCert = revoke(userData,revokeCode, revocationCodeId, cert);
 								if(newCert != null && req.getRespondWith().size() > 0){
 									KeyBindingAbstractType keyBinding = getResponseValues(req.getRevokeKeyBinding(), newCert, true, false);
 									result.getKeyBinding().add((KeyBindingType) keyBinding);
@@ -106,12 +106,12 @@ public class RevokeResponseGenerator extends
 	}
 
 	/**
-	 * Method that returns the revokation code identifier in the extended information
-	 * or null of no revokation identier existed
+	 * Method that returns the revocation code identifier in the extended information
+	 * or null if no revocation identifier exists
 	 * @param userData
 	 * @return
 	 */
-	private String getRevokationCodeFromUserData(UserDataVO userData) {
+	private String getRevocationCodeFromUserData(UserDataVO userData) {
 		String retval = null;
 		if(userData != null && userData.getExtendedinformation() != null 
 		   && userData.getExtendedinformation().getRevocationCodeIdentifier() != null){

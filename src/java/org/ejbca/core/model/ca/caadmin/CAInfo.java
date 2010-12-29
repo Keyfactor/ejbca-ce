@@ -88,8 +88,8 @@ public class CAInfo implements Serializable {
     protected Collection<Certificate> certificatechain;
     protected CATokenInfo catokeninfo;
     protected String description;
-    protected int revokationreason;
-    protected Date revokationdate;
+    protected int revocationReason;
+    protected Date revocationDate;
     protected int certificateprofileid;
     /** Default value 24 hours */
     protected long crlperiod = 1 * SimpleTime.MILLISECONDS_PER_DAY;
@@ -142,8 +142,8 @@ public class CAInfo implements Serializable {
     public String getDescription(){ return this.description;}
     public void setDescription(String description){ this.description = description;}
     
-    public int getRevokationReason(){ return this.revokationreason;}
-    public Date getRevokationDate(){ return this.revokationdate;}    
+    public int getRevocationReason(){ return this.revocationReason;}
+    public Date getRevocationDate(){ return this.revocationDate;}    
     
     public void setCertificateProfileId(int _certificateprofileid) { this.certificateprofileid = _certificateprofileid; }
     public int getCertificateProfileId(){ return this.certificateprofileid; }

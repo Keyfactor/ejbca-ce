@@ -1568,7 +1568,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");
             throw new WaitingForApprovalException(msg);
         }
-        // Perform revokation
+        // Perform revocation
         Collection<Certificate> certs = certificateStoreSession.findCertificatesByUsername(admin, username);
         // Revoke all certs
         Iterator<Certificate> j = certs.iterator();
@@ -1615,7 +1615,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param username
      *            the username to revoke.
      * @param reason
-     *            the reason of revokation, one of the RevokedCertInfo.XX
+     *            the reason of revocation, one of the RevokedCertInfo.XX
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
      *            certificate on hold.
      * @throws AlreadyRevokedException
@@ -1626,16 +1626,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ", username, " + username + ")");
         }
-        UserData data = UserData.findByUsername(entityManager, username);// TODO:
-                                                                         // Fetch
-                                                                         // this
-                                                                         // from
-                                                                         // certstoresession
-                                                                         // instead
+        UserData data = UserData.findByUsername(entityManager, username);// TODO: Fetch this from certstoresession instead
         if (data == null) {
             throw new FinderException("Could not find user " + username);
         }
-        // Check that the user have revokation rigths.
+        // Check that the user have revocation rights.
         if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
             Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
         }
@@ -1687,7 +1682,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             String msg = intres.getLocalizedMessage("ra.approvalrevoke");
             throw new WaitingForApprovalException(msg);
         }
-        // Perform revokation, first we try to find the certificate profile the
+        // Perform revocation, first we try to find the certificate profile the
         // certificate was issued under
         // Get it first from the certificate itself. This should be the correct
         // one

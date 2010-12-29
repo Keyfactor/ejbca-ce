@@ -386,7 +386,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			}
 			int endEntityProfileId = userdata.getEndEntityProfileId();
 			EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileId);
-			boolean reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
+			boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 			if (log.isDebugEnabled()) {
 				log.debug("reusecertificate: "+reusecertificate);
 			}

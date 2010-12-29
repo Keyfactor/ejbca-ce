@@ -543,7 +543,7 @@ public interface IEjbcaWS {
 	 * @param hardTokenData data containing PIN/PUK info
 	 * @param overwriteExistingSN if the the current hardtoken should be overwritten instead of throwing HardTokenExists exception.
 	 * If a card is overwritten, all previous certificates on the card is revoked.
-	 * @param revocePreviousCards tells the service to revoke old cards issued to this user. If the present card have the label TEMPORARY_CARD
+	 * @param revokePreviousCards tells the service to revoke old cards issued to this user. If the present card have the label TEMPORARY_CARD
 	 * old cards is set to CERTIFICATE_ONHOLD otherwise UNSPECIFIED.
 	 * @return a List of the generated certificates. 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
@@ -563,7 +563,7 @@ public interface IEjbcaWS {
 			List<TokenCertificateRequestWS> tokenRequests,
 			HardTokenDataWS hardTokenData,
 			boolean overwriteExistingSN,
-			boolean revocePreviousCards) throws CADoesntExistsException, AuthorizationDeniedException,
+			boolean revokePreviousCards) throws CADoesntExistsException, AuthorizationDeniedException,
 			WaitingForApprovalException, HardTokenExistsException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;

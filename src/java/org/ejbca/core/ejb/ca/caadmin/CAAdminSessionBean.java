@@ -1836,8 +1836,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 crlCreateSession.run(admin, ca);
             }
 
-            ca.setRevokationReason(reason);
-            ca.setRevokationDate(new Date());
+            ca.setRevocationReason(reason);
+            ca.setRevocationDate(new Date());
             if (ca.getStatus() != SecConst.CA_EXTERNAL) {
                 ca.setStatus(SecConst.CA_REVOKED);
             }
@@ -2336,8 +2336,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             cainfo = new X509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, SecConst.CA_ACTIVE, new Date(), "", certprof, validity, CertTools
                     .getNotAfter(caSignatureCertificate), // Expiretime
-                    CAInfo.CATYPE_X509, signedby, certificatechain, catoken.getCATokenInfo(), description, -1, null, // revokationreason,
-                    // revokationdate
+                    CAInfo.CATYPE_X509, signedby, certificatechain, catoken.getCATokenInfo(), description,
+                    -1, // revocationReason
+                    null, // revocationDate
                     null, // PolicyId
                     24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                     0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssuePeriod

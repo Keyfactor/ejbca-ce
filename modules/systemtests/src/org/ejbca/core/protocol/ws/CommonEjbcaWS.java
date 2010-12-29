@@ -1405,7 +1405,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         profile.setValue(EndEntityProfile.KEYRECOVERABLE, 0, EndEntityProfile.TRUE);
         profile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
-        profile.setReUseKeyRevoceredCertificate(true);
+        profile.setReUseKeyRecoveredCertificate(true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
         assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY") != 0);

@@ -95,8 +95,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected static final String CATOKENDATA                    = "catoken";
     protected static final String SIGNEDBY                       = "signedby";
     protected static final String DESCRIPTION                    = "description";
-    protected static final String REVOKATIONREASON               = "revokationreason";
-	protected static final String REVOKATIONDATE                 = "revokationdate";
+    protected static final String REVOCATIONREASON               = "revokationreason";
+	protected static final String REVOCATIONDATE                 = "revokationdate";
     protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
     protected static final String CRLPERIOD                      = "crlperiod";
     protected static final String DELTACRLPERIOD                 = "deltacrlperiod";
@@ -133,7 +133,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        data.put(VALIDITY, new Long(cainfo.getValidity()));
        data.put(SIGNEDBY, Integer.valueOf(cainfo.getSignedBy()));
        data.put(DESCRIPTION, cainfo.getDescription());
-       data.put(REVOKATIONREASON, Integer.valueOf(-1));
+       data.put(REVOCATIONREASON, Integer.valueOf(-1));
        data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
        setCRLPeriod(cainfo.getCRLPeriod());
        setCRLIssueInterval(cainfo.getCRLIssueInterval());
@@ -227,11 +227,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public String getDescription(){return ((String)data.get(DESCRIPTION));}
     public void setDescription(String description) { data.put(DESCRIPTION,description);}  
     
-    public int getRevokationReason(){return ((Integer) data.get(REVOKATIONREASON)).intValue();}
-    public void setRevokationReason(int reason){ data.put(REVOKATIONREASON,Integer.valueOf(reason));}
+    public int getRevocationReason(){return ((Integer) data.get(REVOCATIONREASON)).intValue();}
+    public void setRevocationReason(int reason){ data.put(REVOCATIONREASON,Integer.valueOf(reason));}
         
-	public Date getRevokationDate(){return (Date) data.get(REVOKATIONDATE);}
-	public void setRevokationDate(Date date){ data.put(REVOKATIONDATE,date);}
+	public Date getRevocationDate(){return (Date) data.get(REVOCATIONDATE);}
+	public void setRevocationDate(Date date){ data.put(REVOCATIONDATE,date);}
                 
     public long getCRLPeriod(){return ((Long)data.get(CRLPERIOD)).longValue();}
     public void setCRLPeriod(long crlperiod) {data.put(CRLPERIOD, new Long(crlperiod));}
@@ -251,10 +251,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public long getCRLOverlapTime(){return ((Long)data.get(CRLOVERLAPTIME)).longValue();}
     public void setCRLOverlapTime(long crlOverlapTime) {data.put(CRLOVERLAPTIME, new Long(crlOverlapTime));}
 
-    public Collection<Integer>  getCRLPublishers(){return ((Collection<Integer>)data.get(CRLPUBLISHERS));}
-    public void setCRLPublishers(Collection crlpublishers) {data.put(CRLPUBLISHERS, crlpublishers);}    
-    
-    
+    public Collection<Integer> getCRLPublishers(){return ((Collection<Integer>)data.get(CRLPUBLISHERS));}
+    public void setCRLPublishers(Collection<Integer> crlpublishers) {data.put(CRLPUBLISHERS, crlpublishers);}    
+
     public int getCertificateProfileId() {return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();}
     
     /** Returns the CAs token. The token is fetched from the token registry, or created and added to the token registry.

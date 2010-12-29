@@ -59,7 +59,7 @@ public class X509CAInfo extends CAInfo{
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
                     long validity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
-                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List<CertificatePolicy> policies,
+                    CATokenInfo catokeninfo, String description, int revocationReason, Date revocationDate, List<CertificatePolicy> policies,
                     long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, Collection<Integer> crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
@@ -94,8 +94,8 @@ public class X509CAInfo extends CAInfo{
 		}
         this.catokeninfo = catokeninfo; 
         this.description = description;
-        this.revokationreason = revokationreason;
-        this.revokationdate = revokationdate;
+        this.revocationReason = revocationReason;
+        this.revocationDate = revocationDate;
         this.policies = policies;
         this.crlperiod = crlperiod;
         this.crlIssueInterval = crlIssueInterval;

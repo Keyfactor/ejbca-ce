@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.P12toPEM;
 import org.w3._2000._09.xmldsig_.X509DataType;
 import org.w3._2002._03.xkms_.KeyBindingType;
@@ -59,7 +60,7 @@ public abstract class XKMSCLIBaseCommand {
 	
 	protected X509Certificate clientCert = null;
 	protected Key privateKey = null;
-	private Collection catrustlist = null;
+	private Collection<Certificate> catrustlist = null;
 	
 	
 	protected static final String[] REASON_TEXTS ={"NOT REVOKED","UNSPECIFIED","KEYCOMPROMISE","CACOMPROMISE",
@@ -89,29 +90,16 @@ public abstract class XKMSCLIBaseCommand {
     protected static final String QUERYTYPE_IPSEC              = "IPSEC";
     protected static final String QUERYTYPE_PKIX               = "PKIX";
 	
-	public static final int NOT_REVOKED = RevokedCertInfo.NOT_REVOKED;
-	public static final int REVOKATION_REASON_UNSPECIFIED = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
-	public static final int REVOKATION_REASON_KEYCOMPROMISE = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
-	public static final int REVOKATION_REASON_CACOMPROMISE = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
-	public static final int REVOKATION_REASON_AFFILIATIONCHANGED = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
-	public static final int REVOKATION_REASON_SUPERSEDED = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
-	public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
-	public static final int REVOKATION_REASON_CERTIFICATEHOLD = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
-	public static final int REVOKATION_REASON_REMOVEFROMCRL = RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL;
-	public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
-	public static final int REVOKATION_REASON_AACOMPROMISE = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
-	
-	protected static final int[] REASON_VALUES = {NOT_REVOKED,REVOKATION_REASON_UNSPECIFIED, 
-		 REVOKATION_REASON_KEYCOMPROMISE, REVOKATION_REASON_CACOMPROMISE,
-		 REVOKATION_REASON_AFFILIATIONCHANGED, REVOKATION_REASON_SUPERSEDED,
-		 REVOKATION_REASON_CESSATIONOFOPERATION, REVOKATION_REASON_CERTIFICATEHOLD,
-		 REVOKATION_REASON_REMOVEFROMCRL, REVOKATION_REASON_PRIVILEGESWITHDRAWN,
-		 REVOKATION_REASON_AACOMPROMISE};
+	protected static final int[] REASON_VALUES = {RevokedCertInfo.NOT_REVOKED, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED, 
+		RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE,
+		RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED, RevokedCertInfo.REVOKATION_REASON_SUPERSEDED,
+		RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+		RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL, RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN,
+		RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE};
 	
 	XKMSCLIBaseCommand(String[] args){
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProvider();
 		this.args = args;
-		
 	}
 	
 	/**
@@ -120,37 +108,32 @@ public abstract class XKMSCLIBaseCommand {
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	protected XKMSInvoker getXKMSInvoker() throws  FileNotFoundException, IOException{       
-		if(xkms == null){
-			
-			  if(getKeyStorePath()!=null){
-				  try{
-				  KeyStore clientKeyStore = KeyStore.getInstance("JKS");				  
-			      clientKeyStore.load(new FileInputStream(getKeyStorePath()), getKeyStorePassword().toCharArray());
-			      if(getKeyStoreAlias() == null){
-			    	  throw new IOException("Error no alias specified in the property file");
-			      }
-			      String alias = getKeyStoreAlias();       
-			      clientCert = (java.security.cert.X509Certificate)clientKeyStore.getCertificate(alias);            
-			      privateKey = clientKeyStore.getKey(alias, getKeyStorePassword().toCharArray());
-			      Certificate[] trustedcerts = clientKeyStore.getCertificateChain(alias);
-			      catrustlist = new ArrayList();
-			      for(int i=0;i<trustedcerts.length;i++ ){
-			    	if(((X509Certificate)trustedcerts[i]).getBasicConstraints() != -1){
-			    		catrustlist.add(trustedcerts[i]);
-			    	}
-			      }
-				  }catch(Exception e){
-					  throw new IOException("Error reading client keystore " + e.getMessage());
-				  }			      
-			  }
-									   		
+	protected XKMSInvoker getXKMSInvoker() throws FileNotFoundException, IOException {       
+		if (xkms == null) {
+			if (getKeyStorePath()!=null) {
+				try{
+					KeyStore clientKeyStore = KeyStore.getInstance("JKS");				  
+					clientKeyStore.load(new FileInputStream(getKeyStorePath()), getKeyStorePassword().toCharArray());
+					if (getKeyStoreAlias() == null) {
+						throw new IOException("Error no alias specified in the property file");
+					}
+					String alias = getKeyStoreAlias();       
+					clientCert = (java.security.cert.X509Certificate)clientKeyStore.getCertificate(alias);            
+					privateKey = clientKeyStore.getKey(alias, getKeyStorePassword().toCharArray());
+					Certificate[] trustedcerts = clientKeyStore.getCertificateChain(alias);
+					catrustlist = new ArrayList<Certificate>();
+					for (int i=0;i<trustedcerts.length;i++ ) {
+						if(((X509Certificate)trustedcerts[i]).getBasicConstraints() != -1){
+							catrustlist.add(trustedcerts[i]);
+						}
+					}
+				} catch(Exception e) {
+					throw new IOException("Error reading client keystore " + e.getMessage());
+				}			      
+			}
 			xkms = new XKMSInvoker(getWebServiceURL(),catrustlist);
-
 		}
-                
-        return xkms;
-        
+		return xkms;
 	}
 
 	private String getKeyStorePassword() throws FileNotFoundException, IOException {

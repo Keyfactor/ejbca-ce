@@ -415,7 +415,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         			inValidSet = true;
         		}
 
-        		// Check RevokationReason
+        		// Check RevocationReason
         		CertificateStatus status = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         		if(status != CertificateStatus.NOT_AVAILABLE){
         			if(status.revocationReason == RevokedCertInfo.NOT_REVOKED){
