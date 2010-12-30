@@ -308,5 +308,16 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return availableCANames;		
 	}
 
-}
+	public List getAvailablePublishers(){
+		List availablePublisherNames = new ArrayList();
+		Collection publisherIds = EjbcaJSFHelper.getBean().getCAAdminSession().getAuthorizedPublisherIds(getAdmin());
+		Iterator iter = publisherIds.iterator();
+		while(iter.hasNext()){
+			int next = ((Integer) iter.next()).intValue();
+			// Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
+			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), EjbcaJSFHelper.getBean().getPublisherSession().getPublisherName(getAdmin(), next)+" ("+next+")"));
+		}
+		return availablePublisherNames;		
+	}
 
+}
