@@ -24,7 +24,7 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
     public WebOcspHealthCheckTest(String name) {
         super(name);
         httpPort = "8080"; 
-        httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/ocsphealthcheck/extocsphealth";
+        httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/vahealthcheck/extocsphealth";
     }
 
     public void setUp() throws Exception {
