@@ -33,11 +33,7 @@ public abstract class ValueExtractor {
 		try {
 			return ((Integer) object.getClass().getMethod("intValue").invoke(object)).intValue();
 		} catch (NoSuchMethodException e) {
-			String classNames = "intValue was not available on any of ";
-			for (Class<?> c : object.getClass().getClasses()) {
-				classNames += c.getName() + " (primitive=" + c.isPrimitive() + ") ";
-			}
-			LOG.error(classNames, e);
+			LOG.error(object.getClass().getName() + ", isPrimitive=" + object.getClass().isPrimitive(), e);
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -53,11 +49,7 @@ public abstract class ValueExtractor {
 		try {
 			return ((Long) object.getClass().getMethod("longValue").invoke(object)).longValue();
 		} catch (NoSuchMethodException e) {
-			String classNames = "longValue was not available on any of ";
-			for (Class<?> c : object.getClass().getClasses()) {
-				classNames += c.getName() + " (primitive=" + c.isPrimitive() + ") ";
-			}
-			LOG.error(classNames, e);
+			LOG.error(object.getClass().getName() + ", isPrimitive=" + object.getClass().isPrimitive(), e);
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
