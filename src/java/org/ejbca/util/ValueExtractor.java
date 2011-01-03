@@ -13,12 +13,16 @@
 
 package org.ejbca.util;
 
+import org.apache.log4j.Logger;
+
 /**
  * Helper object to convert from JDBC driver specific objects to a unified form. 
  *
  * @version $Id$
  */
 public abstract class ValueExtractor {
+	
+	private static final Logger LOG = Logger.getLogger(ValueExtractor.class);
 
 	/**
 	 * Return the intValue if the supplied object has a "intValue" method.
@@ -28,6 +32,13 @@ public abstract class ValueExtractor {
 	public static int extractIntValue(Object object) {
 		try {
 			return ((Integer) object.getClass().getMethod("intValue").invoke(object)).intValue();
+		} catch (NoSuchMethodException e) {
+			String classNames = "intValue was not available on any of ";
+			for (Class<?> c : object.getClass().getClasses()) {
+				classNames += c.getName() + " (primitive=" + c.isPrimitive() + ") ";
+			}
+			LOG.error(classNames, e);
+			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -41,6 +52,13 @@ public abstract class ValueExtractor {
 	public static long extractLongValue(Object object) {
 		try {
 			return ((Long) object.getClass().getMethod("longValue").invoke(object)).longValue();
+		} catch (NoSuchMethodException e) {
+			String classNames = "longValue was not available on any of ";
+			for (Class<?> c : object.getClass().getClasses()) {
+				classNames += c.getName() + " (primitive=" + c.isPrimitive() + ") ";
+			}
+			LOG.error(classNames, e);
+			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
