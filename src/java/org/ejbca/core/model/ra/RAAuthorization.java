@@ -117,13 +117,13 @@ public class RAAuthorization implements Serializable {
 			}        	
         	
         }
-        return endentityauth.trim();
+        return endentityauth == null ? "" : endentityauth.trim();
     }
 
     /**
      * Method that checks the administrators end entity profile privileges and returns a string that should be used in where clause of userdata SQL queries.
      *
-     * @return a string of end entity profile privileges that should be used in the where clause of SQL queries.
+     * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
