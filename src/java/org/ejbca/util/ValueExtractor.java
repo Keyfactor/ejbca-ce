@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 public abstract class ValueExtractor {
 	
 	private static final Logger LOG = Logger.getLogger(ValueExtractor.class);
+	private static final String ERRMSG_NOTONE = "Array of values with not exactly one value! Using first field.";
 
 	/**
 	 * Return the intValue if the supplied object has a "intValue" method.
@@ -30,10 +31,18 @@ public abstract class ValueExtractor {
 	 * Integer, BigInteger or BigDecimal (Oracle) this is convenient.
 	 */
 	public static int extractIntValue(Object object) {
+		Class<?> c = object.getClass();
 		try {
-			return ((Integer) object.getClass().getMethod("intValue").invoke(object)).intValue();
+			if (c.isArray()) {
+				final Object[] objects = (Object[]) object;
+				if (objects.length != 1) {
+					LOG.warn(ERRMSG_NOTONE);
+				}
+				c = objects[0].getClass();
+			}
+			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
 		} catch (NoSuchMethodException e) {
-			LOG.error(object.getClass().getName() + ", isPrimitive=" + object.getClass().isPrimitive(), e);
+			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -46,8 +55,16 @@ public abstract class ValueExtractor {
 	 * Long, BigInteger or BigDecimal (Oracle) this is convenient.
 	 */
 	public static long extractLongValue(Object object) {
+		Class<?> c = object.getClass();
 		try {
-			return ((Long) object.getClass().getMethod("longValue").invoke(object)).longValue();
+			if (c.isArray()) {
+				final Object[] objects = (Object[]) object;
+				if (objects.length != 1) {
+					LOG.warn(ERRMSG_NOTONE);
+				}
+				c = objects[0].getClass();
+			}
+			return ((Long) c.getMethod("longValue").invoke(object)).longValue();
 		} catch (NoSuchMethodException e) {
 			LOG.error(object.getClass().getName() + ", isPrimitive=" + object.getClass().isPrimitive(), e);
 			throw new RuntimeException(e);
