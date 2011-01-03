@@ -179,6 +179,7 @@
 
 			<!-- JBoss 6.0.0 for Remote EJB-->
 			<include name="client/jboss-logging*.jar"/>
+			<include name="client/jboss-metadata-ejb.jar"/>
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
