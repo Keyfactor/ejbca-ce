@@ -86,7 +86,7 @@ public class RAAuthorization implements Serializable {
     } 
 
     /**
-     * @return a string of end entity profile privileges that should be used in the where clause of SQL queries.
+     * @return a string of end entity profile privileges that should be used in the where clause of SQL queries, or null if no authorized end entity profiles exist.
      * @throws AuthorizationDeniedException if the current requester isn't authorized to query for approvals
      */
     public String getEndEntityProfileAuthorizationString() throws AuthorizationDeniedException {
@@ -101,7 +101,7 @@ public class RAAuthorization implements Serializable {
             throw new AuthorizationDeniedException("Not authorized to query apporvals");
         }
 
-    	String endentityauth = "";
+    	String endentityauth = null;
         GlobalConfiguration globalconfiguration = raadminsession.getCachedGlobalConfiguration(admin);
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){
         	endentityauth = getEndEntityProfileAuthorizationString(true);
@@ -117,7 +117,7 @@ public class RAAuthorization implements Serializable {
 			}        	
         	
         }
-        return endentityauth == null ? "" : endentityauth.trim();
+        return endentityauth == null ? endentityauth : endentityauth.trim();
     }
 
     /**
