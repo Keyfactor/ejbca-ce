@@ -34,6 +34,13 @@ public abstract class ValueExtractor {
 		Class<?> c = object.getClass();
 		try {
 			if (c.isArray()) {
+				if (object instanceof int[]) {
+					return ((int[])object)[0]; 
+				} else if (object instanceof long[]) {
+					return Long.valueOf(((long[])object)[0]).intValue(); 
+				} else if (object instanceof short[]) {
+					return Short.valueOf(((short[])object)[0]).intValue(); 
+				}
 				final Object[] objects = (Object[]) object;
 				if (objects.length != 1) {
 					LOG.warn(ERRMSG_NOTONE);
@@ -41,10 +48,8 @@ public abstract class ValueExtractor {
 				c = objects[0].getClass();
 			}
 			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
-		} catch (NoSuchMethodException e) {
-			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
-			throw new RuntimeException(e);
 		} catch (Exception e) {
+			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -58,6 +63,13 @@ public abstract class ValueExtractor {
 		Class<?> c = object.getClass();
 		try {
 			if (c.isArray()) {
+				if (object instanceof int[]) {
+					return Integer.valueOf(((int[])object)[0]).longValue(); 
+				} else if (object instanceof long[]) {
+					return ((long[])object)[0]; 
+				} else if (object instanceof short[]) {
+					return Short.valueOf(((short[])object)[0]).longValue(); 
+				}
 				final Object[] objects = (Object[]) object;
 				if (objects.length != 1) {
 					LOG.warn(ERRMSG_NOTONE);
@@ -65,10 +77,8 @@ public abstract class ValueExtractor {
 				c = objects[0].getClass();
 			}
 			return ((Long) c.getMethod("longValue").invoke(object)).longValue();
-		} catch (NoSuchMethodException e) {
-			LOG.error(object.getClass().getName() + ", isPrimitive=" + object.getClass().isPrimitive(), e);
-			throw new RuntimeException(e);
 		} catch (Exception e) {
+			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
 			throw new RuntimeException(e);
 		}
 	}
