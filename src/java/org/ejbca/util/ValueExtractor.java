@@ -29,7 +29,7 @@ public abstract class ValueExtractor {
 		try {
 			return ((Integer) object.getClass().getMethod("intValue").invoke(object)).intValue();
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -42,7 +42,7 @@ public abstract class ValueExtractor {
 		try {
 			return ((Long) object.getClass().getMethod("longValue").invoke(object)).longValue();
 		} catch (Exception e) {
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 }
