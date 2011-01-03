@@ -141,7 +141,7 @@ For production use you should use a real database instead of the embedded one.</
 
 <subsubsection name="JBoss settings">
 <p>
-Edit
+On JBoss 5.1.x, edit (not needed on JBoss 6.0.x)
 </p> 
 <source>
  APPSRVR_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
@@ -161,11 +161,11 @@ to force the location to be generated with info from the WSDL request.
 The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
 a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
 configuration of java memory arguments to set them to
-at least '-Xms128m -Xmx512m'. 
+at least '-Xms128m -Xmx512m -XX:MaxPermSize=256m'. 
 For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
 </p>
 <source>
-JAVA_OPTS="-server -Xms128m -Xmx512m"
+JAVA_OPTS="-server -Xms128m -Xmx512m -XX:MaxPermSize=256m"
 </source>
 <p>
 can be changed.
@@ -209,10 +209,13 @@ in the distribution.
 Note that the installation must be done with a user with privileges to write to APPSRV_HOME and subdirs. 
 </p><p>
 1) Set the environment variable APPSRV_HOME to where your JBoss is installed,
-example:
+examples:
 </p> 
 <source>
 APPSRV_HOME=/opt/jboss-5.1.0
+</source>
+<source>
+APPSRV_HOME=/opt/jboss-6.0.0.Final
 </source>
 <p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.6.0_21/bin.
 <br/>Due to Java's memory handling you may need to assign more memory to ant in order to build the system without OutOfMemory errors. 
