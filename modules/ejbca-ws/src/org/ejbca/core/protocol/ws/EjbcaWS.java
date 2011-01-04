@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -567,7 +566,6 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @param cert
 	 * @return
 	 * @throws CADoesntExistsException
-	 * @throws RemoteException
 	 * @throws NoSuchAlgorithmException
 	 * @throws NoSuchProviderException
 	 * @throws InvalidKeySpecException
