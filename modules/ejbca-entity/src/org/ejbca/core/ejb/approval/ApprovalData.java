@@ -510,6 +510,9 @@ s	 * @throws ApprovalRequestExpiredException
 		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
 		// Ingres wont let us access a LOB in a List using a native query for all fields.
 		// -> So we will get a list of primary keys and the fetch the whole entities one by one...
+		
+		// As a sad little bonus on DB2, "SELECT id FROM ApprovalData WHERE "
+		// is converted into "select * from ( select rownumber() over() as rownumber_, id FROM ApprovalData WHERE ... as temp_ where rownumber_ <= ?"
 		final Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
 		query.setFirstResult(index);
 		query.setMaxResults(numberofrows);

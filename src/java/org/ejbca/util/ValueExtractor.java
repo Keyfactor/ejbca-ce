@@ -23,29 +23,27 @@ import org.apache.log4j.Logger;
 public abstract class ValueExtractor {
 	
 	private static final Logger LOG = Logger.getLogger(ValueExtractor.class);
-	private static final String ERRMSG_NOTONE = "Array of values with not exactly one value! Using first field.";
 
 	/**
 	 * Return the intValue if the supplied object has a "intValue" method.
 	 * Since different JDBC driver will return different types of objects like
 	 * Integer, BigInteger or BigDecimal (Oracle) this is convenient.
+	 * 
+	 * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
+	 * where the first value is row and the second is the value.
 	 */
 	public static int extractIntValue(Object object) {
 		Class<?> c = object.getClass();
 		try {
 			if (c.isArray()) {
-				if (object instanceof int[]) {
-					return ((int[])object)[0]; 
-				} else if (object instanceof long[]) {
-					return Long.valueOf(((long[])object)[0]).intValue(); 
-				} else if (object instanceof short[]) {
-					return Short.valueOf(((short[])object)[0]).intValue(); 
-				}
 				final Object[] objects = (Object[]) object;
-				if (objects.length != 1) {
-					LOG.warn(ERRMSG_NOTONE);
+				if (LOG.isDebugEnabled()) {
+					for (Object o : objects) {
+						LOG.debug(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
+					}
 				}
-				c = objects[0].getClass();
+				object = objects[objects.length-1];
+				c = object.getClass();
 			}
 			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
 		} catch (Exception e) {
@@ -63,18 +61,14 @@ public abstract class ValueExtractor {
 		Class<?> c = object.getClass();
 		try {
 			if (c.isArray()) {
-				if (object instanceof int[]) {
-					return Integer.valueOf(((int[])object)[0]).longValue(); 
-				} else if (object instanceof long[]) {
-					return ((long[])object)[0]; 
-				} else if (object instanceof short[]) {
-					return Short.valueOf(((short[])object)[0]).longValue(); 
-				}
 				final Object[] objects = (Object[]) object;
-				if (objects.length != 1) {
-					LOG.warn(ERRMSG_NOTONE);
+				if (LOG.isDebugEnabled()) {
+					for (Object o : objects) {
+						LOG.debug(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
+					}
 				}
-				c = objects[0].getClass();
+				object = objects[objects.length-1];
+				c = object.getClass();
 			}
 			return ((Long) c.getMethod("longValue").invoke(object)).longValue();
 		} catch (Exception e) {
