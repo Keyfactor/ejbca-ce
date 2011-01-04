@@ -105,13 +105,6 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Compile va resonder java sources                                  -->
-    <!-- =================================================================== -->
-    <target name="va-compile" depends="va-ejb">
-    	<echo message="THIS TARGET (va-compile) SHOULD NO LONGER BE USED!"/>
-    </target>
-
-    <!-- =================================================================== -->
 	<!-- Make sure the user isn't using the GNU version of java              -->
     <!-- =================================================================== -->
 	<target name="testforgnujava">
