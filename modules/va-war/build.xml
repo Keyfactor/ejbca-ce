@@ -18,13 +18,13 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 
 	<path id="compile-ejbca.classpath">
 		<path refid="compile-common.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 	
 	<path id="compile-va.classpath">
