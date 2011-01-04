@@ -14,11 +14,21 @@
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
-	<path id="compile.classpath">
+	<path id="common-compile.classpath">
 		<path refid="lib.utils.classpath"/>
 		<path refid="lib.jpa.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+	</path>
+
+	<path id="compile.classpath">
+		<path refid="common-compile.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
+	</path>
+
+	<path id="va-compile.classpath">
+		<path refid="common-compile.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.log4j.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -58,8 +68,8 @@
     	<jar destfile="${mod.ejbca-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml" excludes="org/ejbca/util/DatabaseSchemaScriptCreator.class"/>
     </target>
 
-    <target name="build-va" description="Build this module" depends="compile, handlepersistence, handleorm-ocsp">
-    	<jar destfile="${mod.va-entity.lib}" basedir="${build.dir}" includes="**/CertificateData.class **/*.xml"/>
+    <target name="build-va" description="Build this module" depends="compile-va, handlepersistence, handleorm-ocsp">
+    	<jar destfile="${mod.va-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml"/>
     </target>
 
     <target name="compile" depends="ejbca-util">
@@ -109,10 +119,14 @@
 		<copy file="${resources.dir}/orm-ocsp-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
 	</target>
 
-    <target name="compile-va" depends="ejbca-util">
+    <target name="compile-va">
     	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
+        	<include name="org/ejbca/core/ejb/ca/store/CertificateData.java"/>
+        	<src path="${ejbca.home}/src/java"/>
+        	<src path="${src.dir}"/>
+        </javac>
     </target>
 
     <target name="test-dbschema" description="Perform database schema validation." depends="compile-test, handlepersistence, handleorm">

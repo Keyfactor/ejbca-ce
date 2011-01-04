@@ -45,9 +45,8 @@
 
 	<path id="compile-va-ejb.classpath">
 		<path refid="compile-util.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
-		<path location="${mod.va-ejb-interface.lib}"/>
-		<path location="${mod.va-entity.lib}"/>
+		<pathelement location="${mod.va-ejb-interface.lib}"/>
+		<pathelement location="${mod.va-entity.lib}"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -142,6 +141,10 @@
             <fileset dir="${ejbca.home}">
 				<include name="conf/**/*.properties"/>
 			</fileset>	
+        	<fileset dir="${ejbca.home}/src/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>
         </jar>
     </target>
 
@@ -194,7 +197,7 @@
         </copy>
     </target>
 
-    <target name="compile-va-ejb" depends="build-util, va-entity, va-ejb-interface">
+    <target name="compile-va-ejb" depends="va-ejb-interface">
     	<mkdir dir="${build-va.dir}"/>
         <javac destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" >
             <classpath>
@@ -203,15 +206,9 @@
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 			<!-- Classes not available in ejbca-util.jar -->
-            <include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java" />
             <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" />
-            <include name="org/ejbca/core/model/ca/MalformedRequestException.java" />
-            <include name="org/ejbca/ui/web/LimitLengthASN1Reader.java" />
             <include name="org/ejbca/util/DummyPatternLogger.java" />
-            <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
             <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
-            <include name="org/ejbca/ui/web/pub/cluster/TextResponse.java" />
-            <include name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java" />
