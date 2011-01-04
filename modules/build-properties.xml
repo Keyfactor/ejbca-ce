@@ -62,6 +62,7 @@
     <property name="mod.va-war.path" location="${mod.path}/va-war" />
     <property name="mod.va-war.war" location="${mod.dist.path}/va.war" />
     <property name="mod.va-war-va-build.path" location="${mod.path}/va-war/build-va/WEB-INF/classes" />
+    <property name="mod.va-war-ejbca-build.path" location="${mod.path}/va-war/build/WEB-INF/classes" />
     <property name="mod.renew-war.path" location="${mod.path}/ejbca-renew-war" />
     <property name="mod.renew-war.war" location="${mod.dist.path}/renew.war" />
     <property name="mod.scep-war.path" location="${mod.path}/ejbca-scep-war" />

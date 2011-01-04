@@ -13,16 +13,9 @@
 
 package org.ejbca.ui.web.protocol;
 
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-
 import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -30,8 +23,10 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.ocsp.CertificateCache;
-import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
+import org.ejbca.core.protocol.certificatestore.CertStore;
+import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
+import org.ejbca.core.protocol.certificatestore.ICertificateCache;
+import org.ejbca.core.protocol.ocsp.OCSPData;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -43,42 +38,26 @@ import org.ejbca.core.protocol.ocsp.CertificateCacheInternal;
 public class OCSPServlet extends OCSPServletBase {
 
     @EJB
-    private CertificateStoreSessionLocal certificateStoreSessionLocal;
-    
-    @EJB
     private CAAdminSessionLocal caAdminSessionLocal;
-    
-    public void init(ServletConfig config)
-            throws ServletException {
-        super.init(config);
+
+    public OCSPServlet() {
+        super(new OCSPData(new CertStore()));
+    }
+    @Override
+	protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+        return (OCSPCAServiceResponse)this.caAdminSessionLocal.extendedService(adm, caid, request);
     }
 
-    protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return certificateStoreSessionLocal.findCertificateByIssuerAndSerno(adm, issuer, serno);
-    }
-    protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
-        return (OCSPCAServiceResponse)caAdminSessionLocal.extendedService(adm, caid, request);
-    }
-
-    protected CertificateStatus getStatus(String name, BigInteger serialNumber) {
-        return certificateStoreSessionLocal.getStatus(name, serialNumber);
-    }
-
-    protected CertificateCache createCertificateCache() {
-		return CertificateCacheInternal.getInstance();
+    @Override
+	protected ICertificateCache createCertificateCache() {
+		return CertificateCacheFactory.getInstance(new CertStore());
 	}
 
     /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(java.lang.String)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    protected void loadPrivateKeys(String password) {
+    @Override
+	protected void loadPrivateKeys(Admin adm, String password) {
         // not used by this servlet
-    }
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#healthCheck()
-     */
-    public String healthCheck(boolean doSignTest, boolean doValidityTest) {
-        // not used by this servlet
-    	return null;
     }
 } // OCSPServlet

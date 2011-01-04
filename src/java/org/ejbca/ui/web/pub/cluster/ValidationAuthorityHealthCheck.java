@@ -13,14 +13,13 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
+import org.ejbca.ui.web.protocol.IHealtChecker;
+
+
 
 /**
  * External OCSP Health Checker. 
@@ -31,26 +30,23 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
  * * Database connection can be established.
  * * All OCSPSignTokens are active if not set as offline.
  * 
- * TODO: System test this class.
- * 
  * @author Philip Vendil
  * @version $Id$
  */
 
-public class ExtOCSPHealthCheck extends CommonHealthCheck {
+public class ValidationAuthorityHealthCheck extends CommonHealthCheck {
 	
-	private static final Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
+	private static final Logger log = Logger.getLogger(ValidationAuthorityHealthCheck.class);
+	private static IHealtChecker healthChecker;
 
 	private boolean doSignTest = OcspConfiguration.getHealthCheckSignTest();
 	private boolean doValidityTest = OcspConfiguration.getHealthCheckCertificateValidity();
 
-	private CertificateStoreOnlyDataSessionLocal certificateStoreOnlyDataSessionLocal;
-	
-	public ExtOCSPHealthCheck(CertificateStoreOnlyDataSessionLocal certificateStoreOnlyDataSessionLocal) {
-	    this.certificateStoreOnlyDataSessionLocal = certificateStoreOnlyDataSessionLocal;
+	static public void setHealtChecker(IHealtChecker hc) {
+		healthChecker = hc;
 	}
-	
-	
+
+	@Override
 	public String checkHealth(HttpServletRequest request) {
 		log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
 		String errormessage = "";
@@ -59,8 +55,7 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 		if( !errormessage.equals("") ) { 
 			// if Down for maintenance do not perform more checks
 			return errormessage; 
-		} 
-		errormessage += checkDB();
+		}
 		if(errormessage.equals("")){
 		  errormessage += checkMemory();								
 		  errormessage += checkOCSPSignTokens();	
@@ -74,29 +69,11 @@ public class ExtOCSPHealthCheck extends CommonHealthCheck {
 		return errormessage;
 	}
 
-	private String checkDB(){
-		log.debug("Checking database connection.");
-		return certificateStoreOnlyDataSessionLocal.getDatabaseStatus();
+
+	private String checkOCSPSignTokens(){
+		if ( healthChecker==null ) {
+			return "No OCSP token health checker set";
+		}
+		return healthChecker.healthCheck(this.doSignTest, this.doValidityTest);
 	}
-
-    /**
-     * Since the classes are deployed in a separate WAR, we cannot access the
-     * healtcheck directly.
-     */
-    private String checkOCSPSignTokens() {
-        try {
-            URL url = new URL("http://127.0.0.1:8080/ejbca/publicweb/status/ocsp?healthcheck=true&doSignTest=" + this.doSignTest + "&doValidityTest="
-                    + this.doValidityTest);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            int responseCode = con.getResponseCode();
-            String responseMessage = con.getResponseMessage();
-            if (responseCode != 200) {
-                return "Unexpected result code " + responseCode + " for URL: '" + url + "'. Message was: '" + responseMessage + '\'';
-            }
-            return "";
-        } catch (Exception e) {
-            return "Network problems: '" + e.getMessage() + '\'';
-        }
-    }
-
 }

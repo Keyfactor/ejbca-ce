@@ -21,8 +21,8 @@
 
 	<path id="compile-ejbca.classpath">
 		<path refid="compile-common.classpath"/>
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.ejbca-ejb.lib}"/>
+		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
+		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 	
@@ -30,7 +30,6 @@
 		<path refid="compile-common.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
 		<pathelement location="${mod.va-ejb.lib}"/>
-		<pathelement location="${mod.va-war-va-build.path}"/>
 		<pathelement location="${mod.va-entity.lib}" />
 	</path>
 		

@@ -91,6 +91,8 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
+import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -438,7 +440,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         // First test with a signed OCSP request that can be verified
         Collection cacerts = new ArrayList();
         cacerts.add(cacert);
-        CertificateCache certcache = new CertificateCache(cacerts);
+        ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
         X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
         assertNotNull(signer);
         assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));

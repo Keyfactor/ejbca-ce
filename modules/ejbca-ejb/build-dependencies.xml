@@ -438,6 +438,8 @@
 					<include name="org/ejbca/core/protocol/IResponseMessage.java"/>
 					<include name="org/ejbca/core/protocol/ResponseStatus.java"/>
 					<include name="org/ejbca/core/protocol/FailInfo.java"/>
+					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
+					<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
 					<!-- Dependency on Certificate Extensions -->
 					<include name="org/ejbca/util/cert/SubjectDirAttrExtension.java"/>
 					<include name="org/ejbca/core/model/ca/certextensions/standard/*.java"/>
