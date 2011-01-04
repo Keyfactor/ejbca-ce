@@ -17,16 +17,16 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 
 	<path id="compile-ejbca.classpath">
 		<path refid="compile-common.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ejb.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 	
-	<path id="compile-ocsp.classpath">
+	<path id="compile-va.classpath">
 		<path refid="compile-common.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
 		<pathelement location="${mod.va-ejb.lib}"/>
@@ -58,7 +58,7 @@
 	<target name="va-compile" depends="va-va-war">
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-ocsp.classpath"/>
+			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-va.classpath"/>
 	</target>
 
 </project>
