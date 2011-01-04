@@ -43,7 +43,6 @@ import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -51,6 +50,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -150,9 +150,18 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
-                        if (getPublisher(pdl).storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
-                                tag, certificateProfileId, lastUpdate, extendedinformation)) {
-                            publishStatus = PublisherConst.STATUS_SUCCESS;
+                    	try {
+                    		if (publisherQueueSession.storeCertificateNonTransactional(getPublisher(pdl), admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
+                    				tag, certificateProfileId, lastUpdate, extendedinformation)) {
+                    			publishStatus = PublisherConst.STATUS_SUCCESS;
+                    		}
+                        } catch (EJBException e) {
+                        	final Throwable t = e.getCause();
+                        	if (t instanceof PublisherException) {
+                        		throw (PublisherException)t;
+                        	} else {
+                        		throw e;
+                        	}
                         }
                         String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());
                         logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), username, cert, logInfoEvent, msg);
@@ -195,7 +204,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         return returnval;
     }
-
+    
     /**
      * Stores the crl to the given collection of publishers. See BasePublisher
      * class for further documentation about function
@@ -217,7 +226,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
-                        if (getPublisher(pdl).storeCRL(admin, incrl, cafp, number, userDN)) {
+                    	if (publisherQueueSession.storeCRLNonTransactional(getPublisher(pdl), admin, incrl, cafp, number, userDN)) {
                             publishStatus = PublisherConst.STATUS_SUCCESS;
                         }
                         String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());

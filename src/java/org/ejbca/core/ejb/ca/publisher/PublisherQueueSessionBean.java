@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,9 +21,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -60,8 +65,17 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
+    @Resource
+    private SessionContext sessionContext;
+
     @EJB
     private LogSessionLocal logSession;
+    private PublisherQueueSessionLocal publisherQueueSession;
+
+    @PostConstruct
+    public void ejbCreate() {
+    	publisherQueueSession = sessionContext.getBusinessObject(PublisherQueueSessionLocal.class);
+    }
 
     /**
      * Adds an entry to the publisher queue.
@@ -314,11 +328,18 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                         if (cd == null) {
                             throw new FinderException();
                         }
-              
-                        published = publisher.storeCertificate(admin, cd.getCertificate(), username, password, userDataDN, cd.getCaFingerprint(), cd
-                                .getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd
-                                .getCertificateProfileId(), cd.getUpdateTime(), ei);
-
+                        try {
+                        	published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, cd.getCertificate(), username, password, userDataDN,
+                        			cd.getCaFingerprint(), cd.getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd
+                        			.getCertificateProfileId(), cd.getUpdateTime(), ei);
+                        } catch (EJBException e) {
+                        	final Throwable t = e.getCause();
+                        	if (t instanceof PublisherException) {
+                        		throw (PublisherException)t;
+                        	} else {
+                        		throw e;
+                        	}
+                        }
                     } else {
                         String msg = intres.getLocalizedMessage("publisher.nopublisher", publisherId);
                         log.info(msg);
@@ -333,7 +354,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                     if (crlData == null) {
                         throw new FinderException();
                     }
-                    published = publisher.storeCRL(admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), crlData.getCrlNumber(), userDataDN);
+                    published = publisherQueueSession.storeCRLNonTransactional(publisher, admin, crlData.getCRLBytes(), crlData.getCaFingerprint(), crlData.getCrlNumber(), userDataDN);
                 } else {
                     String msg = intres.getLocalizedMessage("publisher.unknowntype", publishType);
                     log.error(msg);
@@ -382,5 +403,24 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
             log.debug("Returning from publisher with " + successcount + " entries published successfully.");
         }
         return successcount;
+    }
+
+    /**
+     * Publishers do not run a part of regular transactions and expect to run in auto-commit mode.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public boolean storeCertificateNonTransactional(BasePublisher publisher, Admin admin, Certificate cert, String username, String password, String userDN,
+    		String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
+    		long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
+    	return publisher.storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
+                tag, certificateProfileId, lastUpdate, extendedinformation);
+    }
+
+    /**
+     * Publishers do not run a part of regular transactions and expect to run in auto-commit mode.
+     */
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public boolean storeCRLNonTransactional(BasePublisher publisher, Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
+    	return publisher.storeCRL(admin, incrl, cafp, number, userDN);
     }
 }
