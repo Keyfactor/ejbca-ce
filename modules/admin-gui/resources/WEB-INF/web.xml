@@ -16,6 +16,12 @@
         <param-value>true</param-value>
     </context-param>
 
+	<!-- In JBoss AS 6 we don't want to use JSF2, because the Tomahawk library is not compatible with that. -->
+	<context-param>
+    	<param-name>org.jboss.jbossfaces.JSF_CONFIG_NAME</param-name>
+    	<param-value>Mojarra-1.2</param-value>
+ 	</context-param>
+
    <servlet>
       <description><![CDATA[Returns the specified CA certificate]]></description>
       <display-name>CACertServlet</display-name>
