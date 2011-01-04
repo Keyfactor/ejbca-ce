@@ -4465,7 +4465,7 @@ They can also be fetched directly from
 <p>
 EJBCA can be run with servlets and EJBs or only with EJBs. The
 servlets are only a publicly available front-end to the beans. 
-If the CA is deployed integrated in another J2EE application, 
+If the CA is deployed integrated in another JEE application, 
 this front-end may not be needed.
 </p></subsection>
 

@@ -32,9 +32,9 @@
 
 <section name="EJBCA Enterprise PKI">
 <p>
-EJBCA is an enterprise class PKI Certificate Authority built on J2EE technology. 
+EJBCA is an enterprise class PKI Certificate Authority built on JEE technology. 
 It is a robust, high performance, platform independent, flexible, and component based CA to be used 
-stand-alone or integrated in other J2EE applications.
+stand-alone or integrated in other JEE applications.
 </p>
 <p>
 EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organization.

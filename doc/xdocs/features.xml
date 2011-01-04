@@ -7,7 +7,7 @@
 
 <body>
   <section name="Features">
-    <p>Built on the J2EE 1.3 (EJB 2.0) specification.</p>
+    <p>Built on the JEE 5 (EJB 3.0) specification.</p>
 <ul>
 <li>Flexible, component based architecture.</li>
 <li>Using standard, high performance RDBMS for storage.</li>

@@ -10,7 +10,7 @@
 EJBCA uses the opensource JCE crypto provider from <a href="http://www.bouncycastle.org/">The Legion of the Bouncy Castle</a>.
 </p>
 <p>
-Development and default deployment is done (primarily) using the J2EE application server <a href="http://www.jboss.org/">JBoss AS</a>.
+Development and default deployment is done (primarily) using the JEE application server <a href="http://www.jboss.org/">JBoss AS</a>.
 </p>
 <p>
 This product includes software developed by The Apache Software Foundation
