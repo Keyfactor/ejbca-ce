@@ -395,8 +395,8 @@
         <antcall target="j2ee:deployva" />
         <antcall target="showtime" />
     </target>
-    <target name="ocsp-deploy" depends="va-deploy" description="Depricated, use va-deploy instead" >
-        <echo message="Depricated use va-deploy instead." />
+    <target name="ocsp-deploy" depends="va-deploy" description="Deprecated, use va-deploy instead" >
+        <echo message="Deprecated use va-deploy instead." />
     </target>
 
     <!-- ======================================================================= -->
