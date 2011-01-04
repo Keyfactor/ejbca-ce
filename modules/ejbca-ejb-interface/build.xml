@@ -21,8 +21,8 @@
 
 	<path id="va-compile.classpath">
 		<pathelement location="${mod.va-entity.lib}" />
+		<pathelement location="${mod.ejbca-util.lib}" />
 		<path refid="lib.jee.classpath"/>
-		<path refid="lib.ldap.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
