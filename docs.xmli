@@ -71,7 +71,7 @@
         <mkdir dir="${docs.dest}"/>
     </target>
 
-    <target name="doc" if="AnakiaTask.present" depends="prepare-error, doc-build-tool" description="Build EJBCA web site and docs">
+    <target name="doc" if="AnakiaTask.present" depends="prepare-error, doc-build-tool, ejbca-util.jar" description="Build EJBCA web site and docs">
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
         </taskdef>
