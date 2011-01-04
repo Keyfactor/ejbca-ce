@@ -18,7 +18,7 @@ $Id$
       <!-- Datasources are not available outside the virtual machine -->
       <jndi-name>${datasource.jndi-name}</jndi-name>
 
-      <connection-url>${database.url}</connection-url>
+      <connection-url><![CDATA[${database.url}]]></connection-url>
 
       <!-- The driver class -->
       <driver-class>${database.driver}</driver-class>

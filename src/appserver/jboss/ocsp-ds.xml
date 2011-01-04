@@ -18,7 +18,7 @@ $Id$
       <!-- Datasources are not available outside the virtual machine -->
       <jndi-name>${ocsp-datasource.jndi-name}</jndi-name>
 
-      <connection-url>${ocsp-database.url}</connection-url>
+      <connection-url><![CDATA[${ocsp-database.url}]]></connection-url>
 
       <!-- The driver class -->
       <driver-class>${ocsp-database.driver}</driver-class>

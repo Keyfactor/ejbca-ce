@@ -52,7 +52,9 @@ For details on how the application server should be configured, see the installa
 The values of "customAvailableAccessRules" and "RNGAlgorithm" (Random Number Generator) are now configurable 
 from conf/ejbca.properties instead of being read through the ENC.
 
-Note that the database.name property in database.properties changed from mssql2000 to mssql for MS-SQL Server.
+The 'database.name' property in database.properties changed from mssql2000 to mssql for MS-SQL Server.
+The 'database.url' property in database.properties no longer needs XML escaping for '&'-characters.
+The 'ocsp-database.url' property in ocsp.properties no longer needs XML escaping for '&'-characters.
 
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 If you are upgrading a cluster, update the software on all the nodes.
