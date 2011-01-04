@@ -8,7 +8,7 @@
 <body>
   <section name="News and Info">
   <note>
-  <p><strong>2010-11-29: EJBCA 3.11.0 and cert-cvc 1.2.12 with EAC ePassport support is now out!</strong>
+  <p><strong>2010-12-23: EJBCA 3.11.1 and cert-cvc 1.2.12 with EAC ePassport support is now out!</strong>
   <br/>Visit the <a href="download.html">download</a> section. There is also a LiveCD!
   </p>
   </note>
@@ -27,6 +27,9 @@
   <note>
   <strong>EJBCA 4.0 alpha is here!</strong>. <a href="http://sourceforge.net/projects/ejbca/files/ejbca4/">Download</a> the first pre-release of EJBCA 4.0 now. Read the basic
   <a href="http://blog.ejbca.org/2010/10/ejbca-4-basic-roadmap.html">Roadmap for EJBCA 4</a>. Read release <a href="http://blog.ejbca.org/2010/12/ejbca-40-alpha1-released.html">announcement</a>.
+  </note>
+  <note>
+  Find latest news about ejbca at the <a href="http://blog.ejbca.org/">EJBCA blog</a>.
   </note>
   </section>
 
