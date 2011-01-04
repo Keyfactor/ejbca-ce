@@ -119,8 +119,7 @@ function changematchfields(row){
      for( i = 0; i < eventfields[ID].length; i++){
        menumatchvalue.options[i]= new Option(eventfields[NAME][i],eventfields[ID][i]);       
      }
-  }else{
-    if(matchwithvalue == <%= LogMatch.MATCH_WITH_CA %> ){
+  }else if(matchwithvalue == <%= LogMatch.MATCH_WITH_CA %> ){
 
       menumatchvalue.disabled = false;
       textmatchvalue.disabled = true;
@@ -140,9 +139,7 @@ function changematchfields(row){
      for( i = 0; i < cafields[ID].length; i++){
        menumatchvalue.options[i]= new Option(cafields[NAME][i],cafields[ID][i]);       
      }
-    }
-    else{
-      if(matchwithvalue == <%= LogMatch.MATCH_WITH_MODULE %> ){
+  } else if(matchwithvalue == <%= LogMatch.MATCH_WITH_MODULE %> ){
 
         menumatchvalue.disabled = false;
         textmatchvalue.disabled = true;
@@ -162,11 +159,9 @@ function changematchfields(row){
         for( i = 0; i < modulefields[ID].length; i++){
          menumatchvalue.options[i]= new Option(modulefields[NAME][i],modulefields[ID][i]);       
         }
-      }
-      else{
+  } else if(matchwithvalue == <%= LogMatch.MATCH_WITH_SPECIALADMIN %> ){
         // if admintype use manu and no textfield. 
-        if(matchwithvalue == <%= LogMatch.MATCH_WITH_SPECIALADMIN %> ){
-  
+
           menumatchvalue.disabled = false;
           textmatchvalue.disabled = true;
           textmatchvalue.value= "";
@@ -186,9 +181,25 @@ function changematchfields(row){
             menumatchvalue.options[i]= new Option(admintypes[NAME][i],admintypes[ID][i]);       
           }
       
-       }
-       else{      
-   // else use textfield.  
+  } else if(matchwithvalue == <%= LogMatch.MATCH_WITH_ADMINCERTIFICATE %> ){
+         // if admin certificate, use 'begin with' and textfield.
+            menumatchvalue.disabled = true;
+            textmatchvalue.disabled = false;
+            textmatchvalue.size = 40;
+
+            var numoftypes = matchtype.length;
+            for( i=numoftypes-1; i >= 0; i-- ){
+                matchtype.options[i]=null;
+            }
+            matchtype.options[0]= new Option(matchtypefields[NAME][1],matchtypefields[ID][1]);
+            matchtype.options[1]= new Option(matchtypefields[NAME][2],matchtypefields[ID][2]);
+
+            numofvalues = menumatchvalue.length;
+            for(i=numofvalues-1; i >= 0; i--){
+                menumatchvalue.options[i]=null;
+            }     
+  } else{
+         // else use textfield.  
      
           var numoftypes = matchtype.length;
           for(i=numoftypes-1; i >= 0; i-- ){
@@ -205,12 +216,9 @@ function changematchfields(row){
           menumatchvalue.disabled = true;
           textmatchvalue.disabled = false;
           textmatchvalue.size=40;
-        
-       }  
-     }
-   }
   }
-}
+} //end function
+
 
 function checkfields(){
   var returnval =true;
@@ -314,8 +322,17 @@ function checkfields(){
                          out.write(" selected ");
                     } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
           </option>
-             <%  }
-                 else{ %>
+
+              <% } else if (Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_ADMINCERTIFICATE) { %>
+          <option <% if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                        out.write(" selected ");
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"BEGINSWITH\") %>" />
+          </option>
+          <option <% if(tempval == BasicMatch.MATCH_TYPE_CONTAINS){
+                         out.write(" selected ");
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_CONTAINS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"CONTAINS\") %>" />
+          </option> 
+              <% } else{ %>
           <option <% if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
                     } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
@@ -406,7 +423,8 @@ function checkfields(){
            <% } %>
        </select>
        <% if( oldmatchwithrow1!= null){
-           if(  oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN)) || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_CA))){ %>
+           if(  oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow1) == LogMatch.MATCH_WITH_MODULE 
+                || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN)) || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
               <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
@@ -490,8 +508,16 @@ function checkfields(){
                          out.write(" selected ");
                     } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
           </option>
-             <%  }
-                 else{ %>
+             <%  } else if (Integer.parseInt(oldmatchwithrow2) == LogMatch.MATCH_WITH_ADMINCERTIFICATE) { %>
+          <option <% if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                        out.write(" selected ");
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"BEGINSWITH\") %>" />
+          </option>
+          <option <% if(tempval == BasicMatch.MATCH_TYPE_CONTAINS){
+                         out.write(" selected ");
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_CONTAINS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"CONTAINS\") %>" />
+          </option> 
+                <% } else{ %>
           <option <% if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
                     } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
@@ -667,8 +693,16 @@ function checkfields(){
                          out.write(" selected ");
                     } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
           </option>
-             <%  }
-                 else{ %>
+             <%  } else if (Integer.parseInt(oldmatchwithrow3) == LogMatch.MATCH_WITH_ADMINCERTIFICATE) { %>
+          <option <% if(tempval == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+                        out.write(" selected ");
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_BEGINSWITH) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"BEGINSWITH\") %>" />
+          </option>
+          <option <% if(tempval == BasicMatch.MATCH_TYPE_CONTAINS){
+                         out.write(" selected ");
+                    } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_CONTAINS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"CONTAINS\") %>" />
+          </option> 
+                <% } else{ %>
           <option <% if(tempval == BasicMatch.MATCH_TYPE_EQUALS){
                          out.write(" selected ");
                     } %> value='<c:out value="<%= Integer.toString(BasicMatch.MATCH_TYPE_EQUALS) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"EQUALS\") %>" />
