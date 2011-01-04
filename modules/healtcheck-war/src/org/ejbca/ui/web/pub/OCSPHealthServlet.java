@@ -15,7 +15,7 @@ package org.ejbca.ui.web.pub;
 import javax.ejb.EJB;
 
 import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
-import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
+import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthResponse;
 import org.ejbca.ui.web.pub.cluster.TextResponse;
@@ -28,7 +28,7 @@ public class OCSPHealthServlet extends AbstractHealthServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private ExtOCSPHealthCheck extOCSPHealthCheck;
+    private ValidationAuthorityHealthCheck validationAuthorityHealthCheck;
     private TextResponse textResponse;
     
     @EJB
@@ -36,7 +36,7 @@ public class OCSPHealthServlet extends AbstractHealthServlet {
 
     @Override
     public IHealthCheck getHealthCheck() {
-        return extOCSPHealthCheck;
+        return validationAuthorityHealthCheck;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class OCSPHealthServlet extends AbstractHealthServlet {
 
     @Override
     public void initializeServlet() {
-        extOCSPHealthCheck = new ExtOCSPHealthCheck(certificateStoreOnlyDataSessionLocal);  
+        validationAuthorityHealthCheck = new ValidationAuthorityHealthCheck();  
         textResponse = new TextResponse();
     }
 

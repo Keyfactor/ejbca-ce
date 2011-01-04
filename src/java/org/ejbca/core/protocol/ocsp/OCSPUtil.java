@@ -21,7 +21,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -32,6 +31,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -57,6 +58,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.util.AlgorithmTools;
+import org.ejbca.core.protocol.certificatestore.HashID;
+import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
@@ -187,10 +190,11 @@ public class OCSPUtil {
     	} catch (CertificateNotYetValidException e) {
     		throw new Error("This should never happen.", e);
     	}
-		if ( m_log.isDebugEnabled() ) {
-			m_log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "+
-		            new Date(signerCert.getNotAfter().getTime()-warnBeforeExpirationTime));
+		if ( !m_log.isDebugEnabled() ) {
+			return true;
 		}
+		m_log.debug("Time for \"certificate will soon expire\" not yet reached. You will be warned after: "+
+		            new Date(signerCert.getNotAfter().getTime()-warnBeforeExpirationTime));
     	return true;
     }
     /**
@@ -276,7 +280,7 @@ public class OCSPUtil {
      * @throws NoSuchAlgorithmException if the certificate contains an unsupported algorithm
      * @throws InvalidKeyException if the certificate, or CA key is invalid
      */
-    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, CertificateCache cacerts)
+    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, ICertificateCache cacerts)
     throws SignRequestException, OCSPException,
     NoSuchProviderException, CertificateException,
     NoSuchAlgorithmException, InvalidKeyException,
@@ -310,7 +314,7 @@ public class OCSPUtil {
     			verifyOK = true;
     			// Also check that the signer certificate can be verified by one of the CA-certificates
     			// that we answer for
-    			Certificate signerca = cacerts.findLatestBySubjectDN(CertTools.getIssuerDN(certs[i]));
+    			X509Certificate signerca = cacerts.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
     			String subject = signer;
     			String issuer = signerissuer;
     			if (signerca != null) {
@@ -414,6 +418,28 @@ public class OCSPUtil {
     	}
     	return trustedCerts;
     }
+    
+    boolean checkAuthorization(HttpServletRequest request, Hashtable trustedCerts) {
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+            m_log.error(errMsg);
+            return false;
+        }
+        // The entitys certificate is nr 0
+        X509Certificate cert = certs[0];
+        if (cert == null) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+            m_log.error(errMsg);
+            return false;
+        }
+        if (checkCertInList(cert, trustedCerts)) {
+        	return true;
+        }
+    	String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", request.getRemoteAddr(), request.getRemoteHost());
+        m_log.error(errMsg);
+		return false;
+	}
     
     /**
      * Checks to see if a certificate is in a list of certificate.
