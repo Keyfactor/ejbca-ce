@@ -292,8 +292,6 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
 		} catch (PersistenceException e) {
 			// The most likely reason is that the user already existed.
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.USER_ALREADY_EXISTS, Level.INFO);
@@ -338,8 +336,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -376,8 +372,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -448,8 +442,6 @@ public class EjbcaWS implements IEjbcaWS {
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
 				log.debug(msg);
 			}
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (CertificateEncodingException e) {
@@ -488,6 +480,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -517,6 +511,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -576,7 +572,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @throws NoSuchProviderException
 	 * @throws InvalidKeySpecException
 	 */
-	private PublicKey getCVPublicKey(Admin admin, java.security.cert.Certificate cert) throws CADoesntExistsException, RemoteException {
+	private PublicKey getCVPublicKey(Admin admin, java.security.cert.Certificate cert) throws CADoesntExistsException {
 		PublicKey pk = cert.getPublicKey();
 		if (pk instanceof PublicKeyEC) {
 			// The public key of IS and DV certificate do not have any EC parameters so we have to do some magic to get a complete EC public key
@@ -823,9 +819,6 @@ public class EjbcaWS implements IEjbcaWS {
 			// Have this first, if processReq throws an EjbcaException we want to reset status
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw e;
-		} catch (RemoteException e) {
-			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
-            throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (ServiceLocatorException e) {
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw EjbcaWSHelper.getInternalException(e, logger);
@@ -847,6 +840,9 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (CertificateEncodingException e) {
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw EjbcaWSHelper.getInternalException(e, logger);
+		} catch (EJBException e) {
+			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -875,6 +871,8 @@ public class EjbcaWS implements IEjbcaWS {
 		    throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
 		} catch (CATokenAuthenticationFailedException e) {
 		    throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_INVALID_TOKEN_PIN, Level.INFO);
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, null);
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("<caRenewCertRequest");
@@ -898,6 +896,8 @@ public class EjbcaWS implements IEjbcaWS {
 		    throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_OFFLINE, Level.INFO);
 		} catch (CATokenAuthenticationFailedException e) {
 		    throw EjbcaWSHelper.getEjbcaException(e, null, ErrorCode.CA_INVALID_TOKEN_PIN, Level.INFO);
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, null);
 		}
 		log.trace("<caCertResponse");
 	} // caCertResponse
@@ -924,6 +924,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1069,8 +1071,9 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (NoSuchFieldException e) {
 			// CVC error
             throw EjbcaWSHelper.getInternalException(e, logger);
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
 		}
-
 		return retval;
 	}
 
@@ -1175,8 +1178,6 @@ public class EjbcaWS implements IEjbcaWS {
 			} catch (IllegalKeyException e) {
 				// Don't log a bad error for this (user's key length too small)
                 throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.ILLEGAL_KEY, Level.DEBUG);
-			/*} catch (RemoteException e) {
-                throw EjbcaWSHelper.getInternalException(e, logger);*/
             } catch( RuntimeException t ) {
                 logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
                 throw t;
@@ -1217,10 +1218,10 @@ public class EjbcaWS implements IEjbcaWS {
 			throw e;
 		} catch (ClassCastException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (EJBException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1269,8 +1270,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1316,8 +1315,6 @@ public class EjbcaWS implements IEjbcaWS {
 			userAdminSession.prepareForKeyRecovery(admin, userdata.getUsername(), userdata.getEndEntityProfileId(), null);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1346,6 +1343,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1449,8 +1448,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( DatatypeConfigurationException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
@@ -1478,8 +1475,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1533,8 +1528,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -1901,8 +1894,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw e;
  		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch (FinderException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (ClassCastException e) {
@@ -1932,8 +1923,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2051,8 +2040,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (EJBException e) {
 			throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-			throw EjbcaWSHelper.getInternalException(e, logger);*/
 		} catch( RuntimeException t ) {
         	logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
         	throw t;
@@ -2060,7 +2047,6 @@ public class EjbcaWS implements IEjbcaWS {
         	logger.writeln();
         	logger.flush();
 		}
-
 		return retval;
 	}
 	
@@ -2084,6 +2070,8 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2121,13 +2109,8 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} 
-
 		return retval;
 	}
-
-
-
-
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#republishCertificate(java.lang.String, java.lang.String)
@@ -2171,8 +2154,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2228,8 +2209,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2237,7 +2216,6 @@ public class EjbcaWS implements IEjbcaWS {
             logger.writeln();
             logger.flush();
         }
-		
 	}
 
 	/**
@@ -2265,8 +2243,6 @@ public class EjbcaWS implements IEjbcaWS {
 			ret = userDataSourceSession.removeUserData(admin, userDataSourceIds, searchString, removeMultipleMatch);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2293,8 +2269,6 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
 		} catch (EJBException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);*/
         } catch( RuntimeException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2577,9 +2551,6 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
-        } catch( RuntimeException t ) {
-            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-            throw t;
 		} catch (InvalidKeyException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
 		} catch (IllegalKeyException e) {
@@ -2608,6 +2579,11 @@ public class EjbcaWS implements IEjbcaWS {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch( RuntimeException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
         } finally {
             logger.writeln();
             logger.flush();
@@ -2649,9 +2625,6 @@ public class EjbcaWS implements IEjbcaWS {
         } catch( NotFoundException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
-        } catch( RuntimeException t ) {
-            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
-            throw t;
 		} catch (InvalidKeyException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
 		} catch (IllegalKeyException e) {
@@ -2684,10 +2657,14 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new NotFoundException(e.getMessage());
         } catch (InvalidAlgorithmParameterException e) {
            throw EjbcaWSHelper.getInternalException(e, logger);
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch( RuntimeException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
 		} finally {
             logger.writeln();
             logger.flush();
         }
 	}
-
 }

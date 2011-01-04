@@ -727,8 +727,6 @@ public class EjbcaWSHelper {
 			X509ResponseMessage msg = new X509ResponseMessage();
 			msg.setCertificate(CertTools.getCertfromByteArray(cert));
 			caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, keystorepwd);
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, null);*/
 		} catch (CertificateException e) {
             throw EjbcaWSHelper.getInternalException(e, null);
 		}
@@ -739,12 +737,8 @@ public class EjbcaWSHelper {
 	 */
 	protected byte[] caRenewCertRequest(EjbcaWSHelper ejbhelper, Admin admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException {
-		//try {
 		CAInfo cainfo = caAdminSession.getCAInfoOrThrowException(admin, caname);
 		return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, regenerateKeys, usenextkey, activatekey, keystorepwd);				
-		/*} catch (RemoteException e) {
-            throw EjbcaWSHelper.getInternalException(e, null);
-		}*/
 	}
 
 	protected  static EjbcaException getInternalException(Throwable t, IPatternLogger logger) {
