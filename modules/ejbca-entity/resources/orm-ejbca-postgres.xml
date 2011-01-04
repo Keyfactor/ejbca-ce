@@ -30,6 +30,9 @@
          Notes:
          - Hibernate by default maps Serializable to the "OID" data-type, instead of "BYTEA". OID is a reference to LOB on disk.
            Deleting a row with an OID will not remove the LOB from disk, so we stick with BYTEA.
+
+         - The same goes for use of TEXT, don't use <lob/> (or @Lob), 
+             see for example http://postgresql.1045698.n5.nabble.com/Jdbc4ResultSet-getClob-and-getBlob-are-calling-getLong-internally-td2172181.html.
     -->
 
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
@@ -42,12 +45,12 @@
             <basic name="reqadmincertissuerdn"><column name="reqadmincertissuerdn" column-definition="TEXT"/></basic>
             <basic name="reqadmincertsn"><column name="reqadmincertsn" column-definition="TEXT"/></basic>
             <basic name="status"><column name="status" column-definition="INT4" nullable="false"/></basic>
-            <basic name="approvaldata"><column name="approvaldata" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic name="requestdata"><column name="requestdata" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="approvaldata"><column name="approvaldata" column-definition="TEXT" nullable="false"/></basic>
+            <basic name="requestdata"><column name="requestdata" column-definition="TEXT" nullable="false"/></basic>
             <basic name="requestdate"><column name="requestdate" column-definition="INT8" nullable="false"/></basic>
             <basic name="expiredate"><column name="expiredate" column-definition="INT8" nullable="false"/></basic>
             <basic name="remainingapprovals"><column name="remainingapprovals" column-definition="INT4" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -58,7 +61,7 @@
             <basic name="accessRule"><column name="accessRule" column-definition="TEXT" nullable="false"/></basic>
             <basic name="rule"><column name="rule" column-definition="INT4" nullable="false"/></basic>
             <basic name="isRecursiveBool"><column name="isRecursive" column-definition="BOOLEAN" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
             <transient name="isRecursiveInt"/>
         </attributes>
@@ -70,7 +73,7 @@
             <basic name="matchType"><column name="matchType" column-definition="INT4" nullable="false"/></basic>
             <basic name="matchValue"><column name="matchValue" column-definition="TEXT"/></basic>
             <basic name="caId"><column name="cAId" column-definition="INT4" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -79,7 +82,7 @@
             <id name="primeKey"><column name="pK" column-definition="INT4"/></id>
             <basic name="adminGroupName"><column name="adminGroupName" column-definition="TEXT" nullable="false"/></basic>
             <basic name="caId"><column name="cAId" column-definition="INT4" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
             <one-to-many name="accessRules" fetch="EAGER"><join-column name="AdminGroupData_accessRules" column-definition="INT4"/><cascade><cascade-all/></cascade></one-to-many>
             <one-to-many name="adminEntities" fetch="EAGER"><join-column name="AdminGroupData_adminEntities" column-definition="INT4"/><cascade><cascade-all/></cascade></one-to-many>
@@ -89,7 +92,7 @@
         <attributes>
             <id name="primKey"><column name="pK" column-definition="INT4"/></id>
             <basic name="authorizationTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INT4" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -101,8 +104,8 @@
             <basic name="status"><column name="status" column-definition="INT4" nullable="false"/></basic>
             <basic name="expireTime"><column name="expireTime" column-definition="INT8" nullable="false"/></basic>
             <basic name="updateTime"><column name="updateTime" column-definition="INT8" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -111,7 +114,7 @@
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="certificateProfileName"><column name="certificateProfileName" column-definition="TEXT" nullable="false"/></basic>
             <basic name="dataUnsafe"><column name="data" column-definition="BYTEA" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -121,7 +124,7 @@
             <basic name="name"><column name="name" column-definition="TEXT"/></basic>
             <basic name="updateCounter"><column name="updateCounter" column-definition="INT4" nullable="false"/></basic>
             <basic name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -135,8 +138,8 @@
             <basic name="publishType"><column name="publishType" column-definition="INT4" nullable="false"/></basic>
             <basic name="fingerprint"><column name="fingerprint" column-definition="TEXT"/></basic>
             <basic name="publisherId"><column name="publisherId" column-definition="INT4" nullable="false"/></basic>
-            <basic name="volatileData"><column name="volatileData" column-definition="TEXT"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="volatileData"><column name="volatileData" column-definition="TEXT"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -153,13 +156,13 @@
             <basic name="revocationDate"><column name="revocationDate" column-definition="INT8" nullable="false"/></basic>
             <basic name="revocationReason"><column name="revocationReason" column-definition="INT4" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
-            <basic name="base64Cert"><column name="base64Cert" column-definition="TEXT"/><lob/></basic>
+            <basic name="base64Cert"><column name="base64Cert" column-definition="TEXT"/></basic>
             <basic name="username"><column name="username" column-definition="TEXT"/></basic>
             <basic name="tag"><column name="tag" column-definition="TEXT"/></basic>
             <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INT4" nullable="false"/></basic>
             <basic name="updateTime"><column name="updateTime" column-definition="INT8" nullable="false"/></basic>
             <basic name="subjectKeyId"><column name="subjectKeyId" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -169,9 +172,9 @@
             <basic name="issuerDN"><column name="issuerDN" column-definition="TEXT" nullable="false"/></basic>
             <basic name="serialNumber"><column name="serialNumber" column-definition="TEXT" nullable="false"/></basic>
             <basic name="timestamp"><column name="timestamp" column-definition="INT8" nullable="false"/></basic>
-            <basic name="userDataVO"><column name="userDataVO" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="userDataVO"><column name="userDataVO" column-definition="TEXT" nullable="false"/></basic>
             <basic name="username"><column name="username" column-definition="TEXT" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -184,8 +187,8 @@
             <basic name="thisUpdate"><column name="thisUpdate" column-definition="INT8" nullable="false"/></basic>
             <basic name="nextUpdate"><column name="nextUpdate" column-definition="INT8" nullable="false"/></basic>
             <basic name="deltaCRLIndicator"><column name="deltaCRLIndicator" column-definition="INT4" nullable="false"/></basic>
-            <basic name="base64Crl"><column name="base64Crl" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="base64Crl"><column name="base64Crl" column-definition="TEXT" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -193,7 +196,7 @@
         <attributes>
             <id name="certificateFingerprint"><column name="certificateFingerprint" column-definition="TEXT"/></id>
             <basic name="tokenSN"><column name="tokenSN" column-definition="TEXT" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -206,7 +209,7 @@
             <basic name="tokenType"><column name="tokenType" column-definition="INT4" nullable="false"/></basic>
             <basic name="significantIssuerDN"><column name="significantIssuerDN" column-definition="TEXT"/></basic>
             <basic name="dataUnsafe"><column name="data" column-definition="BYTEA"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -216,7 +219,7 @@
             <basic name="alias"><column name="alias" column-definition="TEXT" nullable="false"/></basic>
             <basic name="adminGroupId"><column name="adminGroupId" column-definition="INT4" nullable="false"/></basic>
             <basic name="dataUnsafe"><column name="data" column-definition="BYTEA" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -225,8 +228,8 @@
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="name"><column name="name" column-definition="TEXT" nullable="false"/></basic>
             <basic name="updateCounter"><column name="updateCounter" column-definition="INT4" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -237,7 +240,7 @@
         		<attribute-override name="property"><column name="property" column-definition="TEXT"/></attribute-override>
         	</embedded-id>
             <basic name="value"><column name="value" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -250,8 +253,8 @@
         	</embedded-id>
             <basic name="username"><column name="username" column-definition="TEXT"/></basic>
             <basic name="markedAsRecoverableBool"><column name="markedAsRecoverable" column-definition="BOOLEAN" nullable="false"/></basic>
-            <basic name="keyData"><column name="keyData" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="keyData"><column name="keyData" column-definition="TEXT" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
             <transient name="markedAsRecoverableInt"/>
         </attributes>
@@ -261,7 +264,7 @@
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="logConfigurationUnsafe"><column name="logConfiguration" column-definition="BYTEA" nullable="false"/></basic>
             <basic name="logEntryRowNumber"><column name="logEntryRowNumber" column-definition="INT4" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -277,7 +280,7 @@
             <basic name="certificateSNR"><column name="certificateSNR" column-definition="TEXT"/></basic>
             <basic name="event"><column name="event" column-definition="INT4" nullable="false"/></basic>
             <basic name="logComment"><column name="logComment" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -298,10 +301,10 @@
             <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INT4" nullable="false"/></basic>
             <basic name="tokenType"><column name="tokenType" column-definition="INT4" nullable="false"/></basic>
             <basic name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="INT4" nullable="false"/></basic>
-            <basic name="extendedInformationData"><column name="extendedInformationData" column-definition="TEXT"/><lob/></basic>
+            <basic name="extendedInformationData"><column name="extendedInformationData" column-definition="TEXT"/></basic>
             <basic name="keyStorePassword"><column name="keyStorePassword" column-definition="TEXT"/></basic>
             <basic name="cardNumber"><column name="cardNumber" column-definition="TEXT"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -309,7 +312,7 @@
         <attributes>
             <id name="id"><column name="id" column-definition="TEXT"/></id>
             <basic name="dataUnsafe"><column name="data" column-definition="BYTEA" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -318,7 +321,7 @@
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="profileName"><column name="profileName" column-definition="TEXT" nullable="false"/></basic>
             <basic name="dataUnsafe"><column name="data" column-definition="BYTEA" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -326,7 +329,7 @@
         <attributes>
             <id name="configurationId"><column name="configurationId" column-definition="TEXT"/></id>
             <basic name="dataUnsafe"><column name="data" column-definition="BYTEA" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -335,8 +338,8 @@
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="name"><column name="name" column-definition="TEXT" nullable="false"/></basic>
             <basic name="updateCounter"><column name="updateCounter" column-definition="INT4" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
@@ -344,10 +347,10 @@
         <attributes>
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="name"><column name="name" column-definition="TEXT" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT"/></basic>
             <basic name="nextRunTimeStamp"><column name="nextRunTimeStamp" column-definition="INT8" nullable="false"/></basic>
             <basic name="runTimeStamp"><column name="runTimeStamp" column-definition="INT8" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT4" nullable="false"/></version>
         </attributes>
     </entity>
