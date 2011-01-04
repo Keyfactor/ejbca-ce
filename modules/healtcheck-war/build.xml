@@ -28,10 +28,10 @@
 	
 	<path id="compile-ocsp.classpath">
 		<path refid="compile-common.classpath"/>
-		<path location="${mod.va-ejb-interface.lib}"/>
-		<path location="${mod.va-ejb.lib}"/>
-		<path location="${mod.va-war-va-build.path}"/>
-		<path refid="lib.ejbca-util.classpath"/>
+		<pathelement location="${mod.va-ejb-interface.lib}"/>
+		<pathelement location="${mod.va-ejb.lib}"/>
+		<pathelement location="${mod.va-war-va-build.path}"/>
+		<pathelement location="${mod.va-entity.lib}" />
 	</path>
 		
     <target name="clean" description="Clean up this module">
@@ -55,7 +55,7 @@
     		
     </target>
 
-	<target name="va-compile" depends="va-ejb-interface, va-ejb, va-va-war">
+	<target name="va-compile" depends="va-va-war">
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-ocsp.classpath"/>

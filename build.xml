@@ -107,7 +107,7 @@
     <!-- =================================================================== -->
     <!-- Compile va resonder java sources                                  -->
     <!-- =================================================================== -->
-    <target name="va-compile" depends="ejbca-util.jar, va-entity, va-ejb-interface">
+    <target name="va-compile" depends="va-ejb">
     	<echo message="THIS TARGET (va-compile) SHOULD NO LONGER BE USED!"/>
     </target>
 
@@ -292,9 +292,9 @@
 	</target>
 	
     <!-- =================================================================== -->
-    <!-- Build OCSP-ear                                                        -->
+    <!-- Build VA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="va-ear" depends="display-properties, va-war, va-jar, vahealthcheck.war, create-log4config-bundle">
+    <target name="va-ear" depends="display-properties, vahealthcheck.war, create-log4config-bundle">
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
@@ -324,7 +324,6 @@
                 <include name="va-entity.jar" />
                 <include name="log4jconfig.jar" />
         	</zipfileset>
-        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
 	</ear>
     </target>
 	

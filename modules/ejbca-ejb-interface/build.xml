@@ -19,6 +19,12 @@
 		<path refid="lib.jee.classpath"/>
 	</path>
 
+	<path id="va-compile.classpath">
+		<pathelement location="${mod.va-entity.lib}" />
+		<path refid="lib.jee.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+	</path>
+
     <target name="build" description="Build this module" depends="compile-ejb3">
   	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}"/> 
     </target>
@@ -35,12 +41,14 @@
 		<delete file="${mod.va-ejb-interface.lib}"/>
     </target>
 
-	<target name="compile-va" depends="ejbca-util">
+	<target name="compile-va" depends="va-entity">
     	<mkdir dir="${build-va.dir}" />
         <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<src path="${src.dir}"/>
+    		<src path="${ejbca.home}/src/java"/>
 			<include name="org/ejbca/core/ejb/**/CertificateStoreOnlyDataSession*.java"/>
+        	<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
         	<include name="org/ejbca/core/ejb/JndiHelper.java" />
     	</javac>
     </target>

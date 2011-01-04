@@ -29,9 +29,9 @@
 	
 	<path id="compile-va.classpath">
 		<path refid="compile-common.classpath"/>
-		<path location="${mod.va-ejb-interface.lib}"/>
-		<path location="${mod.va-ejb.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
+		<pathelement location="${mod.va-ejb-interface.lib}"/>
+		<pathelement location="${mod.va-ejb.lib}"/>
+		<pathelement location="${mod.va-entity.lib}"/>
 	</path>
 		
     <target name="clean" description="Clean up this module">
@@ -54,11 +54,15 @@
 			excludes="org/ejbca/ui/web/protocol/OCSPServletStandAlone*.java" classpathref="compile-ejbca.classpath"/>
     </target>
 
-	<target name="va-compile" depends="va-ejb-interface, va-ejb">
+	<target name="va-compile" depends="va-ejb">
 		<echo message="${mod.va-ejb.lib}"/>
 		<mkdir dir="${build-va.dir}/WEB-INF/classes" />
-		<javac srcdir="${src.dir}" destdir="${build-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-			excludes="org/ejbca/ui/web/protocol/OCSPServlet.java" classpathref="compile-va.classpath"/>
+		<javac destdir="${build-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			classpathref="compile-va.classpath">
+			<include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>
+    		<src path="${src.dir}"/>
+    		<src path="${ejbca.home}/src/java"/>
+		</javac>
 	</target>
 
 </project>
