@@ -143,16 +143,6 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Build doc part                                                                                                                             -->
-    <!-- =================================================================== -->
-    <target name="doc.war" if="doc.war.enabled">
-    	<antcall target="doc" />
-		<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
-            <fileset dir="${doc.src}" />
-        </war>
-    </target>
-	
-    <!-- =================================================================== -->
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar">
