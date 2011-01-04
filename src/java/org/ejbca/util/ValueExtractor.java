@@ -13,6 +13,9 @@
 
 package org.ejbca.util;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -31,6 +34,8 @@ public abstract class ValueExtractor {
 	 * 
 	 * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
 	 * where the first value is row and the second is the value.
+	 * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
+	 * where the first value is the value and the second is the row.
 	 */
 	public static int extractIntValue(Object object) {
 		Class<?> c = object.getClass();
@@ -42,7 +47,13 @@ public abstract class ValueExtractor {
 						LOG.debug(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
 					}
 				}
-				object = objects[objects.length-1];
+				if (objects[0].getClass().equals(BigInteger.class)) {
+					object = objects[objects.length-1];
+				} else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
+					object = objects[0];
+				} else {
+					throw new RuntimeException("Unsupported object type to cenvert to int.");
+				}
 				c = object.getClass();
 			}
 			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
@@ -67,7 +78,13 @@ public abstract class ValueExtractor {
 						LOG.debug(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
 					}
 				}
-				object = objects[objects.length-1];
+				if (objects[0].getClass().equals(BigInteger.class)) {
+					object = objects[objects.length-1];
+				} else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
+					object = objects[0];
+				} else {
+					throw new RuntimeException("Unsupported object type to cenvert to long.");
+				}
 				c = object.getClass();
 			}
 			return ((Long) c.getMethod("longValue").invoke(object)).longValue();

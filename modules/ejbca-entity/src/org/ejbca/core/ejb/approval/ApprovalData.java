@@ -507,12 +507,15 @@ s	 * @throws ApprovalRequestExpiredException
 	/** @return return the query results as a List<ApprovalData>. */
 	public static List<ApprovalDataVO> findByCustomQuery(final EntityManager entityManager, final int index, final int numberofrows, final String customQuery) {
 		final List<ApprovalDataVO> ret = new ArrayList<ApprovalDataVO>();
-		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
-		// Ingres wont let us access a LOB in a List using a native query for all fields.
-		// -> So we will get a list of primary keys and the fetch the whole entities one by one...
-		
-		// As a sad little bonus on DB2, "SELECT id FROM ApprovalData WHERE "
-		// is converted into "select * from ( select rownumber() over() as rownumber_, id FROM ApprovalData WHERE ... as temp_ where rownumber_ <= ?"
+		/* Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults.
+		 * Ingres wont let us access a LOB in a List using a native query for all fields.
+		 * -> So we will get a list of primary keys and the fetch the whole entities one by one...
+		 * 
+		 * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
+		 * where the first value is row and the second is the value.
+		 * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
+		 * where the first value is the value and the second is the row.
+		 */
 		final Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
 		query.setFirstResult(index);
 		query.setMaxResults(numberofrows);
