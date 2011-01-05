@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ocsp.standalonesession;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.Security;
@@ -40,6 +41,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPData;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
+import org.ejbca.util.keystore.KeyTools;
 import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.keystore.P11Slot.P11SlotUser;
 import org.ejbca.util.provider.TLSProvider;
@@ -238,13 +240,17 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
                             pw.print(errMsg);
                             continue;
                         }
-                        final boolean isOK = !doSignTest || SessionData.signTest(privKey, entityCert.getPublicKey(),
-                                                                                 entityCert.getSubjectDN().toString(), providerName);
-                        if ( !isOK ) {
-                            pw.println();
-                            pw.print(errMsg);
-                            m_log.error("Key not working. "+errMsg);
-                            continue;
+                        
+                        if (doSignTest) {
+                        	try {
+                            	KeyTools.testKey(privKey, entityCert.getPublicKey(), providerName);
+                            } catch (InvalidKeyException e) {
+                            	// thrown by testKey
+                                pw.println();
+                                pw.print(errMsg);
+                                m_log.error("Key not working. SubjectDN '"+entityCert.getSubjectDN().toString()+"'. Error comment '"+errMsg+"'. Message '"+e.getMessage());
+                                continue;                	
+                            }
                         }
                         if (m_log.isDebugEnabled()) {
                             m_log.debug("Test of \""+errMsg+"\" OK!");                        	

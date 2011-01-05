@@ -17,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
@@ -43,6 +44,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Holds a {@link SigningEntity} for each CA that the responder is capable of signing a response for.
@@ -390,12 +392,13 @@ class  SigningEntityContainer {
                     continue;
                 }
                 try {
-                    if ( !SessionData.signTest(key, pkf.getCertificate().getPublicKey(), errorComment, providerHandler.getProviderName()) ) {
-                        m_log.debug("Key not working. Not adding signer entity for: "+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
-                        continue;
-                    }
+                	KeyTools.testKey(key, pkf.getCertificate().getPublicKey(), providerHandler.getProviderName());
                     m_log.debug("Adding sign entity for '"+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
                     putSignEntity(pkf, pkf.getCertificate(), adm, providerHandler, newSignEntity);
+                } catch (InvalidKeyException e) {
+                	// thrown by testKey
+                    m_log.debug("Key not working. Not adding signer entity for: "+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'. Error comment '"+errorComment+"'. Message '"+e.getMessage());
+                    continue;                	
                 } finally {
                     pkf.releaseKey();
                 }

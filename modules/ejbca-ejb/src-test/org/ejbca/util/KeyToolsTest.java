@@ -189,6 +189,7 @@ public class KeyToolsTest extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //log.debug(b64cert);
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
         log.trace("<test02GenKeysRSA()");
     }
 
@@ -220,6 +221,7 @@ public class KeyToolsTest extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //log.debug(b64cert);
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
         log.trace("<test03GenKeysECDSA()");
     }
 
@@ -236,6 +238,7 @@ public class KeyToolsTest extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //log.info(b64cert);
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
         log.trace("<test04GenKeysECDSANist()");
     }
     
@@ -252,6 +255,7 @@ public class KeyToolsTest extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //log.info(b64cert);
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
         log.trace("<test05GenKeysECDSAImplicitlyCA()");
     }
     
@@ -267,6 +271,7 @@ public class KeyToolsTest extends TestCase {
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //log.debug(b64cert);
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
         log.trace("<test06GenKeysDSA()");
     }
     
@@ -297,6 +302,7 @@ public class KeyToolsTest extends TestCase {
     	assertEquals(ecs1.getCurve(), ecs2.getCurve());
     	// Verify that it is not the same key though
     	assertFalse(pk1.getW().equals(pk2.getW()));
+        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), "BC");
         log.trace("<test07GenKeysECDSAAlgorithmSpec()");
     }
 
