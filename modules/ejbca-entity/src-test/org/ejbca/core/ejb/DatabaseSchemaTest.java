@@ -280,7 +280,8 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testCertReqHistoryData");
 	}
 
-	public void testCRLData() {
+	// ZZ to run this test last, since we often run out of memory here and mess up the database connection.
+	public void testZZCRLData() {
 		LOG.trace(">testCRLData");
 		CRLData entity = new CRLData();
 		entity.setBase64Crl(CLOB_100MiB);
