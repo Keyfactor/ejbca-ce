@@ -13,9 +13,6 @@
 
 package org.ejbca.core.protocol.ocsp.standalonesession;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
 import java.security.KeyStore.PasswordProtection;
 import java.util.Set;
 
@@ -135,39 +132,7 @@ class SessionData {
     boolean doKeyRenewal() {
         return this.webURL!=null && this.webURL.length()>0 && this.mRenewTimeBeforeCertExpiresInSeconds>=0;
     }
-    /**
-     * Tests a key.
-     * @param privateKey The private part of the key.
-     * @param publicKey The public part of the key.
-     * @param alias The alias of the for the key. Just used for debug output.
-     * @param providerName The provider name.
-     * @return True if the key is OK.
-     * @throws Exception
-     */
-    static boolean signTest(PrivateKey privateKey, PublicKey publicKey, String alias, String providerName) throws Exception {
-        final String sigAlgName = "SHA1withRSA";
-        final byte signInput[] = "Lillan gick on roaden ut.".getBytes();
-        final byte signBA[];
-        {
-            final Signature signature = Signature.getInstance(sigAlgName, providerName);
-            signature.initSign( privateKey );
-            signature.update( signInput );
-            signBA = signature.sign();
-        }
-        {
-            final Signature signature = Signature.getInstance(sigAlgName);
-            signature.initVerify(publicKey);
-            signature.update(signInput);
-            final boolean result = signature.verify(signBA);
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Signature test of key "+alias+
-                        ": signature length " + signBA.length +
-                        "; first byte " + Integer.toHexString(0xff&signBA[0]) +
-                        "; verifying " + result);               
-            }
-            return result;
-        }
-    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#finalize()
      */

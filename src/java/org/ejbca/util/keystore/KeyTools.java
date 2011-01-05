@@ -969,12 +969,10 @@ public class KeyTools {
      * @param pub public key to verify the signature with
      * @param provider A provider used for signing with the private key, or null if "BC" should be used.
      * 
-     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key.
+     * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
      * @throws NoSuchProviderException if the provider is not installed.
-     * @throws NoSuchAlgorithmException if a signature algorithm chosen by the class does not exist, SHA1WithRSA, SHA1WithDSA or SHA1withECDSA depending on the key type.
-     * @throws SignatureException if the signature of verification operation fails for unknown reasons
      */
-    public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws InvalidKeyException, NoSuchProviderException {
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         final String testSigAlg;
@@ -992,28 +990,34 @@ public class KeyTools {
             log.trace("publicKey: "+pub);          
             log.trace("publicKey class: "+pub.getClass().getName());           
         }
-        {
-       	    final Provider prov= Security.getProvider(provider!=null ? provider : "BC");
-            final Signature signature = Signature.getInstance(testSigAlg, prov);
-            signature.initSign( priv );
-            signature.update( input );
-            signBV = signature.sign();
-            if ( signBV==null ) {
-                throw new InvalidKeyException("Result from signing is null.");
-            }
-            if (log.isDebugEnabled()) {
-                log.trace("Created signature of size: "+signBV.length);         
-                log.trace("Created signature: "+new String(Hex.encode(signBV)));                                
-            }
-        }
-        {
-            final Signature signature = Signature.getInstance(testSigAlg, "BC");
-            signature.initVerify(pub);
-            signature.update(input);
-            if ( !signature.verify(signBV) ) {
-                throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
-            }
-        }
+        try {
+        	{
+        		final Provider prov= Security.getProvider(provider!=null ? provider : "BC");
+        		final Signature signature = Signature.getInstance(testSigAlg, prov);
+        		signature.initSign( priv );
+        		signature.update( input );
+        		signBV = signature.sign();
+        		if ( signBV==null ) {
+        			throw new InvalidKeyException("Result from signing is null.");
+        		}
+        		if (log.isDebugEnabled()) {
+        			log.trace("Created signature of size: "+signBV.length);         
+        			log.trace("Created signature: "+new String(Hex.encode(signBV)));                                
+        		}
+        	}
+        	{
+        		final Signature signature = Signature.getInstance(testSigAlg, "BC");
+        		signature.initVerify(pub);
+        		signature.update(input);
+        		if ( !signature.verify(signBV) ) {
+        			throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
+        		}
+        	}
+        } catch (NoSuchAlgorithmException e) {
+            throw new InvalidKeyException("Exception testing key: "+e.getMessage(), e);        	
+        } catch (SignatureException e) {
+            throw new InvalidKeyException("Exception testing key: "+e.getMessage(), e);        	
+		}
     }
     /**
      * Print parameters of public part of a key.
