@@ -240,7 +240,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     public int findFreeEndEntityProfileId() {
     	int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-        while (!(EndEntityProfileData.findById(entityManager, id) == null)) {
+    	// Never generate id's less than 10000
+        while ((id < 10000) || (EndEntityProfileData.findById(entityManager, id) != null)) {
             id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
         }
         return id;
