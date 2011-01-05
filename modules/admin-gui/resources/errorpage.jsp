@@ -31,6 +31,12 @@
         response.setStatus(HttpServletResponse.SC_OK);
     } else if (exception instanceof ParameterError) { %>
         <h2><c:out value="${exception.localizedMessage}" /></h2><%
+        response.setStatus(HttpServletResponse.SC_OK);
+    } else if (exception instanceof org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile) { %>
+        <H2><c:out value='<%= WebConfiguration.notification(ejbcawebbean.getText(\"EXCEPTIONOCCURED\")) %>' /></H2>
+        <H4><c:out value="<%= exception.getLocalizedMessage() %>" /></H4><%
+        org.apache.log4j.Logger.getLogger("errorpage.jsp").info(exception.getMessage());
+        response.setStatus(HttpServletResponse.SC_OK);
     } else {
         // Other exception occurred, print exception and stack trace.%>
         <H2><c:out value='<%= WebConfiguration.notification(ejbcawebbean.getText(\"EXCEPTIONOCCURED\")) %>' /></H2>
@@ -42,7 +48,7 @@
             <br/>
             <pre style="font-style: italic;"><c:out value="<%= stackTrace %>" /></pre><%
         }
-        exception.printStackTrace(); // Prints in server.log
+        org.apache.log4j.Logger.getLogger("errorpage.jsp").error(exception.getMessage(), exception); // Prints in server.log
         response.setStatus(HttpServletResponse.SC_OK);
     }
 %>

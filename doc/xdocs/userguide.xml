@@ -743,6 +743,27 @@ You should previously have created the certificate profile for SSL servers.
 </subsection>
 
 <subsection name="End Entity Profile fields">
+<subsubsection name="Password Fields">
+<p>
+Passwords are used when a user (end entity) is requesting a certificate. Usually this is required
+and no default value is configured.
+</p><p>
+You can use auto-generation of passwords with email notification to send the user a generated
+password together with information on how to fetch the certificate.
+</p><p>
+You can also specify the minimum bit-strength a password is allowed to have in order to make policy
+compliance easier. The strength of a password is calculated as <i>floor(log2(number of allowed
+password characters)*(the number characters in the password))</i>. For non-generated passwords the
+<i>number of allowed password characters</i> is estimated to 72. Example usage:
+<pre>
+Password: "foobar123" (9 characters)
+Allowed characters: a-z, A-Z, 0-9, 22 additional printable characters (72 in total)
+Password strength / char: log2(72) = 6.17
+Password strength: floor(6.17 * 9) = floor(55.53) = 55 bits
+</pre>
+Setting this value to 55 will require the RA admin to set a 9 character password or longer.
+</p>
+</subsubsection>
 <subsubsection name="Subject DN Fields">
 <p>Subject DN fields define which DN components should be present for an end entity. If "Enable End Entity Profile Limitations" in the "System Configuration" is enabled
 this restricts the values that can be used when adding or editing an end entity using all interfaces, be it web GUI, web service, cmp or something else.

@@ -32,9 +32,9 @@ public interface IPasswordGenerator {
      * @param maxlength indicates the maximum length of the generated password.
      * @return the generated password
      */
-    
-    public abstract String getNewPassword(int minlength, int maxlength);
+    public String getNewPassword(int minlength, int maxlength);
 
-	public abstract String getName();
+	public String getName();
    
+	public int getNumerOfDifferentChars();
 }

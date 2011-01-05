@@ -45,6 +45,7 @@
  
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
+  static final String TEXTFIELD_MINPWDSTRENGTH       = "textfieldminpwdstrength";
   static final String TEXTFIELD_SUBJECTDN            = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME       = "textfieldsubjectaltname";
   static final String TEXTFIELD_SUBJECTDIRATTR       = "textfieldsubjectdirattr";
@@ -363,6 +364,10 @@
              profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDTYPE, 0, request.getParameter(SELECT_AUTOPASSWORDTYPE));
              profiledata.setValue(EndEntityProfile.AUTOGENPASSWORDLENGTH, 0, request.getParameter(SELECT_AUTOPASSWORDLENGTH));
              
+             try {
+	             profiledata.setMinPwdStrength(Integer.parseInt(request.getParameter(TEXTFIELD_MINPWDSTRENGTH)));
+             } catch(NumberFormatException ignored) {}
+
              int nValue = -1;
              try {
             	 nValue = Integer.parseInt(request.getParameter(TEXTFIELD_MAXFAILEDLOGINS));
