@@ -24,12 +24,9 @@
             <context-root>/ejbca/publicweb/apply</context-root>
         </web>
     </module>
-    <module>
-        <web>
-            <web-uri>va.war</web-uri>
-            <context-root>/ejbca/publicweb/status</context-root>
-        </web>
-    </module>
+       <!--@status.war@-->
+       <!--@certstore.war@-->
+       <!--@crlstore.war@-->
     <module>
         <web>
             <web-uri>cmp.war</web-uri>
