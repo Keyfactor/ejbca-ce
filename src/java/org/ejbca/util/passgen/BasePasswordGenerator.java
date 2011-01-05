@@ -12,45 +12,42 @@
  *************************************************************************/
 
 package org.ejbca.util.passgen;
+
+import java.security.SecureRandom;
 import java.util.Random;
 
 /**
- * BasePasswordGenerator is a baseclass for generating random passwords.
+ * BasePasswordGenerator is a base class for generating random passwords.
  * Inheriting classes should overload the constants USEDCHARS, MIN_CHARS
  * and MAX_CHARS.
  *
  * @version $Id$
  */
-public abstract class BasePasswordGenerator implements IPasswordGenerator{
+public abstract class BasePasswordGenerator implements IPasswordGenerator {
+
+    private final char[] usedchars;
 
     protected BasePasswordGenerator(char[] usedchars){
-
        this.usedchars = usedchars;
     }
 
 	/**
 	 * @see org.ejbca.util.passgen.IPasswordGenerator
 	 */
-
 	public String getNewPassword(int minlength, int maxlength){
-		int difference = maxlength - minlength;
-		char[] password = null;
-
-		Random ran = new Random();
-
+		final int difference = maxlength - minlength;
+		final Random ran = new SecureRandom();
 		// Calculate the length of password
 		int passlen = maxlength;
 		if(minlength != maxlength) {
-		  passlen = minlength + ran.nextInt(difference);
+			passlen = minlength + ran.nextInt(difference);
 		}
-		password = new char[passlen];
-		for(int i=0; i < passlen; i++){
-		  password[i] = usedchars[ran.nextInt(usedchars.length)];
+		final char[] password = new char[passlen];
+		for (int i=0; i < passlen; i++) {
+			password[i] = usedchars[ran.nextInt(usedchars.length)];
 		}
-
 		return new String(password);
 	}
 
-
-    private final char[] usedchars;
+    public int getNumerOfDifferentChars() { return usedchars.length; }
 }

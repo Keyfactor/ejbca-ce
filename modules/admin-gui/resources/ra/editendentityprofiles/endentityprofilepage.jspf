@@ -400,8 +400,9 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="text" name="<%=TEXTFIELD_USERNAME%>" size="45" maxlength="1024" 
            value="<%= profiledata.getValue(EndEntityProfile.USERNAME,0)%>">
       </td>
+    </tr>
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
@@ -443,8 +444,21 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
             <% } %>
         </select>
       </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%" valign="top" align="right"> 
+        <%= ejbcawebbean.getText("MINPWDSTRENGTH") %>
+		<%= ejbcawebbean.getHelpReference("/userguide.html#Password%20Fields") %>
+      </td>
+      <td width="50%"> 
+        <input type="text" name="<%= TEXTFIELD_MINPWDSTRENGTH %>" size="5" maxlength="10" value="<%= profiledata.getMinPwdStrength() %>"/>
+      </td>
+    </tr>
 
-    <tr  id="Row<%=row++%2%>"> 
+    <tr id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
          &nbsp;
       </td>
