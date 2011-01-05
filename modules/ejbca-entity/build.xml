@@ -8,6 +8,7 @@
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 	<property name="src.dir" location="${this.dir}/src"/>
@@ -59,6 +60,7 @@
 
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
+		<delete dir="${build-va.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-entity.lib}" />
 		<delete file="${mod.va-entity.lib}" />
@@ -69,13 +71,7 @@
     </target>
 
     <target name="build-va" description="Build this module" depends="compile-va, handlepersistence, handleorm-ocsp">
-    	<jar destfile="${mod.va-entity.lib}" basedir="${build.dir}" includes="**/*.class **/*.xml"/>
-    </target>
-
-    <target name="compile" depends="ejbca-util">
-    	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
+    	<jar destfile="${mod.va-entity.lib}" basedir="${build-va.dir}" includes="**/*.class **/*.xml"/>
     </target>
 
     <target name="handlepersistence">
@@ -97,7 +93,13 @@
     	<condition property="persistence.enable-websphere-jta-lookup1" value="-->"><equals arg1="${appserver.type}" arg2="websphere"/></condition>
     	<condition property="persistence.enable-websphere-jta-lookup2" value="&lt;!--"><equals arg1="${appserver.type}" arg2="websphere"/></condition>
     	<mkdir dir="${build.dir}/META-INF"/>
+    	<mkdir dir="${build-va.dir}/META-INF"/>
     	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
+    		<filterchain>
+				<expandproperties/>
+    		</filterchain>
+    	</copy>
+    	<copy file="${resources.dir}/persistence-ds-template.xml" tofile="${build-va.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
     		<filterchain>
 				<expandproperties/>
     		</filterchain>
@@ -116,12 +118,18 @@
 	</target>
 
     <target name="handleorm-ocsp">
-		<copy file="${resources.dir}/orm-ocsp-${database.name}.xml" tofile="${build.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
+		<copy file="${resources.dir}/orm-ocsp-${database.name}.xml" tofile="${build-va.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
 	</target>
 
-    <target name="compile-va">
+    <target name="compile" depends="ejbca-util">
     	<mkdir dir="${build.dir}" />
-        <javac destdir="${build.dir}" debug="on" includeantruntime="no"
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
+    </target>
+
+    <target name="compile-va">
+    	<mkdir dir="${build-va.dir}" />
+        <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<include name="org/ejbca/core/ejb/ca/store/CertificateData.java"/>
         	<src path="${ejbca.home}/src/java"/>
