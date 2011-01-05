@@ -979,8 +979,8 @@ public class KeyTools {
         final byte signBV[];
         final String testSigAlg;
         {
-            final Iterator i = AlgorithmTools.getSignatureAlgorithms(pub).iterator();
-            final String tmp = i.hasNext() ? (String)i.next() : null;
+            final Iterator<String> i = AlgorithmTools.getSignatureAlgorithms(pub).iterator();
+            final String tmp = i.hasNext() ? i.next() : null;
             testSigAlg = tmp!=null ? tmp : "SHA1WithRSA";
         }
         if (log.isDebugEnabled()) {
