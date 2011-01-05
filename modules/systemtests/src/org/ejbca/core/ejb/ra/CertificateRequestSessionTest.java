@@ -130,6 +130,25 @@ public class CertificateRequestSessionTest extends CaTestCase {
         assertFalse("Failed certificate generation request never rolled back user created '" + username2 + "'.", userAdminSession.existsUser(admin, username2));
     }
 
+    /**
+     * Test what happens if we supply empty DN fields. Created in response to ECA-1767.
+     */
+    public void testEmptyFields() throws Exception {
+        // First try a successful request and validate the returned KeyStore
+        String username = "certificateRequestTest-" + random.nextInt();
+        String password = "foo123";
+    	final String suppliedDn = "CN=" + username + ",Name=removed,SN=removed,GIVENNAME= ,GIVENNAME=,SURNAME= ,SURNAME=,O=removed,C=SE";
+    	final String expectedDn = "CN=" + username + ",Name=removed,SN=removed,O=removed,C=SE";
+        UserDataVO userdata = new UserDataVO(username, suppliedDn, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+        userdata.setPassword(password);
+        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
+        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
+                SecConst.CERT_RES_TYPE_CERTIFICATE);
+        Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
+        assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn, CertTools.getSubjectDN(cert));
+    }
+
     public void testZZZTearDown() {
         removeTestCA();
     }
