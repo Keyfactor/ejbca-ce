@@ -11,12 +11,9 @@
     <module>
         <ejb>va-ejb.jar</ejb>
     </module>
-    <module>
-        <web>
-            <web-uri>va.war</web-uri>
-            <context-root>/ejbca/publicweb/status</context-root>
-        </web>
-    </module>
+       <!--@status.war@-->
+       <!--@certstore.war@-->
+       <!--@crlstore.war@-->
     <module>
         <web>
             <web-uri>healthcheck.war</web-uri>

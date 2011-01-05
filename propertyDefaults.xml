@@ -155,6 +155,13 @@
 		<istrue value="${cmp.tcp.enabled}"/>
 	</condition>
 
+	<property name="ocsp.enabled" value="true" />
+	<property name="certstore.enabled" value="false" />
+	<property name="crlstore.enabled" value="false" />
+	<property name="crlstore.contextroot" value="/crls" />
+	<property name="certstore.contextroot" value="/certificates" />
+	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
+
 	<!-- CMP settings -->
 	<property name="cmp.allowraverifypopo" value="false" />
 	<property name="cmp.defaultca" value="" />
