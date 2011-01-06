@@ -71,7 +71,6 @@ public class DatabaseSchemaTest extends TestCase {
 	private static String CLOB_10KiB;
 	private static String CLOB_100KiB;
 	private static String CLOB_1MiB;
-	private static String CLOB_100MiB;
 	private static final HashMap HASHMAP_200K = new HashMap();
 	private static final HashMap HASHMAP_1M = new HashMap();
 	private static final int BOGUS_INT = -32;	// Very random..
@@ -81,41 +80,35 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void test000Setup() throws Exception {
 		LOG.trace(">test000Setup");
+		logMemStats();
 		entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
 		entityManager = entityManagerFactory.createEntityManager();
 		LOG.debug("Allocating memory..");
-		final byte[] lob80B = new byte[80];
-		final byte[] lob250B = new byte[250];
-		final byte[] lob10K = new byte[10*1024];
-		final byte[] lob100K = new byte[100*1024];
-		final byte[] lob196K = new byte[196*1024];
-		final byte[] lob996K = new byte[996*1024];
-		final byte[] lob1M = new byte[1*1024*1024];
-		final byte[] lob100M = new byte[100*1024*1024];
-		LOG.debug("Filling memory..");
-		Arrays.fill(lob80B, (byte) '0');
-		Arrays.fill(lob250B, (byte) '0');
-		Arrays.fill(lob10K, (byte) '0');
-		Arrays.fill(lob100K, (byte) '0');
-		Arrays.fill(lob196K, (byte) '0');
-		Arrays.fill(lob996K, (byte) '0');
-		Arrays.fill(lob1M, (byte) '0');
-		Arrays.fill(lob100M, (byte) '0');
-		LOG.debug("Creating Strings..");
-		VARCHAR_80B = new String(lob80B);
-		VARCHAR_250B = new String(lob250B);
-		CLOB_10KiB = new String(lob10K);
-		CLOB_100KiB = new String(lob100K);
-		CLOB_1MiB = new String(lob1M);
-		CLOB_100MiB = new String(lob100M);
+		VARCHAR_80B = getClob(80);
+		VARCHAR_250B = getClob(250);
+		CLOB_10KiB = getClob(10*1024);
+		CLOB_100KiB = getClob(100*1024);
+		CLOB_1MiB = getClob(1024*1024);
 		LOG.debug("Filling HashMaps..");
-		HASHMAP_200K.put("object", lob196K);	// It need to be less than 200KiB in Serialized format..
-		HASHMAP_1M.put("object", lob996K);		// It need to be less than 1MiB in Serialized format.. 
+		HASHMAP_200K.put("object", getLob(196*1024));	// It need to be less than 200KiB in Serialized format..
+		HASHMAP_1M.put("object", getLob(996*1024));		// It need to be less than 1MiB in Serialized format.. 
+		logMemStats();
 		LOG.trace("<test000Setup");
 	}
 	
+	private byte[] getLob(int size) {
+		byte[] ret = new byte[size];
+		Arrays.fill(ret, (byte) '0');
+		return ret;
+	}
+
+	private String getClob(int size) {
+		return new String(getLob(size));
+	}
+
 	public void testApprovalData() {
 		LOG.trace(">testApprovalData");
+		logMemStats();
 		ApprovalData entity = new ApprovalData();
 		entity.setApprovalid(0);
 		entity.setApprovaldata(CLOB_1MiB);
@@ -138,6 +131,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testAccessRulesData() {
 		LOG.trace(">testAccessRulesData");
+		logMemStats();
 		AccessRulesData entity = new AccessRulesData();
 		entity.setAccessRule(VARCHAR_250B);
 		entity.setIsRecursive(false);
@@ -151,6 +145,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testAdminEntityData() {
 		LOG.trace(">testAdminEntityData");
+		logMemStats();
 		AdminEntityData entity = new AdminEntityData();
 		entity.setCaId(BOGUS_INTEGER);
 		entity.setMatchType(0);
@@ -165,6 +160,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testAdminGroupData() {
 		LOG.trace(">testAdminGroupData");
+		logMemStats();
 		AdminGroupData entity = new AdminGroupData();
 		entity.setAdminGroupName(VARCHAR_250B);
 		entity.setCaId(BOGUS_INT);
@@ -177,6 +173,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testCAData() {
 		LOG.trace(">testCAData");
+		logMemStats();
 		CAData entity = new CAData();
 		entity.setCaId(BOGUS_INTEGER);
 		entity.setData(CLOB_100KiB);
@@ -193,6 +190,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testCertificateProfileData() {
 		LOG.trace(">testCertificateProfileData");
+		logMemStats();
 		CertificateProfileData entity = new CertificateProfileData();
 		entity.setCertificateProfileName(VARCHAR_250B);
 		entity.setDataUnsafe(HASHMAP_1M);
@@ -205,6 +203,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testPublisherData() {
 		LOG.trace(">testPublisherData");
+		logMemStats();
 		PublisherData entity = new PublisherData();
 		entity.setData(CLOB_100KiB);
 		entity.setId(BOGUS_INTEGER);
@@ -218,6 +217,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testPublisherQueueData() {
 		LOG.trace(">testPublisherQueueData");
+		logMemStats();
 		PublisherQueueData entity = new PublisherQueueData();
 		entity.setFingerprint(VARCHAR_250B);
 		entity.setLastUpdate(0);
@@ -236,6 +236,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testCertificateData() {
 		LOG.trace(">testCertificateData");
+		logMemStats();
 		CertificateData entity = new CertificateData();
 		entity.setBase64Cert(CLOB_1MiB);
 		entity.setCaFingerprint(VARCHAR_250B);
@@ -263,6 +264,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testCertReqHistoryData() {
 		LOG.trace(">testCertReqHistoryData");
+		logMemStats();
 		CertReqHistoryData entity = new CertReqHistoryData();
 		entity.setIssuerDN(VARCHAR_250B);
 		entity.setFingerprint(VARCHAR_250B);
@@ -283,8 +285,12 @@ public class DatabaseSchemaTest extends TestCase {
 	// ZZ to run this test last, since we often run out of memory here and mess up the database connection.
 	public void testZZCRLData() {
 		LOG.trace(">testCRLData");
+		logMemStats();
+		String CLOB_100MiB = getClob(100*1024*1024);
 		CRLData entity = new CRLData();
 		entity.setBase64Crl(CLOB_100MiB);
+		CLOB_100MiB = null;
+		System.gc();
 		entity.setCaFingerprint(VARCHAR_250B);
 		entity.setCrlNumber(0);
 		entity.setDeltaCRLIndicator(0);
@@ -301,6 +307,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testHardTokenCertificateMap() {
 		LOG.trace(">testHardTokenCertificateMap");
+		logMemStats();
 		HardTokenCertificateMap entity = new HardTokenCertificateMap();
 		entity.setCertificateFingerprint(VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
@@ -312,6 +319,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testHardTokenData() {
 		LOG.trace(">testHardTokenData");
+		logMemStats();
 		HardTokenData entity = new HardTokenData();
 		entity.setCtime(0L);
 		entity.setData(HASHMAP_200K);
@@ -328,6 +336,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testHardTokenIssuerData() {
 		LOG.trace(">testHardTokenIssuerData");
+		logMemStats();
 		HardTokenIssuerData entity = new HardTokenIssuerData();
 		entity.setAdminGroupId(0);
 		entity.setAlias(VARCHAR_250B);
@@ -341,6 +350,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testHardTokenProfileData() {
 		LOG.trace(">testHardTokenProfileData");
+		logMemStats();
 		HardTokenProfileData entity = new HardTokenProfileData();
 		entity.setData(CLOB_1MiB);
 		entity.setId(BOGUS_INTEGER);
@@ -354,6 +364,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testHardTokenPropertyData() {
 		LOG.trace(">testHardTokenPropertyData");
+		logMemStats();
 		HardTokenPropertyData entity = new HardTokenPropertyData();
 		// Combined primary key id+property has to be less than 1000 bytes on MyISAM (UTF8: 3*(80+250) < 1000 bytes)
 		entity.setHardTokenPropertyDataPK(new HardTokenPropertyDataPK(VARCHAR_80B, VARCHAR_250B));
@@ -366,6 +377,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testKeyRecoveryData() {
 		LOG.trace(">testKeyRecoveryData");
+		logMemStats();
 		KeyRecoveryData entity = new KeyRecoveryData();
 		entity.setKeyRecoveryDataPK(new KeyRecoveryDataPK(VARCHAR_80B, VARCHAR_250B));
 		entity.setKeyData(CLOB_1MiB);
@@ -379,6 +391,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testLogConfigurationData() {
 		LOG.trace(">testLogConfigurationData");
+		logMemStats();
 		LogConfigurationData entity = new LogConfigurationData();
 		entity.setId(BOGUS_INTEGER);
 		entity.setLogConfigurationUnsafe(new LogConfiguration(false, false, HASHMAP_200K));
@@ -391,6 +404,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testLogEntryData() {
 		LOG.trace(">testLogEntryData");
+		logMemStats();
 		LogEntryData entity = new LogEntryData();
 		entity.setAdminData(VARCHAR_250B);
 		entity.setAdminType(0);
@@ -410,6 +424,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testUserData() {
 		LOG.trace(">testUserData");
+		logMemStats();
 		UserData entity = new UserData();
 		entity.setCaId(0);
 		entity.setCardNumber(VARCHAR_250B);
@@ -437,6 +452,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testAdminPreferencesData() {
 		LOG.trace(">testAdminPreferencesData");
+		logMemStats();
 		AdminPreferencesData entity = new AdminPreferencesData();
 		entity.setDataUnsafe(HASHMAP_200K);
 		entity.setId(VARCHAR_250B);
@@ -448,6 +464,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testEndEntityProfileData() {
 		LOG.trace(">testEndEntityProfileData");
+		logMemStats();
 		EndEntityProfileData entity = new EndEntityProfileData();
 		entity.setDataUnsafe(HASHMAP_200K);
 		entity.setId(BOGUS_INTEGER);
@@ -460,6 +477,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testGlobalConfigurationData() {
 		LOG.trace(">testGlobalConfigurationData");
+		logMemStats();
 		GlobalConfigurationData entity = new GlobalConfigurationData();
 		entity.setConfigurationId(VARCHAR_250B);
 		entity.setDataUnsafe(HASHMAP_200K);
@@ -471,6 +489,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testUserDataSourceData() {
 		LOG.trace(">testUserDataSourceData");
+		logMemStats();
 		UserDataSourceData entity = new UserDataSourceData();
 		entity.setData(CLOB_100KiB);
 		entity.setId(BOGUS_INTEGER);
@@ -484,6 +503,7 @@ public class DatabaseSchemaTest extends TestCase {
 
 	public void testServiceData() {
 		LOG.trace(">testServiceData");
+		logMemStats();
 		ServiceData entity = new ServiceData();
 		entity.setData(CLOB_100KiB);
 		entity.setId(BOGUS_INTEGER);
@@ -500,6 +520,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace(">testZZZCleanUp");
 		entityManager.close();
 		entityManagerFactory.close();
+		logMemStats();
 		LOG.trace("<testZZZCleanUp");
 	}
 
@@ -510,6 +531,7 @@ public class DatabaseSchemaTest extends TestCase {
 	 */
 	private void storeAndRemoveEntity(Object entity) {
 		LOG.trace(">storeAndRemoveEntity");
+		logMemStats();
 		try {
 			Class<?> entityClass = entity.getClass();
 			LOG.info("  - verifying that all getter has an assigned value for " + entityClass.getName());
@@ -545,8 +567,16 @@ public class DatabaseSchemaTest extends TestCase {
 			if (entityManager.getTransaction().isActive()) {
 				entityManager.getTransaction().rollback();
 			}
+			logMemStats();
 		}
 		LOG.trace("<storeAndRemoveEntity");
+	}
+	
+	private void logMemStats() {
+		System.gc();
+		final long maxMemory = Runtime.getRuntime().maxMemory() / 1024 /1024;
+		final long freeMemory = Runtime.getRuntime().freeMemory() / 1024 /1024;
+		LOG.info("JVM Runtime reports: freeMemory="+freeMemory+"MiB, maxMemory="+maxMemory+"MiB, (" + (maxMemory-freeMemory)*100/maxMemory + "% used)");
 	}
 	
 	/* * Used in order to bypass validity check of different private fields that are access via transient setters. * /
