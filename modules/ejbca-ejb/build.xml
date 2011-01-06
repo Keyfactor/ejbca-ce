@@ -164,9 +164,9 @@
             </classpath>
 			<!-- Exclude appserver specific code.. -->
             <exclude name="org/ejbca/appserver/**" />
-			<!-- Only for External OCSP responder.. -->
-            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
-            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAloneSession.java" />
+			<!-- Only for External VA.. -->
+			<exclude name="org/ejbca/core/protocol/certificatestore/CertStoreStandAlone.java"/>
+			<exclude name="org/ejbca/core/protocol/certificatestore/CRLStoreStandAlone.java"/>
             <exclude name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" />
             <exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 			<!-- Samples should never be included.. -->
@@ -199,9 +199,10 @@
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 			<!-- Classes not available in ejbca-util.jar -->
+        	<include name="org/ejbca/core/protocol/certificatestore/CertStoreStandAlone.java"/>
+        	<include name="org/ejbca/core/protocol/crlstore/CRLStoreStandAlone.java"/>
             <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" />
             <include name="org/ejbca/util/DummyPatternLogger.java" />
-            <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
             <include name="org/ejbca/core/protocol/ws/client/ejbcawsracli.java" />
             <include name="org/ejbca/core/protocol/ws/client/gen/*.java" />
             <include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java" />
@@ -209,6 +210,8 @@
             <include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java" />
         	<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" />
         	<include name="org/ejbca/ui/web/protocol/IHealtChecker.java" />
+        	<include name="org/ejbca/ui/web/protocol/RFC4387URL.java" />
+        	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java" />
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${src.dir}" />
