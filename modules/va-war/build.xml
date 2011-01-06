@@ -22,6 +22,7 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.mail.classpath"/>
 	</path>
 
 	<path id="compile-ejbca.classpath">
@@ -30,7 +31,7 @@
 		<path location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
-	
+
 	<path id="compile-va.classpath">
 		<path refid="compile-common.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
@@ -85,9 +86,19 @@
 	</target>
 	<target name="va-certstore-compile" depends="va-common-compile" if="certstore.enabled">
     	<mkdir dir="${build-certstore-va.dir}/WEB-INF/classes" />
+		<javac destdir="${build-certstore-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			classpathref="compile-va.classpath">
+        	<include name="org/ejbca/ui/web/protocol/CertStoreServletStandAlone.java" />
+			<src path="${src.dir}"/>
+		</javac>
 	</target>
 	<target name="va-crlstore-compile" depends="va-common-compile" if="crlstore.enabled">
     	<mkdir dir="${build-crlstore-va.dir}/WEB-INF/classes" />
+		<javac destdir="${build-crlstore-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			classpathref="compile-va.classpath">
+        	<include name="org/ejbca/ui/web/protocol/CRLStoreServletStandAlone.java" />
+			<src path="${src.dir}"/>
+		</javac>
 	</target>
 
 	<target name="ejbca-compile" depends="ejbca-status-compile, ejbca-certstore-compile, ejbca-crlstore-compile"/>
@@ -95,17 +106,27 @@
 	</target>
 	<target name="ejbca-status-compile" depends="ejbca-common-compile" if="ocsp.enabled">
     	<mkdir dir="${build-status.dir}/WEB-INF/classes" />
-        <javac srcdir="${src.dir}" destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
-        	<exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>
-        	<exclude name="org/ejbca/core/protocol/ocsp/standalonesession/**"/>
+        	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
+			<src path="${src.dir}"/>
         </javac>
 	</target>
 	<target name="ejbca-certstore-compile" depends="ejbca-common-compile" if="certstore.enabled">
     	<mkdir dir="${build-certstore.dir}/WEB-INF/classes" />
+		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			classpathref="compile-ejbca.classpath">
+        	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
+			<src path="${src.dir}"/>
+		</javac>
 	</target>
 	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile" if="crlstore.enabled">
     	<mkdir dir="${build-crlstore.dir}/WEB-INF/classes" />
+		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+			classpathref="compile-ejbca.classpath">
+        	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
+			<src path="${src.dir}"/>
+		</javac>
 	</target>
 
 </project>
