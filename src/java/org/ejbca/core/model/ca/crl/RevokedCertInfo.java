@@ -63,7 +63,7 @@ public class RevokedCertInfo implements java.io.Serializable {
      * Constructor filling in the whole object.
      *
      **/
-    public RevokedCertInfo(String fingerprint, BigInteger serno, Date revdate, int reason, Date expdate)
+    public RevokedCertInfo(final String fingerprint, final BigInteger serno, final Date revdate, final int reason, final Date expdate)
     {
     	this.fingerprint = fingerprint;
         this.userCertificate = serno;
@@ -82,7 +82,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     /**
      * Certificate fingerprint
      **/
-    public void setCertificateFingerprint( String fp) {
+    public void setCertificateFingerprint(final String fp) {
         this.fingerprint = fp;
     }
     
@@ -96,7 +96,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     /**
      * Certificate serial number
      **/
-    public void setUserCertificate( BigInteger serno ) {
+    public void setUserCertificate(final BigInteger serno) {
         this.userCertificate = serno;
     }
 
@@ -110,7 +110,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     /**
      * Date when the certificate was revoked.
      **/
-    public void setRevocationDate( Date date ) {
+    public void setRevocationDate(final Date date) {
         this.revocationDate = date;
     }
 
@@ -124,7 +124,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     /**
      * Date when the certificate expires.
      **/
-    public void setExpireDate( Date date ) {
+    public void setExpireDate(final Date date) {
         this.expireDate = date;
     }
 
@@ -152,7 +152,7 @@ public class RevokedCertInfo implements java.io.Serializable {
     /**
      * The reason the certificate was revoked.
      **/
-    public void setReason( int reason ) {
+    public void setReason(final int reason) {
         this.reason = reason;
     }
 
