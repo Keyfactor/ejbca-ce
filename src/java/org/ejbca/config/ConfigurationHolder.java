@@ -181,22 +181,25 @@ public final class ConfigurationHolder {
 	/**
 	 * @param property the property to look for
 	 * @param defaultValue default value to use if property is not found
-	 * @return String configured for property, or default value, if defaultValue is null and property is not found an empty string is returned.
+	 * @return String configured for property, or default value, if defaultValue is null and property is not found null is returned.
 	 */
 	public static String getString(final String property, final String defaultValue) {
 		// Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
-		final StringBuffer ret = new StringBuffer();
+		final String ret;
+		final StringBuffer str = new StringBuffer();
 		final String rets[] = instance().getStringArray(property);
 		for (int i=0; i<rets.length; i++) {
 			if (i != 0) {
-				ret.append(',');	
+				str.append(',');	
 			}
-			ret.append(rets[i]);
+			str.append(rets[i]);
 		}
-		if ( (ret.length()==0) && (defaultValue != null) ) {
-			ret.append(defaultValue);
+		if (str.length() != 0) {
+			ret = str.toString();
+		} else {
+			ret = defaultValue;
 		}
-		return ret.toString();
+		return ret;
 	}
 	
 	/**
