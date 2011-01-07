@@ -17,17 +17,23 @@ import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from ejbca.properties
+ * 
+ * @version $Id$
  */
-public class EjbcaConfiguration {
+public final class EjbcaConfiguration {
 	
 	private static final Logger log = Logger.getLogger(EjbcaConfiguration.class);
 	
+	// This is a singleton with on static methods
+	private EjbcaConfiguration() {}
+	
+	private static final String TRUE = "true";
 	/**
 	 * Check if EJBCA is running in production
 	 */
 	public static boolean getIsInProductionMode() {
-		String value = ConfigurationHolder.getString("ejbca.productionmode", "true");
-		if ("true".equalsIgnoreCase(value) || "ca".equalsIgnoreCase(value) || "ocsp".equalsIgnoreCase(value)) {
+		final String value = ConfigurationHolder.getString("ejbca.productionmode", TRUE);
+		if (TRUE.equalsIgnoreCase(value) || "ca".equalsIgnoreCase(value) || "ocsp".equalsIgnoreCase(value)) {
 			return true;
 		}
 		return false;
@@ -59,7 +65,7 @@ public class EjbcaConfiguration {
 	 */
 	public static int getCaSerialNumberOctetSize() {
 		String value = ConfigurationHolder.getString("ca.serialnumberoctetsize", "8");
-		if (!value.equals("8") && !value.equals("4") ) {
+		if (!"8".equals(value) && !"4".equals(value) ) {
 			value = "8";
 		}
 		return Integer.parseInt(value);
@@ -77,7 +83,7 @@ public class EjbcaConfiguration {
      */
     public static boolean doPermitExtractablePrivateKeys() {
         final String value = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys", null);
-        return value!=null && value.trim().equalsIgnoreCase("true");
+        return value!=null && value.trim().equalsIgnoreCase(TRUE);
     }
     
     /**
@@ -107,7 +113,7 @@ public class EjbcaConfiguration {
 	public static long getApprovalDefaultRequestValidity() {
 		long value = 28800L;
 		try {
-			value = Long.parseLong(ConfigurationHolder.getString("approval.defaultrequestvalidity", ""+value));
+			value = Long.parseLong(ConfigurationHolder.getString("approval.defaultrequestvalidity", String.valueOf(value)));
 		} catch( NumberFormatException e ) {
 			log.warn("\"approval.defaultrequestvalidity\" is not a decimal number. Using default value: " + value);
 		}
@@ -120,7 +126,7 @@ public class EjbcaConfiguration {
 	public static long getApprovalDefaultApprovalValidity() {
 		long value = 28800L;
 		try {
-			value = Long.parseLong(ConfigurationHolder.getString("approval.defaultapprovalvalidity", ""+value));
+			value = Long.parseLong(ConfigurationHolder.getString("approval.defaultapprovalvalidity", String.valueOf(value)));
 		} catch( NumberFormatException e ) {
 			log.warn("\"approval.defaultapprovalvalidity\" is not a decimal number. Using default value: " + value);
 		}
@@ -148,7 +154,7 @@ public class EjbcaConfiguration {
 	public static long getHealthCheckAmountFreeMem() {
 		long value = 1;
 		try {
-			value = Long.parseLong(ConfigurationHolder.getString("healthcheck.amountfreemem", ConfigurationHolder.getString("ocsphealthcheck.amountfreemem", ""+value)));
+			value = Long.parseLong(ConfigurationHolder.getString("healthcheck.amountfreemem", ConfigurationHolder.getString("ocsphealthcheck.amountfreemem", String.valueOf(value))));
 		} catch( NumberFormatException e ) {
 			log.warn("\"healthcheck.amountfreemem\" or \"ocsphealthcheck.amountfreemem\" is not a decimal number. Using default value: " + value);
 		}
@@ -173,14 +179,14 @@ public class EjbcaConfiguration {
 	 * Parameter to specify if the check of CA tokens should actually perform a signature test on the CA token.
 	 */
 	public static boolean getHealthCheckCaTokenSignTest() {
-		return "true".equalsIgnoreCase(ConfigurationHolder.getString("healthcheck.catokensigntest", "false"));
+		return TRUE.equalsIgnoreCase(ConfigurationHolder.getString("healthcheck.catokensigntest", "false"));
 	}
 
 	/**
 	 * Parameter to specify if a connection test of publishers should be performed.
 	 */
 	public static boolean getHealthCheckPublisherConnections() {
-		return "true".equalsIgnoreCase(ConfigurationHolder.getString("healthcheck.publisherconnections", "true"));
+		return TRUE.equalsIgnoreCase(ConfigurationHolder.getString("healthcheck.publisherconnections", TRUE));
 	}
 
 	/**
@@ -239,7 +245,7 @@ public class EjbcaConfiguration {
      * Therefore the default value is false. 
      */
 	public static boolean getDevelopmentProviderInstallation() {
-		return "true".equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation", "false"));
+		return TRUE.equalsIgnoreCase(ConfigurationHolder.getString("development.provider.installation", "false"));
 	}
 	
 	/**
@@ -324,7 +330,7 @@ public class EjbcaConfiguration {
 	 * Parameter to specify how to treat data in the database, when running in a clustered environment with different EJBCA versions.
 	 */
 	public static int getEffectiveApplicationVersion() {
-		String readVersion = ConfigurationHolder.getString("app.version.effective", InternalConfiguration.getAppVersionNumber());
+		final String readVersion = ConfigurationHolder.getString("app.version.effective", InternalConfiguration.getAppVersionNumber());
 		if (readVersion.startsWith("3.11")) {
 			return 311;
 		}
