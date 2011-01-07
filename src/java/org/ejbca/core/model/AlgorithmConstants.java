@@ -16,7 +16,7 @@ package org.ejbca.core.model;
 /**
  * @version $Id$
  */
-public class AlgorithmConstants {
+public final class AlgorithmConstants {
 
     public static final String SIGALG_SHA1_WITH_RSA            = "SHA1WithRSA";
     public static final String SIGALG_SHA256_WITH_RSA          = "SHA256WithRSA";
