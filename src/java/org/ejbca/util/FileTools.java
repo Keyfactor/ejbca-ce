@@ -26,13 +26,11 @@ import org.apache.log4j.Logger;
  *
  * @version $Id$
  */
-public class FileTools {
-    private static Logger log = Logger.getLogger(FileTools.class);
+public final class FileTools {
+    private static final Logger log = Logger.getLogger(FileTools.class);
 
-    /**
-     * Creates new FileTools
-     */
-    public FileTools() {
+    /** Should not be created */
+    private FileTools() {
     }
 
     /**
@@ -48,14 +46,14 @@ public class FileTools {
      *
      * @throws IOException if the PEM file does not contain the right keys.
      */
-    public static byte[] getBytesFromPEM(byte[] inbuf, String beginKey, String endKey)
+    public static byte[] getBytesFromPEM(final byte[] inbuf, final String beginKey, final String endKey)
         throws IOException {
         log.trace(">getBytesFromPEM");
 
-        ByteArrayInputStream instream = new ByteArrayInputStream(inbuf);
-        BufferedReader bufRdr = new BufferedReader(new InputStreamReader(instream));
-        ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-        PrintStream opstr = new PrintStream(ostr);
+        final ByteArrayInputStream instream = new ByteArrayInputStream(inbuf);
+        final BufferedReader bufRdr = new BufferedReader(new InputStreamReader(instream));
+        final ByteArrayOutputStream ostr = new ByteArrayOutputStream();
+        final PrintStream opstr = new PrintStream(ostr);
         String temp;
 
         while (((temp = bufRdr.readLine()) != null) && !temp.equals(beginKey)) {
@@ -79,10 +77,8 @@ public class FileTools {
 
         opstr.close();
 
-        byte[] bytes = Base64.decode(ostr.toByteArray());
-
+        final byte[] bytes = Base64.decode(ostr.toByteArray());
         log.trace("<getBytesFromPEM");
-
         return bytes;
     } // getBytesfromPEM
 
@@ -95,9 +91,9 @@ public class FileTools {
      *
      * @throws IOException if the file does not exist or cannot be read.
      */
-    public static byte[] readFiletoBuffer(String file)
+    public static byte[] readFiletoBuffer(final String file)
         throws IOException {
-        InputStream in = new FileInputStream(file);
+    	final InputStream in = new FileInputStream(file);
         return readInputStreamtoBuffer(in);
     } // readFiletoBuffer
 
@@ -108,11 +104,11 @@ public class FileTools {
      *
      * @throws IOException if the file does not exist or cannot be read.
      */
-    public static byte[] readInputStreamtoBuffer(InputStream in)
+    public static byte[] readInputStreamtoBuffer(final InputStream in)
         throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+    	final ByteArrayOutputStream os = new ByteArrayOutputStream();
         int len = 0;
-        byte[] buf = new byte[1024];
+        final byte[] buf = new byte[1024];
 
         while ((len = in.read(buf)) > 0) {
             os.write(buf, 0, len);
@@ -127,7 +123,7 @@ public class FileTools {
     /**
      * Sort the files by name with directories first.
      */
-    public static void sortByName(File[] files) {
+    public static void sortByName(final File[] files) {
     	if (files == null) {
     		return;
     	}
@@ -135,14 +131,14 @@ public class FileTools {
     }
     
     private static class FileComp implements Comparator {
-    	private Collator c = Collator.getInstance();
+    	private final Collator c = Collator.getInstance();
 
-    	public int compare(Object o1, Object o2) {
+    	public int compare(final Object o1, final Object o2) {
     		if(o1 == o2) {
     			return 0;
     		}
-    		File f1 = (File) o1;
-    		File f2 = (File) o2;
+    		final File f1 = (File) o1;
+    		final File f2 = (File) o2;
     		if(f1.isDirectory() && f2.isFile()) {
     			return -1;
     		}
