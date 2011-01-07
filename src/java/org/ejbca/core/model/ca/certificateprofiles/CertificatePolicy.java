@@ -62,7 +62,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
      * @param notice user notice text
      * @param uri cps uri
      */
-    public CertificatePolicy(String policyID, String qualifierId, String qualifier) {
+    public CertificatePolicy(final String policyID, final String qualifierId, final String qualifier) {
         this.policyID = policyID;
         this.qualifierId = qualifierId;
         this.qualifier = qualifier;
@@ -78,7 +78,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @param policyID the policyID to set
      */
-    public void setPolicyID(String policyID) {
+    public void setPolicyID(final String policyID) {
         this.policyID = policyID;
     }
 
@@ -94,7 +94,7 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @param uri the uri to set
      */
-    public void setQualifier(String qualifier) {
+    public void setQualifier(final String qualifier) {
         this.qualifier = qualifier;
     }
 
@@ -109,14 +109,14 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @param qualifierId the QualifierId to set
      */
-    public void setQualifierId(String qualifierId) {
+    public void setQualifierId(final String qualifierId) {
         this.qualifierId = qualifierId;
     }
     
     /**
      * @see java.lang.Object#clone()
      */
-    protected Object clone() {
+    protected Object clone() throws CloneNotSupportedException { // NOPMD by tomas on 1/7/11 1:04 PM
         return new CertificatePolicy(this.policyID, this.qualifierId, this.qualifier);
     }
 
@@ -124,15 +124,15 @@ public class CertificatePolicy implements Serializable, Cloneable {
      * @see java.lang.Object#toString()
      */
     public String toString() {
-        StringBuffer strBuffer = new StringBuffer("CertificatePolicy(");
+        final StringBuffer strBuffer = new StringBuffer(100);
 
-        strBuffer.append("policyID=");
+        strBuffer.append("CertificatePolicy(policyID=");
         strBuffer.append(this.policyID);
         strBuffer.append(", qualifierId=");
         strBuffer.append(this.qualifierId);
         strBuffer.append(", qualifier=");
         strBuffer.append(this.qualifier);
-        strBuffer.append(")");
+        strBuffer.append(')');
 
         return strBuffer.toString();
     }
@@ -140,11 +140,11 @@ public class CertificatePolicy implements Serializable, Cloneable {
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if((obj == null) || !(obj instanceof CertificatePolicy)) {
             return false;
         }
-        CertificatePolicy policy = (CertificatePolicy) obj;
+        final CertificatePolicy policy = (CertificatePolicy) obj;
 
         // We want to let both null and "" be the same value here, i.e. an empty value
         // Simply because, especially in gui code, it is somewhat tricky to trust which is a non-existant value
