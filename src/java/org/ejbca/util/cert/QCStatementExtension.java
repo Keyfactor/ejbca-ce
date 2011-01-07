@@ -42,7 +42,7 @@ import org.ejbca.util.CertTools;
  */
 public final class QCStatementExtension extends CertTools {
 
-    private static final Logger log = Logger.getLogger(SubjectDirAttrExtension.class);
+    private static final Logger log = Logger.getLogger(QCStatementExtension.class);
 
     /**
      * inhibits creation of new SubjectDirAttrExtension
