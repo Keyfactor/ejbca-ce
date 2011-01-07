@@ -449,6 +449,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         UserDataVO userdata = userAdminSession.findUser(admin, username);
         assertNotNull(userdata);
         userdata.setDN(newDN);
+        log.debug("changeUser: username=" + username + ", DN="+userdata.getDN()+", password="+userdata.getPassword()+", certProfileId=" + userdata.getCertificateProfileId());
         userAdminSession.changeUser(admin, userdata, true);
     }
 
