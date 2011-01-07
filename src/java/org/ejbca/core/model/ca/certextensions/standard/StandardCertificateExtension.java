@@ -29,13 +29,6 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 public abstract class StandardCertificateExtension extends CertificateExtension {
 	
 	/**
-	 * Constuctor for creating a Certificate Extension. 
-	 */
-	public StandardCertificateExtension() {
-		super();
-	}
-	
-	/**
 	 * Method that initialises the CertificateExtension
 	 * 
 	 * @param certProf certificateprofile that defines if this extension is used and critical

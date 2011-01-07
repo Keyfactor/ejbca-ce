@@ -37,17 +37,11 @@ import org.ejbca.core.model.ra.UserDataVO;
  */
 public class ExtendedKeyUsage extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(ExtendedKeyUsage.class);
-	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public ExtendedKeyUsage() {
-		super();
-	}
 
 	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.ExtendedKeyUsage.getId());
         // Extended Key Usage may be either critical or non-critical
 		super.setCriticalFlag(certProf.getExtendedKeyUsageCritical());
@@ -61,14 +55,14 @@ public class ExtendedKeyUsage extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		org.bouncycastle.asn1.x509.ExtendedKeyUsage ret = null;
         // Get extended key usage from certificate profile
-        Collection c = certProfile.getExtendedKeyUsageOids();
-        Vector usage = new Vector();
-        Iterator iter = c.iterator();
+		final Collection<String> c = certProfile.getExtendedKeyUsageOids();
+		final Vector usage = new Vector();
+		final Iterator<String> iter = c.iterator();
         while (iter.hasNext()) {
-            usage.add(new DERObjectIdentifier((String)iter.next()));
+            usage.add(new DERObjectIdentifier(iter.next()));
         }
         // Don't add empty key usage extension
         if (!usage.isEmpty()) {

@@ -47,16 +47,9 @@ public class FreshestCrl extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(FreshestCrl.class);
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public FreshestCrl() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.FreshestCRL.getId());
 		super.setCriticalFlag(false);
 	}
@@ -69,29 +62,31 @@ public class FreshestCrl extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
         String freshestcrldistpoint = certProfile.getFreshestCRLURI();
-        X509CA x509ca = (X509CA)ca;
-        if(certProfile.getUseCADefinedFreshestCRL() == true){
+        final X509CA x509ca = (X509CA)ca;
+        if(certProfile.getUseCADefinedFreshestCRL()){
             freshestcrldistpoint = x509ca.getCADefinedFreshestCRL();
         }
         // Multiple FCDPs are separated with the ';' sign
         CRLDistPoint ret = null;
         if (freshestcrldistpoint != null) {
-            StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
-            ArrayList distpoints = new ArrayList();
+        	final StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
+        	final ArrayList<DistributionPoint> distpoints = new ArrayList<DistributionPoint>();
             while (tokenizer.hasMoreTokens()) {
-                String uri = tokenizer.nextToken();
-                GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-                log.debug("Added freshest CRL distpoint: "+uri);
-                ASN1EncodableVector vec = new ASN1EncodableVector();
+            	final String uri = tokenizer.nextToken();
+                final GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+                if (log.isDebugEnabled()) {
+                	log.debug("Added freshest CRL distpoint: "+uri);
+                }
+                final ASN1EncodableVector vec = new ASN1EncodableVector();
                 vec.add(gn);
-                GeneralNames gns = new GeneralNames(new DERSequence(vec));
-                DistributionPointName dpn = new DistributionPointName(0, gns);
+                final GeneralNames gns = new GeneralNames(new DERSequence(vec));
+                final DistributionPointName dpn = new DistributionPointName(0, gns);
                 distpoints.add(new DistributionPoint(dpn, null, null));
             }
-            if (distpoints.size() > 0) {
-                ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
+            if (!distpoints.isEmpty()) {
+                ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[distpoints.size()]));
             }            	 
         } 
 		if (ret == null) {

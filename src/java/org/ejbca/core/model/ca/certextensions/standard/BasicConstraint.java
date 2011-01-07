@@ -34,16 +34,9 @@ import org.ejbca.core.model.ra.UserDataVO;
 public class BasicConstraint extends StandardCertificateExtension {
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public BasicConstraint() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.BasicConstraints.getId());
 		super.setCriticalFlag(certProf.getBasicConstraintsCritical());
 	}
@@ -56,9 +49,9 @@ public class BasicConstraint extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		// Default value, end entity 
-    	BasicConstraints bc = new BasicConstraints(false);
+		BasicConstraints bc = new BasicConstraints(false);
         if ((certProfile.getType() == CertificateProfile.TYPE_SUBCA)
             || (certProfile.getType() == CertificateProfile.TYPE_ROOTCA)){            	
         	if(certProfile.getUsePathLengthConstraint()){

@@ -35,16 +35,9 @@ import org.ejbca.util.CertTools;
 public class MsTemplate extends StandardCertificateExtension {
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public MsTemplate() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(CertTools.OID_MSTEMPLATE);
 		super.setCriticalFlag(false);
 	}
@@ -57,8 +50,8 @@ public class MsTemplate extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
-        String mstemplate = certProfile.getMicrosoftTemplate();             
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+		final String mstemplate = certProfile.getMicrosoftTemplate();             
         return new DERIA5String(mstemplate);             
 	}	
 }

@@ -44,24 +44,17 @@ public class SeisCardNumber extends StandardCertificateExtension {
     public static final String OID_CARDNUMBER = CertificateProfile.OID_CARDNUMBER;	//"1.2.752.34.2.1";
 
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public SeisCardNumber() {
-		super();
-	}
-	
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(SeisCardNumber.OID_CARDNUMBER);
 		super.setCriticalFlag(false);
 	}
 	
 
-	public DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
+	public DEREncodable getValue(final UserDataVO userData, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey)
 			throws CertificateExtentionConfigurationException, CertificateExtensionException {
-		String cardnumber = userData.getCardNumber();
+		final String cardnumber = userData.getCardNumber();
 		DEREncodable ret = null;
 		if (StringUtils.isNotEmpty(cardnumber)) {
 			ret = new DERPrintableString(cardnumber);

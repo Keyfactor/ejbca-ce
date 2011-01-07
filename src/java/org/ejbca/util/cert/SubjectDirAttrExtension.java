@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
  */
 public class SubjectDirAttrExtension extends CertTools {
 
-    private static Logger log = Logger.getLogger(SubjectDirAttrExtension.class);
+    private static final Logger log = Logger.getLogger(SubjectDirAttrExtension.class);
     
     /**
      * inhibits creation of new SubjectDirAttrExtension
@@ -138,8 +138,8 @@ public class SubjectDirAttrExtension extends CertTools {
      * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null
      * @see #getSubjectDirectoryAttributes(Certificate)
      */
-    public static Collection getSubjectDirectoryAttributes(String dirAttr) {
-    	ArrayList ret = new ArrayList();
+    public static Collection<Attribute> getSubjectDirectoryAttributes(String dirAttr) {
+    	ArrayList<Attribute> ret = new ArrayList<Attribute>();
     	Attribute attr = null;
         String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
         if (!StringUtils.isEmpty(value)) {

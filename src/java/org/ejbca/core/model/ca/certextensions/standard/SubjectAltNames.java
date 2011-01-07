@@ -37,16 +37,9 @@ public class SubjectAltNames extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(SubjectAltNames.class);
 
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public SubjectAltNames() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.SubjectAlternativeName.getId());
 		super.setCriticalFlag(certProf.getSubjectAlternativeNameCritical());
 	}
@@ -59,7 +52,7 @@ public class SubjectAltNames extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		GeneralNames ret = null;
         String altName = subject.getSubjectAltName(); 
         if(certProfile.getUseSubjectAltNameSubSet()){

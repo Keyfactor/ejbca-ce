@@ -37,16 +37,9 @@ public class KeyUsage extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(KeyUsage.class);
 
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public KeyUsage() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.KeyUsage.getId());
 		super.setCriticalFlag(certProf.getKeyUsageCritical());
 	}
@@ -59,11 +52,13 @@ public class KeyUsage extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		// Key usage
 		X509KeyUsage ret = null;
-		int keyUsage = CertTools.sunKeyUsageToBC(certProfile.getKeyUsage());
-		log.debug("Using KeyUsage from profile: "+keyUsage);
+		final int keyUsage = CertTools.sunKeyUsageToBC(certProfile.getKeyUsage());
+		if (log.isDebugEnabled()) {
+			log.debug("Using KeyUsage from profile: "+keyUsage);
+		}
 		if (keyUsage >=0) {
 			ret = new X509KeyUsage(keyUsage);
 		}
