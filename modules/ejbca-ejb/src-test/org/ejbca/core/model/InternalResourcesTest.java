@@ -23,8 +23,7 @@ import org.apache.log4j.Logger;
 import junit.framework.TestCase;
 
 /**
- * @version $Id: InternalResourcesTest.java 8865 2010-04-09 15:14:51Z
- *          mikekushner $
+ * @version $Id$
  */
 public class InternalResourcesTest extends TestCase {
 
