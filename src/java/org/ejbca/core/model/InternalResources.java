@@ -15,6 +15,7 @@ package org.ejbca.core.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -69,8 +70,8 @@ public class InternalResources implements Serializable {
     }
 
     private void setupResources() {
-        String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase();
-        String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase();
+        final String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
+        final String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
         InputStream secondaryStream = null;
@@ -125,8 +126,8 @@ public class InternalResources implements Serializable {
      * found in any of the resource file "key" is returned.
      * 
      */
-    public String getLocalizedMessage(String key) {
-        Object[] params = {};
+    public String getLocalizedMessage(final String key) {
+    	final Object[] params = {};
         return getLocalizedMessage(key, params, 0);
     }
 
@@ -139,7 +140,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -147,8 +148,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0) {
-        Object[] params = { param0 };
+    public String getLocalizedMessage(final String key, final Object param0) {
+    	final Object[] params = { param0 };
         return getLocalizedMessage(key, params, 1);
     }
 
@@ -161,7 +162,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -169,8 +170,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1) {
-        Object[] params = { param0, param1 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1) {
+    	final Object[] params = { param0, param1 };
         return getLocalizedMessage(key, params, 2);
     }
 
@@ -183,7 +184,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -191,8 +192,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2) {
-        Object[] params = { param0, param1, param2 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2) {
+    	final Object[] params = { param0, param1, param2 };
         return getLocalizedMessage(key, params, 3);
     }
 
@@ -205,7 +206,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -213,8 +214,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3) {
-        Object[] params = { param0, param1, param2, param3 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3) {
+    	final Object[] params = { param0, param1, param2, param3 };
         return getLocalizedMessage(key, params, 4);
     }
 
@@ -227,7 +228,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -235,8 +236,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3, Object param4) {
-        Object[] params = { param0, param1, param2, param3, param4 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4) {
+    	final Object[] params = { param0, param1, param2, param3, param4 };
         return getLocalizedMessage(key, params, 5);
     }
 
@@ -249,7 +250,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -257,8 +258,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3, Object param4, Object param5) {
-        Object[] params = { param0, param1, param2, param3, param4, param5 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5) {
+    	final Object[] params = { param0, param1, param2, param3, param4, param5 };
         return getLocalizedMessage(key, params, 6);
     }
 
@@ -271,7 +272,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -279,8 +280,8 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6) {
-        Object[] params = { param0, param1, param2, param3, param4, param5, param6 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6) {
+    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6 };
         return getLocalizedMessage(key, params, 7);
     }
 
@@ -293,7 +294,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -301,9 +302,9 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6,
-            Object param7) {
-        Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6,
+    		final Object param7) {
+    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7 };
         return getLocalizedMessage(key, params, 8);
     }
 
@@ -316,7 +317,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -324,9 +325,9 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6,
-            Object param7, Object param8) {
-        Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7, param8 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6,
+    		final Object param7, final Object param8) {
+    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7, param8 };
         return getLocalizedMessage(key, params, 9);
     }
 
@@ -339,7 +340,7 @@ public class InternalResources implements Serializable {
      * @param key
      *            is the key searched for in the resource files
      * @param paramX
-     *            indicaties the parameter that will be replaced by {X} in the
+     *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
      *            Ex Calling the method with key = TEST and param0 set to "hi"
@@ -347,9 +348,9 @@ public class InternalResources implements Serializable {
      *            result in the string "message is hi".
      * 
      */
-    public String getLocalizedMessage(String key, Object param0, Object param1, Object param2, Object param3, Object param4, Object param5, Object param6,
-            Object param7, Object param8, Object param9) {
-        Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 };
+    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6,
+    		final Object param7, final Object param8, final Object param9) {
+    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 };
         return getLocalizedMessage(key, params, 10);
     }
 
@@ -361,7 +362,7 @@ public class InternalResources implements Serializable {
      * found in any of the resource file "key" is returned.
      * 
      */
-    private String getMessageString(String key) {
+    private String getMessageString(final String key) {
         String retval = primaryResource.getProperty(key);
         if (retval == null) {
             retval = secondaryResource.getProperty(key);
@@ -372,10 +373,10 @@ public class InternalResources implements Serializable {
         return retval.trim();
     }
 
-    private String getLocalizedMessage(String key, Object[] params, int numOfParams) {
+    private String getLocalizedMessage(final String key, final Object[] params, final int numOfParams) {
         String localizedString = getMessageString(key);
         for (int i = 0; i < numOfParams; i++) {
-            Object obj = params[i];
+        	final Object obj = params[i];
             String param = "";
             if (obj != null) {
                 param = obj.toString();
