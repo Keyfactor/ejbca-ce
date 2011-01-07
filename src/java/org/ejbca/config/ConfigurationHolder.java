@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  * 
  * @version $Id$
  */
-public class ConfigurationHolder {
+public final class ConfigurationHolder {
 
 	private static final Logger log = Logger.getLogger(ConfigurationHolder.class);
 
@@ -61,13 +61,12 @@ public class ConfigurationHolder {
 
 	public static Configuration instance() {
 		if (config == null) {
-
 			// read ejbca.properties, from config file built into jar, and see if we allow configuration by external files
 			boolean allowexternal = false;
 			try {
-				URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
+				final URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
 				if (url != null) {
-					PropertiesConfiguration pc = new PropertiesConfiguration(url);
+					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 					allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
 					log.info("Allow external re-configuration: " + allowexternal);
 				}
@@ -87,7 +86,7 @@ public class ConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("conf"+File.separator+CONFIG_FILES[i]);
-						PropertiesConfiguration pc = new PropertiesConfiguration(f);
+						final PropertiesConfiguration pc = new PropertiesConfiguration(f);
 						pc.setReloadingStrategy(new FileChangedReloadingStrategy());
 						config.addConfiguration(pc);
 						log.info("Added file to configuration source: "+f.getAbsolutePath());
@@ -100,7 +99,7 @@ public class ConfigurationHolder {
 					File f = null;
 					try {
 						f = new File("/etc/ejbca/conf/" + CONFIG_FILES[i]);
-						PropertiesConfiguration pc = new PropertiesConfiguration(f);
+						final PropertiesConfiguration pc = new PropertiesConfiguration(f);
 						pc.setReloadingStrategy(new FileChangedReloadingStrategy());
 						config.addConfiguration(pc);
 						log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
@@ -116,9 +115,9 @@ public class ConfigurationHolder {
 			}
 			// Load internal.properties only from built in configuration file
 			try {
-				URL url = ConfigurationHolder.class.getResource("/internal.properties");
+				final URL url = ConfigurationHolder.class.getResource("/internal.properties");
 				if (url != null) {
-					PropertiesConfiguration pc = new PropertiesConfiguration(url);
+					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 					config.addConfiguration(pc);
 					log.debug("Added url to configuration source: " + url);
 				}
@@ -133,13 +132,13 @@ public class ConfigurationHolder {
 	 * to the configuration.
 	 * @param filename the full path to the properties file used for configuration.
 	 */
-	public static void addConfigurationFile(String filename) {
+	public static void addConfigurationFile(final String filename) {
 		// Make sure the basic initialization has been done
 		instance();
 		File f = null;
 		try {
 			f = new File(filename);
-			PropertiesConfiguration pc = new PropertiesConfiguration(f);
+			final PropertiesConfiguration pc = new PropertiesConfiguration(f);
 			pc.setReloadingStrategy(new FileChangedReloadingStrategy());
 			config.addConfiguration(pc);
 			log.info("Added file to configuration source: "+f.getAbsolutePath());	        		
@@ -151,13 +150,13 @@ public class ConfigurationHolder {
 	/**
 	 * Add built in config file
 	 */
-	public static void addConfigurationResource(String resourcename) {
+	public static void addConfigurationResource(final String resourcename) {
 		// Make sure the basic initialization has been done
 		instance();
 		try {
-			URL url = ConfigurationHolder.class.getResource("/conf/" + resourcename);
+			final URL url = ConfigurationHolder.class.getResource("/conf/" + resourcename);
 			if (url != null) {
-				PropertiesConfiguration pc = new PropertiesConfiguration(url);
+				final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 				config.addConfiguration(pc);
 				log.debug("Added url to configuration source: " + url);
 			}
@@ -170,26 +169,34 @@ public class ConfigurationHolder {
 	 * @return the configuration as a regular Properties object
 	 */
 	public static Properties getAsProperties() {
-		Properties properties = new Properties();
-		Iterator i = instance().getKeys();
+		final Properties properties = new Properties();
+		final Iterator i = instance().getKeys();
 		while (i.hasNext()) {
-			String key = (String) i.next();
+			final String key = (String) i.next();
 			properties.setProperty(key, instance().getString(key));
 		}
 		return properties;
 	}
 
-	public static String getString(String property, String defaultValue) {
+	/**
+	 * @param property the property to look for
+	 * @param defaultValue default value to use if property is not found
+	 * @return String configured for property, or default value, if defaultValue is null and property is not found an empty string is returned.
+	 */
+	public static String getString(final String property, final String defaultValue) {
 		// Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
-		String ret = "";
-		String rets[] = instance().getStringArray(property);
+		final StringBuffer ret = new StringBuffer();
+		final String rets[] = instance().getStringArray(property);
 		for (int i=0; i<rets.length; i++) {
-			ret += (i==0?"":",") + rets[i];
+			if (i != 0) {
+				ret.append(',');	
+			}
+			ret.append(rets[i]);
 		}
-		if (ret.length()==0) {
-			ret = defaultValue;
+		if ( (ret.length()==0) && (defaultValue != null) ) {
+			ret.append(defaultValue);
 		}
-		return ret;
+		return ret.toString();
 	}
 	
 	/**
@@ -199,7 +206,7 @@ public class ConfigurationHolder {
 	 * would return "foobar" for property2
 	 * @param defaultValue to use if no property of such a name is found
 	 */
-	public static String getExpandedString(String property, String defaultValue) {
+	public static String getExpandedString(final String property, final String defaultValue) {
 		String ret = getString(property, defaultValue);
 		if (ret != null) {
 			while (ret.indexOf("${") != -1) {
@@ -209,15 +216,15 @@ public class ConfigurationHolder {
 		return ret;
 	}
 	
-	private static String interpolate(String orderString) {
+	private static String interpolate(final String orderString) {
 		final Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
 		final Matcher m = PATTERN.matcher(orderString);
 		final StringBuffer sb = new StringBuffer(orderString.length());
 		m.reset();
 		while (m.find()) {
 			// when the pattern is ${identifier}, group 0 is 'identifier'
-			String key = m.group(1);
-			String value = getExpandedString(key, "");
+			final String key = m.group(1);
+			final String value = getExpandedString(key, "");
 			
 			// if the pattern does exists, replace it by its value
 			// otherwise keep the pattern ( it is group(0) )
@@ -227,7 +234,7 @@ public class ConfigurationHolder {
 				// I'm doing this to avoid the backreference problem as there will be a $
 				// if I replace directly with the group 0 (which is also a pattern)
 				m.appendReplacement(sb, "");
-				String unknown = m.group(0);
+				final String unknown = m.group(0);
 				sb.append(unknown);
 			}
 		}
@@ -267,12 +274,12 @@ public class ConfigurationHolder {
 	 * 
 	 * NOTE: This method should only be used by tests through ConfigurationSessionBean!
 	 */
-	public static boolean updateConfiguration(Properties properties) {
+	public static boolean updateConfiguration(final Properties properties) {
 		backupConfiguration();	// Only takes a backup if necessary.
-		Iterator i = properties.keySet().iterator();
+		final Iterator i = properties.keySet().iterator();
 		while (i.hasNext()) {
-			String key = (String) i.next();
-			String value = (String) properties.get(key);
+			final String key = (String) i.next();
+			final String value = (String) properties.get(key);
 			config.setProperty(key, value);
 		}
 		return true;
@@ -283,7 +290,7 @@ public class ConfigurationHolder {
 	 * 
 	 * NOTE: This method should only be used by tests through ConfigurationSessionBean!
 	 */
-	public static boolean updateConfiguration(String key, String value) {
+	public static boolean updateConfiguration(final String key, final String value) {
 		backupConfiguration();	// Only takes a backup if necessary.
 		config.setProperty(key, value);
 		return true;
