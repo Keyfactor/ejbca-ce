@@ -22,6 +22,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,8 +51,10 @@ import org.bouncycastle.util.encoders.Hex;
  *
  * @version $Id$
  */
-public class StringTools {
-    private static Logger log = Logger.getLogger(StringTools.class);
+public final class StringTools {
+    private static final Logger log = Logger.getLogger(StringTools.class);
+
+    private StringTools() {} // Not for instantiation
 
     // Characters that are not allowed in strings that may be stored in the db.
     private static final char[] stripChars = {
@@ -75,8 +78,6 @@ public class StringTools {
     public static final int KEY_SEQUENCE_FORMAT_ALPHANUMERIC                   = 2; 
     public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC      = 4; 
     public static final int KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC = 8; 
-
-    private StringTools() { }
     
     /**
      * Strips all special characters from a string by replacing them with a forward slash, '/'.
@@ -86,11 +87,11 @@ public class StringTools {
      *
      * @return the stripped version of the input string.
      */
-    public static String strip(String str) {
+    public static String strip(final String str) {
         if (str == null) {
             return null;
         }
-    	StringBuffer buf = new StringBuffer(str);
+    	final StringBuffer buf = new StringBuffer(str);
 		for (int i = 0; i< stripChars.length; i++) {
 			int index = 0;
 			int end = buf.length();
@@ -125,13 +126,13 @@ public class StringTools {
      * @return true if some chars in the string would be stripped, false if not.
      * @see #strip
      */
-    public static boolean hasSqlStripChars(String str) {
+    public static boolean hasSqlStripChars(final String str) {
         if (str == null) {
             return false;
         }
 		for (int i = 0; i< stripSqlChars.length; i++) {
 			int index = 0;
-			int end = str.length();
+			final int end = str.length();
 			while (index < end) {
 				if (str.charAt(index) == stripSqlChars[i] && stripSqlChars[i] != '\\') {
 					// Found an illegal character.
@@ -158,7 +159,7 @@ public class StringTools {
      * @param ch the char to check
      * @return true if char is an allowed escape character, false if now
      */ 
-    private static boolean isAllowed(char ch) {
+    private static boolean isAllowed(final char ch) {
     	boolean allowed = false;
     	for (int j = 0; j < allowedEscapeChars.length; j++) {
     		if (ch == allowedEscapeChars[j]) {
@@ -176,7 +177,7 @@ public class StringTools {
      * @return the string with all whitespace removed
      * @since 2.1b1
      */
-    public static String stripWhitespace(String str) {
+    public static String stripWhitespace(final String str) {
         if (str == null) {
             return null;
         }
@@ -190,7 +191,7 @@ public class StringTools {
      * @return ip address string, null if input is invalid
      * @see #ipStringToOctets(String)
      */
-    public static String ipOctetsToString(byte[] octets) {
+    public static String ipOctetsToString(final byte[] octets) {
     	String ret = null;
     	if (octets.length == 4){
     		String ip = "";
@@ -204,8 +205,8 @@ public class StringTools {
     			// same as the byte, and bits 8 through 31 will be set to 1. So the bitwise 
     			// AND with 0x000000FF clears out all of those bits. 
     			// Note that this could have been written more compactly as; 0xFF & buf[index]
-    			int intByte = (0x000000FF & ((int)octets[i]));
-    			short t = (short)intByte;
+    			final int intByte = (0x000000FF & ((int)octets[i]));
+    			final short t = (short)intByte; // NOPMD, we need short
         		if (StringUtils.isNotEmpty(ip)) {
         			ip += ".";
         		}
@@ -224,15 +225,15 @@ public class StringTools {
      * Result is tested with openssl, that it's subjectAltName displays as intended.
      * 
      * @param str string form of ip-address
-     * @return octets, null if input format is invalid
+     * @return octets, empty array if input format is invalid, never null
      */
-    public static byte[] ipStringToOctets(String str) {
-        String[] toks = str.split("[.:]");
+    public static byte[] ipStringToOctets(final String str) {
+        final String[] toks = str.split("[.:]");
         if (toks.length == 4) {
             // IPv4 address such as 192.168.5.45
-            byte[] ret = new byte[4];
+            final byte[] ret = new byte[4];
             for (int i = 0;i<toks.length;i++) {
-                int t = Integer.parseInt(toks[i]);
+                final int t = Integer.parseInt(toks[i]);
                 if (t>255) {
                     log.error("IPv4 address '"+str+"' contains octet > 255.");
                     return null;
@@ -243,26 +244,26 @@ public class StringTools {
         }
         if (toks.length == 8) {
             // IPv6 address such as 2001:0db8:85a3:0000:0000:8a2e:0370:7334
-            byte[] ret = new byte[16];
+            final byte[] ret = new byte[16];
             int ind = 0;
             for (int i = 0;i<toks.length;i++) {
-                int t = Integer.parseInt(toks[i], 16);
+                final int t = Integer.parseInt(toks[i], 16);
                 if (t>0xFFFF) {
                     log.error("IPv6 address '"+str+"' contains part > 0xFFFF.");
                     return null;
                 }
-                int t1 = t >> 8;
-    		    int b1 = t1 & 0x00FF;
+                final int t1 = t >> 8;
+    		    final int b1 = t1 & 0x00FF;
                 //int b1 = t & 0x00FF;
                 ret[ind++] = (byte)b1;
                 //int b2 = t & 0xFF00;
-                int b2 = t & 0x00FF;
+                final int b2 = t & 0x00FF;
                 ret[ind++] = (byte)b2;
             }
             return ret;
         }
         log.error("Not a IPv4 or IPv6 address.");
-        return null;
+        return new byte[0];
     }
     
     /** Takes input and converts to Base64 on the format
@@ -271,7 +272,7 @@ public class StringTools {
      * @param s String to base64 encode
      * @return Base64 encoded string, or original string if it was null or empty
      */
-    public static String putBase64String(String s) {
+    public static String putBase64String(final String s) {
         if (StringUtils.isEmpty(s)) {
             return s;
         }
@@ -297,7 +298,7 @@ public class StringTools {
      * @param s String to Base64 decode
      * @return Base64 decoded string, or original string if it was not base 64 encoded
      */
-    public static String getBase64String(String s) {
+    public static String getBase64String(final String s) {
         if (StringUtils.isEmpty(s)) {
             return s;
         }
@@ -326,22 +327,22 @@ public class StringTools {
      * @param s string to obfuscate
      * @return an obfuscated string
      */
-    public static String obfuscate(String s)
+    public static String obfuscate(final String s)
     {
-        StringBuffer buf = new StringBuffer();
-        byte[] b = s.getBytes();
+        final StringBuffer buf = new StringBuffer();
+        final byte[] b = s.getBytes();
         
         synchronized(buf)
         {
             buf.append("OBF:");
             for (int i=0;i<b.length;i++)
                {
-                byte b1 = b[i];
-                byte b2 = b[s.length()-(i+1)];
-                int i1= b1+b2+127;
-                int i2= b1-b2+127;
-                int i0=i1*256+i2;
-                String x=Integer.toString(i0,36);
+                final byte b1 = b[i];
+                final byte b2 = b[s.length()-(i+1)];
+                final int i1= b1+b2+127;
+                final int i2= b1-b2+127;
+                final int i0=i1*256+i2;
+                final String x = Integer.toString(i0,36);
 
                 switch(x.length())
                 {
@@ -360,8 +361,9 @@ public class StringTools {
      * @param s obfuscated string, usually (bot not neccesarily) starts with OBF:
      * @return plain text string
      */
-    public static String deobfuscate(String s)
+    public static String deobfuscate(final String in)
     {
+    	String s = in;
         if (s.startsWith("OBF:")) {
             s=s.substring(4);
         }
@@ -369,10 +371,10 @@ public class StringTools {
         int l=0;
         for (int i=0;i<s.length();i+=4)
            {
-            String x=s.substring(i,i+4);
-            int i0 = Integer.parseInt(x,36);
-            int i1=(i0/256);
-            int i2=(i0%256);
+            final String x = s.substring(i,i+4);
+            final int i0 = Integer.parseInt(x,36);
+            final int i1=(i0/256);
+            final int i2=(i0%256);
             b[l++]=(byte)((i1+i2-254)/2);
         }
 
@@ -384,7 +386,7 @@ public class StringTools {
     }
     private static final char[] p = deobfuscate("OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf").toCharArray();
     private static final int iCount = 100;
-    public static String pbeEncryptStringWithSha256Aes192(String in) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+    public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
     	if (CryptoProviderTools.isUsingExportableCryptography()) {
     		log.warn("Obfuscation not possible due to weak crypto policy.");
     		return in;
@@ -409,7 +411,7 @@ public class StringTools {
         return new String(hex);
     }
     
-    public static String pbeDecryptStringWithSha256Aes192(String in) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, UnsupportedEncodingException {
+    public static String pbeDecryptStringWithSha256Aes192(final String in) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, UnsupportedEncodingException {
     	if (CryptoProviderTools.isUsingExportableCryptography()) {
     		log.warn("De-obfuscation not possible due to weak crypto policy.");
     		return in;
@@ -426,7 +428,7 @@ public class StringTools {
         return new String(dec);
     }
     
-    public static String passwordDecryption(final String in, String sDebug) {
+    public static String passwordDecryption(final String in, final String sDebug) {
         try {
             final String tmp = pbeDecryptStringWithSha256Aes192(in);
             log.debug("Using encrypted "+sDebug);
@@ -437,7 +439,7 @@ public class StringTools {
         }
     }
     
-    public static String incrementKeySequence(int keySequenceFormat, String oldSequence) {
+    public static String incrementKeySequence(final int keySequenceFormat, final String oldSequence) {
     	if (log.isTraceEnabled()) {
         	log.trace(">incrementKeySequence: " + keySequenceFormat + ", " + oldSequence);
     	}
@@ -451,17 +453,19 @@ public class StringTools {
         } else if (keySequenceFormat == KEY_SEQUENCE_FORMAT_ALPHANUMERIC) {
             ret = incrementAlphaNumeric(oldSequence);
         } else if (keySequenceFormat == KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_NUMERIC) {
-            String countryCode = oldSequence.substring(0, Math.min(2, oldSequence.length()));
-            log.debug("countryCode: " + countryCode);
-            String inc = incrementNumeric(oldSequence.substring(2));
+            final String countryCode = oldSequence.substring(0, Math.min(2, oldSequence.length()));
+            if (log.isDebugEnabled()) {
+                log.debug("countryCode: " + countryCode);            	
+            }
+            final String inc = incrementNumeric(oldSequence.substring(2));
             // Cut off the country code
             if (oldSequence.length() > 2 && inc != null) {
                 ret = countryCode + inc;
             }
         } else if (keySequenceFormat == KEY_SEQUENCE_FORMAT_COUNTRY_CODE_PLUS_ALPHANUMERIC) {
-            String countryCode = oldSequence.substring(0, Math.min(2, oldSequence.length()));
+            final String countryCode = oldSequence.substring(0, Math.min(2, oldSequence.length()));
             log.debug("countryCode: " + countryCode);
-            String inc = incrementAlphaNumeric(oldSequence.substring(2));
+            final String inc = incrementAlphaNumeric(oldSequence.substring(2));
             // Cut off the country code
             if (oldSequence.length() > 2 && inc != null) {
                 ret = countryCode + inc;
@@ -474,25 +478,25 @@ public class StringTools {
             // Here we will strip any sequence number at the end of the key label and add the new sequence there
             // We will only count decimal (0-9) to ensure that we will not accidentally update the first to 
             // characters to the provided country code
-            StringBuffer buf = new StringBuffer();
+            final StringBuffer buf = new StringBuffer();
             for (int i = oldSequence.length()-1; i >= 0; i--) {
-                char c = oldSequence.charAt(i);     
+                final char c = oldSequence.charAt(i);     
                 if (CharUtils.isAsciiNumeric(c)) {
                     buf.insert(0, c);                       
                 } else {
                     break; // at first non numeric character we break
                 }
             }
-            int restlen = oldSequence.length() - buf.length();
-            String rest = oldSequence.substring(0, restlen);
+            final int restlen = oldSequence.length() - buf.length();
+            final String rest = oldSequence.substring(0, restlen);
     
-            String intStr = buf.toString();
+            final String intStr = buf.toString();
             if (StringUtils.isNotEmpty(intStr)) {
                 Integer seq = Integer.valueOf(intStr);
                 seq = seq + 1;
                 // We want this to be the same number of numbers as we converted and incremented 
-                DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
-                String fseq = df.format(seq);
+                final DecimalFormat df = new DecimalFormat("0000000000".substring(0,intStr.length()));
+                final String fseq = df.format(seq);
                 ret = rest + fseq;
                 if (log.isTraceEnabled()) {
                     log.trace("<incrementKeySequence: "+ ret);          
@@ -504,12 +508,12 @@ public class StringTools {
     	return ret;
     }
     
-    private static String incrementNumeric(String s) {
+    private static String incrementNumeric(final String s) {
         // check if input is valid, if not return null
         if (!s.matches("[0-9]{1,5}")) {
             return null;
         }
-        int len = s.length();
+        final int len = s.length();
         // Parse to int and increment by 1
         int incrSeq = Integer.parseInt(s, 10) + 1;
         // Reset if the maximum value is exceeded
@@ -519,15 +523,15 @@ public class StringTools {
         // Make a nice String again
         String newSeq = "00000" + Integer.toString(incrSeq, 10);
         newSeq = newSeq.substring(newSeq.length()-len);
-        return newSeq.toUpperCase();
+        return newSeq.toUpperCase(Locale.ENGLISH);
     }
     
-    private static String incrementAlphaNumeric(String s) {
+    private static String incrementAlphaNumeric(final String s) {
         // check if input is valid, if not return null
         if (!s.matches("[0-9A-Z]{1,5}")) {
             return null;
         }
-        int len = s.length();
+        final int len = s.length();
         // Parse to int and increment by 1
         int incrSeq = Integer.parseInt(s, 36) + 1;
         // Reset if the maximum value is exceeded
@@ -537,7 +541,7 @@ public class StringTools {
         // Make a nice String again
         String newSeq = "00000" + Integer.toString(incrSeq, 36);
         newSeq = newSeq.substring(newSeq.length()-len);
-        return newSeq.toUpperCase();
+        return newSeq.toUpperCase(Locale.ENGLISH);
     }
     
 	/**
@@ -560,12 +564,11 @@ public class StringTools {
 	 * uses double-quotes
 	 * @return A collection of strings
 	 */
-	public static Collection/*String*/ splitURIs(String dispPoints) {
+	public static Collection<String> splitURIs(String dPoints) {
 
-        LinkedList/*String*/ result = new LinkedList/*String*/();
+        String dispPoints = dPoints.trim();
 
-        dispPoints = dispPoints.trim();
-        
+        final LinkedList<String> result = new LinkedList<String>();
         for(int i = 0; i < dispPoints.length(); i++) {
             int nextQ = dispPoints.indexOf('"', i);
             if(nextQ == i) {
@@ -577,7 +580,7 @@ public class StringTools {
                 result.add(dispPoints.substring(i+1, nextQ).trim());
                 i = nextQ;
             } else {
-                int nextSep = dispPoints.indexOf(';', i);
+                final int nextSep = dispPoints.indexOf(';', i);
                 if(nextSep != i) {   
 	                if(nextSep != -1) { // eat(to sep)
 	                    result.add(dispPoints.substring(i, nextSep).trim());
@@ -597,13 +600,13 @@ public class StringTools {
 	 * @param certdata the string containing the certificate details
 	 * @return a String array with two elements, the first is the certificate serialnumber and the second one is the certificate issuerDN
 	 */
-	public static String[] parseCertData(String certdata){
+	public static String[] parseCertData(final String certdata){
 		if(certdata == null) {
 			return null;
 		}
 		
-    	String dnStrings = "(unstructuredName|dnQualifier|postalAddress|name|emailAddress|UID|OU|NIF|CIF|ST|businessCategory|streetAddress|CN|postalCode|O|pseudonym|DC|surname|C|initials|serialNumber|L|givenName|telephoneNumber|title|DC)";
-    	String formats[] = {"(^[0-9A-Fa-f]+),((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",
+    	final String dnStrings = "(unstructuredName|dnQualifier|postalAddress|name|emailAddress|UID|OU|NIF|CIF|ST|businessCategory|streetAddress|CN|postalCode|O|pseudonym|DC|surname|C|initials|serialNumber|L|givenName|telephoneNumber|title|DC)";
+    	final String formats[] = {"(^[0-9A-Fa-f]+),((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",
     						"(^[0-9A-Fa-f]+) : DN : \"([^\"]*)\"( ?: SubjectDN : \"[^\"]*\")?"
     			
     	};
@@ -611,8 +614,8 @@ public class StringTools {
     	String ret[] = null;
     	
     	for(int i=0; i<formats.length; i++){
-    		Pattern p = Pattern.compile(formats[i]);
-    		Matcher m = p.matcher(certdata);
+    		final Pattern p = Pattern.compile(formats[i]);
+    		final Matcher m = p.matcher(certdata);
     		if(m.find()){
     			ret = new String[2];
     			ret[0] = m.group(1);
