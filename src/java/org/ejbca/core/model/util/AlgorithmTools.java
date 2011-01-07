@@ -46,6 +46,9 @@ public final class AlgorithmTools {
 	/** Log4j instance */
 	private static final Logger log = Logger.getLogger(AlgorithmTools.class);
 
+    /** Should not be created */
+    private AlgorithmTools() {}
+
 	/** String used for an unkown keyspec in CA token properties */
 	public static final String KEYSPEC_UNKNOWN = "unknown";
 
@@ -104,14 +107,17 @@ public final class AlgorithmTools {
 	 * @see AlgorithmConstants
 	 */
 	public static Collection<String> getSignatureAlgorithms(final PublicKey publickey) {
+		final Collection<String> ret;
 		if ( publickey instanceof RSAPublicKey ) {
-			return SIG_ALGS_RSA;
+			ret = SIG_ALGS_RSA;
 		} else if ( publickey instanceof DSAPublicKey ) {
-			return SIG_ALGS_DSA;
+			ret = SIG_ALGS_DSA;
 		} else if ( publickey instanceof ECPublicKey ) {
-			return SIG_ALGS_ECDSA;
+			ret = SIG_ALGS_ECDSA;
+		} else {
+			ret = Collections.emptyList();			
 		}
-		return Collections.emptyList();
+		return ret;
 	}
 	
 	/**
@@ -122,12 +128,15 @@ public final class AlgorithmTools {
 	 * @see AlgorithmConstants 
 	 */
 	public static String getKeyAlgorithmFromSigAlg(final String signatureAlgorithm) {
+		final String ret;
 		if ( signatureAlgorithm.contains("ECDSA") ) {
-			return AlgorithmConstants.KEYALGORITHM_ECDSA;
+			ret = AlgorithmConstants.KEYALGORITHM_ECDSA;
 		} else if ( signatureAlgorithm.contains("DSA") ) {
-			return AlgorithmConstants.KEYALGORITHM_DSA;
+			ret = AlgorithmConstants.KEYALGORITHM_DSA;
+		} else {
+			ret = AlgorithmConstants.KEYALGORITHM_RSA;			
 		}
-		return AlgorithmConstants.KEYALGORITHM_RSA;
+		return ret;
 	}
 	
 	/**
@@ -190,19 +199,20 @@ public final class AlgorithmTools {
 	 * @return true if signature algorithm can be used with the public key algorithm
 	 */
 	public static boolean isCompatibleSigAlg(final PublicKey publicKey, final String signatureAlgorithm) {
+		boolean ret = false;
 		if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_RSA)) {
 			if (publicKey instanceof RSAPublicKey) {
-				return true;
+				ret = true;
 			}
 		} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
     		if (publicKey instanceof ECPublicKey) {
-    			return true;
+    			ret = true;
     		}
     	} else if (StringUtils.contains(signatureAlgorithm, AlgorithmConstants.KEYALGORITHM_DSA)) {
      		if (publicKey instanceof DSAPublicKey) {
-     			return true;
+     			ret = true;
      		}
      	}
-		return false;
+		return ret;
 	}
 }
