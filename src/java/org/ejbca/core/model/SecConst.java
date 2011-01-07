@@ -27,7 +27,7 @@ package org.ejbca.core.model;
  *
  * @version $Id$
  */
-public class SecConst extends Object {
+public final class SecConst {
     // User types
 
     /** Dummy type. */
@@ -175,7 +175,7 @@ public class SecConst extends Object {
     /**
      * @return true is certificate profile identified by profileId is fixed
      */
-    public static boolean isFixedCertificateProfile(int profileId) {
+    public static boolean isFixedCertificateProfile(final int profileId) {
     	return (
     			profileId == SecConst.CERTPROFILE_FIXED_ENDUSER ||
     			profileId == SecConst.CERTPROFILE_FIXED_SUBCA ||
