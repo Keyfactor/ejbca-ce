@@ -24,11 +24,16 @@ import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from conf/extendedkeyusage.properties
+ * 
+ * @version $Id$
  */
-public class ExtendedKeyUsageConfiguration {
+public final class ExtendedKeyUsageConfiguration {
 
 	private static final Logger log = Logger.getLogger(ExtendedKeyUsageConfiguration.class);
 	
+	/** This is a singleton so it's not allowed to create an instance explicitly */ 
+	private ExtendedKeyUsageConfiguration() {}
+
     /**
      * Map for texts that maps OIDs in extendedKeyUsageOids to text strings that can be displayed.
      * If an extended key usage should not be displayed in the GUI, put null as value in the
@@ -64,12 +69,12 @@ public class ExtendedKeyUsageConfiguration {
      * Fill the map and list with OIDs from the configuration file
      */
 	private static synchronized void fillExtendedKeyUsageOidsAndTexts() {
-    	ListOrderedMap map = new ListOrderedMap();
-    	Configuration conf = ConfigurationHolder.instance();
+    	final ListOrderedMap map = new ListOrderedMap();
+    	final Configuration conf = ConfigurationHolder.instance();
     	final String ekuname = "extendedkeyusage.name.";
     	final String ekuoid = "extendedkeyusage.oid.";
     	for (int i = 0; i < 255; i++) {
-    		String oid = conf.getString(ekuoid+i);
+    		final String oid = conf.getString(ekuoid+i);
     		if (oid != null) {
     			String name = conf.getString(ekuname+i);
     			if (name != null) {
