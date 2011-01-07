@@ -65,8 +65,7 @@ import org.ejbca.util.keystore.KeyTools;
  * the CA or instead of by the CA.
  * 
  * @author Markus Kilås
- * @version $Id: ApprovalEnforcedByCertificateProfileTest.java 9435 2010-07-14
- *          15:18:39Z mikekushner $
+ * @version $Id$
  */
 public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
