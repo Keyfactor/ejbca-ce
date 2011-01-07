@@ -34,18 +34,20 @@ import org.ejbca.cvc.CVCProvider;
  * 
  * @version $Id$
  */
-public class CryptoProviderTools {
+public final class CryptoProviderTools {
 	
-	private static Logger log = Logger.getLogger(CryptoProviderTools.class);
+	private static final Logger log = Logger.getLogger(CryptoProviderTools.class);
 			
+    private CryptoProviderTools() {} // Not for instantiation
+
     /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
      * The curve parameters is then defined outside of the key and configured in the BC provider.
      */
-    private static String IMPLICITLYCA_Q = EjbcaConfiguration.getEcdsaImplicitlyCaQ();
-    private static String IMPLICITLYCA_A = EjbcaConfiguration.getEcdsaImplicitlyCaA(); 
-    private static String IMPLICITLYCA_B = EjbcaConfiguration.getEcdsaImplicitlyCaB(); 
-    private static String IMPLICITLYCA_G = EjbcaConfiguration.getEcdsaImplicitlyCaG(); 
-    private static String IMPLICITLYCA_N = EjbcaConfiguration.getEcdsaImplicitlyCaN();
+    private static final String IMPLICITLYCA_Q = EjbcaConfiguration.getEcdsaImplicitlyCaQ();
+    private static final String IMPLICITLYCA_A = EjbcaConfiguration.getEcdsaImplicitlyCaA(); 
+    private static final String IMPLICITLYCA_B = EjbcaConfiguration.getEcdsaImplicitlyCaB(); 
+    private static final String IMPLICITLYCA_G = EjbcaConfiguration.getEcdsaImplicitlyCaG(); 
+    private static final String IMPLICITLYCA_N = EjbcaConfiguration.getEcdsaImplicitlyCaN();
 
     /** System provider used to circumvent a bug in Glassfish. Should only be used by 
      * X509CAInfo, OCSPCAService, XKMSCAService, CMSCAService. 
@@ -61,12 +63,15 @@ public class CryptoProviderTools {
     public static boolean isUsingExportableCryptography() {
     	boolean returnValue = true;
     	try {
-    		int keylen = Cipher.getMaxAllowedKeyLength("DES");
-    		log.debug("MaxAllowedKeyLength for DES is: "+keylen);
+    		final int keylen = Cipher.getMaxAllowedKeyLength("DES");
+    		if (log.isDebugEnabled()) {
+    			log.debug("MaxAllowedKeyLength for DES is: "+keylen);
+    		}
 			if ( keylen == Integer.MAX_VALUE ) {
 				returnValue = false;
 			}
 		} catch (NoSuchAlgorithmException e) {
+			// NOPMD
 		}
 		return returnValue;
     }
@@ -111,15 +116,15 @@ public class CryptoProviderTools {
         if (installImplicitlyCA) {
             // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
             // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
-            ECCurve curve = new ECCurve.Fp(
+            final ECCurve curve = new ECCurve.Fp(
                     new BigInteger(IMPLICITLYCA_Q), // q
                     new BigInteger(IMPLICITLYCA_A, 16), // a
                     new BigInteger(IMPLICITLYCA_B, 16)); // b
-            org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
+            final org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
                     curve,
                     curve.decodePoint(Hex.decode(IMPLICITLYCA_G)), // G
                     new BigInteger(IMPLICITLYCA_N)); // n
-            ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
+            final ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
             if (config != null) {
                 config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);                                               
             } else {
@@ -135,7 +140,7 @@ public class CryptoProviderTools {
         
         // We hard specify the system security provider in a few cases (see SYSTEM_SECURITY_PROVIDER). 
         // If the SUN provider does not exist, we will always use BC.
-        Provider p = Security.getProvider(SYSTEM_SECURITY_PROVIDER);
+        final Provider p = Security.getProvider(SYSTEM_SECURITY_PROVIDER);
         if (p == null) {
         	log.debug("SUN security provider does not exist, using BC as system default provider.");
         	SYSTEM_SECURITY_PROVIDER = "BC";
