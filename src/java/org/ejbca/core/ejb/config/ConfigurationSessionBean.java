@@ -28,8 +28,7 @@ import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 /**
  * This bean handles configuration changes for system tests.
  * 
- * @version $Id: ConfigurationSessionBean.java 9508 2010-07-22 23:13:44Z jeklund
- *          $
+ * @version $Id$
  * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSessionRemote")
