@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 /**
  * UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by
- * classes saving it's data to a database in BLOB form.
+ * classes saving it's data to a database in BLOB/CLOB form.
  *
  * @version $Id$
  *
@@ -46,38 +46,32 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     }
 
     /**
-     * Should return a constant containing the latest available version of the class.
-     *
-     * @return DOCUMENT ME!
+     * @see IUpgradeableData#getLatestVersion()
      */
     public abstract float getLatestVersion();
 
     /**
-     * Function returning the current version of the class data.
+     * @see IUpgradeableData#getVersion()
      */
     public float getVersion() {
         return ((Float) data.get(VERSION)).floatValue();
     }
 
     /**
-     * Function sending the data to be saved to the database.
-     *
-     * @return DOCUMENT ME!
+     * @see IUpgradeableData#saveData()
      */
     public Object saveData() {
         return data;
     }
 
     /**
-     * Function loading saved data into to data structure.
-     *
-     * @param data DOCUMENT ME!
+     * @see IUpgradeableData#loadData(Object)
      */
-    public void loadData(Object data) {
+    public void loadData(final Object data) {
     	this.data = (HashMap<Object, Object>) data;
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
     		upgrade();     
-    		isUpgraded = true;
+    		upgraded = true;
     	}
     }
 
@@ -86,7 +80,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      * @return true if data has been upgraded, false otherwise
      */
     public boolean isUpgraded() {
-		return isUpgraded;
+		return upgraded;
 	}
 
     /**
@@ -96,6 +90,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     public abstract void upgrade();
 
     protected HashMap<Object, Object> data;
-    private boolean isUpgraded = false;
+    private boolean upgraded = false;
 	public static final String VERSION = "version";
 }
