@@ -35,16 +35,9 @@ import org.ejbca.core.model.ra.UserDataVO;
 public class OcspNoCheck extends StandardCertificateExtension {
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public OcspNoCheck() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
 		super.setCriticalFlag(false);
 	}
@@ -57,7 +50,7 @@ public class OcspNoCheck extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		return new DERNull();
 	}	
 }

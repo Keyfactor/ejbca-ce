@@ -50,16 +50,9 @@ public class CertificatePolicies extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(CertificatePolicies.class);
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public CertificatePolicies() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.CertificatePolicies.getId());
 		super.setCriticalFlag(certProf.getCertificatePoliciesCritical());
 	}
@@ -72,40 +65,40 @@ public class CertificatePolicies extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DERSequence ret = null;
     	// The UserNotice policy qualifier can have two different character encodings,
     	// the correct one (UTF8) or the wrong one (BMP) used by IE < 7.
-		X509CA x509ca = (X509CA)ca;
+		final X509CA x509ca = (X509CA)ca;
     	int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
     	if (x509ca.getUseUTF8PolicyText()) {
     		displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
     	}
     	// Iterate through policies and add oids and policy qualifiers if they exist
-    	List policies = certProfile.getCertificatePolicies();
-    	Map policiesMap = new HashMap(); //<DERObjectIdentifier, ASN1EncodableVector>
+    	final List policies = certProfile.getCertificatePolicies();
+    	final Map policiesMap = new HashMap(); //<DERObjectIdentifier, ASN1EncodableVector>
     	// Each Policy OID can be entered several times, with different qualifiers, 
     	// because of this we make a map of oid and qualifiers, and we can add a new qualifier
     	// in each round of this for loop
-    	for(Iterator it = policies.iterator(); it.hasNext(); ) {
-    		CertificatePolicy policy = (CertificatePolicy) it.next();
-    		DERObjectIdentifier oid = new DERObjectIdentifier(policy.getPolicyID());
-    		ASN1EncodableVector qualifiers;
+    	for(final Iterator it = policies.iterator(); it.hasNext(); ) {
+    		final CertificatePolicy policy = (CertificatePolicy) it.next();
+    		final DERObjectIdentifier oid = new DERObjectIdentifier(policy.getPolicyID());
+    		final ASN1EncodableVector qualifiers;
     		if(policiesMap.containsKey(oid)) {
     			qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
     		} else {
     			qualifiers = new ASN1EncodableVector();
     		}
-			PolicyQualifierInfo pqi = getPolicyQualifierInformation(policy, displayencoding);
+    		final PolicyQualifierInfo pqi = getPolicyQualifierInformation(policy, displayencoding);
 			if (pqi != null) {
 				qualifiers.add(pqi);
 			}
 			policiesMap.put(oid, qualifiers);
     	}
-    	ASN1EncodableVector seq = new ASN1EncodableVector();
-    	for(Iterator it = policiesMap.keySet().iterator(); it.hasNext(); ) {
-    		DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
-    		ASN1EncodableVector qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
+    	final ASN1EncodableVector seq = new ASN1EncodableVector();
+    	for(final Iterator it = policiesMap.keySet().iterator(); it.hasNext(); ) {
+    		final DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
+    		final ASN1EncodableVector qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
     		if(qualifiers.size() == 0) {
     			seq.add(new PolicyInformation(oid, null));
     		} else {
@@ -131,17 +124,17 @@ public class CertificatePolicies extends StandardCertificateExtension {
      *          
      * @return PolicyQualifierInfo
      */
-	private PolicyQualifierInfo getPolicyQualifierInformation(CertificatePolicy policy, int displayencoding) {
+	private PolicyQualifierInfo getPolicyQualifierInformation(final CertificatePolicy policy, final int displayencoding) {
 		PolicyQualifierInfo pqi = null;
-		String qualifierId = policy.getQualifierId();
+		final String qualifierId = policy.getQualifierId();
 		if ((qualifierId != null) && !StringUtils.isEmpty(qualifierId.trim())) {
-			String qualifier = policy.getQualifier();
+			final String qualifier = policy.getQualifier();
 			if ( (qualifier != null) && !StringUtils.isEmpty(qualifier.trim()) ) {
 				if (qualifierId.equals(PolicyQualifierId.id_qt_cps.getId())) {
 					pqi = new PolicyQualifierInfo(qualifier);
 				} else if (qualifierId.equals(PolicyQualifierId.id_qt_unotice.getId())){
 					// Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
-					UserNotice un = new UserNotice(null, new DisplayText(displayencoding, qualifier));
+					final UserNotice un = new UserNotice(null, new DisplayText(displayencoding, qualifier));
 					pqi = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
 				}
 			}

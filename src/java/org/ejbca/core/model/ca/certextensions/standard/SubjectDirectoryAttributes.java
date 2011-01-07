@@ -42,16 +42,9 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);
 
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public SubjectDirectoryAttributes() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.SubjectDirectoryAttributes.getId());
 		// Subject Directory Attributes must always be non-critical
 		super.setCriticalFlag(false);
@@ -65,17 +58,16 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DEREncodable ret = null;
-		String dirAttrString  = subject.getExtendedinformation() != null ? subject.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		final String dirAttrString  = subject.getExtendedinformation() != null ? subject.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		if (StringUtils.isNotEmpty(dirAttrString)) {
 			// Subject Directory Attributes is a sequence of Attribute
-			Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
-			ASN1EncodableVector vec = new ASN1EncodableVector();
-			Iterator iter = attr.iterator();
+			final Collection<Attribute> attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
+			final ASN1EncodableVector vec = new ASN1EncodableVector();
+			final Iterator<Attribute> iter = attr.iterator();
 			while (iter.hasNext()) {
-				Attribute a = (Attribute)iter.next();
-				vec.add(a);
+				vec.add(iter.next());
 			}        
 			if (vec.size() > 0) {
 				ret = new DERSequence(vec);				

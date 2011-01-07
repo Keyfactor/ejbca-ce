@@ -39,16 +39,9 @@ import org.ejbca.core.model.ra.UserDataVO;
 public class SubjectKeyIdentifier extends StandardCertificateExtension {
 
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public SubjectKeyIdentifier() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.SubjectKeyIdentifier.getId());
 		super.setCriticalFlag(certProf.getSubjectKeyIdentifierCritical());
 	}
@@ -61,16 +54,14 @@ public class SubjectKeyIdentifier extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
         SubjectPublicKeyInfo spki;
 		try {
 			spki = new SubjectPublicKeyInfo(
                 (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(userPublicKey.getEncoded())).readObject());
 		} catch (IOException e) {
-			CertificateExtensionException ex = new CertificateExtensionException("IOException parsing user public key: "+e.getMessage(), e);
-			throw ex;
+			throw new CertificateExtensionException("IOException parsing user public key: "+e.getMessage(), e);
 		}
-        org.bouncycastle.asn1.x509.SubjectKeyIdentifier ret = new org.bouncycastle.asn1.x509.SubjectKeyIdentifier(spki);
-		return ret;
+		return new org.bouncycastle.asn1.x509.SubjectKeyIdentifier(spki);
 	}	
 }

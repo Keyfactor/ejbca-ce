@@ -21,10 +21,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
@@ -52,16 +52,9 @@ public class QcStatement extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(QcStatement.class);
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public QcStatement() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.QCStatements.getId());
 		super.setCriticalFlag(certProf.getQCStatementCritical());
 	}
@@ -74,10 +67,10 @@ public class QcStatement extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DERSequence ret = null;
-		String names = certProfile.getQCStatementRAName();
-		GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
+		final String names = certProfile.getQCStatementRAName();
+		final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
 		SemanticsInformation si = null;
 		if (san != null) {
 			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
@@ -88,7 +81,7 @@ public class QcStatement extends StandardCertificateExtension {
 		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
 			si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()));                 
 		}
-		ArrayList qcs = new ArrayList();
+		final ArrayList<QCStatement> qcs = new ArrayList<QCStatement>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
 		DERObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1;
@@ -108,23 +101,22 @@ public class QcStatement extends StandardCertificateExtension {
 			qcs.add(qc);
 		}
 		// ETSI Statement regarding limit on the value of transactions
-		if (certProfile.getUseQCEtsiValueLimit()) {
-			// Both value and currency must be available for this extension
-			if ( (certProfile.getQCEtsiValueLimit() >= 0) && (certProfile.getQCEtsiValueLimitCurrency() != null) ) {
-				int limit = certProfile.getQCEtsiValueLimit();
-				// The exponent should be default 0
-				int exponent = certProfile.getQCEtsiValueLimitExp();
-				MonetaryValue value = new MonetaryValue(new Iso4217CurrencyCode(certProfile.getQCEtsiValueLimitCurrency()), limit, exponent);
-				qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue, value);
-				qcs.add(qc);
-			}
+		// Both value and currency must be available for this extension
+		if (certProfile.getUseQCEtsiValueLimit() &&
+				(certProfile.getQCEtsiValueLimit() >= 0) && (certProfile.getQCEtsiValueLimitCurrency() != null) ) {
+			final int limit = certProfile.getQCEtsiValueLimit();
+			// The exponent should be default 0
+			final int exponent = certProfile.getQCEtsiValueLimitExp();
+			final MonetaryValue value = new MonetaryValue(new Iso4217CurrencyCode(certProfile.getQCEtsiValueLimitCurrency()), limit, exponent);
+			qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue, value);
+			qcs.add(qc);
 		}
 
 		if (certProfile.getUseQCEtsiRetentionPeriod()) {
-			DERInteger years = new DERInteger( ((Integer) certProfile.getQCEtsiRetentionPeriod()) );
-          		qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_RetentionPeriod, years);
-		        qcs.add(qc);
-	        }
+			final DERInteger years = new DERInteger( ((Integer) certProfile.getQCEtsiRetentionPeriod()) );
+			qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_RetentionPeriod, years);
+			qcs.add(qc);
+		}
         
 		// ETSI Statement claiming that the private key resides in a Signature Creation Device
 		if (certProfile.getUseQCEtsiSignatureDevice()) {
@@ -139,19 +131,18 @@ public class QcStatement extends StandardCertificateExtension {
 		//   -- This certificate, according to Act. No. xxxx Electronic Signature Law is a qualified electronic certificate
 		//
 		// YourCustomUTF8String ::= UTF8String
-		if (certProfile.getUseQCCustomString()) {
-			if (!StringUtils.isEmpty(certProfile.getQCCustomStringOid()) && !StringUtils.isEmpty(certProfile.getQCCustomStringText())) {
-				DERUTF8String str = new DERUTF8String(certProfile.getQCCustomStringText());
-				DERObjectIdentifier oid = new DERObjectIdentifier(certProfile.getQCCustomStringOid());
-				qc = new QCStatement(oid, str);
-				qcs.add(qc);            		 
-			}
+		if (certProfile.getUseQCCustomString() && 
+				!StringUtils.isEmpty(certProfile.getQCCustomStringOid()) && !StringUtils.isEmpty(certProfile.getQCCustomStringText())) {
+			final DERUTF8String str = new DERUTF8String(certProfile.getQCCustomStringText());
+			final DERObjectIdentifier oid = new DERObjectIdentifier(certProfile.getQCCustomStringOid());
+			qc = new QCStatement(oid, str);
+			qcs.add(qc);            		 
 		}
-		if (qcs.size() >  0) {
-			ASN1EncodableVector vec = new ASN1EncodableVector();
-			Iterator iter = qcs.iterator();
+		if (!qcs.isEmpty()) {
+			final ASN1EncodableVector vec = new ASN1EncodableVector();
+			final Iterator<QCStatement> iter = qcs.iterator();
 			while (iter.hasNext()) {
-				QCStatement q = (QCStatement)iter.next();
+				final QCStatement q = (QCStatement)iter.next();
 				vec.add(q);
 			}
 			ret = new DERSequence(vec);

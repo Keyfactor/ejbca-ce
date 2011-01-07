@@ -51,16 +51,9 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(CrlDistributionPoints.class);
 	
 	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public CrlDistributionPoints() {
-		super();
-	}
-
-	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.CRLDistributionPoints.getId());
 		super.setCriticalFlag(certProf.getCRLDistributionPointCritical());
 	}
@@ -73,47 +66,51 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		String crldistpoint = certProfile.getCRLDistributionPointURI();
 		String crlissuer=certProfile.getCRLIssuer();
-		X509CA x509ca = (X509CA)ca;
+		final X509CA x509ca = (X509CA)ca;
 		if(certProfile.getUseDefaultCRLDistributionPoint()){
 			crldistpoint = x509ca.getDefaultCRLDistPoint();
 			crlissuer = x509ca.getDefaultCRLIssuer();
 		}
 		// Multiple CDPs are separated with the ';' sign        	         	 
-		ArrayList dpns = new ArrayList();
+		final ArrayList<DistributionPointName> dpns = new ArrayList<DistributionPointName>();
 		if (StringUtils.isNotEmpty(crldistpoint)) {
-			Iterator/*String*/ it = StringTools.splitURIs(crldistpoint).iterator();
+			final Iterator<String> it = StringTools.splitURIs(crldistpoint).iterator();
 			while (it.hasNext()) {
 				// 6 is URI
-				String uri = (String) it.next();
-				GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
-				log.debug("Added CRL distpoint: "+uri);
-				ASN1EncodableVector vec = new ASN1EncodableVector();
+				final String uri = (String) it.next();
+				final GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+				if (log.isDebugEnabled()) {
+					log.debug("Added CRL distpoint: "+uri);
+				}
+				final ASN1EncodableVector vec = new ASN1EncodableVector();
 				vec.add(gn);
-				GeneralNames gns = new GeneralNames(new DERSequence(vec));
-				DistributionPointName dpn = new DistributionPointName(0, gns);
+				final GeneralNames gns = new GeneralNames(new DERSequence(vec));
+				final DistributionPointName dpn = new DistributionPointName(0, gns);
 				dpns.add(dpn);
 			}            	
 		}
 		// CRL issuer works much like Dist point URI. If separated by ; it is put in the same global distPoint as the URI, 
 		// if there is more of one of them, the one with more is put in an own global distPoint.
-		ArrayList issuers = new ArrayList();
+		final ArrayList<GeneralNames> issuers = new ArrayList<GeneralNames>();
 		if (StringUtils.isNotEmpty(crlissuer)) {
-			StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
+			final StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
 			while (tokenizer.hasMoreTokens()) {
-				String issuer = tokenizer.nextToken();
-				GeneralName gn = new GeneralName(new X509Name(issuer));
-				log.debug("Added CRL issuer: "+issuer);
-				ASN1EncodableVector vec = new ASN1EncodableVector();
+				final String issuer = tokenizer.nextToken();
+				final GeneralName gn = new GeneralName(new X509Name(issuer));
+				if (log.isDebugEnabled()) {
+					log.debug("Added CRL issuer: "+issuer);
+				}
+				final ASN1EncodableVector vec = new ASN1EncodableVector();
 				vec.add(gn);
-				GeneralNames gns = new GeneralNames(new DERSequence(vec));
+				final GeneralNames gns = new GeneralNames(new DERSequence(vec));
 				issuers.add(gns);
 			}            	
 		}
-		ArrayList distpoints = new ArrayList();
-		if ( (issuers.size() > 0) || (dpns.size() > 0) ) {
+		final ArrayList<DistributionPoint> distpoints = new ArrayList<DistributionPoint>();
+		if ( (!issuers.isEmpty()) || (!dpns.isEmpty()) ) {
 			int i = dpns.size();
 			if (issuers.size() > i) {
 				i = issuers.size();
@@ -133,8 +130,8 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 			}
 		}
 		CRLDistPoint ret = null;
-		if (distpoints.size() > 0) {
-			ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));			
+		if (!distpoints.isEmpty()) {
+			ret = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[distpoints.size()]));			
 		} 
 		if (ret == null) {
 			log.error("DrlDistributionPoints missconfigured, no distribution points available.");

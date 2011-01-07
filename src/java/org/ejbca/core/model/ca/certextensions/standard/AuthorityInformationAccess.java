@@ -44,17 +44,11 @@ import org.ejbca.core.model.ra.UserDataVO;
 public class AuthorityInformationAccess extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(AuthorityInformationAccess.class);
 
-	/**
-	 * Constructor for creating the certificate extension 
-	 */
-	public AuthorityInformationAccess() {
-		super();
-	}
 
 	/**
 	 * @see StandardCertificateExtension#init(CertificateProfile)
 	 */
-	public void init(CertificateProfile certProf) {
+	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.AuthorityInfoAccess.getId());
 		super.setCriticalFlag(false);
 	}
@@ -67,15 +61,15 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @return a DEREncodable or null.
 	 */
-	public DEREncodable getValue(UserDataVO subject, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
-        ASN1EncodableVector accessList = new ASN1EncodableVector();
+	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+		final ASN1EncodableVector accessList = new ASN1EncodableVector();
         GeneralName accessLocation;
         String url;
 
         // caIssuers
-        List<String> caIssuers = certProfile.getCaIssuers();
+        final List<String> caIssuers = certProfile.getCaIssuers();
         if (caIssuers != null) {
-        	for(Iterator<String> it = caIssuers.iterator(); it.hasNext(); ) {
+        	for(final Iterator<String> it = caIssuers.iterator(); it.hasNext(); ) {
         		url = it.next();
         		if(StringUtils.isNotEmpty(url)) {
         			accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
@@ -86,7 +80,7 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
         }
 
         // ocsp url
-        X509CA x509ca = (X509CA)ca;
+        final X509CA x509ca = (X509CA)ca;
         url = certProfile.getOCSPServiceLocatorURI();
         if(certProfile.getUseDefaultOCSPServiceLocator()){
         	url = x509ca.getDefaultOCSPServiceLocator();
