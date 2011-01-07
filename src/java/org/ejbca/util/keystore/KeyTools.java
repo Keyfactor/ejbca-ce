@@ -98,8 +98,8 @@ import org.ejbca.util.FileTools;
  *
  * @version $Id$
  */
-public class KeyTools {
-    private static Logger log = Logger.getLogger(KeyTools.class);
+public final class KeyTools {
+    private static final Logger log = Logger.getLogger(KeyTools.class);
 
     /** The name of Suns pkcs11 implementation */
     public static final String SUNPKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
@@ -139,13 +139,13 @@ public class KeyTools {
      * @throws InvalidAlgorithmParameterException 
      * @see org.ejbca.core.model.AlgorithmConstants#KEYALGORITHM_RSA
      */
-    public static KeyPair genKeys(String keySpec, AlgorithmParameterSpec algSpec, String keyAlg)
+    public static KeyPair genKeys(final String keySpec, final AlgorithmParameterSpec algSpec, final String keyAlg)
         throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
     	if (log.isTraceEnabled()) {
             log.trace(">genKeys("+keySpec+", "+keyAlg+")");    		
     	}
 
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
+    	final KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
         	AlgorithmParameterSpec ecSpec = null;
         	if ( (keySpec != null) && !StringUtils.equals(keySpec,"implicitlyCA") ) {
@@ -169,15 +169,15 @@ public class KeyTools {
         	keygen.initialize(ecSpec, new SecureRandom());
         } else {
         	// RSA or DSA keys
-        	int keysize = Integer.parseInt(keySpec);
+        	final int keysize = Integer.parseInt(keySpec);
             keygen.initialize(keysize);
         }
 
-        KeyPair keys = keygen.generateKeyPair();
+        final KeyPair keys = keygen.generateKeyPair();
 
         if (log.isDebugEnabled()) {
-            PublicKey pk = keys.getPublic();
-        	int len = getKeyLength(pk);
+        	final PublicKey pk = keys.getPublic();
+        	final int len = getKeyLength(pk);
             log.debug("Generated " + keys.getPublic().getAlgorithm() + " keys with length " + len);        	
         }
 		log.trace("<genKeys()");
@@ -187,7 +187,7 @@ public class KeyTools {
     /** 
      * @see KeyTools#genKeys(String,AlgorithmParameterSpec,String)
      */
-    public static KeyPair genKeys(String keySpec, String keyAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public static KeyPair genKeys(final String keySpec, final String keyAlg) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
     	return genKeys(keySpec, null, keyAlg);
     }
 
@@ -201,40 +201,40 @@ public class KeyTools {
      * @throws NoSuchAlgorithmException 
      * @throws InvalidKeySpecException 
      */
-    public static PublicKey getECPublicKeyWithParams(PublicKey pk, String keySpec) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final String keySpec) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
     	PublicKey ret = pk;
     	if ( (pk instanceof PublicKeyEC) && (keySpec != null) ) {
-    		PublicKeyEC pkec = (PublicKeyEC) pk;
+    		final PublicKeyEC pkec = (PublicKeyEC) pk;
     		// The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
-    		ECParameterSpec spec = pkec.getParams();
+    		final ECParameterSpec spec = pkec.getParams();
     		if (spec == null) {
     			// we did not have the parameter specs, lets create them because we know which curve we are using
-    			org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(keySpec);
-    			java.security.spec.ECPoint p = pkec.getW();
-    			org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p, false);
-    			ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
-		        KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
+    			final org.bouncycastle.jce.spec.ECParameterSpec bcspec = ECNamedCurveTable.getParameterSpec(keySpec);
+    			final java.security.spec.ECPoint p = pkec.getW();
+    			final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(bcspec.getCurve(), p, false);
+    			final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
+    			final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
     	        ret = keyfact.generatePublic(pubKey);
     		}
     	} 
     	return ret;
     }
     
-    public static PublicKey getECPublicKeyWithParams(PublicKey pk, PublicKey pkwithparams) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+    public static PublicKey getECPublicKeyWithParams(final PublicKey pk, final PublicKey pkwithparams) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
     	PublicKey ret = pk;
     	if ( (pk instanceof PublicKeyEC) && (pkwithparams instanceof PublicKeyEC) ) {
-    		PublicKeyEC pkec = (PublicKeyEC) pk;
+    		final PublicKeyEC pkec = (PublicKeyEC) pk;
     		// The public key of IS and DV certificate do not have any parameters so we have to do some magic to get a complete EC public key
-    		ECParameterSpec spec = pkec.getParams();
+    		final ECParameterSpec spec = pkec.getParams();
     		if (spec == null) {
-        		PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
-        		ECParameterSpec pkspec = pkecp.getParams();
+    			final PublicKeyEC pkecp = (PublicKeyEC) pkwithparams;
+    			final ECParameterSpec pkspec = pkecp.getParams();
         		if (pkspec != null) {
-        			org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec, false);
-        			java.security.spec.ECPoint p = pkec.getW();
-        			org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
-        			ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
-    		        KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
+        			final org.bouncycastle.jce.spec.ECParameterSpec bcspec = EC5Util.convertSpec(pkspec, false);
+        			final java.security.spec.ECPoint p = pkec.getW();
+        			final org.bouncycastle.math.ec.ECPoint ecp = EC5Util.convertPoint(pkspec, p, false);
+        			final ECPublicKeySpec pubKey = new ECPublicKeySpec(ecp, bcspec);
+        			final KeyFactory keyfact = KeyFactory.getInstance("ECDSA", "BC");
     		        ret = keyfact.generatePublic(pubKey);        			
         		} else {
         			log.info("pkwithparams does not have any params.");
@@ -252,14 +252,14 @@ public class KeyTools {
      * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated, 
      * for example if the key is an EC key and the "implicitlyCA" encoding is used.
      */
-	public static int getKeyLength(PublicKey pk) {
+	public static int getKeyLength(final PublicKey pk) {
 		int len = -1;
 		if (pk instanceof RSAPublicKey) {
-			RSAPublicKey rsapub = (RSAPublicKey) pk;
+			final RSAPublicKey rsapub = (RSAPublicKey) pk;
 			len = rsapub.getModulus().bitLength();
 		} else if (pk instanceof JCEECPublicKey) {
-			JCEECPublicKey ecpriv = (JCEECPublicKey) pk;
-			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
+			final JCEECPublicKey ecpriv = (JCEECPublicKey) pk;
+			final org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
 			if (spec != null) {
 				len = spec.getN().bitLength();				
 			} else {
@@ -267,8 +267,8 @@ public class KeyTools {
 				len = 0;
 			}
 		} else if (pk instanceof ECPublicKey) {
-			ECPublicKey ecpriv = (ECPublicKey) pk;
-			java.security.spec.ECParameterSpec spec = ecpriv.getParams();
+			final ECPublicKey ecpriv = (ECPublicKey) pk;
+			final java.security.spec.ECParameterSpec spec = ecpriv.getParams();
 			if (spec != null) {
 				len = spec.getOrder().bitLength(); // does this really return something we expect?
 			} else {
@@ -276,7 +276,7 @@ public class KeyTools {
 				len = 0;
 			}
 		} else if (pk instanceof DSAPublicKey) {
-			DSAPublicKey dsapub = (DSAPublicKey) pk;
+			final DSAPublicKey dsapub = (DSAPublicKey) pk;
 			if ( dsapub.getParams() != null ) {
 				len = dsapub.getParams().getP().bitLength();
 			} else {
@@ -291,36 +291,36 @@ public class KeyTools {
      * @param pk PublicKey used to derive the AlgorithmParameterSpec
      * @return null if key is unsupported or pk is null, otherwise a AlgorithmParameterSpec.
      */
-	public static AlgorithmParameterSpec getKeyGenSpec(PublicKey pk) {
+	public static AlgorithmParameterSpec getKeyGenSpec(final PublicKey pk) {
 		if (pk == null) {
 			return null;
 		}
 		AlgorithmParameterSpec ret = null;
 		if (pk instanceof RSAPublicKey) {
 			log.debug("getKeyGenSpec: RSA");
-			RSAPublicKey rpk = (RSAPublicKey)pk;
+			final RSAPublicKey rpk = (RSAPublicKey)pk;
 			ret = new RSAKeyGenParameterSpec(getKeyLength(pk), rpk.getPublicExponent());
 		} else if (pk instanceof DSAPublicKey) {
 			log.debug("getKeyGenSpec: DSA");
-			DSAPublicKey dpk = (DSAPublicKey)pk;
-			DSAParams params = dpk.getParams();
+			final DSAPublicKey dpk = (DSAPublicKey)pk;
+			final DSAParams params = dpk.getParams();
 			ret = new DSAParameterSpec(params.getP(), params.getQ(), params.getG());
 		} else if (pk instanceof ECPublicKey) {
 			log.debug("getKeyGenSpec: ECPublicKey");
-			ECPublicKey ecpub = (ECPublicKey) pk;
-			java.security.spec.ECParameterSpec sunsp = ecpub.getParams();
-			EllipticCurve ecurve = new EllipticCurve(sunsp.getCurve().getField(), sunsp.getCurve().getA(), sunsp.getCurve().getB());
+			final ECPublicKey ecpub = (ECPublicKey) pk;
+			final java.security.spec.ECParameterSpec sunsp = ecpub.getParams();
+			final EllipticCurve ecurve = new EllipticCurve(sunsp.getCurve().getField(), sunsp.getCurve().getA(), sunsp.getCurve().getB());
 			//ECParameterSpec par = new ECNamedCurveSpec(null, sunsp.getCurve(), sunsp.getGenerator(), sunsp.getOrder(), BigInteger.valueOf(sunsp.getCofactor()));
-			ECParameterSpec params = new ECParameterSpec(ecurve, sunsp.getGenerator(), sunsp.getOrder(), sunsp.getCofactor());
+			final ECParameterSpec params = new ECParameterSpec(ecurve, sunsp.getGenerator(), sunsp.getOrder(), sunsp.getCofactor());
 			if (log.isDebugEnabled()) {
 				log.debug("Fieldsize: "+params.getCurve().getField().getFieldSize());
-				EllipticCurve curve = params.getCurve();
+				final EllipticCurve curve = params.getCurve();
 				log.debug("CurveA: "+curve.getA().toString(16));
 				log.debug("CurveB: "+curve.getB().toString(16));
 				log.debug("CurveSeed: "+curve.getSeed());
-				ECFieldFp field = (ECFieldFp)curve.getField();
+				final ECFieldFp field = (ECFieldFp)curve.getField();
 				log.debug("CurveSfield: "+field.getP().toString(16));
-				ECPoint p = params.getGenerator();
+				final ECPoint p = params.getGenerator();
 				log.debug("Generator: "+p.getAffineX().toString(16)+", "+p.getAffineY().toString(16));
 				log.debug("Order: "+params.getOrder().toString(16));
 				log.debug("CoFactor: "+params.getCofactor());				
@@ -328,11 +328,11 @@ public class KeyTools {
 			ret = params;
 		} else if (pk instanceof JCEECPublicKey) {
 			log.debug("getKeyGenSpec: JCEECPublicKey");
-			JCEECPublicKey ecpub = (JCEECPublicKey) pk;
-			org.bouncycastle.jce.spec.ECParameterSpec bcsp = ecpub.getParameters();
-			ECCurve curve = bcsp.getCurve();
+			final JCEECPublicKey ecpub = (JCEECPublicKey) pk;
+			final org.bouncycastle.jce.spec.ECParameterSpec bcsp = ecpub.getParameters();
+			final ECCurve curve = bcsp.getCurve();
 			//TODO: this probably does not work for key generation with the Sun PKCS#11 provider. Maybe seed needs to be set to null as above? Or something else, the BC curve is it the same?
-			ECParameterSpec params = new ECNamedCurveSpec(null, curve, bcsp.getG(), bcsp.getN(), bcsp.getH());
+			final ECParameterSpec params = new ECNamedCurveSpec(null, curve, bcsp.getG(), bcsp.getN(), bcsp.getH());
 			ret = params;
 			//EllipticCurve ecc = new EllipticCurve(curve.)
 			//ECParameterSpec sp = new ECParameterSpec(, bcsp.getG(), bcsp.getN(), bcsp.getH().intValue());
@@ -353,7 +353,7 @@ public class KeyTools {
      *
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Certificate cacert) 
+    public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate cacert) 
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
 
@@ -377,7 +377,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Collection<Certificate> cacerts)
+    public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Collection<Certificate> cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null) {
@@ -400,7 +400,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, Certificate cert, Certificate[] cachain) 
+    public static KeyStore createP12(final String alias, final PrivateKey privKey, final Certificate cert, final Certificate[] cachain) 
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
     	if (log.isTraceEnabled()) {
             log.trace(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
@@ -413,25 +413,25 @@ public class KeyTools {
         if (cachain != null) {
             len += cachain.length;
         }
-        Certificate[] chain = new Certificate[len];
+        final Certificate[] chain = new Certificate[len];
         // To not get a ClassCastException we need to generate a real new certificate with BC
-        CertificateFactory cf = CertTools.getCertificateFactory();
+        final CertificateFactory cf = CertTools.getCertificateFactory();
         chain[0] = cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
 
         if (cachain != null) {
             for (int i = 0; i < cachain.length; i++) {
-                X509Certificate tmpcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
+            	final X509Certificate tmpcert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
                             cachain[i].getEncoded()));
                 chain[i + 1] = tmpcert;
             }
         }
         if (chain.length > 1) {
             for (int i = 1; i < chain.length; i++) {
-                X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
+            	final X509Certificate cacert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
                             chain[i].getEncoded()));
                 // Set attributes on CA-cert
                 try {
-                    PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
+                	final PKCS12BagAttributeCarrier caBagAttr = (PKCS12BagAttributeCarrier) chain[i];
                     // We construct a friendly name for the CA, and try with some parts from the DN if they exist.
                     String cafriendly = CertTools.getPartFromDN(CertTools.getSubjectDN(cacert), "CN");
                     // On the ones below we +i to make it unique, O might not be otherwise
@@ -454,7 +454,7 @@ public class KeyTools {
 
         // Set attributes on user-cert
         try {
-        	PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
+        	final PKCS12BagAttributeCarrier certBagAttr = (PKCS12BagAttributeCarrier) chain[0];
         	certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
         	// in this case we just set the local key id to that of the public key
         	certBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
@@ -462,11 +462,11 @@ public class KeyTools {
         	log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
         // "Clean" private key, i.e. remove any old attributes
-        KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), "BC");
-        PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(privKey.getEncoded()));
+        final KeyFactory keyfact = KeyFactory.getInstance(privKey.getAlgorithm(), "BC");
+        final PrivateKey pk = keyfact.generatePrivate(new PKCS8EncodedKeySpec(privKey.getEncoded()));
         // Set attributes for private key
         try {
-        	PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
+        	final PKCS12BagAttributeCarrier keyBagAttr = (PKCS12BagAttributeCarrier) pk;
         	// in this case we just set the local key id to that of the public key
         	keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString(alias));
         	keyBagAttr.setBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, createSubjectKeyId(chain[0].getPublicKey()));
@@ -474,7 +474,7 @@ public class KeyTools {
         	log.error("ClassCastException setting BagAttributes, can not set friendly name: ", e);
         }
         // store the key and the certificate chain
-        KeyStore store = KeyStore.getInstance("PKCS12", "BC");
+        final KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
         if (log.isTraceEnabled()) {
@@ -498,13 +498,13 @@ public class KeyTools {
      *
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createJKS(String alias, PrivateKey privKey, String password,
-        X509Certificate cert, Certificate[] cachain) throws Exception {
+    public static KeyStore createJKS(final String alias, final PrivateKey privKey, final String password,
+    		final X509Certificate cert, final Certificate[] cachain) throws Exception {
     	if (log.isTraceEnabled()) {
     		log.trace(">createJKS: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
     	            ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
     	}
-        String caAlias = "cacert";
+    	final String caAlias = "cacert";
 
         // Certificate chain
         if (cert == null) {
@@ -514,7 +514,7 @@ public class KeyTools {
         if (cachain != null) {
             len += cachain.length;
         }
-        Certificate[] chain = new Certificate[len];
+        final Certificate[] chain = new Certificate[len];
         chain[0] = cert;
         if (cachain != null) {
             for (int i = 0; i < cachain.length; i++) {
@@ -523,11 +523,11 @@ public class KeyTools {
         }
 
         // store the key and the certificate chain
-        KeyStore store = KeyStore.getInstance("JKS");
+        final KeyStore store = KeyStore.getInstance("JKS");
         store.load(null, null);
 
         // First load the key entry
-        X509Certificate[] usercert = new X509Certificate[1];
+        final X509Certificate[] usercert = new X509Certificate[1];
         usercert[0] = cert;
         store.setKeyEntry(alias, privKey, password.toCharArray(), usercert);
 
@@ -552,11 +552,11 @@ public class KeyTools {
     /**
      * Convert a KeyStore to PEM format.
      */
-    public static byte[] getSinglePemFromKeyStore(KeyStore ks, char[] password) throws KeyStoreException, CertificateEncodingException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    public static byte[] getSinglePemFromKeyStore(final KeyStore ks, final char[] password) throws KeyStoreException, CertificateEncodingException, IOException, UnrecoverableKeyException, NoSuchAlgorithmException {
+    	final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         // Find the key private key entry in the keystore
-        Enumeration<String> e = ks.aliases();
+    	final Enumeration<String> e = ks.aliases();
         Object o = null;
         String alias = "";
         PrivateKey serverPrivKey = null;
@@ -576,10 +576,10 @@ public class KeyTools {
             privKeyEncoded = serverPrivKey.getEncoded();
         }
 
-        Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
-        X509Certificate userX509Certificate = (X509Certificate) chain[0];
+        final Certificate[] chain = KeyTools.getCertChain(ks, (String) o);
+        final X509Certificate userX509Certificate = (X509Certificate) chain[0];
 
-        byte[] output = userX509Certificate.getEncoded();
+        final byte[] output = userX509Certificate.getEncoded();
         String sn = CertTools.getSubjectDN(userX509Certificate);
 
         String subjectdnpem = sn.replace(',', '/');
@@ -592,7 +592,7 @@ public class KeyTools {
         buffer.write(BEGIN_PRIVATE_KEY);
         buffer.write(NL);
 
-        byte[] privKey = Base64.encode(privKeyEncoded);
+        final byte[] privKey = Base64.encode(privKeyEncoded);
         buffer.write(privKey);
         buffer.write(NL);
         buffer.write(END_PRIVATE_KEY);
@@ -610,7 +610,7 @@ public class KeyTools {
         buffer.write(BEGIN_CERTIFICATE);
         buffer.write(NL);
 
-        byte[] userCertB64 = Base64.encode(output);
+        final byte[] userCertB64 = Base64.encode(output);
         buffer.write(userCertB64);
         buffer.write(NL);
         buffer.write(END_CERTIFICATE);
@@ -618,7 +618,7 @@ public class KeyTools {
 
         if (!CertTools.isSelfSigned(userX509Certificate)) {
             for (int num = 1; num < chain.length; num++) {
-                X509Certificate tmpX509Cert = (X509Certificate) chain[num];
+            	final X509Certificate tmpX509Cert = (X509Certificate) chain[num];
                 sn = CertTools.getSubjectDN(tmpX509Cert);
 
                 String cn = CertTools.getPartFromDN(sn, "CN");
@@ -640,11 +640,11 @@ public class KeyTools {
                 buffer.write(issuerdnpem.getBytes());
                 buffer.write(NL);
 
-                byte[] tmpOutput = tmpX509Cert.getEncoded();
+                final byte[] tmpOutput = tmpX509Cert.getEncoded();
                 buffer.write(BEGIN_CERTIFICATE);
                 buffer.write(NL);
 
-                byte[] tmpCACertB64 = Base64.encode(tmpOutput);
+                final byte[] tmpCACertB64 = Base64.encode(tmpOutput);
                 buffer.write(tmpCACertB64);
                 buffer.write(NL);
                 buffer.write(END_CERTIFICATE);
@@ -662,12 +662,12 @@ public class KeyTools {
      *
      * @return array of Certificate, or null if no certificates are found.
      */
-    public static Certificate[] getCertChain(KeyStore keyStore, String privateKeyAlias)
+    public static Certificate[] getCertChain(final KeyStore keyStore, final String privateKeyAlias)
         throws KeyStoreException {
     	if (log.isTraceEnabled()) {
     		log.trace(">getCertChain: alias='" + privateKeyAlias + "'");
     	}
-        Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
+    	final Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
         if (certchain == null) {
             return null;
         }
@@ -695,7 +695,7 @@ public class KeyTools {
         }
 
         // If we came here, we have a cert which is not root cert in 'cert'
-        ArrayList<Certificate> array = new ArrayList<Certificate>();
+        final ArrayList<Certificate> array = new ArrayList<Certificate>();
 
         for (int i = 0; i < certchain.length; i++) {
             array.add(certchain[i]);
@@ -704,9 +704,9 @@ public class KeyTools {
         boolean stop = false;
 
         while (!stop) {
-            X509Certificate cert = (X509Certificate) array.get(array.size() - 1);
-            String ialias = CertTools.getPartFromDN(CertTools.getIssuerDN(cert), "CN");
-            Certificate[] chain1 = keyStore.getCertificateChain(ialias);
+        	final X509Certificate cert = (X509Certificate) array.get(array.size() - 1);
+        	final String ialias = CertTools.getPartFromDN(CertTools.getIssuerDN(cert), "CN");
+        	final Certificate[] chain1 = keyStore.getCertificateChain(ialias);
 
             if (chain1 == null) {
                 stop = true;
@@ -731,7 +731,7 @@ public class KeyTools {
             }
         }
 
-        Certificate[] ret = new Certificate[array.size()];
+        final Certificate[] ret = new Certificate[array.size()];
 
         for (int i = 0; i < ret.length; i++) {
             ret[i] = (X509Certificate) array.get(i);
@@ -753,7 +753,7 @@ public class KeyTools {
      *
      * @return SubjectKeyIdentifer asn.1 structure
      */
-    public static SubjectKeyIdentifier createSubjectKeyId(PublicKey pubKey) {
+    public static SubjectKeyIdentifier createSubjectKeyId(final PublicKey pubKey) {
         try {
             final ASN1Sequence keyASN1Sequence;
             final Object keyObject = new ASN1InputStream(new ByteArrayInputStream(pubKey.getEncoded())).readObject();
@@ -766,7 +766,7 @@ public class KeyTools {
             }
             return new SubjectKeyIdentifier(new SubjectPublicKeyInfo(keyASN1Sequence));
         } catch (Exception e) {
-        	final RuntimeException e2 = new RuntimeException("error creating key");
+        	final RuntimeException e2 = new RuntimeException("error creating key"); // NOPMD
         	e2.initCause(e);
         	throw e2;
         }
@@ -807,8 +807,8 @@ public class KeyTools {
             return getP11Provider(new FileInputStream(fileName), null);
         }
         // Properties for the SUN PKCS#11 provider
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    	PrintWriter pw = new PrintWriter(baos);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintWriter pw = new PrintWriter(baos);
     	pw.println("name = "+libFile.getName()+"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
 
@@ -854,7 +854,7 @@ public class KeyTools {
     	}
 
         // Properties for the IAIK PKCS#11 provider
-    	Properties prop = new Properties();
+    	final Properties prop = new Properties();
     	prop.setProperty("PKCS11_NATIVE_MODULE", libFile.getCanonicalPath());
     	// If using Slot Index it is denoted by brackets in iaik
     	prop.setProperty("SLOT_ID", isIndex ? ("["+slot+"]") : slot);    
@@ -870,7 +870,7 @@ public class KeyTools {
      * @return Java security Provider for a PCKS#11 token
      * @throws IOException if neither the IAIK or the SUN provider can be created
      */
-    private static Provider getP11Provider(final InputStream is, Properties prop) throws IOException {
+    private static Provider getP11Provider(final InputStream is, final Properties prop) throws IOException {
 
         // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because 
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
@@ -905,7 +905,7 @@ public class KeyTools {
                 ret = (Provider)implClass.getConstructor(InputStream.class).newInstance(new Object[] {is});
             } catch (Exception e) {
                 log.error("Error constructing pkcs11 provider: "+e.getMessage());
-                IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
+                final IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
                 ioe.initCause(e);
                 throw ioe;
             }        	
@@ -939,8 +939,8 @@ public class KeyTools {
      * @param data the data to sign
      * @return the signature
      */
-    public static byte[] signData(PrivateKey privateKey , String signatureAlgorithm, byte[] data) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-    	Signature signer = Signature.getInstance(signatureAlgorithm);
+    public static byte[] signData(final PrivateKey privateKey, final String signatureAlgorithm, final byte[] data) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+    	final Signature signer = Signature.getInstance(signatureAlgorithm);
         signer.initSign(privateKey);
         signer.update(data);
         return (signer.sign());
@@ -955,8 +955,8 @@ public class KeyTools {
      * @param signature the signature
      * @return true if the signature is ok 
      */
-    public static boolean verifyData(PublicKey publicKey , String signatureAlgorithm, byte[] data, byte[] signature) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        Signature signer = Signature.getInstance(signatureAlgorithm);
+    public static boolean verifyData(final PublicKey publicKey , final String signatureAlgorithm, final byte[] data, final byte[] signature) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
+    	final Signature signer = Signature.getInstance(signatureAlgorithm);
         signer.initVerify(publicKey);
         signer.update(data);
         return (signer.verify(signature));    	
@@ -972,7 +972,7 @@ public class KeyTools {
      * @throws InvalidKeyException if the public key can not be used to verify a string signed by the private key, because the key is wrong or the signature operation fails for other reasons such as a NoSuchAlgorithmException or SignatureException.
      * @throws NoSuchProviderException if the provider is not installed.
      */
-    public static void testKey(PrivateKey priv, PublicKey pub, String provider) throws InvalidKeyException, NoSuchProviderException {
+    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException, NoSuchProviderException {
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         final String testSigAlg;
