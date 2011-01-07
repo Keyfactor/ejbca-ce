@@ -17,8 +17,6 @@ import java.util.HashMap;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * Tests the DNFieldExtractor class.
@@ -26,35 +24,23 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class DnFieldExtractorTest extends TestCase {
-    private static Logger log = Logger.getLogger(DnFieldExtractorTest.class);
 
     /**
-
      * @param name name
      */
-    public DnFieldExtractorTest(String name) {
+    public DnFieldExtractorTest(final String name) {
         super(name);
-    }
-
-    public void setUp() throws Exception {
-        log.trace(">setUp()");
-        log.trace("<setUp()");
-    }
-
-    public void tearDown() throws Exception {
-        log.trace(">tearDown()");
-        log.trace("<tearDown()");
     }
 
     /**
      * @throws Exception error
      */
     public void test01CheckDnFields() throws Exception {
-    	String comp = DnComponents.getDnExtractorFieldFromDnId(34);
+    	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
     	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
-    	HashMap i = extractor.getNumberOfFields();
+    	final HashMap i = extractor.getNumberOfFields();
     	assertEquals(26,i.size());
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
@@ -64,13 +50,13 @@ public class DnFieldExtractorTest extends TestCase {
     	assertEquals("PrimeKey", dc);
     	dc = extractor.getField(DNFieldExtractor.DC, 1);
     	assertEquals("com", dc);
-    	String l = extractor.getField(DNFieldExtractor.L, 0);
+    	final String l = extractor.getField(DNFieldExtractor.L, 0);
     	assertEquals("Stockholm", l);
-    	String name = extractor.getField(DNFieldExtractor.NAME, 0);
+    	final String name = extractor.getField(DNFieldExtractor.NAME, 0);
     	assertEquals("tomas", name);
-    	String street = extractor.getField(DNFieldExtractor.STREET, 0);
+    	final String street = extractor.getField(DNFieldExtractor.STREET, 0);
     	assertEquals("a street", street);
-    	String pseudo = extractor.getField(DNFieldExtractor.PSEUDONYM, 0);
+    	final String pseudo = extractor.getField(DNFieldExtractor.PSEUDONYM, 0);
     	assertEquals("pseudo", pseudo);
     	int num = extractor.getNumberOfFields(DNFieldExtractor.DC);
     	assertEquals(2, num);
@@ -110,19 +96,19 @@ public class DnFieldExtractorTest extends TestCase {
     public void test01CheckAltNameFields() throws Exception {
     	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se,krb5principal=foo/bar@P.COM";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-    	HashMap i = extractor.getNumberOfFields();
+    	final HashMap i = extractor.getNumberOfFields();
     	assertEquals(12,i.size());
-        String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
+    	final String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
     	boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	boolean other = extractor.existsOther();
     	assertFalse(other);
-    	String email= extractor.getField(DNFieldExtractor.RFC822NAME, 0);
+    	final String email= extractor.getField(DNFieldExtractor.RFC822NAME, 0);
     	assertEquals("foo@bar.se", email);    	
     	int num = extractor.getNumberOfFields(DNFieldExtractor.RFC822NAME);
     	assertEquals(1, num);
-    	String krb = extractor.getField(DNFieldExtractor.KRB5PRINCIPAL, 0);
+    	final String krb = extractor.getField(DNFieldExtractor.KRB5PRINCIPAL, 0);
     	assertEquals("foo/bar@P.COM", krb);    	
     	num = extractor.getNumberOfFields(DNFieldExtractor.KRB5PRINCIPAL);
     	assertEquals(1, num);
@@ -179,17 +165,17 @@ public class DnFieldExtractorTest extends TestCase {
      * @throws Exception error
      */
     public void test01CheckDirAttrFields() throws Exception {
-    	String dn = "PlaceOfBirth=Stockholm,DateOfBirth=10660911";
+    	final String dn = "PlaceOfBirth=Stockholm,DateOfBirth=10660911";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
     	HashMap i = extractor.getNumberOfFields();
     	assertEquals(5,i.size());
-    	String dns = extractor.getField(DNFieldExtractor.PLACEOFBIRTH, 0);
+    	final String dns = extractor.getField(DNFieldExtractor.PLACEOFBIRTH, 0);
     	assertEquals("Stockholm", dns);
-    	boolean illegal = extractor.isIllegal();
+    	final boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
-    	boolean other = extractor.existsOther();
+    	final boolean other = extractor.existsOther();
     	assertFalse(other);
-    	String email= extractor.getField(DNFieldExtractor.DATEOFBIRTH, 0);
+    	final String email= extractor.getField(DNFieldExtractor.DATEOFBIRTH, 0);
     	assertEquals("10660911", email);
     	int num = extractor.getNumberOfFields(DNFieldExtractor.DATEOFBIRTH);
     	assertEquals(1, num);
