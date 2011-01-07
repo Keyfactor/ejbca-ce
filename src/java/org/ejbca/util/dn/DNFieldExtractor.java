@@ -16,6 +16,7 @@ package org.ejbca.util.dn;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 
 import org.apache.log4j.Logger;
 import org.ejbca.util.CertTools;
@@ -94,14 +95,14 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param dn DOCUMENT ME!
      * @param type DOCUMENT ME!
      */
-    public DNFieldExtractor(String dn, int type) {
+    public DNFieldExtractor(final String dn, final int type) {
         dnfields = new HashMap<Integer, String>();
         setDN(dn, type);
     }
     
     /** Fields that can be selected in Certificate profile and Publisher
      */
-    public static Integer[] getUseFields(int type) {
+    public static Integer[] getUseFields(final int type) {
     	if (type == DNFieldExtractor.TYPE_SUBJECTDN) {
     		return (Integer[])DnComponents.getDnDnIds().toArray(new Integer[0]);
     	} else if (type == DNFieldExtractor.TYPE_SUBJECTALTNAME) {
@@ -113,17 +114,16 @@ public class DNFieldExtractor implements java.io.Serializable {
     	}
     }
     
-    public static String getFieldComponent(int field, int type) {
+    public static String getFieldComponent(final int field, final int type) {
+    	final String ret;
     	if (type == DNFieldExtractor.TYPE_SUBJECTDN) {
-    		String ret = DnComponents.getDnExtractorFieldFromDnId(field);
-    		return ret;
+    		ret = DnComponents.getDnExtractorFieldFromDnId(field);
     	} else if (type == DNFieldExtractor.TYPE_SUBJECTALTNAME) {
-    		String ret = DnComponents.getAltNameExtractorFieldFromDnId(field);
-    		return ret;
+    		ret = DnComponents.getAltNameExtractorFieldFromDnId(field);
     	} else {
-    		String ret = DnComponents.getDirAttrExtractorFieldFromDnId(field);
-    		return ret;
+    		ret = DnComponents.getDirAttrExtractorFieldFromDnId(field);
     	}
+    	return ret;
     }
 
     /**
@@ -132,9 +132,9 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param dn DOCUMENT ME!
      * @param type DOCUMENT ME!
      */
-    public void setDN(String dn, int type) {    	
+    public final void setDN(final String dn, final int type) {    	
         this.type = type;
-        ArrayList<Integer> ids;
+        final ArrayList<Integer> ids;
         if (type == TYPE_SUBJECTDN) {
         	ids = DnComponents.getDnDnIds();
         } else if (type == TYPE_SUBJECTALTNAME){
@@ -145,9 +145,9 @@ public class DNFieldExtractor implements java.io.Serializable {
         	ids = new ArrayList<Integer>();
         }
         fieldnumbers = new HashMap<Integer, Integer>();
-        Iterator<Integer> it = ids.iterator();
+        final Iterator<Integer> it = ids.iterator();
         while (it.hasNext()) {
-        	Integer id = (Integer)it.next();
+        	final Integer id = (Integer)it.next();
             fieldnumbers.put(id, 0);
         }
 
@@ -155,13 +155,13 @@ public class DNFieldExtractor implements java.io.Serializable {
             dnfields = new HashMap<Integer, String>();
 
             try {
-                String[] dnexploded = LDAPDN.explodeDN(dn, false);
+            	final String[] dnexploded = LDAPDN.explodeDN(dn, false);
 
                 for (int i = 0; i < dnexploded.length; i++) {
                     boolean exists = false;       
-                    Iterator<Integer> iter = ids.iterator();
+                    final Iterator<Integer> iter = ids.iterator();
                     while (iter.hasNext()) {
-                    	Integer id = (Integer)iter.next();
+                    	final Integer id = (Integer)iter.next();
                     	Integer number = (Integer)fieldnumbers.get(id);
                     	String field;
                         if (type == TYPE_SUBJECTDN) {
@@ -171,14 +171,14 @@ public class DNFieldExtractor implements java.io.Serializable {
                         } else {
                         	field = DnComponents.getDirAttrExtractorFieldFromDnId(id.intValue());
                         }
-                        String dnex = dnexploded[i].toUpperCase();
+                        final String dnex = dnexploded[i].toUpperCase();
                         if (id.intValue() == DNFieldExtractor.URI) {
                             // Fix up URI, which can have several forms
-                            if (dnex.indexOf(CertTools.URI.toUpperCase()+"=") > -1) {
-                            	field = CertTools.URI.toUpperCase()+"=";
+                            if (dnex.indexOf(CertTools.URI.toUpperCase(Locale.ENGLISH)+"=") > -1) {
+                            	field = CertTools.URI.toUpperCase(Locale.ENGLISH)+"=";
                             }
-                            if (dnex.indexOf(CertTools.URI1.toUpperCase()+"=") > -1) {
-                            	field = CertTools.URI1.toUpperCase()+"=";
+                            if (dnex.indexOf(CertTools.URI1.toUpperCase(Locale.ENGLISH)+"=") > -1) {
+                            	field = CertTools.URI1.toUpperCase(Locale.ENGLISH)+"=";
                             }                        	
                         }
                         if (dnex.startsWith(field)) {
@@ -239,9 +239,8 @@ public class DNFieldExtractor implements java.io.Serializable {
      *         or "com" if DNFieldExtractor.DC and 1 was passed. 
      *         Returns an empty String "", if no such field with the number exists.    
      */
-    public String getField(int field, int number) {
-        String returnval;
-        returnval = (String) dnfields.get(Integer.valueOf((field * BOUNDRARY) + number));
+    public String getField(final int field, final int number) {
+        String returnval = (String) dnfields.get(Integer.valueOf((field * BOUNDRARY) + number));
 
         if (returnval == null) {
             returnval = "";
@@ -255,13 +254,13 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param field the DN component, one of the constants DNFieldExtractor.CN, ...
      * @return A String for example "CN=Tomas Gustavsson" if DNFieldExtractor.CN was passed, "DC=PrimeKey,DC=com" if DNFieldExtractor.DC was passed.    
      */
-    public String getFieldString(int field){
+    public String getFieldString(final int field){
         String retval = "";
         String fieldname = DnComponents.getDnExtractorFieldFromDnId(field);
         if(type != TYPE_SUBJECTDN){
         	fieldname = DnComponents.getAltNameExtractorFieldFromDnId(field);
         }
-        int num = getNumberOfFields(field);
+        final int num = getNumberOfFields(field);
         for(int i=0;i<num;i++){
         	if(retval.length() == 0) {
         	  retval += fieldname + getField(field,i);
@@ -289,11 +288,11 @@ public class DNFieldExtractor implements java.io.Serializable {
      *
      * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
-    public int getNumberOfFields(int field) {
+    public int getNumberOfFields(final int field) {
         Integer ret = (Integer)fieldnumbers.get(Integer.valueOf(field));
         if (ret == null) {
         	log.error("Not finding fieldnumber value for "+field);
-        	return 0;
+        	ret = Integer.valueOf(0);
         }
         return ret.intValue();
     }
