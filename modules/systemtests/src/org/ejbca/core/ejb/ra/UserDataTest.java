@@ -585,7 +585,39 @@ public class UserDataTest extends CaTestCase {
         }
         assertTrue("Two user with the same name were allowed!", ok);
     }
+    
+    public void test11UserPassword() throws Exception {
+    	UserData data = new UserData();
+    	data.setPassword("foo123");
+    	String hash = data.getPasswordHash();
+    	// Check that it by default generates a strong bcrypt password hash
+    	assertTrue(hash.startsWith("$2"));
+    	assertFalse(data.comparePassword("bar123"));
+    	assertTrue(data.comparePassword("foo123"));
+    	// Set the same password again, it should be another hash this time
+    	data.setPassword("foo123");
+    	String hash1 = data.getPasswordHash();
+    	assertTrue(hash1.startsWith("$2"));
+    	assertFalse(hash1.equals(hash));
 
+    	// Now check that we can still use old password hashes transparently usgin the old fixed sha1 hash of foo123
+    	data.setPasswordHash("3b303d8b0364d9265c06adc8584258376150c9b5");
+    	assertEquals("3b303d8b0364d9265c06adc8584258376150c9b5", data.getPasswordHash());
+    	assertFalse(data.comparePassword("bar123"));
+    	assertTrue(data.comparePassword("foo123"));
+
+    	// Check that set clear text password works as well
+    	data.setOpenPassword("primekey");
+    	hash = data.getPasswordHash();
+    	// Check that it by default generates a strong bcrypt password hash
+    	assertTrue(hash.startsWith("$2"));
+    	assertFalse(data.comparePassword("foo123123"));
+    	assertTrue(data.comparePassword("primekey"));
+    	assertEquals("primekey", data.getClearPassword());
+
+    }
+
+    	
     /**
      * Cleans up after test JUnit tests, i.e. deletes users and CAs that we created and resets any configuration changes.
      *

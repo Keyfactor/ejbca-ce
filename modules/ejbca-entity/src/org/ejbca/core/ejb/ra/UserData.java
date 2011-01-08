@@ -27,6 +27,7 @@ import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.SecConst;
@@ -306,8 +307,15 @@ public class UserData implements Serializable {
     	}
         boolean ret = false;
         if (password != null) {
-            //log.debug("Newhash="+makePasswordHash(password)+", OldHash="+passwordHash);
-            ret = (makePasswordHash(password).equals(getPasswordHash()));
+        	final String hash = getPasswordHash();
+        	// Check if it is a new or old style hashing
+        	if (StringUtils.startsWith(hash, "$2")) {
+        		// new style with good salt
+            	ret = BCrypt.checkpw(password, hash);        		
+        	} else {
+        		// old style, plain SHA1 hash
+                ret = makeOldPasswordHash(password).equals(getPasswordHash());
+        	}
         }
     	if (log.isTraceEnabled()) {
     		log.trace("<comparePassword()");
@@ -320,16 +328,26 @@ public class UserData implements Serializable {
     //
 
     /**
-     * Creates the hashed password
+     * Creates the hashed password using the bcrypt algorithm, http://www.mindrot.org/projects/jBCrypt/
      */
     private String makePasswordHash(String password) throws NoSuchAlgorithmException {
         if (password == null) {
             return null;
         }
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+    /**
+     * Creates the hashed password using the old hashing, which is a plain SHA1 password
+     */
+    private String makeOldPasswordHash(String password) throws NoSuchAlgorithmException {
+        if (password == null) {
+            return null;
+        }
         String ret = null;
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA1");
-            byte[] pwdhash = md.digest(password.trim().getBytes());
+            final MessageDigest md = MessageDigest.getInstance("SHA1");
+            final byte[] pwdhash = md.digest(password.trim().getBytes());
             ret = new String(Hex.encode(pwdhash));
         } catch (NoSuchAlgorithmException e) {
             log.error("SHA1 algorithm not supported.", e);
@@ -410,7 +428,7 @@ public class UserData implements Serializable {
     }    
 
 	/**
-	 * @throws NonUniqueResultException if more than one entity with the name exists
+	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
     public static UserData findBySubjectDN(EntityManager entityManager, String subjectDN) {
