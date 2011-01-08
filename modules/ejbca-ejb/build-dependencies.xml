@@ -567,6 +567,7 @@
 				<fileset dir="${src-ejbca-entity.dir}">
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
 					<include name="org/ejbca/core/ejb/ra/UserData.java"/>
+					<include name="org/ejbca/core/ejb/ra/BCrypt.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/signing" destdir="${build-temp.dir}/signing" debug="on" includeantruntime="no"
