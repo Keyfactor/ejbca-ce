@@ -476,7 +476,14 @@ dMDaR1l15Vn6mNsw9lYaAcIj/EOlZcGocnVXAlhy3MkWk0ue85VbvwgPAfDP1AEF
   <section name="SPOC PKI">
   <p>The SPOC CA is a regular X.509 CA and is configured as such, following the profiles of the SPOC specification (CSN 369791:2009).</p>
   <p>The only thing in the specification of the SPOC CA that requires configuration is two private <i>Extended Key Usages</i> that are defined in the standard.
-  In order to use these in EJBCA you have to configure <strong>conf/extendedkeyusage.properties</strong> and add the two new key usage OIDs.</p>
+  </p>
+  <subsection name="EJBCA 4.0 and later">
+  <p>From EJBCA 4.0 these key usages are standard and can be selected in certificate profiles. 
+  </p>
+  </subsection>
+  <subsection name="EJBCA 3.11 and earlier">
+  <p>
+	For EJBCA 3.11 and earlier you need to configure <strong>conf/extendedkeyusage.properties</strong> and add the two new key usage OIDs.</p>
   <source>
 extendedkeyusage.oid.23 = 1.2.203.7064.1.1.369791.1
 extendedkeyusage.name.23 = CSN369791-TLS-CLIENT 
@@ -487,6 +494,7 @@ extendedkeyusage.name.24 = CSN369791-TLS-SERVER</source>
   are changed to follow consecutive numbering in the file.</p>
   <p>After this change you simply have to re-deploy ejbca (ant clean; ant bootstrap) and they will show up as selectable values in <i>Certificate Profiles</i> in the EJCBA admin GUI.</p>
   <p>A SPOC client should use "Client Authentication, CSN369791-TLS-CLIENT" and a SPOC server should use "Server Authentication, CSN369791-TLS-SERVER".</p>
+  </subsection>
   </section>
   
 </body>
