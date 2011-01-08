@@ -198,6 +198,7 @@
             </classpath>
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
+        	<include name="org/cesecore/core/ejb/ca/crl/CrlSessionStandAloneBean.java" />
 			<!-- Classes not available in ejbca-util.jar -->
         	<include name="org/ejbca/core/protocol/certificatestore/CertStoreStandAlone.java"/>
         	<include name="org/ejbca/core/protocol/crlstore/CRLStoreStandAlone.java"/>
@@ -214,7 +215,7 @@
         	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java" />
         	<include name="org/ejbca/core/model/ca/store/CRLInfo.java" />
         	<include name="org/ejbca/core/protocol/crlstore/CRLCacheFactory.java"/>
-        	<include name="org/ejbca/core/protocol/crlstore/CRLStore.java"/>
+        	<include name="org/ejbca/core/protocol/crlstore/CRLStoreStandAlone.java"/>
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${src.dir}" />

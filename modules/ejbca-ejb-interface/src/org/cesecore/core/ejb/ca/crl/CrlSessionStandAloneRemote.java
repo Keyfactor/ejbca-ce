@@ -10,34 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.crlstore;
+package org.cesecore.core.ejb.ca.crl;
 
-import javax.ejb.EJBException;
+import javax.ejb.Remote;
 
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlSessionStandAlone;
-import org.ejbca.core.ejb.JndiHelper;
 /**
- * DB store of data to be used by the CA
- *
- * @author primelars
- * @version $Id$
- *
+ * Remote interface for CreateCRLSession
+ * 
  */
-public class CRLStore extends CRLStoreBase {
-	private CrlSessionStandAlone m_crlSession = null;
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.protocol.crlstore.CRLStoreBase#getCRLStore()
-	 */
-	@Override
-	synchronized CrlSessionStandAlone getCRLStore(){
-		if(this.m_crlSession == null){	
-			try {
-				this.m_crlSession = JndiHelper.getRemoteSession(CrlSessionRemote.class);	// TODO: Use a local EJB stub instead
-			}catch(Exception e){
-				throw new EJBException(e);      	  	    	  	
-			}
-		}
-		return this.m_crlSession;
-	}
+@Remote
+public interface CrlSessionStandAloneRemote extends CrlSessionStandAlone {
+
 }

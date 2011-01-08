@@ -14,8 +14,8 @@ package org.ejbca.core.protocol.crlstore;
 
 import javax.ejb.EJBException;
 
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlSessionStandAlone;
+import org.cesecore.core.ejb.ca.crl.CrlSessionStandAloneRemote;
 import org.ejbca.core.ejb.JndiHelper;
 /**
  * DB store of data to be used by the CA
@@ -24,7 +24,7 @@ import org.ejbca.core.ejb.JndiHelper;
  * @version $Id$
  *
  */
-public class CRLStore extends CRLStoreBase {
+public class CRLStoreStandAlone extends CRLStoreBase {
 	private CrlSessionStandAlone m_crlSession = null;
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.protocol.crlstore.CRLStoreBase#getCRLStore()
@@ -33,7 +33,7 @@ public class CRLStore extends CRLStoreBase {
 	synchronized CrlSessionStandAlone getCRLStore(){
 		if(this.m_crlSession == null){	
 			try {
-				this.m_crlSession = JndiHelper.getRemoteSession(CrlSessionRemote.class);	// TODO: Use a local EJB stub instead
+				this.m_crlSession = JndiHelper.getRemoteSession(CrlSessionStandAloneRemote.class);	// TODO: Use a local EJB stub instead
 			}catch(Exception e){
 				throw new EJBException(e);      	  	    	  	
 			}

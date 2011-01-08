@@ -48,8 +48,9 @@
         	<src path="${src.dir}"/>
     		<src path="${ejbca.home}/src/java"/>
 			<include name="org/ejbca/core/ejb/**/CertificateStoreOnlyDataSession*.java"/>
-			<include name="org/cesecore/core/ejb/**/CrlSession*.java"/>
+			<include name="org/cesecore/core/ejb/**/CrlSessionStandAlone*.java"/>
         	<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
+			<exclude name="org/cesecore/core/ejb/ca/crl/CrlSessionStandAloneBean.java" />
         	<include name="org/ejbca/core/ejb/JndiHelper.java" />
     	</javac>
     </target>
