@@ -14,7 +14,7 @@
 package org.ejbca.ui.web.protocol;
 
 import org.ejbca.core.protocol.certificatestore.CertStoreStandAlone;
-import org.ejbca.core.protocol.crlstore.CRLStore;
+import org.ejbca.core.protocol.crlstore.CRLStoreStandAlone;
 
 
 /** 
@@ -26,6 +26,6 @@ import org.ejbca.core.protocol.crlstore.CRLStore;
  */
 public class CRLStoreServletStandAlone extends CRLStoreServletBase {
 	public CRLStoreServletStandAlone() {
-		super( new CertStoreStandAlone(), new CRLStore() );
+		super( new CertStoreStandAlone(), new CRLStoreStandAlone() );
 	}
 } // CRLStoreServletStandAlone

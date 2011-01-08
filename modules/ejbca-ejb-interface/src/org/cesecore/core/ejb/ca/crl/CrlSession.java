@@ -21,63 +21,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @version $Id$
  */
-public interface CrlSession {
-
-    /**
-     * Retrieves the latest CRL issued by this CA.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerdn
-     *            the CRL issuers DN (CAs subject DN)
-     * @param deltaCRL
-     *            true to get the latest deltaCRL, false to get the
-     *            latestcomplete CRL
-     * @return byte[] with DER encoded X509CRL or null of no CRLs have been
-     *         issued.
-     */
-    public byte[] getLastCRL(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-
-    /**
-     * Retrieves the information about the lastest CRL issued by this CA.
-     * Retreives less information than getLastCRL, i.e. not the actual CRL data.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerdn
-     *            the CRL issuers DN (CAs subject DN)
-     * @param deltaCRL
-     *            true to get the latest deltaCRL, false to get the
-     *            latestcomplete CRL
-     * @return CRLInfo of last CRL by CA or null if no CRL exists.
-     */
-    public org.ejbca.core.model.ca.store.CRLInfo getLastCRLInfo(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-
-    /**
-     * Retrieves the information about the specified CRL. Retreives less
-     * information than getLastCRL, i.e. not the actual CRL data.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param fingerprint
-     *            fingerprint of the CRL
-     * @return CRLInfo of CRL or null if no CRL exists.
-     */
-    public org.ejbca.core.model.ca.store.CRLInfo getCRLInfo(org.ejbca.core.model.log.Admin admin, java.lang.String fingerprint);
-
-    /**
-     * Retrieves the highest CRLNumber issued by the CA.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param issuerdn
-     *            the subjectDN of a CA certificate
-     * @param deltaCRL
-     *            true to get the latest deltaCRL, false to get the latest
-     *            complete CRL
-     */
-    public int getLastCRLNumber(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-    
+public interface CrlSession extends CrlSessionStandAlone {
     /**
      * Stores a CRL
      *
@@ -91,5 +35,4 @@ public interface CrlSession {
      * @return true if storage was successful.
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator);
-
 }
