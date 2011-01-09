@@ -189,7 +189,7 @@ public class CAData implements Serializable {
         	final HashMap h = (HashMap) decoder.readObject();
             decoder.close();
             // Handle Base64 encoded string values
-            final HashMap<String, ?> data = new Base64GetHashMap(h);
+            final HashMap<Object, Object> data = new Base64GetHashMap(h);
             
             // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
             // and perhaps upgrading

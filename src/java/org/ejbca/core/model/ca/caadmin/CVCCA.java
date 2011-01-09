@@ -34,6 +34,7 @@ import java.util.Properties;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.core.model.InternalResources;
@@ -44,6 +45,7 @@ import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
@@ -95,12 +97,12 @@ public class CVCCA extends CA implements Serializable {
 
 	/** Constructor used when retrieving existing CVCCA from database. 
 	 * @throws IllegalKeyStoreException */
-	public CVCCA(HashMap data, int caId, String subjectDN, String name, int status, Date updateTime) throws IllegalKeyStoreException{
+	public CVCCA(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) throws IllegalKeyStoreException{
 		super(data);
-		ArrayList externalcaserviceinfos = new ArrayList();
-		Iterator iter = getExternalCAServiceTypes().iterator(); 	
+		ArrayList<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+		Iterator<Integer> iter = getExternalCAServiceTypes().iterator(); 	
 		while(iter.hasNext()){
-			ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(((Integer) iter.next()).intValue());
+			ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(iter.next().intValue());
 			if (info != null) {
 				externalcaserviceinfos.add(info);  	    			
 			}
@@ -131,8 +133,10 @@ public class CVCCA extends CA implements Serializable {
 	/**
 	 * @see CA#createRequest(Collection, String, Certificate, int)
 	 */
-	public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException {
-		log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
+	public byte[] createRequest(Collection<DEREncodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException {
+		if (log.isTraceEnabled()) {
+			log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
+		}
 		byte[] ret = null;
 		// Create a CVC request. 
 		// No outer signature on this self signed request
@@ -273,8 +277,8 @@ public class CVCCA extends CA implements Serializable {
 				try {
 					// We don't know if this is a PEM or binary certificate or request request so we first try to 
 					// decode it as a PEM certificate, and if it's not we try it as a PEM request and finally as a binary request 
-					Collection col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
-					Certificate cert = (Certificate)col.iterator().next();
+					Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
+					Certificate cert = col.iterator().next();
 					if (cert != null) {
 						binbytes = cert.getEncoded();
 					}
@@ -464,19 +468,20 @@ public class CVCCA extends CA implements Serializable {
         CardVerifiableCertificate retCert = new CardVerifiableCertificate(cvc);
         // Verify certificate before returning
         retCert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-        
-		log.trace("<generateCertificate()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<generateCertificate()");
+        }
 		return retCert;                                                                                        
 	}
 
 
-    public CRL generateCRL(Collection certs, int crlnumber) {
+    public CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) {
         String msg = intres.getLocalizedMessage("signsession.nocrlcreate", "CVC");
         log.info(msg);
         return null;
     }
 
-    public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber) {
+    public CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
         String msg = intres.getLocalizedMessage("signsession.nocrlcreate", "CVC");
         log.info(msg);
         return null;
