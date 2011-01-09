@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSException;
@@ -65,6 +66,7 @@ import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -172,9 +174,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     /** Constructor used when retrieving existing CA from database. */
-    public CA(HashMap data){
+    public CA(HashMap<Object, Object> data){
       loadData(data);
-      extendedcaservicemap = new HashMap();
+      extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
     }
     public void setCAInfo(CAInfo cainfo) {
         this.cainfo = cainfo;    	
@@ -616,9 +618,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                                                     X509Extensions extensions,
                                                     String sequence) throws Exception;
     
-    public abstract CRL generateCRL(Collection certs, int crlnumber) throws Exception;
+    public abstract CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
     
-    public abstract CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber) throws Exception;
+    public abstract CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws Exception;
 
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
 
@@ -631,7 +633,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param signatureKeyPurpose which CA token key pair should be used to create the request, normally SecConst.CAKEYPURPOSE_CERTSIGN but can also be SecConst.CAKEYPURPOSE_CERTSIGN_NEXT.
      * @return byte array with binary encoded request
      */
-    public abstract byte[] createRequest(Collection attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException;
+    public abstract byte[] createRequest(Collection<DEREncodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException;
 
     /** Signs a certificate signature request CSR), that can be sent to an external CA. This signature can be use to authenticate the 
      * original request. mainly used for CVC CAs where the CVC requests is created and (self)signed by the DV and then the CVCA

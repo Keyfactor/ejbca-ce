@@ -101,12 +101,14 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.SimpleTime;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
@@ -179,13 +181,13 @@ public class X509CA extends CA implements Serializable {
     
    /** Constructor used when retrieving existing X509CA from database. 
  * @throws IllegalKeyStoreException */
-    public X509CA(HashMap data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) throws IllegalKeyStoreException{
+    public X509CA(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime, Date expireTime) throws IllegalKeyStoreException{
     	super(data);
     	setExpireTime(expireTime);	// Make sure the internal state is synched with the database column. Required for upgrades from EJBCA 3.5.6 or EJBCA 3.6.1 and earlier.
-    	ArrayList externalcaserviceinfos = new ArrayList();
-    	Iterator iter = getExternalCAServiceTypes().iterator(); 	
+    	ArrayList<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+    	Iterator<Integer> iter = getExternalCAServiceTypes().iterator(); 	
     	while(iter.hasNext()){
-    		ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(((Integer) iter.next()).intValue());
+    		ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(iter.next().intValue());
     		if (info != null) {
         		externalcaserviceinfos.add(info);  	    			
     		}
@@ -202,10 +204,10 @@ public class X509CA extends CA implements Serializable {
     }
 
     // Public Methods.
-    public List getPolicies() {
-    	return (List) data.get(POLICIES);
+    public List<CertificatePolicy> getPolicies() {
+    	return (List<CertificatePolicy>) data.get(POLICIES);
     }
-    public void setPolicies(List policies) {
+    public void setPolicies(List<CertificatePolicy> policies) {
     	data.put(POLICIES, policies);
     }
     
@@ -348,8 +350,8 @@ public class X509CA extends CA implements Serializable {
         } catch (Exception e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
         }
-        Collection chain = getCertificateChain();
-        ArrayList certList = new ArrayList();
+        Collection<Certificate> chain = getCertificateChain();
+        ArrayList<Certificate> certList = new ArrayList<Certificate>();
         if (cert != null) {
             certList.add(cert);
         } 
@@ -389,12 +391,12 @@ public class X509CA extends CA implements Serializable {
     /**
      * @see CA#createRequest(Collection, String, Certificate, int)
      */
-    public byte[] createRequest(Collection attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException {
+    public byte[] createRequest(Collection<DEREncodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CATokenOfflineException {
 		log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
     	ASN1Set attrset = new DERSet();
     	if (attributes != null) {
     		log.debug("Adding attributes in the request");
-    		Iterator iter = attributes.iterator();
+    		Iterator<DEREncodable> iter = attributes.iterator();
 			ASN1EncodableVector vec = new ASN1EncodableVector();
     		while (iter.hasNext()) {
     			DEREncodable o = (DEREncodable)iter.next();
@@ -448,7 +450,7 @@ public class X509CA extends CA implements Serializable {
 			try {
 				// We don't know if this is a PEM or binary certificate so we first try to 
 				// decode it as a PEM certificate, and if it's not we try it as a binary certificate 
-				Collection col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
+				Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
 				cert = (X509Certificate)col.iterator().next();
 				if (cert != null) {
 					binbytes = cert.getEncoded();
@@ -781,12 +783,12 @@ public class X509CA extends CA implements Serializable {
     }
 
     
-    public CRL generateCRL(Collection certs, int crlnumber) 
+    public CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
     	return generateCRL(certs, getCRLPeriod(), crlnumber, false, 0);
     }
 
-    public CRL generateDeltaCRL(Collection certs, int crlnumber, int basecrlnumber)
+    public CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber)
         throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
     	return generateCRL(certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
     }
@@ -809,7 +811,7 @@ public class X509CA extends CA implements Serializable {
      * @throws CRLException
      * @throws NoSuchAlgorithmException
      */
-    private CRL generateCRL(Collection certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber) 
+    private CRL generateCRL(Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg= getCAInfo().getCATokenInfo().getSignatureAlgorithm();
 
@@ -842,7 +844,7 @@ public class X509CA extends CA implements Serializable {
         	crlgen.setIssuerDN(cacert.getSubjectX500Principal());
         }
         if (certs != null) {            
-            Iterator it = certs.iterator();
+            Iterator<RevokedCertInfo> it = certs.iterator();
             while( it.hasNext() ) {
                 RevokedCertInfo certinfo = (RevokedCertInfo)it.next();
                 crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
@@ -870,11 +872,11 @@ public class X509CA extends CA implements Serializable {
     	// CRL Distribution point URI and Freshest CRL DP
   	    if(getUseCrlDistributionPointOnCrl()) {
   	        String crldistpoint = getDefaultCRLDistPoint();
-  	        List distpoints = generateDistributionPoints(crldistpoint);
+  	        List<DistributionPoint> distpoints = generateDistributionPoints(crldistpoint);
 
   	        if (distpoints.size() > 0) {
   	            IssuingDistributionPoint idp =
-  	                new IssuingDistributionPoint(((DistributionPoint) distpoints.get(0)).getDistributionPoint(),
+  	                new IssuingDistributionPoint(distpoints.get(0).getDistributionPoint(),
   	                                             false, false, null, false, false);
 
   	            // According to the RFC, IDP must be a critical extension.
@@ -886,9 +888,9 @@ public class X509CA extends CA implements Serializable {
 
             if (!isDeltaCRL) {
                 String crlFreshestDP = getCADefinedFreshestCRL();
-                List freshestDistPoints = generateDistributionPoints(crlFreshestDP);
+                List<DistributionPoint> freshestDistPoints = generateDistributionPoints(crlFreshestDP);
                 if (freshestDistPoints.size() > 0) {
-                    CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])freshestDistPoints.toArray(new DistributionPoint[0]));
+                    CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])freshestDistPoints.toArray(new DistributionPoint[freshestDistPoints.size()]));
 
                     // According to the RFC, the Freshest CRL extension on a
                     // CRL must not be marked as critical. Therefore it is
@@ -913,13 +915,13 @@ public class X509CA extends CA implements Serializable {
      * @param distPoints distribution points as String in semi column (';') separated format.
      * @return list of distribution points.
      */
-    private List generateDistributionPoints(String distPoints) {
+    private List<DistributionPoint> generateDistributionPoints(String distPoints) {
     	if (distPoints == null) {
     		distPoints = "";
     	}
         // Multiple CDPs are separated with the ';' sign
-    	Iterator/*String*/ it = StringTools.splitURIs(distPoints).iterator();
-    	ArrayList result = new ArrayList();
+    	Iterator<String> it = StringTools.splitURIs(distPoints).iterator();
+    	ArrayList<DistributionPoint> result = new ArrayList<DistributionPoint>();
         while (it.hasNext()) {
             String uri = (String) it.next();
             GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
@@ -1025,7 +1027,7 @@ public class X509CA extends CA implements Serializable {
      */
     public boolean upgradeExtendedCAServices() {
     	boolean retval = false;
-    	Collection extendedServiceTypes = getExternalCAServiceTypes();
+    	Collection<Integer> extendedServiceTypes = getExternalCAServiceTypes();
 
     	if(getCAInfo().getStatus() != SecConst.CA_EXTERNAL){
     		// Create XKMS service if it does not exist
@@ -1094,7 +1096,7 @@ public class X509CA extends CA implements Serializable {
     	ObjectOutputStream os = new ObjectOutputStream(baos);
     	os.writeObject(keypair);    	    
     	
-    	CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProviderIfNotAvailable();
     		
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	    	      
        
@@ -1116,7 +1118,7 @@ public class X509CA extends CA implements Serializable {
     	CMSEnvelopedData ed = new CMSEnvelopedData(data);   	    	
     	     
 		RecipientInformationStore  recipients = ed.getRecipientInfos();           	
-    	Iterator    it =  recipients.getRecipients().iterator();
+    	Iterator it =  recipients.getRecipients().iterator();
     	RecipientInformation   recipient = (RecipientInformation) it.next();
     	ObjectInputStream ois = null;
     	byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getJCEProvider());
@@ -1128,7 +1130,7 @@ public class X509CA extends CA implements Serializable {
 	public byte[] decryptData(byte[] data, int cAKeyPurpose) throws Exception {
     	CMSEnvelopedData ed = new CMSEnvelopedData(data);
 		RecipientInformationStore  recipients = ed.getRecipientInfos();           	
-    	Iterator    it =  recipients.getRecipients().iterator();
+    	Iterator it =  recipients.getRecipients().iterator();
     	RecipientInformation   recipient = (RecipientInformation) it.next();
     	byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(cAKeyPurpose),getCAToken().getProvider());    	
     	    	    	
@@ -1136,7 +1138,7 @@ public class X509CA extends CA implements Serializable {
 	}
 
 	public byte[] encryptData(byte[] data, int keyPurpose) throws Exception {
-    	CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProviderIfNotAvailable();
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	    	             
     	CMSEnvelopedData ed;
 		try {
