@@ -77,7 +77,7 @@ public class CAsTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
-    private static Collection rootcacertchain = null;
+    private static Collection<Certificate> rootcacertchain = null;
 
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
@@ -133,12 +133,12 @@ public class CAsTest extends CaTestCase {
                     AlgorithmConstants.KEYALGORITHM_RSA));
 
             X509CAInfo cainfo = new X509CAInfo("CN=TEST", "TEST", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -148,7 +148,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -186,7 +186,7 @@ public class CAsTest extends CaTestCase {
             ret = true;
 
             // Test to generate a certificate request from the CA
-            Collection cachain = info.getCertificateChain();
+            Collection<Certificate> cachain = info.getCertificateChain();
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
@@ -274,12 +274,12 @@ public class CAsTest extends CaTestCase {
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA", "TESTECDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -289,7 +289,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -372,12 +372,12 @@ public class CAsTest extends CaTestCase {
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA", "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE, new Date(), "",
                     SecConst.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit ECDSA ImplicitlyCA CA", -1, null, policies, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA ImplicitlyCA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -387,7 +387,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -463,12 +463,12 @@ public class CAsTest extends CaTestCase {
 
             X509CAInfo cainfo = new X509CAInfo(cadn, "TESTSha256WithMGF1", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -478,7 +478,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -554,7 +554,7 @@ public class CAsTest extends CaTestCase {
                     null, // Expiretime
                     CAInfo.CATYPE_X509,
                     CAInfo.SELFSIGNED,
-                    (Collection) null,
+                    (Collection<Certificate>) null,
                     catokeninfo,
                     "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
                     -1, null, null, // PolicyId
@@ -562,7 +562,7 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -572,7 +572,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -653,7 +653,7 @@ public class CAsTest extends CaTestCase {
                     null, // Expiretime
                     CAInfo.CATYPE_X509,
                     CAInfo.SELFSIGNED,
-                    (Collection) null,
+                    (Collection<Certificate>) null,
                     catokeninfo,
                     "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
                     -1, null, null, // PolicyId
@@ -661,7 +661,7 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -671,7 +671,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     false, // Use X500 DN order
@@ -751,9 +751,9 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -815,9 +815,9 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -875,9 +875,9 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -949,7 +949,7 @@ public class CAsTest extends CaTestCase {
         assertEquals("READ_ACCESS_DG3", accessRights);
 
         // Make a certificate request from a CVCA
-        Collection cachain = cvcainfo.getCertificateChain();
+        Collection<Certificate> cachain = cvcainfo.getCertificateChain();
         assertEquals(1, cachain.size());
         Certificate cert1 = (Certificate) cachain.iterator().next();
         CardVerifiableCertificate cvcert1 = (CardVerifiableCertificate) cert1;
@@ -1061,9 +1061,9 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -1118,9 +1118,9 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -1178,9 +1178,9 @@ public class CAsTest extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -1256,7 +1256,7 @@ public class CAsTest extends CaTestCase {
         assertEquals("READ_ACCESS_DG3_AND_DG4", accessRights);
 
         // Make a certificate request from a DV, regenerating keys
-        Collection cachain = dvdcainfo.getCertificateChain();
+        Collection<Certificate> cachain = dvdcainfo.getCertificateChain();
         byte[] request = caAdminSession.makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
         CVCObject obj = CertificateParser.parseCVCObject(request);
         // We should have created an authenticated request signed by the old
@@ -1381,12 +1381,12 @@ public class CAsTest extends CaTestCase {
                     // the first
                     // TEST CA we
                     // created
-                    (Collection) null, catokeninfo, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
+                    (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -1396,7 +1396,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -1436,8 +1436,8 @@ public class CAsTest extends CaTestCase {
             // Check that the CA has the correct certificate chain now
             info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(SecConst.CA_ACTIVE, info.getStatus());
-            Iterator iter = info.getCertificateChain().iterator();
-            X509Certificate cert = (X509Certificate) iter.next();
+            Iterator<Certificate> iter = info.getCertificateChain().iterator();
+            Certificate cert = iter.next();
             String sigAlg = CertTools.getSignatureAlgorithm(cert);
             assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
             assertTrue("Error in created ca certificate", CertTools.getSubjectDN(cert).equals("CN=TESTSIGNEDBYEXTERNAL"));
@@ -1461,7 +1461,7 @@ public class CAsTest extends CaTestCase {
         }
 
         // Make a certificate request from the CA
-        Collection cachain = info.getCertificateChain();
+        Collection<Certificate> cachain = info.getCertificateChain();
         byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
         info = caAdminSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
         assertEquals(SecConst.CA_ACTIVE, info.getStatus()); // No new keys
@@ -1502,12 +1502,12 @@ public class CAsTest extends CaTestCase {
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650,
                     null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit DSA CA", -1, null, null, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit DSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -1517,7 +1517,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -1555,7 +1555,7 @@ public class CAsTest extends CaTestCase {
             ret = true;
 
             // Test to generate a certificate request from the CA
-            Collection cachain = info.getCertificateChain();
+            Collection<Certificate> cachain = info.getCertificateChain();
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTDSA", msg.getRequestDN());
@@ -1569,7 +1569,7 @@ public class CAsTest extends CaTestCase {
     public void test13RenewCA() throws Exception {
         // Test renew cacert
         CAInfo info = caAdminSession.getCAInfo(admin, getTestCAId());
-        Collection certs = info.getCertificateChain();
+        Collection<Certificate> certs = info.getCertificateChain();
         X509Certificate cacert1 = (X509Certificate) certs.iterator().next();
         caAdminSession.renewCA(admin, getTestCAId(), "foo123", false);
         info = caAdminSession.getCAInfo(admin, getTestCAId());
@@ -1608,7 +1608,7 @@ public class CAsTest extends CaTestCase {
         cacert4.verify(cacert2.getPublicKey());
 
         // Test make request just making a request using the old keys
-        byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList(), false, false, false, "foo123");
+        byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), false, false, false, "foo123");
         assertNotNull(request);
         PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
         PublicKey pk1 = cacert3.getPublicKey();
@@ -1618,7 +1618,7 @@ public class CAsTest extends CaTestCase {
         // A plain request using the CAs key will have the same public key
         assertEquals(key1, key2);
         // Test make request generating new keys
-        request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList(), true, false, true, "foo123");
+        request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), true, false, true, "foo123");
         assertNotNull(request);
         msg = RequestMessageUtils.genPKCS10RequestMessage(request);
         pk1 = cacert3.getPublicKey();

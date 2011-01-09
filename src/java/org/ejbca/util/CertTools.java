@@ -2814,26 +2814,26 @@ public class CertTools {
      * The list of certificates should only contain one root certificate.
      *
      * @param certlist
-     * @return the certificatepath with the root CA at the end
+     * @return the certificatepath with the root CA at the end, either collection of Certificate or byte[] (der encoded certs)
      * @throws CertPathValidatorException if the certificate chain can not be constructed
      * @throws InvalidAlgorithmParameterException 
      * @throws NoSuchProviderException 
      * @throws NoSuchAlgorithmException 
      * @throws CertificateException 
      */
-    public static Collection<Certificate> createCertChain(Collection<?> certlist) throws CertPathValidatorException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException{
+    public static Collection<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException{
     	ArrayList<Certificate> returnval = new ArrayList<Certificate>();
 
-    	certlist = orderCertificateChain(certlist);
+    	Collection<Certificate> certlist = orderCertificateChain(certlistin);
 
     	// set certificate chain
     	Certificate rootcert = null;
     	ArrayList<Certificate> calist = new ArrayList<Certificate>();
-    	Iterator<?> iter = certlist.iterator();
+    	Iterator<Certificate> iter = certlist.iterator();
     	while(iter.hasNext()){
-    		Certificate next = (Certificate) iter.next();
+    		Certificate next = iter.next();
     		if (CertTools.isSelfSigned(next)){
-    			rootcert = (Certificate)next;
+    			rootcert = next;
     		} else{
     			calist.add(next);
     		}
@@ -2844,7 +2844,7 @@ public class CertTools {
     		returnval.add(rootcert);
     	} else {
     		// We need a bit special handling for CV certificates because those can not be handled using a PKIX CertPathValidator
-    		Certificate test = (Certificate)calist.get(0);
+    		Certificate test = calist.get(0);
     		if (test.getType().equals("CVC")) {
     			if (calist.size() == 1) {
     				returnval.add(test);
@@ -2889,7 +2889,7 @@ public class CertTools {
     /**
      * Method ordering a list of certificate into a certificate path with the root CA at the end.
      * Does not check validity or verification of any kind, just ordering by issuerdn.
-     * @param certlist list of certificates to order.
+     * @param certlist list of certificates to order can be collection of Certificate or byte[] (der encoded certs).
      * @return Collection with certificatechain.
      */
     private static Collection<Certificate> orderCertificateChain(Collection<?> certlist) throws CertPathValidatorException{

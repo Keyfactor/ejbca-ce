@@ -13,9 +13,11 @@
 
 package org.ejbca.core.model.ca.caadmin;
 
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
@@ -34,11 +36,11 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when creating CA and retrieving CA info.
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
-			long validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
+			long validity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
 			CATokenInfo catokeninfo, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
-			Collection crlpublishers,boolean finishuser,Collection extendedcaserviceinfos, 
-			Collection approvalSettings, int numOfReqApprovals,
+			Collection<Integer> crlpublishers,boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+			Collection<Integer> approvalSettings, int numOfReqApprovals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
@@ -81,9 +83,9 @@ public class CVCCAInfo extends CAInfo {
 	 */
 	public CVCCAInfo(int caid, long validity, CATokenInfo catokeninfo, String description,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
-			Collection crlpublishers,
-			boolean finishuser, Collection extendedcaserviceinfos, 
-			Collection approvalSettings, int numOfReqApprovals,
+			Collection<Integer> crlpublishers,
+			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+			Collection<Integer> approvalSettings, int numOfReqApprovals,
 			boolean includeInHealthCheck, boolean _doEnforceUniquePublicKeys,
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
