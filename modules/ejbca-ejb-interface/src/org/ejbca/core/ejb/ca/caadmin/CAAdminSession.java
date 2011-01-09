@@ -170,7 +170,7 @@ public interface CAAdminSession {
      * @param caid
      *            id of the CA that should create the request
      * @param cachain
-     *            A Collection of CA-certificates.
+     *            A Collection of CA-certificates, can be either a collection of Certificate or byte[], or even empty collection or null.
      * @param regenerateKeys
      *            if renewing a CA this is used to also generate a new KeyPair,
      *            if this is true and activatekey is false, the new key will not
@@ -188,7 +188,7 @@ public interface CAAdminSession {
      *            be null if regenerateKeys and activatekey is false.
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
-    public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
+    public byte[] makeRequest(Admin admin, int caid, Collection<?> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException,
             CATokenOfflineException, CATokenAuthenticationFailedException;
 

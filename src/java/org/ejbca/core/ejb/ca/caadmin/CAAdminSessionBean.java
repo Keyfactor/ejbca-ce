@@ -767,7 +767,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @param caid
      *            id of the CA that should create the request
      * @param cachain
-     *            A Collection of CA-certificates, can be empty or null
+     *            A Collection of CA-certificates, can be either a collection of Certificate or byte[], or even empty collection or null.
      * @param regenerateKeys
      *            if renewing a CA this is used to also generate a new KeyPair,
      *            if this is true and activatekey is false, the new key will not
@@ -785,7 +785,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      *            be null if regenerateKeys and activatekey is false.
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
-    public byte[] makeRequest(Admin admin, int caid, Collection<byte[]> cachainin, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
+    public byte[] makeRequest(Admin admin, int caid, Collection<?> cachainin, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
         if (log.isTraceEnabled()) {
@@ -815,14 +815,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CA ca = cadata.getCA();
             String caname = ca.getName();
 
-            Collection<byte[]> cachain = cachainin;
-            if (cachain == null) {
-            	cachain = new ArrayList<byte[]>(); // create empty list if input was null
+            Collection<Certificate> chain = null;
+            if ((cachainin != null) && (cachainin.size() > 0)) {
+                chain = CertTools.createCertChain(cachainin);
+                log.debug("Setting request certificate chain of size: " + chain.size());
+                ca.setRequestCertificateChain(chain);
+            } else {
+                log.debug("Empty request certificate chain parameter.");
+                // create empty list if input was null
+                chain = new ArrayList<Certificate>();
             }
             // AR+ patch to make SPOC independent of external CVCA certs for automatic renewals
             // i.e. if we don't pass a ca certificate as parameter we try to find a suitable CA certificate in the database, among existing CAs 
             // (can be a simple imported CA-certificate of external CA)
-            if (cachain.isEmpty() &&
+            if (chain.isEmpty() &&
             	ca.getCAType() == CAInfo.CATYPE_CVC &&
                 ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA &&
                 ca.getStatus() == SecConst.CA_ACTIVE){
@@ -836,27 +842,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 	        			CardVerifiableCertificate cvccert = (CardVerifiableCertificate)cvca.getCACertificate();
 	        			if (ca_ref.equals (cvccert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated())){
 	                    	log.debug("Added missing CVCA to rewnewal request: "+ cvca.getName());
-	        				cachain.add(cvccert.getEncoded());
+	        				chain.add(cvccert);
 	        				break;
 	        			}
 	        		}
        			}
-	        	if (cachain.isEmpty ()){
-                	log.info("Failed founding suitable CVCA, forgot to import it?");
+	        	if (chain.isEmpty ()){
+                	log.info("Failed finding suitable CVCA, forgot to import it?");
 	        	}
             }
             // AR-
             
             // Generate new certificate request.
-            Collection<Certificate> chain = null;
-            if (cachain.size() > 0) {
-                chain = CertTools.createCertChain(cachain);
-                log.debug("Setting request certificate chain of size: " + chain.size());
-                ca.setRequestCertificateChain(chain);
-            } else {
-                log.debug("Empty request certificate chain parameter.");
-                chain = new ArrayList<Certificate>();
-            }
             String signAlg = "SHA1WithRSA"; // Default algorithm
             CATokenInfo tinfo = ca.getCAInfo().getCATokenInfo();
             if (tinfo != null) {
