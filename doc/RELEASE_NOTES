@@ -19,6 +19,9 @@ Java 1.6 and Ant 1.7.1 or higher is required from this version on.
 This is and alpha release, so expect a few rough edges. Have in mind that there will not
 necessarily be an upgrade path from this release to EJBCA 4.0.0.
 
+Known issues:
+- XKMS Signature validation does not work.
+
 EJBCA 3.11.1
 -----------
 This is a maintenance release – 16 issues have been resolved. Only fixes and layout improvements, no new features. 
