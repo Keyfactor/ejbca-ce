@@ -19,7 +19,7 @@ bc-x jars are BouncyCastle (http://www.bouncycastle.org), License is BC (BSD lik
 These jars are the cryptographic foundation in EJBCA.
 Current version used is 1.45.
 
-Ldap.jar is from OpenLDAP and used for publishing in LDAP directories.
+Ldap.jar is from OpenLDAP and used for publishing in LDAP directories, current version is from 2009-10-07.
 
 Log4j.jar is from apache, License is Apache.
 The file is used for logging throughout EJBCA.
