@@ -113,7 +113,7 @@
    }
 
 %>
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 <!--  
 <% if(!editca){ %>
   var rootcaprofiles = new Array(<%= rootcaprofiles.keySet().size()%>);
@@ -370,7 +370,7 @@ function checkallfields(){
    } 
 -->
 
-</SCRIPT>
+</script>
 <body <% if(!editca) out.write(" onload='fillCertProfileField()' "); %>> 
 <div align="center"> 
   <% if(processrequest){ %>

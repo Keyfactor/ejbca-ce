@@ -17,7 +17,7 @@
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
 </head>
 <script type="text/javascript">

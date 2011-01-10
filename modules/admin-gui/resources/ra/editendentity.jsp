@@ -581,8 +581,8 @@
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript>
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <script type="text/javascript">
    <!--
 
 <% if(profile != null && userdata != null){ %>
@@ -967,7 +967,7 @@ function checkUseInBatch(){
 
    -->
   </script>
-  <script language=javascript src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body class="popup" id="editendentity"
       onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");

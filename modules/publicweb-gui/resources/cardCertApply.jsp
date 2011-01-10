@@ -1,6 +1,6 @@
 <%@ include file="header.jsp" %>
 
-	<script language="JavaScript" type="text/javascript">
+	<script type="text/javascript">
 	    <!--
 		myDeclare();
 		// -->

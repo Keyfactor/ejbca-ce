@@ -149,7 +149,7 @@
 		</div>
 	</noscript>
 	
-	<script language="JavaScript" type="text/javascript">
+	<script type="text/javascript">
 		document.writeln("<h2>A new certificate has been installed on your card.</h2>");
 	</script>
 
