@@ -14,10 +14,14 @@
 package org.ejbca.ui.web.pub;
 
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
@@ -115,4 +119,46 @@ public class WebdistHttpTest extends TestCase {
 
     }
 
+    public void testPublicWebChainDownload() throws Exception {
+    	
+    	// This test assumes we have a default AdminCA1 installed with CAId=-1688117755
+        String httpReqPathPem = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=pem";
+        String httpReqPathJks = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=jks";
+
+        final WebClient webClient = new WebClient();
+        WebConnection con = webClient.getWebConnection();
+        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPathPem));
+        WebResponse resp = con.getResponse(settings);
+        assertEquals("Response code", 200, resp.getStatusCode());
+        String ctype = resp.getContentType();
+        assertTrue(StringUtils.startsWith(ctype, "application/octet-stream"));
+        List list = resp.getResponseHeaders();
+        Iterator iter = list.iterator();
+        boolean found = false;
+        while (iter.hasNext()) {
+        	NameValuePair pair = (NameValuePair)iter.next();
+        	if (StringUtils.equals("Content-disposition", pair.getName())) {
+        		assertEquals("attachment; filename=\"chain.pem\"", pair.getValue());
+        		found = true;
+        	}
+        }
+        assertTrue(found);
+
+        settings = new WebRequestSettings(new URL(httpReqPathJks));
+        resp = con.getResponse(settings);
+        assertEquals("Response code", 200, resp.getStatusCode());
+        ctype = resp.getContentType();
+        assertTrue(StringUtils.startsWith(ctype, "application/octet-stream"));
+        list = resp.getResponseHeaders();
+        iter = list.iterator();
+        found = false;
+        while (iter.hasNext()) {
+        	NameValuePair pair = (NameValuePair)iter.next();
+        	if (StringUtils.equals("Content-disposition", pair.getName())) {
+        		assertEquals("attachment; filename=\"chain.jks\"", pair.getValue());
+        		found = true;
+        	}
+        }
+        assertTrue(found);
+    }
 }

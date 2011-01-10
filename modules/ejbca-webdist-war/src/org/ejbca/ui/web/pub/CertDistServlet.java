@@ -13,29 +13,38 @@
  
 package org.ejbca.ui.web.pub;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.URLEncoder;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -48,7 +57,7 @@ import org.ejbca.util.CertTools;
  *
  * The servlet is called with method GET or POST and syntax
  * <code>command=&lt;command&gt;</code>.
- * <p>The follwing commands are supported:<br>
+ * <p>The following commands are supported:<br>
  * <ul>
  * <li>crl - gets the latest CRL.
  * <li>deltacrl - gets the latest delta CRL.
@@ -79,6 +88,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String COMMAND_NSCACERT = "nscacert";
     private static final String COMMAND_IECACERT = "iecacert";
     private static final String COMMAND_CACERT = "cacert";
+    private static final String COMMAND_CACHAIN = "cachain";
     
     private static final String SUBJECT_PROPERTY = "subject";
 	private static final String CAID_PROPERTY = "caid";
@@ -281,12 +291,7 @@ public class CertDistServlet extends HttpServlet {
             }// CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
                 Certificate[] chain = null;
-                if(caid != 0) {
-				    chain = (Certificate[]) signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
-                }
-                else {
-                    chain = (Certificate[]) signSession.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
-                }
+                chain = getCertificateChain(administrator, caid, issuerdn);
                 // chain.length-1 is last cert in chain (root CA)
                 if (chain.length < level) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
@@ -354,6 +359,8 @@ public class CertDistServlet extends HttpServlet {
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
                 return;
             }
+        } else if (command.equalsIgnoreCase(COMMAND_CACHAIN) && ( issuerdn != null || caid != 0)) {
+        	handleCaChainCommands(administrator, issuerdn, caid, format, res);
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
@@ -399,6 +406,82 @@ public class CertDistServlet extends HttpServlet {
         }
 
     } // doGet
+
+	private Certificate[] getCertificateChain(Admin administrator,
+			int caid, String issuerdn) {
+		Certificate[] chain;
+		if(caid != 0) {
+		    chain = (Certificate[]) signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
+		}
+		else {
+		    chain = (Certificate[]) signSession.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
+		}
+		return chain;
+	}
+
+	private void handleCaChainCommands(Admin administrator, String issuerdn, int caid, String format, HttpServletResponse res) throws IOException {
+			try {
+				Certificate[] chain = getCertificateChain(administrator, caid, issuerdn);
+				// This one gets it in the wrong order for a chain file...so reverse it
+				ArrayUtils.reverse(chain);
+				String filename = "chain.pem";
+				byte[] outbytes = new byte[0];
+				// Encode and send back
+				if ((format == null) || StringUtils.equalsIgnoreCase(format, "pem")) {
+					final StringBuffer out = new StringBuffer();
+					for (int i = 0; i < chain.length; i++) {
+						out.append("-----BEGIN CERTIFICATE-----\n");
+						out.append(new String(Base64.encode(chain[i].getEncoded())));
+						out.append("\n-----END CERTIFICATE-----\n");
+					}
+					outbytes = out.toString().getBytes();
+				} else {
+					filename = "chain.jks";
+					// Create a JKS truststore with the CA certificates in
+			        final KeyStore store = KeyStore.getInstance("JKS");
+			        store.load(null, null);
+			        for (int i = 0; i < chain.length; i++) {
+				        String cadn = CertTools.getSubjectDN(chain[i]);
+			        	String alias = CertTools.getPartFromDN(cadn, "CN");
+			        	if (alias == null) {
+			        		alias = CertTools.getPartFromDN(cadn, "O");
+			        	}
+			        	if (alias == null) {
+			        		alias = "cacert"+i;
+			        	}
+			        	alias = StringUtils.replaceChars(alias, ' ', '_');
+			        	alias = StringUtils.substring(alias, 0, 15);
+			            store.setCertificateEntry(alias, chain[i]);
+			            ByteArrayOutputStream out = new ByteArrayOutputStream();
+			            store.store(out, "changeit".toCharArray());
+			            out.close();
+			            outbytes = out.toByteArray();
+			        }
+				}
+				// We must remove cache headers for IE
+				ServletUtils.removeCacheHeaders(res);
+				res.setHeader("Content-disposition", "attachment; filename=\""+filename+"\"");
+				res.setContentType("application/octet-stream");
+				res.setContentLength(outbytes.length);
+				res.getOutputStream().write(outbytes);
+				log.debug("Sent CA certificate chain to client, len="+outbytes.length+".");						
+            } catch (CertificateEncodingException e) {
+                log.debug("Error getting CA certificate chain: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificate chain.");
+            } catch (KeyStoreException e) {
+                log.debug("Error creating JKS with CA certificate chain: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error creating JKS with CA certificate chain.");
+			} catch (NoSuchAlgorithmException e) {
+                log.debug("Error creating JKS with CA certificate chain: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error creating JKS with CA certificate chain.");
+			} catch (CertificateException e) {
+                log.debug("Error creating JKS with CA certificate chain: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error creating JKS with CA certificate chain.");
+			} catch (EJBException e) {
+                log.debug("CA does not exist: ", e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "CA does not exist: "+e.getMessage());
+			}
+	}
     
     private void printHtmlHeader(String title, PrintWriter pout) {
                 pout.println("<html><head>");
