@@ -499,6 +499,12 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         log.trace("<test07CRLFreshestCRL()");
     }
+    public void test08TestCRLStore() throws Exception {
+        log.trace(">test08TestCRLStore()");
+    	final String result = ValidationAuthorityTst.testCRLStore(ca, this.createCrlSession);
+    	assertNull(result, result);
+        log.trace("<test08TestCRLStore()");
+    }
 
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
