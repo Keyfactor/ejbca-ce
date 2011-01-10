@@ -124,6 +124,9 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                         log.debug("Storing CRL in certificate store.");
                 }
                 crlSession.storeCRL(admin, crlBytes, fingerprint, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+                // Store crl in ca CRL publishers.
+                log.debug("Storing CRL in publishers");
+                this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, fingerprint, nextCrlNumber, ca.getSubjectDN());
             }
         } catch (CATokenOfflineException ctoe) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
