@@ -1,6 +1,15 @@
-/**
- * 
- */
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.core.ejb.ca.crl;
 
 import java.security.cert.Certificate;
@@ -19,9 +28,10 @@ import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
-/**
+/** Base class with methods common to CRLSessionBean and CRLSessionStandAloneBean
+ * 
  * @author lars
- *
+ * @version $Id$
  */
 abstract class CrlSessionBeanBase {
 

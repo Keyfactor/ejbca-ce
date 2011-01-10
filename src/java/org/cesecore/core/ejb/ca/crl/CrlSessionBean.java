@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CRLData;
+import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
@@ -100,6 +101,30 @@ public class CrlSessionBean extends CrlSessionBeanBase implements CrlSessionLoca
 	void log(Admin admin, int hashCode, int moduleCa, Date date,
 	         String string, Certificate cert, int eventInfoGetlastcrl, String msg) {
 		this.logSession.log(admin, hashCode, moduleCa, date, string, cert, eventInfoGetlastcrl, msg);
+	}
+
+	// 
+	// Methods overriding implementations in CrlSessionBeanBase, needed because of the following bug in JBoss 6.0.0.
+	// https://issues.jboss.org/browse/JBMDR-73
+	//
+	@Override
+	public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
+		return super.getLastCRL(admin, issuerdn, deltaCRL);
+	}
+
+	@Override
+	public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
+		return super.getLastCRLInfo(admin, issuerdn, deltaCRL);
+	}
+
+	@Override
+	public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
+		return super.getCRLInfo(admin, fingerprint);
+	}
+
+	@Override
+	public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
+		return super.getLastCRLNumber(admin, issuerdn, deltaCRL);
 	}
 
 }

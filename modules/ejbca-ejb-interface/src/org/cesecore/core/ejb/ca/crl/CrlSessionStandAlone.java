@@ -12,8 +12,7 @@
  *************************************************************************/
 package org.cesecore.core.ejb.ca.crl;
 
-import java.util.Date;
-
+import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -36,7 +35,7 @@ public interface CrlSessionStandAlone {
 	 * @return byte[] with DER encoded X509CRL or null of no CRLs have been
 	 *         issued.
 	 */
-	public byte[] getLastCRL(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
+	public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL);
 
 	/**
 	 * Retrieves the information about the lastest CRL issued by this CA.
@@ -51,7 +50,7 @@ public interface CrlSessionStandAlone {
 	 *            latestcomplete CRL
 	 * @return CRLInfo of last CRL by CA or null if no CRL exists.
 	 */
-	public org.ejbca.core.model.ca.store.CRLInfo getLastCRLInfo(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
+	public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL);
 
 	/**
 	 * Retrieves the information about the specified CRL. Retreives less
@@ -63,7 +62,7 @@ public interface CrlSessionStandAlone {
 	 *            fingerprint of the CRL
 	 * @return CRLInfo of CRL or null if no CRL exists.
 	 */
-	public org.ejbca.core.model.ca.store.CRLInfo getCRLInfo(org.ejbca.core.model.log.Admin admin, java.lang.String fingerprint);
+	public CRLInfo getCRLInfo(Admin admin, String fingerprint);
 
 	/**
 	 * Retrieves the highest CRLNumber issued by the CA.
@@ -76,6 +75,5 @@ public interface CrlSessionStandAlone {
 	 *            true to get the latest deltaCRL, false to get the latest
 	 *            complete CRL
 	 */
-	public int getLastCRLNumber(org.ejbca.core.model.log.Admin admin, java.lang.String issuerdn, boolean deltaCRL);
-
+	public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL);
 }
