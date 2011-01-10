@@ -683,6 +683,6 @@ public interface UserAdminSession {
      * @param status Status of the requested CAIDs
      * @return
      */
-    public List<UserData> findUsers(List<Integer> caIds, long timeModified, int status);
+    public List<UserDataVO> findUsers(List<Integer> caIds, long timeModified, int status);
 
 }

@@ -14,7 +14,7 @@
 
 	<path id="compile.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.ejbca-ejb.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.servlet.classpath"/>
@@ -22,6 +22,7 @@
 		<path refid="lib.commons-fileupload.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 	</path>
 	
     <path id="jasper.classpath">
@@ -44,7 +45,7 @@
         <war destfile="${mod.publicweb-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
     </target>
 
-    <target name="compile" depends="setup, ejbca-ejb">
+    <target name="compile" depends="setup, ejbca-common-web">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>

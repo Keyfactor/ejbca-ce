@@ -17,7 +17,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -56,34 +55,30 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
        
         long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
-        List<UserData> userDataList = getUserAdminSession().findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
+        List<UserDataVO> userDataList = getUserAdminSession().findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, UserDataConstants.STATUS_NEW);
 
-        for (UserData userData : userDataList) {     
-            UserDataVO userDataVO = userData.toUserDataVO();
+        for (UserDataVO userDataVO : userDataList) {
             userDataVO.setStatus(UserDataConstants.STATUS_GENERATED);
             userDataVO.setPassword(null);
             try {
                 getUserAdminSession().changeUser(getAdmin(), userDataVO, false);
-
-                if (userData != null) {
-                    if (isSendToEndUsers()) {
-                        if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
-                            String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", userDataVO.getUsername());
-                            log.info(msg);
-                        } else {
-                            // Populate end user message
-                            String message = new UserNotificationParamGen(userDataVO).interpolate(getEndUserMessage());
-                            MailActionInfo mailActionInfo = new MailActionInfo(userDataVO.getEmail(), getEndUserSubject(), message);
-                            userEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
-                        }
-                    }
-                    if (isSendToAdmins()) {
-                        // Populate admin message
-                        String message = new UserNotificationParamGen(userDataVO).interpolate(getAdminMessage());
-                        MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
-                        adminEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
-                    }
+                if (isSendToEndUsers()) {
+                	if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
+                		String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", userDataVO.getUsername());
+                		log.info(msg);
+                	} else {
+                		// Populate end user message
+                		String message = new UserNotificationParamGen(userDataVO).interpolate(getEndUserMessage());
+                		MailActionInfo mailActionInfo = new MailActionInfo(userDataVO.getEmail(), getEndUserSubject(), message);
+                		userEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
+                	}
+                }
+                if (isSendToAdmins()) {
+                	// Populate admin message
+                	String message = new UserNotificationParamGen(userDataVO).interpolate(getAdminMessage());
+                	MailActionInfo mailActionInfo = new MailActionInfo(null, getAdminSubject(), message);
+                	adminEmailQueue.add(new EmailCertData(userDataVO.getUsername(), mailActionInfo));
                 }
             } catch (Exception e) {
                 log.error("Error running service work: ", e);

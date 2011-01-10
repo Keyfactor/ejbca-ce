@@ -308,6 +308,7 @@
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
+                <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
                 <include name="ejbca-entity.jar" />
                 <include name="log4jconfig.jar" />

@@ -13,7 +13,7 @@
 
 	<path id="compile.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.ejbca-ejb.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.jee.classpath"/>
