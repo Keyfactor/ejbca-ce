@@ -177,9 +177,8 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
                     <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
                     <exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
-					<!-- (Do not) Exclude semi-broken tests
+					<!-- Exclude test of broken functionality -->
 					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
-					-->
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
 					<exclude name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class"/>
