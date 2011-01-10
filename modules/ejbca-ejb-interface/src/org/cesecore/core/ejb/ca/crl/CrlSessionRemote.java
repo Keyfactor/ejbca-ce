@@ -16,7 +16,7 @@ import javax.ejb.Remote;
 
 /**
  * Remote interface for CreateCRLSession
- * 
+ * @version $Id$
  */
 @Remote
 public interface CrlSessionRemote extends CrlSession {
