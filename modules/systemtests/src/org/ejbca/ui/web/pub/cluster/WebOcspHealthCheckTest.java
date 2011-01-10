@@ -45,8 +45,11 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
         WebConnection con = webClient.getWebConnection();
         WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath));
         WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
-        assertEquals("ALLOK", resp.getContentAsString());
+        final int statusCode = resp.getStatusCode();
+        final String contentAsString = resp.getContentAsString();
+        log.debug("Response: statusCode=" + statusCode + " contentAsString=" + contentAsString);
+        assertEquals("Response code", 200, statusCode);
+        assertEquals("ALLOK", contentAsString);
         long before = System.currentTimeMillis();
         createThreads();
         long after = System.currentTimeMillis();
