@@ -1,4 +1,13 @@
 # ------------ OCSP responder configuration ---------------------
+# These configurations are used both for EJBCA and the Validation Authority (VA).
+
+# OCSP servlet enabled. If false there will be no servlet.
+# Default is true.
+#ocsp.enabled=false
+
+# Context root (the path in the URL)
+# Default is '/${app.name}/publicweb/status'
+#ocsp.contextroot=/status
 
 # Specifies the subject of a certificate which is used to identify the 
 # responder which will generate responses when no real CA can be found from the request. 
@@ -140,8 +149,8 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # The used token is referred to as "card" since smart card was the first (and is the only) token a custom signer has been implemented for.
 
 # Directory of classes implementing hardware signing of the OCSP response
-# Default ${ejbca.home}/ocspHardTokenClasses
-#ocsp.hardToken.classes=/full-path/primeCard/ocspHardTokenClasses-1.6
+# Default ./ocspHardTokenClasses
+#ocsp.hardToken.classes=../primeCard/ocspHardTokenClasses-1.6
 
 # The class that implements card signing of the OCSP response
 # Default: se.primeKey.caToken.card.CardKeysImpl
@@ -238,86 +247,6 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Default: false
 #ocsp.activation.doNotStorePasswordsInMemory=true
 
-
-#------------------- OCSP publisher db configuration------------------------------
-# All these "ocsp-database.*" properties is used to configure the connection to the database that the
-# ExternalOCSPPublisher will publish to. Please read the OCSP web-docs for information.
-# If no ExternalOCSPPublisher will be used these properties should not be configured.
-# Note that the External OCSP responder itself uses the configuration options database.*.
-#
-# Configure these options if you are configuring EJBCA that will publish certificates to an external OCSP responder.
-
-# jndi name of the datasource to use in deployment descriptors of ejbs.
-#ocsp-datasource.jndi-name=OcspDS
-
-# Database connection url.
-# This is the URL used to connect to the database, used to configure a new datasource in JBoss.
-#ocsp-database.url=jdbc:mysql://127.0.0.1:3306/ejbca
-#ocsp-database.url=jdbc:postgresql://127.0.0.1/ejbca
-#ocsp-database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
-#ocsp-database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
-#ocsp-database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
-
-# JDBC driver classname.
-# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
-#ocsp-database.driver=com.mysql.jdbc.Driver
-#ocsp-database.driver=org.postgresql.Driver
-#ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
-#ocsp-database.driver=oracle.jdbc.driver.OracleDriver
-#ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
-
-# Database username.
-#ocsp-database.username=ocsp
-
-# Database password.
-#ocsp-database.password=ocsp
-
-#------------------- External OCSP Healthcheck settings -------------
-# Specifies the basic settings of the external OCSP Healtcheck servlet 
-# (i.e. health check servlet that is running on the external OCSP responder).
-# for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
-#
-# The url for the external OCSP healthcheck is:
-# http://127.0.0.1:8080/ejbca/publicweb/ocsphealthcheck/extocsphealth
-#
-# Configure these options if you are configuring an external OCSP responder now.
-
-# Parameter specifying amount of free memory (Mb) before alarming
-# Default: 1
-#ocsphealthcheck.amountfreemem=1
-
-# Parameter specifying database test query string. Used to check that
-# the database is operational.
-# Default : Select 1 From CertificateData where fingerprint='XX'
-#ocsphealthcheck.dbquery=Select 1 From CertificateData where fingerprint='XX'
-
-# Parameter specifying IP addresses authorized to access the healthcheck
-# servlet. Use ';' between multiple IPs.
-# Default: 127.0.0.1  
-#ocsphealthcheck.authorizedips=127.0.0.1
-
-# Parameter to specify location of file containing information about maintenance
-# Use this file to specify wether to include node in healthcheck or report as down for maintenance, 
-# which will return an error message (either the property name specified below or a custom message specified in web.xml).
-#ocsphealthcheck.maintenancefile=~/maintenance.properties
-
-# Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
-# The healthcheck.maintenancefile should contain a single line like this:
-# DOWN_FOR_MAINTENANCE=true
-# Where the node will be down for maintenance of the property is true, and not down for maintenance if the property is false.
-#ocsphealthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
-
-# Parameter to configure if all available signing keys should be tested.
-# The test will fail if any of the available signing keys is not working or if there are no available signing keys.
-# Default: true
-#ocsphealthcheck.signtest=false
-
-# True if the healthcheck should check the validity of all signing certificates.
-# If your cluster of responders have the same expiration time for all signing certificates it could be better not to check since
-# it might be better to sign with an old certificate than not signing at all. Otherwise it is usually a good idea to do this check
-# and exclude a responder with no valid signing certificate.
-# Default: true
-#ocsphealthcheck.checkSigningCertificateValidity=false
 
 #------------------- OCSP Logging settings -------------
 # Transaction logging logs summary lines for all OCSP request/responses, which can be used for charging clients if you are running a commercial OCSP service.
