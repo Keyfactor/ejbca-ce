@@ -57,6 +57,21 @@
 					</p>
 					</div>
 				</c:forEach>
+				<p>
+				<c:out value="CA certificate chain: " />
+				<c:url var="pemchain" value="../publicweb/webdist/certdist" >
+					<c:param name="cmd" value="cachain" />
+					<c:param name="caid" value="${ca_id}" />
+					<c:param name="format" value="pem" />
+				</c:url>					
+				<a href="${pemchain}">Download PEM chain</a>, 
+				<c:url var="jkschain" value="../publicweb/webdist/certdist" >
+					<c:param name="cmd" value="cachain" />
+					<c:param name="caid" value="${ca_id}" />
+					<c:param name="format" value="jks" />
+				</c:url>					
+				<a href="${jkschain}">Download JKS truststore</a> (password changeit)
+				</p>				
 				</div>
 			</c:otherwise>
 		</c:choose>
