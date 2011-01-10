@@ -1,0 +1,51 @@
+#------------------- Validation Authority (VA) Healthcheck settings -------------
+# Specifies the basic settings of the VA healthcheck
+# (i.e. health check servlet that is running on the VA).
+# for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
+#
+# The url for the external OCSP healthcheck is:
+# http://127.0.0.1:8080/ejbca/publicweb/vahealthcheck/vahealth
+#
+# Configure these options if you are configuring a VA now.
+
+# Note: The naming ocsphealthcheck.* of the properties has a historical reason, before the VA only contained an OCSP responder.
+# The property names are kept for backward compatibility. 
+
+# Parameter specifying amount of free memory (Mb) before alarming
+# Default: 1
+#ocsphealthcheck.amountfreemem=1
+
+# Parameter specifying database test query string. Used to check that
+# the database is operational.
+# Default : Select 1 From CertificateData where fingerprint='XX'
+#ocsphealthcheck.dbquery=Select 1 From CertificateData where fingerprint='XX'
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' between multiple IPs.
+# Default: 127.0.0.1  
+#ocsphealthcheck.authorizedips=127.0.0.1
+
+# Parameter to specify location of file containing information about maintenance
+# Use this file to specify wether to include node in healthcheck or report as down for maintenance, 
+# which will return an error message (either the property name specified below or a custom message specified in web.xml).
+#ocsphealthcheck.maintenancefile=~/maintenance.properties
+
+# Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
+# The healthcheck.maintenancefile should contain a single line like this:
+# DOWN_FOR_MAINTENANCE=true
+# Where the node will be down for maintenance of the property is true, and not down for maintenance if the property is false.
+#ocsphealthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
+
+# Parameter to configure if all available signing keys should be tested.
+# The test will fail if any of the available signing keys is not working or if there are no available signing keys.
+# If the OCSP responder is disable the test will always succeed.
+# Default: true
+#ocsphealthcheck.signtest=false
+
+# True if the healthcheck should check the validity of all signing certificates.
+# If your cluster of responders have the same expiration time for all signing certificates it could be better not to check since
+# it might be better to sign with an old certificate than not signing at all. Otherwise it is usually a good idea to do this check
+# and exclude a responder with no valid signing certificate.
+# If the OCSP responder is disable the test will always succeed.
+# Default: true
+#ocsphealthcheck.checkSigningCertificateValidity=false
