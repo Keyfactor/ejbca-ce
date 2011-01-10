@@ -17,13 +17,16 @@
 <html>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
-  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
+
 <f:view>
 <body>
+
 <h1><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
+
 	<h:form>
 	<h:dataTable border="0" value="#{cAActivationMBean.hasMessages}" var="item" style="right: auto; left: auto">
 	     	<h:column>

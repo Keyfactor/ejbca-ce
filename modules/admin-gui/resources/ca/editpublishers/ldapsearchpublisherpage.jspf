@@ -21,7 +21,7 @@
     </tr>  
 	<tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
-         <%= ejbcawebbean.getText("SEARCHBASEDN") %><br>
+         <%= ejbcawebbean.getText("SEARCHBASEDN") %><br />
          <%= ejbcawebbean.getText("SEARCHBASEDNDESCR") %>
       </td>
       <td width="50%" valign="top"> 
@@ -31,7 +31,7 @@
     </tr>
 	<tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
-         <%= ejbcawebbean.getText("SEARCHFILTER") %><br>
+         <%= ejbcawebbean.getText("SEARCHFILTER") %><br />
          <%= ejbcawebbean.getText("SEARCHFILTERDESCR") %>
       </td>
       <td width="50%" valign="top"> 

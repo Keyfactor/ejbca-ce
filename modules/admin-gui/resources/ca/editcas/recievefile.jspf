@@ -71,15 +71,15 @@ function check()
       <td width="49%" valign="top" align="right">&nbsp;
       </td>
       <td>
-        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText(buttontexts[filemode]) %>" ><br><br>
+        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText(buttontexts[filemode]) %>" ><br /><br />
         <% if (filemode == 3) { // ACTION_SIGNREQUEST %>
            <%= ejbcawebbean.getText("USEPREVIOUSKEY") %>
            <input type="checkbox" name="<%=CHECKBOX_USEPREVIOUSKEY%>" value="<%=CHECKBOX_VALUE%>">
-           <br> 
+           <br /> 
            <%= ejbcawebbean.getText("CREATELINKCERT") %>
            <input type="checkbox" name="<%=CHECKBOX_CREATELINKCERT%>" value="<%=CHECKBOX_VALUE%>"> 
         <% } %>
-        <br>
+        <br />
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
       </td>
     </tr>

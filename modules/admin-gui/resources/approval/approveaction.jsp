@@ -16,9 +16,9 @@
 <html>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
-  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
 <f:view>
@@ -41,8 +41,8 @@ function viewcert(link){
 
    <h3 align="center">
      <h:outputText value="#{approvalActionSession.approveRequestData.approveActionName}"/>
-     <br><h:messages  layout="table" errorClass="alert"/><br>
-     <h:outputText value="#{web.text.CURRENTSTATUS}"/> <h:outputText value=" : "/> <h:outputText value="#{approvalActionSession.approveRequestData.status}"/><br>     
+     <br /><h:messages  layout="table" errorClass="alert"/><br />
+     <h:outputText value="#{web.text.CURRENTSTATUS}"/> <h:outputText value=" : "/> <h:outputText value="#{approvalActionSession.approveRequestData.status}"/><br />     
    </h3>
    <h4 align="center">
    	</h4>
@@ -166,10 +166,10 @@ function viewcert(link){
     <f:subview id="shownonerow" rendered="#{!approvalActionSession.existsApprovals}">
       <h3 align="center"><h:outputText value="#{web.text.NONE}"/></h3>
     </f:subview>    
-    <br><br><br>       
+    <br /><br /><br />       
       <f:subview id="showapprovebuttons" rendered="#{approvalActionSession.approvable}">
         <h:outputText value="#{web.text.COMMENT}"/><h:outputText value=":"/> 
-        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionSession.comment}"/><br>
+        <h:inputTextarea id="comment" rows="2" cols="30" value="#{approvalActionSession.comment}"/><br />
         <h:commandButton  id="accept" value="#{web.text.APPROVE}" action="#{approvalActionSession.approve}" onclick="return confirmapprove()"/>
         <h:commandButton  id="reject" value="#{web.text.REJECT}" action="#{approvalActionSession.reject}" onclick="return confirmreject()"/>
        </f:subview>

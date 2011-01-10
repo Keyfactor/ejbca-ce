@@ -85,14 +85,17 @@
 <html>
 <head>
 <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 <body>
+
 <h1><c:out value="<%= ejbcawebbean.getText(\"EJBCAADMINPREFERENCES\") %>" /></h1>
+
 <h2><c:out value="<%= ejbcawebbean.getText(\"FORADMIN\")+\" \" + ejbcawebbean.getUsersCommonName() %>" /></h2>
+
 <form name="defaultmypreferences" method="post" action="<%=THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
 <!--

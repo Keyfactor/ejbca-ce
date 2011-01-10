@@ -222,11 +222,11 @@
 
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-  <script type="text/JavaScript">
+  <script type="text/javascript">
 <!--
 function viewuser(row){
     var hiddenusernamefield = eval("document.form.<%= HIDDEN_USERNAME %>" + row);
@@ -298,7 +298,6 @@ function viewcert(row){
     <input type="button" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>" onclick='window.location.reload(true)'>
   </p>
     
-  <br>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
@@ -414,7 +413,7 @@ function viewcert(row){
                        } %>
     </td>
     <td width="7%">
-                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0"><%= ejbcawebbean.getText("VERIFY") %>
+                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" /><%= ejbcawebbean.getText("VERIFY") %>
     </td>
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>

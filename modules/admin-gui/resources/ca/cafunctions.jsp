@@ -95,13 +95,16 @@ function getPasswordAndSubmit(formname) {
 -->
   </script>
 </head>
+
 <body>
+
   <h1><%= ejbcawebbean.getText("CAFUNCTIONS") %></h1>
+
 <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
   </div> -->
 
-	<br>
+	<br />
   <% // Display CA info one by one.
      Iterator iter = canames.keySet().iterator();
      int number = 0;
@@ -175,7 +178,7 @@ function getPasswordAndSubmit(formname) {
              row++;
           }%>
         </table> 
-        <br>
+        <br />
         
         <!-- Full CRLs --> 
         <% CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), false);
@@ -192,7 +195,7 @@ function getPasswordAndSubmit(formname) {
            } 
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + crlinfo.getLastCRLNumber()); %>  
 <i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
-<br>
+<br />
 <%        } %>
 
 <% // Delta CRLs 
@@ -203,7 +206,7 @@ function getPasswordAndSubmit(formname) {
      	       } else {
      	           out.write(ejbcawebbean.getText("DELTACRLSNOTENABLED"));
      	       }
-	         %> <br> <%
+	         %> <br /> <%
 	       }else{
 	       	 boolean expired = deltacrlinfo.getExpireDate().compareTo(new Date()) < 0; %>
 	<%=ejbcawebbean.getText("LATESTDELTACRL") + ": "  
@@ -215,13 +218,13 @@ function getPasswordAndSubmit(formname) {
 	           } 
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + deltacrlinfo.getLastCRLNumber()); %>  
 <i><a href="<%=DOWNLOADCRL_LINK%>?cmd=deltacrl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETDELTACRL") %></a></i>
-<br>
-<br>
+<br />
+<br />
 <%        } %>
 
 <% // Display createcrl if admin is authorized
       if(createcrlrights){ %>
-<br> 
+<br /> 
 <form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
 <input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
@@ -232,7 +235,7 @@ function getPasswordAndSubmit(formname) {
            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
           } 
        if(cainfo.getCAInfo().getDeltaCRLPeriod() > 0) { %>
-<br>
+<br />
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
 <%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
        <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) { %>
@@ -243,8 +246,8 @@ function getPasswordAndSubmit(formname) {
        } %>
 </form>
 <%    } %>
-<br>
-<hr>
+<br />
+<hr />
 <% 
     number++;
   }  %>

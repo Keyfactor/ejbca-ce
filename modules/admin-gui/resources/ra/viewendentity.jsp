@@ -32,11 +32,12 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
+
 <body class="popup" id="viewendentity">
   <h2><%= ejbcawebbean.getText("VIEWENDENTITY2") %></h2>
   <%if(viewendentityhelper.nouserparameter){%>
@@ -259,7 +260,7 @@
       <% } if(viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
-        <%= ejbcawebbean.getText("SENDNOTIFICATION") %> <br>
+        <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
       </td>
       <td > 
         <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_SENDNOTIFICATION%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="12"
@@ -270,7 +271,7 @@
       <% } if(viewendentityhelper.profile.getUsePrinting()){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
-        <%= ejbcawebbean.getText("PRINTUSERDATA") %> <br>
+        <%= ejbcawebbean.getText("PRINTUSERDATA") %>
       </td>
       <td > 
         <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_PRINT%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="12"

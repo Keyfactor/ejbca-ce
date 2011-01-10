@@ -1,8 +1,8 @@
 
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--
@@ -40,7 +40,9 @@ function viewcert(row){
 </head>
 
 <body>
+
 <h1><c:out value="<%= ejbcawebbean.getText(\"VIEWLOG\") %>" /><%= ejbcawebbean.getHelpReference("/userguide.html#View%20Log%20options") %></h1>
+
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
     <div align="right">
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>
@@ -56,6 +58,7 @@ function viewcert(row){
      <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>" /></u> </A> -->
   </div>
   </form> 
+
 <form name="form" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_LISTLOG %>'>
   <input type="hidden" name='<%= OLD_ACTION %>' value='<%=oldaction %>'>
@@ -193,7 +196,7 @@ function viewcert(row){
                  <%  } %>                  
       </select>  
   </p>
-  <br>
+  <br />
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
@@ -308,7 +311,7 @@ function viewcert(row){
                        } %>
     </td>
     <td width="7%">
-                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0"><%= ejbcawebbean.getText("VERIFY") %>
+                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" /><%= ejbcawebbean.getText("VERIFY") %>
     </td>
     
   </tr>

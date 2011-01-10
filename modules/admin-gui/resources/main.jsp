@@ -10,21 +10,25 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
-  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
+
 <body>
-<H5><DIV align=right><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%>
+
+<div align="right" style="text-weight: bold;">
+	<%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION %>
 <%	if ( ejbcawebbean.isUsingExportableCryptography() ) { %>
 	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("EXPORTABLE") %></div>
 <%	} %>
 	<noscript>
 	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("JAVASCRIPTDISABLED") %></div>
 	</noscript>
-</div></H5> 
+</div> 
 
 <h3 id="welcome"><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%></h3> 
+
 <div id="information">
 	<div><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "%><code><%= ejbcawebbean.getHostName()%></code></div> 
 	<div><%= ejbcawebbean.getText("SERVERTIME") + " : "%><code><%= ejbcawebbean.getServerTime()%></code></div>

@@ -1,8 +1,8 @@
 
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--
@@ -82,7 +82,9 @@ function confirmrevocation(){
 </head>
 
 <body>
+
 <h1><c:out value="<%= ejbcawebbean.getText(\"SEARCHENDENTITIES\") %>" /></h1>
+
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
     <div align="right">
      <% if(filtermode == AdminPreference.FILTERMODE_BASIC){ %>
@@ -98,6 +100,7 @@ function confirmrevocation(){
      <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>"/></u> </A> -->
   </div>
   </form> 
+
 <form name="form" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<c:out value="<%=ACTION_LISTUSERS %>"/>'>
   <input type="hidden" name='<%= OLD_ACTION %>' value='<c:out value="<%=oldaction %>"/>'>
@@ -207,7 +210,7 @@ function confirmrevocation(){
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>
   </p>
-  <br>
+  
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
@@ -424,7 +427,9 @@ function confirmrevocation(){
       </td>
     </tr>
   </table>
-  <br><br>
+
+  <br /><br />
+
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
       <td  valign="top">
@@ -438,7 +443,7 @@ function confirmrevocation(){
                onClick='return confirmdeleterevoke()'>&nbsp;&nbsp;&nbsp;
        <%   } 
           }catch(AuthorizationDeniedException ade){} %>        
-         <br> <c:out value="<%= ejbcawebbean.getText(\"REVOKATIONREASON\") %>"/>&nbsp;
+         <br /> <c:out value="<%= ejbcawebbean.getText(\"REVOKATIONREASON\") %>"/>&nbsp;
         <select name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>
@@ -463,7 +468,7 @@ function confirmrevocation(){
       <%/* try{ 
            if(ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_EDIT_RIGHTS)){ %>
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value='<c:out value="<%= ejbcawebbean.getText(\"CHANGESTATUSTO\") %>"/>'
-               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE",true) %>")'><br>
+               onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE",true) %>")'><br />
         <select name="<%=SELECT_CHANGE_STATUS %>">
          <option selected value='<%= Integer.toString(UserDataConstants.STATUS_NEW) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>"/></option>
      <!--   <option value='<%= Integer.toString(UserDataConstants.STATUS_FAILED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSFAILED\") %>"/></option>  -->

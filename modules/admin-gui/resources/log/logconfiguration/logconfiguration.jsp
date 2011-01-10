@@ -172,12 +172,13 @@
 <html>
 <head>
 <title><%= globalconfiguration .getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 <body>
+
 <h1><%= ejbcawebbean.getText("LOGCONFIGURATION") %></h1>
 
 <form name="form" method="post" action="<%= globalconfiguration .getLogPath() + "/logconfiguration/" + THIS_FILENAME %>">

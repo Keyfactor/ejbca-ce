@@ -12,9 +12,10 @@
     <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certification Authority</title>
     <link rel="stylesheet" href="styles.css" type="text/css" />
   </head>
+
   <body>
     <div class="logobar">
-      <a href="index.jsp"><img src="images/logotype.png" alt="EJBCA-pki logotype" border="0"/></a>
+      <a href="index.jsp"><img src="images/logotype.png" alt="EJBCA" border="0"/></a>
     </div>
     <div class="menucontainer">
       <div class="menu">

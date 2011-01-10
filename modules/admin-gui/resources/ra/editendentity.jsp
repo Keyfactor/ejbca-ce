@@ -579,9 +579,9 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript">
    <!--
 
@@ -969,6 +969,7 @@ function checkUseInBatch(){
   </script>
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
+
 <body class="popup" id="editendentity"
       onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
@@ -1624,7 +1625,7 @@ function checkUseInBatch(){
     <% }if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
-        <%= ejbcawebbean.getText("CARDNUMBER") %> <br>
+        <%= ejbcawebbean.getText("CARDNUMBER") %>
       </td>
       <td > 
         <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="20" tabindex="<%=tabindex++%>" value="<%=userdata.getCardNumber()%>"> 
@@ -1634,7 +1635,7 @@ function checkUseInBatch(){
      <% }if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
-        <%= ejbcawebbean.getText("SENDNOTIFICATION") %> <br>
+        <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
       </td>
       <td > 
         <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 
@@ -1649,7 +1650,7 @@ function checkUseInBatch(){
      <% }if(profile.getUsePrinting()){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
-        <%= ejbcawebbean.getText("PRINTUSERDATA") %> <br>
+        <%= ejbcawebbean.getText("PRINTUSERDATA") %>
       </td>
       <td > 
         <input type="checkbox" name="<%=CHECKBOX_PRINT%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getPrintingDefault())
@@ -1672,7 +1673,7 @@ function checkUseInBatch(){
     </tr>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
-        <%= ejbcawebbean.getText("STATUS") %> <br>
+        <%= ejbcawebbean.getText("STATUS") %>
       </td>
       <td > 
         <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >

@@ -508,7 +508,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
-           value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"><br>
+           value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"><br />
            <%= ejbcawebbean.getText("ENDDATEINFO") %> <%= ValidityDate.getDateExample()  %>
       </td>
     </tr>
@@ -614,7 +614,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTS%>"   onClick="checkusebasicconstraintfield()" value="<%=CHECKBOX_VALUE %>"
            <% if(certificateprofiledata.getUseBasicConstraints()) 
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL%>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseBasicConstraints())
@@ -635,7 +635,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>"   onClick="checkusepathlengtconstraintfield()" value="<%=CHECKBOX_VALUE %>" <% if(!enablepathlenconstraint) out.write(" disabled "); %>
            <% if(certificateprofiledata.getUsePathLengthConstraint() && enablepathlenconstraint) 
                  out.write(" CHECKED ");
-           %>> <br> 
+           %>> <br /> 
            <input type="text" name="<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>" size="2" maxlength="2" 
            <%      if(!certificateprofiledata.getUsePathLengthConstraint() || !enablepathlenconstraint) 
                        out.write(" disabled ");
@@ -656,7 +656,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseAuthorityKeyIdentifier())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
              if(!certificateprofiledata.getUseAuthorityKeyIdentifier())
@@ -683,7 +683,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>', '<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
              if(!certificateprofiledata.getUseSubjectKeyIdentifier())
@@ -709,7 +709,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_KEYUSAGE %>" onClick="checkusefield('<%=CHECKBOX_KEYUSAGE %>', '<%=CHECKBOX_KEYUSAGECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseKeyUsage())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_KEYUSAGECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseKeyUsage())
@@ -747,7 +747,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>"  onclick="checkuseextendedkeyusagefield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseExtendedKeyUsage())
                  out.write("CHECKED");
-           %>><br> 
+           %>><br /> 
            <input type="checkbox" name="<%=CHECKBOX_EXTENDEDKEYUSAGECRITICAL %>"  <% if(!certificateprofiledata.getUseExtendedKeyUsage()) out.write(" disabled "); %> value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getExtendedKeyUsageCritical())
                  out.write("CHECKED");
@@ -791,7 +791,7 @@ function checkallfields(){
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAME %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTALTERNATIVENAME %>', '<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseSubjectAlternativeName())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <% 
              if(!certificateprofiledata.getUseSubjectAlternativeName())
@@ -820,17 +820,17 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLDISTPOINT") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %> <br>
-        <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br>
-        <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br>
-        <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %> <br />
+        <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br />
+        <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br />
+        <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br />
         <%= ejbcawebbean.getText("CRLISSUER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseCRLDistributionPoint())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseCRLDistributionPoint())
@@ -838,7 +838,7 @@ function checkallfields(){
                else
                  if(certificateprofiledata.getCRLDistributionPointCritical())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
            <input type="checkbox" name="<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>" onClick="checkusedefaultsecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseCRLDistributionPoint())
@@ -846,7 +846,7 @@ function checkallfields(){
                else
                  if(certificateprofiledata.getUseDefaultCRLDistributionPoint())
                  out.write(" CHECKED ");
-           %>> <br> 
+           %>> <br /> 
            <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="45" maxlength="4096" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
@@ -855,7 +855,7 @@ function checkallfields(){
                        out.write(" value=\"" + certificateprofiledata.getCRLDistributionPointURI().replace("\"", "&#34;") + "\""); 
                       else
                        out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI().replace("\"", "&#34;") + "\"");%>>
-           <br>
+           <br />
            <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
                       out.write(" disabled "); 
@@ -875,15 +875,15 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEFRESHESTCRL") %>
-        <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %> <br>
-        <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %> <br />
+        <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br />
         <%= ejbcawebbean.getText("FRESHESTCRLURI") %>
        </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEFRESHESTCRL %>" onClick="checkusefreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseFreshestCRL())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> <br /> 
           <input type="checkbox" name="<%=CHECKBOX_USECADEFINEDFRESHESTCRL %>" onClick="checkusecadefinedfreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseFreshestCRL())
@@ -891,7 +891,7 @@ function checkallfields(){
                else
                  if(certificateprofiledata.getUseCADefinedFreshestCRL())
                  out.write(" CHECKED ");
-           %>> <br> 
+           %>> <br /> 
            <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseFreshestCRL() || certificateprofiledata.getUseCADefinedFreshestCRL())
                       out.write(" disabled "); 
@@ -992,7 +992,7 @@ function checkallfields(){
               if(certificateprofiledata.getUseDefaultOCSPServiceLocator())
                  out.write(" CHECKED ");
                  
-           %>> <br>
+           %>> <br />
            <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseAuthorityInformationAccess() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 

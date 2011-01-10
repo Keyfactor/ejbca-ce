@@ -36,7 +36,7 @@
     </tr>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
-         <%= ejbcawebbean.getText("BASEDN") %><br>
+         <%= ejbcawebbean.getText("BASEDN") %><br />
          <%= ejbcawebbean.getText("BASEDNDESCR") %>
       </td>
       <td width="50%" valign="top"> 
@@ -282,7 +282,7 @@
     </tr>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
-         <%= ejbcawebbean.getText("USEFIELDSINDN") %><br>
+         <%= ejbcawebbean.getText("USEFIELDSINDN") %><br />
          <%= ejbcawebbean.getText("DCOCSHOULDBEDEFINED") %>
       </td>
       <td width="50%" valign="top">   

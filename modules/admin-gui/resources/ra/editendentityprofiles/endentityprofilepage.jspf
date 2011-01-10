@@ -412,7 +412,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.PASSWORD,0);   %>
         <input type="text" name="<%=TEXTFIELD_PASSWORD%>" size="20" maxlength="1024" 
-           value="<%= profiledata.getValue(EndEntityProfile.PASSWORD,0)%>" <% if(!used) out.write(" disabled "); %>><br>
+           value="<%= profiledata.getValue(EndEntityProfile.PASSWORD,0)%>" <% if(!used) out.write(" disabled "); %>><br />
            <%= ejbcawebbean.getText("REQUIRED") %>
            <input type="checkbox" name="<%=CHECKBOX_REQUIRED_PASSWORD %>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %> 
            <% if(profiledata.isRequired(EndEntityProfile.PASSWORD,0))
@@ -512,7 +512,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="checkbox" name="<%=CHECKBOX_USE_CLEARTEXTPASSWORD %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_CLEARTEXTPASSWORD %>', '<%=CHECKBOX_CLEARTEXTPASSWORD%>', '<%=CHECKBOX_REQUIRED_CLEARTEXTPASSWORD %>')"
            <%  if(used)
                  out.write(" CHECKED ");
-           %>><br>
+           %>><br />
         <%= ejbcawebbean.getText("DEFAULT") %> 
         <input type="checkbox" name="<%=CHECKBOX_CLEARTEXTPASSWORD%>"  value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE) && used)
@@ -539,7 +539,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            if(profiledata.getUse(EndEntityProfile.EMAIL,0) || emailfieldexists) 
              used=true; %>
         <input type="text" name="<%=TEXTFIELD_EMAIL%>" size="45" maxlength="1024"  <% if(!used) out.write(" disabled "); %>
-           value="<% if(profiledata.getValue(EndEntityProfile.EMAIL,0) != null && used) out.write(profiledata.getValue(EndEntityProfile.EMAIL,0)); %>"><br>
+           value="<% if(profiledata.getValue(EndEntityProfile.EMAIL,0) != null && used) out.write(profiledata.getValue(EndEntityProfile.EMAIL,0)); %>"><br />
         <%= ejbcawebbean.getText("USE") %> 
         <input type="checkbox" name="<%=CHECKBOX_USE_EMAIL %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusetextfield('<%=CHECKBOX_USE_EMAIL %>', '<%=TEXTFIELD_EMAIL%>', '<%=CHECKBOX_REQUIRED_EMAIL %>', '<%=CHECKBOX_MODIFYABLE_EMAIL %>')"
            <% if(used)
@@ -649,7 +649,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="50%"> 
         <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN + i%>" size="45" maxlength="1024"
-           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br> 
+           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br /> 
         <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>"
            <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
@@ -756,7 +756,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) &&
            				profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) ) {
            			out.write(" DISABLED ");
-           		} %> /><br>
+           		} %> /><br />
         <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>"
 	        <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
@@ -823,7 +823,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_SUBJECTDIRATTR + i%>" size="45" maxlength="1024" 
-           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br>
+           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br />
 
         <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>"
@@ -1275,7 +1275,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <input type="checkbox" name="<%=CHECKBOX_REUSECERTIFICATE%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.getReUseKeyRecoveredCertificate() && used)
                    out.write("CHECKED");
-           %> ><br>
+           %> ><br />
         <%= ejbcawebbean.getText("DEFAULT") %> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.getValue(EndEntityProfile.KEYRECOVERABLE,0) != null && used)
@@ -1380,7 +1380,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="checkbox" name="<%=CHECKBOX_USE_SENDNOTIFICATION %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_SENDNOTIFICATION %>', '<%=CHECKBOX_SENDNOTIFICATION%>', '<%=CHECKBOX_REQUIRED_SENDNOTIFICATION %>'); checkuseemailfield();usenotificationchange()"
            <% if(used)
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br />
         <%= ejbcawebbean.getText("DEFAULT") %> 
         <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.getValue(EndEntityProfile.SENDNOTIFICATION,0) != null && used)
@@ -1566,7 +1566,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <input type="checkbox" name="<%=CHECKBOX_USE_PRINTING %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_PRINTING %>', '<%=CHECKBOX_PRINTING%>', '<%=CHECKBOX_REQUIRED_PRINTING %>'); useprintingchange()"
            <% if(used)
                  out.write("CHECKED");
-           %>> <br>
+           %>> <br />
         <%= ejbcawebbean.getText("DEFAULT") %> 
         <input type="checkbox" name="<%=CHECKBOX_PRINTING%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.getPrintingDefault() && used){
