@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra.raadmin;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1115,10 +1116,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
     	  log.debug("endTime is: "+endTime);
       }
+      SimpleDateFormat sm = new  SimpleDateFormat("yyyy-MM-dd HH:mm");
 	  Date now = new Date();
 	  Date startTimeDate = null;
       if( getUse(STARTTIME, 0) && startTime != null && !startTime.equals("") ) {
-    	  if ( startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+    	  if ( startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { //relative time
     		  String[] startTimeArray = startTime.split(":");
     		  if ( Long.parseLong(startTimeArray[0]) < 0 || Long.parseLong(startTimeArray[1]) < 0 || Long.parseLong(startTimeArray[2]) < 0 ) {
     			  throw new UserDoesntFullfillEndEntityProfile("Cannot use negtive relative time.");
@@ -1129,7 +1131,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  startTimeDate = new Date(now.getTime() + relative);
     	  } else {
     		  try {
-    			  startTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(startTime);
+    			  startTimeDate = sm.parse(startTime);
     		  } catch (ParseException e) {
     		  }
     	  }
@@ -1140,7 +1142,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
 	  Date endTimeDate = null;
       if( getUse(ENDTIME, 0) && endTime != null && !endTime.equals("") ) {
-    	  if ( endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+    	  if ( endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { //relative time
     		  String[] endTimeArray = endTime.split(":");
     		  if ( Long.parseLong(endTimeArray[0]) < 0 || Long.parseLong(endTimeArray[1]) < 0 || Long.parseLong(endTimeArray[2]) < 0 ) {
     			  throw new UserDoesntFullfillEndEntityProfile("Cannot use negtive relative time.");
@@ -1152,7 +1154,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  endTimeDate = new Date(start.getTime() + relative);
     	  } else {
     		  try {
-    			  endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(endTime);
+    			  endTimeDate = sm.parse(endTime);
     		  } catch (ParseException e) {
     		  }
     	  }
@@ -1164,8 +1166,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       if ( (startTimeDate != null) && (endTimeDate != null) ) {
     	  if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
     		  throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
-    				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(startTimeDate) + " "+
-    				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(endTimeDate));
+    				  sm.format(startTimeDate)+" "+sm.format(endTimeDate));
     	  }    	  
       }
 	  

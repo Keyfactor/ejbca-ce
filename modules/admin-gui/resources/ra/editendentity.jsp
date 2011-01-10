@@ -5,7 +5,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, java.math.BigInteger,
-                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
+                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, java.text.SimpleDateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -439,8 +439,8 @@
 				if (value.length() > 0) {
 					String storeValue = value;
 	                if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+	                	SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	                	storeValue = sm.format(sm.parse(value));
 	        		}
 					ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
 					newuser.setExtendedInformation(ei);					
@@ -452,8 +452,8 @@
 				if (value.length() > 0) {
 					String storeValue = value;
 	                if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+	                	SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	                	storeValue = sm.format(sm.parse(value));
 	        		}
 					ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
 					newuser.setExtendedInformation(ei);					
@@ -1332,9 +1332,9 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
-				ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
-				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()) %> 
+				<%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()%>:
+				<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1345,9 +1345,8 @@ function checkUseInBatch(){
 								startTime = "";
 							} 
 							if ( !startTime.trim().equals("") && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-								startTime = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()
-									).format(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
-									).parse(startTime));
+								SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+								startTime = sm.format(sm.parse(startTime));
 							}
 						}
                     %>
@@ -1369,9 +1368,9 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
-				ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
-				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date()) %>
+				 <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase() %>:
+				 <%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1383,8 +1382,8 @@ function checkUseInBatch(){
 							endTime = "";
 						} 
 						if ( !endTime.trim().equals("") && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-							endTime = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(
-								DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(endTime));
+							SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+							endTime = sm.format(sm.parse(endTime));
 		        		}
 						%>
 					value="<%= endTime %>"

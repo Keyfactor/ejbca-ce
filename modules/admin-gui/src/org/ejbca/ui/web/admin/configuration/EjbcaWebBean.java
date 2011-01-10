@@ -573,7 +573,8 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public String printDateTime(Date date){
-      return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(date);
+    	SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    	return sm.format(date);
     }
 
     public void reloadGlobalConfiguration() throws  Exception {

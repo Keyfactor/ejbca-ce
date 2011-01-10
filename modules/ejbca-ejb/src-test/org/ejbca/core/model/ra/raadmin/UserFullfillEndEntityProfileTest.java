@@ -14,6 +14,7 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -768,9 +769,10 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         final EndEntityProfile profile = new EndEntityProfile();
         Date now = new Date();
         Date endOfTime = new Date(Long.MAX_VALUE);
-        String staticNow = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(now);
+        SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String staticNow = sm.format(now);
         String relativeNow = "0:00:00";
-        String staticEndOfTime = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(endOfTime);
+        String staticEndOfTime = sm.format(endOfTime);
         String relativeEndOfTime = "33000:00:00"; // ~100 years
         String staticInvalid = "XXXX-XX-XX XX:XX PM";
         String relativeInvalid = "XXXXX:XXX:XXX";

@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
-                 org.ejbca.core.model.ra.ExtendedInformation, java.text.DateFormat, java.util.Locale, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
+                 org.ejbca.core.model.ra.ExtendedInformation, java.text.SimpleDateFormat, java.util.Locale, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -296,8 +296,7 @@
 		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
 		<td>
 		<%	if ( !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
-				<%= ejbcawebbean.printDateTime(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
-				).parse(startTime)) %>
+				<%= ejbcawebbean.printDateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(startTime)) %>
 		<%	} else { %>
 				<%= startTime %>
 		<%	} %>
@@ -308,8 +307,7 @@
 		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFEND") %></td>
 		<td>
 		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
-				<%= ejbcawebbean.printDateTime(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
-				).parse(endTime)) %>
+				<%= ejbcawebbean.printDateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(endTime)) %>
 		<%	} else { %>
 				<%= endTime %>
 		<%	} %>

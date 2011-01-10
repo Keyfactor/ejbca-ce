@@ -5,7 +5,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents,
-                 java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger" %>
+                 java.text.SimpleDateFormat, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -544,8 +544,8 @@
 					if (value.length() > 0) {
 						String storeValue = value;
 						if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-						storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-							DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+							SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+							storeValue = sm.format(sm.parse(value));
   	        		    }
 						ExtendedInformation ei = newuser.getExtendedInformation();
 						if ( ei == null ) {
@@ -564,8 +564,8 @@
 					if (value.length() > 0) {
 						String storeValue = value;
 	                    if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-							storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
-								DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+							SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+							storeValue = sm.format(sm.parse(value));
 		        		}
 						ExtendedInformation ei = newuser.getExtendedInformation();
 						if ( ei == null ) {
@@ -1728,8 +1728,7 @@ function checkallfields(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFSTART\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
-				ejbcawebbean.getLocale()).format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
+				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= new SimpleDateFormat(\"yyyy-MM-dd HH:mm\").format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
 				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
@@ -1754,8 +1753,7 @@ function checkallfields(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFEND\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
-				ejbcawebbean.getLocale()).format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
+				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= new SimpleDateFormat(\"yyyy-MM-dd HH:mm\").format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
 				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
