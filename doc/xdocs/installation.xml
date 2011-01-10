@@ -73,6 +73,16 @@ Needed to build and run are:</p>
 <li>JBOSS >=5.1.x (support for JBoss 4.2.x was dropped in EJBCA 4.0).</li>
 <li>Ant >= 1.7.1 to build (http://jakarta.apache.org/ant/)</li>
 </ul>
+<note>
+JBoss 5.x has a bug causing issues with the BC JCE provider when the Sun JVM is used. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
+Remember this when it's time for upgrades! Tracked by JBoss as JBAS-7882.
+<br/>
+JBoss 5.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions. Tracked by JBoss as JBPAPP-3766.
+</note>
+<note>
+JBoss 6.0.0 does not work with Oracle JDK, because JBoss still have not fixed <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>.
+<br/>OpenJDK works just fine though, such as the OpenJDK distributed with RedHat, Ubuntu, Debian etc.
+</note>
 <p>
 Set the environment variable APPSRV_HOME to the directory where
 the appservers root is
@@ -224,12 +234,6 @@ You can do that by setting an environment variable:
 <source>
 ANT_OPTS=-Xmx512m
 </source>
-<note>
-JBoss 5.x has a bug causing issues with the BC JCE provider when the Sun JVM is used. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
-Remember this when it's time for upgrades! Tracked by JBoss as JBAS-7882.
-<br/>
-JBoss 5.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions. Tracked by JBoss as JBPAPP-3766.
-</note>
 <p>
 2) Open a console and type:
 </p>
