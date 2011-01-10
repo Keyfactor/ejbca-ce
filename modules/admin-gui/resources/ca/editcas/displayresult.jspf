@@ -48,10 +48,10 @@
     <tr  id="Row<%=row++%2%>"> 
       <td width="20%" valign="top" align="right"></td>
       <td width="80%" valign="top">     
-        <A href="<%=pemlink%>"><u><%= ejbcawebbean.getText("DOWNLOADPEM") %></u></A><br>
-        <A href="<%=binarylink%>"><u><%= ejbcawebbean.getText("DOWNLOADBINARY") %></u></A><br>
+        <A href="<%=pemlink%>"><u><%= ejbcawebbean.getText("DOWNLOADPEM") %></u></A><br />
+        <A href="<%=binarylink%>"><u><%= ejbcawebbean.getText("DOWNLOADBINARY") %></u></A><br />
       <% if(filemode == CERTGENMODE){ %>
-        <A href="<%=pkcs7link%>"><u><%= ejbcawebbean.getText("DOWNLOADPEMASPKCS7") %></u></A><br><br>
+        <A href="<%=pkcs7link%>"><u><%= ejbcawebbean.getText("DOWNLOADPEMASPKCS7") %></u></A><br /><br />
       <% } %>        
         <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCAS") %></u></A>
       </td>

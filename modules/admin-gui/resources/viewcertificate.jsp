@@ -269,9 +269,9 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--
@@ -624,7 +624,7 @@ function confirmrepublish(){
 				//-- Certificate can be unrevoked
 %>
 				<input type="submit" name="<%=BUTTON_UNREVOKE %>" value="<%= ejbcawebbean.getText("UNREVOKE") %>"
-                onClick='return confirmunrevocation()'><br>	
+                onClick='return confirmunrevocation()'><br />	
 <%
 			  }
 		   }

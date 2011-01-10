@@ -32,8 +32,8 @@
 <f:view>
 <head>
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 <script type="text/javascript">
 <!--  
@@ -193,7 +193,7 @@ function checkallfields(){
 } 
 
 -->
-</SCRIPT>
+</script>
 </head>
 
 

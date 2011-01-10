@@ -49,14 +49,14 @@ function check(file)
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("MAKEREQUESTHELP") %></td>
       <td width="51%" valign="top">     
         <input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>">            
-        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>"  value="<%= ejbcawebbean.getText("MAKEREQUEST") %>" ><br><br>        
+        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>"  value="<%= ejbcawebbean.getText("MAKEREQUEST") %>" ><br /><br />        
       </td>
     </tr>
     </form>
   </table>
  <div align="center">   
-   <br>
-   <br>
+   <br />
+   <br />
    <h3><%= ejbcawebbean.getText("RECIEVEREQUEST") %></h3>
  </div>
  <table width="100%" border="0" cellspacing="3" cellpadding="3">
@@ -68,7 +68,7 @@ function check(file)
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("RECIEVEREQUESTHELP") %></td>
       <td width="51%" valign="top">     
         <input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>">            
-        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>"  value="<%= ejbcawebbean.getText("RECIEVEREQUEST") %>" ><br><br>
+        <input type="submit" name="<%= BUTTON_RECIEVEFILE %>"  value="<%= ejbcawebbean.getText("RECIEVEREQUEST") %>" ><br /><br />
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
       </td>
     </tr>

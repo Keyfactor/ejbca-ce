@@ -193,9 +193,9 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--
@@ -235,6 +235,7 @@ function viewcopies(link){
 -->
 </script>
 </head>
+
 <body class="popup" id="viewtoken">
   <h2><%= ejbcawebbean.getText("VIEWHARDTOKEN") %></h2>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html")  + "#viewhardtoken"%>")'>
@@ -330,20 +331,20 @@ function viewcopies(link){
             if(token.isOriginal()){
               out.write(ejbcawebbean.getText("THISISANORIGINAL"));             
               if(token.getCopies() == null || token.getCopies().size() == 0){
-                 out.write("<br>" + ejbcawebbean.getText("NOCOPIESHAVEBEENMADE"));
+                 out.write("<br />" + ejbcawebbean.getText("NOCOPIESHAVEBEENMADE"));
               }else{
-                 out.write("<br>" + ejbcawebbean.getText("FOLLOWINGCOPIESHAVEBEEN") + ":");
+                 out.write("<br />" + ejbcawebbean.getText("FOLLOWINGCOPIESHAVEBEEN") + ":");
                  Iterator iter = token.getCopies().iterator();
                  while(iter.hasNext()){ 
                     String copytokensn = (String) iter.next();%>
-                   <br>
+                   <br />
                    <A  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username%>')">
                       <u><%= copytokensn %></u> 
                    </A><%
                  }
               }     
             }else{
-              out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br>");  
+              out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br />");  
               String copyofsn = token.getCopyOf();%>
                  <A style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username%>')">
                    <u><%= copyofsn %></u> 
@@ -405,7 +406,7 @@ function viewcopies(link){
        <%    if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
                && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(),username)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
-               onClick='return confirmrevocation()'><br>
+               onClick='return confirmrevocation()'><br />
         <select name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < SecConst.reasontexts.length; i++){ 
                if(i!= 7){%>

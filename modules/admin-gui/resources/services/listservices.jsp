@@ -15,19 +15,23 @@
 <html>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
-  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
 
 <f:view>
 <body>
+
 <h1><h:outputText value="#{web.text.EDITSERVICES}"/></h1>
+
 <p>
 	<h:messages styleClass="alert" layout="table"/>
 	</p>
+
 <h3><h:outputText value="#{web.text.CURRENTSERVICES}"/></h3>
+
 	<h:form>
 		<h:selectOneListbox id="listServices" value="#{listServicesManagedBean.selectedServiceName}" style="width: 50em" size="15">
 			<f:selectItems value="#{listServicesManagedBean.availableServices}"/>

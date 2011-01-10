@@ -717,8 +717,8 @@
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript">
 
   <% if(!noprofiles){ %>
@@ -1147,6 +1147,7 @@ function checkallfields(){
   </script>
   <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
+
 <body onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible();");%>
                  fillCAField();'>
@@ -1933,7 +1934,7 @@ function checkallfields(){
     <tr  id="Row<%=(row++)%2%>"> 
       <td>&nbsp;</td>
       <td  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"PRINTUSERDATA\") %>"/> <br>
+        <c:out value="<%= ejbcawebbean.getText(\"PRINTUSERDATA\") %>"/>
       </td>
       <td > 
         <input type="checkbox" name="<%=CHECKBOX_PRINT%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getPrintingDefault())

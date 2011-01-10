@@ -47,7 +47,7 @@ function check()
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("PATHTOTEMPLATE") %></td>
       <td width="51%" valign="top">     
         <input TYPE="FILE" NAME="<%= EditHardTokenProfileJSPHelper.FILE_TEMPLATE %>">            
-        <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_UPLOADFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" ><br><br>
+        <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_UPLOADFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" ><br /><br />
         <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
       </td>
     </tr>

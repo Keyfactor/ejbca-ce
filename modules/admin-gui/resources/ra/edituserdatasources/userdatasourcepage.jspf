@@ -141,7 +141,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%" align="right"> 
-        <%= ejbcawebbean.getText("APPLICABLECAS") %> <br>&nbsp;
+        <%= ejbcawebbean.getText("APPLICABLECAS") %>
       </td>
       <td width="60%"> 
         <select name="<%=userdatasourcehelper.SELECT_APPLICABLECAS%>" size="7" multiple >

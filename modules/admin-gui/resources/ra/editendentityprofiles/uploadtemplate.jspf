@@ -41,7 +41,7 @@ function check()
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("PATHTOTEMPLATE") %></td>
       <td width="51%" valign="top">     
         <input TYPE="FILE" NAME="<%= FILE_TEMPLATE %>">            
-        <input type="submit" name="<%= BUTTON_UPLOADFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" ><br><br>
+        <input type="submit" name="<%= BUTTON_UPLOADFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" ><br /><br />
         <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
       </td>
     </tr>

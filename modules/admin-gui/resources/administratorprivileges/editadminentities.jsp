@@ -31,15 +31,18 @@
 <f:view>
 <head>
   <title><h:outputText value="#{web.ejbcaWebBean.globalConfiguration.ejbcaTitle}" /></title>
-  <base href="<%= ejbcawebbean.getBaseUrl() %>">
-  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
+  <base href="<%= ejbcawebbean.getBaseUrl() %>" />
+  <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script language="javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
+
 <body>
 
 <div align="center">
-	<p><H2><h:outputText value="#{web.text.ADMINSINGROUP} #{adminGroupsManagedBean.currentAdminGroup}"
-  			rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}"/></H2></p>
+
+	<h2><h:outputText value="#{web.text.ADMINSINGROUP} #{adminGroupsManagedBean.currentAdminGroup}"
+  			rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}"/></h2>
+
 	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{empty adminGroupsManagedBean.currentAdminGroup && !adminGroupsManagedBean.authorizedToGroup}"/>
 	<h:panelGroup rendered="#{not empty adminGroupsManagedBean.currentAdminGroup && adminGroupsManagedBean.authorizedToGroup}">
  
