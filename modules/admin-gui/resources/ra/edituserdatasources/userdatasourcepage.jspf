@@ -11,7 +11,7 @@
 
   int row = 0;
 %>
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 <!--  
 
 function checkallfields(){
@@ -29,7 +29,7 @@ function checkallfields(){
 
 -->
 
-</SCRIPT>
+</script>
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITUSERDATASOURCE") %></h2>
   <h3><%= ejbcawebbean.getText("USERDATASOURCE")+ " : " + userdatasourcehelper.userdatasourcename %></h3>

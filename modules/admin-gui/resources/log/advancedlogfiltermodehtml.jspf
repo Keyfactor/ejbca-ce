@@ -33,7 +33,7 @@
       
 %> 
 
-<script language=javascript>
+<script type="text/javascript">
 <!--
    var ID    = 0;
    var NAME  = 1;

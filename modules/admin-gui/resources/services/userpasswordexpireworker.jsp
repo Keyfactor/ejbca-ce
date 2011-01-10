@@ -3,7 +3,7 @@
 
 	<h:panelGroup>
 	<f:verbatim>
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 <!--  
 
 function checkUseAdminNotification(){
@@ -36,7 +36,7 @@ function checkUseEndUserNotification(){
 } 
 
 -->
-</SCRIPT></f:verbatim>
+</script></f:verbatim>
 		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.USEREXPIRATIONSETTINGS}"/><f:verbatim></strong></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>

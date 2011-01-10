@@ -242,7 +242,7 @@
 #macro (footer)
       <p class="copyright">
         Copyright &copy; 2001-2010&nbsp;EJBCA team. All rights reserved.
-        <script type="text/javascript" language="JavaScript"><!--
+        <script type="text/javascript"><!--
                 document.write(" - "+"Last Published: " + document.lastModified);
               //  -->
         </script>

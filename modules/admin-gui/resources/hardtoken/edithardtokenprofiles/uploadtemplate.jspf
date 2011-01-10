@@ -7,7 +7,7 @@
   int row = 0;
 %>
 <body > 
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 <!--  
 
 function check()
@@ -22,7 +22,7 @@ function check()
    return false;
 }
 -->
-</SCRIPT>
+</script>
 <div align="center">   
    <h2><%= ejbcawebbean.getText(headlines[edithardtokenprofile.uploadmode]) %></h2>
    <h3><%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %></h3>

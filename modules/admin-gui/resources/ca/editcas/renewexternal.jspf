@@ -3,7 +3,7 @@
   row = 0;
 %>
 <body > 
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 <!--  
 
 function check(file)
@@ -18,7 +18,7 @@ function check(file)
    return false;
 }
 -->
-</SCRIPT>
+</script>
 <div align="center">   
    <h2><%= ejbcawebbean.getText("RENEWCA") %></h2>
    <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>

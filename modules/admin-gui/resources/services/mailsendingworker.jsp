@@ -50,11 +50,11 @@
 	<h:panelGroup>				
 		<h:inputTextarea id="certCheckAdminMessageTextArea" value="#{editService.notifyingType.adminMessage}" rows="8" cols="45" />
 			<f:verbatim>
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 <!--  
 checkUseAdminNotification();
 checkUseEndUserNotification();
 -->
-</SCRIPT></f:verbatim>
+</script></f:verbatim>
 	</h:panelGroup>
 

@@ -97,7 +97,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 		End Function
 	
     </script>
-    <script language="JavaScript" type="text/javascript">
+    <script type="text/javascript">
 	// <!--
 	var success;
 	var plugin;
@@ -171,7 +171,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 		</div>
 	</noscript>
 
-    <script language="JavaScript" type="text/javascript">
+    <script type="text/javascript">
     	if (plugin && success) {
 	    	document.writeln("<h2>The certificate was successfully downloaded to your card.<\/h2>");
 	    } else {

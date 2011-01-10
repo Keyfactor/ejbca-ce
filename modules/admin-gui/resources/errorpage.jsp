@@ -14,7 +14,7 @@
 <head>
     <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
     <base href="<%= ejbcawebbean.getBaseUrl() %>">
-    <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
+    <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>">
 </head>
 <body>
 <br/>

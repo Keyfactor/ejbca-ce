@@ -6,7 +6,7 @@
 
    int row=0;
 %>
-<SCRIPT language="JavaScript">
+<script type="text/javascript">
 
   <!-- // Method to check all textfields for valid input -->
 <!--
@@ -21,7 +21,7 @@ function checkallfields(){
     return illegalfields;
 }
 -->
-</SCRIPT>
+</script>
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITHARDTOKENISSUER") %></h2>
   <h3><%= ejbcawebbean.getText("HARDTOKENISSUER")+ " : " + issuerdata.getAlias() %></h3>
