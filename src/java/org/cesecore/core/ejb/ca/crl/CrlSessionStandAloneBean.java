@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -53,6 +54,31 @@ public class CrlSessionStandAloneBean extends CrlSessionBeanBase implements CrlS
 	void log(Admin admin, int hashCode, int moduleCa, Date date,
 	         String string, Certificate cert, int eventInfoGetlastcrl, String msg) {
 		// do nothing since there is no logging session.
+	}
+
+	
+	// 
+	// Methods overriding implementations in CrlSessionBeanBase, needed because of the following bug in JBoss 6.0.0.
+	// https://issues.jboss.org/browse/JBMDR-73
+	//
+	@Override
+	public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
+		return super.getLastCRL(admin, issuerdn, deltaCRL);
+	}
+
+	@Override
+	public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
+		return super.getLastCRLInfo(admin, issuerdn, deltaCRL);
+	}
+
+	@Override
+	public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
+		return super.getCRLInfo(admin, fingerprint);
+	}
+
+	@Override
+	public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
+		return super.getLastCRLNumber(admin, issuerdn, deltaCRL);
 	}
 
 }
