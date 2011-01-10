@@ -26,6 +26,6 @@ public class TLSProvider extends Provider {
     private static String info = "EJBCA TLS Provider";
     public TLSProvider() {
         super("TLSProvider", 0.0, info);
-        put("TrustManagerFactory.AcceptAll", "org.ejbca.util.provider.TrustManagerFactoryImpl$AcceptAll");
+        put("TrustManagerFactory.AcceptAll", org.ejbca.util.provider.TrustManagerFactoryImpl.AcceptAll.class.getName());	// "org.ejbca.util.provider.TrustManagerFactoryImpl$AcceptAll" 
     }
 }

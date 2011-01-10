@@ -269,7 +269,7 @@ class KeyRenewer {
     private boolean editUser(EjbcaWS ejbcaWS, UserDataVOWS userData) {
         userData.setStatus(UserDataConstants.STATUS_NEW);
         userData.setPassword("foo123");
-        userData.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        userData.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         try {
             ejbcaWS.editUser(userData);
         } catch (Exception e) {

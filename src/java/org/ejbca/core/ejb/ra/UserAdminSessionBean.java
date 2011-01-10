@@ -2041,7 +2041,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
     
     /**
-     * Selects a list of specific list of UserData entities, as filtered by the below parameters. 
+     * Selects a list of specific list of UserDataVO entities, as filtered by the below parameters. 
      * 
      * @param caIds The list of CAIDs to filter by. If this list is empty, all the UserData objects that match the given expiration and status are returned.
      * @param timeModified Not modified since this date, as expressed by a Long value 
@@ -2050,9 +2050,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      */
     @SuppressWarnings("unchecked")
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<UserData> findUsers(List<Integer> caIds, long timeModified, int status) {
+    public List<UserDataVO> findUsers(List<Integer> caIds, long timeModified, int status) {
         String queryString = "SELECT a FROM UserData a WHERE (a.timeModified <=:timeModified) AND (a.status=:status)";
-   
         if(caIds.size() > 0) {
             queryString += " AND (a.caId=:caId0";
             for(int i = 1; i < caIds.size(); i++) {
@@ -2072,7 +2071,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 query.setParameter("caId" + i, caIds.get(i));
             }
         }
-        return (List<UserData>) query.getResultList();
+        final List<UserData> queryResult = (List<UserData>) query.getResultList();
+        final List<UserDataVO> ret = new ArrayList<UserDataVO>(queryResult.size());
+        for (UserData userData : queryResult) {
+            ret.add(userData.toUserDataVO());
+        }
+        return ret;
     }
 
 

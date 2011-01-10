@@ -88,6 +88,10 @@
 		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-util" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 
+	<target name="ejbca-common-web" description="Build EJBCA common web library">
+		<ant antfile="${mod.ejbca-ejb.path}/build.xml" target="build-common-web" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+
 	<target name="ejbca-ws" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>

@@ -28,14 +28,14 @@
 	<path id="compile-ejbca.classpath">
 		<path refid="compile-common.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
-		<path location="${mod.ejbca-ejb.lib}"/>
+		<path location="${mod.ejbca-common-web.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 
 	<path id="compile-va.classpath">
 		<path refid="compile-common.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
-		<pathelement location="${mod.va-ejb.lib}"/>
+		<pathelement location="${mod.va-ejb.lib}"/><!-- TODO.. This is not a shared EAR lib! -->
 		<pathelement location="${mod.va-entity.lib}"/>
 	</path>
 		

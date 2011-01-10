@@ -18,7 +18,6 @@ import java.util.Collection;
 
 import javax.ejb.EJBException;
 
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.log.Admin;
