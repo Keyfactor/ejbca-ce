@@ -317,6 +317,17 @@ function checkallfields(){
     if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value.indexOf("=")==-1)){
 		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>")
 		illegalfields++;
+    } else {
+    <% if(catype == CAInfo.CATYPE_CVC) { %>
+        var value = document.ca.<%= TEXTFIELD_SUBJECTDN %>.value;
+        var hasCN = value.match(/(^|,(\s*))CN=/);
+        var hasC = value.match(/(^|,(\s*))C=/);
+        
+        if (value != "" && (!hasCN || !hasC)) {
+            alert("<%= ejbcawebbean.getText("SUBJECTDNBADFORCVC")%>")
+            illegalfields++;
+        }
+    <% } %>
     }
     
     if((document.ca.<%= SELECT_SIGNATUREALGORITHM %>.value.indexOf("ECDSA")!=-1)) {
