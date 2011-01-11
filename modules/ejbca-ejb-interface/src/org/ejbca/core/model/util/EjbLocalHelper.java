@@ -41,8 +41,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
@@ -141,14 +139,6 @@ public class EjbLocalHelper {
 			certificatestoresession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
 		}
 		return certificatestoresession;
-	}
-	
-	private CertificateStoreOnlyDataSession certificateStoreOnlyDataSession = null;
-	public CertificateStoreOnlyDataSession getCertificateStoreOnlyDataSession()  {
-		if(certificateStoreOnlyDataSession == null){
-			certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);
-		}
-		return certificateStoreOnlyDataSession;
 	}
 	
 	public EndEntityProfileSession getEndEntityProfileSession() {

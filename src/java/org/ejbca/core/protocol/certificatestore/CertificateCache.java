@@ -35,6 +35,7 @@ import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.config.OcspConfiguration;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
@@ -71,7 +72,7 @@ class CertificateCache implements ICertificateCache {
 	 */
 	final private Collection<Certificate> testcerts;
 
-	final private ICertStore certStore;
+	final private CertificateStoreSessionLocal certificateStoreSession;
 
 	/** Cache time counter, set and used by loadCertificates */
 	private long m_certValidTo = 0;
@@ -86,12 +87,12 @@ class CertificateCache implements ICertificateCache {
 	final private Lock rebuildlock = new ReentrantLock();
 
 	/**
-	 * @param _certStore The DB store to be used.
+	 * @param certificateStoreSession The DB store to be used.
 	 */
-	CertificateCache(ICertStore _certStore) {
+	CertificateCache(CertificateStoreSessionLocal certificateStoreSession) {
 		// Default values
 		this.testcerts = null;
-		this.certStore = _certStore;
+		this.certificateStoreSession = certificateStoreSession;
 		loadCertificates();
 	}
 
@@ -100,7 +101,7 @@ class CertificateCache implements ICertificateCache {
 	 */
 	CertificateCache(Collection<Certificate> _testcerts) {
 		// Default values
-		this.certStore = null;
+		this.certificateStoreSession = null;
 		this.testcerts = _testcerts;
 		loadCertificates();
 	}
@@ -347,10 +348,10 @@ class CertificateCache implements ICertificateCache {
 	 * @return Collection of Certificate never null
 	 */
 	private Collection<Certificate> findCertificatesByType(Admin adm, int type, String issuerDN) {
-		if ( this.certStore==null ) {
+		if ( this.certificateStoreSession==null ) {
 			// Use classes CertificateCacheStandalone or CertificateCacheInternal for non-test caches
 			return this.testcerts;
 		}
-		return this.certStore.findCertificatesByType(adm, type, issuerDN);
+		return this.certificateStoreSession.findCertificatesByType(adm, type, issuerDN);
 	}
 }

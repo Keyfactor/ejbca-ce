@@ -13,10 +13,12 @@
 
 package org.ejbca.ui.web.protocol;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
@@ -24,7 +26,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
-import org.ejbca.core.protocol.certificatestore.CertStoreStandAlone;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.OCSPData;
@@ -40,6 +41,9 @@ import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	
     private static final long serialVersionUID = -7093480682721604160L;
 
     /** Special logger only used to log version number. ejbca.version.log can be directed to a special logger, or have a special log level 
@@ -77,14 +81,12 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
          */
         OCSPCAServiceResponse extendedService(int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException;
     }
-    public OCSPServletStandAlone() {
-        super(new OCSPData(new CertStoreStandAlone()));
-    }
+
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#init(javax.servlet.ServletConfig)
      */
     public void init(ServletConfig config) throws ServletException {
-        super.init(config);
+        super.init(config, new OCSPData(certificateStoreSession));
 
         // Log with warn priority so it will be visible in strict production configurations  
 	    m_versionLog.warn("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
@@ -127,6 +129,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#createCertificateCache()
      */
     protected ICertificateCache createCertificateCache() {
-		return CertificateCacheFactory.getInstance(new CertStoreStandAlone());
+		return CertificateCacheFactory.getInstance(certificateStoreSession);
 	}
 }

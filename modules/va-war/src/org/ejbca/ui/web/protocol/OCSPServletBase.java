@@ -152,13 +152,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
     private AuditLogger auditLogger;
 	private static final String PROBEABLE_ERRORHANDLER_CLASS = "org.ejbca.appserver.jboss.ProbeableErrorHandler";
 	private static final String SAFER_LOG4JAPPENDER_CLASS = "org.ejbca.appserver.jboss.SaferDailyRollingFileAppender";
-	/**
-	 * Data to be used also by the standalone session.
-	 */
-	final OCSPData data;
-	OCSPServletBase( OCSPData _data ) {
-	    this.data = _data;
-	}
+
+	OCSPData data;	// Data to be used also by the standalone session.
+
 	synchronized void loadTrustDir() throws Exception {
 		// Check if we have a cached collection that is not too old
 		if(m_reqRestrictMethod == OcspConfiguration.RESTRICTONISSUER) {
@@ -209,8 +205,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
 	 */
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config, OCSPData _data) throws ServletException {
 		super.init(config);
+		this.data = _data;
 		CryptoProviderTools.installBCProvider();
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("signTrustValidTime is: " + m_signTrustValidTime);
@@ -602,7 +599,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(IPatternLogger.REPLY_TIME, ITransactionLogger.REPLY_TIME);
 					if (OcspConfiguration.getEnforceRequestSigning()) {
 						// If it verifies OK, check if it is revoked
-						final CertificateStatus status = this.data.certStore.getStatus(CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
+						final CertificateStatus status = this.data.certificateStoreSession.getStatus(CertTools.getIssuerDN(signercert), CertTools.getSerialNumber(signercert));
 						// If rci == null it means the certificate does not exist in database, we then treat it as ok,
 						// because it may be so that only revoked certificates is in the (external) OCSP database.
 						if ( status.equals(CertificateStatus.REVOKED) ) {
@@ -731,10 +728,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					final org.bouncycastle.ocsp.CertificateStatus certStatus;
 					transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); // it seems to be correct
                     // Check if the cacert (or the default responderid) is revoked
-                    final CertificateStatus cacertStatus = this.data.certStore.getStatus(CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
+                    final CertificateStatus cacertStatus = this.data.certificateStoreSession.getStatus(CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
 					if ( !cacertStatus.equals(CertificateStatus.REVOKED) ) {
 						// Check if cert is revoked
-						final CertificateStatus status = this.data.certStore.getStatus(cacert.getSubjectDN().getName(), certId.getSerialNumber());
+						final CertificateStatus status = this.data.certificateStoreSession.getStatus(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 						// If we have different maxAge and untilNextUpdate for different certificate profiles, we have to fetch these
 						// values now that we have fetched the certificate status, that includes certificate profile.
                         nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
@@ -805,7 +802,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 								if (extObj != null) {
 									// Find the certificate from the certId
 									X509Certificate cert = null;
-									cert = (X509Certificate)this.data.certStore.findCertificateByIssuerAndSerno(this.data.m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+									cert = (X509Certificate)this.data.certificateStoreSession.findCertificateByIssuerAndSerno(this.data.m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
 									if (cert != null) {
 										// Call the OCSP extension
 										Hashtable retext = extObj.process(request, cert, certStatus);

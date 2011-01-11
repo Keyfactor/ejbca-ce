@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.core.protocol.certificatestore.ICertStore;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /**
@@ -36,28 +36,23 @@ import org.ejbca.core.protocol.certificatestore.ICertificateCache;
  * @version  $Id$
  */
 public abstract class StoreServletBase extends HttpServlet {
-    private static final Logger log = Logger.getLogger(StoreServletBase.class);
+
+	private static final long serialVersionUID = 1L;
+
+	private static final Logger log = Logger.getLogger(StoreServletBase.class);
 
 	protected ICertificateCache certCache;
-	private final ICertStore certStore;
 	final String space = "|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 
-	StoreServletBase(ICertStore certStore) {
-		super();
-		this.certStore = certStore;
-	}
-
-	/* (non-Javadoc)
-	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-	 */
-	public void init(ServletConfig config) throws ServletException {
+	public void init(ServletConfig config, CertificateStoreSessionLocal certificateStoreSession) throws ServletException {
 		super.init(config);
-		this.certCache = CertificateCacheFactory.getInstance(certStore);
+		this.certCache = CertificateCacheFactory.getInstance(certificateStoreSession);
 	}
 
 	abstract void sHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
@@ -148,7 +143,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	}
 	private void printInfo(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
-		final PrintWriter pw = new MyPrintWriter(sw);
+		final PrintWriter pw = new HtmlPrintWriter(sw);
 		printInfo(this.certCache.getRootCertificates(), "", pw, req.getRequestURL().toString());
 		pw.flush();
 		pw.close();
@@ -156,23 +151,18 @@ public abstract class StoreServletBase extends HttpServlet {
 		returnInfoPage(resp, sw.toString());
 		sw.close();
 	}
-	private class MyPrintWriter extends PrintWriter {
-		/**
-		 * @param out
-		 */
-		public MyPrintWriter(Writer out) {
+
+	private class HtmlPrintWriter extends PrintWriter {
+
+		public HtmlPrintWriter(Writer out) {
 			super(out);
 		}
-		/* (non-Javadoc)
-		 * @see java.io.PrintWriter#println()
-		 */
+
 		public void println() {
 			super.print("<br/>");
 			super.println();
 		}
-		/* (non-Javadoc)
-		 * @see java.io.PrintWriter#println(java.lang.String)
-		 */
+
 		public void println(String s) {
 			super.print(s);
 			println();

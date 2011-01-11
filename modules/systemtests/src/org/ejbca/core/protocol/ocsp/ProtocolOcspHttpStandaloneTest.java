@@ -45,7 +45,7 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -66,7 +66,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static final int myCaId = issuerDN.hashCode();
     //private static final String myOcspIp = "127.0.0.1";	TODO: Refactor back to where we could use this test remotely?
 
-    private CertificateStoreOnlyDataSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreOnlyDataSessionRemote.class);	// Stand alone OCSP version..
+    private CertificateStoreSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);	// Stand alone OCSP version..
 
     public ProtocolOcspHttpStandaloneTest(String name) throws Exception {
         //super(name, "http://" + myOcspIp + ":8080/ejbca", "publicweb/status/ocsp");

@@ -16,9 +16,9 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.OcspConfiguration;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.core.protocol.certificatestore.ICertStore;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.util.CertTools;
 
@@ -27,11 +27,10 @@ import org.ejbca.util.CertTools;
  * 
  * @author primelars
  * @version  $Id$
- *
  */
 public class OCSPData {
 
-    final public ICertStore certStore;
+    final public CertificateStoreSessionLocal certificateStoreSession;
 
     private static final Logger m_log = Logger.getLogger(OCSPData.class);
 
@@ -48,8 +47,8 @@ public class OCSPData {
      */
     public final String m_defaultResponderId = OcspConfiguration.getDefaultResponderId();
 
-    public OCSPData(ICertStore _certStore) {
-        this.certStore = _certStore;
+    public OCSPData(CertificateStoreSessionLocal certificateStoreSession) {
+        this.certificateStoreSession = certificateStoreSession;
     }
     /** Generates an EJBCA caid from a CA certificate, or looks up the default responder certificate.
      * 

@@ -302,11 +302,9 @@
 		<!-- Exclude appserver specific code.. -->
         <exclude name="org/ejbca/appserver/**" />
 		<!-- Only for External VA.. -->
-		<exclude name="org/ejbca/core/protocol/certificatestore/CertStoreStandAlone.java"/>
-		<exclude name="org/ejbca/core/protocol/certificatestore/CRLStoreStandAlone.java"/>
         <exclude name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" />
         <exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
-    	<exclude name="org/cesecore/core/ejb/ca/crl/CrlSessionStandAloneBean.java" />
+    	<exclude name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
 		<!-- Samples should never be included.. -->
         <exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
@@ -446,15 +444,11 @@
             </classpath>
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
-        	<include name="org/cesecore/core/ejb/ca/crl/CrlSessionStandAloneBean.java" />
+        	<include name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
 			<!-- Classes not available in ejbca-util.jar -->
-        	<include name="org/ejbca/core/protocol/certificatestore/CertStoreStandAlone.java"/><!-- Only used in VA WAR! Move source! -->
-        	<include name="org/ejbca/core/protocol/crlstore/CRLStoreStandAlone.java"/><!-- Only used in VA WAR! Move source! -->
-            <include name="org/ejbca/core/protocol/ocsp/CertificateCacheStandalone.java" /><!-- Only used in VA WAR! Move source! -->
         	<include name="org/ejbca/ui/web/protocol/RFC4387URL.java" /><!-- Only used in VA WAR! Move source! -->
         	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java" /><!-- Only used in VA WAR! Move source! -->
         	<include name="org/ejbca/core/protocol/crlstore/CRLCacheFactory.java"/><!-- Only used in VA WAR! Move source! -->
-        	<include name="org/ejbca/core/protocol/crlstore/CRLStoreStandAlone.java"/><!-- Only used in VA WAR! Move source! -->
             <include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java" /><!-- Used in VA WAR! -->
             <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java" /><!-- Used in VA WAR! -->
             <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWSService.java" /><!-- Used in VA WAR! -->
@@ -465,7 +459,8 @@
             <include name="org/ejbca/util/DummyPatternLogger.java"/><!-- Used in VA WAR! -->
         	<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" /><!-- Used in healtcheck and VA WAR-->
         	<include name="org/ejbca/ui/web/protocol/IHealtChecker.java" /><!-- Used in healtcheck and VA WAR-->
-        	<include name="org/ejbca/core/model/ca/store/CRLInfo.java" /><!-- Used in VA WAR! -->
+        	<!-- Inlcuded from interface build
+        	<include name="org/ejbca/core/model/ca/store/CRLInfo.java" /><! - - Used in VA WAR! -->
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${src.dir}" />

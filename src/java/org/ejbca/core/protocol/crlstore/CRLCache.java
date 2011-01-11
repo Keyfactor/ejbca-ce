@@ -20,24 +20,22 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.util.CertTools;
 
-
-
 /**
  * See {@link ICRLCache} to see what this is.
  * @author lars
  * @version $Id$
- *
  */
 class CRLCache implements ICRLCache {
 	private static final Logger log = Logger.getLogger(CRLCache.class);
 	
-	private final ICRLStore crlStore;
+	private final CrlSessionLocal crlSession;
 	private final ICertificateCache certCache;
 	final private Map<Integer, CRLEntity> crls = new HashMap<Integer, CRLEntity>();
 	final private Map<Integer, CRLEntity> deltaCrls = new HashMap<Integer, CRLEntity>();
@@ -63,28 +61,25 @@ class CRLCache implements ICRLCache {
 	/** Admin for calling session beans in EJBCA */
 	final private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	/**
-	 * @param crlStore DB connections
+	 * @param crlSession DB connections
 	 * @param certStore references to needed CA certificates.
 	 */
-	CRLCache(ICRLStore crlStore, ICertificateCache certCache) {
+	CRLCache(CrlSessionLocal crlSession, ICertificateCache certCache) {
 		super();
-		this.crlStore = crlStore;
+		this.crlSession = crlSession;
 		this.certCache = certCache;
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.protocol.crlstore.ICRLCache#findBySubjectKeyIdentifier(org.ejbca.core.protocol.certificatestore.HashID, boolean)
-	 */
+
 	@Override
 	public byte[] findBySubjectKeyIdentifier(HashID id, boolean isDelta) {
 		return findLatest(this.certCache.findBySubjectKeyIdentifier(id), isDelta);
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.protocol.crlstore.ICRLCache#findLatestByIssuerDN(org.ejbca.core.protocol.certificatestore.HashID, boolean)
-	 */
+
 	@Override
 	public byte[] findLatestByIssuerDN(HashID id, boolean isDelta) {
 		return findLatest(this.certCache.findLatestBySubjectDN(id), isDelta);
 	}
+
 	private byte[] findLatest(X509Certificate caCert, boolean isDelta) {
 		if ( caCert==null ) {
 			if (log.isDebugEnabled()) {
@@ -96,7 +91,7 @@ class CRLCache implements ICRLCache {
 		final String issuerDN = CertTools.getSubjectDN(caCert);
 		this.rebuildlock.lock();
 		try {
-			final CRLInfo crlInfo = this.crlStore.getLastCRLInfo(this.admin, issuerDN, isDelta);
+			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(this.admin, issuerDN, isDelta);
 			if ( crlInfo==null ) {
 				if (log.isDebugEnabled()) {
 					log.debug("No CRL found with issuerDN '"+issuerDN+"', returning null.");
@@ -111,7 +106,7 @@ class CRLCache implements ICRLCache {
 				}
 				return cachedCRL.encoded;
 			}
-			final CRLEntity entry = new CRLEntity( crlInfo, this.crlStore.getLastCRL(this.admin, issuerDN, isDelta) );
+			final CRLEntity entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(this.admin, issuerDN, isDelta) );
 			usedCrls.put(id.key, entry);
 			if (log.isDebugEnabled()) {
 				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());
