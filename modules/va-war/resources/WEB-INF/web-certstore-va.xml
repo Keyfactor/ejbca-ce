@@ -13,7 +13,7 @@
         <description><![CDATA[Fetches certificates according to rfc4378]]></description>
         <display-name>CertStoreServletStandAlone</display-name>
         <servlet-name>CertificateStore</servlet-name>
-        <servlet-class>org.ejbca.ui.web.protocol.CertStoreServletStandAlone</servlet-class>
+        <servlet-class>org.ejbca.ui.web.protocol.CertStoreServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
