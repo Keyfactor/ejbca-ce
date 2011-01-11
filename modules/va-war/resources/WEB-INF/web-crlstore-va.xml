@@ -13,7 +13,7 @@
         <description><![CDATA[Fetches CRLs according to rfc4378]]></description>
         <display-name>CRLStoreServletStandAlone</display-name>
         <servlet-name>CRLStore</servlet-name>
-        <servlet-class>org.ejbca.ui.web.protocol.CRLStoreServletStandAlone</servlet-class>
+        <servlet-class>org.ejbca.ui.web.protocol.CRLStoreServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
