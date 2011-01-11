@@ -14,8 +14,11 @@
 package org.ejbca.ui.web.protocol;
 
 import javax.ejb.EJB;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -23,7 +26,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.certificatestore.CertStore;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.OCSPData;
@@ -37,12 +39,17 @@ import org.ejbca.core.protocol.ocsp.OCSPData;
  */
 public class OCSPServlet extends OCSPServletBase {
 
-    @EJB
-    private CAAdminSessionLocal caAdminSessionLocal;
+	private static final long serialVersionUID = 1L;
 
-    public OCSPServlet() {
-        super(new OCSPData(new CertStore()));
+	@EJB
+    private CAAdminSessionLocal caAdminSessionLocal;
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+
+    public void init(ServletConfig config) throws ServletException {
+    	super.init(config, new OCSPData(certificateStoreSession));
     }
+    
     @Override
 	protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
         return (OCSPCAServiceResponse)this.caAdminSessionLocal.extendedService(adm, caid, request);
@@ -50,14 +57,11 @@ public class OCSPServlet extends OCSPServletBase {
 
     @Override
 	protected ICertificateCache createCertificateCache() {
-		return CertificateCacheFactory.getInstance(new CertStore());
+		return CertificateCacheFactory.getInstance(certificateStoreSession);
 	}
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
-     */
     @Override
 	protected void loadPrivateKeys(Admin adm, String password) {
         // not used by this servlet
     }
-} // OCSPServlet
+}

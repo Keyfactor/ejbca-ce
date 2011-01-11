@@ -19,6 +19,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.ui.web.pub.cluster.EJBCAHealthCheck;
+import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.TextResponse;
 
 /**
@@ -39,7 +40,7 @@ import org.ejbca.ui.web.pub.cluster.TextResponse;
 public class HealthCheckServlet extends AbstractHealthServlet {
     private static final long serialVersionUID = 1L;
 
-    private EJBCAHealthCheck healthcheck = null;
+    private IHealthCheck healthcheck = null;
     private TextResponse healthresponse = null;
 
     
@@ -58,7 +59,7 @@ public class HealthCheckServlet extends AbstractHealthServlet {
     }
 
     @Override
-    public EJBCAHealthCheck getHealthCheck() {
+    public IHealthCheck getHealthCheck() {
         return healthcheck;
     }
 

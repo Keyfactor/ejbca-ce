@@ -33,29 +33,22 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlSessionStandAloneRemote")
+@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CrlSessionStandAloneBean extends CrlSessionBeanBase implements CrlSessionStandAloneLocal, CrlSessionStandAloneRemote{
+public class CrlStandAloneSessionBean extends CrlSessionBeanBase implements CrlSessionLocal, CrlSessionRemote {
 
-	@PersistenceContext(unitName="ejbca") EntityManager entityManager;
+	@PersistenceContext(unitName="ejbca")
+	EntityManager entityManager;
 
-	/* (non-Javadoc)
-	 * @see org.cesecore.core.ejb.ca.crl.CrlSessionBeanBase#getEntityManager()
-	 */
 	@Override
 	EntityManager getEntityManager() {
 		return this.entityManager;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cesecore.core.ejb.ca.crl.CrlSessionBeanBase#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.Certificate, int, java.lang.String)
-	 */
 	@Override
-	void log(Admin admin, int hashCode, int moduleCa, Date date,
-	         String string, Certificate cert, int eventInfoGetlastcrl, String msg) {
+	void log(Admin admin, int hashCode, int moduleCa, Date date, String string, Certificate cert, int eventInfoGetlastcrl, String msg) {
 		// do nothing since there is no logging session.
 	}
-
 	
 	// 
 	// Methods overriding implementations in CrlSessionBeanBase, needed because of the following bug in JBoss 6.0.0.
@@ -81,4 +74,13 @@ public class CrlSessionStandAloneBean extends CrlSessionBeanBase implements CrlS
 		return super.getLastCRLNumber(admin, issuerdn, deltaCRL);
 	}
 
+	
+	/* *******************************************************************
+	 * The following methods are not implemented in stand alone VA mode! *
+	 *********************************************************************/
+	
+	@Override
+	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
 }

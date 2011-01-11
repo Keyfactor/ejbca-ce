@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.crlstore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /**
@@ -30,14 +31,14 @@ public class CRLCacheFactory {
     /**
      * @return  {@link CRLCache} for the CA.
      */
-    public static ICRLCache getInstance(ICRLStore crlStore, ICertificateCache certCache) {
+    public static ICRLCache getInstance(CrlSessionLocal crlSession, ICertificateCache certCache) {
         if (instance != null) {
         	return instance;
         }
         lock.lock();
         try {
         	if ( instance==null ) {
-        		instance = new CRLCache(crlStore, certCache);
+        		instance = new CRLCache(crlSession, certCache);
         	}
     		return instance;
         } finally {

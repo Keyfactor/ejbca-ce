@@ -15,6 +15,8 @@ package org.ejbca.core.protocol.certificatestore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+
 /**
  * Factory for creating a {@link CertificateCache} object to be used by the OCSP responder of the CA.
  * 
@@ -28,14 +30,14 @@ public class CertificateCacheFactory {
     /**
      * @return  {@link CertificateCache} for the CA.
      */
-    public static ICertificateCache getInstance(ICertStore certStore) {
+    public static ICertificateCache getInstance(CertificateStoreSessionLocal certificateStoreSession) {
         if (instance != null) {
         	return instance;
         }
         lock.lock();
         try {
         	if ( instance==null ) {
-        		instance = new CertificateCache(certStore);
+        		instance = new CertificateCache(certificateStoreSession);
         	}
     		return instance;
         } finally {

@@ -24,6 +24,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.ldap.classpath"/>
+		<path refid="lib.bouncycastle-provonly.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
@@ -48,20 +49,18 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<src path="${src.dir}"/>
     		<src path="${ejbca.home}/src/java"/>
-			<include name="org/ejbca/core/ejb/**/CertificateStoreOnlyDataSession*.java"/>
-			<include name="org/cesecore/core/ejb/**/CrlSessionStandAlone*.java"/>
-        	<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
-			<exclude name="org/cesecore/core/ejb/ca/crl/CrlSessionStandAloneBean.java" />
+			<include name="org/ejbca/core/ejb/**/CertificateStoreSession*.java"/>
+			<include name="org/cesecore/core/ejb/**/CrlSession*.java"/>
+        	<exclude name="org/ejbca/core/ejb/ca/store/CertificateStore*SessionBean.java" />
+			<exclude name="org/cesecore/core/ejb/ca/crl/Crl*SessionBean.java" />
         	<include name="org/ejbca/core/ejb/JndiHelper.java" />
     	</javac>
     </target>
 	
     <target name="compile-ejb3" depends="ejbca-util, ejbca-entity">
         <mkdir dir="${ejb3.build.dir}" />
-        <javac destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
-            <src path="${src.dir}"/>
-			<exclude name="org/ejbca/core/ejb/**/CertificateStoreOnlyDataSession*.java"/>
-        </javac>
+        <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        	classpathref="compile.classpath"/>
     </target>
 	
 </project>

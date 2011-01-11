@@ -41,12 +41,15 @@ import org.ejbca.core.model.log.LogConstants;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class CrlSessionBean extends CrlSessionBeanBase implements CrlSessionLocal, CrlSessionRemote{
+public class CrlSessionBean extends CrlSessionBeanBase implements CrlSessionLocal, CrlSessionRemote {
 
 	static final private Logger log = Logger.getLogger(CrlSessionBean.class);
-	@PersistenceContext(unitName="ejbca") EntityManager entityManager;
 
-	@EJB LogSessionLocal logSession;
+	@PersistenceContext(unitName="ejbca")
+	EntityManager entityManager;
+
+	@EJB
+	LogSessionLocal logSession;
 
 	/**
 	 * Stores a CRL

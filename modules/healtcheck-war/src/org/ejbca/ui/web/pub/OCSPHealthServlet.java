@@ -12,13 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.pub;
 
-import javax.ejb.EJB;
-
-import org.ejbca.core.ejb.ca.store.CertificateStoreOnlyDataSessionLocal;
-import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthResponse;
 import org.ejbca.ui.web.pub.cluster.TextResponse;
+import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
 
 /**
  * @author mikek
@@ -28,12 +25,9 @@ public class OCSPHealthServlet extends AbstractHealthServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private ValidationAuthorityHealthCheck validationAuthorityHealthCheck;
+    private IHealthCheck validationAuthorityHealthCheck;
     private TextResponse textResponse;
     
-    @EJB
-    private CertificateStoreOnlyDataSessionLocal certificateStoreOnlyDataSessionLocal;
-
     @Override
     public IHealthCheck getHealthCheck() {
         return validationAuthorityHealthCheck;
