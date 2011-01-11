@@ -14,12 +14,12 @@
 package org.ejbca.core.model.ra.raadmin;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
@@ -769,7 +769,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         final EndEntityProfile profile = new EndEntityProfile();
         Date now = new Date();
         Date endOfTime = new Date(Long.MAX_VALUE);
-        SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        FastDateFormat sm = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
         String staticNow = sm.format(now);
         String relativeNow = "0:00:00";
         String staticEndOfTime = sm.format(endOfTime);

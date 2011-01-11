@@ -15,12 +15,12 @@ package org.ejbca.util.cert;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -86,7 +86,7 @@ public class SubjectDirAttrExtension extends CertTools {
 	        ASN1Sequence seq = (ASN1Sequence)obj;
 	        
 	        String prefix = "";
-			SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
+			FastDateFormat dateF = FastDateFormat.getInstance("yyyyMMdd");
 	        for (int i = 0; i < seq.size(); i++) {
 	        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
 	        	if (!StringUtils.isEmpty(result)) {

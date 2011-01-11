@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -34,6 +33,7 @@ import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
@@ -573,8 +573,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public String printDateTime(Date date){
-    	SimpleDateFormat sm = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-    	return sm.format(date);
+    	return FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(date);
     }
 
     public void reloadGlobalConfiguration() throws  Exception {
@@ -675,8 +674,7 @@ public class EjbcaWebBean implements Serializable {
      * @return The current time on the server
      */
     public String getServerTime(){
-    	SimpleDateFormat timeformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssz");
-    	return timeformat.format(new Date());
+    	return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssz").format(new Date());
     }
 
     /**
