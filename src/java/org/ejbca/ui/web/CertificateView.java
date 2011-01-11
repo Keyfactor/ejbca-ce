@@ -103,7 +103,9 @@ public class CertificateView implements Serializable {
     }
 
     public String getIssuerDN() {
-      return HTMLTools.htmlescape(CertTools.getIssuerDN(certificate));
+    	String dn = HTMLTools.htmlescape(CertTools.getIssuerDN(certificate));
+    	// Last make all spaces visible
+    	return StringUtils.replace(dn, " ", "&nbsp;");
     }
 
     public String getIssuerDNUnEscaped() {
@@ -115,7 +117,9 @@ public class CertificateView implements Serializable {
     }
 
     public String getSubjectDN() {
-      return HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
+    	String dn = HTMLTools.htmlescape(CertTools.getSubjectDN(certificate));
+    	// Last make all spaces visible
+    	return StringUtils.replace(dn, " ", "&nbsp;");
     }
 
     public String getSubjectDNField(int field, int number) {
