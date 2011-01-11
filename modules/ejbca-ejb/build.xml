@@ -445,10 +445,9 @@
         	<!-- EJBs -->
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
         	<include name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
-			<!-- Classes not available in ejbca-util.jar -->
-        	<include name="org/ejbca/ui/web/protocol/RFC4387URL.java" /><!-- Only used in VA WAR! Move source! -->
+			<!-- Additional required classes -->
+        	<include name="org/ejbca/ui/web/protocol/RFC4387URL.java" /><!-- Only used in VA WAR! Could probably be useful in GUIs like publicweb etc to calculate URL. -->
         	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java" /><!-- Only used in VA WAR! Move source! -->
-        	<include name="org/ejbca/core/protocol/crlstore/CRLCacheFactory.java"/><!-- Only used in VA WAR! Move source! -->
             <include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java" /><!-- Used in VA WAR! -->
             <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java" /><!-- Used in VA WAR! -->
             <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWSService.java" /><!-- Used in VA WAR! -->
@@ -459,8 +458,6 @@
             <include name="org/ejbca/util/DummyPatternLogger.java"/><!-- Used in VA WAR! -->
         	<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" /><!-- Used in healtcheck and VA WAR-->
         	<include name="org/ejbca/ui/web/protocol/IHealtChecker.java" /><!-- Used in healtcheck and VA WAR-->
-        	<!-- Inlcuded from interface build
-        	<include name="org/ejbca/core/model/ca/store/CRLInfo.java" /><! - - Used in VA WAR! -->
             <src path="${mod.ejbca-ws-cli.path}/src-gen" />
             <src path="${mod.ejbca-ws.path}/src" />
             <src path="${src.dir}" />
