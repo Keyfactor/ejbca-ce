@@ -1162,7 +1162,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
                     // Publish CA Cert
                     publishCACertificate(admin, chain, ca.getCRLPublishers(), ca.getSubjectDN());
-                    crlCreateSession.publishCRL(admin, cacert, ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
 
                     // Set status to active, so we can sign certificates for the
                     // external services below.
@@ -1215,7 +1214,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     cadata.setCA(ca);
 
                     // Create initial CRL
-                    crlCreateSession.run(admin, ca);
+                    crlCreateSession.createCRLs(admin, ca, ca.getCAInfo());
                 } else {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", Integer.valueOf(caid));
                     // Cannot create certificate request for internal CA
@@ -1434,9 +1433,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                     // Publish CA certificates.
                     publishCACertificate(admin, certchain, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null);
-                    crlCreateSession.publishCRL(admin, cacertificate, signca.getCRLPublishers(), ca != null ? ca.getSubjectDN() : null, ca != null
-                            && ca.getDeltaCRLPeriod() > 0);
-
+                    // External CAs will not have any CRLs in this system, so we don't have to try to publish any CRLs
                 } catch (CATokenOfflineException e) {
                     String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());
                     log.error(msg, e);
@@ -1762,7 +1759,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Publish the new CA certificate
             publishCACertificate(admin, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
             crlCreateSession.createCRLs(admin, ca, ca.getCAInfo());
-            crlCreateSession.publishCRL(admin, ca.getCACertificate(), ca.getCRLPublishers(), ca.getSubjectDN(), ca.getDeltaCRLPeriod() > 0);
         } catch (CATokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenewca", Integer.valueOf(caid));
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
