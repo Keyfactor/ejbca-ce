@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ca;
 
 import java.math.BigInteger;
+import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -131,102 +132,132 @@ public abstract class CaTestCase extends TestCase {
         return createTestCA(caName, 1024);
     }
 
-    /**
-     * Makes sure the Test CA exists.
-     * 
-     * @return true if successful
-     */
-    public boolean createTestCA(String caName, int keyStrength) {
+	/**
+	 * Makes sure the Test CA exists.
+	 * 
+	 * @return true if successful
+	 */
+	public boolean createTestCA(String caName, int keyStrength) {
+		return createTestCA( caName, keyStrength, "CN="+caName, CAInfo.SELFSIGNED, null);
+	}
+	/**
+	 * Make sure testCA exist.
+	 * @param caName The CA name
+	 * @param keyStrength
+	 * @param dn DN of the CA
+	 * @param signedBy id of the signing CA
+	 * @return
+	 */
+	public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection certificateChain) {
         log.trace(">createTestCA");
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-        try {                       
-            adminGroupSession.init(admin, ("CN=" + caName).hashCode(), DEFAULT_SUPERADMIN_CN);
-        } catch (AdminGroupExistsException e) {
-            log.error("", e);
-        }
-        // Search for requested CA
-
-        CAInfo caInfo = caAdminSessionRemote.getCAInfo(admin, caName);
-        if (caInfo != null) {
-            return true;
-        }
-
-        // Create request CA, if necessary
+        final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    	try {
+			 this.adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+		} catch (AdminGroupExistsException e) {
+			log.error("",e);
+		}
+		// Search for requested CA
+		CAInfo caInfo = this.caAdminSessionRemote.getCAInfo(admin, caName);
+		if (caInfo != null) {
+			return true;
+		}
+		// Create request CA, if necessary
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec("" + keyStrength);
-        catokeninfo.setEncKeySpec("" + keyStrength);
+        catokeninfo.setSignKeySpec(""+keyStrength);
+        catokeninfo.setEncKeySpec(""+keyStrength);
         catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        ArrayList extendedcaservices = new ArrayList();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, "CN=XKMSCertificate, " + "CN=" + caName, "", "" + keyStrength,
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                "CN=XKMSCertificate, " + dn,
+                "",
+                ""+keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
-
-        X509CAInfo cainfo = new X509CAInfo("CN=" + caName, caName, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+        /*
+        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+        		"CN=CMSCertificate, " + dn,
+        		"",
+        		""+keyStrength,
+                AlgorithmConstants.KEYALGORITHM_RSA));
+        */
+        X509CAInfo cainfo = new X509CAInfo(dn,
+                caName, SecConst.CA_ACTIVE, new Date(),
+                "", signedBy==CAInfo.SELFSIGNED ? SecConst.CERTPROFILE_FIXED_ROOTCA : SecConst.CERTPROFILE_FIXED_SUBCA,
+                3650,
+                null, // Expiretime
+                CAInfo.CATYPE_X509,
+                signedBy,
+                certificateChain,
+                catokeninfo,
+                "JUnit RSA CA",
+                -1, null,
+                null, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
                 10, // Delta CRL period
-                new ArrayList(), true, // Authority Key Identifier
+                new ArrayList(),
+                true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
                 false, // CRL Number Critical
-                null, // defaultcrldistpoint
-                null, // defaultcrlissuer
+                null, // defaultcrldistpoint 
+                null, // defaultcrlissuer 
                 null, // defaultocsplocator
                 null, // defaultfreshestcrl
                 true, // Finish User
-                extendedcaservices, false, // use default utf8 settings
+                extendedcaservices,
+                false, // use default utf8 settings
                 new ArrayList(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
-                true, // Use LDAP DN order by default
-                false, // Use CRL Distribution Point on CRL
-                false, // CRL Distribution Point on CRL critical
-                true, true, // isDoEnforceUniquePublicKeys
+        		true, // Use LDAP DN order by default
+        		false, // Use CRL Distribution Point on CRL
+        		false,  // CRL Distribution Point on CRL critical
+        		true,
+                true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 true, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
-        );
+        		);
 
         try {
-            caAdminSessionRemote.createCA(admin, cainfo);
-        } catch (Exception e) {
-            log.error("", e);
-            return false;
+        	this.caAdminSessionRemote.createCA(admin, cainfo);
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+        final CAInfo info = this.caAdminSessionRemote.getCAInfo(admin, caName);
+		final String normalizedDN = CertTools.stringToBCDNString(dn);
+        final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+        final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
+        if ( !normalizedCertDN.equals(normalizedDN) ) {
+        	log.error("CA certificate DN is not what it should. Is '"+normalizedDN+"'. Should be '"+normalizedCertDN+"'.");
+			return false;
         }
-        CAInfo info;
-
-        info = caAdminSessionRemote.getCAInfo(admin, caName);
-
-        X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-        if (!cert.getSubjectDN().toString().equals("CN=" + caName)) {
-            log.error("Error in created CA certificate!");
-            return false;
-        }
-        if (!info.getSubjectDN().equals("CN=" + caName)) {
-            log.error("Creating CA failed!");
-            return false;
+        if (!info.getSubjectDN().equals(normalizedCertDN)) {
+        	log.error("Creating CA failed!");
+			return false;
         }
         try {
-            if (certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getCertFingerprintAsString(cert.getEncoded())) == null) {
-                log.error("CA certificate not available in database!!");
-                return false;
-            }
-        } catch (CertificateEncodingException e) {
-            log.error("", e);
-            return false;
-        }
+			if ( this.certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getCertFingerprintAsString(cert.getEncoded())) == null) {
+	        	log.error("CA certificate not available in database!!");
+	        	return false;
+			}
+		} catch (CertificateEncodingException e) {
+        	log.error("", e);
+			return false;
+		}
         log.trace("<createTestCA");
-        return true;
-    }
+		return true;
+	}
 
     /**
      * @return the caid of the test CA
@@ -292,11 +323,11 @@ public abstract class CaTestCase extends TestCase {
         // Search for requested CA
         Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
         try {
-            CAInfo caInfo = caAdminSessionRemote.getCAInfo(admin, caName);
+            final CAInfo caInfo = this.caAdminSessionRemote.getCAInfo(admin, caName);
             if (caInfo == null) {
                 return true;
             }
-            caSession.removeCA(admin, ("CN=" + caName).hashCode());
+            this.caSession.removeCA(admin, caInfo.getCAId());
         } catch (Exception e) {
             log.error("", e);
             return false;
@@ -364,6 +395,10 @@ public abstract class CaTestCase extends TestCase {
             }
         }
         return approvedRevocations;
-    } 
+    }
+
+	public CAInfo getCAInfo(Admin admin, String name) {
+		return this.caAdminSessionRemote.getCAInfo(admin, name);
+	} 
 
 }
