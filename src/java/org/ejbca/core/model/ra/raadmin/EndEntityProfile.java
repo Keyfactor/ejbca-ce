@@ -15,7 +15,6 @@ package org.ejbca.core.model.ra.raadmin;
 
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -1116,7 +1117,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
     	  log.debug("endTime is: "+endTime);
       }
-      SimpleDateFormat sm = new  SimpleDateFormat("yyyy-MM-dd HH:mm");
+      String[] datePatterns = {"yyyy-MM-dd HH:mm"};
 	  Date now = new Date();
 	  Date startTimeDate = null;
       if( getUse(STARTTIME, 0) && startTime != null && !startTime.equals("") ) {
@@ -1131,7 +1132,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  startTimeDate = new Date(now.getTime() + relative);
     	  } else {
     		  try {
-    			  startTimeDate = sm.parse(startTime);
+    			  startTimeDate = DateUtils.parseDate(startTime, datePatterns);
     		  } catch (ParseException e) {
     		  }
     	  }
@@ -1154,7 +1155,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		  endTimeDate = new Date(start.getTime() + relative);
     	  } else {
     		  try {
-    			  endTimeDate = sm.parse(endTime);
+    			  endTimeDate = DateUtils.parseDate(endTime, datePatterns);
     		  } catch (ParseException e) {
     		  }
     	  }
@@ -1165,6 +1166,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
       if ( (startTimeDate != null) && (endTimeDate != null) ) {
     	  if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
+    		  FastDateFormat sm = FastDateFormat.getInstance(datePatterns[0]);
     		  throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
     				  sm.format(startTimeDate)+" "+sm.format(endTimeDate));
     	  }    	  

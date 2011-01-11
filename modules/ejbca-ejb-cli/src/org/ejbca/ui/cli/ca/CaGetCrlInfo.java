@@ -13,9 +13,9 @@
 
 package org.ejbca.ui.cli.ca;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -33,7 +33,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
 
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
-		final SimpleDateFormat iso8601DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		final FastDateFormat iso8601DateFormat = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
         try {
         	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin());
         	for (Integer caId : caIds) {
