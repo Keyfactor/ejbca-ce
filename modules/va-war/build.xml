@@ -88,7 +88,7 @@
     	<mkdir dir="${build-certstore-va.dir}/WEB-INF/classes" />
 		<javac destdir="${build-certstore-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-va.classpath">
-        	<include name="org/ejbca/ui/web/protocol/CertStoreServletStandAlone.java" />
+        	<include name="org/ejbca/ui/web/protocol/CertStoreServlet.java" />
 			<src path="${src.dir}"/>
 		</javac>
 	</target>
@@ -96,7 +96,7 @@
     	<mkdir dir="${build-crlstore-va.dir}/WEB-INF/classes" />
 		<javac destdir="${build-crlstore-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-va.classpath">
-        	<include name="org/ejbca/ui/web/protocol/CRLStoreServletStandAlone.java" />
+        	<include name="org/ejbca/ui/web/protocol/CRLStoreServlet.java" />
 			<src path="${src.dir}"/>
 		</javac>
 	</target>
