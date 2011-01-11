@@ -845,6 +845,21 @@ The default password for SSL keystore (key.p12) in Websphere is WebAS.
 
 </section>
 
+<section name="Transaction timouts">
+<p>In some cases, either if you have a slow machine, or very large data sets some common operations can take a long time to complete. The default transaction timout of 
+the application servers may then not be enough.</p>
+<subsection name="JBoss">
+<p>In order to change the defautl transaction timeout in JBoss you can edit the file JBOSS_HOME/server/default/deploy/transaction-jboss-beans.xml. 
+There is a property you can change:</p>
+<source>
+&lt;property name="defaultTimeout"&gt;300&lt;/property&gt;
+</source>
+</subsection>
+<subsection name="Weblogic">
+<p>In weblogic you change the default transaction timeout in the admin console. <i>Services -&gt; JTA -&gt; Timeout Seconds</i></p>
+</subsection>
+</section>
+
 <section name="Files deployed">
 <p>
 Here we describe shortly which files are copied during ant bootstrap and ant deploy. These targets only modified files automatically on the JBoss platforms,
