@@ -286,14 +286,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setKeyUsageCritical(true);
 
       setUseExtendedKeyUsage(false);
-      setExtendedKeyUsage(new ArrayList());
+      setExtendedKeyUsage(new ArrayList<String>());
       setExtendedKeyUsageCritical(false);
 
       ArrayList<Integer> availablecas = new ArrayList<Integer>();
       availablecas.add(Integer.valueOf(ANYCA));
       setAvailableCAs(availablecas);
       
-      setPublisherList(new ArrayList());
+      setPublisherList(new ArrayList<Integer>());
 
       setUseOcspNoCheck(false);
 
@@ -307,9 +307,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setCNPostfix("");
 	  
 	  setUseSubjectDNSubSet(false);
-	  setSubjectDNSubSet(new ArrayList());
+	  setSubjectDNSubSet(new ArrayList<Integer>());
 	  setUseSubjectAltNameSubSet(false);
-	  setSubjectAltNameSubSet(new ArrayList());
+	  setSubjectAltNameSubSet(new ArrayList<Integer>());
 	  
 	  setUsePathLengthConstraint(false);
 	  setPathLengthConstraint(0);
@@ -337,14 +337,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setUseDefaultOCSPServiceLocator(false);
 	  setOCSPServiceLocatorURI("");
 
-      setUseCRLDistributionPointOnCRL(false);
-      setUseOcspNoCheck(false);
-      setUseFreshestCRL(false);
-      
       // Default to have access to fingerprint and iris
       setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
       
-      setUsedCertificateExtensions(new ArrayList());
+      setUsedCertificateExtensions(new ArrayList<Integer>());
       
       setNumOfReqApprovals(1);
       setApprovalSettings(Collections.EMPTY_LIST);
@@ -1027,6 +1023,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getQCStatementCritical() { return ((Boolean) data.get(QCSTATEMENTCRITICAL)).booleanValue(); }
     public void  setQCStatementCritical(boolean qcstatementcritical) { data.put(QCSTATEMENTCRITICAL, Boolean.valueOf(qcstatementcritical));}
 
+    /** @return String with RAName or empty string */
     public String getQCStatementRAName(){ return (String) data.get(QCSTATEMENTRANAME); }
     public void setQCStatementRAName(String qcstatementraname) {
       if(qcstatementraname==null) {
@@ -1035,6 +1032,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(QCSTATEMENTRANAME,qcstatementraname);
       }
     }
+    /** @return String with SemanticsId or empty string */
     public String getQCSemanticsId(){ return (String) data.get(QCSSEMANTICSID); }
     public void setQCSemanticsId(String qcsemanticsid) {
       if(qcsemanticsid==null) {
@@ -1051,6 +1049,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setQCEtsiValueLimit(int qcetsivaluelimit){data.put(QCETSIVALUELIMIT, Integer.valueOf(qcetsivaluelimit));}
     public int getQCEtsiValueLimitExp(){return ((Integer) data.get(QCETSIVALUELIMITEXP)).intValue();}
     public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp){data.put(QCETSIVALUELIMITEXP, Integer.valueOf(qcetsivaluelimitexp));}
+    /** @return String with Currency or empty string */
     public String getQCEtsiValueLimitCurrency(){ return (String) data.get(QCETSIVALUELIMITCURRENCY); }
     public void setQCEtsiValueLimitCurrency(String qcetsicaluelimitcurrency) {
       if(qcetsicaluelimitcurrency==null) {
@@ -1068,6 +1067,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public boolean getUseQCCustomString(){ return ((Boolean) data.get(USEQCCUSTOMSTRING)).booleanValue(); }
     public void setUseQCCustomString(boolean useqccustomstring) { data.put(USEQCCUSTOMSTRING, Boolean.valueOf(useqccustomstring));}
+    /** @return String with oid or empty string */
     public String getQCCustomStringOid(){ return (String) data.get(QCCUSTOMSTRINGOID); }
     public void setQCCustomStringOid(String qccustomstringoid) {
       if(qccustomstringoid==null) {
@@ -1076,6 +1076,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(QCCUSTOMSTRINGOID,qccustomstringoid);
       }
     }
+    /** @return String with custom text or empty string */
     public String getQCCustomStringText(){ return (String) data.get(QCCUSTOMSTRINGTEXT); }
     public void setQCCustomStringText(String qccustomstringtext) {
       if(qccustomstringtext==null) {
