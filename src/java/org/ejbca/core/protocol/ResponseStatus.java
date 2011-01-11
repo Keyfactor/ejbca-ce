@@ -22,8 +22,8 @@ import java.io.Serializable;
  * Encapsulates the possible values for the status of a SCEP response.
  *
  * @author Jon Barber (jon.barber@acm.org)
+ * @version $Id$
  */
-
 public class ResponseStatus implements Serializable {
 
     /**
