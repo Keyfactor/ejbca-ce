@@ -42,10 +42,10 @@ import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 public class CertificateProfileData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(CertificateProfileData .class);
+	private static final Logger log = Logger.getLogger(CertificateProfileData .class); // NOPMD
 
 	private Integer id;
-	private String certificateProfileName;
+	private String certificateProfileName; // NOPMD, this is what the database column is called.
 	private Serializable data;
 	private int rowVersion = 0;
 	private String rowProtection;
@@ -53,15 +53,13 @@ public class CertificateProfileData implements Serializable {
 	/**
 	 * Entity holding data of a certificate profile.
 	 */
-	public CertificateProfileData(final Integer id, final String certificateprofilename, final CertificateProfile certificateProfile) {
+	public CertificateProfileData(final Integer id, final String profilename, final CertificateProfile profile) {
 		setId(id);
-		setCertificateProfileName(certificateprofilename);
-		setCertificateProfile(certificateProfile);
-		log.debug("Created certificateprofile " + certificateprofilename);
+		setCertificateProfileName(profilename);
+		setCertificateProfile(profile);
+		log.debug("Created certificateprofile " + profilename);
 	}
 	
-	public CertificateProfileData() { }
-
 	//@Id @Column
 	public Integer getId() { return id; }
 	public final void setId(final Integer id) { this.id = id; }
