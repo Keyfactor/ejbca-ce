@@ -1854,13 +1854,6 @@ isn't specified by the worker.
 <p>With this option, it is possible to choose on which nodes the service is allowed to execute. By not choosing any nodes in the list the service can be executed on any of the nodes.</p>
 <p>On startup of EJBCA each node adds its hostname to the list of nodes. The list can also be manually edited on the System Configuration page.</p>
 </subsubsection>
-<subsubsection name="Clear All Caches">
-<p>This butten is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
-nodes in this cluster. In order for this to work, the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
-the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
-<br/>Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list. Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address.
-</p>
-</subsubsection>
 </subsection>
 
 <subsection name="Currently Available Services">
@@ -4798,6 +4791,15 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 <li>Maximum performance since no database queries are done. Enable to maximum caching and EJBCA will not make a single call to the database.</li>
 <li>Minimal storage requirements. Since no issued certificates are stored in the database only EJBCA configuration needs storage.</li>
 </ul>
+</subsection>
+<subsection name="Clear All Caches">
+<p>This butten is located under <i>System Configuration</i> and is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
+nodes in this cluster. In order for this to work, the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
+the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
+<br/>Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list. Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address.
+</p><p>
+On startup of EJBCA each node adds its hostname to the "Nodes in Cluster" list. The list can also be manually edited on the System Configuration page.
+</p>
 </subsection>
 </section>
 
