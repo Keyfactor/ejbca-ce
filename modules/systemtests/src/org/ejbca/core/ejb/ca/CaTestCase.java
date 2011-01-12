@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.ca;
 
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
