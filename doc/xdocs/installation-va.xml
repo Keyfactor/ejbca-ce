@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Standalone VA installation</title>
+  </properties>
+<body>
+<section name="Standalone VA installation">
+  <subsection name="Building and configuring EJBCA">
+  <p>
+EJBCA should be configured as for any other installation but you must also set all preferences
+of the VA database in conf/va-publisher.properties. 
+The VA database is the master database of all standalone VA installations. It is there that EJBCA will 
+publish certificates when they are issued or revoked. 
+</p><p>
+After this configuration EJBCA is built and deployed as usual with the command 'ant deploy', as described in the EJBCA installation guide.
+</p><p>
+The deploy command sets up a datasource <b>java:/OcspDS</b> in JBoss, if you use another application server 
+you must set up this datasource manually. It should be a datasource that is not involved in transactions
+(a <i>no-tx-datasource</i> in JBoss), and it should have autocommit (should be default in JBoss).
+</p><p>
+When EJBCA has been started you have to add a new publisher. As a superadministrator you add this publisher
+on the "Edit Publishers" page in the admin GUI. Use publisher type "Validation Authority Publisher". 
+</p>
+<p>
+Validation Authority Settings :
+</p>
+<ul>
+<li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
+<li>'Store certificate on responder' - stores the complete certificate on the responder. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
+There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. 
+On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate. Publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this enabled.
+</li>
+<li>'Store CRL at the Validation Authority' should be set if the CRL store service of the VA should be used for a CA (only has a meaning for publishers used on a 'Edit Certificate Authorities' page).</li>
+</ul>
+<p>
+All certificate profiles for certificates that should be available to the OCSP responder should
+have a reference to this publisher. To configure this you must be a superadministrator.
+</p><p>
+All CAs that should have their certificates and CRLs published to the VA  should
+have a reference to this publisher. To configure this you must be a superadministrator.
+</p><p>
+When all settings above have been done then all created certificates issued with a certificate
+profile that has the ValidationAuthorityPublisher as publisher should be published in the responder
+database as well as in the EJBCA database. 
+When a certificate is revoked it will be revoked in
+the responder database as well.
+If the publishing is not working it is important to notice this and synchronize the databases again, 
+see <a href="#Error%20handling">Error handling</a> below.
+  </p>
+  </subsection>
+  <subsection name="Building and configuring the VA">
+  <p>
+The VA is configured using the same configuration files as EJBCA. 
+Only the preferences ocsp.*, crlstore.*, certstore.*, httpsserver.* and database.* are relevant to the responder but you may keep conf/*.properties
+from the EJBCA setup since definitions of other properties does no harm.<br/>
+</p>
+<note> 
+Note that the standalone VA uses the configuration options database.* and not the ocsp-database.* options to access the VA database.
+</note>
+<p>
+Please read description of the configuration properties in conf/ocsp.properties.sample, conf/database.properties.sample, conf/crlstore.properties.sample, conf/certstore.properties.sample and perhaps 
+conf/web.properties.sample (if ssl or different ports should be configured).
+</p><p>
+For the certificate and CRL store service the sample file should be enough to understand how to set it up. For the OCSP responder service there is separate <a href="installation-ocsp.html">setup instructions</a> for the Standalone OCSP installation.
+
+</p><p>
+The responder is then built and deployed with:
+</p><source>
+ant va-deploy
+</source>
+<p>
+on the VA.
+</p>
+
+<subsubsection name="Responder database">
+<p>
+The standalone VA database (that OcspDS in EJBCA and EjbcaDS in standalone VA points to) only have to contain the CertificateData and CRLData table. These tables are 
+created automatically by JBoss when it starts on the standalone VA.
+</p><p>
+The database connection settings on the standalone VA is configured and deployed in JBoss in the file 
+JBOSS_HOME/server/default/deploy/ejbca-ds.xml.
+</p>
+</subsubsection>
+</subsection>
+</section>
+
+<section name="Error handling">
+<p>
+If there is an error publishing to the VA database, the VA/OCSP Responder will be out of sync with the CA.
+It is very important to re-synchronize the databases in that case.
+</p>
+<p>
+In case of failure to publish to the VA database the following error message will appear in the server.log:
+</p>
+<source>
+Validation Authority ERROR, publishing is not working
+</source>
+<p>
+This will be followed by more details of the error.
+</p><p>
+The log must be monitored to discover such a fault and if such a fault is discovered an alarm should notify 
+the operator that he has to fix whatever is wrong and then synchronise the VA database with the EJBCA 
+database (see 'Synchronise the database of the responder').
+  </p>
+  
+  <subsection name="Synchronise the database of the responder">
+  <p>
+At the beginning and after failure in publishing to the VA responder, the master database of the
+publishers must be synchronised with the CertificateData and CRLData table of the database of EJBCA.
+If you only use OCSP and not CRL store, only the CertificateData table needs to be synchronised.
+</p><p>
+If there is a single certificate out of sync you can re-sync it by doing a 'Republish' from the admin-GUI.
+</p><p>
+The following procedure may be used to synchronise the database of EJBCA with the database of the
+responder:
+</p><p>
+<b>1.</b> Prevent any further issuing of new certificates and revocation of old certificates until the
+synchronisation is finished. This might be done by simply blocking the port to the adminweb.
+<br/>
+<b>2.</b> On the host of ejbca the following commands can be used to make the synchronisation:
+Run on the OCSP responder machine (as root user in mysql):
+</p>
+<source>
+mysqladmin drop ocsp_db;
+mysqladmin create ocsp_db;
+</source><p>
+This drops and re-creates the ocsp database to clean it. Replace ocsp_db with the database name of your database.
+<br/>
+Run on the CA server:
+</p>
+<source>
+mysqldump -u ejbca -p --compress ejbca_db CertificateData > CertificateData.dat
+mysqldump -u ejbca -p --compress ejbca_db CRLData > CRLData.dat
+cat CertificateData.dat | mysql -h ocspresponder ocsp_db
+cat CRLData.dat | mysql -h ocspresponder ocsp_db
+</source>
+<p>
+Replace your the username ejbca with your username.
+ocspresponder is the external VA/OCSP responder host.
+</p>
+<note>
+Note, that this can usually not be done from a windows machine, to a Linux machine, because windows is not case sensitive.
+</note>
+<p>
+<b>3.</b> Check that the publishing is working before allowing issuing and revoking.
+  </p>
+  </subsection>
+</section>
+
+</body>
+</document>

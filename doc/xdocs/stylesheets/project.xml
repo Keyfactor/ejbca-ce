@@ -32,6 +32,11 @@
                 <item name="User Guide"		  href="/userguide.html"/>
             </menu>
 
+            <menu name="Validation Authority (VA)">
+                <item name="VA Services"		  href="/services-va.html"/>
+                <item name="Standalone VA Installation"	  href="/installation-va.html"/>
+            </menu>
+
             <menu name="EJBCA OCSP Docs">
                 <item name="OCSP Architecture"	  href="/architecture-ocsp.html"/>
                 <item name="OCSP Installation"	  href="/installation-ocsp.html"/>

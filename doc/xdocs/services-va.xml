@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>VA Services</title>
+  </properties>
+<body>
+<section name="VA Services">
+<p>
+The validation authority (VA) part of EJBCA provides services used to validate a certificate. These services could run on an
+installed EJBCA or on a stand alone installation. See <a href="installation-va.html">Standalone VA installation</a> for instructions on how to install
+it stand alone. Each service is implemented by a servlet that can be enabled/disabled independently at compile time. 
+The services are disabled by default.
+</p>
+<subsection name="CA certificate store">
+<p>
+Is used to get a certificate chain to the root CA in order to verify that the certificate is signed by a valid CA (it is valid if the root
+is trusted).
+<a href="#RFC 4387">RFC 4387</a> specifies how the certificates are retrieved.
+The configuration file ${EJBCA_HOME}/conf/certstore.properties is used to configure the service.
+</p><p>
+If you view the page http://vahost:8080/certificates/search.cgi (when the service is enabled) you will get links to all URLs that can be used.
+'certificates' is the default path for the servlet but can be changed in the configuration.
+</p>
+</subsection>
+<subsection name="CRL store">
+<p>
+Is used to get a Certificate Revocation List (a signed list of revoked certificates) for a CA.
+<a href="#RFC 4387">RFC 4387</a> specifies how the CRLs are retrieved.
+The configuration file ${EJBCA_HOME}/conf/crlstore.properties is used to configure the service.
+</p><p>
+If you view the page http://vahost:8080/crls/search.cgi you will get links to all URLs that could be used.
+'crls' is the default path for the servlet but can be changed in the configuration.
+</p>
+</subsection>
+<subsection name="OCSP responder">
+<p>
+The OCSP responder is used to ask if a certificate is revoked or not. The OCSP protocol is specified in <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a>.
+See <a href="architecture-ocsp.html">OCSP Architecture</a>
+</p>
+<p>The url for OCSP services is http://vahost:8080/ejbca/publicweb/status/ocsp
+</p>
+</subsection>
+</section>
+
+<section name="RFC 4387">
+<p>
+The protocol to retrieve CRLs and certificates is described in <a href="http://www.ietf.org/rfc/rfc4387">RFC 4387</a>.
+</p><p>
+Only CA certificates can be fetched. Since the attributes 'certHash', 'uri', 'iAndSHash' and 'name' does not make that much sense to CA
+certificates and CRLs they are not implemented.
+</p><p>
+To be able to specify that a delta CRL should be fetched an extra parameter 'delta' is added to the URL. This is not described in the RFC.
+Example:
+</p>
+<source>
+http://myhost:8080/crls/search.cgi?sKIDHash=X4NX3VF9u/tzkkGZU6M6OEffhFc&amp;delta=
+</source>
+<p>
+When searching for certificates you can use iHash, sHash and sKIDHash. iHash is the ASN1 encoded DN of the issuer in a certificate. If you search with it you get all certificates that has the same issuer, except for the root certificate.
+You do not find a root certificate if you search with the iHash of the root. It has been assumed that sHash should be used when searching for a root.
+</p>
+<p>
+If you want to implement your own application accessing the VA you could look at the ejbca junit test class org.ejbca.ui.web.protocol.TestCertStoreServlet
+</p>
+</section>
+
+</body>
+
+</document>
+
