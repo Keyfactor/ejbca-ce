@@ -15,84 +15,17 @@
   external OCSP responder. 
   </p><p>If you are not using the responder with EJBCA you can skip the section about building and configuring EJBCA.
   </p>
-  <subsection name="Building and configuring EJBCA">
-  <p>
-EJBCA should be configured as for any other installation but you must also set all preferences
-(ocsp-database.*) of the responder database in conf/ocsp.properties. 
-The responder database is the master database of all the responders, and it is there that EJBCA will 
-publish certificates when they are issued or revoked. 
-</p><p>
-After this configuration EJBCA is built and deployed as usual with the command 'ant deploy', as described in the EJBCA installation guide.
-</p><p>
-The deploy command sets up a datasource <b>java:/OcspDS</b> in JBoss, if you use another application server 
-you must set up this datasource manually. It should be a datasource that is not involved in transactions
-(a <i>no-tx-datasource</i> in JBoss), and is should have autocommit (should be default in JBoss).
-</p><p>
-When EJBCA has been started you have to add a new publisher. As a superadministrator you add this publisher
-on the "Edit Publishers" page in the admin GUI. Use publisher type "External OCSP Publisher". 
-</p>
-<p>
-External OCSP Settings:
-</p>
-<ul>
-<li>'Data Source' - is the database of the external OCSP where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
-<li>'Store certificate on responder' - stores the complete certificate on the responder. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
-There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. 
-On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate.
-</li>
-</ul>
-<p>
-All certificate profiles for certificates that should be available to the OCSP responder should
-have a reference to this publisher. To configure this you must be a superadministrator.
-</p>
-<p>
-When all settings above have been done then all created certificates issued with a certificate
-profile that has the ExternalOCSPPublisher as publisher should be published in the responder
-database as well as in the EJBCA database. 
-When a certificate is revoked it will be revoked in
-the responder database as well.
-If the publishing is not working it is important to notice this and synchronize the databases again, 
-see 'Error publishing to OCSP database' below.
-  </p>
-  </subsection>
-
   <subsection name="Building and configuring the Responder">
-  <p>
-The responder is configured using the same configuration files as EJBCA. 
-Only the preferences ocsp.*, httpsserver.*, datasource.* and database.* are relevant to the responder but you may keep conf/*.properties
-from the EJBCA setup since definitions of other properties does no harm.<br/>
-</p>
-<note> 
-Note that the External OCSP responder uses the configuration options database.* and not the ocsp-database.* options to access the OCSP responder database.
-</note>
+<subsubsection name="General configuration">
 <p>
-Please read description of the configuration properties in conf/ocsp.properties.sample, conf/database.properties.sample and perhaps 
-conf/web.properties.sample (if ssl or different ports should be configured).
-</p>
-<p>
+You should first read the <a href="installation-va.html">Standalone VA installation</a> that specifies the general configuration for a VA.
+</p><p>
 All options for the OCSP responders OCSP behavior is set in conf/ocsp.properties. All options are documented in this file.
 <br/>
 The ocsp.keys.* preferences (that has no meaning for EJBCA) has also to be configured.<br/> 
 If card keys (see below) should be used then the property 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.
-</p><p>
-The responder is then built and deployed with:
-</p><source>
-ant ocsp-deploy
-</source>
-<p>
-on the external OCSP responder.
-</p>
-
-<subsubsection name="Responder database">
-<p>
-The external OCSP responder database (that OcspDS in EJBCA and EjbcaDS in OCSP responder) points to only have to contain the CertificateData table. This table is 
-created automatically by JBoss when it starts on the external OCSP responder.
-</p><p>
-The database connection settings on the external OCSP responder is configured and deployed in JBoss in the file 
-JBOSS_HOME/server/default/deploy/ejbca-ds.xml.
 </p>
 </subsubsection>
-
 <subsubsection name="Responder signing keys">
 <p>
 The keys used to sign the OCSP response could either be stored on as a PKCS#12 file in the file system of the host, 
@@ -246,64 +179,13 @@ To be able to define this set of keys that should be used there is a property ca
 </p>
 </subsection>
 </section>
+
 <section name="Error handling">
 <p>
 If there is an error publishing to the OCSP database, the OCSP responder will be out of sync with the CA.
-It is very important to re-synchronize the databases in that case.
+It is very important to re-synchronize the databases in that case. Read about error handling and synchronization of the database in the <a href="installation-va.html#Error%20handling">VA installation</a> guide.
 </p>
-<p>
-In case of failure to publish to the OCSP database the following error message will appear in the server.log:
-</p>
-<source>
-EXTERNAL OCSP ERROR, publishing is not working
-</source>
-<p>
-This will be followed by more details of the error.
-</p><p>
-The log must be monitored to discover such a fault and if such a fault is discovered an alarm should notify 
-the operator that he has to fix whatever is wrong and then synchronize the OCSP database with the EJBCA 
-database (see 'Synchronize the database of the responder').
-  </p>
   
-  <subsection name="Synchronise the database of the responder">
-  <p>
-At the beginning and after failure in publishing to the responder, the master database of the
-publishers must be synchronised with the CertificateData table of the database of EJBCA.
-</p><p>
-If there is a single certificate out of sync you can re-sync it by doing a 'Republish' from the admin-GUI.
-</p><p>
-The following procedure may be used to synchronise the database of EJBCA with the database of the
-responder:
-</p><p>
-<b>1.</b> Prevent any further issuing of new certificates and revocation of old certificates until the
-synchronisation is finished. This might be done by simply blocking the port to the adminweb.
-<br/>
-<b>2.</b> On the host of ejbca the following commands can be used to make the synchronisation:
-Run on the OCSP responder machine (as root user in mysql):
-</p>
-<source>
-mysqladmin drop ocsp_db;
-mysqladmin create ocsp_db;
-</source><p>
-This drops and re-creates the ocsp database to clean it. Replace ocsp_db with the database name of your database.
-<br/>
-Run on the CA server:
-</p>
-<source>
-mysqldump -u ejbca -p --compress ejbca_db CertificateData > CertificateData.dat
-cat CertificateData.dat | mysql -h ocspresponder ocsp_db
-</source>
-<p>
-Replace your the username ejbca with your username.
-ocspresponder is the external OCSP responder host.
-</p>
-<note>
-Note, that this can usually not be done from a windows machine, to a Linux machine, because windows is not case sensitive.
-</note>
-<p>
-<b>3.</b> Check that the publishing is working before allowing issuing and revoking.
-  </p>
-  </subsection>
   </section>
 
   <section name="Running several responders">
@@ -343,7 +225,7 @@ of the followings: <a href="http://dev.mysql.com/doc/refman/5.0/en/replication-h
   <ol>
     <li>To create the tables in the target OCSP, start JBoss AS with OCSP deployed for the first time (and then stop the server before doing the next step).</li>
     <li>Add an additional DataSource for the target OCSP responder in EJBCA.</li>
-    <li>Configure a new OCSPPublisher in EJCBA that uses the target OCSP DataSource. Chose to only publish to queue to accumulate all changes during the cloning.</li>
+    <li>Configure a new ValidationAuthorityPublisher in EJCBA that uses the target OCSP DataSource. Chose to only publish to queue to accumulate all changes during the cloning.</li>
     <li>Wait one hour and check that there is nothing in the publisher-queue of the source OCSP that is older than one hour.</li>
     <li>Do a MySQL dump from the source database to the target database or use the ClientToolBox DBCOPY-command.</li>
     <li>When the copy operation has finished, configure a new Republisher Service for the target's OCSP Publisher.</li>
