@@ -428,7 +428,7 @@ function confirmrepublish(){
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBALTNAME") %></td>
 		 <td><% if(certificatedata.getSubjectAltName() == null)
-	                  out.write(ejbcawebbean.getText("NONE"));
+	                  out.write(ejbcawebbean.getText("ALT_NONE"));
 	                else
 	                  out.write(certificatedata.getSubjectAltName());%> 
 	         </td>
@@ -436,7 +436,7 @@ function confirmrepublish(){
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBDIRATTR") %></td>
 		 <td><% if(certificatedata.getSubjectDirAttr() == null)
-	                  out.write(ejbcawebbean.getText("NONE"));
+	                  out.write(ejbcawebbean.getText("SDA_NONE"));
 	                else
 	                  out.write(certificatedata.getSubjectDirAttr());%> 
 	         </td>
@@ -454,7 +454,7 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("BASICCONSTRAINTS") %></strong></td>
-		 <td><strong><%= certificatedata.getBasicConstraints(ejbcawebbean.getText("NONE"), ejbcawebbean.getText("CANOLIMIT"), ejbcawebbean.getText("ENDENTITY"), ejbcawebbean.getText("CAPATHLENGTH")) %></strong>
+		 <td><strong><%= certificatedata.getBasicConstraints(ejbcawebbean.getText("EXT_UNUSED"), ejbcawebbean.getText("CANOLIMIT"), ejbcawebbean.getText("ENDENTITY"), ejbcawebbean.getText("CAPATHLENGTH")) %></strong>
          </td>
        </tr>
        
@@ -517,7 +517,7 @@ function confirmrepublish(){
 	                  out.write(ejbcawebbean.getText("DECIPHERONLY"));
 	               }
 	               if(none){
-	                  out.write(ejbcawebbean.getText("NOKEYUSAGESPECIFIED"));          
+	                  out.write(ejbcawebbean.getText("KU_NONE"));          
 	              }
 	%>
 	         </td>
@@ -531,7 +531,7 @@ function confirmrepublish(){
 	                  out.write( ejbcawebbean.getText(extendedkeyusage[i]));
 	                }                
 	                if(extendedkeyusage == null || extendedkeyusage.length == 0)
-	                  out.write(ejbcawebbean.getText("NOEXTENDEDKEYUSAGESPECIFIED"));                       
+	                  out.write(ejbcawebbean.getText("EKU_NONE"));                       
 	%>
 	         </td>
        </tr>
