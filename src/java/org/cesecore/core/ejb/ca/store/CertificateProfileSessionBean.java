@@ -485,7 +485,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
 
     /**
-     * Removes a certificateprofile from the database, does not throw any errors if the profile does not exist, but it does log a message.
+     * Removes a certificateprofile from the database, does not throw any errors if the profile does not exist.
      *
      * @param admin Administrator performing the operation
      */
@@ -493,13 +493,20 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     public void removeCertificateProfile(final Admin admin, final String profilename) {
         try {
                 final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, profilename);
-                entityManager.remove(pdl);
-                flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("store.removedprofile", profilename);                
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+                if (pdl == null) {
+                	if (LOG.isDebugEnabled()) {
+                    	LOG.debug("Trying to remove a certificate profile that does not exist: "+profilename);                		
+                	}
+                } else {
+                	entityManager.remove(pdl);
+                	flushProfileCache();
+                	final String msg = INTRES.getLocalizedMessage("store.removedprofile", profilename);                
+                	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);                	
+                }
         } catch (Exception e) {
-                final String msg = INTRES.getLocalizedMessage("store.errorremoveprofile", profilename);                    
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            LOG.error("Error was caught when trying to remove certificate profile " + profilename, e);
+        	final String msg = INTRES.getLocalizedMessage("store.errorremoveprofile", profilename);                    
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         }
     }
     

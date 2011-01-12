@@ -934,7 +934,14 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         try {          
         	String msg = intres.getLocalizedMessage("store.removehistory", certFingerprint);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
-            entityManager.remove(CertReqHistoryData.findById(entityManager, certFingerprint));
+            CertReqHistoryData crh = CertReqHistoryData.findById(entityManager, certFingerprint);
+            if (crh == null) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Trying to remove CertReqHistory that does not exist: "+certFingerprint);                		
+            	}
+            } else {
+            	entityManager.remove(crh);
+            }
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorremovehistory", certFingerprint);            	
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);

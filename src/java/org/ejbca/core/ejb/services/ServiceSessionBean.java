@@ -215,7 +215,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 if (worker != null) {
                     serviceSession.cancelTimer(htp.getId());
                 }
-                serviceDataSession.removeServiceData(htp);
+                serviceDataSession.removeServiceData(htp.getId());
                 logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
                         LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
                 retval = true;

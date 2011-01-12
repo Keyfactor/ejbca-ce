@@ -58,7 +58,7 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
      * 
      * @param serviceData
      */
-     void removeServiceData(ServiceData serviceData);
+     void removeServiceData(Integer id);
 
     /**
      * Updates a database row with the matching values. This way we can ensure atomic operation for acquiring the semaphore for a service,

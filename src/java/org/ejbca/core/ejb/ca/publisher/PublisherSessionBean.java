@@ -417,9 +417,15 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         try {
             PublisherData htp = PublisherData.findByName(entityManager, name);
-            entityManager.remove(htp);
-            String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            if (htp == null) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Trying to remove a publisher that does not exist: "+name);                		
+            	}
+            } else {
+            	entityManager.remove(htp);
+                String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_PUBLISHERDATA, msg);
+            }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("publisher.errorremovepublisher", name);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_PUBLISHERDATA, msg, e);
