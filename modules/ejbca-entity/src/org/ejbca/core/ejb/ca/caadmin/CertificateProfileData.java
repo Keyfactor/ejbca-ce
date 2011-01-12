@@ -50,6 +50,9 @@ public class CertificateProfileData implements Serializable {
 	private int rowVersion = 0;
 	private String rowProtection;
 
+	/** Needed by JPA */
+	public CertificateProfileData() { }
+
 	/**
 	 * Entity holding data of a certificate profile.
 	 */
