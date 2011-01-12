@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -105,7 +106,7 @@ public class UsersView implements java.io.Serializable {
       Collections.sort(this.users);
     }
     
-    public void setUsers(UserDataVO[] users, HashMap caidtonamemap) {
+    public void setUsers(UserDataVO[] users, Map caidtonamemap) {
       UserView user;  
       this.users.clear();
       if(users !=null && users.length > 0){ 
@@ -118,7 +119,7 @@ public class UsersView implements java.io.Serializable {
       }
     }
 
-    public void setUsers(Collection importusers, HashMap caidtonamemap) { 
+    public void setUsers(Collection importusers, Map caidtonamemap) { 
         
       UserView user;  
       Iterator i;  

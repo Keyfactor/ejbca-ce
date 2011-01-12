@@ -62,21 +62,16 @@ public final class CertificateProfileCache {
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
-    /**  */
-    private volatile Map<Integer, CertificateProfile> profileCache = null;
+    private transient volatile Map<Integer, CertificateProfile> profileCache = null;
     /** Cache of mappings between profileId and profileName */
-    private volatile HashMap<Integer, String> idNameMapCache = null;
+    private transient volatile Map<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
-    private volatile Map<String, Integer> nameIdMapCache = null;
+    private transient volatile Map<String, Integer> nameIdMapCache = null;
 
     /** help variable used to control that cache update isn't performed to often. */
-    private volatile long lastupdatetime = -1;  
+    private transient volatile long lastupdatetime = -1;  
 
-	public CertificateProfileCache() {
-		// Do nothing
-	}
-
-	public void updateProfileCache(EntityManager entityManager) {
+	public void updateProfileCache(final EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
@@ -129,18 +124,19 @@ public final class CertificateProfileCache {
 	}
 
 	public boolean needsUpdate() {
+		boolean ret = false;
         if ((nameIdMapCache == null) || (idNameMapCache == null) || (profileCache == null)
                 || (lastupdatetime + EjbcaConfiguration.getCacheCertificateProfileTime() < System.currentTimeMillis())) {
-            return true;
+            ret = true;
         }
-        return false;
+        return ret;
 	}
 
 	public Map<Integer, CertificateProfile> getProfileCache() {
 		return profileCache;
 	}
 
-	public HashMap<Integer, String> getIdNameMapCache() {
+	public Map<Integer, String> getIdNameMapCache() {
 		return idNameMapCache;
 	}
 

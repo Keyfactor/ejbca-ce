@@ -13,7 +13,7 @@
 package org.cesecore.core.ejb.ca.store;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
@@ -142,13 +142,13 @@ public interface CertificateProfileSession {
     String getCertificateProfileName(Admin admin, int id);
 
     /**
-     * Method creating a hashmap mapping profile id (Integer) to profile name
+     * Method creating a Map mapping profile id (Integer) to profile name
      * (String).
      * 
      * @param admin
      *            Administrator performing the operation
      */
-    HashMap<Integer, String> getCertificateProfileIdToNameMap(Admin admin);
+    Map<Integer, String> getCertificateProfileIdToNameMap(Admin admin);
 
     /**
      * A method designed to be called at startuptime to (possibly) upgrade

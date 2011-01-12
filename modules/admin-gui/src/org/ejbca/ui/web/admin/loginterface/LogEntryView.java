@@ -13,10 +13,10 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.text.DateFormat;
 import java.rmi.RemoteException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.log.Admin;
@@ -65,7 +65,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
     
     public LogEntryView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames,
-    		String[] localsystemeventnames, String[] localmodulenames, HashMap  caidtonamemap) throws RemoteException{
+    		String[] localsystemeventnames, String[] localmodulenames, Map  caidtonamemap) throws RemoteException{
       logentrydata = new String[NUMBEROF_FIELDS];
       for(int i=0; i<  NUMBEROF_FIELDS ; i++){
         logentrydata[i] = "";    
@@ -92,7 +92,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
        
     /* Sets the values according to the values in the LogEntry object.*/ 
-    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, HashMap caidtonamemap) throws RemoteException{
+    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, Map caidtonamemap) throws RemoteException{
         
        logentrydata[TIME] = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(logentry.getTime());
        this.time = logentry.getTime();
