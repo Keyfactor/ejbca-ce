@@ -13,15 +13,9 @@
  
 package org.ejbca.core.model.ca.publisher;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.ValueExtractor;
 
 
 /**
@@ -133,55 +127,5 @@ public class PublisherQueueData implements java.io.Serializable {
 	}
 	public void setVolatileData(PublisherQueueVolatileData volatileData) {
 		this.volatileData = volatileData;
-	}
-    
-	/** @return return the count. */
-	public static long findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId) {
-		Query query = entityManager.createQuery("SELECT COUNT(a) FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND publishStatus=" + PublisherConst.STATUS_PENDING);
-		query.setParameter("publisherId", publisherId);
-		return ((Long)query.getSingleResult()).longValue();
-	}
-
-	/**
-	 * @return the count of pending entries for a publisher in the specified intervals.
-	 */
-	public static List<Integer> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
-    	StringBuilder sql = new StringBuilder();
-    	long now = new Date().getTime();
-    	for(int i = 0; i < lowerBounds.length; i++) {
-    		sql.append("SELECT COUNT(*) FROM PublisherQueueData where publisherId=");
-    		sql.append(publisherId);
-    		sql.append(" AND publishStatus=");
-    		sql.append(PublisherConst.STATUS_PENDING);
-    		if(lowerBounds[i] > 0) {
-	    		sql.append(" AND timeCreated < ");
-	    		sql.append(now - 1000 * lowerBounds[i]);
-    		}
-    		if(upperBounds[i] > 0) {
-	    		sql.append(" AND timeCreated > ");
-	    		sql.append(now - 1000 * upperBounds[i]);
-    		}
-    		if(i < lowerBounds.length-1) {
-    			sql.append(" UNION ALL ");
-    		}
-    	}
-    	if (log.isDebugEnabled()) {
-    		log.debug("findCountOfPendingEntriesForPublisher executing SQL: "+sql.toString());    			
-		}
-    	Query query = entityManager.createNativeQuery(sql.toString());
-    	List<?> resultList = query.getResultList();
-    	List<Integer> returnList;
-    	// Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
-    	if (resultList.size()==0) {
-    		returnList = new ArrayList<Integer>();
-    	} else if (resultList.get(0) instanceof Integer) {
-    		returnList = (List<Integer>) resultList;	// This means we can return it in it's current format
-    	} else {
-    		returnList = new ArrayList<Integer>();
-    		for (Object o : resultList) {
-    			returnList.add(ValueExtractor.extractIntValue(o));
-    		}
-    	}
-		return returnList;
-	}
+	}   
 }

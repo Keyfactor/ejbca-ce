@@ -18,11 +18,11 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
@@ -83,14 +83,9 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
      * @return the found entity instance or null if the entity does not exist
      */
     public ServiceData findByName(String name) {
-        ServiceData ret = null;
-        try {
-            Query query = entityManager.createQuery("SELECT a FROM ServiceData a WHERE a.name=:name");
-            query.setParameter("name", name);
-            ret = (ServiceData) query.getSingleResult();
-        } catch (NoResultException e) {
-        }
-        return ret;
+        final Query query = entityManager.createQuery("SELECT a FROM ServiceData a WHERE a.name=:name");
+        query.setParameter("name", name);
+        return (ServiceData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
     }
 
     /** @return the found entity instance or null if the entity does not exist */
@@ -101,14 +96,9 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     /** @return the name of the service with the given id */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public String findNameById(Integer id) {
-        String ret = null;
-        try {
-            Query query = entityManager.createQuery("SELECT a.name FROM ServiceData a WHERE a.id=:id");
-            query.setParameter("id", id);
-            ret = (String) query.getSingleResult();
-        } catch (NoResultException e) {
-        }
-        return ret;
+        Query query = entityManager.createQuery("SELECT a.name FROM ServiceData a WHERE a.id=:id");
+        query.setParameter("id", id);
+        return (String) QueryResultWrapper.getResultAndSwallowNoResultException(query);
     }
     
     /** @return return the query results as a List. */

@@ -22,7 +22,6 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -30,6 +29,7 @@ import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -416,15 +416,10 @@ public class UserData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
     public static UserData findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
-    	UserData ret = null;
-    	try {
-    		Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
-    		query.setParameter("subjectDN", subjectDN);
-    		query.setParameter("caId", caId);
-    		ret = (UserData) query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
+		query.setParameter("subjectDN", subjectDN);
+		query.setParameter("caId", caId);
+		return (UserData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
     }    
 
 	/**
@@ -432,39 +427,34 @@ public class UserData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
     public static UserData findBySubjectDN(EntityManager entityManager, String subjectDN) {
-    	UserData ret = null;
-    	try {
-    		Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN");
-    		query.setParameter("subjectDN", subjectDN);
-    		ret = (UserData) query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN");
+		query.setParameter("subjectDN", subjectDN);
+		return (UserData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
     }
 
 	/** @return return the query results as a List. */
     public static List<UserData> findBySubjectEmail(EntityManager entityManager, String subjectEmail) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail");
+    	final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail");
     	query.setParameter("subjectEmail", subjectEmail);
     	return query.getResultList();
     }
 
 	/** @return return the query results as a List. */
     public static List<UserData> findByStatus(EntityManager entityManager, int status) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status");
+    	final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status");
     	query.setParameter("status", status);
     	return query.getResultList();
     }
 
 	/** @return return the query results as a List. */
     public static List<UserData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserData a");
+    	final Query query = entityManager.createQuery("SELECT a FROM UserData a");
     	return query.getResultList();
     }
 
 	/** @return return the query results as a List. */
 	public static List<UserData> findAllBatchUsersByStatus(EntityManager entityManager, int status, int maximumQueryRowcount) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
+    	final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
     	query.setParameter("status", status);
     	query.setMaxResults(maximumQueryRowcount);
     	return query.getResultList();
@@ -472,7 +462,7 @@ public class UserData implements Serializable {
 
 	/** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
 	public static List<UserData> findNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId, int maxResults) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
+    	final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
     	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
     	query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
     	query.setParameter("status1", UserDataConstants.STATUS_NEW);
@@ -485,30 +475,30 @@ public class UserData implements Serializable {
     
 	/** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
 	public static long countNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
+    	final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
     	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
     	query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
     	query.setParameter("status1", UserDataConstants.STATUS_NEW);
     	query.setParameter("status2", UserDataConstants.STATUS_KEYRECOVERY);
-    	return ((Long)query.getSingleResult()).longValue();
+    	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 
 	/** @return return a count of UserDatas with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
 	public static long countByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId");
+    	final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId");
     	query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
-    	return ((Long)query.getSingleResult()).longValue();
+    	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 
 	public static String findSubjectEmailByUsername(EntityManager entityManager, String username) {
-    	Query query = entityManager.createQuery("SELECT a.subjectEmail FROM UserData a WHERE a.username=:username");
+    	final Query query = entityManager.createQuery("SELECT a.subjectEmail FROM UserData a WHERE a.username=:username");
     	query.setParameter("username", username);
-		return (String) query.getSingleResult();
+		return (String) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/** @return return a List<UserData> matching the custom query. */
 	public static List<UserData> findByCustomQuery(EntityManager entityManager, String customQuery, int maxResults) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE " + customQuery);
+    	final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE " + customQuery);
     	if (maxResults > 0) {
     		query.setMaxResults(maxResults);
     	}
@@ -517,29 +507,29 @@ public class UserData implements Serializable {
 
 	/** @return return a count of UserDatas with the specified End Entity Profile. */
 	public static long countByEndEntityProfileId(EntityManager entityManager, int endEntityProfileId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.endEntityProfileId=:endEntityProfileId");
+    	final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.endEntityProfileId=:endEntityProfileId");
     	query.setParameter("endEntityProfileId", endEntityProfileId);
-    	return ((Long)query.getSingleResult()).longValue();
+    	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 
 	/** @return return a count of UserDatas with the specified Certificate Profile. */
 	public static long countByCertificateProfileId(EntityManager entityManager, int certificateProfileId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
+    	final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
     	query.setParameter("certificateProfileId", certificateProfileId);
-    	return ((Long)query.getSingleResult()).longValue();
+    	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 
 	/** @return return a count of UserDatas with the specified CA. */
 	public static long countByCaId(EntityManager entityManager, int caId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
+    	final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
     	query.setParameter("caId", caId);
-    	return ((Long)query.getSingleResult()).longValue();
+    	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 
 	/** @return return a count of UserDatas with the specified Hard Token Profile. */
 	public static long countByHardTokenProfileId(EntityManager entityManager, int hardTokenProfileId) {
-    	Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.tokenType=:tokenType");
+    	final Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.tokenType=:tokenType");
     	query.setParameter("tokenType", hardTokenProfileId);
-    	return ((Long)query.getSingleResult()).longValue();
+    	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 }

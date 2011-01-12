@@ -20,12 +20,12 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.util.Base64PutHashMap;
 
@@ -138,19 +138,14 @@ public class UserDataSourceData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
     public static UserDataSourceData findByName(EntityManager entityManager, String name) {
-    	UserDataSourceData ret = null;
-    	try {
-    		Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a WHERE a.name=:name");
-    		query.setParameter("name", name);
-    		ret = (UserDataSourceData) query.getSingleResult();
-    	} catch (NoResultException e) {
-		}
-    	return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a WHERE a.name=:name");
+		query.setParameter("name", name);
+		return (UserDataSourceData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
     }
     
 	/** @return return the query results as a List. */
     public static List<UserDataSourceData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a");
+    	final Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a");
     	return query.getResultList();
     }
 }

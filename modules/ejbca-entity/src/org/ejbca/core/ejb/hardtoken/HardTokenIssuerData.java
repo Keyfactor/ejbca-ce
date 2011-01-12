@@ -19,13 +19,13 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 
 // TODO: This class might need additional merging with org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.core.model.hardtoken.HardTokenIssuer
@@ -122,19 +122,14 @@ public class HardTokenIssuerData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static HardTokenIssuerData findByAlias(EntityManager entityManager, String alias) {
-		HardTokenIssuerData ret = null;
-		try {
-			Query query = entityManager.createQuery("SELECT a FROM HardTokenIssuerData a WHERE a.alias=:alias");
-			query.setParameter("alias", alias);
-			ret = (HardTokenIssuerData) query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM HardTokenIssuerData a WHERE a.alias=:alias");
+		query.setParameter("alias", alias);
+		return (HardTokenIssuerData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/** @return return the query results as a List. */
 	public static List<HardTokenIssuerData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a FROM HardTokenIssuerData a");
+		final Query query = entityManager.createQuery("SELECT a FROM HardTokenIssuerData a");
 		return query.getResultList();
 	}
 }

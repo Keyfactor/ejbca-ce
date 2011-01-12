@@ -20,12 +20,12 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.util.Base64PutHashMap;
 
@@ -134,19 +134,14 @@ public class PublisherData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static PublisherData findByName(EntityManager entityManager, String name) {
-		PublisherData ret = null;
-		try {
-			Query query = entityManager.createQuery("SELECT a FROM PublisherData a WHERE a.name=:name");
-			query.setParameter("name", name);
-			ret = (PublisherData) query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM PublisherData a WHERE a.name=:name");
+		query.setParameter("name", name);
+		return (PublisherData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/** @return return the query results as a List. */
 	public static List<PublisherData> findAll(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT a FROM PublisherData a");
+		final Query query = entityManager.createQuery("SELECT a FROM PublisherData a");
 		return query.getResultList();
 	}
 }

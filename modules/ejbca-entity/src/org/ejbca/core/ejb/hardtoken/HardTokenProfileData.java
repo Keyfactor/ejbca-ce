@@ -20,12 +20,12 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.util.Base64PutHashMap;
 
@@ -128,19 +128,14 @@ public class HardTokenProfileData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
     public static HardTokenProfileData findByName(EntityManager entityManager, String name) {
-    	HardTokenProfileData ret = null;
-    	try {
-    		Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a WHERE a.name=:name");
-    		query.setParameter("name", name);
-    		ret = (HardTokenProfileData) query.getSingleResult();
-    	} catch (NoResultException e) {
-    	}
-    	return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a WHERE a.name=:name");
+		query.setParameter("name", name);
+		return (HardTokenProfileData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
     }
     
 	/** @return return the query results as a List. */
     public static List<HardTokenProfileData> findAll(EntityManager entityManager) {
-    	Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a");
+    	final Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a");
     	return query.getResultList();
     }
 }

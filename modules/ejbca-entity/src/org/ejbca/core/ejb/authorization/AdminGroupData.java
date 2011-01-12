@@ -23,12 +23,12 @@ import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -330,15 +330,9 @@ public class AdminGroupData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static AdminGroupData findByGroupName(final EntityManager entityManager, final String adminGroupName) {
-		AdminGroupData ret = null;
-		try {
-			final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE adminGroupName=:adminGroupName");
-			query.setParameter("adminGroupName", adminGroupName);
-			ret = (AdminGroupData) query.getSingleResult();
-		} catch (NoResultException e) {
-			// return null
-		}
-		return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE adminGroupName=:adminGroupName");
+		query.setParameter("adminGroupName", adminGroupName);
+		return (AdminGroupData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/** @return return the query results as a List. */

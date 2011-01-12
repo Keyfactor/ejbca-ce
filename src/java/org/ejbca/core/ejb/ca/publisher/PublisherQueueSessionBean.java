@@ -142,7 +142,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
      * @return The number of pending entries.
      */
     public int getPendingEntriesCountForPublisher(int publisherId) {
-    	return Long.valueOf(PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId)).intValue();
+    	return Long.valueOf(org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId)).intValue();
     }
     
     /**
@@ -162,7 +162,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	if(lowerBounds.length != upperBounds.length) {
     		throw new IllegalArgumentException("lowerBounds and upperBounds must have equal length");
     	}
-    	List<Integer> entryCountList = PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId, lowerBounds, upperBounds);
+    	List<Integer> entryCountList = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId, lowerBounds, upperBounds);
     	int[] result = new int[lowerBounds.length];
 		for(int i = 0; i < lowerBounds.length && i < result.length; i++) {
 			result[i] = entryCountList.get(i).intValue();

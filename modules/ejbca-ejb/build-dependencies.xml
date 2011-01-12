@@ -55,6 +55,8 @@
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/JBossUnmarshaller.java"/>
+					<include name="org/ejbca/core/ejb/QueryResultWrapper.java"/> 
+					<include name="org/ejbca/util/ValueExtractor.java"/> 
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/config/ConfigurationHolder.java"/>
@@ -68,7 +70,6 @@
 					<include name="org/ejbca/util/FileTools.java"/>
 					<include name="org/ejbca/util/Base64.java"/>
 					<include name="org/ejbca/core/ejb/InitialContextBuilder.java"/>
-					<include name="org/ejbca/util/ValueExtractor.java"/> 
 					<!-- <include name="org/ejbca/core/ejb/JNDINames.java"/> -->
 					<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
 					<include name="org/ejbca/core/ejb/ServiceLocatorException.java"/>

@@ -19,13 +19,13 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -158,14 +158,9 @@ public class CertificateProfileData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static CertificateProfileData findByProfileName(final EntityManager entityManager, final String certificateProfileName) {
-		CertificateProfileData ret = null;
-		try {
-			final Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
-			query.setParameter("certificateProfileName", certificateProfileName);
-			ret = (CertificateProfileData) query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
+		query.setParameter("certificateProfileName", certificateProfileName);
+		return (CertificateProfileData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/** @return return the query results as a List. */
