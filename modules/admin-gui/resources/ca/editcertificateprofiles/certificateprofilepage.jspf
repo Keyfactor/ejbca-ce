@@ -20,10 +20,10 @@
 
 
   Collection authorizedcas = cabean.getAuthorizedCAs();
-  HashMap caidtonamemap = cabean.getCAIdToNameMap();
+  Map caidtonamemap = cabean.getCAIdToNameMap();
 
   TreeMap authorizedpublishers = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
-  HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
+  Map publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   int row = 0;
 %>

@@ -117,7 +117,7 @@
 
   String approvalmessage           = null;
   
-  HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -553,7 +553,7 @@
       }
     }
 
-    HashMap availablecas = null;
+    Map availablecas = null;
     Collection authcas = null;
 
     if(issuperadministrator) {

@@ -1,6 +1,6 @@
 <% //GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration(); 
-   // This page is not translated because documant root isn't known yet.
-   java.util.HashMap caidToNameMap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+   // This page is not translated because document root isn't known yet.
+   java.util.Map caidToNameMap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 %>
 <html>
 <head>

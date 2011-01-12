@@ -3,7 +3,7 @@
    
 
   TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
-  HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
   int[] publishertypes = {PublisherConst.TYPE_LDAPPUBLISHER, 
                           PublisherConst.TYPE_LDAPSEARCHPUBLISHER,

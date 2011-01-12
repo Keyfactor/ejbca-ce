@@ -179,7 +179,7 @@ function viewcert(row){
         <option  value=''><c:out value="<%=SELECT_EMPTYVALUE%>" /></option>
                 <% 
                 Collection authorizedcaids = ejbcawebbean.getAuthorizedCAIds();
-                HashMap  caidtonamemap  = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+                Map  caidtonamemap  = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
                 TreeMap canameandids = new TreeMap();
                 Iterator iter = authorizedcaids.iterator();
                 while(iter.hasNext()){

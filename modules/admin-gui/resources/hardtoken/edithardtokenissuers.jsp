@@ -60,7 +60,7 @@
 
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/edithardtokenissuers.jsp";
 
-  HashMap caidtonamemap = cabean.getCAIdToNameMap(); 
+  Map caidtonamemap = cabean.getCAIdToNameMap(); 
 %>
  
 <head>
@@ -190,7 +190,7 @@
   }
 
   Collection authgroups = ejbcawebbean.getInformationMemory().getHardTokenIssuingAdminGroups();
-  HashMap adminidtonamemap = ejbcawebbean.getInformationMemory().getAdminGroupIdToNameMap();
+  Map adminidtonamemap = ejbcawebbean.getInformationMemory().getAdminGroupIdToNameMap();
 
  // Include page
   if( includefile.equals("hardtokenissuerspage.jspf")){ %>
