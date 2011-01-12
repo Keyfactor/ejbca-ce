@@ -12,11 +12,17 @@
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	
 	<path id="systemtests.classpath">
+    	<path refid="systemtests.classpath.nojee"/>
+    	<path refid="lib.jee.classpath"/>
+	</path>
+
+	<!-- When running WS tests we don't want the JEE classes of the appserver, ws should be independent of that,
+	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
+	<path id="systemtests.classpath.nojee">
     	<path refid="lib.servlet.classpath"/>
     	<path refid="lib.mail.classpath"/>
     	<path refid="lib.junit.classpath"/>
     	<path refid="lib.utils.classpath"/>
-    	<path refid="lib.jee.classpath"/>
     	<path refid="lib.jpa.classpath"/>
     	<path refid="lib.bouncycastle.classpath"/>
     	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
@@ -283,6 +289,7 @@
 	<target name="runws" description="Run Web Services system tests">
     	<property name="test.runone" value="EjbcaWS*Test"/>
     	<property name="reports.dir" location="${reports.base.dir}/runws"/>
+		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>	<!-- no jee classes for ws tests -->
 		<antcall target="runone-internal"/>
 	</target>
 
