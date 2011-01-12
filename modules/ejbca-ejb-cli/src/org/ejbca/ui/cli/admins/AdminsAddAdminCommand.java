@@ -27,6 +27,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Adds an admin
+ * @version $Id$
  */
 public class AdminsAddAdminCommand extends BaseAdminsCommand {
 

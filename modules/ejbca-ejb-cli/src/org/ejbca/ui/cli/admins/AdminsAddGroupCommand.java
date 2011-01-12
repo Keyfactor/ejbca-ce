@@ -17,6 +17,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Adds a new admin group
+ * @version $Id$
  */
 public class AdminsAddGroupCommand extends BaseAdminsCommand {
 
