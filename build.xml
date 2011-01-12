@@ -374,6 +374,7 @@
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="va-ejb3-interface.jar" />
                 <include name="va-entity.jar" />
+                <include name="va-common.jar" />
                 <include name="log4jconfig.jar" />
         	</zipfileset>
 	</ear>
