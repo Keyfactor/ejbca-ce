@@ -75,7 +75,7 @@ public final class JBossUnmarshaller {
 	 * @param object is the object that will be stored as a BLOB
 	 * @return either the pure object or a JBoss serialized version of the Object
 	 */
-	public static Serializable serializeObject(Serializable object) {
+	public static Serializable serializeObject(final Serializable object) {
 		Serializable ret = object;
 		if (lookForJbossMarshaller && EjbcaConfiguration.getEffectiveApplicationVersion() == 311) {
 			try {
