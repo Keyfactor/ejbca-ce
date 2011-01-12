@@ -14,6 +14,7 @@
 	<property name="build-util-signserver.dir" location="${this.dir}/build-util-signserver"/>
 	<property name="build-common-web.dir" location="${this.dir}/build-common-web"/>
 	<property name="build-va.dir" location="${this.dir}/build-va"/>
+	<property name="build-va-common.dir" location="${this.dir}/build-va-common"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${ejbca.home}/src/java"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
@@ -55,6 +56,7 @@
 		<path refid="compile-util.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
 		<pathelement location="${mod.va-entity.lib}"/>
+    	<path path="${build-va-common.dir}"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -261,15 +263,15 @@
        	<include name="org/ejbca/ui/web/LimitLengthASN1Reader.java"/>
 		<!-- Dependecies from VA WAR -->
        	<include name="org/ejbca/util/PatternLogger.java"/>
-		<include name="org/ejbca/core/protocol/certificatestore/CertStore.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/certificatestore/ICertStore.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/crlstore/CRLStore.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/crlstore/ICRLStore.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/crlstore/CRLCacheFactory.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/crlstore/ICRLCache.java"/><!-- VA WAR ONLY! Move! -->
-		<include name="org/ejbca/core/protocol/crlstore/CRLCache.java"/><!-- VA WAR ONLY! Move! -->
+		<include name="org/ejbca/core/protocol/certificatestore/CertStore.java"/>
+		<include name="org/ejbca/core/protocol/certificatestore/ICertStore.java"/>
+		<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/>
+		<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/>
+		<!-- Dependecies from HC WAR -->
+		<include name="org/ejbca/ui/web/pub/cluster/IHealthCheck.java"/>
+		<include name="org/ejbca/ui/web/pub/cluster/CommonHealthCheck.java"/>
+		<!-- Dependecies from CMP TCP WAR -->
+		<include name="org/ejbca/config/CmpConfiguration.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-common-web" pathsep=" " property="source.fileset.ejbca-common-web.files"><map from="${src.dir}/" to=""/></pathconvert>
 
@@ -295,7 +297,7 @@
 	<echo message="source.fileset.ejbca-common-web.files: ${source.fileset.ejbca-common-web.files}"/>
 	<echo message="source.fileset.ejbca-ejb.files:        ${source.fileset.ejbca-ejb.files}"/>
 	-->
-	
+
 	<!-- Import taget "dependecy-check" -->
 	<import file="${this.dir}/build-dependencies.xml"/>
 
@@ -320,10 +322,9 @@
     	</copy>
         <jar destfile="${mod.ejbca-ejb.lib}">
         	<fileset dir="${build.dir}"/>
-            <fileset dir="${ejbca.home}">
-				<include name="conf/**/*.properties"/>
-			</fileset>
+            <fileset dir="${ejbca.home}" includes="conf/**/*.properties"/>
             <fileset dir="${ejbca.home}/src/upgrade"/>
+            <fileset dir="${internalresources.base.dir}" includes="intresources/*.properties"/>
         	<!--
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
@@ -349,7 +350,7 @@
 		</exec>
     </target>
 
-    <target name="build-va" description="Build this module" depends="compile-va-ejb">
+    <target name="build-va" description="Build this module" depends="build-va-common, compile-va-ejb">
     	<copy todir="${build-va.dir}" file="${ejbca.home}/src/internal.properties">
     		<filterchain>
     			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
@@ -360,14 +361,24 @@
         	<fileset dir="${build-va.dir}" />
             <fileset dir="${ocsp.hardToken.classes}"/>
         	<fileset dir="${ejbca.home}/src" includes="intresources/*.properties"/>
+            <fileset dir="${ejbca.home}" includes="conf/**/*.properties"/>
+        </jar>
+    </target>
+
+    <target name="build-va-common" description="Build the va-common JAR" depends="compile-va-common">
+    	<dirname file="${mod.va-common.lib}" property="mod.va-common.lib.dir"/>
+    	<mkdir dir="${mod.va-common.lib.dir}" />
+    	<jar destfile="${mod.va-common.lib}">
+    		<manifest>
+				<attribute name="Implementation-Version" value="${app.version}"/>
+    		</manifest>
+   			<fileset dir="${build-va-common.dir}" includes="**/*.class"/>
         	<fileset dir="${ejbca.home}/src/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
-        	</fileset>	
-            <fileset dir="${ejbca.home}">
-				<include name="conf/**/*.properties"/>
-			</fileset>
-        </jar>
+                <include name="certextensions.properties"/>
+        	</fileset>
+    	</jar>
     </target>
 
     <target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
@@ -381,6 +392,7 @@
         	<fileset dir="${ejbca.home}/src/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
+                <include name="certextensions.properties"/>
         	</fileset>
     	</jar>
     </target>
@@ -412,54 +424,35 @@
     	<mkdir dir="${build.dir}"/>
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
-        <copy todir="${build.dir}">
-            <fileset dir="${internalresources.base.dir}">
-                <include name="intresources/*.properties"/>
-            </fileset>	
-            <fileset dir="${src.dir}">
-                <include name="dncomponents.properties"/>
-                <include name="profilemappings.properties"/>
-                <include name="certextensions.properties"/>
-            </fileset>	
-        </copy>
     </target>
 
-    <target name="compile-va-ejb" depends="va-ejb-interface">
+    <target name="compile-va-ejb" depends="va-ejb-interface, compile-va-common">
     	<mkdir dir="${build-va.dir}"/>
-        <javac destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" >
-            <classpath>
-            	<path refid="compile-va-ejb.classpath" />
-            </classpath>
-        	<!-- EJBs -->
+        <javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
         	<include name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
-			<!-- Additional required classes -->
-        	<include name="org/ejbca/ui/web/protocol/RFC4387URL.java" /><!-- Only used in VA WAR! Could probably be useful in GUIs like publicweb etc to calculate URL. -->
-        	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java" /><!-- Only used in VA WAR! Move source! -->
-            <include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWSService.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/core/protocol/ws/client/gen/NameAndId.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/core/protocol/ws/client/gen/UserDataVOWS.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/core/protocol/ws/client/gen/UserMatch.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java" /><!-- Used in VA WAR! -->
-            <include name="org/ejbca/util/DummyPatternLogger.java"/><!-- Used in VA WAR! -->
-        	<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" /><!-- Used in healtcheck and VA WAR-->
-        	<include name="org/ejbca/ui/web/protocol/IHealtChecker.java" /><!-- Used in healtcheck and VA WAR-->
-            <src path="${mod.ejbca-ws-cli.path}/src-gen" />
-            <src path="${mod.ejbca-ws.path}/src" />
-            <src path="${src.dir}" />
         </javac>
-        <copy todir="${build-va.dir}">
-            <fileset dir="${internalresources.base.dir}">
-                <include name="intresources/*.properties"/>
-            </fileset>	
-            <fileset dir="${src.dir}">
-                <include name="dncomponents.properties"/>
-                <include name="profilemappings.properties"/>
-                <include name="certextensions.properties"/>
-            </fileset>	
-        </copy>
+    </target>
+
+    <target name="compile-va-common">
+    	<mkdir dir="${build-va-common.dir}"/>
+        <javac destdir="${build-va-common.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-util.classpath">
+           	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/>
+           	<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/>
+           	<include name="org/ejbca/ui/web/protocol/IHealtChecker.java"/>
+           	<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java"/>
+            <include name="org/ejbca/util/DummyPatternLogger.java"/>
+            <include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java"/>
+            <include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java"/>
+            <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java"/>
+            <include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWSService.java"/>
+            <include name="org/ejbca/core/protocol/ws/client/gen/NameAndId.java"/>
+            <include name="org/ejbca/core/protocol/ws/client/gen/UserDataVOWS.java"/>
+            <include name="org/ejbca/core/protocol/ws/client/gen/UserMatch.java"/>
+        	<src path="${src.dir}"/>
+        	<src path="${mod.ejbca-ws.path}/src"/>
+        	<src path="${mod.ejbca-ws-cli.path}/src-gen"/>
+    	</javac>
     </target>
 
 	<target name="compile-util">

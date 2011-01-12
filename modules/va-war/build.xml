@@ -35,7 +35,7 @@
 	<path id="compile-va.classpath">
 		<path refid="compile-common.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
-		<pathelement location="${mod.va-ejb.lib}"/><!-- TODO.. This is not a shared EAR lib! -->
+		<pathelement location="${mod.va-common.lib}"/>
 		<pathelement location="${mod.va-entity.lib}"/>
 	</path>
 		
