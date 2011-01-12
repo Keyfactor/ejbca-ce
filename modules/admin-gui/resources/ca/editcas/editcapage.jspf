@@ -5,8 +5,8 @@
   
   TreeMap casigners = info.getCANames();
 
-  HashMap certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
-  HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
+  Map certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
+  Map publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   Collection availablecatokens = CATokenManager.instance().getAvailableCATokens();
   String[] availablecatokentypes = new String[availablecatokens.size()];
