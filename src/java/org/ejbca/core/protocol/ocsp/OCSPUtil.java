@@ -32,8 +32,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -418,28 +416,6 @@ public class OCSPUtil {
     	}
     	return trustedCerts;
     }
-    
-    boolean checkAuthorization(HttpServletRequest request, Hashtable trustedCerts) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        if (certs == null) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
-            m_log.error(errMsg);
-            return false;
-        }
-        // The entitys certificate is nr 0
-        X509Certificate cert = certs[0];
-        if (cert == null) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
-            m_log.error(errMsg);
-            return false;
-        }
-        if (checkCertInList(cert, trustedCerts)) {
-        	return true;
-        }
-    	String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", request.getRemoteAddr(), request.getRemoteHost());
-        m_log.error(errMsg);
-		return false;
-	}
     
     /**
      * Checks to see if a certificate is in a list of certificate.
