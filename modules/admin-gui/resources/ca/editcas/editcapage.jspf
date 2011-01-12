@@ -315,7 +315,7 @@ function checkallfields(){
       illegalfields++;
     }
     if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value.indexOf("=")==-1)){
-		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>")
+		alert("<%= ejbcawebbean.getText("SUBJECTDNINVALID")%>");
 		illegalfields++;
     } else {
     <% if(catype == CAInfo.CATYPE_CVC) { %>
@@ -324,7 +324,7 @@ function checkallfields(){
         var hasC = value.match(/(^|,(\s*))C=/);
         
         if (value != "" && (!hasCN || !hasC)) {
-            alert("<%= ejbcawebbean.getText("SUBJECTDNBADFORCVC")%>")
+            alert("<%= ejbcawebbean.getText("SUBJECTDNBADFORCVC")%>");
             illegalfields++;
         }
     <% } %>
@@ -358,8 +358,7 @@ function checkallfields(){
    if(!checkfieldforipaddess("document.ca.<%=TEXTFIELD_POLICYID%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + ejbcawebbean.getText("POLICYID")%>"))
       illegalfields++;
       <% } 
-      } %>
-      <% if(!processrequest){ %>
+      if(!processrequest){ %>
     if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_CRLPERIOD %>.value == "")){
@@ -376,7 +375,8 @@ function checkallfields(){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("DELTACRLPERIOD")%>");
       illegalfields++;
     }
-    <%  } %> 
+    <%  }
+    } %> 
      return illegalfields == 0;  
    } 
 -->
