@@ -15,11 +15,8 @@ package org.ejbca.ui.cli.admins;
 
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
-
-
 /**
  * Adds a new admin group
- *
  */
 public class AdminsAddGroupCommand extends BaseAdminsCommand {
 
@@ -35,9 +32,7 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
         return "Adds an administrative group.";
     }
 
-    /**
-     * @see org.ejbca.ui.cli.IAdminCommand
-     */
+    /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 2) {

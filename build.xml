@@ -756,4 +756,9 @@
 	<target name="jbosslog4jsafer" description="Build Log4j ErrorHandler and Appender extensions for JBoss">
     	<ant dir="modules" target="appserver-ext-jbosslog4jsafer"/>
 	</target>
+
+    <target name="ejbca-util-signserver.jar" description="Creates util library for use in SignServer">
+        <ant dir="modules/ejbca-ejb" target="build-util-signserver"/>
+    </target>
+
 </project>

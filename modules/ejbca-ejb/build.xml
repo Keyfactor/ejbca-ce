@@ -11,6 +11,7 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-util.dir" location="${this.dir}/build-util"/>
+	<property name="build-util-signserver.dir" location="${this.dir}/build-util-signserver"/>
 	<property name="build-common-web.dir" location="${this.dir}/build-common-web"/>
 	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
@@ -76,168 +77,135 @@
 	</path>
 
 	<!--
-		EJBCA util depends on the CVC library and used by many modules in EJBCA and also in SignServer.
+		SignServer util depends on the CVC library and used by many modules in EJBCA and also in SignServer.
+		
+		Execute
+		 grep "import.*org.ejbca.*" * -r | grep -v svn | awk '{print $2}' | tr -d ';' | sed 's/\s//g' | sort | uniq | sed 's/[\.]/\//g'"
+		and
+		 grep "import.*org.cesecore.*" * -r | grep -v svn | awk '{print $2}' | tr -d ';' | sed 's/\s//g' | sort | uniq | sed 's/[\.]/\//g'
+		in the SignServer home dir to get a list of dependencies.
 	-->
-	<fileset id="source.fileset.ejbca-util" dir="${src.dir}">
-    	<!-- From EJBCA WS common lib -->
-       	<include name="org/ejbca/core/model/SecConst.java"/>
-    	<include name="org/ejbca/core/model/approval/ApprovalRequestExecutionException.java"/>
-    	<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
-       	<include name="org/ejbca/core/model/approval/WaitingForApprovalException.java"/>
-       	<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
-       	<include name="org/ejbca/core/model/authorization/AuthorizationDeniedException.java"/>
-       	<include name="org/ejbca/core/model/ca/SignRequestException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/PublisherException.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenDoesntExistsException.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenExistsException.java"/>
-       	<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
-       	<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
-       	<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
-       	<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
-       	<include name="org/ejbca/core/model/ra/userdatasource/MultipleMatchException.java"/>
-       	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceException.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenConstants.java"/>
-    	<include name="org/ejbca/util/CertTools.java"/>
-       	<include name="org/ejbca/util/query/IllegalQueryException.java"/>
-       	<include name="org/ejbca/util/query/BasicMatch.java"/>
-       	<include name="org/ejbca/util/query/UserMatch.java"/>
-    	<!-- From EJBCA WS CLI (including some of the classes above) -->
-       	<include name="org/ejbca/ui/cli/ErrorAdminCommandException.java"/>
-       	<include name="org/ejbca/ui/cli/IAdminCommand.java"/>
-       	<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
-       	<include name="org/ejbca/util/keystore/P11Slot.java"/>
-       	<include name="org/ejbca/util/provider/TLSProvider.java"/>
-       	<include name="org/ejbca/util/provider/TrustManagerFactoryImpl.java"/>
-       	<include name="org/ejbca/util/provider/X509TrustManagerAcceptAll.java"/>
-       	<include name="org/ejbca/util/PerformanceTest.java"/>
-       	<include name="org/ejbca/util/RequestMessageUtils.java"/>
-    	<!-- From EJBCA XKMS CLI (including some of the classes above) -->
-       	<include name="org/ejbca/util/keystore/P12toPEM.java"/>
-    	<!-- From EJBCA EJB interfaces (including some of the classes above) -->
-       	<include name="org/ejbca/core/model/log/Admin.java"/>
-       	<include name="org/ejbca/core/model/approval/AdminAlreadyApprovedRequestException.java"/>
-       	<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
-       	<include name="org/ejbca/core/model/approval/Approval.java"/>
-       	<include name="org/ejbca/util/query/Query.java"/>
-       	<include name="org/ejbca/core/model/authorization/AdminGroup.java"/>
-       	<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
-       	<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
-       	<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
-       	<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CA.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CAInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/IllegalKeyStoreException.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
-       	<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/PublisherConnectionException.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
-       	<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
-       	<include name="org/ejbca/core/model/ca/SignRequestSignatureException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceRequestException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceRequest.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.java"/>
-       	<include name="org/ejbca/core/ejb/ca/store/CertificateStatus.java"/>
-       	<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/store/CertReqHistory.java"/>
-       	<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>
-       	<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfile.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfile.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuer.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/types/HardToken.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/HardTokenData.java"/>
-       	<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryData.java"/>
-       	<include name="org/ejbca/core/model/log/ILogExporter.java"/>
-       	<include name="org/ejbca/core/model/log/LogConfiguration.java"/>
-       	<include name="org/ejbca/core/model/log/ILogDevice.java"/>
-       	<include name="org/ejbca/core/model/protect/TableVerifyResult.java"/>
-       	<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
-       	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
-       	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
-       	<include name="org/ejbca/core/model/ra/userdatasource/BaseUserDataSource.java"/>
-       	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
-       	<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
-       	<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
-       	<include name="org/ejbca/util/ValueExtractor.java"/>
-    	<!-- From EJBCA EJB CLI (including some of the classes above) -->
-       	<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
-       	<include name="org/ejbca/core/protocol/X509ResponseMessage.java"/>
-       	<include name="org/ejbca/util/PluginTool.java"/>
-       	<include name="org/ejbca/util/PrinterManager.java"/>
-       	<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
-       	<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
-    	<include name="org/ejbca/core/model/ra/raadmin/*Profile.java"/>
-    	<include name="org/ejbca/core/model/ra/raadmin/*Exception.java"/>
-       	<include name="org/ejbca/util/CliTools.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/X509CA.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/X509CAInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CVCCA.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CVCCAInfo.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/profiles/IPINEnvelopeSettings.java"/>
-       	<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/CmsCAServiceInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/XKMSCAServiceInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/catoken/SoftCATokenInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/catoken/HardCATokenInfo.java"/>
-       	<include name="org/ejbca/core/model/ca/catoken/KeyStrings.java"/>
-       	<include name="org/ejbca/core/model/ca/catoken/NFastCAToken.java"/>
-    	<include name="org/ejbca/core/model/ca/certificateprofiles/*CertificateProfile.java"/>
-    	<include name="org/ejbca/core/model/ca/certificateprofiles/*Exception.java"/>
-       	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/> <!-- Needed for profile imports to upgrade profiles -->
-       	<exclude name="org/ejbca/core/model/ca/publisher/ExternalOCSPPublisher.java"/> <!-- But not this one, is has EJB dependencies -->
-       	<include name="org/ejbca/util/keystore/KeyStoreContainerFactory.java"/>
-    	<!-- From EJBCA External SCEP RA (including some of the classes above) -->
-       	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
-       	<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
-    	<!-- From EJBCA External RA GUI (including some of the classes above) -->
-       	<include name="com/novosec/pkix/asn1/**/*.java"/>
-       	<include name="org/ejbca/util/GUIDGenerator.java"/>
-    	<!-- Dependencies from SignServer -->
-    	<!-- Execute "grep "import.*org.ejbca.*" src/ -r | grep -v svn | awk '{print $2}' | tr -d ';' | sort | uniq" in the SignServer home dir to get a list of dependencies. -->
+	<fileset id="source.fileset.signserver-util" dir="${src.dir}">
+		<!-- Classes no longer available in EJBCA:
        	<include name="org/ejbca/core/ejb/JNDINames.java"/>
-       	<include name="org/ejbca/model/ca/caadmin/IllegalKeyStoreException.java"/>
-       	<include name="org/ejbca/model/ca/catoken/CATokenAuthenticationFailedException.java"/>
-       	<include name="org/ejbca/model/ca/catoken/CATokenOfflineException.java"/>
-       	<include name="org/ejbca/model/ca/catoken/ICAToken.java"/>
-       	<include name="org/ejbca/model/ca/catoken/PKCS11CAToken.java"/>
-       	<include name="org/ejbca/model/ca/crl/RevokedCertInfo.java"/>
-       	<include name="org/ejbca/model/UpgradeableDataHashMap.java"/>
+		-->
+       	<include name="org/ejbca/core/model/ca/caadmin/IllegalKeyStoreException.java"/>
+       	<include name="org/ejbca/core/model/ca/catoken/CATokenAuthenticationFailedException.java"/>
+       	<include name="org/ejbca/core/model/ca/catoken/CATokenOfflineException.java"/>
+       	<include name="org/ejbca/core/model/ca/catoken/ICAToken.java"/>
+       	<include name="org/ejbca/core/model/ca/catoken/PKCS11CAToken.java"/>
+       	<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
+       	<include name="org/ejbca/core/model/UpgradeableDataHashMap.java"/>
+       	<include name="org/ejbca/core/protocol/IRequestMessage.java"/>
+       	<include name="org/ejbca/core/protocol/SimpleRequestMessage.java"/>
        	<include name="org/ejbca/ui/cli/util/ConsolePasswordReader.java"/>
        	<include name="org/ejbca/ui/web/pub/cluster/IHealthCheck.java"/>
        	<include name="org/ejbca/util/Base64.java"/>
        	<include name="org/ejbca/util/Base64GetHashMap.java"/>
        	<include name="org/ejbca/util/Base64PutHashMap.java"/>
        	<include name="org/ejbca/util/CertTools.java"/>
+       	<include name="org/ejbca/util/IPatternLogger.java"/>
        	<include name="org/ejbca/util/JDBCUtil.java"/>
+       	<include name="org/ejbca/util/keystore/KeyStoreContainer.java"/>
+       	<include name="org/ejbca/util/keystore/KeyStoreContainerFactory.java"/>
        	<include name="org/ejbca/util/keystore/KeyTools.java"/>
        	<include name="org/ejbca/util/PatternLogger.java"/>
-       	<include name="org/ejbca/util/IPatternLogger.java"/>
-    	<!-- General test helpers -->
-       	<include name="org/ejbca/util/NonEjbTestTools.java"/>
-    	<!-- Dependencies from Public Web WAR -->
-       	<include name="org/ejbca/config/WebConfiguration.java"/>
-       	<include name="org/ejbca/config/InternalConfiguration.java"/>
-    	<!-- Dependencies from EJB Entity -->
+       	<include name="org/ejbca/util/RequestMessageUtils.java"/>
+	</fileset>
+	<pathconvert refid="source.fileset.signserver-util" pathsep=" " property="source.fileset.signserver-util.files"><map from="${src.dir}/" to=""/></pathconvert>
+
+	<!--
+		EJBCA util depends on the CVC library and used by many modules in EJBCA.
+	-->
+	<fileset id="source.fileset.ejbca-util" dir="${src.dir}">
+    	<!-- From EJBCA entity lib -->
+       	<include name="org/ejbca/config/EjbcaConfiguration.java"/>
        	<include name="org/ejbca/core/model/approval/ApprovalDataUtil.java"/>
-       	<include name="org/ejbca/core/model/log/LogEntry.java"/>
-       	<include name="org/ejbca/core/model/ca/caadmin/CACacheManager.java"/>
-    	<!-- Dependencies from CMP TCP WAR -->
-       	<include name="org/ejbca/ui/web/LimitLengthASN1Reader.java"/>
-       	<include name="org/ejbca/config/CmpConfiguration.java"/>
-    	<!-- Dependencies from OCSP WAR -->
+       	<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
+       	<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
+      	<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
+      	<include name="org/ejbca/core/model/authorization/AccessRule.java"/>
+      	<include name="org/ejbca/core/model/authorization/AdminGroup.java"/>
+      	<include name="org/ejbca/core/model/ca/caadmin/X509CA.java"/>
+      	<include name="org/ejbca/core/model/ca/caadmin/CVCCA.java"/>
+      	<include name="org/ejbca/core/model/ca/caadmin/CACacheManager.java"/>
+      	<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
+      	<include name="org/ejbca/core/model/ca/certificateprofiles/CACertificateProfile.java"/>
+      	<include name="org/ejbca/core/model/ca/certificateprofiles/EndUserCertificateProfile.java"/>
+      	<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
+      	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
+      	<include name="org/ejbca/core/model/ca/store/CertReqHistory.java"/>
+      	<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
+      	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuer.java"/>
+      	<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfile.java"/>
+      	<include name="org/ejbca/core/model/log/LogConfiguration.java"/>
+      	<include name="org/ejbca/core/model/log/LogEntry.java"/>
+      	<include name="org/ejbca/core/model/ra/raadmin/AdminPreference.java"/>
+      	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
+      	<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
+      	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceData.java"/>
+      	<include name="org/ejbca/core/model/ra/userdatasource/BaseUserDataSource.java"/>
+      	<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
+       	<include name="org/ejbca/util/ValueExtractor.java"/>
+       	<include name="org/ejbca/util/GUIDGenerator.java"/>
+    	<!-- From EJBCA interface lib -->
+       	<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
+       	<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
+       	<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>
+       	<include name="org/ejbca/core/model/log/ILogExporter.java"/>
+       	<include name="org/ejbca/util/query/IllegalQueryException.java"/>
+       	<include name="org/ejbca/util/query/Query.java"/>
+       	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
+       	<include name="org/ejbca/core/model/approval/AdminAlreadyApprovedRequestException.java"/>
+       	<include name="org/ejbca/core/model/approval/WaitingForApprovalException.java"/>
+       	<include name="org/ejbca/core/model/authorization/AuthorizationDeniedException.java"/>
+       	<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
+       	<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
+       	<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
+       	<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
+       	<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
+       	<include name="org/ejbca/core/ejb/ca/store/CertificateStatus.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/HardTokenData.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/HardTokenDoesntExistsException.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/HardTokenExistsException.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
+       	<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryData.java"/>
+       	<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+       	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
+       	<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
+		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->
+       	<include name="org/ejbca/core/protocol/scep/ScepRequestMessage.java"/>
+       	<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
+		<!-- Dependecies from EJB CLI, AdminWeb -->
+       	<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
+       	<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+       	<include name="org/ejbca/util/PrinterManager.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>
+		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
+       	<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
+		<!-- Dependecies from EJB CLI, EJBCA WS -->
+       	<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
+       	<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
+		<!-- Dependecies from multiple places -->
+       	<include name="com/novosec/pkix/asn1/**/*.java"/>
+       	<include name="org/ejbca/core/protocol/X509ResponseMessage.java"/>
+		<!-- Dependecies from EJB CLI and CTB -->
+       	<include name="org/ejbca/util/CliTools.java"/>
+		<!-- Dependecies from EJB CLI and XMKS -->
+       	<include name="org/ejbca/util/keystore/P12toPEM.java"/>
+		<!-- Dependecies from EJBCA WS CLI and XMKS CLI -->
+       	<include name="org/ejbca/ui/cli/IAdminCommand.java"/>
+		<!-- Dependecies from EJBCA WS CLI and VA WAR -->
+       	<include name="org/ejbca/util/provider/TLSProvider.java"/>
+		<!-- Dependecies from EJBCA WS CLI and CTB -->
+       	<include name="org/ejbca/util/PerformanceTest.java"/>
+		<!-- Dependecies from all CLIs -->
+       	<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
+    	<!-- Dependencies from VA WAR and Appserver Extensions -->
        	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files"><map from="${src.dir}/" to=""/></pathconvert>
@@ -275,6 +243,10 @@
        	<include name="org/ejbca/core/model/services/actions/NoAction.java"/>
        	<include name="org/ejbca/util/CombineTime.java"/> <!-- This is only used from AdminGUI, but we probably want to use it more generally -->
        	<include name="org/ejbca/core/model/log/CsvLogExporter.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/ActiveDirectoryPublisher.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/ValidationAuthorityPublisher.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/LdapPublisher.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/LdapSearchPublisher.java"/>
 		<!-- Dependecies from AdminGUI, EJB, and XMKS -->
 		<include name="org/ejbca/config/XkmsConfiguration.java"/>
 		<!-- Dependecies from EJBCA WS -->
@@ -285,7 +257,10 @@
 		<include name="org/ejbca/core/protocol/SimpleRequestMessage.java"/>
 		<include name="org/ejbca/core/model/hardtoken/types/TurkishEIDHardToken.java"/>
 		<include name="org/ejbca/util/DummyPatternLogger.java"/>
+		<!-- Dependecies from VA WAR, CMP WAR -->
+       	<include name="org/ejbca/ui/web/LimitLengthASN1Reader.java"/>
 		<!-- Dependecies from VA WAR -->
+       	<include name="org/ejbca/util/PatternLogger.java"/>
 		<include name="org/ejbca/core/protocol/certificatestore/CertStore.java"/><!-- VA WAR ONLY! Move! -->
 		<include name="org/ejbca/core/protocol/certificatestore/ICertStore.java"/><!-- VA WAR ONLY! Move! -->
 		<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/><!-- VA WAR ONLY! Move! -->
@@ -328,6 +303,7 @@
 		<delete dir="${build.dir}" />
 		<delete dir="${build-va.dir}" />
 		<delete dir="${build-util.dir}" />
+		<delete dir="${build-util-signserver.dir}" />
 		<delete dir="${build-common-web.dir}" />
 		<delete dir="${build-test.dir}" />
 		<delete file="${mod.ejbca-ejb.lib}" />
@@ -412,14 +388,26 @@
     <target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
     	<dirname file="${mod.ejbca-common-web.lib}" property="mod.ejbca-common-web.lib.dir"/>
     	<mkdir dir="${mod.ejbca-common-web.lib.dir}" />
-    	<jar destfile="${mod.ejbca-common-web.lib}">
+    	<jar destfile="${mod.ejbca-common-web.lib}" basedir="${build-common-web.dir}">
     		<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
     		</manifest>
-   			<fileset dir="${build-common-web.dir}" includes="**/*.class"/>
     	</jar>
     </target>
-	
+
+	<target name="build-util-signserver" description="Compile and create library used by SignServer">
+    	<mkdir dir="${build-util-signserver.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${build-util-signserver.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+        	includes="${source.fileset.signserver-util.files}" classpathref="compile-ejbca-ejb.classpath"/>
+    	<dirname file="${mod.ejbca-util-signserver.lib}" property="mod.ejbca-util-signserver.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-util-signserver.lib.dir}"/>
+    	<jar destfile="${mod.ejbca-util-signserver.lib}" basedir="${build-util-signserver.dir}" includes="**/*.class">
+    		<manifest>
+				<attribute name="Implementation-Version" value="${app.version}"/>
+    		</manifest>
+    	</jar>
+    </target>
+
     <target name="compile-ejbca-ejb" depends="build-util, build-common-web, ejbca-entity, ejbca-ejb-interface">
     	<mkdir dir="${build.dir}"/>
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
@@ -507,12 +495,6 @@
     	<property name="reports.dir" location="${reports.base.dir}/test"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
-		<!-- Sequential run of standalone tests.. The old and slow way of doing this.. =)
-		<antcall target="test-subprocess">
-			<param name="test-subprocess.include-pattern" value="**/*Test.class" />
-			<param name="test-subprocess.exclude-pattern" value="" />
-		</antcall>
-		-->
 		<echo message=" ** Running stand-alone tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
 			<antcall target="test-subprocess">

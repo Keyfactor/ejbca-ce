@@ -42,9 +42,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
         return "Adds an administrator";
     }
 
-    /**
-     * @see org.ejbca.ui.cli.IAdminCommand
-     */
+    /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 6) {

@@ -35,7 +35,7 @@ public interface CliCommandPlugin {
 	public String getDescription();
 	
 	/**
-	 * 
+	 * Run the command.
 	 * @param args
 	 * @throws IllegalAdminCommandException
 	 * @throws ErrorAdminCommandException
