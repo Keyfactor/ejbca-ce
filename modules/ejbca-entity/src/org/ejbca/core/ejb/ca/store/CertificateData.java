@@ -548,7 +548,7 @@ public class CertificateData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
 		query.setParameter("subjectDN", subjectDN);
 		query.setParameter("issuerDN", issuerDN);
 		return query.getResultList();
@@ -556,21 +556,21 @@ public class CertificateData implements Serializable {
 	
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN");
 		query.setParameter("subjectDN", subjectDN);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber");
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
@@ -578,14 +578,14 @@ public class CertificateData implements Serializable {
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByUsernameOrdered(EntityManager entityManager, String username) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username ORDER BY a.expireDate DESC, a.serialNumber DESC");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username ORDER BY a.expireDate DESC, a.serialNumber DESC");
 		query.setParameter("username", username);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByUsernameAndStatus(EntityManager entityManager, String username, int status) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
 		query.setParameter("username", username);
 		query.setParameter("status", status);
 		return query.getResultList();
@@ -594,7 +594,7 @@ public class CertificateData implements Serializable {
 	/** @return return the query results as a List. */
 	// TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
 	public static List<CertificateData> findByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("subjectKeyId", subjectKeyId);
 		return query.getResultList();
@@ -602,7 +602,7 @@ public class CertificateData implements Serializable {
 
 	/** @return return the query results as a List<String>. */
 	public static List<String> findFingerprintsByIssuerDN(EntityManager entityManager, String issuerDN) {
-		Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
+		final Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
 		query.setParameter("issuerDN", issuerDN);
 		return query.getResultList();
 	}
@@ -616,7 +616,7 @@ public class CertificateData implements Serializable {
 	 * @return
 	 */
 	public static List<CertificateData> getNextBatch(EntityManager entityManager, int certificateProfileId, String currentFingerprint, int batchSize) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId order by a.fingerprint asc");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId order by a.fingerprint asc");
 		query.setParameter("certificateProfileId", certificateProfileId);
 		query.setParameter("currentFingerprint", currentFingerprint);
 		query.setMaxResults(batchSize);
@@ -632,7 +632,7 @@ public class CertificateData implements Serializable {
 	 * @return
 	 */
 	public static List<CertificateData> getNextBatch(EntityManager entityManager, String currentFingerprint, int batchSize) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint order by a.fingerprint asc");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint order by a.fingerprint asc");
 		query.setParameter("currentFingerprint", currentFingerprint);
 		query.setMaxResults(batchSize);
 		return query.getResultList();
@@ -640,20 +640,20 @@ public class CertificateData implements Serializable {
 	
 	/** @return the number of entries with the given parameter  */
 	public static long getCount(EntityManager entityManager, int certificateProfileId) {
-		Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
+		final Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
 		countQuery.setParameter("certificateProfileId", certificateProfileId);
-		return (Long) countQuery.getSingleResult();
+		return ((Long) countQuery.getSingleResult()).longValue();	// Always returns a result
 	}
 	
 	/** @return the number of entries with the given parameter  */
 	public static long getCount(EntityManager entityManager) {
-		Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a");
-		return (Long) countQuery.getSingleResult();
+		final Query countQuery = entityManager.createQuery("SELECT COUNT(a) FROM CertificateData a");
+		return ((Long) countQuery.getSingleResult()).longValue();	// Always returns a result
 	}
 	
 	/** @return return the query results as a List. */
 	public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
-		Query query = entityManager.createQuery("SELECT DISTINCT certificateProfileId FROM CertificateData ORDER BY certificateProfileId");
+		final Query query = entityManager.createQuery("SELECT DISTINCT certificateProfileId FROM CertificateData ORDER BY certificateProfileId");
 	    return query.getResultList();
 	}
 
@@ -674,8 +674,8 @@ public class CertificateData implements Serializable {
 			query.setParameter("issuerDN", issuerDN);
 			query.setParameter("status", SecConst.CERT_REVOKED);
 		}
-		List<Object[]> incompleteCertificateDatas = query.getResultList();
-		List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
+		final List<Object[]> incompleteCertificateDatas = query.getResultList();
+		final List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
 		for (Object[] current : incompleteCertificateDatas) {
 			// The order of the results are defined by the SqlResultSetMapping annotation
 			String fingerprint = (String) current[0];
@@ -690,7 +690,7 @@ public class CertificateData implements Serializable {
 	
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
-		Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2)");
+		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2)");
 		query.setParameter("expireDate", expireDate);
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
 		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
@@ -700,7 +700,7 @@ public class CertificateData implements Serializable {
 
 	public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
 		// TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
-		Query query = entityManager.createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username NOT NULL");
+		final Query query = entityManager.createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username NOT NULL");
 		query.setParameter("minExpireTime", minExpireTime);
 		query.setParameter("maxExpireTime", maxExpireTime);
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
@@ -710,9 +710,9 @@ public class CertificateData implements Serializable {
 	}
 
 	public static List<Certificate> findCertificatesByIssuerDnAndSerialNumbers(EntityManager entityManager, String issuerDN, Collection<BigInteger> serialNumbers) {
-        List<Certificate> certificateList = new ArrayList<Certificate>();
-        StringBuffer sb = new StringBuffer();
-        Iterator<BigInteger> iter = serialNumbers.iterator();
+        final List<Certificate> certificateList = new ArrayList<Certificate>();
+        final StringBuffer sb = new StringBuffer();
+        final Iterator<BigInteger> iter = serialNumbers.iterator();
         while (iter.hasNext()) {
         	sb.append(", '");
         	// Make sure this is really a BigInteger passed in as (untrusted param)
@@ -724,9 +724,9 @@ public class CertificateData implements Serializable {
         sb.delete(0, ", ".length());
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND serialNumber IN (" + sb.toString() + ")");
+        final Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND serialNumber IN (" + sb.toString() + ")");
 		query.setParameter("issuerDN", issuerDN);
-        List<String> base64CertificateList = query.getResultList();
+        final List<String> base64CertificateList = query.getResultList();
         for (String base64Certificate : base64CertificateList) {
     		try {
                 certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
@@ -741,11 +741,11 @@ public class CertificateData implements Serializable {
 	/** @return the CertificateInfo representation (all fields except the actual cert) or null if no such fingerprint exists. */
 	public static CertificateInfo getCertificateInfo(EntityManager entityManager, String fingerprint) {
 		CertificateInfo ret = null;
-		Query query = entityManager.createNativeQuery(
+		final Query query = entityManager.createNativeQuery(
 				"SELECT a.issuerDN, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
 				+ "a.username, a.tag, a.certificateProfileId, a.updateTime FROM CertificateData a WHERE a.fingerprint=:fingerprint", "CertificateInfoSubset");
 			query.setParameter("fingerprint", fingerprint);
-		List<Object[]> resultList = (List<Object[]>) query.getResultList();
+		final List<Object[]> resultList = (List<Object[]>) query.getResultList();
 		if (!resultList.isEmpty()) {
 			Object[] fields = resultList.get(0);
 			// The order of the results are defined by the SqlResultSetMapping annotation
@@ -774,7 +774,7 @@ public class CertificateData implements Serializable {
 
 	/** @return the number of certificates that had their status changed from On Hold to Revoked for this issuer. */
 	public static int revokeOnHoldPermanently(EntityManager entityManager, String issuerDN) {
-		Query query = entityManager.createQuery("UPDATE CertificateData a SET a.status=:status1 WHERE a.issuerDN=:issuerDN AND a.status=:status2");
+		final Query query = entityManager.createQuery("UPDATE CertificateData a SET a.status=:status1 WHERE a.issuerDN=:issuerDN AND a.status=:status2");
 		query.setParameter("status1", SecConst.CERT_REVOKED);
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("status2", SecConst.CERT_TEMP_REVOKED);
@@ -783,7 +783,7 @@ public class CertificateData implements Serializable {
 
 	/** @return the number of certificates that had their status changed from On Hold to Revoked for this issuer. */
 	public static int revokeAllNonRevokedCertificates(EntityManager entityManager, String issuerDN, int reason) {
-		Query query = entityManager.createQuery("UPDATE CertificateData SET status=:status1, revocationDate=:revocationDate, revocationReason=:revocationReason WHERE issuerDN=:issuerDN AND status <> :status2");
+		final Query query = entityManager.createQuery("UPDATE CertificateData SET status=:status1, revocationDate=:revocationDate, revocationReason=:revocationReason WHERE issuerDN=:issuerDN AND status <> :status2");
 		query.setParameter("status1", SecConst.CERT_REVOKED);
 		query.setParameter("revocationDate", new Date().getTime());
 		query.setParameter("revocationReason", reason);
@@ -794,13 +794,13 @@ public class CertificateData implements Serializable {
 
 	/** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
 	public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, String certificateTypes) {
-        List<Certificate> certificateList = new ArrayList<Certificate>();
+        final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ")");
+        final Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ")");
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
 		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
-        List<String> base64CertificateList = query.getResultList();
+        final List<String> base64CertificateList = query.getResultList();
 		for (String base64Certificate : base64CertificateList) {
     		try {
                 certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
@@ -814,14 +814,14 @@ public class CertificateData implements Serializable {
 
 	/** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given issuer. */
 	public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, String certificateTypes, String issuerDN) {
-        List<Certificate> certificateList = new ArrayList<Certificate>();
+        final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
-        Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ") AND issuerDN=:issuerDN");
+        final Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (status=:status1 or status=:status2) AND type IN (" + certificateTypes + ") AND issuerDN=:issuerDN");
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
 		query.setParameter("status2", SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
 		query.setParameter("issuerDN", issuerDN);
-        List<String> base64CertificateList = query.getResultList();
+        final List<String> base64CertificateList = query.getResultList();
 		for (String base64Certificate : base64CertificateList) {
     		try {
                 certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
@@ -840,7 +840,7 @@ public class CertificateData implements Serializable {
 	public static List<Object[]> findExpirationInfo(EntityManager entityManager, String cASelectString, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
         // We can not select the base64 certificate data here, because it may be a LONG data type which we can't simply select.
         // TODO: Still true for JPA?
-		Query query = entityManager.createNativeQuery(
+		final Query query = entityManager.createNativeQuery(
 				"SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE (" + cASelectString + ") AND "
                 + "(expireDate>:activeNotifiedExpireDateMin) AND " + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1"
                 + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR " + "status=:status3)", "FingerprintUsernameSubset");
@@ -855,7 +855,7 @@ public class CertificateData implements Serializable {
 
 	/** @return true if a row with the given fingerprint was updated */
 	public static boolean updateStatus(EntityManager entityManager, String fingerprint, int status) {
-		Query query = entityManager.createQuery("UPDATE CertificateData a SET a.status=:status WHERE a.fingerprint=:fingerprint");
+		final Query query = entityManager.createQuery("UPDATE CertificateData a SET a.status=:status WHERE a.fingerprint=:fingerprint");
 		query.setParameter("status", status);
 		query.setParameter("fingerprint", fingerprint);
 		return query.executeUpdate() == 1;

@@ -134,6 +134,7 @@
       	<include name="org/ejbca/core/model/ca/certificateprofiles/EndUserCertificateProfile.java"/>
       	<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
       	<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
+      	<include name="org/ejbca/core/model/ca/publisher/PublisherConst.java"/>
       	<include name="org/ejbca/core/model/ca/store/CertReqHistory.java"/>
       	<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
       	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuer.java"/>
@@ -146,7 +147,6 @@
       	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceData.java"/>
       	<include name="org/ejbca/core/model/ra/userdatasource/BaseUserDataSource.java"/>
       	<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
-       	<include name="org/ejbca/util/ValueExtractor.java"/>
        	<include name="org/ejbca/util/GUIDGenerator.java"/>
     	<!-- From EJBCA interface lib -->
        	<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>

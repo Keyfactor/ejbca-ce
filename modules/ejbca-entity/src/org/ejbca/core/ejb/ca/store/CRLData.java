@@ -20,12 +20,12 @@ import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -193,33 +193,25 @@ public class CRLData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static CRLData findByIssuerDNAndCRLNumber(EntityManager entityManager, String issuerDN, int crlNumber) {
-		CRLData ret = null;
-		try {
-			Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
-			query.setParameter("issuerDN", issuerDN);
-			query.setParameter("crlNumber", crlNumber);
-			ret = (CRLData) query.getSingleResult();
-    	} catch (NoResultException e) {
-		}
-    	return ret;
+		final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
+		query.setParameter("issuerDN", issuerDN);
+		query.setParameter("crlNumber", crlNumber);
+		return (CRLData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/**
 	 * @return the highest CRL number or null if no CRL for the specified issuer exists.
 	 */
 	public static Integer findHighestCRLNumber(EntityManager entityManager, String issuerDN, boolean deltaCRL) {
-		Integer ret = null;
-		try {
-			if (deltaCRL) {
-				Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0");
-				query.setParameter("issuerDN", issuerDN);
-				ret = (Integer) query.getSingleResult();
-			} else {
-				Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1");
-				query.setParameter("issuerDN", issuerDN);
-				ret = (Integer) query.getSingleResult();
-			}
-    	} catch (NoResultException e) {
+		Integer ret;
+		if (deltaCRL) {
+			final Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0");
+			query.setParameter("issuerDN", issuerDN);
+			ret = (Integer) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		} else {
+			final Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1");
+			query.setParameter("issuerDN", issuerDN);
+			ret = (Integer) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 		}
     	return ret;
 	}

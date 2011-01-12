@@ -112,6 +112,6 @@ public class AdminEntityData implements Serializable {
 	public static long findCountByCaId(final EntityManager entityManager, final int caId) {
 		final Query query = entityManager.createQuery("SELECT COUNT(a) FROM AdminEntityData a WHERE a.caId=:caId");
 		query.setParameter("caId", caId);
-		return ((Long)query.getSingleResult()).longValue();
+		return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
 }

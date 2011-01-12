@@ -19,13 +19,13 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JBossUnmarshaller;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -145,14 +145,9 @@ public class EndEntityProfileData implements Serializable {
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static EndEntityProfileData findByProfileName(EntityManager entityManager, String profileName) {
-		EndEntityProfileData ret = null;
-		try {
-			Query query = entityManager.createQuery("SELECT a FROM EndEntityProfileData a WHERE a.profileName=:profileName");
-			query.setParameter("profileName", profileName);
-			ret = (EndEntityProfileData) query.getSingleResult();
-		} catch (NoResultException e) {
-		}
-		return ret;
+		Query query = entityManager.createQuery("SELECT a FROM EndEntityProfileData a WHERE a.profileName=:profileName");
+		query.setParameter("profileName", profileName);
+		return (EndEntityProfileData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
 	}
 
 	/** @return return the query results as a List. */
