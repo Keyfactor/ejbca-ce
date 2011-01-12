@@ -120,17 +120,18 @@
 			</batchtest>
 		</junit>
 		<delete dir="${this.dir}/p12" />	<!-- Workaround for tests using BatchMakeP12 -->
-		<antcall target="createreport"/>
+	<antcall target="createreport">
+		<param name="reports.dir" value="${reports.dir}"/>
+	</antcall>
 	</target>
 
 	<!-- =================================
           Run most system tests
          ================================= -->
-    <target name="run" depends="build, assert-appserverrunning" description="Run all system tests">
+    <target name="run" depends="build, assert-appserverrunning, runws" description="Run all system tests">
     	<antcall target="showtime"/>
-    	<property name="reports.dir" location="${reports.base.dir}/run"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
+		<delete dir="${reports.base.dir}/run" />
+		<mkdir dir="${reports.base.dir}/run/html"/>
 		<mkdir dir="${this.dir}/p12"/>	<!-- Workaround for tests using BatchMakeP12 -->
 		<mkdir dir="${build.dir}/conf"/>	<!-- Workaround for tests TestCertificateProfile -->
     	<copy todir="${build.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />	<!-- Workaround for tests TestCertificateProfile -->
@@ -145,20 +146,20 @@
 				<pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
 			</classpath>
 			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
+			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
 			</batchtest>
 			<!-- Tests that require CAsTest to setup CAs -->
-			<batchtest fork="yes" todir="${reports.dir}">
+			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.dir}">
 					<include name="org/ejbca/core/ejb/ca/sign/SignSessionTest.class" />
 				</fileset>
 			</batchtest>
-			<batchtest fork="yes" todir="${reports.dir}">
+			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class"/>
 			</batchtest>
 			<!-- Most system tests -->
-			<batchtest fork="yes" todir="${reports.dir}">
+			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.dir}">
 					<include name="**/*Test.class" />
 					<!-- Tests that require TestCAs to setup CAs -->
@@ -196,10 +197,12 @@
 					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
 					<exclude name="org/ejbca/core/protocol/ws/CustomCertSerialnumberWSTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
+					<!-- Exclude WS, they are run from their own target, runws -->
+					<exclude name="**/EjbcaWS*Test.class" />
 				</fileset>
 			</batchtest>
 			<!-- Tests that require the CMP TCP listener -->
-			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
+			<batchtest fork="yes" todir="${reports.base.dir}/run" unless="cmptcplistener.notrunning">
 				<fileset dir="${build.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
@@ -207,22 +210,23 @@
 			</batchtest>
 		</junit>
 		<delete dir="${this.dir}/p12" />	<!-- Workaround for tests using BatchMakeP12 -->
-		<antcall target="createreport"/>
+    	<antcall target="createreport">
+    		<param name="reports.dir" value="${reports.base.dir}/run"/>
+    	</antcall>
     	<antcall target="showtime"/>
     </target>
 
     <target name="runweb" depends="build, assert-appserverrunning" description="Run web-realted system tests">
     	<antcall target="showtime"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runweb"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
+		<delete dir="${reports.base.dir}/runweb" />
+		<mkdir dir="${reports.base.dir}/runweb/html"/>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
 			</classpath>
 			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
+			<batchtest fork="yes" todir="${reports.base.dir}/runweb">
 				<fileset dir="${build.dir}">
                     <include name="org/ejbca/core/protocol/scep/ProtocolScepHttpTest.class" />
                     <include name="org/ejbca/core/protocol/scep/ProtocolOcspHttpTest.class" />
@@ -234,15 +238,16 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
+	<antcall target="createreport">
+		<param name="reports.dir" value="${reports.base.dir}/runweb"/>
+	</antcall>
     	<antcall target="showtime"/>
     </target>
 
     <target name="runcmp" depends="build, assert-appserverrunning" description="Run CMP system tests">
     	<antcall target="showtime"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runcmp"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
+		<delete dir="${reports.base.dir}/runcmp" />
+		<mkdir dir="${reports.base.dir}/runcmp/html"/>
 		<echo message="Checking if the CMP TCP listener is listening on port 127.0.0.1:5587..."/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
 			<socket server="127.0.0.1" port="5587"/>
@@ -257,7 +262,7 @@
 				<path refid="systemtests.classpath" />
 			</classpath>
 			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}" unless="cmptcplistener.notrunning">
+			<batchtest fork="yes" todir="${reports.base.dir}/runcmp" unless="cmptcplistener.notrunning">
 				<fileset dir="${build.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
@@ -265,7 +270,9 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<antcall target="createreport"/>
+	<antcall target="createreport">
+		<param name="reports.dir" value="${reports.base.dir}/runcmp"/>
+	</antcall>
     	<antcall target="showtime"/>
     </target>
 
@@ -273,8 +280,9 @@
           Run a single test specified with -Dtest.runone=TestName
          ================================= -->
 	<target name="runone" description="Run a single JUnit-test specified -Dtest.runone=classname" unless="test.runone.fileset.notempty">
-    	<property name="reports.dir" location="${reports.base.dir}/run-one"/>
-		<antcall target="runone-internal"/>
+		<antcall target="runone-internal">
+			 <param name="reports.dir" value="${reports.base.dir}/run-one"/>
+		</antcall>
 	</target>
 
 	<!-- =================================
@@ -282,40 +290,46 @@
          ================================= -->
 	<target name="runlogstress" description="Run the log stress test (runs for one hour)">
     	<property name="test.runone" value="LoggingStressTest"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runlogstress"/>
-		<antcall target="runone-internal"/>
+		<antcall target="runone-internal">
+			<param name="reports.dir" value="${reports.base.dir}/runlogstress"/>
+		</antcall>
 	</target>
 
 	<target name="runws" description="Run Web Services system tests">
     	<property name="test.runone" value="EjbcaWS*Test"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runws"/>
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>	<!-- no jee classes for ws tests -->
-		<antcall target="runone-internal"/>
+	<antcall target="runone-internal">
+		<param name="reports.dir" value="${reports.base.dir}/runws"/>
+	</antcall>
 	</target>
 
 	<target name="runxkms" description="Run XKMS system tests">
     	<property name="test.runone" value="XKMS*Test"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runxkms"/>
-		<property name="runone-internal.classpath" value="systemtests.classpath"/>
-		<antcall target="runone-internal"/>
+		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
+	<antcall target="runone-internal">
+		<param name="reports.dir" value="${reports.base.dir}/runxkms"/>
+	</antcall>
 	</target>
 
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
     	<property name="test.runone" value="AddLotsofCertsPerUserTest"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>
-		<antcall target="runone-internal"/>
+		<antcall target="runone-internal">
+			<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
+		</antcall>
 	</target>
 
 	<target name="runlotsofusers" description="Run system tests that creates lots of users">
     	<property name="test.runone" value="AddLotsofUsersTest"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runlotsperuser"/>
-		<antcall target="runone-internal"/>
+	<antcall target="runone-internal">
+		<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
+	</antcall>
 	</target>
 
 	<target name="runperf" description="Run system tests that creates lots of certificates">
     	<property name="test.runone" value="SignLotsOfCertsTest"/>
-    	<property name="reports.dir" location="${reports.base.dir}/runperf"/>
-		<antcall target="runone-internal"/>
+	<antcall target="runone-internal">
+		<param name="reports.dir" value="${reports.base.dir}/runperf"/>
+	</antcall>
 	</target>
 
 	<!-- Target that setups a user with cert as required by ProtocolOcspHttpStandaloneTest -->
