@@ -92,8 +92,8 @@ public interface CertificateProfileSession {
      *            Admin
      * @return Collection of id:s (Integer)
      */
-    public java.util.Collection<Integer> getAuthorizedCertificateProfileIds(org.ejbca.core.model.log.Admin admin, int certprofiletype,
-            java.util.Collection<Integer> authorizedCaIds);
+    public Collection<Integer> getAuthorizedCertificateProfileIds(Admin admin, int certprofiletype,
+            Collection<Integer> authorizedCaIds);
 
     /**
      * Clear and reload certificate profile caches.
@@ -117,8 +117,7 @@ public interface CertificateProfileSession {
      * /** Do not use, use changeCertificateProfile instead. Used internally for
      * testing only. Updates a profile without flushing caches.
      */
-    void internalChangeCertificateProfileNoFlushCache(org.ejbca.core.model.log.Admin admin, java.lang.String certificateprofilename,
-            org.ejbca.core.model.ca.certificateprofiles.CertificateProfile certificateprofile);
+    void internalChangeCertificateProfileNoFlushCache(Admin admin, String certificateprofilename, CertificateProfile certificateprofile);
 
     int findFreeCertificateProfileId();
 
@@ -160,7 +159,7 @@ public interface CertificateProfileSession {
      * @param admin
      *            administrator calling the method
      */
-    public void initializeAndUpgradeProfiles(org.ejbca.core.model.log.Admin admin);
+    public void initializeAndUpgradeProfiles(Admin admin);
 
     /**
      * Removes a certificateprofile from the database, does not throw any errors
@@ -169,7 +168,7 @@ public interface CertificateProfileSession {
      * @param admin
      *            Administrator performing the operation
      */
-    public void removeCertificateProfile(org.ejbca.core.model.log.Admin admin, java.lang.String certificateprofilename);
+    public void removeCertificateProfile(Admin admin, String certificateprofilename);
 
     /**
      * Renames a certificateprofile
@@ -187,7 +186,7 @@ public interface CertificateProfileSession {
      *            the caid to search for.
      * @return true if ca exists in any of the certificate profiles.
      */
-    public boolean existsCAInCertificateProfiles(org.ejbca.core.model.log.Admin admin, int caid);
+    public boolean existsCAInCertificateProfiles(Admin admin, int caid);
     
     /**
      * Method to check if a Publisher exists in any of the certificate profiles.
@@ -197,6 +196,6 @@ public interface CertificateProfileSession {
      *            the publisherid to search for.
      * @return true if publisher exists in any of the certificate profiles.
      */
-    public boolean existsPublisherInCertificateProfiles(org.ejbca.core.model.log.Admin admin, int publisherid);
+    public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid);
 
 }
