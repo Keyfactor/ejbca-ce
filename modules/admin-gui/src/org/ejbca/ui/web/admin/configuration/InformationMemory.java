@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
@@ -79,15 +80,15 @@ public class InformationMemory implements Serializable {
     CAAuthorization caauthorization = null;
     HardTokenAuthorization hardtokenauthorization = null;
     
-    HashMap<Integer, String> endentityprofileidtonamemap = null;
-    HashMap<Integer, String>  caidtonamemap = null;
-    HashMap<Integer, String> certificateprofileidtonamemap = null;    
-    HashMap<Integer, HashMap<Integer, List>> endentityavailablecas = null;
-    HashMap<Integer,String> publisheridtonamemap = null;
+    Map<Integer, String> endentityprofileidtonamemap = null;
+    Map<Integer, String>  caidtonamemap = null;
+    Map<Integer, String> certificateprofileidtonamemap = null;    
+    Map<Integer, HashMap<Integer, List>> endentityavailablecas = null;
+    Map<Integer,String> publisheridtonamemap = null;
 
     TreeMap<String, Integer> authgroups = null;
     TreeMap<String, Integer> publishernames = null;
-    HashMap<Integer, String> admingrpidmap = null;
+    Map<Integer, String> admingrpidmap = null;
     
     HashSet<String> authorizedaccessrules = null;
     
@@ -127,7 +128,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns a Map of end entity profile id (Integer) -> end entity profile name (String).
      */
-    public HashMap<Integer, String> getEndEntityProfileIdToNameMap(){
+    public Map<Integer, String> getEndEntityProfileIdToNameMap(){
       if(endentityprofileidtonamemap == null){
         endentityprofileidtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(administrator);  
       }
@@ -139,7 +140,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns a Map of certificate profile id (Integer) -> certificate name (String).
      */
-    public HashMap<Integer, String> getCertificateProfileIdToNameMap(){
+    public Map<Integer, String> getCertificateProfileIdToNameMap(){
       if(certificateprofileidtonamemap == null){
         certificateprofileidtonamemap = this.certificateProfileSession.getCertificateProfileIdToNameMap(administrator); 
       }
@@ -150,7 +151,7 @@ public class InformationMemory implements Serializable {
     /**
      * Returns a Map of CA id (Integer) -> CA name (String).
      */
-    public HashMap<Integer, String>  getCAIdToNameMap(){
+    public Map<Integer, String>  getCAIdToNameMap(){
       if(caidtonamemap == null){
         caidtonamemap = caadminsession.getCAIdToNameMap(administrator);
       }
@@ -161,7 +162,7 @@ public class InformationMemory implements Serializable {
 	/**
 	 * Returns a Map of hard token profile id (Integer) -> hard token profile name (String).
 	 */
-	public HashMap<Integer, String> getHardTokenProfileIdToNameMap(){      
+	public Map<Integer, String> getHardTokenProfileIdToNameMap(){      
 	  return this.hardtokenauthorization.getHardTokenProfileIdToNameMap();
 	}            
     
@@ -313,7 +314,7 @@ public class InformationMemory implements Serializable {
      * 
      * @return the publisheridtonamemap (HashMap)
      */
-    public HashMap<Integer,String> getPublisherIdToNameMap(){
+    public Map<Integer,String> getPublisherIdToNameMap(){
     	if(publisheridtonamemap == null) {
     	   publisheridtonamemap = publishersession.getPublisherIdToNameMap(administrator);
     	}
@@ -327,7 +328,7 @@ public class InformationMemory implements Serializable {
     	if(publishernames==null){
     		publishernames = new TreeMap<String, Integer>();  
     		Iterator<Integer> iter = caadminsession.getAuthorizedPublisherIds(administrator).iterator();      
-    		HashMap<Integer,String> idtonamemap = getPublisherIdToNameMap();
+    		Map<Integer,String> idtonamemap = getPublisherIdToNameMap();
     		while(iter.hasNext()){
     			Integer id = iter.next();
     			publishernames.put(idtonamemap.get(id),id);
@@ -347,7 +348,7 @@ public class InformationMemory implements Serializable {
      * @returns a HashMap of CertificateProfileId to Collection. It returns a set of avialable CAs per certificate profile.
      */
     
-    public HashMap<Integer, List> getEndEntityAvailableCAs(int endentityprofileid){
+    public Map<Integer, List> getEndEntityAvailableCAs(int endentityprofileid){
       if(endentityavailablecas == null){
         // Build new structure.  
         Collection<Integer> authorizedcas = getAuthorizedCAIds();  
@@ -474,7 +475,7 @@ public class InformationMemory implements Serializable {
 	 * Returns a map with authorized admingroupid -> admingroupname
 	 */
     
-    public HashMap<Integer, String> getAdminGroupIdToNameMap(){
+    public Map<Integer, String> getAdminGroupIdToNameMap(){
       if(admingrpidmap == null){
       	TreeMap<String, Integer> admingrpnames = getAuthorizedAdminGroups();
 		admingrpidmap = new HashMap<Integer, String>();

@@ -17,8 +17,8 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.rainterface.SortBy;
 public class LogEntriesView implements java.io.Serializable {
  
     /** Creates a new instance of LogEntriesView  */
-    public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames, String[] localmodulenames, HashMap caidtonamemap) {
+    public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames, String[] localmodulenames, Map caidtonamemap) {
       logentryviews = new ArrayList();
       sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);
       this.dnproxy = dnproxy;
@@ -124,5 +124,5 @@ public class LogEntriesView implements java.io.Serializable {
     private String[] localerroreventnames;
     private String[] localsystemeventnames;
     private String[] localmodulenames;
-    private HashMap  caidtonamemap;
+    private Map  caidtonamemap;
 }

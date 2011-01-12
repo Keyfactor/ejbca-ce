@@ -321,7 +321,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
      * @param admin
      *            Administrator performing the operation
      */
-    public HashMap<Integer, String> getCertificateProfileIdToNameMap(final Admin admin) {
+    public Map<Integer, String> getCertificateProfileIdToNameMap(final Admin admin) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getCertificateProfileIdToNameMap");
         }
@@ -564,7 +564,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return profileCache.getProfileCache();
     }
 
-    private HashMap<Integer, String> getCertificateProfileIdNameMapInternal() {
+    private Map<Integer, String> getCertificateProfileIdNameMapInternal() {
     	if (profileCache.needsUpdate()) {
     		flushProfileCache();
     	}

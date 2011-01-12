@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -81,7 +82,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 HashMap<Integer, String> caidtonamemap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
 
                 Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, caids);
-                HashMap<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap(getAdmin());
+                Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap(getAdmin());
 
                 Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin());
                 HashMap<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());

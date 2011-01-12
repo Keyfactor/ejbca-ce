@@ -14,8 +14,8 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -83,7 +83,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    
    private CAInfo          cainfo   = null;
    
-    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, HashMap publishersidtonamemap){
+    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, Map publishersidtonamemap){
       this.cainfo = cainfo;  
         
       if (cainfo instanceof X509CAInfo) {

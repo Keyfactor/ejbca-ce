@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.ejb.CreateException;
@@ -167,7 +168,7 @@ public class CAInterfaceBean implements Serializable {
      *
      */ 
     
-    public HashMap<Integer, String>  getCAIdToNameMap(){
+    public Map<Integer, String>  getCAIdToNameMap(){
       return informationmemory.getCAIdToNameMap();      
     }
 

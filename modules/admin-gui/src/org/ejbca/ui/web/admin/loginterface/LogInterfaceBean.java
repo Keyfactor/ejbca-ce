@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -70,7 +71,7 @@ public class LogInterfaceBean implements java.io.Serializable {
                 
         dnproxy = new SubjectDNProxy(admin, certificatesession);           
         
-		HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+		Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
         
         // Add Internal CA Name if it doesn't exists
         if(caidtonamemap.get(Integer.valueOf(LogConstants.INTERNALCAID)) == null){

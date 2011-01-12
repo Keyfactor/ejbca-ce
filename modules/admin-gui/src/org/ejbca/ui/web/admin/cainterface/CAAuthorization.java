@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
@@ -83,7 +84,7 @@ public class CAAuthorization implements Serializable {
         } else {         
 		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
         }
-        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamesendentity.put(idtonamemap.get(id),id);
@@ -96,7 +97,7 @@ public class CAAuthorization implements Serializable {
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap<String, Integer>();  
         Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
-        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamessubca.put(idtonamemap.get(id),id);
@@ -110,7 +111,7 @@ public class CAAuthorization implements Serializable {
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap<String, Integer>();  
         Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
-        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
           profilenamesrootca.put(idtonamemap.get(id),id);
@@ -137,7 +138,7 @@ public class CAAuthorization implements Serializable {
 		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(admin, SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()));
 		  iter = certprofiles.iterator();
         }
-        HashMap<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
+        Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap(admin);
         while(iter.hasNext()){
         
           Integer id = iter.next();

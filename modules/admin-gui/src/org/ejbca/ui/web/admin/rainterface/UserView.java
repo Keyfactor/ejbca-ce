@@ -14,7 +14,7 @@
 package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -41,7 +41,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
    }
 
 
-    public UserView(UserDataVO newuserdata, HashMap caidtonamemap){
+    public UserView(UserDataVO newuserdata, Map caidtonamemap){
       userdata = newuserdata;
       this.caname = (String) caidtonamemap.get(Integer.valueOf(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
