@@ -320,8 +320,8 @@ function checkallfields(){
     } else {
     <% if(catype == CAInfo.CATYPE_CVC) { %>
         var value = document.ca.<%= TEXTFIELD_SUBJECTDN %>.value;
-        var hasCN = value.match(/(^|,(\s*))CN=/);
-        var hasC = value.match(/(^|,(\s*))C=/);
+        var hasCN = value.match(/(^|,(\s*))CN=/i);
+        var hasC = value.match(/(^|,(\s*))C=/i);
         
         if (value != "" && (!hasCN || !hasC)) {
             alert("<%= ejbcawebbean.getText("SUBJECTDNBADFORCVC")%>");
