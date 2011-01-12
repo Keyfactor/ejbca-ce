@@ -33,6 +33,7 @@
 	<property name="mod.ejbca-ejb-interface.lib" location="${mod.dist.path}/ejbca-interface.jar" />
     <property name="mod.va-ejb-interface.lib" location="${mod.dist.path}/va-ejb3-interface.jar" />
     <property name="mod.ejbca-util.lib" location="${ejbca.dist.path}/ejbca-util.jar" />
+    <property name="mod.ejbca-util-signserver.lib" location="${ejbca.dist.path}/ejbca-util-signserver.jar" />
     <property name="mod.ejbca-common-web.lib" location="${mod.dist.path}/ejbca-common-web.jar" />
     <property name="mod.ejbca-ws-cli.dist" location="${ejbca.dist.path}/ejbca-ws-cli" />
     <property name="mod.ejbca-ws-cli.lib" location="${mod.ejbca-ws-cli.dist}/ejbca-ws-cli.jar" />
