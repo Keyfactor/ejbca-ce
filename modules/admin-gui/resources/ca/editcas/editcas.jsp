@@ -226,7 +226,7 @@
   int filemode = 0;
   int row = 0;
 
-  HashMap caidtonamemap = cabean.getCAIdToNameMap();
+  Map caidtonamemap = cabean.getCAIdToNameMap();
   InformationMemory info = ejbcawebbean.getInformationMemory();
 
 %>

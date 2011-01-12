@@ -107,7 +107,7 @@ public class LogInterfaceBean implements java.io.Serializable {
      * @param index point's where in result to begin returning data.
      * @param size the number of elements to return.
      */
-    public LogEntriesView filterByUsername(String deviceName, String username, HashMap caidtonamemap) throws Exception {
+    public LogEntriesView filterByUsername(String deviceName, String username, Map caidtonamemap) throws Exception {
       LogEntriesView returnval = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localsystemeventnamesunsorted, localmodulenamesunsorted,  caidtonamemap);  
       String user = StringTools.strip(username);  
       Query query = new Query(Query.TYPE_LOGQUERY);

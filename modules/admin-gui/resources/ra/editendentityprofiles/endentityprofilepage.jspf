@@ -12,7 +12,7 @@
    String[] hardtokenissueraliases = new String[0];
    int[] hardtokenissuerids = new int[0];
 
-   HashMap caidtonamemap = cabean.getCAIdToNameMap();
+   Map caidtonamemap = cabean.getCAIdToNameMap();
    Collection authorizedcas = ejbcawebbean.getAuthorizedCAIds();
    
    String[] printerNames = ejbcarabean.listPrinters();

@@ -2,7 +2,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import=" org.ejbca.core.model.authorization.AuthorizationDeniedException,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.log.LogConfiguration,org.ejbca.util.HTMLTools,
-                java.util.HashMap, java.util.Iterator, java.util.Collection"%>
+                java.util.HashMap, java.util.Map, java.util.Iterator, java.util.Collection"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="org.ejbca.ui.web.admin.loginterface.LogInterfaceBean" />
@@ -50,7 +50,7 @@
 
   String forwardurl = "/" + globalconfiguration .getMainFilename();
  
-  HashMap caidtonamemap =  ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map caidtonamemap =  ejbcawebbean.getInformationMemory().getCAIdToNameMap();
   Collection authorizedcaids = ejbcawebbean.getAuthorizedCAIds();
 
   boolean nocachosen = true;

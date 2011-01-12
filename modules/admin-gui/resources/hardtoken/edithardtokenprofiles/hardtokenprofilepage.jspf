@@ -5,7 +5,7 @@
   TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();
   TreeMap authorizedcertprofiles = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
  
-  HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+  Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
   int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID, TurkishEIDProfile.TYPE_TURKISHEID};
   String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID", "TURKISHEID"};
