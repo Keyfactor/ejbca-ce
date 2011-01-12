@@ -229,10 +229,16 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         }
         try {
             HardTokenProfileData htp = HardTokenProfileData.findByName(entityManager, name);
-            entityManager.remove(htp);
-            String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+            if (htp == null) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Trying to remove HardTokenProfileData that does not exist: "+name);                		
+            	}
+            } else {
+            	entityManager.remove(htp);
+                String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+            }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
@@ -497,10 +503,16 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         }
         try {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
-            entityManager.remove(htih);
-            String msg = intres.getLocalizedMessage("hardtoken.removedissuer", alias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+            if (htih == null) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Trying to remove HardTokenProfileData that does not exist: "+alias);                		
+            	}
+            } else {
+            	entityManager.remove(htih);
+            	String msg = intres.getLocalizedMessage("hardtoken.removedissuer", alias);
+            	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
+            			LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+            }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveissuer", alias);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
@@ -1107,9 +1119,15 @@ public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTok
         int caid = CertTools.getIssuerDN(certificate).hashCode();
         try {
             HardTokenCertificateMap htcm = HardTokenCertificateMap.findByCertificateFingerprint(entityManager, CertTools.getFingerprintAsString(certificate));
-            entityManager.remove(htcm);
-            String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
+            if (htcm == null) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Trying to remove HardTokenCertificateMap that does not exist: "+CertTools.getFingerprintAsString(certificate));                		
+            	}
+            } else {
+            	entityManager.remove(htcm);
+            	String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
+            	logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
+            }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingcert", certificatesn);
             logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);

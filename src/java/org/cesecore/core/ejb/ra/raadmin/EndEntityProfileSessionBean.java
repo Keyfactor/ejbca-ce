@@ -469,27 +469,26 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     /**
-     * Removes an end entity profile from the database.
+     * Removes an end entity profile from the database, does not throw any errors if the profile does not exist.
      */
     public void removeEndEntityProfile(final Admin admin, final String profilename) {
-    	boolean success = false;
         try {
         	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
-        	if (pdl != null) {
-                entityManager.remove(pdl);
-                flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("ra.removedprofile", profilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
-                success = true;
+        	if (pdl == null) {
+        		if (LOG.isDebugEnabled()) {
+        			LOG.debug("Trying to remove an end entity profile that does not exist: "+profilename);                		
+        		}
+        	} else {
+        		entityManager.remove(pdl);
+        		flushProfileCache();
+        		final String msg = INTRES.getLocalizedMessage("ra.removedprofile", profilename);
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
+        				LogConstants.EVENT_INFO_ENDENTITYPROFILE, msg);
         	}
         } catch (Exception e) {
             LOG.error("Error was caught when trying to remove end entity profile " + profilename, e);
-        }
-        if (!success) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorremoveprofile", profilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
         }
     }
 

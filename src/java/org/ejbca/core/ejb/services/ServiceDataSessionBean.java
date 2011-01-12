@@ -68,13 +68,15 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     }
     
     /**
-     * Removes given parameter from persistence.
+     * Removes given service data from persistence.
      * 
-     * @param serviceData
+     * @param id (pk) of ServiceData in the database
      */
-    public void removeServiceData(ServiceData serviceData) {
-        serviceData = entityManager.merge(serviceData);
-        entityManager.remove(serviceData);
+    public void removeServiceData(Integer id) {
+    	ServiceData sd = findById(id);
+    	if (sd != null) {
+    		entityManager.remove(sd);
+    	}
     }
     
     /**

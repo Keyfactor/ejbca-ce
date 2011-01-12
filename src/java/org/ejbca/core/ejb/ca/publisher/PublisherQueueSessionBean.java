@@ -105,7 +105,13 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	}
     	try {
     		org.ejbca.core.ejb.ca.publisher.PublisherQueueData pqd = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findByPk(entityManager, pk);
-    		entityManager.remove(pqd);
+    		if (pqd == null) {
+    			if (log.isDebugEnabled()) {
+    				log.debug("Trying to remove queue data that does not exist: "+pk);
+    			}
+    		} else {
+        		entityManager.remove(pqd);    			
+    		}
 		} catch (Exception e) {
 			log.info(e);
 		}
