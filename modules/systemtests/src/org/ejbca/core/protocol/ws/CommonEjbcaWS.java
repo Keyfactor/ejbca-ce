@@ -197,6 +197,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             user1.setPassword("foo123");
             user1.setDN("CN=wstest");
             CAInfo cainfo = caAdminSessionRemote.getCAInfo(intAdmin, getAdminCAName());
+            assertNotNull("No CA with name "+getAdminCAName()+" was found.", cainfo);
             user1.setCAId(cainfo.getCAId());
             user1.setEmail(null);
             user1.setSubjectAltName(null);
