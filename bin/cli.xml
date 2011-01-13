@@ -22,10 +22,12 @@
     <!-- Promts for passwords required at deployment                             -->
 	<!-- Note: This code is duplicated in build.xml								 -->
     <!-- ======================================================================= -->
-	<target name="ejbca:deployprompt">
+	<target name="ejbca:deploytrustprompt">
 		<input message="Please enter the password of the truststore with the CA certificate for https?" addproperty="java.trustpassword" defaultvalue="changeit">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
+	</target>
+	<target name="ejbca:deployprompt" depends="ejbca:deploytrustprompt">
 		<input message="Please enter the password of the keystore with the TLS key for https" addproperty="httpsserver.password" defaultvalue="serverpwd">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
@@ -73,7 +75,7 @@ appserver.home         : ${appserver.home}
         </echo>
     </target>
 
-	<target name="ejbca:javatruststore" description="Java trust store config">
+	<target name="ejbca:javatruststore" depends="ejbca:deploytrustprompt" description="Java trust store config">
 		<!-- prompt for ca name, but only if it has not been set in install.properties or prompted for already during install -->
 	    <input message="Enter name of CA to add to truststore" addproperty="ca.name"/>
         <echo message="Getting root certificate in DER format..."/>
