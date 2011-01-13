@@ -449,7 +449,7 @@
 				<path location="${build.dir}" />
                 <path refid="systemtests.classpath" />
 			</classpath>
-			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=0 -Dvertest.expectedFailures=1 -Dvertest.expectedWarnings=0"/>
+			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=0 -Dvertest.expectedFailures=3 -Dvertest.expectedWarnings=0"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
 				<fileset dir="${build.dir}">
