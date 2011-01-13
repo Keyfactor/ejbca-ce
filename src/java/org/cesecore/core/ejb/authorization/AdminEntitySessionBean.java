@@ -57,14 +57,16 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
     
     /**
      * Adds a Collection of AdminEnity to the admingroup. Changes their values
-     * if they already exists.
+     * if they already exists. Does not give any errors if the admin group does not exist.
      */
     public void addAdminEntities(final Admin admin, final String admingroupname, final Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
                 final AdminGroupData agdl = AdminGroupData.findByGroupName(entityManager, admingroupname);
                 if (agdl == null) {
-                    throw new FinderException("Could not find admin group " + admingroupname);
+                    String msg = INTRES.getLocalizedMessage("authorization.erroraddadmin", admingroupname);
+                    msg += ". Admin group does not exist.";
+                    LOG.info(msg);
                 }          
                 agdl.addAdminEntities(entityManager, adminentities);
                 authTreeSession.signalForAuthorizationTreeUpdate();
