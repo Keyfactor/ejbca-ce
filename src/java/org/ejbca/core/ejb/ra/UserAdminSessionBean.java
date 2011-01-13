@@ -192,9 +192,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * addUser(..UserDataVO...) instead.
      * 
      * @param admin
-     *            the administrator pwrforming the action
+     *            the administrator performing the action
      * @param username
-     *            the unique username.
+     *            the unique user name.
      * @param password
      *            the password used for authentication.
      * @param subjectdn
