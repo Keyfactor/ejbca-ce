@@ -285,7 +285,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Should only be used from loadLogConfiguration(..)
      * @param logConfiguration the logconfiguration to save.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void saveNewLogConfiguration(final int caid, final LogConfiguration logConfiguration) {
 		entityManager.persist(new LogConfigurationData(caid, logConfiguration));
         // Update cache
