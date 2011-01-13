@@ -400,6 +400,21 @@ EJBCA should run on any on any JEE5 compliant application server in theory. In r
 </ol>
 </p>
 
+<subsection name="JBoss">
+<subsubsection name="Schema validation">
+<p>By default JBoss (at least 6.0.0) tries to validate schemas when deploying for example web services (XKMS is notorious). 
+If you don't have an internet connection this will obviously not work if the appserver does not have all schema built in (it does not for XKMS).
+You can luckily turn of schema validation. Here is RedHat's <a href="http://docs.redhat.com/docs/en-US/JBoss_Enterprise_Web_Platform/5/html/Installation_Guide/migration.apps.html">description</a>.
+</p>
+<p>Edit file <i>server/default/deployers/ear-deployer-jboss-beans.xml</i> and look for the following sections:</p>
+<source>
+&lt;!-- uncomment to disable xml validation
+&lt;property name="useValidation"&gt;false&lt;/property --&gt;
+&lt;!-- in case xml validation is disabled, it's also better to turn off schema validation
+&lt;property name="useSchemaValidation"&gt;false&lt;/property --&gt;
+</source>
+</subsubsection>
+</subsection>
 <subsection name="Glassfish">
 <p>
 Currently EJBCA has been tested with Glassfish v2.1.1.
