@@ -61,7 +61,9 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 	}
 	
 	public void gotConnected(final ClientHandler handler) throws SocketTimeoutException, IOException {
-		LOG.debug("CMP connection opened: "+handler.getHostAddress());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("CMP connection opened: "+handler.getHostAddress());
+		}
 		handler.setDataMode(DataMode.BINARY, DataType.IN);
 		handler.setDataMode(DataMode.BINARY, DataType.OUT);
 	}
@@ -76,6 +78,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 
 	public void handleBinary(final ClientHandler handler, final byte command[])	throws SocketTimeoutException, IOException {
 		LOG.info(INTRES.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress()));
+		long startTime = System.currentTimeMillis();
 		final TcpReceivedMessage cmpTcpMessage = TcpReceivedMessage.getTcpMessage(command);
 		if ( cmpTcpMessage.message==null )  {
 			handler.closeConnection();
@@ -90,7 +93,9 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 				handler.closeConnection();
 				return;
 			}
-			LOG.debug("Sending back CMP response to client.");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Sending back CMP response to client.");
+			}
 			// Send back reply
 			final TcpReturnMessage sendBack;
 			{
@@ -104,9 +109,12 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 				}
 				sendBack = TcpReturnMessage.createMessage(tmp, cmpTcpMessage.doClose);
 			}
-			LOG.debug("Sending "+sendBack.message.length+" bytes to client");
-			handler.sendClientBinary(sendBack.message);			
-			final String iMsg = INTRES.getLocalizedMessage("cmp.sentresponsemsg", handler.getHostAddress());
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Sending "+sendBack.message.length+" bytes to client");
+			}
+			handler.sendClientBinary(sendBack.message);
+			long endTime = System.currentTimeMillis();
+			final String iMsg = INTRES.getLocalizedMessage("cmp.sentresponsemsg", handler.getHostAddress(), Long.valueOf(endTime - startTime));
 			LOG.info(iMsg);
 			if ( cmpTcpMessage.doClose || sendBack.doClose ) {
 				handler.closeConnection(); // It's time to say good bye			
