@@ -439,7 +439,7 @@ Hot redeployment on Glassfish 2.1.1 does not work due to conflicting version of 
 </li>
 <li>Start the application server:
 <pre>
-asadmin start-domain
+bin/asadmin start-domain
 </pre>
   The default user/password for the web console is admin/adminadmin.<br/>
   Access the Glassfish admin console at http://127.0.0.1:4848/.</li><br/>
@@ -449,14 +449,15 @@ asadmin start-domain
     Save and use the Ping-button for the pool. If you get 'Parameter wrong for this method : off', go to Additional Properties and delete 'Ssl'.<br/>
     Command line alternative:
     <pre>
-    asadmin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --property user=APP:password=APP:DatabaseName=ejbca:ServerName=localhost:port=1527 EjbcaPool
+    bin/asadmin create-jdbc-connection-pool --datasourceclassname org.apache.derby.jdbc.ClientDataSource --property user=APP:password=APP:DatabaseName=ejbca:ServerName=localhost:port=1527 EjbcaPool
     </pre>
 </li>    
 <li>Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources. Use the connection pool you just created.<br/>
     Command line alternative:
     <pre>
-    asadmin create-jdbc-resource --connectionpoolid EjbcaPool jdbc/EjbcaDS
+    bin/asadmin create-jdbc-resource --connectionpoolid EjbcaPool jdbc/EjbcaDS
     </pre>
+    If security is enabled you have to add "--user admin --passwordfile pwd.txt" as command line parameters where pwd.txt contains 'AS_ADMIN_PASSWORD=adminadmin'.
 </li>
 </ol>
 </p>
