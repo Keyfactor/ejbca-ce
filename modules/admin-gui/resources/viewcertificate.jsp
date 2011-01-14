@@ -464,7 +464,7 @@ function confirmrepublish(){
 		 <td><% boolean first= true;
 	                boolean none = true;
 	                if(certificatedata.getKeyUsage(CertificateProfile.DIGITALSIGNATURE)){
-	                  out.write(ejbcawebbean.getText("DIGITALSIGNATURE"));
+	                  out.write(ejbcawebbean.getText("KU_DIGITALSIGNATURE"));
 	                  first=false;
 	                  none =false;
 	                }
@@ -472,49 +472,49 @@ function confirmrepublish(){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("NONREPUDIATION"));
+	                  out.write(ejbcawebbean.getText("KU_NONREPUDIATION"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.KEYENCIPHERMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("KEYENCIPHERMENT"));
+	                  out.write(ejbcawebbean.getText("KU_KEYENCIPHERMENT"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.DATAENCIPHERMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("DATAENCIPHERMENT"));
+	                  out.write(ejbcawebbean.getText("KU_DATAENCIPHERMENT"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.KEYAGREEMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("KEYAGREEMENT"));
+	                  out.write(ejbcawebbean.getText("KU_KEYAGREEMENT"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.KEYCERTSIGN)){
 	                  if(!first) out.write(", "); 
 	                  first=false;               
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("KEYCERTSIGN"));
+	                  out.write(ejbcawebbean.getText("KU_KEYCERTSIGN"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.CRLSIGN)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("CRLSIGN"));
+	                  out.write(ejbcawebbean.getText("KU_CRLSIGN"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.ENCIPHERONLY)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("ENCIPHERONLY"));
+	                  out.write(ejbcawebbean.getText("KU_ENCIPHERONLY"));
 	                }
 	                if(certificatedata.getKeyUsage(CertificateProfile.DECIPHERONLY)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
-	                  out.write(ejbcawebbean.getText("DECIPHERONLY"));
+	                  out.write(ejbcawebbean.getText("KU_DECIPHERONLY"));
 	               }
 	               if(none){
 	                  out.write(ejbcawebbean.getText("KU_NONE"));          
