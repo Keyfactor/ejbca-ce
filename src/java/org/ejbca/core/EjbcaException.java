@@ -13,6 +13,8 @@
  
 package org.ejbca.core;
 
+import javax.xml.ws.WebFault;
+
 
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any
@@ -21,6 +23,7 @@ package org.ejbca.core;
  *
  * @version $Id$
  */
+@WebFault
 public class EjbcaException extends Exception {
 
     private static final long serialVersionUID = -3754146611270578813L;

@@ -13,6 +13,8 @@
  
 package org.ejbca.core.model.ca.publisher;
 
+import javax.xml.ws.WebFault;
+
 import org.ejbca.core.EjbcaException;
 
 
@@ -22,6 +24,7 @@ import org.ejbca.core.EjbcaException;
  * @author  Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class PublisherException extends EjbcaException {
     
     /**

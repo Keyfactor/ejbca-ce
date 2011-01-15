@@ -13,6 +13,8 @@
  
 package org.ejbca.core.model.ra.userdatasource;
 
+import javax.xml.ws.WebFault;
+
 import org.ejbca.core.EjbcaException;
 
 
@@ -22,6 +24,7 @@ import org.ejbca.core.EjbcaException;
  * @author  Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class UserDataSourceException extends EjbcaException {
     
     private static final long serialVersionUID = -7910687478479123115L;
