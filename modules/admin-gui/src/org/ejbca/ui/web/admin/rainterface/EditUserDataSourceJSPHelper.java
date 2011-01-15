@@ -383,11 +383,11 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
     	    
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("PLACEOFBIRTH"),Integer.valueOf( DNFieldExtractor.PLACEOFBIRTH));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("GENDER"),Integer.valueOf( DNFieldExtractor.GENDER));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("COUNTRYOFCITIZENSHIP"),Integer.valueOf( DNFieldExtractor.COUNTRYOFCITIZENSHIP));
-    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("COUNTRYOFRESIDENCE"),Integer.valueOf( DNFieldExtractor.COUNTRYOFRESIDENCE));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_PLACEOFBIRTH"),Integer.valueOf( DNFieldExtractor.PLACEOFBIRTH));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_GENDER"),Integer.valueOf( DNFieldExtractor.GENDER));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_COUNTRYOFCITIZENSHIP"),Integer.valueOf( DNFieldExtractor.COUNTRYOFCITIZENSHIP));
+    		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_COUNTRYOFRESIDENCE"),Integer.valueOf( DNFieldExtractor.COUNTRYOFRESIDENCE));
 
 
     		modifyableFieldTexts.put(ejbcawebbean.getText("USERNAME"), Integer.valueOf(UserDataSourceVO.ISMODIFYABLE_USERNAME));
