@@ -52,7 +52,7 @@
 	<classpathentry kind="lib" path="lib/batik/batik-css.jar"/>
 	<classpathentry kind="lib" path="lib/batik/xml-apis-ext.jar"/>
 	<classpathentry kind="lib" path="lib/ext/htmlunit-1.14.jar"/>
-	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
+	<classpathentry kind="lib" path="lib/ext/mailapi.jar"/>
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
