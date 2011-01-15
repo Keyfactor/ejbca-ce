@@ -13,6 +13,8 @@
  
 package org.ejbca.core.model.ca;
 
+import javax.xml.ws.WebFault;
+
 import org.ejbca.core.EjbcaException;
 
 
@@ -23,6 +25,7 @@ import org.ejbca.core.EjbcaException;
  *
  * @version $Id$
  */
+@WebFault
 public class SignRequestException extends EjbcaException {
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in

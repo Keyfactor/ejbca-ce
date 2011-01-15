@@ -13,12 +13,15 @@
  
 package org.ejbca.util.query;
 
+import javax.xml.ws.WebFault;
+
 /**
- * An exception thrown if Query strucure is illegal.
+ * An exception thrown if Query structure is illegal.
  *
  * @author Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class IllegalQueryException extends java.lang.Exception {
     /**
      * Creates a new instance of <code>IllegalQueryException</code> without detail message.

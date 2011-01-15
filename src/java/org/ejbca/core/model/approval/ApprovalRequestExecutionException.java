@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import javax.xml.ws.WebFault;
+
 /**
  * Exception throws after an administrator have approved a request and the
  * request have been executed and something went wrong that the approval
@@ -20,6 +22,7 @@ package org.ejbca.core.model.approval;
  * @author Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class ApprovalRequestExecutionException extends Exception {
 
 

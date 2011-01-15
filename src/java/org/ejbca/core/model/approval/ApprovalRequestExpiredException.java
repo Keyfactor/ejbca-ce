@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import javax.xml.ws.WebFault;
+
 /**
  * Exception throws after approving,executing or requesting actions
  * that have expired in the approval database
@@ -19,6 +21,7 @@ package org.ejbca.core.model.approval;
  * @author Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class ApprovalRequestExpiredException extends Exception {
 
 

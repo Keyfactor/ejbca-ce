@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import javax.xml.ws.WebFault;
+
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 
@@ -22,6 +24,7 @@ import org.ejbca.core.ErrorCode;
  * @author Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class ApprovalException extends EjbcaException {
 
     private static final long serialVersionUID = 7232454568592982535L;

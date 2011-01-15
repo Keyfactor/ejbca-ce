@@ -13,6 +13,8 @@
  
 package org.ejbca.core.model.ca.caadmin;
 
+import javax.xml.ws.WebFault;
+
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 
@@ -26,6 +28,7 @@ import org.ejbca.core.ErrorCode;
  * @author  Philip Vendil et al., PrimeKey Solutions AB
  * @version $Id$
  */
+@WebFault
 public class CADoesntExistsException extends EjbcaException {
     
     /**

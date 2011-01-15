@@ -19,12 +19,15 @@
 
 package org.ejbca.core.model.authorization;
 
+import javax.xml.ws.WebFault;
+
 /**
  * An exception thrown by the isauthorized method in the EjbcaAthorization bean.
  *
  * @author  Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class AuthorizationDeniedException extends java.lang.Exception {
     
 

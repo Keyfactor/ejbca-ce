@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import javax.xml.ws.WebFault;
+
 /**
- * Excception thrown from actions that stop to wait for approvals
+ * Exception thrown from actions that stop to wait for approvals
  * 
  * @author Philip Vendil
  * @version $Id$
  */
+@WebFault
 public class WaitingForApprovalException extends Exception {
 
 	public int approvalId = 0;

@@ -13,11 +13,14 @@
 
 package org.ejbca.core.model.ra;
 
+import javax.xml.ws.WebFault;
+
 import org.ejbca.core.ErrorCode;
 
 /**
  * Exception thrown when a revocation request for an already revoket object is requested.
  */
+@WebFault
 public class AlreadyRevokedException extends org.ejbca.core.EjbcaException {
     
 	/**
