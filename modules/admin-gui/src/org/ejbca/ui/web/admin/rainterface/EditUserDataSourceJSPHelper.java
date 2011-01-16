@@ -375,10 +375,10 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));
     		    		
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DNSNAME"), Integer.valueOf(DNFieldExtractor.DNSNAME));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("IPADDRESS"), Integer.valueOf(DNFieldExtractor.IPADDRESS));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("DIRECTORYNAME"), Integer.valueOf(DNFieldExtractor.DIRECTORYNAME));
-    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("UNIFORMRESOURCEID"), Integer.valueOf(DNFieldExtractor.URI));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_DNSNAME"), Integer.valueOf(DNFieldExtractor.DNSNAME));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_IPADDRESS"), Integer.valueOf(DNFieldExtractor.IPADDRESS));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_DIRECTORYNAME"), Integer.valueOf(DNFieldExtractor.DIRECTORYNAME));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_UNIFORMRESOURCEID"), Integer.valueOf(DNFieldExtractor.URI));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_UPN"), Integer.valueOf(DNFieldExtractor.UPN));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
