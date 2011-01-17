@@ -17,11 +17,11 @@ package org.ejbca.core.protocol.xkms.common;
  * Class that implement the mappings of specific for 
  * XML signatures, encryption and xkms.
  * 
- * This is exactly the same content as XKMSNamespacePrefixMapperRI
+ * This is exactly the same content as XKMSNamespacePrefixMapper
  * 
  * @version $Id$
  */
-public class XKMSNamespacePrefixMapper extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper {
+public class XKMSNamespacePrefixMapperRI extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
 
 	@Override
 	public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {

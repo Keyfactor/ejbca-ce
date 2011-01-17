@@ -27,8 +27,8 @@
 		<pathelement location="${mod.ejbca-util.lib}" /> 
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.xmlsec.classpath"/>
-		<path refid="lib.javart.classpath" />
-		<path refid="lib.idn.classpath" /> 
+		<path refid="lib.idn.classpath" />
+		<path refid="lib.jaxb-namespaceprfixmapper-interfaces.classpath" />
 	</path>
 
     <target name="clean" description="Clean up this module">
@@ -70,7 +70,7 @@
     <target name="compile" depends="ejbca-ejb">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath" bootclasspathref="lib.javart.classpath">
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src.dir}"/>
     	</javac>
     </target>
@@ -78,7 +78,7 @@
     <target name="compile-library" depends="ejbca-util">
     	<mkdir dir="${build-lib.dir}" />
         <javac destdir="${build-lib.dir}" debug="on" includeantruntime="false" includejavaruntime="true"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath" bootclasspathref="lib.javart.classpath">
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath">
         	<src path="${src.dir}"/>
     	    <include name="org/ejbca/core/protocol/xkms/XKMSService.java"/>
     	    <include name="org/ejbca/core/protocol/xkms/common/*.java"/>

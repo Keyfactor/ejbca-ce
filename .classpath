@@ -85,5 +85,6 @@
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

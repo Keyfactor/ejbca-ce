@@ -140,6 +140,7 @@
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
 	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/></path>
 	<path id="lib.idn.classpath"><fileset dir="${ejbca.home}/lib" includes="libidn.jar"/></path>
+	<path id="lib.jaxb-namespaceprfixmapper-interfaces.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/></path>
 	<path id="lib.xml.classpath"><fileset dir="${ejbca.home}/lib/xmlsign" includes="xalan-2.7.1.jar serializer-2.7.1.jar"/></path>
 	<path id="lib.xmlsec.classpath">
 		<fileset dir="${ejbca.home}/lib/xmlsign" includes="xmlsec-1.4.3.jar"/>
@@ -151,10 +152,6 @@
 			<include name="commons-*.jar"/>
 			<include name="log4j*.jar"/>
 		</fileset>
-	</path>
-
-	<path id="lib.javart.classpath">
-		<fileset dir="${java.home}/lib" includes="*.jar"/>
 	</path>
 
 	<path id="lib.jee.classpath">

@@ -105,11 +105,21 @@ public class XKMSUtil {
 	public static Marshaller getNamespacePrefixMappedMarshaller(JAXBContext jAXBContext) throws JAXBException {
 		Marshaller marshaller = jAXBContext.createMarshaller();
 		try {
-			// JBoss 5.1.0.GA and EAP still uses an old implementation, so this wont work on the server side..
-			Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper").newInstance();
-			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", o);
-			//marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
-			//marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new com.sun.xml.bind.marshaller.NamespacePrefixMapper());
+			try {
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper").newInstance();
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", o);				
+				if (log.isTraceEnabled()) {
+					log.debug("using com.sun.xml.internal.bind.namespacePrefixMapper (JAXB in Java6?)");					
+				}
+			} catch (PropertyException e) {
+				// Reference implementation appears to be present (in endorsed dir?)
+				Object o = Class.forName("org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapperRI").newInstance();
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", o);
+				if (log.isTraceEnabled()) {
+					log.debug("using com.sun.xml.bind.namespacePrefixMapper (JAXB RI?)");					
+				}
+			}
 		} catch( PropertyException e ) {
 			log.error("Error registering new namespace mapper property.",e);
 		} catch (InstantiationException e) {
