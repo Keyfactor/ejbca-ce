@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
+package org.ejbca.core.protocol.certificatestore;
 
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -54,15 +54,15 @@ public class CertificateCacheTest extends TestCase {
 		certs.add(testcvccert);
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
-		CertificateCache cache = new CertificateCache(certs);
+		ICertificateCache cache = new CertificateCache(certs);
 		
 		// Test lookup of not existing cert
-		X509Certificate cert = cache.findLatestBySubjectDN("CN=Foo,C=SE");
+		X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDN("CN=Foo,C=SE"));
 		assertNull(cert);
 		// Old root cert should not be found, we only store the latest to be found by subjectDN
-		X509Certificate rootcert = cache.findLatestBySubjectDN(CertTools.getSubjectDN(testrootnewcert));
+		X509Certificate rootcert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testrootnewcert));
 		assertNotNull(rootcert);
-		X509Certificate subcert = cache.findLatestBySubjectDN(CertTools.getSubjectDN(testsubcert));
+		X509Certificate subcert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testsubcert));
 		// This old subcert should not be possible to verify with the new root cert
 		boolean failed = false;
 		try {
@@ -72,18 +72,18 @@ public class CertificateCacheTest extends TestCase {
 		}
 		assertTrue(failed);
 		// CVC certificate should not be part of OCSP certificate cache
-		cert = cache.findLatestBySubjectDN(CertTools.getSubjectDN(testcvccert));
+		cert = cache.findLatestBySubjectDN(HashID.getFromDN(CertTools.getSubjectDN(testcvccert)));
 		assertNull(cert);
-		cert = cache.findLatestBySubjectDN(CertTools.getSubjectDN(testscepcert));
+		cert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testscepcert));
 		assertEquals(CertTools.getSubjectDN(testscepcert), CertTools.getSubjectDN(cert));
 		
 		// Test lookup based on CertID
-		cert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testrootcert, BigInteger.valueOf(0)));
+		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testrootcert, BigInteger.valueOf(0)));
 		assertNotNull(cert);
 		// The old subcert should verify with this old rootcert
 		subcert.verify(cert.getPublicKey());
 		// But not with the new rootcert
-		cert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testrootnewcert, BigInteger.valueOf(0)));
+		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testrootnewcert, BigInteger.valueOf(0)));
 		assertNotNull(cert);
 		failed = false;
 		try {
@@ -97,10 +97,10 @@ public class CertificateCacheTest extends TestCase {
 		X509Certificate testsubcertnew = (X509Certificate)CertTools.getCertfromByteArray(testsubnew);
 		certs.add(testsubcertnew);
 		cache = new CertificateCache(certs);
-		subcert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testsubcertnew, BigInteger.valueOf(0)));
+		subcert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testsubcertnew, BigInteger.valueOf(0)));
 		assertNotNull(subcert);
 		subcert.verify(cert.getPublicKey());
-		subcert = cache.findLatestBySubjectDN(CertTools.getSubjectDN(testsubcertnew));
+		subcert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testsubcertnew));
 		assertNotNull(subcert);
 		subcert.verify(cert.getPublicKey());
 
@@ -108,15 +108,13 @@ public class CertificateCacheTest extends TestCase {
 		X509Certificate testsnindncert = (X509Certificate)CertTools.getCertfromByteArray(testsnindn);
 		certs.add(testsnindncert);
 		cache = new CertificateCache(certs);
-		cert = cache.findByHash(new CertificateID(CertificateID.HASH_SHA1, testsnindncert, BigInteger.valueOf(0)));
+		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testsnindncert, BigInteger.valueOf(0)));
 		assertNotNull(cert);
 		cert.verify(testsnindncert.getPublicKey());
 		//log.debug(testsnindncert.getIssuerDN().getName());
-		cert = cache.findLatestBySubjectDN(testsnindncert.getIssuerDN().getName());
+		cert = cache.findLatestBySubjectDN(HashID.getFromIssuerDN(testsnindncert));
 		assertNotNull(cert);
 		cert.verify(testsnindncert.getPublicKey());
-		
-		
 	}
 
 	public static Throwable threadException = null;
@@ -133,7 +131,7 @@ public class CertificateCacheTest extends TestCase {
 		certs.add(testcvccert);
 		X509Certificate testscepcert = (X509Certificate)CertTools.getCertfromByteArray(testscepca);
 		certs.add(testscepcert);
-		CertificateCache cache = new CertificateCache(certs);
+		ICertificateCache cache = new CertificateCache(certs);
 		
 		Thread no1 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testscepcert)),"no1"); // NOPMD we want to use thread here, it's not a JEE app
 		Thread no2 = new Thread(new CacheTester(cache, CertTools.getSubjectDN(testrootcert)),"no2"); // NOPMD we want to use thread here, it's not a JEE app
