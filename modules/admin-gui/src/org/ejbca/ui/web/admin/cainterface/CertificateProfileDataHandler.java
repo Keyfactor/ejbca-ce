@@ -151,34 +151,32 @@ public class CertificateProfileDataHandler implements Serializable {
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck) {
         boolean returnval = false;
 
-        boolean issuperadministrator = false;
+        boolean issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
 
-        issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-
+        boolean editauth = true; // will be set to false if we should check it and we are not authorized
         if (editcheck) {
-            authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
+            editauth = authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
         }
-        HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
-
-        if (profile != null) {
-            if (!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
-                returnval = false;
-            } else {
-                Collection<Integer> availablecas = profile.getAvailableCAs();
-                if (availablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
-                    if (issuperadministrator && editcheck) {
-                        returnval = true;
-                    }
-                    if (!editcheck) {
-                        returnval = true;
-                    }
+        if (editauth) {
+            HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
+            if (profile != null) {
+                if (!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
+                    returnval = false;
                 } else {
-                    returnval = authorizedcaids.containsAll(availablecas);
+                    Collection<Integer> availablecas = profile.getAvailableCAs();
+                    if (availablecas.contains(Integer.valueOf(CertificateProfile.ANYCA))) {
+                        if (issuperadministrator && editcheck) {
+                            returnval = true;
+                        }
+                        if (!editcheck) {
+                            returnval = true;
+                        }
+                    } else {
+                        returnval = authorizedcaids.containsAll(availablecas);
+                    }
                 }
-            }
+            }        	
         }
-   
-
         return returnval;
     }
 }
