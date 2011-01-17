@@ -240,7 +240,7 @@ function viewuser(row){
 function viewadmincert(row){
     var hiddencertsernofield = eval("document.form.<%= HIDDEN_ADMINSERNO %>" + row);
     var certserno = hiddencertsernofield.value;
-    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;;
+    var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>="+certserno;
     link = encodeURI(link);
     win_popup = window.open(link, 'view_cert','height=650,width=600,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
