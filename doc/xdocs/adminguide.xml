@@ -4011,7 +4011,7 @@ cp $1 /home/user/cert.crt
 
 <subsection name="Publisher Queue and failures">
 <p>To achieve robust publishing there is a publisher queue. When a publisher fails the published data is stored in a 
-separate table in the database, the PublishQueue. This queue can then be processed by a service (see Services Framework).
+separate table in the database, the PublisherQueueData. This queue can then be processed by a service (see <i>Publisher Queue Process Service</i> in the <a href="#Services%20Framework">Services Framework</a> section).
 </p>
 <p>
 Publishers can also be configured not to publish directly at all, but to store everything in the queue, which is later processed.
