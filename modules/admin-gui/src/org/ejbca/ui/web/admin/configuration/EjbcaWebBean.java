@@ -366,32 +366,52 @@ public class EjbcaWebBean implements Serializable {
         return returnval;
     }
 
-    /* Checks if the admin have authorization to view the resource without performing any logging. Used by menu page */
+    /** Checks if the admin have authorization to view the resource without performing any logging. Used by menu page 
+     * Does not return false if not authorized, instead throws an AuthorizationDeniedException.
+     * 
+     * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
+     * 
+     * @return true is authorized to resource, never return false instead throws AuthorizationDeniedException.
+     * @throws AuthorizationDeniedException is not authorized to resource
+     */
     public boolean isAuthorizedNoLog(String resource) throws AuthorizationDeniedException {
-      boolean returnval=false;
-      if(certificates != null){
-        returnval= authorizationSession.isAuthorizedNoLog(administrator,resource);
-      } else{
-        throw new  AuthorizationDeniedException("Client certificate required.");
-      }
-      return returnval;
+    	boolean returnval=false;
+    	if(certificates != null){
+    		returnval= authorizationSession.isAuthorizedNoLog(administrator,resource);
+    	} else{
+    		throw new  AuthorizationDeniedException("Client certificate required");
+    	}
+    	if (!returnval) {
+    		throw new  AuthorizationDeniedException("Not authorized to "+resource);
+    	}
+    	return returnval;
     }
 
 
-    /* A more optimized authorization version to check if the admin have authorization to view the url without performing any logging.
-     * AUTHORIZED_RA.. constants should be used.*/
+    /** A more optimized authorization version to check if the admin have authorization to view the url without performing any logging.
+     * AUTHORIZED_RA.. constants should be used.
+     * Does not return false if not authorized, instead throws an AuthorizationDeniedException.
+     * 
+     * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
+     * 
+     * @return true is authorized to resource, never return false instead throws AuthorizationDeniedException.
+     * @throws AuthorizationDeniedException is not authorized to resource
+     */
     public boolean isAuthorizedNoLog(int resource) throws AuthorizationDeniedException {
-      boolean returnval=false;
-      if(certificates != null){
-        if(raauthorized[resource] == null) {
-        	// We don't bother to lookup the admin's username and email for this check..
-        	raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(new Admin(certificates[0], null, null),AUTHORIZED_RA_RESOURCES[resource]));
-        }
-        returnval = raauthorized[resource].booleanValue();
-      } else{
-        throw new  AuthorizationDeniedException("Client certificate required.");
-      }
-      return returnval;
+    	boolean returnval=false;
+    	if(certificates != null){
+    		if(raauthorized[resource] == null) {
+    			// We don't bother to lookup the admin's username and email for this check..
+    			raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(new Admin(certificates[0], null, null),AUTHORIZED_RA_RESOURCES[resource]));
+    		}
+    		returnval = raauthorized[resource].booleanValue();
+    	} else{
+    		throw new  AuthorizationDeniedException("Client certificate required.");
+    	}
+    	if (!returnval) {
+    		throw new  AuthorizationDeniedException("Not authorized to "+resource);
+    	}
+    	return returnval;
     }
 
     public String getBaseUrl(){return globalconfiguration.getBaseUrl(requestServerName);}
