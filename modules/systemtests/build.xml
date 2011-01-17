@@ -11,33 +11,33 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	
-	<path id="systemtests.classpath">
-    	<path refid="systemtests.classpath.nojee"/>
-    	<path refid="lib.jee.classpath"/>
-	</path>
-
 	<!-- When running WS tests we don't want the JEE classes of the appserver, ws should be independent of that,
 	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
 	<path id="systemtests.classpath.nojee">
-    	<path refid="lib.servlet.classpath"/>
-    	<path refid="lib.mail.classpath"/>
-    	<path refid="lib.junit.classpath"/>
-    	<path refid="lib.utils.classpath"/>
-    	<path refid="lib.jpa.classpath"/>
-    	<path refid="lib.bouncycastle.classpath"/>
-    	<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
-    	<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
-    	<path refid="lib.idn.classpath"/>	<!-- Use by XKMS -->
+		<path refid="lib.servlet.classpath"/>
+		<path refid="lib.mail.classpath"/>
+		<path refid="lib.junit.classpath"/>
+		<path refid="lib.utils.classpath"/>
+		<path refid="lib.jpa.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
+		<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
+		<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
+		<path refid="lib.idn.classpath"/>	<!-- Use by XKMS -->
 		<path refid="lib.commons-logging.classpath"/>
-    	<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
-    	<pathelement location="${mod.ejbca-entity.lib}"/>
-    	<pathelement location="${mod.ejbca-ws-cli.lib}"/>
-    	<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
-    	<pathelement location="${mod.clientToolBox.lib}"/>
-    	<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
-    	<pathelement location="${mod.ejbca-util.lib}"/>
-    	<pathelement location="${mod.ejbca-common-web.lib}"/>
-    	<pathelement location="${mod.ejbca-ejb.lib}"/>
+		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
+		<pathelement location="${mod.ejbca-entity.lib}"/>
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
+		<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
+		<pathelement location="${mod.clientToolBox.lib}"/>
+		<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
+		<pathelement location="${mod.ejbca-util.lib}"/>
+		<pathelement location="${mod.ejbca-common-web.lib}"/>
+		<pathelement location="${mod.ejbca-ejb.lib}"/>
+	</path>
+
+	<path id="systemtests.classpath">
+		<path refid="systemtests.classpath.nojee"/>
+		<path refid="lib.jee.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile"/>
@@ -299,8 +299,8 @@
 		</antcall>
 	</target>
 
-	<target name="runxkms" description="Run XKMS system tests">
-		<fail message="xkms is not enabled in conf/xkms.properties." unless="xkms.enabled.true" />
+	<target name="runxkms" description="Run XKMS system tests" if="xkms.enabled.true">
+		<!--fail message="xkms is not enabled in conf/xkms.properties." unless="xkms.enabled.true" /-->
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
 		<antcall target="runone-internal">
 			<param name="reports.dir" value="${reports.base.dir}/runxkms"/>
