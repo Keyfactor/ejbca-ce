@@ -149,6 +149,11 @@
    <!ELEMENT form-error-page (#PCDATA)>
    -->
 
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- TODO: Are these still used in any way? WebConfiguration might be a better place if this should be configurable.. -->
    <env-entry>
       <description><![CDATA[Defines the admin directory]]></description>
       <env-entry-name>ADMINDIRECTORY</env-entry-name>
@@ -174,132 +179,4 @@
       <env-entry-value>https</env-entry-value>
    </env-entry>
 
-<!--
-   <ejb-local-ref id="EJBLocalRef_1">
-      <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
-      <ejb-link>RSASignSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_2">
-      <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
-      <ejb-link>CertificateStoreSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_3">
-      <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
-      <ejb-link>CAAdminSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_4">
-      <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
-      <ejb-link>UserAdminSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_5">
-      <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal</local>
-      <ejb-link>RaAdminSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_6">
-      <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
-      <ejb-link>LogSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_7">
-      <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
-      <ejb-link>AuthorizationSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_8">
-      <ejb-ref-name>ejb/HardTokenSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal</local>
-      <ejb-link>HardTokenSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_9">
-      <ejb-ref-name>ejb/HardTokenBatchJobSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocal</local>
-      <ejb-link>HardTokenBatchJobSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_10">
-      <ejb-ref-name>ejb/KeyRecoverySessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal</local>
-      <ejb-link>KeyRecoverySession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_11">
-      <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
-      <ejb-link>PublisherSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_12">
-      <ejb-ref-name>ejb/UserDataSourceSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal</local>
-      <ejb-link>UserDataSourceSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_13">
-      <ejb-ref-name>ejb/ApprovalSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
-      <ejb-link>ApprovalSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_14">
-      <ejb-ref-name>ejb/ServiceSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.services.IServiceSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.services.IServiceSessionLocal</local>
-      <ejb-link>ServiceSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_15">
-      <ejb-ref-name>ejb/ServiceTimerSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.services.IServiceTimerSessionLocal</local>
-      <ejb-link>ServiceTimerSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_16">
-      <ejb-ref-name>ejb/PublisherQueueSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ca.publisher.IPublisherQueueSessionLocal</local>
-      <ejb-link>PublisherQueueSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_17">
-      <ejb-ref-name>ejb/CreateCRLSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal</local>
-      <ejb-link>CreateCRLSession</ejb-link>
-   </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_18">
-      <ejb-ref-name>ejb/CertificateRequestSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ra.ICertificateRequestSessionLocal</local>
-      <ejb-link>CertificateRequestSession</ejb-link>
-   </ejb-local-ref>
--->
 </web-app>
