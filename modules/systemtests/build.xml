@@ -54,7 +54,7 @@
         	<exclude name="org/ejbca/core/protocol/xkms/**"/>
     	</javac>
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}" bootclasspathref="lib.javart.classpath">
+        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
         	<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
         	<classpath path="${build.dir}"/>
     	</javac>
