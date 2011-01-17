@@ -37,21 +37,21 @@ public class ExtendedKeyUsageConfTest extends TestCase {
 		File f = File.createTempFile("testextendedkeyusageconf", "properties");
 		f.deleteOnExit();
 		FileWriter fos = new FileWriter(f);
-		fos.write("extendedkeyusage.oid.0 = 2.5.29.37.0\nextendedkeyusage.name.0 = ANYEXTENDEDKEYUSAGE\n");
+		fos.write("extendedkeyusage.oid.0 = 2.5.29.37.0\nextendedkeyusage.name.0 = EKU_PKIX_ANYEXTENDEDKEYUSAGE\n");
 		fos.write("extendedkeyusage.oid.1 = 1.3.6.1.5.5.7.3.21\nextendedkeyusage.name.1 = EKU_PKIX_SSHCLIENT\n");
-		fos.write("extendedkeyusage.oid.2 = 1.3.6.1.4.1.311.10.3.4.2\nextendedkeyusage.name.2 = PDF_SIGNING\n");
+		fos.write("extendedkeyusage.oid.2 = 1.3.6.1.4.1.311.10.3.4.2\nextendedkeyusage.name.2 = EKU_ADOBE_PDFSIGNING\n");
 		fos.close();
 		ConfigurationHolder.addConfigurationFile(f.getAbsolutePath());
 		// Now there will be some values
 		List<String> oids = ExtendedKeyUsageConfiguration.getExtendedKeyUsageOids();
 		assertEquals(3, oids.size()); 
 		Map<String, String> map = ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames();
-		assertTrue(oids.contains("2.5.29.37.0")); // ANYEXTENDEDKEYUSAGE
-		assertEquals("ANYEXTENDEDKEYUSAGE", map.get("2.5.29.37.0"));
+		assertTrue(oids.contains("2.5.29.37.0")); // EKU_PKIX_ANYEXTENDEDKEYUSAGE
+		assertEquals("EKU_PKIX_ANYEXTENDEDKEYUSAGE", map.get("2.5.29.37.0"));
 		assertTrue(oids.contains("1.3.6.1.5.5.7.3.21")); // EKU_PKIX_SSHCLIENT
 		assertEquals("EKU_PKIX_SSHCLIENT", map.get("1.3.6.1.5.5.7.3.21"));
-		assertTrue(oids.contains("1.3.6.1.4.1.311.10.3.4.2")); // PDF_SIGNING
-		assertEquals("PDF_SIGNING", map.get("1.3.6.1.4.1.311.10.3.4.2"));
+		assertTrue(oids.contains("1.3.6.1.4.1.311.10.3.4.2")); // EKU_ADOBE_PDFSIGNING
+		assertEquals("EKU_ADOBE_PDFSIGNING", map.get("1.3.6.1.4.1.311.10.3.4.2"));
 	}
 	
 }
