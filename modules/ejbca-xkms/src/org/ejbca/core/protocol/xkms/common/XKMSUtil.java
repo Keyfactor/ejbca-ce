@@ -102,6 +102,17 @@ public class XKMSUtil {
 		}
 	}
 	
+	/** We use our own NamespacePrefixMapper. There are different implementations of this however, and java switched in 
+	 * jdk 1.6u18, but you can still stumble upon RI implementations which is why we have to do a bit of testing in this method.
+	 * This depends on the jar jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar when compiling since we need both:
+	 * com.sun.xml.internal.bind.namespacePrefixMapper and com.sun.xml.bind.namespacePrefixMapper in order to compile.
+	 * 
+	 * See: http://pragmaticintegration.blogspot.com/2007/11/moving-jaxb-20-applications-built-by.html
+	 * 
+	 * @param jAXBContext
+	 * @return Marshaller
+	 * @throws JAXBException
+	 */
 	public static Marshaller getNamespacePrefixMappedMarshaller(JAXBContext jAXBContext) throws JAXBException {
 		Marshaller marshaller = jAXBContext.createMarshaller();
 		try {
