@@ -40,13 +40,6 @@
     	<pathelement location="${mod.ejbca-ejb.lib}"/>
 	</path>
 
-	<!--
-	<path id="systemtests-jaxws.classpath">
-    	<path refid="systemtests.classpath"/>
-		<path refid="lib.jaxws-client.classpath"/>	<!- - Used by XKMS.. move these tests! - ->
-	</path>
-	-->
-
     <target name="build" description="Build this module" depends="compile"/>
 
     <target name="clean" description="Clean up this module">
@@ -304,6 +297,7 @@
 	</target>
 
 	<target name="runxkms" description="Run XKMS system tests">
+		<fail message="xkms is not enabled in conf/xkms.properties." unless="xkms.enabled.true" />
     	<property name="test.runone" value="XKMS*Test"/>
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
 	<antcall target="runone-internal">
