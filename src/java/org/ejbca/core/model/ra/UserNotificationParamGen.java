@@ -52,9 +52,10 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		populateWithExpiringCert(expiringCert);
 	}
 
-	public UserNotificationParamGen(UserDataVO userData, String approvalAdminDN) {
+	public UserNotificationParamGen(UserDataVO userData, String approvalAdminDN, UserDataVO admin) {
 		populateWithUserData(userData);
 		populateWithApprovalAdminDN(approvalAdminDN);
+		populateWithEmailAddresses(userData, admin);
 	}
 
 	protected void populateWithExpiringCert(Certificate expiringCert) {
@@ -97,6 +98,22 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 				time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(userData.getTimeModified());
 			}
 			paramPut("user.TIMEMODIFIED", time);
+			
+		}
+	}
+	
+	protected void populateWithEmailAddresses(UserDataVO userdata, UserDataVO admin) {
+		if(userdata != null) {
+			paramPut("user.ee.email", userdata.getEmail());
+
+			DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+			paramPut("user.san.email", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
+		}
+		if(admin != null) {
+			paramPut("requestAdmin.ee.email", admin.getEmail());
+			
+			DNFieldExtractor sanfields = new DNFieldExtractor(admin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+			paramPut("requestAdmin.san.email", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
 		}
 	}
 }

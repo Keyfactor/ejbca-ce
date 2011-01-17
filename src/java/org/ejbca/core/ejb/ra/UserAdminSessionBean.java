@@ -2416,7 +2416,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                         if (log.isDebugEnabled()) {
                             log.debug("approvalAdminDN: " + approvalAdminDN);
                         }
-                        UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN);
+                        UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, findUser(admin, admin.getUsername()));
                         /*
                          * substitute any $ fields in the receipient and from
                          * fields
