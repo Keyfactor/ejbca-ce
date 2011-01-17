@@ -99,7 +99,7 @@
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
 	
-    <target name="javatruststore" depends="testforgnujava" description="Install RootCA ceritficate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
+    <target name="javatruststore" depends="testforgnujava" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:javatruststore" />
         <antcall target="j2ee:deploytruststore" />
     </target>
