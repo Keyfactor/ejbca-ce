@@ -10,11 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
+package org.ejbca.core.protocol.certificatestore;
 
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.core.protocol.certificatestore.HashID;
+import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /** class used from TestCertificateCache
  * 
@@ -22,15 +24,15 @@ import org.apache.commons.lang.StringUtils;
  * @version $Id$
  */
 public class CacheTester implements Runnable { // NOPMD, this is not a JEE app, only a test
-	private CertificateCache cache = null;
+	private ICertificateCache cache = null;
 	private String dn;
-	public CacheTester(CertificateCache cache, String lookfor) {
+	public CacheTester(ICertificateCache cache, String lookfor) {
 		this.cache = cache;
 		this.dn = lookfor;
 	}
 	public void run() {
 		for (int i=0; i<1000;i++) {
-			X509Certificate cert = cache.findLatestBySubjectDN(dn);
+			X509Certificate cert = cache.findLatestBySubjectDN(HashID.getFromDN(dn));
 			// The cache tests will not return any CV Certificates because this OCSP cache 
 			// only handles X.509 Certificates.
 			if (!StringUtils.contains(dn, "CVCTest")) {

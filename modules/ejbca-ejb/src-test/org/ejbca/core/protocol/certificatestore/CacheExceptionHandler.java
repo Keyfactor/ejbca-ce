@@ -10,7 +10,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.ocsp;
+package org.ejbca.core.protocol.certificatestore;
+
 
 
 /** class used from TestCertificateCache, depends on TestCertificateCache
