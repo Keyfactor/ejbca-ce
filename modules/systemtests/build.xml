@@ -93,6 +93,8 @@
 
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest" unless="test.runone" />
+		<property name="test.runoneexclude" value=""/>
+		<fail message="'test.runoneexclude' is not set. Example -Dtest.runoneclude=none" unless="test.runoneexclude" />
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
@@ -109,6 +111,7 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
 					<include name="**/${test.runone}.class" />
+					<exclude name="**/${test.runoneexclude}.class" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -121,7 +124,7 @@
 	<!-- =================================
           Run most system tests
          ================================= -->
-    <target name="run" depends="build, assert-appserverrunning, runws" description="Run all system tests">
+    <target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests">
     	<antcall target="showtime"/>
 		<delete dir="${reports.base.dir}/run" />
 		<mkdir dir="${reports.base.dir}/run/html"/>
@@ -178,8 +181,6 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
                     <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
                     <exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
-					<!-- Exclude test of broken functionality -->
-					<exclude name="org/ejbca/core/protocol/xkms/XKMSSigTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
 					<exclude name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class"/>
@@ -192,6 +193,8 @@
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
 					<!-- Exclude WS, they are run from their own target, runws -->
 					<exclude name="**/EjbcaWS*Test.class" />
+					<!-- Exclude XKMS, they are run from their own target, runxkms -->
+					<exclude name="**/XKMS*Test.class" />
 				</fileset>
 			</batchtest>
 			<!-- Tests that require the CMP TCP listener -->
@@ -289,20 +292,22 @@
 	</target>
 
 	<target name="runws" description="Run Web Services system tests">
-    	<property name="test.runone" value="EjbcaWS*Test"/>
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>	<!-- no jee classes for ws tests -->
-	<antcall target="runone-internal">
-		<param name="reports.dir" value="${reports.base.dir}/runws"/>
-	</antcall>
+		<antcall target="runone-internal">
+			<param name="reports.dir" value="${reports.base.dir}/runws"/>
+			<param name="test.runone" value="EjbcaWS*Test"/>
+		</antcall>
 	</target>
 
 	<target name="runxkms" description="Run XKMS system tests">
 		<fail message="xkms is not enabled in conf/xkms.properties." unless="xkms.enabled.true" />
-    	<property name="test.runone" value="XKMS*Test"/>
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
-	<antcall target="runone-internal">
-		<param name="reports.dir" value="${reports.base.dir}/runxkms"/>
-	</antcall>
+		<antcall target="runone-internal">
+			<param name="reports.dir" value="${reports.base.dir}/runxkms"/>
+	    	<param name="test.runone" value="XKMS*Test"/>
+			<!-- Exclude test of broken functionality -->
+			<param name="test.runoneexclude" value="org/ejbca/core/protocol/xkms/XKMSSigTest"/>
+		</antcall>
 	</target>
 
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
