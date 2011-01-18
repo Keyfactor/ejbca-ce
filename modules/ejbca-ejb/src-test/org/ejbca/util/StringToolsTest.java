@@ -211,6 +211,13 @@ public class StringToolsTest extends TestCase {
     	assertNotNull(res);
     	assertEquals("Failed to find the client certificate serialnumber", res[0], "0000AAAA");
     	assertEquals("Failed to find the client certificate issuerDN", res[1], "CN=foo,O=foo,C=SE");
+    	
+    	certdata = "0000AAAA, CN=foo,O=foo,C=SE";
+    	res = StringTools.parseCertData(certdata);
+    	assertNotNull(res);
+    	assertEquals("Failed to find the client certificate serialnumber", res[0], "0000AAAA");
+    	assertEquals("Failed to find the client certificate issuerDN", res[1], "CN=foo,O=foo,C=SE");
+
     }
 
 }
