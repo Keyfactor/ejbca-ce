@@ -606,7 +606,7 @@ public final class StringTools {
 		}
 		
     	final String dnStrings = "(unstructuredName|dnQualifier|postalAddress|name|emailAddress|UID|OU|NIF|CIF|ST|businessCategory|streetAddress|CN|postalCode|O|pseudonym|DC|surname|C|initials|serialNumber|L|givenName|telephoneNumber|title|DC)";
-    	final String formats[] = {"(^[0-9A-Fa-f]+),((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",
+    	final String formats[] = {"(^[0-9A-Fa-f]+), ?((" + dnStrings + "=[^,]+,)*(" + dnStrings + "=[^,]+)*)",
     						"(^[0-9A-Fa-f]+) : DN : \"([^\"]*)\"( ?: SubjectDN : \"[^\"]*\")?"
     			
     	};
