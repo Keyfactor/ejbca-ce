@@ -272,6 +272,11 @@
 		<include name="org/ejbca/ui/web/pub/cluster/CommonHealthCheck.java"/>
 		<!-- Dependecies from CMP TCP WAR -->
 		<include name="org/ejbca/config/CmpConfiguration.java"/>
+		<!-- Dependecies from ExternalRA Service -->
+		<include name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
+		<include name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
+		<include name="org/ejbca/core/protocol/cmp/CrmfRequestMessage.java"/>
+		<include name="org/ejbca/core/protocol/cmp/CmpResponseMessage.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-common-web" pathsep=" " property="source.fileset.ejbca-common-web.files"><map from="${src.dir}/" to=""/></pathconvert>
 
