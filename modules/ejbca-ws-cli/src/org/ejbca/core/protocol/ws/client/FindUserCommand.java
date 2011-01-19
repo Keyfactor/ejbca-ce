@@ -46,7 +46,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     private static final String[] MATCHWITHTEXTS = {"USERNAME", "EMAIL", "STATUS", "ENDENTITYPROFILE",
     	                                            "CERTIFICATEPROFILE", "CA", "TOKEN", "DN",
     	                                            "DN_PKIX_UID",					"DN_PKIX_COMMONNAME",
-    	                                            "DNSERIALNUMBER",				"GIVENNAME",
+    	                                            "DN_PKIX_SERIALNUMBER",			"GIVENNAME",
     	                                            "INITIALS",						"SURNAME",
     	                                            "TITLE",						"ORGANIZATIONUNIT",
     	                                            "ORGANIZATION",					"LOCALE",
