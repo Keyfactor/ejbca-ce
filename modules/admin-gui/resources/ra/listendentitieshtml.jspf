@@ -254,12 +254,12 @@ function confirmrevocation(){
     </td>
     <td width="19%">
                    <% if(sortby.equals(SORTBY_COMMONNAME_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"COMMONNAME\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <% }else{
                          if(sortby.equals(SORTBY_COMMONNAME_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"COMMONNAME\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"COMMONNAME\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_COMMONNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
                    <%    }
                        } %>
     </td>
