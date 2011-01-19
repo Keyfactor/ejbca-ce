@@ -47,8 +47,8 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     	                                            "CERTIFICATEPROFILE", "CA", "TOKEN", "DN",
     	                                            "DN_PKIX_UID",					"DN_PKIX_COMMONNAME",
     	                                            "DN_PKIX_SERIALNUMBER",			"GIVENNAME",
-    	                                            "INITIALS",						"SURNAME",
-    	                                            "TITLE",						"ORGANIZATIONUNIT",
+    	                                            "DN_PKIX_INITIALS",				"DN_PKIX_SURNAME",
+    	                                            "DN_PKIX_TITLE",				"ORGANIZATIONUNIT",
     	                                            "ORGANIZATION",					"LOCALE",
     	                                            "STATE",						"DOMAINCOMPONENT",
     	                                            "COUNTRY"};
