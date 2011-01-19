@@ -2000,7 +2000,7 @@ function edituser(row){
   <tr> 
     <td width="10%"><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>"/>              
     </td>
-    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"COMMONNAME\") %>"/>
+    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
     </td>
     <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATIONUNIT\") %>"/>
     </td>

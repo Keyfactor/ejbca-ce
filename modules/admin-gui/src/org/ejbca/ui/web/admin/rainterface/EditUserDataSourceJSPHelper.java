@@ -360,7 +360,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		String subjectdirattrtext = ejbcawebbean.getText("SUBDIRATTR");
     		
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_UID"),Integer.valueOf(DNFieldExtractor.UID));  
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COMMONNAME"),Integer.valueOf(DNFieldExtractor.CN));  
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_COMMONNAME"),Integer.valueOf(DNFieldExtractor.CN));  
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DNSERIALNUMBER"), Integer.valueOf(DNFieldExtractor.SN)); 
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("GIVENNAME1"),Integer.valueOf(DNFieldExtractor.GIVENNAME)); 
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("INITIALS"), Integer.valueOf(DNFieldExtractor.INITIALS)); 
