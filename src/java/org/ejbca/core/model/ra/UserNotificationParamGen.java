@@ -112,8 +112,10 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		if(admin != null) {
 			paramPut("requestAdmin.ee.email", admin.getEmail());
 			
-			DNFieldExtractor sanfields = new DNFieldExtractor(admin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
-			paramPut("requestAdmin.san.email", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
+			DNFieldExtractor fields = new DNFieldExtractor(admin.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
+			paramPut("requestAdmin.CN", fields.getField(DNFieldExtractor.CN, 0));
+			fields = new DNFieldExtractor(admin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+			paramPut("requestAdmin.san.email", fields.getField(DNFieldExtractor.RFC822NAME, 0));
 		}
 	}
 }
