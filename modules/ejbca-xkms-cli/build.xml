@@ -12,7 +12,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
-		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<path refid="lib.ejbca-util.classpath"/>
 		<pathelement location="${mod.ejbca-xkms.lib}" /> 
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle-provonly.classpath"/>
@@ -47,7 +47,8 @@
 		<delete dir="${mod.ejbca-xkms-cli.dist}" />
     </target>
 	
-    <target name="compile" depends="ejbca-util, ejbca-xkms-common">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-xkms-common"/></target>
+    <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
         	<src path="${src.dir}"/>

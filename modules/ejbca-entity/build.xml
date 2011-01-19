@@ -121,7 +121,8 @@
 		<copy file="${resources.dir}/orm-ocsp-${database.name}.xml" tofile="${build-va.dir}/META-INF/orm.xml" failonerror="true" overwrite="true"/>
 	</target>
 
-    <target name="compile" depends="ejbca-util">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util"/></target>
+    <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>

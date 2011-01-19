@@ -20,11 +20,10 @@
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
 	</path>
 
 	<path id="compile-library.classpath">
-		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.xmlsec.classpath"/>
 		<path refid="lib.idn.classpath" />
@@ -67,7 +66,8 @@
     	<jar destfile="${mod.ejbca-xkms.lib}" basedir="${build-lib.dir}"/>
     </target>
 
-    <target name="compile" depends="ejbca-ejb">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+    <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath">
@@ -75,7 +75,8 @@
     	</javac>
     </target>
 	
-    <target name="compile-library" depends="ejbca-util">
+    <target name="compile-library-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util"/></target>
+    <target name="compile-library" depends="compile-library-external-deps">
     	<mkdir dir="${build-lib.dir}" />
         <javac destdir="${build-lib.dir}" debug="on" includeantruntime="false" includejavaruntime="true"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-library.classpath">

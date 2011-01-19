@@ -102,9 +102,8 @@
 	</target>
 
 	<target name="ejbca-compile" depends="ejbca-status-compile, ejbca-certstore-compile, ejbca-crlstore-compile"/>
-	<target name="ejbca-common-compile" depends="ejbca-ejb">
-	</target>
-	<target name="ejbca-status-compile" depends="ejbca-common-compile" if="ocsp.enabled">
+	<target name="ejbca-common-compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+	<target name="ejbca-status-compile" depends="ejbca-common-compile-external-deps" if="ocsp.enabled">
     	<mkdir dir="${build-status.dir}/WEB-INF/classes" />
         <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
@@ -112,7 +111,7 @@
 			<src path="${src.dir}"/>
         </javac>
 	</target>
-	<target name="ejbca-certstore-compile" depends="ejbca-common-compile" if="certstore.enabled">
+	<target name="ejbca-certstore-compile" depends="ejbca-common-compile-external-deps" if="certstore.enabled">
     	<mkdir dir="${build-certstore.dir}/WEB-INF/classes" />
 		<javac destdir="${build-certstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
@@ -120,7 +119,7 @@
 			<src path="${src.dir}"/>
 		</javac>
 	</target>
-	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile" if="crlstore.enabled">
+	<target name="ejbca-crlstore-compile" depends="ejbca-common-compile-external-deps" if="crlstore.enabled">
     	<mkdir dir="${build-crlstore.dir}/WEB-INF/classes" />
 		<javac destdir="${build-crlstore.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">

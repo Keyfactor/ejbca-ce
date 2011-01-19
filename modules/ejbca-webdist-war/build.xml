@@ -12,9 +12,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="lib.ejbca-common-web.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -28,20 +26,16 @@
     </target>
 	
     <target name="build" description="Build this module" depends="compile">
-        <war destfile="${mod.webdist-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
+        <war destfile="${mod.webdist-war.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}">
+            <fileset dir="${resources.dir}" excludes="WEB-INF/web.xml"/>
+        </war>
     </target>
 
-    <target name="compile" depends="setup, ejbca-ejb">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+    <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>
-    </target>
-
-    <target name="setup">
-    	<mkdir dir="${build.dir}"/>
-        <copy todir="${build.dir}">
-            <fileset dir="${resources.dir}" excludes="WEB-INF/web.xml"/>
-        </copy>
     </target>
 
 </project>

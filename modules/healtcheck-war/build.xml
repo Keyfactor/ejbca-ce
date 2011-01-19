@@ -21,8 +21,6 @@
 
 	<path id="compile-ejbca.classpath">
 		<path refid="compile-common.classpath"/>
-		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
-		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.ejbca-common-web.classpath"/>
 	</path>
 	
@@ -47,11 +45,11 @@
 		<war destfile="${mod.healthcheck-war.war}" webxml="${resources.dir}/WEB-INF/web-ocsp.xml" basedir="${build-ocsp.dir}"/>
 	</target>
 
-    <target name="ejbca-compile" depends="ejbca-ejb">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+    <target name="ejbca-compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java, org/ejbca/ui/web/pub/OCSPHealthServlet.java" classpathref="compile-ejbca.classpath"/>
-    		
     </target>
 
 	<target name="va-compile" depends="va-va-war">

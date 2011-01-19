@@ -34,14 +34,14 @@
     <!-- =================================================================== -->
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
-	<taskdef resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
+	<taskdef onerror="ignore" resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
 		
 	<target name="guard.noclover" unless="clover.installed">
 		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr"/>
 		<fail unless="clover.installed" message="The target you are attempting to run requires Clover, which doesn't appear to be installed"/>
 	</target>
 	
-	<target name="with.clover">
+	<target name="with.clover" depends="guard.noclover">
 		<clover-setup>
 			<fileset dir="${ejbca.home}/src/java">
 				<exclude name="org/apache/**/*.java"/>
@@ -50,7 +50,7 @@
 		</clover-setup>
 	</target>
 
-	<target name="clover.xml">
+	<target name="clover.xml" depends="guard.noclover">
 	    <clover-report>
 	       <current outfile="coverage.xml">
 	          <format type="xml"/>
@@ -58,7 +58,7 @@
 	    </clover-report>
 	 </target>
 	
-	<target name="clover.html">
+	<target name="clover.html" depends="guard.noclover">
 		<clover-html-report outdir="clover_html" title="EJBCA"/>
 	 </target>
 
@@ -71,13 +71,13 @@
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
-        <ant antfile="modules/build.xml" target="clean" inheritall="false"/>
+        <ant antfile="modules/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="testforgnujava, ejbca.ear, ejbca.clients" description="Builds EJBCA"/>
+    <target name="build" depends="testforgnujava, ejbca.ear" description="Builds EJBCA"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -632,10 +632,6 @@
 	
 	<target name="ejbca.ear.module-dependencies">
     	<ant dir="modules" target="ejbca.ear.module-dependencies"/>
-	</target>
-
-	<target name="ejbca.clients">
-    	<ant dir="modules" target="ejbca.clients"/>
 	</target>
 
     <target name="ejbca-entity">

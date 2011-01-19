@@ -13,7 +13,6 @@
 	<property name="jasper-temp.dir" location="${this.dir}/tmp-jasper"/>
 
 	<path id="compile.classpath">
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="lib.ejbca-common-web.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
@@ -45,11 +44,11 @@
     </target>
 	
     <target name="build" description="Build this module" depends="validate">
-        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}"/>
+        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml"/>
     </target>
 
-    <target name="compile" depends="setup, ejbca-ejb-interface, ejbca-common-web, ejbca-ejb">
-    	<mkdir dir="${build.dir}/WEB-INF/classes" />
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
+    <target name="compile" depends="setup, compile-external-deps">
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
@@ -91,14 +90,11 @@
     </target>
 
     <target name="setup">
-    	<mkdir dir="${build.dir}" />
+    	<mkdir dir="${build.dir}/WEB-INF/classes"/>
         <copy todir="${build.dir}">
-            <fileset dir="${resources.dir}"/>
+            <fileset dir="${resources.dir}" excludes="languages/languagefile.*.properties"/>
         </copy>
         <copy todir="${build.dir}/WEB-INF/lib" file="${ejbca.home}/lib/myfaces/tomahawk-1.1.6.jar" failonerror="true"/>
-		<delete>
-			<fileset dir="${build.dir}/languages/" includes="languagefile.*.properties"/>
-		</delete>
     	<native2ascii encoding="UTF-8"
     		src="${resources.dir}/languages"
     		dest="${build.dir}/languages"

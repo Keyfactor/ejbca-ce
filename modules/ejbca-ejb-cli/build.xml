@@ -20,7 +20,6 @@
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
 		<path refid="lib.xmlsec.classpath"/>	
 	</path>
@@ -66,7 +65,8 @@
     	</javac>
     </target>
 
-    <target name="setup" depends="ejbca-util, ejbca-ejb-interface">
+    <target name="setup-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ejb-interface"/></target>
+    <target name="setup" depends="setup-external-deps">
     	<mkdir dir="${mod.ejbca-ejb-cli.dist}" />
     	<mkdir dir="${mod.ejbca-ejb-cli.dist}/lib" />
     	<pathconvert property="lib.compile.classpath.property" pathsep=" ">
@@ -76,7 +76,7 @@
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${lib.compile.classpath.property}"/>
     	</copy>
-    	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="true">
+    	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="false">
 			<path refid="lib.jee.classpath"/>
     		<path refid="lib.jpa.classpath"/>
     	</copy>

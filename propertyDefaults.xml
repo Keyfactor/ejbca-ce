@@ -3,7 +3,22 @@
     <description>
             This file sets the property defaults. Included from other files. 
     </description>
-    
+
+	<macrodef name="echounlesstrue" description="Echo a message unless the given variable is set to true. Useful for outputing things once.">
+		<attribute name="message"/>
+		<attribute name="unless-true"/>
+		<sequential>
+			<script language="javascript"> <![CDATA[
+				if (project.getProperty("@{unless-true}") != "true") {
+					echo = project.createTask("echo");
+					echo.setMessage("@{message}");
+					echo.perform();
+				}
+				]]>
+			</script>
+		</sequential>
+	</macrodef>
+
 	<!--
 		Merge custom modifications from customejbca.home to
 		ejbca.home before reading the other configuration files.
@@ -15,23 +30,19 @@
     	value="Merging available external modifications from ${customejbca.home} (unless done previously).">
     	<isset property="customejbca.present" />
     </condition>
-    <condition property="customejbca.message.level" else="info" value="debug">
-    	<isset property="runoncesetup.hasrun"/>
-    </condition>
-	<echo message="${customejbca.message}" level="${customejbca.message.level}"/>
     <condition property="customejbca.extensions" value="*" else="none-at-all">
     	<isset property="customejbca.present" />
     </condition>
     <condition property="customejbca.dir" value="${customejbca.home}" else="${ejbca.home}/conf">	<!-- This is just any dir that we know exists to avoid error messages.. -->
     	<isset property="customejbca.present" />
     </condition>
+	<echounlesstrue message="${customejbca.message}" unless-true="runoncesetup.hasrun"/>
 	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
 		<fileset dir="${customejbca.dir}">
 			<include name="**/*.${customejbca.extensions}" unless="runoncesetup.hasrun"/>
 			<exclude name="**/*" if="runoncesetup.hasrun"/>
    		</fileset>
 	</copy>
-	<property name="runoncesetup.hasrun" value="true"/>
 
 	<!-- Load property files -->
     <property file="${ejbca.home}/conf/ejbca.properties" />
@@ -65,7 +76,7 @@
     </condition>
 	
 	<!-- Auto-detect supported application server type -->
-	<echo message="appserver.home: ${appserver.home}" level="${customejbca.message.level}"/>
+	<echounlesstrue message="appserver.home: ${appserver.home}" unless-true="runoncesetup.hasrun"/>
 	<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/client/cxf-api.jar" property="appserver.subtype" value="jboss6"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
@@ -75,7 +86,9 @@
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
 	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA, JBoss 6.0.0, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Normally you should not have to configure this.)" unless="appserver.type"/>
-	<echo message="appserver.type: ${appserver.type}" level="${customejbca.message.level}"/>
+	<echounlesstrue message="appserver.type: ${appserver.type}" unless-true="runoncesetup.hasrun"/>
+
+	<property name="runoncesetup.hasrun" value="true"/>
 	
 	<condition property="bundle-hibernate-jpa">
 		<or>
