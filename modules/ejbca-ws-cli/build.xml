@@ -14,7 +14,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
-		<pathelement location="${mod.ejbca-util.lib}" /> 
+		<path refid="lib.ejbca-util.classpath"/>
 		<pathelement location="${mod.ejbca-ws.lib}" /> 
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.bouncycastle-provonly.classpath"/>
@@ -51,7 +51,8 @@
 		<delete file="${mod.ejbca-ws.wsdl}" />
     </target>
 	
-    <target name="compile" depends="ejbca-util, ejbca-ws-common">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ws-common"/></target>
+    <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-withws.classpath">
@@ -79,7 +80,8 @@
 			     value="package org.ejbca.core.protocol.ws.client.gen;"/>
 	</target>
 
-    <target name="generate" depends="ejbca-ws-wsdl" description="Generate WS client stubs from implementation">
+    <target name="generate-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ws-wsdl"/></target>
+    <target name="generate" depends="generate-external-deps" description="Generate WS client stubs from implementation">
 		<available file="${mod.ejbca-ws.wsdl}" property="wsdl.present"/>
 		<fail unless="wsdl.present" message="Generation of client side Web Services code requires ${mod.ejbca-ws.wsdl} to be present."/>
 		<delete><fileset dir="${src-gen.dir}" includes="**"></fileset></delete>

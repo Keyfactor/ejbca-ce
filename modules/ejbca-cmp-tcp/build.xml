@@ -12,9 +12,7 @@
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="compile.classpath">
-		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path refid="lib.ejbca-common-web.classpath"/>
-		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
@@ -33,7 +31,8 @@
         </war>
     </target>
 
-    <target name="compile" depends="ejbca-ejb" if="cmptcpservices.enabled">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util"/><antcall target="ejbca-common-web"/><antcall target="ejbca-ejb-interface"/></target>
+    <target name="compile" depends="compile-external-deps" if="cmptcpservices.enabled">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>

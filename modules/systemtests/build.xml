@@ -109,10 +109,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.dir}">
-					<include name="**/${test.runone}.class" />
-					<exclude name="**/${test.runoneexclude}.class" />
-				</fileset>
+				<fileset dir="${build.dir}" includes="**/${test.runone}.class" excludes="**/${test.runoneexclude}.class"/>
 			</batchtest>
 		</junit>
 		<delete dir="${this.dir}/p12" />	<!-- Workaround for tests using BatchMakeP12 -->
@@ -147,9 +144,7 @@
 			</batchtest>
 			<!-- Tests that require CAsTest to setup CAs -->
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
-				<fileset dir="${build.dir}">
-					<include name="org/ejbca/core/ejb/ca/sign/SignSessionTest.class" />
-				</fileset>
+				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/sign/SignSessionTest.class"/>
 			</batchtest>
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class"/>

@@ -1,7 +1,7 @@
 The EJBCA build system
 ----------------------
 This directory contains/will contain all the different modules that is required to build EJBCA and
-the external OCSP responder. All modules will not always be built, depending on the configuration.
+the stand alone VA. All modules will not always be built, depending on the configuration.
 
 You should be able to build and to run any modules JUnit tests any module separately. Dependencies
 should be built automatically.
@@ -29,10 +29,8 @@ modules/common/
   This directory holds (/will hold) common libraries and meta-data used by the different modules.
 build.xml
   Contains all the targets that are of concern to the one installing/upgrading/testing EJBCA.
-test.xmli
-  Still contains all the main test targets for EJBCA.  
 src/
-  Still contains the main source-code of EJBCA and meta-data used for deployment.
+  Still contains the main source-code of EJBCA and some meta-data used for deployment.
   
 Creating a new module
 ---------------------
@@ -63,10 +61,14 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 		...
 	</path>
 	
-	<path id="test.classpath">
-		<path location="${build-test.dir}" />
+	<path id="compile-test.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="lib.junit.classpath"/>
+	</path>
+	
+	<path id="test.classpath">
+		<path location="${build-test.dir}" />
+		<path refid="compile-test.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
@@ -80,22 +82,17 @@ modules/{module name}/resources   Holds the module's meta-data and templates
 		<delete file="{JAR produced by 'build'}" />
     </target>
 	
-    <target name="compile">
+    <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="some external dependency target from modules/build.xml"/></target>
+    <target name="compile" depends="compile-external-deps">
        	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        		<path refid="compile.classpath"/>
-        	</classpath>
-        	...
-    	</javac>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+            classpathref="compile.classpath"/>
     </target>
 
     <target name="compile-tests" depends="build">
     	<mkdir dir="${build-test.dir}" />
-        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
-        	<classpath>
-        	...
-    	</javac>
+        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
+            classpathref="compile-test.classpath"/>
         <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
     </target>
 
