@@ -36,6 +36,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
  * Use an instance of this class for all your access of a specific P11 slot.
  * Use {@link P11Slot#getProvider()} to get a provider for the slot.
  *
+ * @version $Id$
  */
 public class P11Slot {
     /** Log4j instance */
