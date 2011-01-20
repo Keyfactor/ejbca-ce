@@ -40,15 +40,14 @@
     </target>
 	
     <target name="build" description="Build this module" depends="validate">
-        <war destfile="${mod.publicweb-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml"/>
+        <war destfile="${mod.publicweb-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
+            <fileset dir="${resources.dir}"/>
+        </war>
     </target>
 
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
     <target name="compile" depends="compile-external-deps">
     	<mkdir dir="${build.dir}/WEB-INF/classes" />
-        <copy todir="${build.dir}">
-            <fileset dir="${resources.dir}"/>
-        </copy>
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
@@ -75,7 +74,7 @@
 
 	    <property name="jasper.classpath" refid="jasper.classpath"/>
 		<taskdef name="jasper2" classname="org.apache.jasper.JspC" classpathref="jasper.classpath" loaderref="jasper"/>
-		<jasper2 uriroot="${build.dir}"
+		<jasper2 uriroot="${resources.dir}"
 			package="org.apache.jasper.jspc"
 			outputdir="${jasper-temp.dir}/jspc"
 			validatexml="false"
