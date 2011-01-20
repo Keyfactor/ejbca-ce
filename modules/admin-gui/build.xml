@@ -44,7 +44,10 @@
     </target>
 	
     <target name="build" description="Build this module" depends="validate">
-        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml"/>
+        <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.6.jar"/>
+        	<fileset dir="${resources.dir}" excludes="languages/*"/>
+        </war>
     </target>
 
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
@@ -91,10 +94,6 @@
 
     <target name="setup">
     	<mkdir dir="${build.dir}/WEB-INF/classes"/>
-        <copy todir="${build.dir}">
-            <fileset dir="${resources.dir}" excludes="languages/languagefile.*.properties"/>
-        </copy>
-        <copy todir="${build.dir}/WEB-INF/lib" file="${ejbca.home}/lib/myfaces/tomahawk-1.1.6.jar" failonerror="true"/>
     	<native2ascii encoding="UTF-8"
     		src="${resources.dir}/languages"
     		dest="${build.dir}/languages"

@@ -163,93 +163,118 @@
     	<ant antfile="build.xml" dir="modules" target="va-ejb" />
     </target>
 
-	<target name="jar_replacement_in_module">
-		<condition property="replacement_string" else="${replacement_tag}" value="module>&lt;ejb>${replacement_ejb}&lt;/ejb>&lt;/module>">
-			<istrue value="${replacement_enabled}"/>
-		</condition>
-		<replace file="${replacement_file}" token="${replacement_tag}" value="${replacement_string}"/>
-	</target>
-	<target name="war_replacement_in_module">
-        <!--
-        <module>
-            <web>
-                <web-uri>${replacement_web-uri}</web-uri>
-                <context-root>${replacement_context-root}</context-root>
-            </web>
-        </module>
-        -->
-		<condition property="replacement_string" else="${replacement_tag}" value="module>&lt;web>&lt;web-uri>${replacement_web-uri}&lt;/web-uri>&lt;context-root>${replacement_context-root}&lt;/context-root>&lt;/web>&lt;/module>">
-			<istrue value="${replacement_enabled}"/>
-		</condition>
-		<replace file="${replacement_file}" token="${replacement_tag}" value="${replacement_string}"/>
-	</target>
+	<macrodef name="jar-replacement-in-module" description="Optionally enable and configure a EJB module in the EAR">
+		<attribute name="replacement-tag"/>
+		<attribute name="replacement-file"/>
+		<attribute name="replacement-enabled"/>
+		<attribute name="replacement-ejb"/>
+		<sequential>
+			<condition property="replacement-string-@{replacement-ejb}" else="@{replacement-tag}" value="module>&lt;ejb>@{replacement-ejb}&lt;/ejb>&lt;/module>">
+				<istrue value="@{replacement-enabled}"/>
+			</condition>
+			<replace file="@{replacement-file}" token="@{replacement-tag}" value="${replacement-string-@{replacement-ejb}}"/>
+			<script language="javascript"> <![CDATA[
+				if ("@{replacement-enabled}" == "true") {
+					echo = project.createTask("echo");
+					echo.setMessage("Enabled module @{replacement-ejb}");
+					echo.perform();
+				}
+				]]>
+			</script>
+		</sequential>
+	</macrodef>
+	<macrodef name="war-replacement-in-module" description="Optionally enable and configure a WAR module in the EAR">
+		<attribute name="replacement-tag"/>
+		<attribute name="replacement-file"/>
+		<attribute name="replacement-enabled"/>
+		<attribute name="replacement-web-uri"/>
+		<attribute name="replacement-context-root"/>
+		<sequential>
+			<condition property="replacement-string-@{replacement-web-uri}" else="@{replacement-tag}" value="module>&lt;web>&lt;web-uri>@{replacement-web-uri}&lt;/web-uri>&lt;context-root>@{replacement-context-root}&lt;/context-root>&lt;/web>&lt;/module>">
+				<istrue value="@{replacement-enabled}"/>
+			</condition>
+			<condition property="replacement-echo-@{replacement-web-uri}" value="true">
+				<istrue value="@{replacement-enabled}"/>
+			</condition>
+			<replace file="@{replacement-file}" token="@{replacement-tag}" value="${replacement-string-@{replacement-web-uri}}"/>
+			<script language="javascript"> <![CDATA[
+				if ("@{replacement-enabled}" == "true") {
+					echo = project.createTask("echo");
+					echo.setMessage("Enabled module @{replacement-web-uri}");
+					echo.perform();
+				}
+				]]>
+			</script>
+		</sequential>
+	</macrodef>
 
 	<target name="va_replacings_in_application.xml">
-		<antcall target="war_replacement_in_module">
-			<param name="replacement_tag" value="!--@status.war@-->"/>
-			<param name="replacement_file" value="${application.xml}"/>
-			<param name="replacement_enabled" value="${ocsp.enabled}"/>
-			<param name="replacement_web-uri" value="status.war"/>
-			<param name="replacement_context-root" value="${ocsp.contextroot}"/>
-		</antcall>
-		<antcall target="war_replacement_in_module">
-			<param name="replacement_tag" value="!--@certstore.war@-->"/>
-			<param name="replacement_file" value="${application.xml}"/>
-			<param name="replacement_enabled" value="${certstore.enabled}"/>
-			<param name="replacement_web-uri" value="certstore.war"/>
-			<param name="replacement_context-root" value="${certstore.contextroot}"/>
-		</antcall>
-		<antcall target="war_replacement_in_module">
-			<param name="replacement_tag" value="!--@crlstore.war@-->"/>
-			<param name="replacement_file" value="${application.xml}"/>
-			<param name="replacement_enabled" value="${crlstore.enabled}"/>
-			<param name="replacement_web-uri" value="crlstore.war"/>
-			<param name="replacement_context-root" value="${crlstore.contextroot}"/>
-		</antcall>
+		<war-replacement-in-module
+			replacement-tag="!--@status.war@-->"
+			replacement-file="${application.xml}"
+			replacement-enabled="${ocsp.enabled}"
+			replacement-web-uri="status.war"
+			replacement-context-root="${ocsp.contextroot}"
+		/>
+		<war-replacement-in-module
+			replacement-tag="!--@certstore.war@-->"
+			replacement-file="${application.xml}"
+			replacement-enabled="${certstore.enabled}"
+			replacement-web-uri="certstore.war"
+			replacement-context-root="${certstore.contextroot}"
+		/>
+		<war-replacement-in-module
+			replacement-tag="!--@crlstore.war@-->"
+			replacement-file="${application.xml}"
+			replacement-enabled="${crlstore.enabled}"
+			replacement-web-uri="crlstore.war"
+			replacement-context-root="${crlstore.contextroot}"
+		/>
 	</target>
 
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, doc.war, create-log4config-bundle">
+	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle">
+		<antcall target="doc.war"><param name="external-deps-satfisfied" value="isset"/></antcall>
 	    <property name="caear" value="${dist.dir}/ejbca.ear" />
 		<property name="eardd.src" value="${tmp}/ear" />
 		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
-		<antcall target="war_replacement_in_module">
-			<param name="replacement_tag" value="!--@doc.war@-->"/>
-			<param name="replacement_file" value="${eardd.src}/META-INF/application.xml"/>
-			<param name="replacement_enabled" value="${doc.war.enabled}"/>
-			<param name="replacement_web-uri" value="doc.war"/>
-			<param name="replacement_context-root" value="/ejbca/doc"/>
-		</antcall>
-		<antcall target="war_replacement_in_module">
-			<param name="replacement_tag" value="!--@renew.war@-->"/>
-			<param name="replacement_file" value="${eardd.src}/META-INF/application.xml"/>
-			<param name="replacement_enabled" value="${web.renewalenabled}"/>
-			<param name="replacement_web-uri" value="renew.war"/>
-			<param name="replacement_context-root" value="/ejbca/renew"/>
-		</antcall>
-		<antcall target="war_replacement_in_module">
-			<param name="replacement_tag" value="!--@ejbca-cmp-tcp.war@-->"/>
-			<param name="replacement_file" value="${eardd.src}/META-INF/application.xml"/>
-			<param name="replacement_enabled" value="${cmp.tcp.enabled}"/>
-			<param name="replacement_web-uri" value="ejbca-cmp-tcp.war"/>
-			<param name="replacement_context-root" value="/ejbca/cmp-tcp"/>
-		</antcall>
-		<antcall target="jar_replacement_in_module">
-			<param name="replacement_tag" value="!--@ejbca-ws-ejb.jar@-->"/>
-			<param name="replacement_file" value="${eardd.src}/META-INF/application.xml"/>
-			<param name="replacement_enabled" value="${ejbcaws.enabled}"/>
-			<param name="replacement_ejb" value="ejbca-ws-ejb.jar"/>
-		</antcall>
-		<antcall target="jar_replacement_in_module">
-			<param name="replacement_tag" value="!--@ejbca-xkms-ejb.jar@-->"/>
-			<param name="replacement_file" value="${eardd.src}/META-INF/application.xml"/>
-			<param name="replacement_enabled" value="${xkms.enabled}"/>
-			<param name="replacement_ejb" value="ejbca-xkms-ejb.jar"/>
-		</antcall>
+		<war-replacement-in-module
+			replacement-tag="!--@doc.war@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${doc.war.enabled}"
+			replacement-web-uri="doc.war"
+			replacement-context-root="/ejbca/doc"
+		/>
+		<war-replacement-in-module
+			replacement-tag="!--@renew.war@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${web.renewalenabled}"
+			replacement-web-uri="renew.war"
+			replacement-context-root="/ejbca/renew"
+		/>
+		<war-replacement-in-module
+			replacement-tag="!--@ejbca-cmp-tcp.war@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${cmp.tcp.enabled}"
+			replacement-web-uri="ejbca-cmp-tcp.war"
+			replacement-context-root="/ejbca/cmp-tcp"
+		/>
+		<jar-replacement-in-module
+			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${ejbcaws.enabled}"
+			replacement-ejb="ejbca-ws-ejb.jar"
+		/>
+		<jar-replacement-in-module
+			replacement-tag="!--@ejbca-xkms-ejb.jar@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${xkms.enabled}"
+			replacement-ejb="ejbca-xkms-ejb.jar"
+		/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
@@ -271,17 +296,18 @@
 		<condition property="bundle-serializer-exclude" value="serializer*.jar" else="">
 			<isset property="exclude-serializer"/>
 		</condition>
+		<!-- Do we need special WebSphere handling? -->
+    	<condition property="websphere-specials" value="true"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
     		<!-- Specify that we will use a specific WS implementation -->
             <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
             <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml"/>
             <zipfileset prefix="lib" dir="${lib}">
-            	<!-- Since WepSphere 7's "special" tools can't handle the signature of these objects, we will add them later.
-                <include name="bcmail-jdk${java.ver}-145.jar" />
-                <include name="bcprov-jdk${java.ver}-145.jar" />
-                <include name="bctsp-jdk${java.ver}-145.jar" />
-                -->
+            	<!-- Since WepSphere 7's "special" tools can't handle the signature of these objects, we will add them later. -->
+                <include name="bcmail-jdk${java.ver}-145.jar" unless="websphere-specials"/>
+                <include name="bcprov-jdk${java.ver}-145.jar" unless="websphere-specials"/>
+                <include name="bctsp-jdk${java.ver}-145.jar" unless="websphere-specials"/>
                 <include name="cert-cvc.jar" />
                 <include name="log4j-1.2.16.jar" />
                 <include name="ldap.jar" />
@@ -320,10 +346,7 @@
         	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
         	<zipfileset prefix="lib" dir="${hwtoken.class.dir}" includes="*.jar"/>
 		</ear>
-    	<condition property="websphere-specials" value="true"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
     	<antcall target="websphere-specials"/>
-		<!-- Now when WebSphere is done we can finally add the BC libraries again. -->
-		<jar update="true" destfile="${caear}" basedir="." includes="lib/bcmail-jdk${java.ver}-145.jar lib/bcprov-jdk${java.ver}-145.jar lib/bctsp-jdk${java.ver}-145.jar"/>
     	<antcall target="signjar">
         	<param name="signjar.file" value="${caear}"/>
     	</antcall>
@@ -348,6 +371,8 @@
 		<exec executable="${appserver.home}/bin/createEJBStubs.${generate-ws-wars-extension}">
 			<arg line="${caear} -verbose" />
 		</exec>
+		<!-- Now when WebSphere is done we can finally add the BC libraries again. -->
+		<jar update="true" destfile="${caear}" basedir="${ejbca.home}" includes="lib/bcmail-jdk${java.ver}-145.jar lib/bcprov-jdk${java.ver}-145.jar lib/bctsp-jdk${java.ver}-145.jar"/>
     </target>
 
 	<target name="create-log4config-bundle">
