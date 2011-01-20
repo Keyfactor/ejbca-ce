@@ -1998,7 +1998,7 @@ function edituser(row){
   </p>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
   <tr> 
-    <td width="10%"><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>"/>              
+    <td width="10%"><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>"/>              
     </td>
     <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
     </td>
