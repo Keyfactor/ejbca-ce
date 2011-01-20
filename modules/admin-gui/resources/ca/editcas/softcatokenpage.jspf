@@ -36,7 +36,7 @@
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SIGNALGORITHM") %>
+        <%= ejbcawebbean.getText("SIGNINGALGORITHM") %>
       </td>
       <td width="50%"> 
            <% if(editca){
@@ -56,7 +56,7 @@
     %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("KEYSIZE") %>
+        <%= ejbcawebbean.getText("KEYSIZERSA") %>
       </td>
       <td width="50%"> 
            <% if(editca){

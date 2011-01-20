@@ -398,25 +398,25 @@ function confirmrepublish(){
       <!-- ---------- Certificate content ---------- -->
 
       <tr id="Row<%=(row++)%2%>">
-		<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATEVERSION") %></td>
+		<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_TYPEVERSION") %></td>
 		<td> <%= certificatedata.getType() + " " + ejbcawebbean.getText("VER") + certificatedata.getVersion() %></td>
       </tr>
       
      <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMBER") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER") %></td>
 		 <td><%= certificatedata.getSerialNumber() %></td>
      </tr>
        
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("ISSUERDN") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_ISSUERDN") %></td>
 		 <td><%= certificatedata.getIssuerDN() %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDFROM") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDFROM") %></td>
 		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidFrom()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDTO") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDTO") %></td>
 		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidTo()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
@@ -444,7 +444,7 @@ function confirmrepublish(){
      <% } // if (!certificatedata.getType().equalsIgnoreCase("CVC")) %>
        
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_PUBLICKEY") %></td>
 		 <td><%= certificatedata.getPublicKeyAlgorithm() %> 
 		 	 <% out.write(" (" + certificatedata.getKeySpec(ejbcawebbean.getText("BITS")) + ")");
 		 	    if (certificatedata.getPublicKeyModulus() != null) {

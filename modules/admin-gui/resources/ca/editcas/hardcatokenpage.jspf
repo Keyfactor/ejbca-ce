@@ -23,7 +23,7 @@
     <% }%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SIGNALGORITHM") %>
+        <%= ejbcawebbean.getText("SIGNINGALGORITHM") %>
       </td>
       <td width="50%"> 
            <% if(editca){

@@ -711,7 +711,7 @@ function checkallfields(){
     %>
         <tr id="Row<%=row++%2%>"> 
           <td width="50%"  align="right"> 
-            <%= ejbcawebbean.getText("ISSUERDN") %>
+            <%= ejbcawebbean.getText("CERT_ISSUERDN") %>
           </td>
           <td width="50%"> 
               <% out.write(issuerDN + "<br />"); %> 

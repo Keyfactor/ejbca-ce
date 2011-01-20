@@ -1405,7 +1405,7 @@ function checkUseInBatch(){
 	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("CERTSERIALNUMBERHEXA") %> <br />
+				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %> <br />
 				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890abcdef)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
