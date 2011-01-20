@@ -51,7 +51,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     	                                            "DN_PKIX_TITLE",			"DN_PKIX_ORGANIZATIONALUNIT",
     	                                            "DN_PKIX_ORGANIZATION",		"DN_PKIX_LOCALITY",
     	                                            "DN_PKIX_STATEORPROVINCE",	"DN_PKIX_DOMAINCOMPONENT",
-    	                                            "COUNTRY"};
+    	                                            "DN_PKIX_COUNTRY"};
 
     private static final int[] MATCHWITHVALUES = { org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME, 
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_EMAIL, 
