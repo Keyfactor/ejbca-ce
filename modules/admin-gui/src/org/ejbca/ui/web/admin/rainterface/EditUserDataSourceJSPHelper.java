@@ -366,11 +366,11 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_INITIALS"), Integer.valueOf(DNFieldExtractor.INITIALS)); 
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_SURNAME"), Integer.valueOf(DNFieldExtractor.SURNAME)); 
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_TITLE"), Integer.valueOf(DNFieldExtractor.T));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("ORGANIZATIONUNIT"), Integer.valueOf(DNFieldExtractor.OU));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("ORGANIZATION"), Integer.valueOf(DNFieldExtractor.O));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("LOCALE"), Integer.valueOf(DNFieldExtractor.L));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("STATE"), Integer.valueOf(DNFieldExtractor.ST));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DOMAINCOMPONENT"), Integer.valueOf(DNFieldExtractor.DC));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_ORGANIZATIONALUNIT"), Integer.valueOf(DNFieldExtractor.OU));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_ORGANIZATION"), Integer.valueOf(DNFieldExtractor.O));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_LOCALITY"), Integer.valueOf(DNFieldExtractor.L));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_STATEORPROVINCE"), Integer.valueOf(DNFieldExtractor.ST));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_DOMAINCOMPONENT"), Integer.valueOf(DNFieldExtractor.DC));
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COUNTRY"), Integer.valueOf(DNFieldExtractor.C));
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));

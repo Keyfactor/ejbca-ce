@@ -45,12 +45,12 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     
     private static final String[] MATCHWITHTEXTS = {"USERNAME", "EMAIL", "STATUS", "ENDENTITYPROFILE",
     	                                            "CERTIFICATEPROFILE", "CA", "TOKEN", "DN",
-    	                                            "DN_PKIX_UID",					"DN_PKIX_COMMONNAME",
-    	                                            "DN_PKIX_SERIALNUMBER",			"GIVENNAME",
-    	                                            "DN_PKIX_INITIALS",				"DN_PKIX_SURNAME",
-    	                                            "DN_PKIX_TITLE",				"ORGANIZATIONUNIT",
-    	                                            "ORGANIZATION",					"LOCALE",
-    	                                            "STATE",						"DOMAINCOMPONENT",
+    	                                            "DN_PKIX_UID",				"DN_PKIX_COMMONNAME",
+    	                                            "DN_PKIX_SERIALNUMBER",		"DN_PKIX_GIVENNAME",
+    	                                            "DN_PKIX_INITIALS",			"DN_PKIX_SURNAME",
+    	                                            "DN_PKIX_TITLE",			"DN_PKIX_ORGANIZATIONALUNIT",
+    	                                            "DN_PKIX_ORGANIZATION",		"DN_PKIX_LOCALITY",
+    	                                            "DN_PKIX_STATEORPROVINCE",	"DN_PKIX_DOMAINCOMPONENT",
     	                                            "COUNTRY"};
 
     private static final int[] MATCHWITHVALUES = { org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME, 
