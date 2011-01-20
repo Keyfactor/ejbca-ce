@@ -2002,9 +2002,9 @@ function edituser(row){
     </td>
     <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_COMMONNAME\") %>"/>
     </td>
-    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATIONUNIT\") %>"/>
+    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
     </td>
-    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATION\") %>"/>                 
+    <td width="20%"><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>                 
     </td>
     <td width="30%"> &nbsp;
     </td>

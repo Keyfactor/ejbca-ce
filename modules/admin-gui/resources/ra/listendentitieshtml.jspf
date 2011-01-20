@@ -265,22 +265,22 @@ function confirmrevocation(){
     </td>
     <td width="17%">
                    <% if(sortby.equals(SORTBY_ORGANIZATIONUNIT_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATIONUNIT\") %>"/>           
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>           
                    <% }else{
                          if(sortby.equals(SORTBY_ORGANIZATIONUNIT_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATIONUNIT\") %>"/>  
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>  
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATIONUNIT\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATIONUNIT_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATIONALUNIT\") %>"/>
                    <%    }
                        } %>
     </td>
     <td width="18%"><% if(sortby.equals(SORTBY_ORGANIZATION_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATION\") %>"/> 
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/> 
                    <% }else{ 
                          if(sortby.equals(SORTBY_ORGANIZATION_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATION\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"ORGANIZATION\") %>"/>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_ORGANIZATION_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"DN_ABBR_ORGANIZATION\") %>"/>
                    <%    }
                        } %>
     </td>
