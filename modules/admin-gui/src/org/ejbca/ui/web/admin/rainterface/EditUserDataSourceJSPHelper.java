@@ -371,9 +371,9 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_LOCALITY"), Integer.valueOf(DNFieldExtractor.L));
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_STATEORPROVINCE"), Integer.valueOf(DNFieldExtractor.ST));
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_DOMAINCOMPONENT"), Integer.valueOf(DNFieldExtractor.DC));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("COUNTRY"), Integer.valueOf(DNFieldExtractor.C));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
-    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_COUNTRY"), Integer.valueOf(DNFieldExtractor.C));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_UNSTRUCTUREDADDRESS"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDADDRESS));
+    		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_UNSTRUCTUREDNAME"), Integer.valueOf(DNFieldExtractor.UNSTRUCTUREDNAME));
     		    		
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_DNSNAME"), Integer.valueOf(DNFieldExtractor.DNSNAME));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_IPADDRESS"), Integer.valueOf(DNFieldExtractor.IPADDRESS));
