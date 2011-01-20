@@ -1710,7 +1710,7 @@ function checkallfields(){
 	<%	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
-				<c:out value="<%= ejbcawebbean.getText(\"CERTSERIALNUMBERHEXA\") %>"/> <br />
+				<c:out value="<%= ejbcawebbean.getText(\"CERT_SERIALNUMBER_HEXA\") %>"/> <br />
 				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> 1234567890abcdef)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="" />

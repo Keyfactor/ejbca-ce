@@ -1094,7 +1094,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
          &nbsp;
       </td>
       <td width="40%"  align="right"> 
-		<%= ejbcawebbean.getText("CUSTOMCERTSERIALNUMBER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20certificate%20serial%20number%20override") %>
+		<%= ejbcawebbean.getText("CERT_SERIALNUMBER_CUSTOM") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20certificate%20serial%20number%20override") %>
       </td>
       <td width="50%"> 
         <%	used = profiledata.getUse(EndEntityProfile.CERTSERIALNR, 0); %>

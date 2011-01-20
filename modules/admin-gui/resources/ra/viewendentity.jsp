@@ -322,7 +322,7 @@
 		final String certSerialNr = oldNr!=null ? oldNr.toString(16) : null;
 		if ( certSerialNr!=null ) { %>
 			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
-			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERTSERIALNUMBERHEXA") %></td>
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %></td>
 			<td><%= certSerialNr %></td>
 			</tr> 
 	<%	} }%>
