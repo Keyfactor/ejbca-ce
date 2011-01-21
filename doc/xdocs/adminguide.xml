@@ -3087,22 +3087,35 @@ Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM
 You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certificate requests from an HSM.
 </p>
   <subsubsection name="Sun Java PKCS#11 ECC key issue">
-  <p>If you are using the ejbcaClientToolBox.sh tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
-  to stumble on a bug in the JDK which prevents reading of the public key from the HSM. the ejbcaClientToolBox.sh tool needs to read the public key,
+  <p>If you are using the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
+  to stumble on a bug in the JDK which prevents reading of the public key from the HSM. The clientToolBox tool needs to read the public key,
   generate a "dummy" certificate and assign that to the key label, so we have a public key certificate in the keystore retrieved from 
   the Sun PKCS#11 provider.
-  </p><p>This bug is present at least up to and including JDK 1.6u18. A fix has been merged though and should hopefully be available in u19.</p>
-  <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="https://jira.primekey.se/browse/ECA-940">ECA-940</a>
+  </p><p>This bug is present at least up to and including Oracle JDK 1.6u23. A fix has been merged though and should hopefully be available in u24. The fix is already included in OpenJDK 1.6u21.</p>
+  <p>You can look at this issue in the EJBCA Jira for a solution to the problem: <a href="http://jira.primekey.se/browse/ECA-940">ECA-940</a>
   </p>
   </subsubsection>
-
-  <subsubsection name="Using Brainpool ECC curves">
-  <p>Using the <a href="http://www.ecc-brainpool.org/download/Domain-parameters.pdf">Brainpool</a> family of elliptic curves requires a bit of special handling in Java, at least with the Sun PKCS#11 provider.
-  <br/>Here we provide a guide for using Brainpool curves with the SafeNet ProtectServer Gold HSM. These steps were contributed by DGBK, Netherlands.
-  <br/>Using the brainpool curves have one disadvantage, at least when using the Sun PKCS#11 provider, and that is that you can not use the EJBCA tools to generate keys, but have to use the HSM vendors tools.
-  </p>
+  
+  <subsubsection name="Missing named Brainpool curves in Java">
   <p>
-  First you have to patch the Java file ECParameters.java. Again, it is the same file as patched above for the bug.
+  At the time of writing, Oracle Java does not have named curve definitions for the Brainpool curves. We have made a patch which is waiting for approval in the OpenJDK 7, see <a href="https://bugs.openjdk.java.net/show_bug.cgi?id=100162">JDK bug 100162</a>. You may download a compiled version together with an installation script for Debian-based operating systems <a href="https://sourceforge.net/projects/ejbca/files/JDK_patches/Brainpool/">from Sourceforge</a>. 
+  If the script does not work for you can replace the class file manually. See the included readme file for instructions.
+  </p>
+  <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2012">ECA-2012</a>.</p>
+  <p>The patch should work on all HSMs that have <i>named curve support</i> for Brainpool. It has been tested on SafeNet Luna SA and Utimaco CryptoServer. SafeNet ProtectServer supports Brainpool but not using named curves, see below for brainpool support on ProtectServer using custom domain parameters.</p>
+  <p>With the patch applied you can generate and use brainpool curves in the HSM. Example clientToolBox commands to generate a key:</p>
+  <source>
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so brainpoolP160r1 keyAliasBp160 1
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /usr/lunasa/lib/libCryptoki2_64.so 1
+
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /etc/utimaco/libcs2_pkcs11.so brainpoolP160r1 keyAliasBp160 1
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /etc/utimaco/libcs2_pkcs11.so 1
+  </source>
+  </subsubsection>
+  
+  <subsubsection name="Issue with explicit parameters in Java">
+  <p>
+  In order to use elliptic curves with explicit parameters (as opposed to the standard named curves) you need to apply a patch to the file ECParameters.java. It is the same file as patched above for the bug.
   </p>
   <ul>
   <li>Download the JDK source code and locate the file sun/security/ec/ECParameters.java.</li>
@@ -3110,8 +3123,14 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
   <li>Compile the class by running 'javac *.java' in the directory where the file is located.</li>
   <li>Replace the existing sun/security/ec/ECParameters.class file in jre/lib/rt.jar with your patched and compiled version.</li>
   </ul>
+  </subsubsection>
+
+  <subsubsection name="Using Brainpool ECC with SafeNet ProtectServer Gold HSM">
+  <p>Here we provide a guide for using <a href="http://www.ecc-brainpool.org/download/Domain-parameters.pdf">Brainpool</a> curves with the SafeNet ProtectServer Gold HSM. These steps were contributed by DGBK, Netherlands.
+  <br/>ProtectServer needs explicit parameters for the Brainpool curves. Using explicit parameters have one disadvantage, at least when using the Sun PKCS#11 provider, and that is that you can not use the EJBCA tools to generate keys, but have to use the HSM vendors tools.
+  </p>
   <p>
-  Now you are ready to start generating domain parameters and keys. 
+  First you should apply the patch for <a href="#Issue with explicit parameters in Sun Java">explicit parameters</a>, above. Then you are ready to start generating domain parameters and keys. 
   These are the commands for <i>ProtectServer Gold software version 3.33, firmware version 2.07</i>.
   </p>
 <p>
