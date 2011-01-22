@@ -308,10 +308,10 @@ function checkallfields(){
     var illegalfields = 0;
 
     <% if(!editca){ %>
-    if(!checkfieldforcompletednchars("document.ca.<%=TEXTFIELD_SUBJECTDN%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("SUBJECTDN") %>"))
+    if(!checkfieldforcompletednchars("document.ca.<%=TEXTFIELD_SUBJECTDN%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("CERT_SUBJECTDN") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("SUBJECTDN", true)%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CERT_SUBJECTDN", true)%>");
       illegalfields++;
     }
     if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value.indexOf("=")==-1)){
@@ -683,7 +683,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <strong><%= ejbcawebbean.getText("SUBJECTDN") %></strong>
+        <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong>
       </td>
       <td width="50%"> 
         <% if(editca){

@@ -420,7 +420,7 @@ function confirmrepublish(){
 		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidTo()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("SUBJECTDN") %></strong></td>
+		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
 		 <td><strong><%= certificatedata.getSubjectDN() %></strong></td>
        </tr>
        
