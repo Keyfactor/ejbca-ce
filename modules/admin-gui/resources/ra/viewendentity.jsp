@@ -88,7 +88,7 @@
       <td>&nbsp;</td>
       </tr> 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("SUBJECTDNFIELDS") %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></td>
 	 <td>
          </td>
        </tr>

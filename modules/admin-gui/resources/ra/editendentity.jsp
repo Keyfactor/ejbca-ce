@@ -1154,7 +1154,7 @@ function checkUseInBatch(){
        </tr>
        <% }%>
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><b><%= ejbcawebbean.getText("SUBJECTDNFIELDS") %></b></td>
+	<td align="right"><b><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></b></td>
 	<td>&nbsp;</td>
 	<td></td>
        </tr>

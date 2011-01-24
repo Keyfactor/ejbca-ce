@@ -1354,12 +1354,12 @@ function checkallfields(){
     <%	} %>
 
 
-    <!-- ---------- Subject DN Fields -------------------- -->
+    <!-- ---------- Subject DN attributes -------------------- -->
 
     <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
 	<td align="right" class="title">
-	  <strong><c:out value="<%= ejbcawebbean.getText(\"SUBJECTDNFIELDS\") %>"/></strong>
+	  <strong><c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_ATTRIBUTES\") %>"/></strong>
 	</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
