@@ -600,14 +600,14 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 	</tr>
 
 
-    <!-- ---------- Subject DN Fields -------------------- -->
+    <!-- ---------- Subject DN attributes -------------------- -->
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
         &nbsp;
       </td>
       <td width="40%" valign="top" align="right" class="title"> 
-        <strong><%= ejbcawebbean.getText("SUBJECTDNFIELDS") %></strong>
+        <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN_ATTRIBUTES") %></strong>
         <%= ejbcawebbean.getHelpReference("/userguide.html#End%20Entity%20Profile%20fields") %>
       </td>
       <td width="50%"> 
@@ -620,7 +620,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
       </td>
       <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTDNFIELDS") %>
+        <%= ejbcawebbean.getText("CERT_SUBJECTDN_ATTRIBUTES") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_ADDSUBJECTDN %>" size="1" >

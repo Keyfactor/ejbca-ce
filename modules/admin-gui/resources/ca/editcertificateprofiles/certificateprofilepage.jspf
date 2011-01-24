@@ -1363,7 +1363,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USESUBJECTDNSUBSET") %> 
+        <%= ejbcawebbean.getText("CERT_SUBJECTDN_SUBSET") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USESUBJECTDNSUBSET  %>"  onclick="checkusesubjectdnsubsetfield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1374,7 +1374,7 @@ function checkallfields(){
     </tr>        
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
-          <%= ejbcawebbean.getText("SUBSETOFSUBJECTDN") %>
+          <%= ejbcawebbean.getText("CERT_SUBJECTDN_SUBSET") %>
       </td>
       <td width="50%" valign="top">   
         <select name="<%=SELECT_SUBJECTDNSUBSET%>" size="15" multiple <%if(!certificateprofiledata.getUseSubjectDNSubSet()){out.write(" disabled ");} %>>       
