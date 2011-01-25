@@ -91,6 +91,7 @@
 		<fail message="Please start application server before running this script" if="appserver.notrunning.ocsp"/>	
 	</target>
 
+	<!-- If using antcall you must use inheritrefs="true" in order for not having to call clover-setup every time -->
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest" unless="test.runone" />
 		<property name="test.runoneexclude" value=""/>
@@ -106,6 +107,7 @@
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="${runone-internal.classpath}" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -136,7 +138,7 @@
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
-				<path refid="lib.clover.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
@@ -215,6 +217,7 @@
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/runweb">
@@ -251,6 +254,7 @@
 		    <classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/runcmp" unless="cmptcplistener.notrunning">
@@ -271,7 +275,7 @@
           Run a single test specified with -Dtest.runone=TestName
          ================================= -->
 	<target name="runone" description="Run a single JUnit-test specified -Dtest.runone=classname" unless="test.runone.fileset.notempty">
-		<antcall target="runone-internal">
+		<antcall target="runone-internal" inheritrefs="true">
 			 <param name="reports.dir" value="${reports.base.dir}/run-one"/>
 		</antcall>
 	</target>
@@ -281,14 +285,14 @@
          ================================= -->
 	<target name="runlogstress" description="Run the log stress test (runs for one hour)">
     	<property name="test.runone" value="LoggingStressTest"/>
-		<antcall target="runone-internal">
+		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runlogstress"/>
 		</antcall>
 	</target>
 
 	<target name="runws" description="Run Web Services system tests">
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>	<!-- no jee classes for ws tests -->
-		<antcall target="runone-internal">
+		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runws"/>
 			<param name="test.runone" value="EjbcaWS*Test"/>
 		</antcall>
@@ -297,7 +301,7 @@
 	<target name="runxkms" description="Run XKMS system tests" if="xkms.enabled.true">
 		<!--fail message="xkms is not enabled in conf/xkms.properties." unless="xkms.enabled.true" /-->
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
-		<antcall target="runone-internal">
+		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runxkms"/>
 	    	<param name="test.runone" value="XKMS*Test"/>
 			<!-- Exclude test of broken functionality -->
@@ -307,21 +311,21 @@
 
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
     	<property name="test.runone" value="AddLotsofCertsPerUserTest"/>
-		<antcall target="runone-internal">
+		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
 		</antcall>
 	</target>
 
 	<target name="runlotsofusers" description="Run system tests that creates lots of users">
     	<property name="test.runone" value="AddLotsofUsersTest"/>
-	<antcall target="runone-internal">
+	<antcall target="runone-internal" inheritrefs="true">
 		<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
 	</antcall>
 	</target>
 
 	<target name="runperf" description="Run system tests that creates lots of certificates">
     	<property name="test.runone" value="SignLotsOfCertsTest"/>
-	<antcall target="runone-internal">
+	<antcall target="runone-internal" inheritrefs="true">
 		<param name="reports.dir" value="${reports.base.dir}/runperf"/>
 	</antcall>
 	</target>
@@ -398,6 +402,7 @@
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -419,6 +424,7 @@
 			<classpath>
 				<path location="${build.dir}" />
                 <path refid="lib.clientToolBox.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -442,6 +448,7 @@
 			<classpath>
 				<path location="${build.dir}" />
                 <path refid="systemtests.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=0 -Dvertest.expectedFailures=3 -Dvertest.expectedWarnings=0"/>
 			<formatter type="xml" />
@@ -466,6 +473,7 @@
 			<classpath>
 				<path location="${build.dir}" />
                 <path refid="systemtests.classpath" />
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedFailures=0"/>
 			<formatter type="xml" />

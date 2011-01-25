@@ -34,7 +34,8 @@
     <!-- =================================================================== -->
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
-	<taskdef onerror="ignore" resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/>
+    <property name="clover.jar" location="/home/tomas/Dev/clover-ant-3.0.2/lib/clover.jar"/>
+	<taskdef onerror="ignore" resource="cloverlib.xml" classpath="${clover.jar}"/>
 		
 	<target name="guard.noclover" unless="clover.installed">
 		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr"/>
@@ -72,6 +73,7 @@
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <clover-clean/>
     </target>
 	
     <!-- =================================================================== -->
