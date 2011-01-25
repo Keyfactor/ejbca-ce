@@ -83,7 +83,10 @@
   if(request.getParameter(USER_PARAMETER) != null){
     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
     if (logDevice == null) {
-    	logDevice = (String) logbean.getAvailableLogDevices().iterator().next();
+    	Iterator<String> iterator = logbean.getAvailableQueryLogDevices().iterator();
+    	if (iterator.hasNext()) {
+        	logDevice = iterator.next();
+    	}
     }
     logdata = logbean.filterByUsername(logDevice, username, ejbcawebbean.getInformationMemory().getCAIdToNameMap());
 
@@ -286,7 +289,7 @@ function viewcert(row){
   <p>
 	<%= ejbcawebbean.getText("FROM") %>
 	<select name="<%=SELECT_VIEWLOGDEVICE %>" >
-	<%	Collection availableLogDevices = logbean.getAvailableLogDevices();
+	<%	Collection availableLogDevices = logbean.getAvailableQueryLogDevices();
 		Iterator iter = availableLogDevices.iterator();
 		while(iter.hasNext()){
 			String deviceName = (String) iter.next();
@@ -402,7 +405,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="18%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
+    <td width="25%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMENT_DEC %>" value="submit" ><%= ejbcawebbean.getText("COMMENT") %>              
                    <% }else{
                          if(sortby.equals(SORTBY_COMMENT_DEC)){ %>
@@ -411,9 +414,6 @@ function viewcert(row){
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_COMMENT_ACC %>" value="submit" ><%= ejbcawebbean.getText("COMMENT") %>
                    <%    }
                        } %>
-    </td>
-    <td width="7%">
-                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" /><%= ejbcawebbean.getText("VERIFY") %>
     </td>
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>
@@ -427,7 +427,6 @@ function viewcert(row){
     <td width="7%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
-    <td width="7%">&nbsp;</td>
   </tr>
   <% } else{
          for(int i=0; i < logentries.length; i++){%>
@@ -468,7 +467,7 @@ function viewcert(row){
         <u><%= logentries[i].getValue(LogEntryView.CERTIFICATE) %></u> </A>
                     <% } %>
     </td>
-    <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
+    <td width="25%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
   </tr>
  <%      }
        }%>

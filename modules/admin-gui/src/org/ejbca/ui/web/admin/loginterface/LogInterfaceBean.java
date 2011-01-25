@@ -267,8 +267,8 @@ public class LogInterfaceBean implements java.io.Serializable {
     	return ret;
     }
     
-    public Collection getAvailableLogDevices() {
-    	return logsession.getAvailableLogDevices();
+    public Collection<String> getAvailableQueryLogDevices() {
+    	return logsession.getAvailableQueryLogDevices();
     }
 
     // Private methods.

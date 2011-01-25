@@ -144,7 +144,7 @@ function viewcert(row){
      </select>  
 		<c:out value="<%= ejbcawebbean.getText(\"FROM\").toLowerCase() %>" />
       <select name="<%=SELECT_VIEWLOGDEVICE %>" >
-      <%	Collection availableLogDevices = logbean.getAvailableLogDevices();
+      <%	Collection availableLogDevices = logbean.getAvailableQueryLogDevices();
             Iterator iter = availableLogDevices.iterator();
             while(iter.hasNext()){
             	String deviceName = (String) iter.next();

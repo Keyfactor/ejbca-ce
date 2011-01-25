@@ -251,7 +251,7 @@ function checkfields(){
     <td width="5%" align="left">&nbsp;</td>
     <td width="93%" align="left"> 
       <select name="<%=SELECT_VIEWLOGDEVICE %>" >
-        <% Collection availableLogDevices = logbean.getAvailableLogDevices();
+        <% Collection availableLogDevices = logbean.getAvailableQueryLogDevices();
            Iterator iteradv = availableLogDevices.iterator();
            while(iteradv.hasNext()){
              String deviceName = (String) iteradv.next();
