@@ -23,7 +23,7 @@
 	</target>
 	<target name="clover.xml" depends="-check.clover" if="clover.installed">
 	    <clover-report initstring="${ejbca.home}/.clover/clover.db">
-	       <current outfile="${ejbca.home}/coverage.xml">
+	       <current outfile="${ejbca.home}/clover.xml">
 	          <format type="xml"/>
 	       </current>
 	    </clover-report>
