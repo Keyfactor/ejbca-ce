@@ -207,10 +207,11 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_CAFUNCTIONALTY);
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY);
 	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_RAFUNCTIONALITY);
-	     requiredacceptrecrules.add(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY);	     
 	     requiredacceptrecrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
 	     HashSet<String> requiredacceptnonrecrules = new HashSet<String>();
 	     requiredacceptnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
+	     requiredacceptnonrecrules.add(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY);	     
+	     requiredacceptnonrecrules.add(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES);	     
 	     requiredacceptnonrecrules.add(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS);
 	     requiredacceptnonrecrules.add(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES);
 	     
