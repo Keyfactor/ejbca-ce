@@ -159,4 +159,12 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
 	public boolean getAllowConfigurableEvents() {
 		return true;
 	}
+
+	/**
+	 * @see org.ejbca.core.model.log.ILogDevice
+	 */
+	@Override
+	public boolean isSupportingQueries() {
+		return false;
+	}
 }

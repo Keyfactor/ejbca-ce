@@ -135,6 +135,19 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     	return ret;
     }
 
+    public Collection<String> getAvailableQueryLogDevices() {
+    	final ArrayList<String> ret = new ArrayList<String>();
+    	final Iterator<ILogDevice> i = logdevices.iterator();
+    	while (i.hasNext()) {
+    		final ILogDevice logDevice = i.next();
+    		if (logDevice.isSupportingQueries()) {
+        		ret.add( logDevice.getDeviceName() );
+    		}
+    	}
+    	Collections.reverse(ret);
+    	return ret;
+    }
+
     /**
      * Session beans main function. Takes care of the logging functionality.
      *

@@ -81,4 +81,7 @@ public interface ILogDevice extends Serializable {
 	 * @return the name the device
 	 */
 	public String getDeviceName();
+
+	/** @return the name the device */
+	public boolean isSupportingQueries();
 }

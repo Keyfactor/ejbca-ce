@@ -33,6 +33,8 @@ public interface LogSession {
 
     Collection<String> getAvailableLogDevices();
 
+    Collection<String> getAvailableQueryLogDevices();
+    
     /**
      * Session beans main function. Takes care of the logging functionality.
      * 
