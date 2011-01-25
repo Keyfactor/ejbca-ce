@@ -167,6 +167,7 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         if (!(editcheck && !authorizationsession.isAuthorizedNoLog(administrator, "/ra_functionality/edit_end_entity_profiles"))
                 && !((profile == null && editcheck) && !authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"))) {
 
+        	// Below line can be changed to use directly caSession.getAvailableCAs(admin) instead, it does exactly what the below line does, but simpler.
             HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizationsession.getAuthorizedCAIds(administrator, caSession
                     .getAvailableCAs()));
     
