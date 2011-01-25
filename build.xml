@@ -34,7 +34,7 @@
     <!-- =================================================================== -->
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
-	<taskdef onerror="ignore" resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
+	<taskdef onerror="ignore" resource="cloverlib.xml" classpath="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/>
 		
 	<target name="guard.noclover" unless="clover.installed">
 		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr"/>
