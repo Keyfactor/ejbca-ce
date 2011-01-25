@@ -1,8 +1,3 @@
-<!DOCTYPE project [
-      <!ENTITY propertiesAndPaths SYSTEM "propertiesAndPaths.xmli">
-      <!ENTITY compile SYSTEM "compile.xmli">
-    ]>  
-    
 <project name="ejbca" default="build" basedir=".">
 
 	<!-- Import build specific info, like version number -->
@@ -32,41 +27,6 @@
 	<import file="./docs.xmli" />
 	
     <!-- =================================================================== -->
-    <!-- Clover stuff                                                        -->
-    <!-- =================================================================== -->
-    <property name="clover.jar" location="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/>
-	<taskdef onerror="ignore" resource="cloverlib.xml" classpath="${clover.jar}"/>
-		
-	<target name="guard.noclover" unless="clover.installed">
-		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr"/>
-		<fail unless="clover.installed" message="The target you are attempting to run requires Clover, which doesn't appear to be installed"/>
-	</target>
-	
-	<target name="with.clover" depends="guard.noclover">
-		<clover-setup>
-			<fileset dir="${ejbca.home}/src/java">
-				<exclude name="org/apache/**/*.java"/>
-				<exclude name="com/novosec/**/*.java"/>
-			</fileset>
-		</clover-setup>
-	</target>
-
-	<target name="clover.xml" depends="guard.noclover">
-	    <clover-report>
-	       <current outfile="coverage.xml">
-	          <format type="xml"/>
-	       </current>
-	    </clover-report>
-	 </target>
-	
-	<target name="clover.html" depends="guard.noclover">
-		<clover-html-report outdir="clover_html" title="EJBCA"/>
-	 </target>
-
-	<target name="clover-clean" depends="guard.noclover">
-		<clover-clean/>
-	</target>
-    <!-- =================================================================== -->
     <!-- Clean ALL                                                           -->
     <!-- =================================================================== -->
     <target name="clean">
@@ -89,8 +49,6 @@
 	  -->
     <target name="bootstrap" depends="testforgnujava" description="Bootstrap EJBCA application">
         <ant target="deploy">
-        	<reference refid="clover.files"/>
-        	<reference refid="clover.useclass.files"/>
         	<property name="j2ee.web-noconfigure" value="true"/>
         </ant>
     </target>
@@ -812,6 +770,18 @@
 
     <target name="ejbca-util-signserver.jar" description="Creates util library for use in SignServer">
         <ant dir="modules/ejbca-ejb" target="build-util-signserver"/>
+    </target>
+
+    <target name="clover.html">
+        <ant dir="modules" target="clover.html"/>
+    </target>
+
+    <target name="clover.clean">
+        <ant dir="modules" target="clover.clean"/>
+    </target>
+
+    <target name="clover.xml">
+        <ant dir="modules" target="clover.xml"/>
     </target>
 
 </project>

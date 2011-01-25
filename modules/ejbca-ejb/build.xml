@@ -425,13 +425,14 @@
     </target>
 
     <target name="compile-ejbca-ejb-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="compile-ejbca-ejb" depends="compile-ejbca-ejb-external-deps">
+	
+    <target name="compile-ejbca-ejb" depends="with.clover, compile-ejbca-ejb-external-deps">
     	<mkdir dir="${build.dir}"/>
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1"
         	includes="${source.fileset.ejbca-ejb.files}" classpathref="compile-ejbca-ejb.classpath"/>
     </target>
 
-    <target name="compile-va-ejb" depends="va-ejb-interface, compile-va-common">
+    <target name="compile-va-ejb" depends="with.clover, va-ejb-interface, compile-va-common">
     	<mkdir dir="${build-va.dir}"/>
         <javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
@@ -439,7 +440,7 @@
         </javac>
     </target>
 
-    <target name="compile-va-common" depends="va-ejb-interface">
+    <target name="compile-va-common" depends="with.clover, va-ejb-interface">
     	<mkdir dir="${build-va-common.dir}"/>
         <javac destdir="${build-va-common.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
            	<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/>
@@ -460,21 +461,21 @@
     	</javac>
     </target>
 
-	<target name="compile-util">
+	<target name="compile-util" depends="with.clover">
     	<mkdir dir="${build-util.dir}" />
         <javac srcdir="${src.dir}" destdir="${build-util.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	includes="${source.fileset.ejbca-util.files}" classpathref="compile-util.classpath"/>
     </target>
 
     <target name="compile-common-web-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ejb-interface"/></target>
-	<target name="compile-common-web" depends="compile-common-web-external-deps">
+	<target name="compile-common-web" depends="with.clover, compile-common-web-external-deps">
     	<mkdir dir="${build-common-web.dir}" />
         <javac srcdir="${src.dir}" destdir="${build-common-web.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	includes="${source.fileset.ejbca-common-web.files}" classpathref="compile-common-web.classpath"/>
     </target>
 
     <target name="compile-tests-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ejb"/></target>
-    <target name="compile-tests" depends="dependecy-check, compile-tests-external-deps">
+    <target name="compile-tests" depends="with.clover, dependecy-check, compile-tests-external-deps">
     	<mkdir dir="${build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"/>

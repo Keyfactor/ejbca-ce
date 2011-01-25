@@ -122,13 +122,14 @@
 	</target>
 
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-util"/></target>
-    <target name="compile" depends="compile-external-deps">
+	
+    <target name="compile" depends="with.clover, compile-external-deps">
     	<mkdir dir="${build.dir}" />
         <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile.classpath"/>
     </target>
 
-    <target name="compile-va">
+    <target name="compile-va" depends="with.clover">
     	<mkdir dir="${build-va.dir}" />
         <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
@@ -164,7 +165,7 @@
 		<antcall target="createreport"/>
     </target>
 
-    <target name="compile-test" depends="ejbca-util, build">
+    <target name="compile-test" depends="with.clover, ejbca-util, build">
     	<mkdir dir="${build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"/>
