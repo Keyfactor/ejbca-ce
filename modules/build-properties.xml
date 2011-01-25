@@ -138,7 +138,7 @@
 	<path id="lib.tomahawk.classpath"><fileset dir="${ejbca.home}/lib/myfaces" includes="tomahawk-*.jar"/></path>
 	<path id="lib.ldap.classpath"><fileset dir="${ejbca.home}/lib" includes="ldap.jar"/></path>
 	<path id="lib.quickserver.classpath"><fileset dir="${ejbca.home}/lib/quickserver" includes="QuickServer.jar"/></path>
-	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/></path>
+	<path id="lib.clover.classpath"><pathelement location="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/></path>
 	<path id="lib.idn.classpath"><fileset dir="${ejbca.home}/lib" includes="libidn.jar"/></path>
 	<path id="lib.jaxb-namespaceprfixmapper-interfaces.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/></path>
 	<path id="lib.xml.classpath"><fileset dir="${ejbca.home}/lib/xmlsign" includes="xalan-2.7.1.jar serializer-2.7.1.jar"/></path>

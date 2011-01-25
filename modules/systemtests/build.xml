@@ -136,7 +136,7 @@
 			<classpath>
 				<path location="${build.dir}" />
 				<path refid="systemtests.classpath" />
-				<pathelement path="/home/hudson/clover/clover-ant-2.5.0/lib/clover.jar"/>
+				<path refid="lib.clover.classpath" />
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
