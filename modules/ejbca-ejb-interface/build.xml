@@ -43,7 +43,7 @@
 		<delete file="${mod.va-ejb-interface.lib}"/>
     </target>
 
-	<target name="compile-va" depends="va-entity">
+	<target name="compile-va" depends="with.clover, va-entity">
     	<mkdir dir="${build-va.dir}" />
         <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
@@ -58,7 +58,8 @@
     </target>
 	
     <target name="compile-ejb3-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-entity"/></target>
-    <target name="compile-ejb3" depends="ejbca-util, ejbca-entity">
+	
+    <target name="compile-ejb3" depends="with.clover, ejbca-util, ejbca-entity">
         <mkdir dir="${ejb3.build.dir}" />
         <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>
