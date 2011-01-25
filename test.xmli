@@ -2,8 +2,8 @@
 <project name="ejbcatest" basedir=".">
 
     <target name="test:run" description="run both stand-alone JUnit test cases and system test">
-    	<antcall target="test:runsa" />
-    	<antcall target="test:runsys" />
+    	<antcall target="test:runsa" inheritrefs="true"/>
+    	<antcall target="test:runsys" inheritrefs="true"/>
     	<echo message="Please observe that there are additional reports from the test:runsa tests" /> 
     </target>
 

@@ -152,6 +152,7 @@
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
         		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
