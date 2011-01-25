@@ -9,7 +9,7 @@
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
     <property name="clover.jar" location="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/>
-	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" />
+	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
 	<target name="-check.clover">
 		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr" />
 	</target>
