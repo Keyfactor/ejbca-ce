@@ -300,7 +300,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="18%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
+    <td width="25%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMENT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"COMMENT\") %>" />
                    <% }else{
                          if(sortby.equals(SORTBY_COMMENT_DEC)){ %>
@@ -310,10 +310,6 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="7%">
-                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" /><%= ejbcawebbean.getText("VERIFY") %>
-    </td>
-    
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>
   <tr id="LogTextRow0"> 
@@ -370,7 +366,7 @@ function viewcert(row){
                     <% } 
                     }%>
     </td>
-    <td width="18%"><c:out value="<%= logentries[i].getValue(LogEntryView.COMMENT) %>" /></td>
+    <td width="25%"><c:out value="<%= logentries[i].getValue(LogEntryView.COMMENT) %>" /></td>
   </tr>
  <%      }
        }%>
