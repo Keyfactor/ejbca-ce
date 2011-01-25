@@ -45,7 +45,8 @@ public class BasicAccessRuleSetDecoder implements java.io.Serializable {
           	  currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_CAFUNCTIONALTY, AccessRule.RULE_ACCEPT, true));
           	  currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
           	  currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
-          	  currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY, AccessRule.RULE_ACCEPT, true));
+         	  currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY, AccessRule.RULE_ACCEPT, false));
+          	  currentruleset.add(new AccessRule(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRule.RULE_ACCEPT, false));
           	  currentruleset.add(new AccessRule(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRule.RULE_ACCEPT, true));
           	
           	  currentruleset.add(new AccessRule(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, AccessRule.RULE_ACCEPT, false));
