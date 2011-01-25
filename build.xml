@@ -63,6 +63,9 @@
 		<clover-html-report outdir="clover_html" title="EJBCA"/>
 	 </target>
 
+	<target name="clover-clean" depends="guard.noclover">
+		<clover-clean/>
+	</target>
     <!-- =================================================================== -->
     <!-- Clean ALL                                                           -->
     <!-- =================================================================== -->
@@ -73,7 +76,6 @@
         <delete dir="${tmp}"/>
         <delete file="velocity.log" />
         <ant antfile="modules/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
-        <clover-clean/>
     </target>
 	
     <!-- =================================================================== -->
