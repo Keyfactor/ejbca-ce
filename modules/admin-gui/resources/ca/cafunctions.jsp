@@ -17,7 +17,7 @@
   final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
 %>
 <%   // Initialize environment
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/basic_functions"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
                                             cabean.initialize(request, ejbcawebbean); 
 
   final String THIS_FILENAME                = globalconfiguration.getCaPath() 
