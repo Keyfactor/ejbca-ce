@@ -17,10 +17,14 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.OldLogSession;
 import org.cesecore.core.ejb.log.OldLogSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -31,25 +35,23 @@ import org.ejbca.util.query.Query;
  */
 public class OldLogDevice implements ILogDevice, Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	public final static String DEFAULT_DEVICE_NAME = "OldLogDevice";
 	
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
 	private static final Logger log = Logger.getLogger(OldLogDevice.class);
-	
-	private OldLogSession oldLogSession;
 
-	/**
-	 * A handle to the unique Singleton instance.
-	 */
+	/** A handle to the unique Singleton instance. */
 	private static ILogDevice instance;
 
+	private OldLogSession oldLogSession;
+	private CAAdminSession caAdminSession;
     private String deviceName = null;
 
-    /**
-	 * Initializes
-	 */
+    /** Initializes */
 	protected OldLogDevice(String name) throws Exception {
 		deviceName = name;
 	}
@@ -59,6 +61,9 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	// but this should not affect the functionality.
 	public void setOldLogSessionInterface(OldLogSessionLocal oldLogSession) {
 		this.oldLogSession = oldLogSession;
+	}
+	public void setCAAdminSessionInterface(CAAdminSessionLocal caAdminSession) {
+		this.caAdminSession = caAdminSession;
 	}
 
 	/**
@@ -120,7 +125,10 @@ public class OldLogDevice implements ILogDevice, Serializable {
 				log.debug("Found "+logentries.size()+" entries when exporting");    		
 			}
 			logexporter.setEntries(logentries);
-			ret = logexporter.export(admin);
+			// Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since we have circular dependencies!
+			Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
+			ejbs.put(CAAdminSession.class, caAdminSession);
+			ret = logexporter.export(admin, ejbs);
 		}
 		return ret;
 	}

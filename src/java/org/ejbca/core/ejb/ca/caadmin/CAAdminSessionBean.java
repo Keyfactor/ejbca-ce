@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import javax.annotation.PostConstruct;
 import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -172,7 +173,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public CAAdminSessionBean() {
+    @PostConstruct
+    public void postConstruct() {
         CryptoProviderTools.installBCProvider();
     }
 
@@ -3154,6 +3156,5 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 publishCACertificate(admin, certificate, publishers, ca.getSubjectDN());
             }
         }
-    } // activateAndPublishExternalCAServices
-
-} // CAAdminSessionBean
+    }
+}

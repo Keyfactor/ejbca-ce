@@ -32,6 +32,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
@@ -104,7 +105,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
     private static X509Certificate cacert = null;
 
-    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
+    private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
+    private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
@@ -366,7 +368,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             Admin approvingAdmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, APPROVINGADMINNAME).iterator().next(),
                     APPROVINGADMINNAME, null);
             approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
-                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, cainfo.getCAId());
+                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, cainfo.getCAId());
             // try to revoke the now revoked cert via CMP and verify error
             nonce = CmpMessageHelper.createSenderNonce();
             transid = CmpMessageHelper.createSenderNonce();
@@ -417,7 +419,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
      *      Find all certificates for a user and approve any outstanding revocation. 
      */
     public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
-                    CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
+                    CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
         Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
         Iterator<java.security.cert.Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
@@ -438,7 +440,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

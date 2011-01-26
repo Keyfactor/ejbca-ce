@@ -32,12 +32,9 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
  * Approval Request created when trying to activate a CA Token.
- *  
- * 
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -45,18 +42,13 @@ import org.ejbca.core.model.util.EjbRemoteHelper;
 public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
-
 	private static final Logger log = Logger.getLogger(ActivateCATokenApprovalRequest.class);
-	
 	private static final int LATEST_VERSION = 1;	
 
 	private String cAName = null;
 	private String authenticationCode = null;
 
-	
-	/**
-	 * Constuctor used in externaliziation only
-	 */
+	/** Constructor used in externalization only */
 	public ActivateCATokenApprovalRequest() {}
 
 	/**
@@ -75,12 +67,12 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.cAName = cAName;
 		this.authenticationCode = authenticationCode;
+	}
 
- 
-	} // RevocationApprovalRequest
-
-
-
+	@Override
+	public void execute() throws ApprovalRequestExecutionException {
+		throw new RuntimeException("This execution requires additional bean references.");
+	}
 	/**
 	 * A main function of the ApprovalRequest, the execute() method
 	 * is run when all required approvals have been made.
@@ -88,29 +80,17 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * execute should perform the action or nothing if the requesting admin
 	 * is supposed to try this action again.
 	 */
-	public void execute() throws ApprovalRequestExecutionException {
+	public void execute(CAAdminSession caAdminSession) throws ApprovalRequestExecutionException {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[getApprovalType()] + " (" + getApprovalType() + ").");
-
 		try {
-		    /*Context ctx = new javax.naming.InitialContext();
-		    ICAAdminSessionHome caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
-		    		ICAAdminSessionHome.class);
-			ICAAdminSessionRemote caadminsession = caadminsessionhome.create();*/
-			CAAdminSession caadminsession = new EjbRemoteHelper().getCAAdminSession();
 			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
-			caadminsession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode, null);
+			caAdminSession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode, null);
 		} catch (CATokenAuthenticationFailedException e) {
 			throw new ApprovalRequestExecutionException("CA Token Authentication Failed :" + e.getMessage(), e);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
 		} catch (CATokenOfflineException e) {
 			throw new ApprovalRequestExecutionException("CA Token still off-line :" + e.getMessage(), e);
-		/*} catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating userdata session", e);
-		} catch (NamingException e) {
-			throw new EJBException(e);
-		} catch (RemoteException e) {
-			throw new EJBException(e);*/
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
@@ -118,8 +98,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		} finally{
 			authenticationCode = "";
 		}
-	
-	} // execute
+	}
 
 	/**
 	 * Method that should generate an approval id for this type of
@@ -129,8 +108,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	public int generateApprovalId() {
 		String idString = getApprovalType() + ";" + cAName;
 		return idString.hashCode();
-	} // generateApprovalId
-
+	}
 
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN;
@@ -143,12 +121,12 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
+	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( cAName != null ) {
 			retval.add(new ApprovalDataText("CANAME",cAName,true,false));
 		}
-		
 		return retval;
 	}
 	
@@ -162,6 +140,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
+	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
@@ -190,6 +169,5 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
     		cAName = (String) in.readObject();
     		authenticationCode = (String) in.readObject(); 		
         }
-
 	}
 }

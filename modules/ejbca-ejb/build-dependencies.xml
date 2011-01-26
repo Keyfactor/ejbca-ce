@@ -127,7 +127,7 @@
 			</javac>
 
 			<!-- Logging component -->
-			<echo message=" ** Validating component: Logging (except CvsExporter, OldLogDevice) **"/>
+			<echo message=" ** Validating component: Logging (except OldLogDevice and CsvLogExporter) **"/>
 			<mkdir dir="${src-temp.dir}/logging"/>
 			<mkdir dir="${build-temp.dir}/logging"/>
 			<copy todir="${src-temp.dir}/logging">
@@ -146,6 +146,8 @@
 					<include name="org/ejbca/util/query/**/*.java"/>
 					<include name="org/ejbca/util/ObjectCache.java"/>
 					<exclude name="org/ejbca/core/model/log/CsvLogExporter.java"/>
+					<exclude name="org/ejbca/core/model/log/OldLogDevice.java"/>
+					<exclude name="org/ejbca/core/model/log/OldLogDeviceFactory.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/logging" destdir="${build-temp.dir}/logging" debug="on" includeantruntime="no"
@@ -209,18 +211,18 @@
 			</javac>
 
 			<!-- Approval component -->
-			<echo message=" ** Validating component: Approval Base (still includes GlobalConfiguration..) **"/>
+			<echo message=" ** Validating component: Approval Base (excludes Approval Execution, includes GlobalConfiguration..) **"/>
 			<mkdir dir="${src-temp.dir}/approval"/>
 			<mkdir dir="${build-temp.dir}/approval"/>
 			<copy todir="${src-temp.dir}/approval">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/ejbca/core/ejb/approval/*.java"/>
+					<include name="org/ejbca/core/ejb/approval/ApprovalSession*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/approval/*.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
-					<include name="org/ejbca/core/ejb/approval/*SessionBean.java"/>
+					<include name="org/ejbca/core/ejb/approval/ApprovalSessionBean.java"/>
 					<include name="org/ejbca/core/model/approval/**/*.java"/>
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
 					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
@@ -849,7 +851,6 @@
 					<include name="org/ejbca/core/model/services/ActionInfo.java"/>
 					<!-- Depends on EjbLocalHelper
        			<include name="org/ejbca/core/model/services/*.java"/>
-    			<include name="org/ejbca/core/model/services/BaseServiceComponent.java"/>
     			<include name="org/ejbca/core/model/services/actions/*.java"/>
     			<include name="org/ejbca/core/model/services/intervals/*.java"/>
     			-->
@@ -868,6 +869,13 @@
 					<pathelement location="${build-temp.dir}/crl"/>
 					<pathelement location="${build-temp.dir}/certstore"/>
 					<pathelement location="${build-temp.dir}/useradmin"/>
+					<pathelement location="${build-temp.dir}/raadmin"/>
+					<pathelement location="${build-temp.dir}/signing"/>
+					<pathelement location="${build-temp.dir}/raadmin"/>
+					<pathelement location="${build-temp.dir}/keyrecovery"/>
+					<pathelement location="${build-temp.dir}/hardtoken"/>
+					<pathelement location="${build-temp.dir}/approval"/>
+					<pathelement location="${build-temp.dir}/publish"/>
 					<pathelement location="${build-temp.dir}/caadmin"/>
 				</classpath>
 			</javac>

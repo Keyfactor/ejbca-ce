@@ -34,6 +34,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
@@ -133,6 +134,7 @@ public class XKMSKRSSTest extends TestCase {
     private final static DocumentBuilderFactory dbf;
     private final static Random ran;
 
+    private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
     private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
@@ -1177,7 +1179,7 @@ public class XKMSKRSSTest extends TestCase {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

@@ -20,6 +20,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
@@ -35,6 +36,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
@@ -50,6 +52,7 @@ public class EjbRemoteHelper {
     private AdminEntitySessionRemote adminEntitySession = null;
     private AdminGroupSessionRemote adminGroupSession = null;
     private ApprovalSessionRemote approvalSession = null;
+    private ApprovalExecutionSessionRemote approvalExecutionSession = null;
     private AuthenticationSessionRemote authenticationSession = null;
     private AuthorizationSessionRemote authorizationSession = null;
     private CAAdminSessionRemote caAdminSession = null;
@@ -68,19 +71,12 @@ public class EjbRemoteHelper {
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
     private RaAdminSessionRemote raAdminSession = null;
+    private ServiceDataSessionRemote serviceDataSession = null;
     private ServiceSessionRemote serviceSession = null;
     private SignSessionRemote signSession = null;
     private UpgradeSessionRemote upgradeSession = null;
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
-
-    /*
-     * Return the environment entries locator. ServiceLocator caches the home
-     * interfaces.
-     * 
-     * @return return the environment entries locator / private ServiceLocator
-     * getLocator() { return ServiceLocator.getInstance(); }
-     */
 
     public AdminEntitySessionRemote getAdminEntitySession() {
         if(adminEntitySession == null) {
@@ -257,10 +253,24 @@ public class EjbRemoteHelper {
         return configurationSession;
     }
 
-    public ServiceSessionRemote getServiceSession() {
+	public ServiceDataSessionRemote getServiceDataSession() {
+        if (serviceDataSession == null) {
+            serviceDataSession = JndiHelper.getRemoteSession(ServiceDataSessionRemote.class);
+        }
+        return serviceDataSession;
+	}
+
+	public ServiceSessionRemote getServiceSession() {
         if (serviceSession == null) {
             serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
         }
         return serviceSession;
     }
+
+	public ApprovalExecutionSessionRemote getApprovalExecutionSession() {
+        if (approvalExecutionSession == null) {
+        	approvalExecutionSession = JndiHelper.getRemoteSession(ApprovalExecutionSessionRemote.class);
+        }
+        return approvalExecutionSession;
+	}
 }

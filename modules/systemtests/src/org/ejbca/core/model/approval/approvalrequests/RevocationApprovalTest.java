@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Random;
 
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -61,6 +62,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = InterfaceCache.getApprovalExecutionSession();
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
@@ -193,7 +195,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 assertTrue("Allowing addition of identical approval requests.", false);
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
-                    ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSessionRemote, approvalCAID);
+                    ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
             // Make sure userstatus changed to revoked
             UserDataVO userdata = userAdminSession.findUser(internalAdmin, username);
             assertTrue("User was not revoked when last cert was.", userdata.getStatus() == UserDataConstants.STATUS_REVOKED);
@@ -221,7 +223,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 assertTrue("Allowing addition of identical approval requests.", false);
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
-                    ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY, certificateStoreSession, approvalSessionRemote, approvalCAID);
+                    ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
         } finally {
             try {
                 userAdminSession.deleteUser(internalAdmin, username);
@@ -256,7 +258,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 assertTrue(ERRORALLOWMORETHANONE, false);
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
-                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, approvalCAID);
+                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
             // Unrevoke
             try {
                 userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username,
@@ -275,7 +277,7 @@ public class RevocationApprovalTest extends CaTestCase {
                 assertTrue(ERRORALLOWMORETHANONE, false);
             }
             approveRevocation(internalAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED, ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE,
-                    certificateStoreSession, approvalSessionRemote, approvalCAID);
+                    certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
         } finally {
             userAdminSession.deleteUser(internalAdmin, username);
         }

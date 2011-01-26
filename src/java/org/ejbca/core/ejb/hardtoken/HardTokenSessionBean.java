@@ -87,7 +87,7 @@ import org.ejbca.util.CertTools;
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class LocalHardTokenSessionBean implements HardTokenSessionLocal, HardTokenSessionRemote {
+public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSessionRemote {
 
     private static final Logger log = Logger.getLogger(EjbcaHardTokenBatchJobSessionBean.class);
     /** Internal localization of logs and errors */

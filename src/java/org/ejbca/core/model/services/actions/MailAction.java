@@ -13,10 +13,12 @@
 package org.ejbca.core.model.services.actions;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -50,7 +52,8 @@ public class MailAction extends BaseAction {
 	 * 
 	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
 	 */
-	public void performAction(ActionInfo actionInfo) throws ActionException {
+	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
+		LogSessionLocal logSession = ((LogSessionLocal)ejbs.get(LogSessionLocal.class));
 		checkConfig(actionInfo);
 		
 		MailActionInfo mailActionInfo = (MailActionInfo) actionInfo;
@@ -70,21 +73,19 @@ public class MailAction extends BaseAction {
         	MailSender.sendMailOrThrow(senderAddress, Arrays.asList(reciverAddress), MailSender.NO_CC, mailActionInfo.getSubject(), mailActionInfo.getMessage(), MailSender.NO_ATTACHMENTS);
         	if (mailActionInfo.isLoggingEnabled()) {
         		String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
-        		getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
         	}
         } catch (Exception e) {
 			String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
             log.error(msg, e);
             try{
                 if (mailActionInfo.isLoggingEnabled()) {
-                	getLogSession().log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
+                	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
                 }
             }catch(Exception f){
                 throw new EJBException(f);
             }
         }
-        
-
 	}
 	
 	/**
@@ -99,14 +100,10 @@ public class MailAction extends BaseAction {
 			String msg = intres.getLocalizedMessage("services.mailaction.erroractioninfo");
 			throw new ActionException(msg);
 		}
-		
 		String senderAddress = properties.getProperty(PROP_SENDERADDRESS);
 		if(senderAddress == null || senderAddress.trim().equals("")){
 			String msg = intres.getLocalizedMessage("services.mailaction.errorsenderaddress");
 			throw new ActionException(msg);
 		}
 	}
-	
-
-
 }

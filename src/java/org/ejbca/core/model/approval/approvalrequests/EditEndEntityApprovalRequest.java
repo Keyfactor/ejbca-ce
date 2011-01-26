@@ -22,7 +22,11 @@ import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -36,13 +40,10 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 
 /**
  * Approval Request created when trying to edit an end entity.
- *  
- * 
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -59,26 +60,25 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	private boolean clearpwd;
 	private UserDataVO orguserdata;
 	
-	/**
-	 * Constuctor used in externaliziation only
-	 */
+	/** Constructor used in externalization only */
 	public EditEndEntityApprovalRequest() {}
 
-
 	public EditEndEntityApprovalRequest(UserDataVO newuserdata, boolean clearpwd, UserDataVO orguserdata, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING,
-				numOfReqApprovals, cAId, endEntityProfileId);
+		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, numOfReqApprovals, cAId, endEntityProfileId);
 		this.newuserdata = newuserdata;
 		this.clearpwd = clearpwd;
 		this.orguserdata = orguserdata;
 	}
 
-
-    public void execute() throws ApprovalRequestExecutionException {
+	@Override
+	public void execute() throws ApprovalRequestExecutionException {
+		throw new RuntimeException("This execution requires additional bean references.");
+	}
+	
+    public void execute(UserAdminSession userAdminSession) throws ApprovalRequestExecutionException {
         log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
         try {
-            UserAdminSession usersession = new EjbLocalHelper().getUserAdminSession();
-            usersession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
+        	userAdminSession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
         } catch (UserDoesntFullfillEndEntityProfile e) {
@@ -90,7 +90,6 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
         } catch (EjbcaException e) {
             throw new ApprovalRequestExecutionException("Error with the SubjectDN serialnumber :" + e.getErrorCode() + e.getMessage(), e);
         }
-
     }
 
     /**
@@ -100,14 +99,17 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		return new String(getApprovalType() + ";" + newuserdata.getUsername()).hashCode();
 	}
 
-
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_EDITENDENTITY;
 	}
 
-
-
+	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+		throw new RuntimeException("This getNewRequestDataAsText requires additional bean references.");
+	}
+
+	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession,
+			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
@@ -126,11 +128,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = newuserdata.getExtendedinformation() != null ? newuserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
-		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, newuserdata.getCAId()),true,false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,newuserdata.getEndEntityProfileId()),true,false));		
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,newuserdata.getCertificateProfileId()),true,false));
-		retval.add(ApprovalRequestHelper.getTokenName(admin,newuserdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,newuserdata.getHardTokenIssuerId())));
+		retval.add(new ApprovalDataText("CA", caAdminSession.getCAInfo(admin, newuserdata.getCAId()).getName(),true,false));
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, newuserdata.getEndEntityProfileId()),true,false));		
+		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(admin, newuserdata.getCertificateProfileId()),true,false));
+		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, admin,newuserdata.getTokenType()));
+		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(admin, newuserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
@@ -141,31 +143,34 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		if(data==null || data.equals("")){
 			return new ApprovalDataText(header,"NOVALUE",true,true);
 		}
-			
 		return new ApprovalDataText(header,data,true,false);
 	}
 
+	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
-		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
-		retval.add(new ApprovalDataText("USERNAME",orguserdata.getUsername(),true,false));
-		retval.add(new ApprovalDataText("PASSWORD","NOTSHOWN",true,true));
-		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(orguserdata.getDN()),true,false));
-		retval.add(getTextWithNoValueString("SUBJECTALTNAME",orguserdata.getSubjectAltName()));
-		String dirattrs = orguserdata.getExtendedinformation() != null ? orguserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
-		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
-		retval.add(getTextWithNoValueString("EMAIL",orguserdata.getEmail()));
-		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, orguserdata.getCAId()),true,false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,orguserdata.getEndEntityProfileId()),true,false));		
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,orguserdata.getCertificateProfileId()),true,false));
-		retval.add(ApprovalRequestHelper.getTokenName(admin,orguserdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,orguserdata.getHardTokenIssuerId())));
-		retval.add(new ApprovalDataText("KEYRECOVERABLE",orguserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("SENDNOTIFICATION",orguserdata.getSendNotification() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(orguserdata.getStatus()),true,true));
-		return retval;
+		throw new RuntimeException("This getOldRequestDataAsText requires additional bean references.");
 	}
 
-
+	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession,
+			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
+		final List<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
+		retval.add(new ApprovalDataText("USERNAME", orguserdata.getUsername(), true, false));
+		retval.add(new ApprovalDataText("PASSWORD", "NOTSHOWN", true, true));
+		retval.add(new ApprovalDataText("SUBJECTDN", CertTools.stringToBCDNString(orguserdata.getDN()), true, false));
+		retval.add(getTextWithNoValueString("SUBJECTALTNAME", orguserdata.getSubjectAltName()));
+		String dirattrs = orguserdata.getExtendedinformation() != null ? orguserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
+		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES", dirattrs));
+		retval.add(getTextWithNoValueString("EMAIL", orguserdata.getEmail()));
+		retval.add(new ApprovalDataText("CA", caAdminSession.getCAInfo(admin, orguserdata.getCAId()).getName(), true, false));
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, orguserdata.getEndEntityProfileId()), true, false));		
+		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(admin, orguserdata.getCertificateProfileId()), true, false));
+		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, admin,orguserdata.getTokenType()));
+		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(admin,orguserdata.getHardTokenIssuerId())));
+		retval.add(new ApprovalDataText("KEYRECOVERABLE", orguserdata.getKeyRecoverable() ? "YES" : "NO", true, true));
+		retval.add(new ApprovalDataText("SENDNOTIFICATION", orguserdata.getSendNotification() ? "YES" : "NO", true, true));
+		retval.add(new ApprovalDataText("STATUS", UserDataConstants.getTranslatableStatusText(orguserdata.getStatus()), true, true));
+		return retval;
+	}
 
 	public boolean isExecutable() {		
 		return true;
@@ -187,7 +192,5 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
     		clearpwd = in.readBoolean();
     		orguserdata = (UserDataVO) in.readObject();
         }
-
 	}
-
 }

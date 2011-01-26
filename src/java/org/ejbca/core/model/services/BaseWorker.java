@@ -29,7 +29,7 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  *
  * @version $Id$
  */
-public abstract class BaseWorker extends BaseServiceComponent implements IWorker {
+public abstract class BaseWorker implements IWorker {
 
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
     /** Internal localization of logs and errors */
@@ -190,5 +190,4 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 		}
 		return cAIdsToCheck;
 	}
-
 }

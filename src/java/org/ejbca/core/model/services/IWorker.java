@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services;
 
+import java.util.Map;
+
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -60,14 +62,13 @@ public interface IWorker {
 	/**
 	 * The main method that is called by the TimeSessionBean each time
 	 * it is time to activate this service
-	 *
+	 * @param ejbs A map between Local EJB interface classes and their injected stub
 	 */
-	public void work() throws ServiceExecutionFailedException;
+	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException;
 	
 	/**
 	 * 
 	 * @return the time in seconds to next execution.
 	 */
 	public long getNextInterval();
-	
 }

@@ -39,7 +39,6 @@ import org.ejbca.util.CertTools;
 public class GenerateTokenApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
-
 	//private static final Logger log = Logger.getLogger(ViewHardTokenDataApprovalRequest.class);
 	
 	public static final int STEP_0_VIEWHARDTOKENDATA = 0;
@@ -50,26 +49,20 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	private String dn;
 	private String username;
 	private String tokenTypeLabel;
-	
 
-	/**
-	 * Constuctor used in externaliziation only
-	 */
+	/** Constructor used in externalization only */
 	public GenerateTokenApprovalRequest() {}
 
-
 	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
-				numOfReqApprovals, cAId, endEntityProfileId,2);
+		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId,2);
 		this.username = username;
 		this.dn = userDN;
 		this.tokenTypeLabel = tokenTypeLabel;
 	}
 
-
+	@Override
 	public void execute() throws ApprovalRequestExecutionException {
 		// This is a non-executable approval
-
 	}
 
     /**
@@ -79,25 +72,23 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 		return new String(getApprovalType() + ";" + username + ";" + CertTools.getFingerprintAsString(getRequestAdminCert())).hashCode();
 	}
 
-
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_GENERATETOKEN;
 	}
 
-
+	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));		
 		retval.add(new ApprovalDataText("SUBJECTDN",dn,true,false));
 		retval.add(new ApprovalDataText("LABEL",tokenTypeLabel,true,true));
-		
 		return retval;
 	}
 	
+	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
-
 
 	public boolean isExecutable() {		
 		return false;
@@ -121,12 +112,10 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
         }
 	}
 
-
 	/**
 	 * @return the subject dn used in the request
 	 */
 	public String getDN() {
 		return dn;
 	}
-
 }

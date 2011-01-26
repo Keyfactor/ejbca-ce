@@ -28,25 +28,17 @@ import org.ejbca.util.CertTools;
 
 /**
  * Dummy Approval Request used for testing and demonstration purposes. 
- *  
- * 
  * 
  * @author Philip Vendil
  * @version $Id$
  */
-
 public class DummyApprovalRequest extends ApprovalRequest { 
 	
 	private static final long serialVersionUID = -1L;
-
 	private static final Logger log = Logger.getLogger(DummyApprovalRequest.class);
-	
 	private static final int LATEST_VERSION = 1;
-	
 	private static final int NUM_OF_REQUIRED_APPROVALS = 2;
-	
 
-   
 	private boolean executable = false;
 	
     /**
@@ -58,30 +50,21 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-
 	public DummyApprovalRequest(Admin requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
-		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE,
-				NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId);	
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId);	
 		this.executable = executable;
-		
 	}  
 	
     /**
      * Main constructor of an approval request with step functionality
      */
-
 	public DummyApprovalRequest(Admin requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
-		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE,
-				NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
 		this.executable = executable;
-		
 	} 
 	
-	/**
-	 * Constuctor used in externaliziation only
-	 */
-	public DummyApprovalRequest(){
-	}
+	/** Constuctor used in externaliziation only */
+	public DummyApprovalRequest() { }
     
 	/**
 	 * Should return true if the request if of the type that should be executed
@@ -89,7 +72,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	 * 
 	 * False if the request admin should do a polling action to try again.
 	 */
-	public  boolean isExecutable(){
+	public boolean isExecutable(){
 		return executable;
 	}
 	
@@ -100,13 +83,13 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	 * execute should perform the action or nothing if the requesting admin
 	 * is supposed to try his action again.
 	 */
+	@Override
 	public void execute() throws ApprovalRequestExecutionException{
 		if(executable){
 			log.info("Dummy Is Executable, this should be shown in the log");
 		}else{
 			log.error("Error: This shouldn't be logged, DummyApprovalRequest isn't executable");
 		}
-		
 	}
 	
 	/**
@@ -117,21 +100,19 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	public  int generateApprovalId(){
 		return (CertTools.getFingerprintAsString(getRequestAdminCert()) + getApprovalType() + getCAId() + getEndEntityProfileId()).hashCode(); 
 	}
-	
 
+	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin){
 		ArrayList<ApprovalDataText> newText = new ArrayList<ApprovalDataText>();
 		newText.add(new ApprovalDataText("DUMMYDATAROW1: ", "YES" , false, false));
 		newText.add(new ApprovalDataText("DUMMYDATAROW2: ", "YES" , false, false));
 		return newText;
-		
 	}
-	
 
+	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin){
 		return null;
 	}
-
 
 	/**
 	 * Should return the time in millisecond that the request should be valid
@@ -152,15 +133,13 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	public long getApprovalValidity(){
 		return 4 * 1000;
 	}
-	
-	
+
 	/**
 	 * Should return one of the ApprovalDataVO.APPROVALTYPE_ constants
 	 */
 	public int getApprovalType(){
 		return ApprovalDataVO.APPROVALTYPE_DUMMY;
 	}
-
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		super.writeExternal(out);
@@ -174,8 +153,5 @@ public class DummyApprovalRequest extends ApprovalRequest {
         if(version == 1){
         	this.executable = in.readBoolean();
         }
-
 	}
-
-
 }

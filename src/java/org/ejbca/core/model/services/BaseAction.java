@@ -22,7 +22,7 @@ import java.util.Properties;
  *
  * @version $Id$
  */
-public abstract class BaseAction extends BaseServiceComponent implements IAction{
+public abstract class BaseAction implements IAction {
 
 	protected Properties properties = null;
 	protected String serviceName = null;

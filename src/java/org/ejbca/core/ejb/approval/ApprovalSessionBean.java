@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.approval;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,13 +36,13 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
+import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
@@ -53,6 +56,7 @@ import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
@@ -60,9 +64,6 @@ import org.ejbca.util.query.Query;
 
 /**
  * Keeps track of approval requests and their approval or rejects.
- * 
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
- * 
  * 
  * @version $Id$
  */
@@ -111,8 +112,21 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         } else {
             // There exists no approval request with status waiting. Add a new one
             try {
-                Integer freeId = findFreeApprovalId();
-                entityManager.persist(new ApprovalData(freeId, approvalRequest));
+                final Integer freeId = findFreeApprovalId();
+                final ApprovalData approvalData = new ApprovalData(freeId);
+                approvalData.setApprovalid(approvalRequest.generateApprovalId());
+                approvalData.setApprovaltype(approvalRequest.getApprovalType());
+                approvalData.setEndentityprofileid(approvalRequest.getEndEntityProfileId());        
+                approvalData.setCaid(approvalRequest.getCAId());
+        		if(approvalRequest.getRequestAdminCert() != null){
+        			approvalData.setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
+        			approvalData.setReqadmincertsn(CertTools.getSerialNumberAsString(approvalRequest.getRequestAdminCert()));
+        		}
+        		setApprovalRequest(approvalData, approvalRequest);
+        		setApprovals(approvalData, new ArrayList<Approval>());
+        		approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
+        		approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
+                entityManager.persist(approvalData);
                 if (gc.getUseApprovalNotifications()) {
                     sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
                             + "adminweb/approval/approveaction.jsf?uniqueId=" + freeId, intres.getLocalizedMessage("notification.newrequest.subject"), intres
@@ -162,82 +176,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     /**
-     * Method used to approve an approval requests.
-     * 
-     * It does the follwing 1. checks if the approval with the status waiting
-     * exists, throws an ApprovalRequestDoesntExistException otherwise
-     * 
-     * 2. check if the administrator is authorized using the follwing rules: 2.1
-     * if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
-     * authorized to AccessRulesConstants.REGULAR_APPROVECAACTION othervise
-     * AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
-     * end entity profile. 2.2 Checks if the admin is authoried to the approval
-     * requests getCAId()
-     * 
-     * 3. looks upp the username of the administrator and checks that no
-     * approval have been made by this user earlier.
-     * 
-     * 4. Runs the approval command in the end entity bean.
-     * 
-     * @param admin
-     * @param approvalId
-     * @param approval
-     * @param gc
-     *            is the GlobalConfiguration used for notification info
-     * @throws ApprovalRequestExpiredException
-     * @throws ApprovalRequestExecutionException
-     * @throws AuthorizationDeniedException
-     * @throws ApprovalRequestDoesntExistException
-     * @throws AdminAlreadyApprovedRequestException
-     * @throws EjbcaException
-     */
-    public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
-            ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
-        log.trace(">approve");
-        ApprovalData adl;
-        try {
-            adl = isAuthorizedBeforeApproveOrReject(admin, approvalId);
-        } catch (ApprovalException e1) {
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALAPPROVED,
-                    "Approval request with id : " + approvalId + " doesn't exists.");
-            throw e1;
-        }
-        
-        checkExecutionPossibility(admin, adl);
-		approval.setApprovalAdmin(true, admin);
-                
-        try {
-            adl.approve(approval);
-            if (gc.getUseApprovalNotifications()) {
-                if (adl.getApprovalDataVO().getRemainingApprovals() != 0) {
-                    sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
-                            + "adminweb/approval/approveaction.jsf?uniqueId=" + adl.getId(),
-                            intres.getLocalizedMessage("notification.requestconcured.subject"), intres.getLocalizedMessage("notification.requestconcured.msg"),
-                            adl.getId(), adl.getApprovalDataVO().getRemainingApprovals(), adl.getApprovalDataVO().getRequestDate(), adl.getApprovalDataVO()
-                                    .getApprovalRequest(), approval);
-                } else {
-                    sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
-                            + "adminweb/approval/approveaction.jsf?uniqueId=" + adl.getId(),
-                            intres.getLocalizedMessage("notification.requestapproved.subject"), intres.getLocalizedMessage("notification.requestapproved.msg"),
-                            adl.getId(), adl.getApprovalDataVO().getRemainingApprovals(), adl.getApprovalDataVO().getRequestDate(), adl.getApprovalDataVO()
-                                    .getApprovalRequest(), approval);
-                }
-            }
-            logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_INFO_APPROVALAPPROVED,
-                    "Approval request with id : " + approvalId + " have been approved.");
-        } catch (ApprovalRequestExpiredException e) {
-            logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALAPPROVED,
-                    "Approval request with id : " + approvalId + " have expired.");
-            throw e;
-        } catch (ApprovalRequestExecutionException e) {
-            logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALAPPROVED,
-                    "Approval with id : " + approvalId + " couldn't execute properly");
-            throw e;
-        }
-        log.trace("<approve");
-    }
-
-    /**
      * Method used to reject an approval requests.
      * 
      * It does the follwing 1. checks if the approval with the status waiting
@@ -255,17 +193,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * 
      * 4. Runs the approval command in the end entity bean.
      * 
-     * @param admin
-     * @param approvalId
-     * @param approval
-     * @param gc
-     *            is the GlobalConfiguration used for notification info
-     * @throws ApprovalRequestExpiredException
-     * @throws AuthorizationDeniedException
-     * @throws ApprovalRequestDoesntExistException
-     * @throws ApprovalException
-     * @throws AdminAlreadyApprovedRequestException
-     * 
+     * @param gc is the GlobalConfiguration used for notification info
      */
     public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
@@ -283,12 +211,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         approval.setApprovalAdmin(false, admin);
 
         try {
-            adl.reject(approval);
+            reject(adl, approval);
             if (gc.getUseApprovalNotifications()) {
+            	final ApprovalDataVO approvalDataVO = getApprovalDataVO(adl);
                 sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
                         + "adminweb/approval/approveaction.jsf?uniqueId=" + adl.getId(), intres.getLocalizedMessage("notification.requestrejected.subject"),
-                        intres.getLocalizedMessage("notification.requestrejected.msg"), adl.getId(), adl.getApprovalDataVO().getRemainingApprovals(), adl
-                                .getApprovalDataVO().getRequestDate(), adl.getApprovalDataVO().getApprovalRequest(), approval);
+                        intres.getLocalizedMessage("notification.requestrejected.msg"), adl.getId(), approvalDataVO.getRemainingApprovals(),
+                        approvalDataVO.getRequestDate(), approvalDataVO.getApprovalRequest(), approval);
             }
             logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_INFO_APPROVALREJECTED,
                     "Approval request with id : " + approvalId + " have been rejected.");
@@ -307,22 +236,21 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * @param adl the action that the administrator tries to approve
      * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
      */
-    private void checkExecutionPossibility(Admin admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
+    public void checkExecutionPossibility(Admin admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
         // Check that the approvers username doesn't exists among the existing
         // usernames.
-        ApprovalDataVO data = adl.getApprovalDataVO();
+        ApprovalDataVO data = getApprovalDataVO(adl);
         String username = admin.getUsername();
-
         if (data.getReqadmincertissuerdn() != null) {
             // Check that the approver isn't the same as requested the action.
             boolean sameAsRequester = false;
-            String requsername = adl.getRequestAdminUsername();
+            String requsername = getRequestAdminUsername(adl);
             if(username != null) {
             	if(username.equals(requsername)) {
             		sameAsRequester=true;
             	}
             } else {
-            	if(admin.getAdminData().equals(adl.getApprovalRequest().getRequestAdmin().getAdminData())) {
+            	if(admin.getAdminData().equals(getApprovalRequest(adl).getRequestAdmin().getAdminData())) {
             		sameAsRequester=true;
             	}
             }
@@ -333,7 +261,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                         + /*approvalId*/ adl.getApprovalid());
             }
         }
-        
         //Check that his admin has not approved this this request before
         Iterator<Approval> iter = data.getApprovals().iterator();
         while (iter.hasNext()) {
@@ -350,9 +277,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     /**
      * Help method for approve and reject.
      */
-    private ApprovalData isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId) throws ApprovalException, AuthorizationDeniedException {
+    public ApprovalData isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId) throws ApprovalException, AuthorizationDeniedException {
         ApprovalData retval = findNonExpiredApprovalDataLocal(approvalId);
-
         if (retval != null) {
             if (retval.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
                 if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVECAACTION)) {
@@ -414,7 +340,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         Iterator<ApprovalData> iter = result.iterator();
         while (iter.hasNext()) {
         	ApprovalData adl = iter.next();
-        	retval = adl.isApproved(step);
+        	retval = isApproved(adl, step);
         	if (adl.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL || adl.getStatus() == ApprovalDataVO.STATUS_APPROVED
         			|| adl.getStatus() == ApprovalDataVO.STATUS_REJECTED) {
         		break;
@@ -478,7 +404,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         while (iter.hasNext()) {
         	ApprovalData adl = iter.next();
-        	adl.markStepAsDone(step);
+        	markStepAsDone(adl, step);
         }
         log.trace("<markAsStepDone.");
     }
@@ -493,7 +419,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         ApprovalDataVO retval = null;
         ApprovalData data = findNonExpiredApprovalDataLocal(approvalId);
         if (data != null) {
-            retval = data.getApprovalDataVO();
+            retval = getApprovalDataVO(data);
         }
         return retval;
     }
@@ -505,7 +431,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         Iterator<ApprovalData> iter = result.iterator();
         while (iter.hasNext()) {
         	ApprovalData next = iter.next();
-        	ApprovalDataVO data = next.getApprovalDataVO();
+        	ApprovalDataVO data = getApprovalDataVO(next);
         	if (data.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL || data.getStatus() == ApprovalDataVO.STATUS_APPROVED
         			|| data.getStatus() == ApprovalDataVO.STATUS_REJECTED) {
         		retval = next;
@@ -515,7 +441,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     /**
-     * Method that takes an approvalId and returns all aprovalrequests for this.
+     * Method that takes an approvalId and returns all approval requests for this.
      * 
      * @param admin
      * @param approvalId
@@ -530,7 +456,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         Iterator<ApprovalData> iter = result.iterator();
         while (iter.hasNext()) {
         	ApprovalData adl = iter.next();
-        	retval.add(adl.getApprovalDataVO());
+        	retval.add(getApprovalDataVO(adl));
         }
         log.trace("<findApprovalDataVO");
         return retval;
@@ -580,7 +506,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 customQuery += " AND " + endEntityProfileAuthorizationString;
             }
         }
-        List<ApprovalDataVO> returnData = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
+        final List<ApprovalData> approvalDataList = ApprovalData.findByCustomQuery(entityManager, index, numberofrows, customQuery);
+        final List<ApprovalDataVO> returnData = new ArrayList<ApprovalDataVO>(approvalDataList.size());
+        for (ApprovalData approvalData : approvalDataList) {
+        	returnData.add(getApprovalDataVO(approvalData));
+        }
         log.trace("<query()");
         return returnData;
     }
@@ -590,14 +520,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
      * to EJBCA 3.10.
      * 
      * @return a List<Integer> with all pending approval ids, never null
-     * 
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Integer> getAllPendingApprovalIds() {
     	return ApprovalData.findByApprovalIdsByStatus(entityManager, ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
     }
 
-    private void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
+    public void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
             String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest,
             Approval approval) {
         if (log.isTraceEnabled()) {
@@ -679,4 +608,145 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         return Integer.valueOf(id);
     }
+
+	/**
+	 * Method that rejects an apporval.
+	 * After someone have rejected the request noone else can approve it
+	 * 
+s	 * @throws ApprovalRequestExpiredException 
+	 * @throws ApprovalRequestExecutionException 
+	 * @throws ApprovalException 
+	 */
+	private void reject(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException,  ApprovalException {
+		if(approvalData.haveRequestOrApprovalExpired()){
+			throw new ApprovalRequestExpiredException();
+		}
+		if(approvalData.getStatus() != ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
+			throw new ApprovalException("Wrong status of approval request.");
+		}
+		final int numberofapprovalsleft = approvalData.getRemainingapprovals() -1;
+		if(numberofapprovalsleft < 0){
+			throw new ApprovalException("Error already enough approvals have been done on this request.");
+		}
+		approvalData.setRemainingapprovals(0);
+		final Collection<Approval> approvals = getApprovals(approvalData);
+		approvals.add(approval);
+		setApprovals(approvalData, approvals);
+		if(getApprovalRequest(approvalData).isExecutable()){
+			approvalData.setStatus(ApprovalDataVO.STATUS_EXECUTIONDENIED);
+			approvalData.setExpireDate(new Date());    		    		
+		}else{
+			approvalData.setStatus(ApprovalDataVO.STATUS_REJECTED);
+			approvalData.setExpiredate((new Date()).getTime() + getApprovalRequest(approvalData).getApprovalValidity());   		
+		}
+	} 
+
+	/**
+	 * Method used to mark an non-executable approval as done
+	 * if the last step is performed will the status be set as
+	 * expired.
+	 *
+	 * @throws ApprovalRequestExpiredException if the step have already been executed
+	 */
+	private void markStepAsDone(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {
+		final ApprovalRequest ar = getApprovalRequest(approvalData);
+		if (!ar.isExecutable() && approvalData.getStatus() == ApprovalDataVO.STATUS_APPROVED) {
+			if (!ar.isStepDone(step)) {
+				ar.markStepAsDone(step);
+				setApprovalRequest(approvalData, ar);
+				if (step == ar.getNumberOfApprovalSteps()-1) {
+					approvalData.setStatus(ApprovalDataVO.STATUS_EXPIRED);
+				}
+			} else {
+				throw new ApprovalRequestExpiredException("Error step " + step + " of approval with id " + approvalData.getApprovalid() + " have alread been performed");
+			}
+		}
+	}
+
+	/**
+	 * Method used by the requestadmin to check if an approval request have been approved
+	 *
+	 * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the statys.
+	 * @throws ApprovalRequestExpiredException if the request or approval have expired, the status will be EXPIREDANDNOTIFIED in this case. 
+	 */
+	public int isApproved(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {    	
+		if(getApprovalRequest(approvalData).isStepDone(step)){
+			return ApprovalDataVO.STATUS_EXPIRED;
+		}
+		if(approvalData.haveRequestOrApprovalExpired()){
+			if(approvalData.getStatus() != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED &&
+					approvalData.getStatus() != ApprovalDataVO.STATUS_EXECUTED &&
+					approvalData.getStatus() != ApprovalDataVO.STATUS_EXECUTIONDENIED &&
+					approvalData.getStatus() != ApprovalDataVO.STATUS_EXECUTIONFAILED){
+				approvalData.setStatus(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED);
+				throw new ApprovalRequestExpiredException();
+			}
+			return ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
+		}
+		if(approvalData.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL){
+			return approvalData.getRemainingapprovals();
+		}
+		return approvalData.getStatus();
+	} 
+
+    /**
+     * Method that returns the approval data. This method currently extracts the ApprovalRequest object.
+     */
+    private String getRequestAdminUsername(final ApprovalData approvalData) {
+    	return getApprovalRequest(approvalData).getRequestAdmin().getUsername();
+    }
+
+    public ApprovalRequest getApprovalRequest(final ApprovalData approvalData) {
+		return ApprovalDataUtil.getApprovalRequest(approvalData.getRequestdata());
+	}
+
+	private final void setApprovalRequest(final ApprovalData approvalData, final ApprovalRequest approvalRequest){
+		try{
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(approvalRequest);
+			oos.flush();
+			approvalData.setRequestdata(new String(Base64.encode(baos.toByteArray(),false)));
+		}catch(IOException e){
+			log.error("Error building approval request.",e);
+			throw new RuntimeException(e);   		
+		}
+	}
+
+	/** Method that returns the approval data value object. */
+	public ApprovalDataVO getApprovalDataVO(ApprovalData approvalData) {
+		approvalData.haveRequestOrApprovalExpired();
+		return new ApprovalDataVO(approvalData.getId(), approvalData.getApprovalid(), approvalData.getApprovaltype(),
+				approvalData.getEndentityprofileid(), approvalData.getCaid(), approvalData.getReqadmincertissuerdn(),
+				approvalData.getReqadmincertsn(), approvalData.getStatus(), getApprovals(approvalData), getApprovalRequest(approvalData),
+				approvalData.getRequestDate(), approvalData.getExpireDate(), approvalData.getRemainingapprovals());
+	}
+
+	public Collection<Approval> getApprovals(ApprovalData approvalData) {   
+		return ApprovalDataUtil.getApprovals(approvalData.getApprovaldata());
+	}
+
+	/**
+	 * Collection of Approval
+	 * @param approvals cannot be null.
+	 * @throws IOException
+	 */
+	public final void setApprovals(ApprovalData approvalData, final Collection<Approval> approvals){
+		try{
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final ObjectOutputStream oos = new ObjectOutputStream(baos);
+			final int size = approvals.size();
+			oos.writeInt(size);
+			final Iterator<Approval> iter = approvals.iterator();
+			while(iter.hasNext()){
+				final Approval next = iter.next();
+				oos.writeObject(next);
+			}
+			oos.flush();
+			approvalData.setApprovaldata(new String(Base64.encode(baos.toByteArray(),false)));
+		} catch (IOException e) {
+			log.error("Error building approvals.",e);
+			throw new RuntimeException(e);
+		}
+	}
 }

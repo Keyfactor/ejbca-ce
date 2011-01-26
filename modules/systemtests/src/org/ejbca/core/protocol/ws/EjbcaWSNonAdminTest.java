@@ -29,6 +29,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -81,7 +82,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private Admin reqadmin;
 
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
+    private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
+    private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
@@ -248,20 +250,15 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             }
 
             Approval approval1 = new Approval("ap1test");
-
             try {
-                approvalSessionRemote.approve(admin1, approvalRequest.generateApprovalId(), approval1, gc);
-
+                approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1, gc);
                 getHardTokenData(serialNumber, true);
-
                 try {
                     getHardTokenData(serialNumber, true);
                     assertTrue(false);
                 } catch (WaitingForApprovalException_Exception e) {
                 }
-
-                approvalSessionRemote.reject(admin1, approvalRequest.generateApprovalId(), approval1, gc);
-
+                approvalSession.reject(admin1, approvalRequest.generateApprovalId(), approval1, gc);
                 try {
                     getHardTokenData(serialNumber, true);
                     assertTrue(false);
@@ -290,10 +287,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
      * @throws ApprovalException
      */
     private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, Admin admin) throws RemoteException, ApprovalException {
-        Collection<ApprovalDataVO> collection = approvalSessionRemote.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
+        Collection<ApprovalDataVO> collection = approvalSession.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
         if (!collection.isEmpty()) {
             for (ApprovalDataVO approvalDataVO : collection) {
-                approvalSessionRemote.removeApprovalRequest(admin, approvalDataVO.getId());
+                approvalSession.removeApprovalRequest(admin, approvalDataVO.getId());
             }
         }
     }
@@ -302,11 +299,11 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setupApprovals();
         ApprovalRequest ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
 
-        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = iter.next();
-            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            approvalSession.removeApprovalRequest(admin1, next.getId());
         }
 
         removeApprovalAdmins();
@@ -330,7 +327,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         Approval approval1 = new Approval("ap1test");
 
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
-        approvalSessionRemote.approve(admin1, ar.generateApprovalId(), approval1, gc);
+        approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1, gc);
 
         genTokenCertificates(true);
 
@@ -346,7 +343,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         } catch (WaitingForApprovalException_Exception e) {
         }
 
-        approvalSessionRemote.reject(admin1, ar.generateApprovalId(), approval1, gc);
+        approvalSession.reject(admin1, ar.generateApprovalId(), approval1, gc);
 
         try {
             genTokenCertificates(true);
@@ -361,20 +358,20 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setupApprovals();
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
 
-        Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        Collection<ApprovalDataVO> result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         Iterator<ApprovalDataVO> iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = iter.next();
-            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            approvalSession.removeApprovalRequest(admin1, next.getId());
         }
 
         ar = new ViewHardTokenDataApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
 
-        result = approvalSessionRemote.findApprovalDataVO(intAdmin, ar.generateApprovalId());
+        result = approvalSession.findApprovalDataVO(intAdmin, ar.generateApprovalId());
         iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalDataVO next = iter.next();
-            approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
+            approvalSession.removeApprovalRequest(admin1, next.getId());
         }
 
         removeApprovalAdmins();

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services.actions;
 
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
@@ -32,7 +34,7 @@ public class DummyAction extends BaseAction {
 	/**
 	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
 	 */
-	public void performAction(ActionInfo actionInfo) throws ActionException {
+	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
 		log.trace(">DummyAction.performAction");
 		this.properties.get("somedata");
 		// Do nothing

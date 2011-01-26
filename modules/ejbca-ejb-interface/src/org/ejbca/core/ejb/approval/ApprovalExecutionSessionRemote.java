@@ -10,26 +10,11 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services.actions;
 
-import java.util.Map;
+package org.ejbca.core.ejb.approval;
 
-import org.ejbca.core.model.services.ActionException;
-import org.ejbca.core.model.services.ActionInfo;
-import org.ejbca.core.model.services.BaseAction;
+import javax.ejb.Remote;
 
-/**
- * No Action that does nothing
- * 
- * @author Philip Vendil 2006 sep 27
- * @version $Id$
- */
-public class NoAction extends BaseAction {
-
-	/**
-	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
-	 */
-	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
-		// Do nothing
-	}
+@Remote
+public interface ApprovalExecutionSessionRemote extends ApprovalExecutionSession {
 }

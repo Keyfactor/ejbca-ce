@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
@@ -59,7 +58,7 @@ public class CertificateExpireTest extends CaTestCase {
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private ServiceDataSessionRemote serviceDataSession = JndiHelper.getRemoteSession(ServiceDataSessionRemote.class);
+    private ServiceDataSessionRemote serviceDataSession = InterfaceCache.getServiceDataSessionRemote();
 
     public CertificateExpireTest() {
         super();
@@ -67,12 +66,9 @@ public class CertificateExpireTest extends CaTestCase {
 
     public CertificateExpireTest(String name) {
         super(name);
-        
-       
     }
 
     public void setUp() throws Exception {
-         
     }
 
     public void tearDown() throws Exception {
@@ -166,11 +162,9 @@ public class CertificateExpireTest extends CaTestCase {
 
         log.trace("<test01CreateNewUser()");
     }
-  
 
     /**
      * Remove all data stored by JUnit tests
-     * 
      */
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");

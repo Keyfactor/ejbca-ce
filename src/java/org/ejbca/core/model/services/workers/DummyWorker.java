@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.BaseWorker;
@@ -32,15 +34,14 @@ public class DummyWorker extends BaseWorker {
 	/**
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
-	public void work() throws ServiceExecutionFailedException {
+	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
 		log.trace(">DummyWorker.work");
 		try {
 			log.info("DummyWorker executed");
-			getAction().performAction(null);
+			getAction().performAction(null, ejbs);
 		} catch (ActionException e) {
 		   // This should never happen
 		}
 		log.trace("<DummyWorker.work");
 	}
-
 }

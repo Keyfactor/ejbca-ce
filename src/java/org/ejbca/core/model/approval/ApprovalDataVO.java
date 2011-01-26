@@ -60,17 +60,12 @@ public class ApprovalDataVO implements Serializable {
 		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE",
                                                       "APACTIVATECATOKEN"};
 	
-	/**
-	 * Used to indicate that the approcal is applicable to any ca.
-	 */
+	/** Used to indicate that the approcal is applicable to any ca. */
 	public static final int ANY_CA = SecConst.ALLCAS;
 	
-	/**
-	 * Used to indicate that the approval is applicable to any end entity profile.
-	 */
+	/** Used to indicate that the approval is applicable to any end entity profile. */
 	public static final int ANY_ENDENTITYPROFILE = SecConst.PROFILE_NO_PROFILE;
-	
-	
+
     private int id = 0;
     private int approvalId = 0;
     private int approvalType = 0;
@@ -84,9 +79,7 @@ public class ApprovalDataVO implements Serializable {
     private Date requestDate = null;
     private Date expireDate = null;
     private int remainingApprovals = 0;
-    
-    
-    
+
 	/**
 	 * @param id unique row id
 	 * @param approvalId    Constructed from action data as actiontype, admin, username etc. It should
@@ -240,8 +233,4 @@ public class ApprovalDataVO implements Serializable {
 	public int getStatus() {
 		return status;
 	}
-    
-          
-
-
 }

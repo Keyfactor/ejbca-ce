@@ -12,47 +12,20 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbLocalHelper;
-
-
 
 /**
  * Helper class containing static methods for RMI lookups
- *  
- * 
  * 
  * @author Philip Vendil
  * @version $Id$
  */
-
 public class ApprovalRequestHelper { 
-	
 
-	
-    // Help Methods for approval requests
-    public static String getCAName(Admin admin, int caid) {
-        String caname;
-
-        caname = new EjbLocalHelper().getCAAdminSession().getCAInfo(admin, caid).getName();
-
-        return caname;
-    }
-	
-    public static String getEndEntityProfileName(Admin admin, int profileid) {
-        return new EjbLocalHelper().getEndEntityProfileSession().getEndEntityProfileName(admin, profileid);
-    }
-	
-    public static String getCertificateProfileName(Admin admin, int profileid) {
-        String name;
-        name = new EjbLocalHelper().getCertificateProfileSession().getCertificateProfileName(admin, profileid);
-        return name;
-    }
-		
-    public static ApprovalDataText getTokenName(Admin admin, int tokenid) {
+    public static ApprovalDataText getTokenName(HardTokenSession hardTokenSession, Admin admin, int tokenid) {
         ApprovalDataText retval;
-
         if (tokenid <= SecConst.TOKEN_SOFT) {
             int tokenindex = 0;
             for (int i = 0; i < SecConst.TOKENIDS.length; i++) {
@@ -63,19 +36,9 @@ public class ApprovalRequestHelper {
             retval = new ApprovalDataText("TOKEN", SecConst.TOKENTEXTS[tokenindex], true, true);
 
         } else {
-            String name = new EjbLocalHelper().getHardTokenSession().getHardTokenProfileName(admin, tokenid);
+            String name = hardTokenSession.getHardTokenProfileName(admin, tokenid);
             retval = new ApprovalDataText("TOKEN", name, true, false);
         }
-
         return retval;
     }
-
-    public static String getHardTokenIssuerName(Admin admin, int issuerid) {
-        String name;
-
-        name = new EjbLocalHelper().getHardTokenSession().getHardTokenIssuerAlias(admin, issuerid);
-
-        return name;
-    }
-
 }

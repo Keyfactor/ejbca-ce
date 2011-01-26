@@ -56,7 +56,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
-import org.ejbca.core.model.util.EjbRemoteHelper;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.StringTools;
@@ -93,10 +93,7 @@ public class EjbcaWebBean implements Serializable {
                                                              "/ra_functionality/view_hardtoken","/ca_functionality/view_certificate",
                                                              "/ra_functionality/keyrecovery"};
 
-    // TODO: Use local interfaces here
-    //private EjbLocalHelper ejb = new EjbLocalHelper();
-    private EjbRemoteHelper ejb = new EjbRemoteHelper();
-    
+    private EjbLocalHelper ejb = new EjbLocalHelper();
     private AdminEntitySession adminEntitySession = ejb.getAdminEntitySession();
     private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
     private AuthorizationSession authorizationSession = ejb.getAuthorizationSession();
@@ -111,7 +108,6 @@ public class EjbcaWebBean implements Serializable {
     private RaAdminSession raAdminSession = ejb.getRAAdminSession();
     private UserAdminSession userAdminSession = ejb.getUserAdminSession();  
     private UserDataSourceSession userDataSourceSession = ejb.getUserDataSourceSession();
-    
 
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;

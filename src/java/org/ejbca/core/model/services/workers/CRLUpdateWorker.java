@@ -13,10 +13,10 @@
 package org.ejbca.core.model.services.workers;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -43,22 +43,19 @@ public class CRLUpdateWorker extends BaseWorker {
 	 * 
 	 * @see org.ejbca.core.model.services.IWorker#work()
 	 */
-	public void work() throws ServiceExecutionFailedException {
+	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+        final CrlCreateSessionLocal crlCreateSession = ((CrlCreateSessionLocal)ejbs.get(CrlCreateSessionLocal.class));
 		// A semaphore used to not run parallel CRL generation jobs if it is slow
 		// in generating CRLs, and this job runs very often
 		if (!running) {
 			try {
 				running = true;
 			    long polltime = getNextInterval();
-			    CAAdminSession session = getCAAdminSession();
-			    CrlCreateSession crlCreateSession = getCrlCreateSession();
-			    if (session != null) {
-			    	// Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
-			    	// selecting CAs did not exist, no CA = Any CA.
-				    Collection<Integer> caids = getCAIdsToCheck(true); 
-				    crlCreateSession.createCRLs(getAdmin(), caids, polltime*1000);
-				    crlCreateSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
-			    }			
+			    // Use true here so the service works the same as before upgrade from 3.9.0 when this function of 
+			    // selecting CAs did not exist, no CA = Any CA.
+			    Collection<Integer> caids = getCAIdsToCheck(true); 
+			    crlCreateSession.createCRLs(getAdmin(), caids, polltime*1000);
+			    crlCreateSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
 			} finally {
 				running = false;
 			}			

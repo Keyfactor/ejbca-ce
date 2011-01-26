@@ -134,7 +134,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
 	   Approval approval = new Approval(comment);
 	   try {		   
 		   Admin admin = EjbcaJSFHelper.getBean().getAdmin();
-		   EjbcaJSFHelper.getBean().getApprovalSession().approve(admin, approveRequestData.getApprovalId(), approval, EjbcaJSFHelper.getBean().getRaAdminSession().getCachedGlobalConfiguration(admin));
+		   EjbcaJSFHelper.getBean().getApprovalExecutionSession().approve(admin, approveRequestData.getApprovalId(), approval, EjbcaJSFHelper.getBean().getRaAdminSession().getCachedGlobalConfiguration(admin));
 		   updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
 	   } catch (ApprovalRequestExpiredException e) {
 		   addErrorMessage("APPROVALREQUESTEXPIRED");
