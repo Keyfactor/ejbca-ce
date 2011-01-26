@@ -1329,7 +1329,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD %>" class="lightyellow" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("CERTIFICATEHOLD") %></option>
+          %>><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("REV_CERTIFICATEHOLD") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) out.write(" selected ");
@@ -1353,15 +1353,15 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CESSATIONOFOPERATION") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CESSATIONOFOPERATION") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("PRIVILEGESWITHDRAWN") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_PRIVILEGEWITHDRAWN") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AACOMPROMISE") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AACOMPROMISE") %></option>
         </select>
       </td>
     </tr>
