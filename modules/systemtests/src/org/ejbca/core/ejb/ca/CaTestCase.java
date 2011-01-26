@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
@@ -362,7 +363,7 @@ public abstract class CaTestCase extends TestCase {
      * Find all certificates for a user and approve any outstanding revocation.
      */
     protected int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
-            CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
+            CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
     	log.debug("approvingAdmin=" + approvingAdmin.getAdminType() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType + " approvalCAID=" + approvalCAID);
         Collection userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
         Iterator i = userCerts.iterator();
@@ -384,7 +385,7 @@ public abstract class CaTestCase extends TestCase {
                 ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID, "(endEntityProfileId="
                         + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.");
-                approvalSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
                 approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                 assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
@@ -398,6 +399,5 @@ public abstract class CaTestCase extends TestCase {
 
 	public CAInfo getCAInfo(Admin admin, String name) {
 		return this.caAdminSessionRemote.getCAInfo(admin, name);
-	} 
-
+	}
 }

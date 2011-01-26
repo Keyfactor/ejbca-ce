@@ -20,6 +20,7 @@ import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
@@ -35,6 +36,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
@@ -154,5 +156,13 @@ public class InterfaceCache {
 
 	public static ServiceSessionRemote getServiceSession() {
 		return getEjb().getServiceSession();
+	}
+
+	public static ApprovalExecutionSessionRemote getApprovalExecutionSession() {
+		return getEjb().getApprovalExecutionSession();
+	}
+
+	public static ServiceDataSessionRemote getServiceDataSessionRemote() {
+		return getEjb().getServiceDataSession();
 	}
 }

@@ -13,9 +13,12 @@
 package org.ejbca.core.model.services.workers;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -41,7 +44,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * This must be decided by serviceName, since we can configure one of these
      * services for every publisher.
      */
-    private static HashMap runmap = new HashMap();
+    private static HashMap<String, Boolean> runmap = new HashMap<String, Boolean>();
 
     /**
      * Checks if there are any publishings in the publisher queue that should be
@@ -49,14 +52,16 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
      */
-    public void work() throws ServiceExecutionFailedException {
+    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">work");
+        final PublisherSessionLocal publisherSession = ((PublisherSessionLocal)ejbs.get(PublisherSessionLocal.class));
+        final PublisherQueueSessionLocal publisherQueueSession = ((PublisherQueueSessionLocal)ejbs.get(PublisherQueueSessionLocal.class));
         // A semaphore used to not run parallel processing jobs
         boolean running = false;
         synchronized (runmap) {
-            Object o = runmap.get(this.serviceName);
-            if (o != null) {
-                running = ((Boolean) o).booleanValue();
+            Boolean b = runmap.get(this.serviceName);
+            if (b != null) {
+                running = b.booleanValue();
             }
         }
         if (!running) {
@@ -74,9 +79,8 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     for (int i = 0; i < ids.length; i++) {
                         int publisherId = Integer.valueOf(ids[i]).intValue();
                         // Get everything from the queue for this publisher id
-                        BasePublisher publisher = getPublisherSession().getPublisher(getAdmin(), publisherId);
-                        getPublisherQueueSession().plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId, publisher);
-                
+                        BasePublisher publisher = publisherSession.getPublisher(getAdmin(), publisherId);
+                        publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId, publisher);
                     }
                 } else {
                     log.debug("No publisher ids configured for worker.");

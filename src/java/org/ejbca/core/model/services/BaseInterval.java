@@ -17,13 +17,13 @@ import java.util.Properties;
 /**
  *
  * Help base class that manages that implements the init method of the interface
- * and manages the propertes.
+ * and manages the properties.
  * 
  * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
-public abstract class BaseInterval  extends BaseServiceComponent implements IInterval{
+public abstract class BaseInterval implements IInterval {
 
 	protected Properties properties = null;
 	protected String serviceName = null;

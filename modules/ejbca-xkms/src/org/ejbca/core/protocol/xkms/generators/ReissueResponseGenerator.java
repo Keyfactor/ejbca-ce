@@ -16,11 +16,18 @@ package org.ejbca.core.protocol.xkms.generators;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -39,17 +46,20 @@ import org.w3c.dom.Document;
  * @version $Id$
  */
 
-public class ReissueResponseGenerator extends
-		KRSSResponseGenerator {
+public class ReissueResponseGenerator extends KRSSResponseGenerator {
 	private static Logger log = Logger.getLogger(ReissueResponseGenerator.class);
 
 	private static final InternalResources intres = InternalResources.getInstance();
 	
 	private UserAdminSession userAdminSession;
 	
-	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc) {
-		super(remoteIP, req,requestDoc);
-		userAdminSession = new EjbRemoteHelper().getUserAdminSession();
+	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc,
+    		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, RaAdminSession raAdminSessionLocal,
+    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
+		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+				keyRecoverySession, raAdminSessionLocal, signSession, userAdminSession, crlSession);
+		this.userAdminSession = userAdminSession;
 	}
 	
 	/**

@@ -29,30 +29,22 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-
-
 /**
  * Abstract Base class representing one approval request created when
  * an administrator performs an action that requires an approval.
- * 
  * 
  * Contains information like:
  * Admin that performs the request
  * Data necessary to display the request to the approver
  * Eventual data necessary to execute the request. 
- *  
- * 
  * 
  * @author Philip Vendil
  * @version $Id$
  */
-
 public abstract class ApprovalRequest implements Externalizable { 
 	
 	private static final long serialVersionUID = -1L;
-	
 	private static final Logger log = Logger.getLogger(ApprovalRequest.class);
-	
 	private static final int LATEST_BASE_VERSION = 3;
 		
 	/**
@@ -69,17 +61,11 @@ public abstract class ApprovalRequest implements Externalizable {
 	public static final int REQUESTTYPE_COMPARING = 2;
 	
     private Admin requestAdmin = null; // Base64 encoding of x509certificate   
-    
     private String requestSignature = null;        
-    
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
-    
     private int numOfRequiredApprovals = 0;
-    
     private int cAId = 0;
-    
     private int endEntityProfileId = 0;
-    
     private boolean[] approvalSteps = {false};
    
     /**
@@ -91,10 +77,8 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-	protected ApprovalRequest(Admin requestAdmin, String requestSignature, 
-			                  int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
+	protected ApprovalRequest(Admin requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
 		super();
-		
    	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
 		this.approvalRequestType = approvalRequestType;
@@ -113,10 +97,8 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      * @param numberOfSteps that this type approval request supports.
      */
-	protected ApprovalRequest(Admin requestAdmin, String requestSignature, 
-			                  int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
+	protected ApprovalRequest(Admin requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
 		super();
-		
    	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
 		this.approvalRequestType = approvalRequestType;
@@ -129,11 +111,8 @@ public abstract class ApprovalRequest implements Externalizable {
 		}
 	}
 	
-	/**
-	 * Constuctor used in externaliziation only
-	 */
-	public ApprovalRequest(){
-	}
+	/** Constuctor used in externaliziation only */
+	public ApprovalRequest() { }
 	
 	/**
 	 * Should return true if the request if of the type that should be executed
@@ -211,14 +190,11 @@ public abstract class ApprovalRequest implements Externalizable {
 	public long getApprovalValidity(){
 		return EjbcaConfiguration.getApprovalDefaultApprovalValidity();
 	}
-	
-	
+
 	/**
 	 * Should return one of the ApprovalDataVO.APPROVALTYPE_ constants
 	 */
 	public abstract int getApprovalType();
-	
-	
 
     /**
      * Method returning the number of required approvals in order to execute the request.
@@ -226,7 +202,6 @@ public abstract class ApprovalRequest implements Externalizable {
 	public int getNumOfRequiredApprovals(){
 		return numOfRequiredApprovals;
 	}
-
 
 	/**
 	 * The type of requesttype, one of TYPE_ constants
@@ -275,7 +250,6 @@ public abstract class ApprovalRequest implements Externalizable {
       return requestAdmin.getAdminInformation().getX509Certificate();
 	}
 
-	
 	public Admin getRequestAdmin() {		
 		return requestAdmin;
 	}
@@ -303,7 +277,6 @@ public abstract class ApprovalRequest implements Externalizable {
 	public int getNumberOfApprovalSteps(){
 		return approvalSteps.length;
 	}
-	
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(LATEST_BASE_VERSION);
@@ -320,7 +293,6 @@ public abstract class ApprovalRequest implements Externalizable {
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        
 		int version = in.readInt();
 		if(version == 1){
 			String requestAdminCert = (String) in.readObject();			
@@ -333,7 +305,6 @@ public abstract class ApprovalRequest implements Externalizable {
 		    	  log.error(e);
 		      }
 		    this.requestAdmin = new Admin(x509cert, null, null); 
-			
 			this.requestSignature = (String) in.readObject();
 			this.approvalRequestType = in.readInt();
 			this.numOfRequiredApprovals =  in.readInt();
@@ -363,9 +334,5 @@ public abstract class ApprovalRequest implements Externalizable {
 				approvalSteps[i] = in.readBoolean();
 			}
 		}
-		
 	}
-	
-
-
 }

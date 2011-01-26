@@ -18,8 +18,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -44,6 +48,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
     private static final Logger log = Logger.getLogger(CertificateExpirationNotifierWorker.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
+    
+    private CertificateStoreSessionLocal certificateStoreSession;
 
     /**
      * Worker that makes a query to the Certificate Store about expiring
@@ -51,8 +57,11 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
      */
-    public void work() throws ServiceExecutionFailedException {
+    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">CertificateExpirationNotifierWorker.work started");
+        final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
+        certificateStoreSession = ((CertificateStoreSessionLocal)ejbs.get(CertificateStoreSessionLocal.class));
+        final UserAdminSessionLocal userAdminSession = ((UserAdminSessionLocal)ejbs.get(UserAdminSessionLocal.class));
 
         ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
@@ -64,7 +73,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             Iterator<Integer> iter = ids.iterator();
             while (iter.hasNext()) {
                 Integer caid = iter.next();
-                CAInfo caInfo = getCAAdminSession().getCAInfo(getAdmin(), caid);
+                CAInfo caInfo = caAdminSession.getCAInfo(getAdmin(), caid);
                 if (caInfo == null) {
                     String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
                     log.info(msg);
@@ -121,7 +130,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             long now = new Date().getTime();
             if (!cASelectString.equals("")) {
                 try {
-                    List<Object[]> fingerprintUsernameList = getCertificateSession().findExpirationInfo(cASelectString, now, (nextRunTimeStamp + thresHold), (runTimeStamp + thresHold));
+                    List<Object[]> fingerprintUsernameList = certificateStoreSession.findExpirationInfo(cASelectString, now, (nextRunTimeStamp + thresHold), (runTimeStamp + thresHold));
                     int count = 0;
                     for (Object[] next : fingerprintUsernameList) {
                         count++;
@@ -130,8 +139,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         String username = (String) next[1];
                         // Get the certificate through a session bean
                         log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
-                        Certificate cert = getCertificateSession().findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
-                        UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
+                        Certificate cert = certificateStoreSession.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
+                        UserDataVO userData = userAdminSession.findUser(getAdmin(), username);
                         if (userData != null) {
                             if (isSendToEndUsers()) {
                                 if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {
@@ -176,10 +185,10 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                     throw new ServiceExecutionFailedException(fe);
                 }
                 if (isSendToEndUsers()) {
-                    sendEmails(userEmailQueue);
+                    sendEmails(userEmailQueue, ejbs);
                 }
                 if (isSendToAdmins()) {
-                    sendEmails(adminEmailQueue);
+                    sendEmails(adminEmailQueue, ejbs);
                 }
             }
 
@@ -193,15 +202,13 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      * Method that must be implemented by all subclasses to EmailSendingWorker,
      * used to update status of a certificate, user, or similar
      * 
-     * @param pk
-     *            primary key of object to update
-     * @param status
-     *            status to update to
+     * @param pk primary key of object to update
+     * @param status status to update to
      */
+	@Override
     protected void updateStatus(String pk, int status) {
-    	if (!getCertificateSession().setStatus(pk, status)) {
+    	if (!certificateStoreSession.setStatus(pk, status)) {
             log.error("Error updating certificate status for certificate with fingerprint: " + pk);
     	}
     }
-
 }

@@ -26,7 +26,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.util.EjbRemoteHelper;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
 /**
  * A class used as an interface between Apply jsp pages and ejbca functions.
@@ -45,7 +45,7 @@ public class ApplyBean implements java.io.Serializable {
 	 */
 	private static final Logger log = Logger.getLogger(ApplyBean.class);
 	
-	private EjbRemoteHelper ejb;
+	private EjbLocalHelper ejb;
 	
 	/**
      * Creates a new instance of CaInterfaceBean
@@ -58,7 +58,7 @@ public class ApplyBean implements java.io.Serializable {
         throws Exception {
         if (!initialized) {
         	administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-        	ejb = new EjbRemoteHelper();
+        	ejb = new EjbLocalHelper();
             initialized = true;
         }
     }

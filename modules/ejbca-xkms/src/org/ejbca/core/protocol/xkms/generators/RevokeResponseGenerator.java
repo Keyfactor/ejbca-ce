@@ -17,14 +17,21 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.FinderException;
 
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.w3._2002._03.xkms_.KeyBindingAbstractType;
@@ -42,16 +49,17 @@ import org.w3c.dom.Document;
  * @version $Id$
  */
 
-public class RevokeResponseGenerator extends
-		KRSSResponseGenerator {
+public class RevokeResponseGenerator extends KRSSResponseGenerator {
 
     private UserAdminSession userAdminSession;
     
-    public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc) {
-        super(remoteIP, req, requestDoc);
-
-        userAdminSession = new EjbLocalHelper().getUserAdminSession();
-
+    public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc,
+    		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, RaAdminSession raAdminSessionLocal,
+    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
+        super(remoteIP, req, requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+				keyRecoverySession, raAdminSessionLocal, signSession, userAdminSession, crlSession);
+        this.userAdminSession = userAdminSession;
     }
 	
 	/**
@@ -158,13 +166,6 @@ public class RevokeResponseGenerator extends
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_NOAUTHENTICATION;			
 		}
-		
 		return retval;
 	}
-	
-
-
-    
-
-
 }

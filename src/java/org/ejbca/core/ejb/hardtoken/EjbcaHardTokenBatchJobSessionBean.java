@@ -78,7 +78,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	if (log.isDebugEnabled()) {
     		log.debug("hardTokenIssuerId=" + hardTokenIssuerId);
     	}
-    	if (hardTokenIssuerId != LocalHardTokenSessionBean.NO_ISSUER) {
+    	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
     			if (!userDataList.isEmpty()) {
@@ -111,7 +111,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	log.trace(">getNextHardTokensToGenerate()");
     	ArrayList<UserDataVO> returnval = new ArrayList<UserDataVO>();
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
-    	if (hardTokenIssuerId != LocalHardTokenSessionBean.NO_ISSUER) {
+    	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, MAX_RETURNED_QUEUE_SIZE);
     			for (UserData userData : userDataList) {
@@ -149,7 +149,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	log.trace(">getNextHardTokenToGenerateInQueue()");
     	UserDataVO returnval=null;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
-    	if (hardTokenIssuerId != LocalHardTokenSessionBean.NO_ISSUER) {
+    	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
     			if (userDataList.size()>(index-1)) {
@@ -180,7 +180,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	log.trace(">getNumberOfHardTokensToGenerate()");
     	int count = 0;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
-    	if (hardTokenIssuerId != LocalHardTokenSessionBean.NO_ISSUER) {
+    	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		count = Long.valueOf(UserData.countNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId)).intValue();
     	}
     	log.trace("<getNumberOfHardTokensToGenerate()");

@@ -27,17 +27,17 @@ import javax.naming.NamingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
-import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbRemoteHelper;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.util.CertTools;
 
@@ -54,11 +54,11 @@ public class CertificateFinderBean {
 	
 	private static final Logger log = Logger.getLogger(CertificateFinderBean.class);
 
-	private EjbRemoteHelper ejb = new EjbRemoteHelper();
-	private SignSessionRemote mSignSession = ejb.getSignSession();
-	private CAAdminSessionRemote mCaAdminSession = ejb.getCAAdminSession();
-	private CaSessionRemote caSession = ejb.getCaSession();
-	private CertificateStoreSessionRemote mStoreSession = ejb.getCertStoreSession();
+	private EjbLocalHelper ejb = new EjbLocalHelper();
+	private SignSession mSignSession = ejb.getSignSession();
+	private CAAdminSession mCaAdminSession = ejb.getCAAdminSession();
+	private CaSession caSession = ejb.getCaSession();
+	private CertificateStoreSession mStoreSession = ejb.getCertStoreSession();
 
 	private boolean mInitialized = false;
 	private Admin mAdmin;

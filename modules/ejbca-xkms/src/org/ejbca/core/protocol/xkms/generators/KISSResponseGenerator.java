@@ -27,13 +27,14 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
@@ -63,13 +64,10 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 	 private CertificateStoreSession certificateStoreSession;
 	 private UserAdminSession userAdminSession;
 	 
-    public KISSResponseGenerator(String remoteIP, RequestAbstractType req) {
-        super(remoteIP, req);
-        EjbLocalHelper ejb = new EjbLocalHelper();
-
-        certificateStoreSession = ejb.getCertStoreSession();
-        userAdminSession = ejb.getUserAdminSession();
-
+    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlSession crlSession, CAAdminSession caAdminSession) {
+        super(remoteIP, req, caAdminSession, certificateStoreSession, crlSession);
+        this.certificateStoreSession = certificateStoreSession;
+        this.userAdminSession = userAdminSession;
     }
 
 	/** 

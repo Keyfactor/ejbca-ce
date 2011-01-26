@@ -17,6 +17,10 @@ import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
@@ -25,18 +29,14 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 /**
  * Class generating a response for a locate call
  * 
- * 
  * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
+public class ValidateResponseGenerator extends KISSResponseGenerator {
 
-public class ValidateResponseGenerator extends
-		KISSResponseGenerator {
-	
-
-	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req) {
-		super(remoteIP, req);
+	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlSession crlSession, CAAdminSession caAdminSession) {
+		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caAdminSession);
 	}
 	
 	/**
@@ -46,14 +46,11 @@ public class ValidateResponseGenerator extends
 		ValidateResultType result = xkmsFactory.createValidateResultType();		
 		super.populateResponse(result, requestVerifies);		
 		ValidateRequestType req = (ValidateRequestType) this.req;
-
-		
 		if(resultMajor == null){
 			if(!checkValidRespondWithRequest(req.getRespondWith())){
 				resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 				resultMinor = XKMSConstants.RESULTMINOR_MESSAGENOTSUPPORTED;
 			}
-
 			if(resultMajor == null){ 
 				List<X509Certificate> queryResult = processRequest(req.getQueryKeyBinding());
 
@@ -62,27 +59,14 @@ public class ValidateResponseGenerator extends
 					while(iter.hasNext()){
 						X509Certificate nextCert = iter.next();
 						result.getKeyBinding().add((KeyBindingType) getResponseValues(req.getQueryKeyBinding(),nextCert,true,false));
-
 					}		  
 				}
 			}
 		}
-		
 		if(resultMajor == null){ 
 			resultMajor = XKMSConstants.RESULTMAJOR_SUCCESS;
 		}
-		  		   
 		setResult(result);
-		
-
-		
-		
 		return result;
 	}
-	
-
-    
-    
-
-
 }

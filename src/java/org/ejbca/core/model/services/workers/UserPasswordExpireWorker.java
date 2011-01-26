@@ -15,8 +15,10 @@ package org.ejbca.core.model.services.workers;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -48,21 +50,22 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
      * 
      * @see org.ejbca.core.model.services.IWorker#work()
      */
-    public void work() throws ServiceExecutionFailedException {
+    public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
+        final UserAdminSessionLocal userAdminSession = ((UserAdminSessionLocal)ejbs.get(UserAdminSessionLocal.class));
 
         ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
        
         long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
-        List<UserDataVO> userDataList = getUserAdminSession().findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
+        List<UserDataVO> userDataList = userAdminSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, UserDataConstants.STATUS_NEW);
 
         for (UserDataVO userDataVO : userDataList) {
             userDataVO.setStatus(UserDataConstants.STATUS_GENERATED);
             userDataVO.setPassword(null);
             try {
-                getUserAdminSession().changeUser(getAdmin(), userDataVO, false);
+            	userAdminSession.changeUser(getAdmin(), userDataVO, false);
                 if (isSendToEndUsers()) {
                 	if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
                 		String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", userDataVO.getUsername());
@@ -85,15 +88,13 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
                 throw new ServiceExecutionFailedException(e);
             }
         }
-
         // Send of the mails
         if (isSendToEndUsers()) {
-            sendEmails(userEmailQueue);
+            sendEmails(userEmailQueue, ejbs);
         }
         if (isSendToAdmins()) {
-            sendEmails(adminEmailQueue);
+            sendEmails(adminEmailQueue, ejbs);
         }
-
         log.trace("<Worker ended");
     }
 	

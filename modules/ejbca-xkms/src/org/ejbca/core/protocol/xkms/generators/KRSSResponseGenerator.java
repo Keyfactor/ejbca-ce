@@ -51,6 +51,7 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.core.ejb.ca.crl.CrlSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -68,7 +69,6 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
@@ -111,20 +111,20 @@ public class KRSSResponseGenerator extends
 	 private SignSession signSession;
 	 private UserAdminSession userAdminSession;
 	 
-    public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc) {
-        super(remoteIP, req);
+    public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
+    		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, RaAdminSession raAdminSessionLocal,
+    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
+        super(remoteIP, req, caadminsession, certificateStoreSession, crlSession);
         this.requestDoc = requestDoc;
-        EjbLocalHelper ejb = new EjbLocalHelper();
-
-        caadminsession = ejb.getCAAdminSession();
-        authenticationSession = ejb.getAuthenticationSession();
-        certificateStoreSession = ejb.getCertStoreSession();
-        endEntityProfileSession = ejb.getEndEntityProfileSession();
-        keyRecoverySession = ejb.getKeyRecoverySession();
-        raAdminSessionLocal = ejb.getRAAdminSession();
-        signSession = ejb.getSignSession();
-        userAdminSession = ejb.getUserAdminSession();
-
+        this.caadminsession = caadminsession;
+        this.authenticationSession = authenticationSession;
+        this.certificateStoreSession = certificateStoreSession;
+        this.endEntityProfileSession = endEntityProfileSession;
+        this.keyRecoverySession = keyRecoverySession;
+        this.raAdminSessionLocal = raAdminSessionLocal;
+        this.signSession = signSession;
+        this.userAdminSession = userAdminSession;
     }
 	
 	/**

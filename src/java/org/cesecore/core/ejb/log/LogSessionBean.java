@@ -39,6 +39,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
@@ -226,6 +227,9 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         while (i.hasNext()) {
         	final ILogDevice dev = i.next();
             if (dev.getDeviceName().equalsIgnoreCase(deviceName)) {
+            	if (dev instanceof OldLogDevice) {
+            		((OldLogDevice)dev).setCAAdminSessionInterface(sessionContext.getBusinessObject(CAAdminSessionLocal.class));	// To avoid consequences of circular dependencies
+            	}
             	result = dev.export(admin, query, viewlogprivileges, capriviledges, logexporter, maxResults);
             	break;
             }

@@ -10,13 +10,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
@@ -40,6 +43,7 @@ public class EjbcaJSFHelper {
 	
 	private boolean initialized = false;
 	
+	// Does this really work?? Looks like it would violate JEE5.. Use EjbLocalHelper!
 	@EJB
 	private RaAdminSessionLocal raAdminSession;
 	@EJB
@@ -58,6 +62,12 @@ public class EjbcaJSFHelper {
 	private PublisherSessionLocal publisherSession;
 	@EJB
 	private AuthorizationSessionLocal authorizationSession;
+	@EJB
+	private HardTokenSessionLocal hardTokenSession;
+	@EJB
+	private CertificateProfileSessionLocal certificateProfileSession;
+	@EJB
+	private ApprovalExecutionSessionLocal approvalExecutionSession;
 	
 	public EjbcaJSFHelper(){}
 	
@@ -200,8 +210,7 @@ public class EjbcaJSFHelper {
     public ApprovalSessionLocal getApprovalSession(){
     	return approvalSession;
     }    
-	
-    
+
     public ServiceSessionLocal getServiceSession(){
     	return serviceSession;
     }
@@ -221,4 +230,16 @@ public class EjbcaJSFHelper {
     public EndEntityProfileSessionLocal getEndEntityProfileSession() {
         return endEntityProfileSession;
     }
+
+    public HardTokenSessionLocal getHardTokenSession() {
+        return hardTokenSession;
+    }
+
+    public CertificateProfileSessionLocal getCertificateProfileSession() {
+        return certificateProfileSession;
+    }
+
+	public ApprovalExecutionSessionLocal getApprovalExecutionSession() {
+		return approvalExecutionSession;
+	}
 }

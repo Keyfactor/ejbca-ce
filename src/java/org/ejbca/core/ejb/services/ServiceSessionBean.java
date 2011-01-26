@@ -42,9 +42,24 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.log.Admin;
@@ -60,7 +75,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  * This bean manages the service configuration as stored in the database, but is not used for running the services. 
  * 
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -90,6 +104,38 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private ServiceDataSessionLocal serviceDataSession;
     private ServiceSessionLocal serviceSession;
+
+    // Additional dependencies from the services we executeServiceInTransaction
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private AuthenticationSessionLocal authenticationSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CrlCreateSessionLocal crlCreateSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private HardTokenSessionLocal hardTokenSession;
+    @EJB
+    private KeyRecoverySessionLocal keyRecoverySession;
+    @EJB
+    private RaAdminSessionLocal raAdminSession;
+    @EJB
+    private SignSessionLocal signSession;
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
+    @EJB
+    private PublisherQueueSessionLocal publisherQueueSession;
+    @EJB
+    private PublisherSessionLocal publisherSession;
     
     private Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);	// The administrator that the services should be run as.
 
@@ -557,7 +603,26 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void executeServiceInTransaction(IWorker worker, String serviceName) {
         try {
-        	worker.work();
+			// Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since we have circular dependencies! 
+        	Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
+        	ejbs.put(ApprovalSessionLocal.class, approvalSession);
+        	ejbs.put(AuthenticationSessionLocal.class, authenticationSession);
+        	ejbs.put(AuthorizationSessionLocal.class, authorizationSession);
+        	ejbs.put(CAAdminSessionLocal.class, caAdminSession);
+        	ejbs.put(CaSessionLocal.class, caSession);
+        	ejbs.put(CertificateProfileSessionLocal.class, certificateProfileSession);
+        	ejbs.put(CertificateStoreSessionLocal.class, certificateStoreSession);
+        	ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
+        	ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
+        	ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
+        	ejbs.put(LogSessionLocal.class, logSession);
+        	ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
+        	ejbs.put(RaAdminSessionLocal.class, raAdminSession);
+        	ejbs.put(SignSessionLocal.class, signSession);
+        	ejbs.put(UserAdminSessionLocal.class, userAdminSession);
+        	ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
+        	ejbs.put(PublisherSessionLocal.class, publisherSession);
+            worker.work(ejbs);
         	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
         			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
         } catch (ServiceExecutionFailedException e) {

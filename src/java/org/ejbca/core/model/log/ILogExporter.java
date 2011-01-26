@@ -15,6 +15,7 @@ package org.ejbca.core.model.log;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
 /** This interface is used for exporting a number of log entries to 
  * any format defined by the implementing class.
@@ -38,11 +39,11 @@ public interface ILogExporter extends Serializable {
 	public int getNoOfEntries();
 
 	/** Returns the exported data, determined by the exporting class. Can be binary or text data.
-	 * 
+	 * @param ejbs A map between Local EJB interface classes and their injected stub
 	 * @throws Exception if an error occurs during export
 	 * @return byte data or null if no of exported entries are 0.
 	 */
-	public byte[] export(Admin admin) throws Exception;
+	public byte[] export(Admin admin, Map<Class<?>, Object> ejbs) throws Exception;
 
 }
 

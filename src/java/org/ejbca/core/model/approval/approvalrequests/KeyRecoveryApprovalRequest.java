@@ -33,15 +33,12 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
  * Approval Request created when an administrator wants
  * to recovery a end entities keyset
- *  
- * 
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -49,24 +46,16 @@ import org.ejbca.util.CertTools;
 public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
-
 	private static final Logger log = Logger.getLogger(KeyRecoveryApprovalRequest.class);
-	
 	private static final int LATEST_VERSION = 1;
 		
 	private String username;
 	private Certificate cert;
-	
-	
-	private boolean recoverNewestCert = false; 
-	
-	
-	
-	/**
-	 * Constructor used in externalization only
-	 */
-	public KeyRecoveryApprovalRequest() {}
 
+	private boolean recoverNewestCert = false; 
+
+	/** Constructor used in externalization only */
+	public KeyRecoveryApprovalRequest() {}
 
 	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
@@ -76,12 +65,14 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		this.recoverNewestCert = recoverNewestCert;
 	}
 
+	@Override
+	public void execute() throws ApprovalRequestExecutionException {
+		throw new RuntimeException("This execution requires additional bean references.");
+	}
 
-    public void execute() throws ApprovalRequestExecutionException {
+    public void execute(UserAdminSession userAdminSession) throws ApprovalRequestExecutionException {
         log.debug("Executing mark for recovery for user:" + username);
         try {
-
-            UserAdminSession userAdminSession = new EjbLocalHelper().getUserAdminSession();
             if (recoverNewestCert) {
                 userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
             } else {
@@ -94,7 +85,6 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
         } catch (WaitingForApprovalException e) {
             throw new EJBException("This should never happen", e);
         }
-
     }
 
     /**
@@ -104,12 +94,11 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		return new String(getApprovalType() + ";" + username).hashCode();
 	}
 
-
 	public int getApprovalType() {		
 		return ApprovalDataVO.APPROVALTYPE_KEYRECOVERY;
 	}
 
-
+	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
@@ -119,10 +108,10 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		return retval;
 	}
 	
+	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
-
 
 	public boolean isExecutable() {		
 		return true;
@@ -140,7 +129,6 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 			log.debug("Error serializing certificate", e);
 			throw new IOException(e.getMessage());
 		}	
-		
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
@@ -157,7 +145,5 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 				throw new IOException(e.getMessage());
 			}	
         }
-
 	}
-
 }

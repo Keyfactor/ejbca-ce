@@ -33,7 +33,7 @@ import java.security.cert.CertificateEncodingException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.util.EjbRemoteHelper;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.quickserver.net.server.ClientBinaryHandler;
 import org.quickserver.net.server.ClientEventHandler;
@@ -51,11 +51,11 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 
 	private static final Logger LOG = Logger.getLogger(CmpTcpCommandHandler.class.getName());
     private static final InternalResources INTRES = InternalResources.getInstance();
-	private static EjbRemoteHelper ejb = null;
+    private static EjbLocalHelper ejb = null;
 	
-	private static synchronized EjbRemoteHelper getEjb() {
+	private static synchronized EjbLocalHelper getEjb() {
 		if (ejb == null) {
-			ejb = new EjbRemoteHelper();
+			ejb = new EjbLocalHelper();
 		}
 		return ejb;
 	}

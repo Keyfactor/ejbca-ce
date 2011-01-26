@@ -15,6 +15,7 @@ package org.ejbca.core.model.services.workers;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
@@ -56,7 +57,6 @@ public abstract class EmailSendingWorker extends BaseWorker {
 		public MailActionInfo getActionInfo() {
 			return actionInfo;
 		}
-		
 	}
 
 	/** Method that must be implemented by all subclasses to EmailSendingWorker, used to update status of 
@@ -66,20 +66,19 @@ public abstract class EmailSendingWorker extends BaseWorker {
 	 */
 	protected abstract void updateStatus(String pk, int status);
 	
-	protected void sendEmails(ArrayList queue)
-			throws ServiceExecutionFailedException {
-				Iterator iter = queue.iterator();
-				while(iter.hasNext()){			
-					try{
-						EmailCertData next = (EmailCertData) iter.next();								
-						getAction().performAction(next.getActionInfo());
-						updateStatus(next.getFingerPrint(), SecConst.CERT_NOTIFIEDABOUTEXPIRATION );
-					} catch (Exception fe) {
-						log.error("Error sending emails: ", fe);
-						throw new ServiceExecutionFailedException(fe);
-					} 
-				}
-			}
+	protected void sendEmails(ArrayList<EmailCertData> queue, Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
+		Iterator<EmailCertData> iter = queue.iterator();
+		while(iter.hasNext()){			
+			try{
+				EmailCertData next = iter.next();								
+				getAction().performAction(next.getActionInfo(), ejbs);
+				updateStatus(next.getFingerPrint(), SecConst.CERT_NOTIFIEDABOUTEXPIRATION );
+			} catch (Exception fe) {
+				log.error("Error sending emails: ", fe);
+				throw new ServiceExecutionFailedException(fe);
+			} 
+		}
+	}
 
 	protected String getAdminMessage() {
 		if(adminMessage == null){
@@ -119,5 +118,4 @@ public abstract class EmailSendingWorker extends BaseWorker {
 	protected boolean isSendToEndUsers() {
 		return properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS,"FALSE").equalsIgnoreCase("TRUE");
 	}
-
 }

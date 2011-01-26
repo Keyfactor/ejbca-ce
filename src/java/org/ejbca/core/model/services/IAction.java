@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -40,8 +41,9 @@ public interface IAction {
 	 * to the data sent in the parameter IActionInfo
 	 * 
 	 * @param optional parameter used to send data to the action
+	 * @param ejbs A map between Local EJB interface classes and their injected stub
 	 * @throws ActionException if the action failed in any way.
 	 */
-	public void performAction(ActionInfo actionInfo) throws ActionException;
+	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException;
 
 }

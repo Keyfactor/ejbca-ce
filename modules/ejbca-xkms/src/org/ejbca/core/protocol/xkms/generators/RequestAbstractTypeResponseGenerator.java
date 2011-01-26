@@ -38,7 +38,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -56,8 +55,6 @@ import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
 import org.w3._2002._03.xkms_.UseKeyWithType;
 import org.w3._2002._03.xkms_.ValidityIntervalType;
 
-
-
 /**
  * Help method that generates the most basic parts of a xkms message 
  * response
@@ -74,7 +71,6 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
     private static final InternalResources intres = InternalResources.getInstance();
     
     protected static final BigInteger SERVERRESPONSELIMIT = new BigInteger("30");
-    
 
 	protected RequestAbstractType req;
 	protected ObjectFactory xkmsFactory = new ObjectFactory();
@@ -83,19 +79,16 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	protected String resultMajor = null;
 	protected String resultMinor = null;
 
-	private CAAdminSession caadminsession;
+	private CAAdminSession caAdminSession;
 	private CertificateStoreSession certificateStoreSession;
 	private CrlSession createCrlSession;
 
-    public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req) {
+    public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CrlSession createCrlSession) {
         super(remoteIP);
         this.req = req;
-        EjbLocalHelper ejb = new EjbLocalHelper();
-
-        caadminsession = ejb.getCAAdminSession();
-        certificateStoreSession = ejb.getCertStoreSession();
-        createCrlSession = ejb.getCreateCrlSession();
-
+        this.caAdminSession = caAdminSession;
+        this.certificateStoreSession = certificateStoreSession;
+        this.createCrlSession = createCrlSession;
     }
 
 	/**
@@ -107,26 +100,19 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		result.setId(genId());
 		result.setRequestId(req.getId());					
 		result.setOpaqueClientData(req.getOpaqueClientData());
-						
-
 		// Nonce is required for two phase commit	
-		
 		if(!requestVerifies){
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_NOAUTHENTICATION;			
 		}
- 
 	}
-
 
 	protected int getResponseLimit() {
 		if(req.getResponseLimit() == null || req.getResponseLimit().compareTo(SERVERRESPONSELIMIT) >= 0){
 			return SERVERRESPONSELIMIT.intValue();
 		}
-		
 		return req.getResponseLimit().intValue();
 	}
-
 
 	private String genId() {
 		String id = "";
@@ -292,7 +278,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN)){
    			int caid = CertTools.getIssuerDN(cert).hashCode();
    			try {
-   				Iterator<Certificate> iter = caadminsession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
+   				Iterator<Certificate> iter = caAdminSession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
    				while(iter.hasNext()){
    					X509Certificate next = (X509Certificate) iter.next();
    					x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(next.getEncoded()));
@@ -390,7 +376,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         	// Check Issuer Trust
         	try{
         		int caid = CertTools.getIssuerDN(cert).hashCode();
-        		CAInfo cAInfo = caadminsession.getCAInfo(pubAdmin, caid);
+        		CAInfo cAInfo = caAdminSession.getCAInfo(pubAdmin, caid);
         		if(cAInfo != null){
         			retval.getValidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
 

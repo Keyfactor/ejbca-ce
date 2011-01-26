@@ -18,16 +18,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
-import org.ejbca.core.model.util.EjbLocalHelper;
 
 public class CsvLogExporter implements ILogExporter {
 	
@@ -71,8 +72,9 @@ public class CsvLogExporter implements ILogExporter {
 	/**
 	 * @see org.ejbca.core.model.log.ILogExporter
 	 */
-	public byte[] export(Admin admin) throws Exception {
+	public byte[] export(Admin admin, Map<Class<?>, Object> ejbs) throws Exception {
 		log.trace(">export");
+		CAAdminSession caAdminSession = (CAAdminSession) ejbs.get(CAAdminSession.class);
 		byte[] ret = null;		
 		if (logentries != null) {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -126,7 +128,7 @@ public class CsvLogExporter implements ILogExporter {
 				int caid = Integer.parseInt(ca);
 				CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
 				//ISignSessionLocal signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
-				CmsCAServiceResponse resp = (CmsCAServiceResponse)new EjbLocalHelper().getCAAdminSession().extendedService(admin, caid, request);
+				CmsCAServiceResponse resp = (CmsCAServiceResponse) caAdminSession.extendedService(admin, caid, request);
 				ret = resp.getCmsDocument();
 			} catch (IllegalExtendedCAServiceRequestException e) {
 				log.error("Bad CA service", e);

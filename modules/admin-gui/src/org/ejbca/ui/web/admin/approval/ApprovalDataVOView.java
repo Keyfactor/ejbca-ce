@@ -32,7 +32,9 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.LinkView;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -241,7 +243,7 @@ public class ApprovalDataVOView implements Serializable {
         if (!initialized) {
             return false;
         }
-        List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+        List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
         int size = newTextRows.size();
         for (int i = 0; i < size; i++) {
             if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)
@@ -264,7 +266,7 @@ public class ApprovalDataVOView implements Serializable {
         ArrayList<String> certificateSerialNumbers = new ArrayList<String>();
         ArrayList<String> certificateIssuerDN = new ArrayList<String>();
         ArrayList<String> usernames = new ArrayList<String>();
-        List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+        List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
 
         for (int i = 0; i < newTextRows.size(); i++) {
             if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)) {
@@ -313,7 +315,7 @@ public class ApprovalDataVOView implements Serializable {
         if (!initialized) {
             return textComparisonList;
         }
-        List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+        List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
         int size = newTextRows.size();
         for (int i = 0; i < size; i++) {
             if (((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)
@@ -339,8 +341,8 @@ public class ApprovalDataVOView implements Serializable {
         }
 
         if (data.getApprovalRequest().getApprovalRequestType() == ApprovalRequest.REQUESTTYPE_COMPARING) {
-            List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
-            List<ApprovalDataText> orgTextRows = data.getApprovalRequest().getOldRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+            List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
+            List<ApprovalDataText> orgTextRows = getOldRequestDataAsText();
             int size = newTextRows.size();
             if (orgTextRows.size() > size) {
                 size = orgTextRows.size();
@@ -363,7 +365,7 @@ public class ApprovalDataVOView implements Serializable {
             }
 
         } else {
-            List<ApprovalDataText> newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+            List<ApprovalDataText> newTextRows = getNewRequestDataAsText();
             int size = newTextRows.size();
             for (int i = 0; i < size; i++) {
                 textComparisonList.add(new TextComparisonView(null, translateApprovalDataText((ApprovalDataText) newTextRows.get(i))));
@@ -388,6 +390,31 @@ public class ApprovalDataVOView implements Serializable {
         }
 
         return retval;
+    }
+    
+    private List<ApprovalDataText> getNewRequestDataAsText() {
+    	ApprovalRequest approvalRequest = data.getApprovalRequest();
+    	Admin admin = EjbcaJSFHelper.getBean().getAdmin();
+    	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, EjbcaJSFHelper.getBean().getCAAdminSession(),
+    				EjbcaJSFHelper.getBean().getEndEntityProfileSession(), EjbcaJSFHelper.getBean().getCertificateProfileSession(), EjbcaJSFHelper.getBean().getHardTokenSession());
+    	} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
+    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, EjbcaJSFHelper.getBean().getCAAdminSession(),
+    				EjbcaJSFHelper.getBean().getEndEntityProfileSession(), EjbcaJSFHelper.getBean().getCertificateProfileSession(), EjbcaJSFHelper.getBean().getHardTokenSession());
+    	} else {
+    		return approvalRequest.getNewRequestDataAsText(admin);
+    	}
+    }
+
+    private List<ApprovalDataText> getOldRequestDataAsText() {
+    	ApprovalRequest approvalRequest = data.getApprovalRequest();
+    	Admin admin = EjbcaJSFHelper.getBean().getAdmin();
+    	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, EjbcaJSFHelper.getBean().getCAAdminSession(),
+    				EjbcaJSFHelper.getBean().getEndEntityProfileSession(), EjbcaJSFHelper.getBean().getCertificateProfileSession(), EjbcaJSFHelper.getBean().getHardTokenSession());
+    	} else {
+    		return approvalRequest.getOldRequestDataAsText(admin);
+    	}
     }
 
     private static byte[] dummycert = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"

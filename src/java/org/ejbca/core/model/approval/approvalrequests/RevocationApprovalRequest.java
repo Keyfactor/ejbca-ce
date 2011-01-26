@@ -25,14 +25,11 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.util.EjbRemoteHelper;
 
 public class RevocationApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
-
 	private static final Logger log = Logger.getLogger(RevocationApprovalRequest.class);
-	
 	private static final int LATEST_VERSION = 1;	
 
 	private int approvalType = -1;
@@ -41,21 +38,11 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	private String issuerDN = null;
 	private int reason = -2;
 	
-	/**
-	 * Constuctor used in externaliziation only
-	 */
+	/** Constructor used in externalization only */
 	public RevocationApprovalRequest() {}
 
 	/**
-	 * Construct an approvalrequest for the revocation of a certificate.
-	 * @param certificateSerialNumber
-	 * @param issuerDN
-	 * @param username
-	 * @param reason
-	 * @param requestAdmin
-	 * @param numOfReqApprovals
-	 * @param cAId
-	 * @param endEntityProfileId
+	 * Construct an ApprovalRequest for the revocation of a certificate.
 	 */
 	public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username,
 			int reason, Admin requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
@@ -65,17 +52,10 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.reason = reason;
 		this.certificateSerialNumber = certificateSerialNumber;
 		this.issuerDN = issuerDN; 
-	} // RevocationApprovalRequest
+	}
 
 	/**
-	 * Constructs an approvalrequest for the revocation and optional removal of an end entity.
-	 * @param deleteAfterRevoke
-	 * @param username
-	 * @param reason
-	 * @param requestAdmin
-	 * @param numOfReqApprovals
-	 * @param cAId
-	 * @param endEntityProfileId
+	 * Constructs an ApprovalRequest for the revocation and optional removal of an end entity.
 	 */
 	public RevocationApprovalRequest(boolean deleteAfterRevoke, String username,
 			int reason, Admin requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
@@ -89,7 +69,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		this.reason = reason;
 		this.certificateSerialNumber = null;
 		this.issuerDN = null;
-	} // RevocationApprovalRequest
+	}
 
 	/**
 	 * A main function of the ApprovalRequest, the execute() method
@@ -98,31 +78,28 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * execute should perform the action or nothing if the requesting admin
 	 * is supposed to try this action again.
 	 */
+	@Override
 	public void execute() throws ApprovalRequestExecutionException {
+		throw new RuntimeException("This execution requires additional bean references.");
+	}
+	
+	public void execute(UserAdminSession userAdminSession) throws ApprovalRequestExecutionException {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[approvalType] + " (" + approvalType + ").");
-
 		try {
-		    /*Context ctx = new javax.naming.InitialContext();
-		    IUserAdminSessionHome useradminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"),
-		    		IUserAdminSessionHome.class);
-			IUserAdminSessionRemote useradminsession = useradminsessionhome.create();*/
-			UserAdminSession useradminsession = new EjbRemoteHelper().getUserAdminSession();
 			switch (approvalType) {
 				case ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY:
-					useradminsession.revokeUser(getRequestAdmin(), username, reason);
+					userAdminSession.revokeUser(getRequestAdmin(), username, reason);
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY:
-					useradminsession.revokeAndDeleteUser(getRequestAdmin(), username, reason);
+					userAdminSession.revokeAndDeleteUser(getRequestAdmin(), username, reason);
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
-					useradminsession.revokeCert(getRequestAdmin(), certificateSerialNumber, issuerDN, username, reason);
+					userAdminSession.revokeCert(getRequestAdmin(), certificateSerialNumber, issuerDN, username, reason);
 					break;
 				default:
 					log.error("Unknown approval type " + approvalType);
 					break;
 			}
-		/*} catch (CreateException e) {
-			throw new ApprovalRequestExecutionException("Error creating userdata session", e);*/
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
 		} catch (ApprovalException e) {
@@ -137,12 +114,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("Could not find object.",e);
 		} catch (RemoveException e) {
 			throw new ApprovalRequestExecutionException("Could not remove object.",e);
-		/*} catch (NamingException e) {
-			throw new EJBException(e);
-		} catch (RemoteException e) {
-			throw new EJBException(e);*/
 		}
-	} // execute
+	}
 
 	/**
 	 * Method that should generate an approval id for this type of
@@ -151,7 +124,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 */
 	public int generateApprovalId() {
 		return generateApprovalId(getApprovalType(), username, reason, certificateSerialNumber, issuerDN);
-	} // generateApprovalId
+	}
 
 	static public int generateApprovalId(int approvalType, String username, int reason, BigInteger certificateSerialNumber, String issuerDN) {
 		String idString = approvalType + ";" + username + ";" + reason +";";
@@ -159,11 +132,11 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			idString += certificateSerialNumber + ";" + issuerDN + ";";
 		}
 		return idString.hashCode();
-	} // generateApprovalId
+	}
 
 	public int getApprovalType() {		
 		return approvalType;
-	} // getApprovalType
+	}
 
 	/**
 	 * This method should return the request data in text representation.
@@ -172,6 +145,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
+	@Override
 	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( username != null ) {
@@ -199,6 +173,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * 
 	 * Should return a Collection of ApprovalDataText, one for each row
 	 */
+	@Override
 	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
 		return null;
 	}
@@ -233,6 +208,5 @@ public class RevocationApprovalRequest extends ApprovalRequest {
     		certificateSerialNumber = (BigInteger) in.readObject();
     		issuerDN = (String) in.readObject();
         }
-
 	}
 }
