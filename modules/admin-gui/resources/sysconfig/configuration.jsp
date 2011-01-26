@@ -229,8 +229,6 @@
         request.getParameter(BUTTON_CANCEL) == null &&
         request.getParameter(BUTTON_PREVIOUS) == null){
  
- 		System.out.println("Reload config");
- 
       // get current global configuration.
         ejbcawebbean.reloadGlobalConfiguration();
      }
