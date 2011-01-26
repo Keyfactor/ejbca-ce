@@ -59,6 +59,7 @@
 
   final String MAIN_RESOURCE                          = "/administrator";
   final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
+  final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
   final String EDITCAS_RESOURCE                       = "/super_administrator";
   final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
   final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
@@ -117,6 +118,14 @@
 		<li id="cat1" class="section"><strong><%=ejbcawebbean.getText("CAFUNCTIONS") %></strong>
 			<ul>
 				<li><a href="<%= CA_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("BASICFUNCTIONS") %></a></li>
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(ACTIVATECA_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("CAFUNCTIONS")+"</strong><ul>"); 
+           caheaderprinted=true;
+        } %>
 				<li><a href="<%= CA_ACTIVATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("CAACTIVATION") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 
