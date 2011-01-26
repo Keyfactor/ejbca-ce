@@ -1875,7 +1875,7 @@ function checkallfields(){
 
           <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED %>"/>' class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) out.write(" selected ");
-          %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"UNSPECIFIED\") %>"/></option>
+          %>><c:out value="<%= ejbcawebbean.getText(\"REVOKED\") %>"/>: <c:out value="<%= ejbcawebbean.getText(\"REV_UNSPECIFIED\") %>"/></option>
 
           <option value='<c:out value="<%= RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE %>"/>' class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) out.write(" selected ");

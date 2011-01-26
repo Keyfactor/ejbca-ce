@@ -40,7 +40,7 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
     final private Exception exception;
     
     
-    protected static final String[] REASON_TEXTS ={"NOT REVOKED","UNSPECIFIED","KEYCOMPROMISE","CACOMPROMISE",
+    protected static final String[] REASON_TEXTS ={"NOT REVOKED","REV_UNSPECIFIED","KEYCOMPROMISE","CACOMPROMISE",
         "AFFILIATIONCHANGED","SUPERSEDED","CESSATIONOFOPERATION",
         "CERTIFICATEHOLD","REMOVEFROMCRL","PRIVILEGESWITHDRAWN",
     "AACOMPROMISE"};

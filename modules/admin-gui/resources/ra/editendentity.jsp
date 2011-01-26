@@ -1462,7 +1462,7 @@ function checkUseInBatch(){
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("UNSPECIFIED") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_UNSPECIFIED") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) out.write(" selected ");
