@@ -189,10 +189,10 @@
 	     <% if(revstatus == RevokedCertInfo.NOT_REVOKED) {%><%= ejbcawebbean.getText("ACTIVE") %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {%><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("CERTIFICATEHOLD")  %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_UNSPECIFIED")  %><%}%>
-	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("KEYCOMPROMISE")  %><%}%>
-	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CACOMPROMISE")  %><%}%>
-	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AFFILIATIONCHANGED")  %><%}%>
-	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("SUPERSEDED")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_KEYCOMPROMISE")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CACOMPROMISE")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AFFILIATIONCHANGED")  %><%}%>
+	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_SUPERSEDED")  %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CESSATIONOFOPERATION")  %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("PRIVILEGESWITHDRAWN")  %><%}%>
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AACOMPROMISE")  %><%}%>

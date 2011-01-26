@@ -1337,19 +1337,19 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("KEYCOMPROMISE") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_KEYCOMPROMISE") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("CACOMPROMISE") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CACOMPROMISE") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("AFFILIATIONCHANGED") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AFFILIATIONCHANGED") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_SUPERSEDED %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("SUPERSEDED") %></option>
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_SUPERSEDED") %></option>
 
           <option value="<%= RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION %>" class="lightred" <%
                 if(revstatus == RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
