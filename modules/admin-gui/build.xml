@@ -78,7 +78,7 @@
 
 	    <property name="jasper.classpath" refid="jasper.classpath"/>
 		<taskdef name="jasper2" classname="org.apache.jasper.JspC" classpathref="jasper.classpath" loaderref="jasper"/>
-		<jasper2 uriroot="${build.dir}"
+		<jasper2 uriroot="${resources.dir}"
 			package="org.apache.jasper.jspc"
 			outputdir="${jasper-temp.dir}/jspc"
 			validatexml="false"
