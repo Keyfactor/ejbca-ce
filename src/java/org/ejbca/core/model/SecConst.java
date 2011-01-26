@@ -227,7 +227,7 @@ public final class SecConst {
 
 	// Revocation reasons identifiers
     public static final String[] reasontexts = {
-        "UNSPECIFIED", "KEYCOMPROMISE", "CACOMPROMISE", "AFFILIATIONCHANGED", "SUPERSEDED",
+        "REV_UNSPECIFIED", "KEYCOMPROMISE", "CACOMPROMISE", "AFFILIATIONCHANGED", "SUPERSEDED",
         "CESSATIONOFOPERATION", "CERTIFICATEHOLD", "UNUSED", "REMOVEFROMCRL", "PRIVILEGESWITHDRAWN",
         "AACOMPROMISE"
     };
