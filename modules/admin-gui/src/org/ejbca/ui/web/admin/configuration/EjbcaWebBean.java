@@ -355,15 +355,23 @@ public class EjbcaWebBean implements Serializable {
         }
     }
 
-    /* Checks if the admin have authorization to view the resource */
+    /** Checks if the admin have authorization to view the resource 
+     * Does not return false if not authorized, instead throws an AuthorizationDeniedException.
+     * 
+     * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
+     * 
+     * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
+     * @throws AuthorizationDeniedException is not authorized to resource
+     */
     public boolean isAuthorized(String resource) throws AuthorizationDeniedException {
-        boolean returnval = false;
         if (certificates != null) {
-            returnval = authorizationSession.isAuthorized(administrator, resource);
+            if (!authorizationSession.isAuthorized(administrator, resource)) {
+        		throw new  AuthorizationDeniedException("Not authorized to "+resource);
+            }
         } else {
             throw new AuthorizationDeniedException("Client certificate required.");
         }
-        return returnval;
+        return true;
     }
 
     /** Checks if the admin have authorization to view the resource without performing any logging. Used by menu page 
@@ -371,20 +379,18 @@ public class EjbcaWebBean implements Serializable {
      * 
      * TODO: don't use as is in a new admin GUI, refactor to return true or false instead (if we re-use this class at all)
      * 
-     * @return true is authorized to resource, never return false instead throws AuthorizationDeniedException.
+     * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
      * @throws AuthorizationDeniedException is not authorized to resource
      */
     public boolean isAuthorizedNoLog(String resource) throws AuthorizationDeniedException {
-    	boolean returnval=false;
     	if(certificates != null){
-    		returnval= authorizationSession.isAuthorizedNoLog(administrator,resource);
+    		if (!authorizationSession.isAuthorizedNoLog(administrator,resource)) {
+        		throw new  AuthorizationDeniedException("Not authorized to "+resource);    			
+    		}
     	} else{
     		throw new  AuthorizationDeniedException("Client certificate required");
     	}
-    	if (!returnval) {
-    		throw new  AuthorizationDeniedException("Not authorized to "+resource);
-    	}
-    	return returnval;
+    	return true;
     }
 
 
