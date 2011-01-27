@@ -828,7 +828,7 @@ function checkallfields(){
 
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEPRINTABLESTRINGSUBJECTDN") %>
+        <%= ejbcawebbean.getText("CERT_SUBJECTDN_PRINTABLESTR") %>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USEPRINTABLESTRINGSUBJECTDN %>" value="<%=CHECKBOX_VALUE %>" 
@@ -839,7 +839,7 @@ function checkallfields(){
 
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USELDAPDNORDER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20LDAP%20DN%20order") %>
+        <%= ejbcawebbean.getText("CERT_SUBJECTDN_LDAPORDER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Use%20LDAP%20DN%20order") %>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
