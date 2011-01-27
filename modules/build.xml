@@ -4,17 +4,26 @@
 		Holds targets for building all the different modules. These targets are
     	invoked from other modules that depend on them.
     </description>
+
+	<!-- Get the correct relative path when this file is imported. -->
+	<dirname property="modules.basedir" file="${ant.file.modules}"/>
 	
+	<import file="${modules.basedir}/build-properties.xml"/>
+	<import file="${modules.basedir}/build-helpers.xml"/>
+
+
     <!-- =================================================================== -->
     <!-- Clover stuff                                                        -->
     <!-- =================================================================== -->
     <property name="clover.jar" location="/home/hudson/clover/clover-ant-3.0.2/lib/clover.jar"/>
+    <property name="clover.out.dir" location="${ejbca.home}"/>
+    <property name="clover.db" location="${clover.out.dir}/.clover/clover.db"/>
 	<taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
 	<target name="-check.clover">
 		<available property="clover.installed" classname="com.cenqua.clover.CloverInstr" />
 	</target>
 	<target name="with.clover" depends="-check.clover" if="clover.installed">
-		<clover-setup initstring="${ejbca.home}/.clover/clover.db">
+		<clover-setup initstring="${clover.db}">
 			<fileset dir="${ejbca.home}">
 				<exclude name="**/org/apache/**/*.java"/>
 				<exclude name="**/com/novosec/**/*.java"/>
@@ -22,25 +31,20 @@
 		</clover-setup>			
 	</target>
 	<target name="clover.xml" depends="-check.clover" if="clover.installed">
-	    <clover-report initstring="${ejbca.home}/.clover/clover.db">
-	       <current outfile="${ejbca.home}/clover_html/clover.xml">
+	    <clover-report initstring="${clover.db}">
+	       <current outfile="${clover.out.dir}/clover_html/clover.xml">
 	          <format type="xml"/>
 	       </current>
 	    </clover-report>
 	 </target>
 	<target name="clover.html" depends="-check.clover" if="clover.installed">
-		<clover-html-report initstring="${ejbca.home}/.clover/clover.db" outdir="${ejbca.home}/clover_html" title="EJBCA"/>
+		<clover-html-report initstring="${clover.db}" outdir="${clover.out.dir}/clover_html" title="EJBCA"/>
 	 </target>
 	<target name="clover.clean" depends="-check.clover" if="clover.installed">
-		<clover-clean initstring="${ejbca.home}/.clover/clover.db"/>
+		<clover-clean initstring="${clover.db}"/>
+	    <delete dir="${clover.out.dir}/clover_html"/>
 	</target>
 	<!-- End Clover stuff -->
-
-	<!-- Get the correct relative path when this file is imported. -->
-	<dirname property="modules.basedir" file="${ant.file.modules}"/>
-	
-	<import file="${modules.basedir}/build-properties.xml"/>
-	<import file="${modules.basedir}/build-helpers.xml"/>
 
     <target name="showhelp">
         <echo message="Run 'ant -p' to see the available targets." />
