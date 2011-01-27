@@ -158,5 +158,27 @@
 				command="find ${publish.dir} -type f -exec chmod 664 {} \;"/>
 		
     </target>
+
+    <target name="gen-depgraph" description="Generate EJB dependecy graph using dot">
+    	<property name="gen-depgraph.dir" value="${ejbca.home}/tmp/gen-dep"/>
+    	<mkdir dir="${gen-depgraph.dir}"/>
+    	<path id="gen-dep.classpath">
+    		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar lib/javaee.jar"/> <!-- for javax.ejb.Stateless, Local and EJB-->
+    	</path>
+    	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" debug="on" includeantruntime="false"
+    		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
+       	<path id="gen-dep.classpath.run">
+       		<path refid="gen-dep.classpath"/>
+       		<path location="${gen-depgraph.dir}"/>
+       	</path>
+    	<java classname="org.ejbca.util.EjbDependencyGraphTool" classpathref="gen-dep.classpath.run">
+    		<arg line="${ejbca.home}/dist/ejbca.ear ${gen-depgraph.dir}/ejbca_${app.version.number}.dot"/>
+    	</java>
+    	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.dot was written."/>
+    	<exec executable="dot">
+    		<arg line="-Tpng -o ${gen-depgraph.dir}/ejbca_${app.version.number}.png ${gen-depgraph.dir}/ejbca_${app.version.number}.dot"/>
+    	</exec>
+    	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.png was created."/>
+    </target>
 	
 </project>

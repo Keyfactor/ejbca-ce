@@ -294,6 +294,8 @@
         <exclude name="org/ejbca/util/PerformanceTest.java" />
 		<!-- Tool used to tidy up JavaDoc. -->
         <exclude name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
+		<!-- Tool used to tidy generate EJB depenency graph -->
+        <exclude name="org/ejbca/util/EjbDependencyGraphTool.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-ejb" pathsep=" " property="source.fileset.ejbca-ejb.files"><map from="${src.dir}/" to=""/></pathconvert>
 
