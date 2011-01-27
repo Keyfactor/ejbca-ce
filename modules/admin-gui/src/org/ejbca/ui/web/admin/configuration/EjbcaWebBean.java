@@ -35,21 +35,21 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.authorization.AdminEntitySession;
-import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.cesecore.core.ejb.log.LogSession;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -93,21 +93,21 @@ public class EjbcaWebBean implements Serializable {
                                                              "/ra_functionality/view_hardtoken","/ca_functionality/view_certificate",
                                                              "/ra_functionality/keyrecovery"};
 
-    private EjbLocalHelper ejb = new EjbLocalHelper();
-    private AdminEntitySession adminEntitySession = ejb.getAdminEntitySession();
-    private AdminGroupSession adminGroupSession = ejb.getAdminGroupSession();
-    private AuthorizationSession authorizationSession = ejb.getAuthorizationSession();
-    private CAAdminSession caAdminSession = ejb.getCAAdminSession();
-    private CaSession caSession = ejb.getCaSession();
-    private CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
-    private CertificateStoreSession certificateStoreSession = ejb.getCertStoreSession();   
-    private EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
-    private HardTokenSession hardTokenSession = ejb.getHardTokenSession();
-    private LogSession logSession = ejb.getLogSession();
-    private PublisherSession publisherSession = ejb.getPublisherSession();
-    private RaAdminSession raAdminSession = ejb.getRAAdminSession();
-    private UserAdminSession userAdminSession = ejb.getUserAdminSession();  
-    private UserDataSourceSession userDataSourceSession = ejb.getUserDataSourceSession();
+    private final EjbLocalHelper ejb = new EjbLocalHelper();
+    private final AdminEntitySessionLocal adminEntitySession = ejb.getAdminEntitySession();
+    private final AdminGroupSessionLocal adminGroupSession = ejb.getAdminGroupSession();
+    private final AuthorizationSessionLocal authorizationSession = ejb.getAuthorizationSession();
+    private final CAAdminSessionLocal caAdminSession = ejb.getCaAdminSession();
+    private final CaSessionLocal caSession = ejb.getCaSession();
+    private final CertificateProfileSessionLocal certificateProfileSession = ejb.getCertificateProfileSession();
+    private final CertificateStoreSessionLocal certificateStoreSession = ejb.getCertificateStoreSession();   
+    private final EndEntityProfileSessionLocal endEntityProfileSession = ejb.getEndEntityProfileSession();
+    private final HardTokenSessionLocal hardTokenSession = ejb.getHardTokenSession();
+    private final LogSessionLocal logSession = ejb.getLogSession();
+    private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
+    private final RaAdminSessionLocal raAdminSession = ejb.getRaAdminSession();
+    private final UserAdminSessionLocal userAdminSession = ejb.getUserAdminSession();  
+    private final UserDataSourceSessionLocal userDataSourceSession = ejb.getUserDataSourceSession();
 
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
@@ -134,8 +134,6 @@ public class EjbcaWebBean implements Serializable {
     }
 
     private void commonInit() throws Exception {
-        //ServiceLocator locator = ServiceLocator.getInstance();
-
     	if ((administrator == null) && (certificates == null)) {
     		throw new AuthenticationFailedException("Client certificate required.");
     	} else if (certificates != null) {

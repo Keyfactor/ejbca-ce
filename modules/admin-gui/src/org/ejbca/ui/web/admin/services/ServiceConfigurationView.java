@@ -45,6 +45,8 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * @version $Id$
  */
 public class ServiceConfigurationView implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ServiceConfigurationView.class);
 	
 	private WorkerType workerType;
@@ -103,7 +105,7 @@ public class ServiceConfigurationView implements Serializable{
 	 * Method that populates a service configuration from a
 	 * GUI data.
 	 */
-	public ServiceConfiguration getServiceConfiguration(ArrayList errorMessages) throws IOException{
+	public ServiceConfiguration getServiceConfiguration(ArrayList<String> errorMessages) throws IOException{
 		ServiceConfiguration retval = new ServiceConfiguration();
 		retval.setActive(isActive());
 		retval.setHidden(isHidden());

@@ -86,12 +86,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		try {
 			administrator = webBean.getAdminObject();
 			EjbLocalHelper ejb = new EjbLocalHelper();
-			certificatesession = ejb.getCertStoreSession();
-			caadminsession = ejb.getCAAdminSession();
+			certificatesession = ejb.getCertificateStoreSession();
+			caadminsession = ejb.getCaAdminSession();
 			caSession = ejb.getCaSession();
 			authorizationsession = ejb.getAuthorizationSession();
 			adminsession = ejb.getUserAdminSession();
-			raadminsession = ejb.getRAAdminSession();             
+			raadminsession = ejb.getRaAdminSession();             
 			certificateProfileSession = ejb.getCertificateProfileSession();
 			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			crlCreateSession = ejb.getCrlCreateSession();

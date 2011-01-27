@@ -10,13 +10,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.admin.configuration;
-
-import java.rmi.RemoteException;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.log.Admin;
@@ -35,63 +30,57 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private RaAdminSession raadminsession;
-    private Admin administrator;
+	private Admin administrator;
 
-    /** Creates a new instance of AdminPreferences */
-    public AdminPreferenceDataHandler(Admin administrator) throws RemoteException, NamingException, CreateException {
-        raadminsession = new EjbLocalHelper().getRAAdminSession();
-        this.administrator = administrator;
-    }
+	/** Creates a new instance of AdminPreferences */
+	public AdminPreferenceDataHandler(Admin administrator) {
+		raadminsession = new EjbLocalHelper().getRaAdminSession();
+		this.administrator = administrator;
+	}
 
-    /** Retrieves the admin from the database or null if the admin doesn't exists. */
-    public AdminPreference getAdminPreference(String certificatefingerprint) {
-     AdminPreference returnvalue=null;
+	/** Retrieves the admin from the database or null if the admin doesn't exists. */
+	public AdminPreference getAdminPreference(String certificatefingerprint) {
+		AdminPreference returnvalue=null;
+		try {
+			returnvalue = raadminsession.getAdminPreference(administrator, certificatefingerprint);
+		} catch(Exception e) {
+		}
+		return returnvalue;
+	}
 
-      try{
-         returnvalue = raadminsession.getAdminPreference(administrator, certificatefingerprint);
-      }catch(Exception e) {
-         returnvalue=null;
-      }
-      return returnvalue;
-    }
+	/** Adds a admin preference to the database */
+	public void addAdminPreference(String certificatefingerprint, AdminPreference adminpreference) throws AdminExistsException {
+		if (!raadminsession.addAdminPreference(administrator, certificatefingerprint, adminpreference)) {
+			throw new AdminExistsException("Admin already exists in the database.");
+		}
+	}
 
-    /** Adds a admin preference to the database */
-    public void addAdminPreference(String certificatefingerprint, AdminPreference adminpreference)
-                                  throws AdminExistsException, RemoteException {
-      if(!raadminsession.addAdminPreference(administrator, certificatefingerprint, adminpreference)) {
-        throw new AdminExistsException("Admin already exists in the database.");
-      }
-    }
+	/** Changes the admin preference for the given admin. */
+	public void changeAdminPreference(String certificatefingerprint, AdminPreference adminpreference) throws AdminDoesntExistException {
+		if (!raadminsession.changeAdminPreference(administrator, certificatefingerprint, adminpreference)) {
+			throw new AdminDoesntExistException("Admin does not exist in the database.");
+		}
+	}
 
-    /** Changes the admin preference for the given admin. */
-    public void changeAdminPreference(String certificatefingerprint, AdminPreference adminpreference)
-                              throws AdminDoesntExistException, RemoteException {
-      if(!raadminsession.changeAdminPreference(administrator, certificatefingerprint, adminpreference)) {
-        throw new AdminDoesntExistException("Admin does not exist in the database.");
-      }
-    }
-    
-    /** Changes the admin preference for the given admin, without performing any logging. */
-    public void changeAdminPreferenceNoLog(String certificatefingerprint, AdminPreference adminpreference)
-                              throws AdminDoesntExistException, RemoteException {
-      if(!raadminsession.changeAdminPreferenceNoLog(administrator, certificatefingerprint, adminpreference)) {
-        throw new AdminDoesntExistException("Admin does not exist in the database.");
-      }
-    }    
+	/** Changes the admin preference for the given admin, without performing any logging. */
+	public void changeAdminPreferenceNoLog(String certificatefingerprint, AdminPreference adminpreference) throws AdminDoesntExistException {
+		if (!raadminsession.changeAdminPreferenceNoLog(administrator, certificatefingerprint, adminpreference)) {
+			throw new AdminDoesntExistException("Admin does not exist in the database.");
+		}
+	}    
 
-    /** Checks if admin preference exists in database. */
-    public boolean existsAdminPreference(String certificatefingerprint) throws RemoteException {
-      return raadminsession.existsAdminPreference(administrator, certificatefingerprint);
+	/** Checks if admin preference exists in database. */
+	public boolean existsAdminPreference(String certificatefingerprint) {
+		return raadminsession.existsAdminPreference(administrator, certificatefingerprint);
+	}
 
-    }
-    
-    /** Returns the default administrator preference. */
-    public AdminPreference getDefaultAdminPreference() throws RemoteException{
-      return raadminsession.getDefaultAdminPreference(administrator);  
-    }
-    
-    /** Saves the default administrator preference. */
-    public void saveDefaultAdminPreference(AdminPreference adminpreference) throws RemoteException{
-      raadminsession.saveDefaultAdminPreference(administrator, adminpreference);  
-    }
+	/** Returns the default administrator preference. */
+	public AdminPreference getDefaultAdminPreference() {
+		return raadminsession.getDefaultAdminPreference(administrator);  
+	}
+
+	/** Saves the default administrator preference. */
+	public void saveDefaultAdminPreference(AdminPreference adminpreference) {
+		raadminsession.saveDefaultAdminPreference(administrator, adminpreference);  
+	}
 }

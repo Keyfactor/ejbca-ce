@@ -19,39 +19,40 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.cesecore.core.ejb.authorization.AdminEntitySession;
-import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
-import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.cesecore.core.ejb.log.LogSession;
-import org.cesecore.core.ejb.log.OldLogSession;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
+import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
+import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.cesecore.core.ejb.log.OldLogSessionLocal;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
-import org.ejbca.core.ejb.approval.ApprovalSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSession;
-import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
-import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
-import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
-import org.ejbca.core.ejb.services.ServiceSession;
-import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSession;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
 /**
  * Helper methods to get EJB session interfaces.
  * 
  * @version $Id$
  */
-public class EjbLocalHelper {
+public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	
 	EjbBridgeSessionLocal ejbLocalBridgeSession = null;
 	static Context initialContext = null;
@@ -81,29 +82,30 @@ public class EjbLocalHelper {
 		}
 	}
 
-	public AdminEntitySession getAdminEntitySession() { return getEjbLocal().getAdminEntitySession(); }
-	public AdminGroupSession getAdminGroupSession() { return getEjbLocal().getAdminGroupSession(); }
-    public SignSession getSignSession() { return getEjbLocal().getSignSession(); }
-    public CaSession getCaSession() { return getEjbLocal().getCaSession(); }
-    public CAAdminSession getCAAdminSession() { return getEjbLocal().getCaAdminSession(); }
-    public AuthenticationSession getAuthenticationSession() { return getEjbLocal().getAuthenticationSession(); }
-    public AuthorizationSession getAuthorizationSession()  { return getEjbLocal().getAuthorizationSession(); }
-    public CrlCreateSession getCrlCreateSession() { return getEjbLocal().getCrlStoreSession(); }
-    public KeyRecoverySession getKeyRecoverySession() { return getEjbLocal().getKeyRecoverySession(); }
-    public CertificateProfileSession getCertificateProfileSession() { return getEjbLocal().getCertificateProfileSession(); }
-	public CertificateStoreSession getCertStoreSession() { return getEjbLocal().getCertificateStoreSession(); }
-	public EndEntityProfileSession getEndEntityProfileSession() { return getEjbLocal().getEndEntityProfileSession(); }
-	public UserAdminSession getUserAdminSession() { return getEjbLocal().getUserSession(); }
-	public RaAdminSession getRAAdminSession() { return getEjbLocal().getRaSession(); }
-	public ApprovalSession getApprovalSession() { return getEjbLocal().getApprovalSession(); }
-	public HardTokenSession getHardTokenSession() { return getEjbLocal().getHardtokenSession(); }
-	public LogSession getLogSession() { return getEjbLocal().getLogSession(); }
-	public OldLogSession getOldLogSession() { return getEjbLocal().getOldLogSession(); }
-	public PublisherQueueSession getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }
-	public UserDataSourceSession getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
-	public CrlSession getCreateCrlSession() { return getEjbLocal().getCreateCRLSession(); }
-	public PublisherSession getPublisherSession() { return getEjbLocal().getPublisherSession(); }
-	public ServiceSession getServiceSession() { return getEjbLocal().getServiceSession(); }
-	public HardTokenBatchJobSession getHardTokenBatchSession() { return getEjbLocal().getHardTokenBatchJobSession(); }
-	public CmpMessageDispatcherSession getCmpMessageDispatcherSession() { return getEjbLocal().getCmpMessageDispatcherSession(); }
+	@Override public AdminEntitySessionLocal getAdminEntitySession() { return getEjbLocal().getAdminEntitySession(); }
+	@Override public AdminGroupSessionLocal getAdminGroupSession() { return getEjbLocal().getAdminGroupSession(); }
+	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return getEjbLocal().getApprovalExecutionSession(); }
+	@Override public ApprovalSessionLocal getApprovalSession() { return getEjbLocal().getApprovalSession(); }
+	@Override public AuthenticationSessionLocal getAuthenticationSession() { return getEjbLocal().getAuthenticationSession(); }
+	@Override public AuthorizationSessionLocal getAuthorizationSession()  { return getEjbLocal().getAuthorizationSession(); }
+	@Override public CAAdminSessionLocal getCaAdminSession() { return getEjbLocal().getCaAdminSession(); }
+	@Override public CaSessionLocal getCaSession() { return getEjbLocal().getCaSession(); }
+	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return getEjbLocal().getCertificateProfileSession(); }
+	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return getEjbLocal().getCertificateStoreSession(); }
+	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return getEjbLocal().getCmpMessageDispatcherSession(); }
+	@Override public CrlCreateSessionLocal getCrlCreateSession() { return getEjbLocal().getCrlCreateSession(); }
+	@Override public CrlSessionLocal getCrlSession() { return getEjbLocal().getCrlSession(); }
+	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return getEjbLocal().getEndEntityProfileSession(); }
+	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return getEjbLocal().getHardTokenBatchJobSession(); }
+	@Override public HardTokenSessionLocal getHardTokenSession() { return getEjbLocal().getHardTokenSession(); }
+	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return getEjbLocal().getKeyRecoverySession(); }
+	@Override public LogSessionLocal getLogSession() { return getEjbLocal().getLogSession(); }
+	@Override public UserAdminSessionLocal getUserAdminSession() { return getEjbLocal().getUserAdminSession(); }
+	@Override public RaAdminSessionLocal getRaAdminSession() { return getEjbLocal().getRaAdminSession(); }
+	@Override public OldLogSessionLocal getOldLogSession() { return getEjbLocal().getOldLogSession(); }
+	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }
+	@Override public PublisherSessionLocal getPublisherSession() { return getEjbLocal().getPublisherSession(); }
+	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
+	@Override public ServiceSessionLocal getServiceSession() { return getEjbLocal().getServiceSession(); }
+	@Override public SignSessionLocal getSignSession() { return getEjbLocal().getSignSession(); }
 }

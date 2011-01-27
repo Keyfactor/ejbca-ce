@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.admin.services;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import javax.faces.el.ValueBinding;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
@@ -39,18 +41,13 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * @version $Id$
  */
 public class ListServicesManagedBean extends BaseManagedBean {
-	
 
-
+	private static final long serialVersionUID = 1L;
+	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private String selectedServiceName;
-	
 	private String newServiceName = "";
 
-	
-	public ListServicesManagedBean(){
-		
-
-	}
+	public ListServicesManagedBean() { }
 
 	public String getSelectedServiceName() {
 		return selectedServiceName;
@@ -60,38 +57,34 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		selectedServiceName = string;
 	}
 
-	public List getAvailableServices() {
-		List availableServices = new ArrayList();
-	    Collection availableServicesIds = EjbcaJSFHelper.getBean().getServiceSession().getAuthorizedVisibleServiceIds(getAdmin());
-	    Iterator iter = availableServicesIds.iterator();
-	    while(iter.hasNext()){
+	public List<SortableSelectItem> getAvailableServices() {
+		List<SortableSelectItem> availableServices = new ArrayList<SortableSelectItem>();
+	    Collection<Integer> availableServicesIds = ejb.getServiceSession().getAuthorizedVisibleServiceIds(getAdmin());
+	    Iterator<Integer> iter = availableServicesIds.iterator();
+	    while (iter.hasNext()) {
 	    	Integer id = (Integer) iter.next();
-	    	ServiceConfiguration serviceConfig =  EjbcaJSFHelper.getBean().getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
-	    	String serviceName = EjbcaJSFHelper.getBean().getServiceSession().getServiceName(getAdmin(), id.intValue());
+	    	ServiceConfiguration serviceConfig =  ejb.getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
+	    	String serviceName = ejb.getServiceSession().getServiceName(getAdmin(), id.intValue());
 	    	String hidden = "";
 	    	if (serviceConfig.isHidden()) {
 	    		hidden = "<Hidden, Debug mode>";
 	    	}
-	    	if(serviceConfig.isActive()){
+	    	if (serviceConfig.isActive()) {
 	    		availableServices.add(new SortableSelectItem(serviceName, serviceName+ " (" + EjbcaJSFHelper.getBean().getText().get("ACTIVE") + ")" + hidden));
-	    	}else{
+	    	} else {
 	    		availableServices.add(new SortableSelectItem(serviceName, serviceName + " (" + EjbcaJSFHelper.getBean().getText().get("INACTIVE") + ")" + hidden));
 	    	}
 	    }
-	    
 	    Collections.sort(availableServices);
-	 
 		return availableServices;
 	}
 
-
-	
 	public String editService(){
 		String retval = "editservice";
 		if(selectedServiceName != null){			
 			try {
 				getEditServiceBean().setServiceName(selectedServiceName);
-				ServiceConfiguration serviceConf = EjbcaJSFHelper.getBean().getServiceSession().getService(getAdmin(), selectedServiceName);
+				ServiceConfiguration serviceConf = ejb.getServiceSession().getService(getAdmin(), selectedServiceName);
 				getEditServiceBean().setServiceConfiguration(serviceConf);
 			} catch (IOException e) {
 				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());						
@@ -100,18 +93,16 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
 			retval = "listservices";
 		}
-		
 		newServiceName = "";
 		return retval;
 	}
 	
 	public String deleteService(){
 		if(selectedServiceName != null){
-		  EjbcaJSFHelper.getBean().getServiceSession().removeService(getAdmin(), selectedServiceName);
+			ejb.getServiceSession().removeService(getAdmin(), selectedServiceName);
 		}else{
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
 		}
-		
 		newServiceName = "";
 		return "listservices";
 	}
@@ -125,17 +116,14 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
 		}else{			
 			try {
-				EjbcaJSFHelper.getBean().getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
+				ejb.getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
 				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("SERVICENAMEALREADYEXISTS"));
 			}			
 		}
-
 		newServiceName = "";
 		return "listservices";
 	}
-	
-
 
 	public String addService(){
 		if (newServiceName.trim().equals("")) {
@@ -145,7 +133,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		}else{			
 			try {
 				ServiceConfiguration serviceConfig = new ServiceConfiguration();			
-				EjbcaJSFHelper.getBean().getServiceSession().addService(getAdmin(), newServiceName, serviceConfig);
+				ejb.getServiceSession().addService(getAdmin(), newServiceName, serviceConfig);
 				getEditServiceBean().setServiceConfiguration(serviceConfig);
 				getEditServiceBean().setServiceName(newServiceName);
 			} catch (ServiceExistsException e) {
@@ -154,7 +142,6 @@ public class ListServicesManagedBean extends BaseManagedBean {
 				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERRORADDINGSERVICE") + e.getMessage());
 			}
 		}
-		
 		newServiceName = "";
 		return "listservices";
 	}
@@ -168,26 +155,21 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
 		}else{			
 			try {
-				EjbcaJSFHelper.getBean().getServiceSession().cloneService(getAdmin(), selectedServiceName, newServiceName);
+				ejb.getServiceSession().cloneService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
 				addErrorMessage("SERVICENAMEALREADYEXISTS");				
 			}			
 		}
-		
 		newServiceName = "";
 		return "listservices";
 	}
 
-	/**
-	 * @return the newServiceName
-	 */
+	/** @return the newServiceName  */
 	public String getNewServiceName() {
 		return newServiceName;
 	}
 
-	/**
-	 * @param newServiceName the newServiceName to set
-	 */
+	/** @param newServiceName the newServiceName to set */
 	public void setNewServiceName(String newServiceName) {
 		this.newServiceName = newServiceName;
 	}
@@ -207,5 +189,4 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		Object value = binding.getValue(context);    
 		return (EditServiceManagedBean) value;
 	}
-	
 }

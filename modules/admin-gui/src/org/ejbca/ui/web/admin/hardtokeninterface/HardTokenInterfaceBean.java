@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.hardtokeninterface;
 
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -46,64 +47,63 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
  */
 public class HardTokenInterfaceBean implements java.io.Serializable {
 
+	private static final long serialVersionUID = 1L;
+	private HardTokenSession hardtokensession;
+    private KeyRecoverySession keyrecoverysession;
+    private HardTokenBatchJobSession hardtokenbatchsession;        
+    private Admin                                          admin;
+    private InformationMemory                      informationmemory;
+    private boolean                                       initialized=false;
+    private HardTokenView[]                          result;
+    private HardTokenProfileDataHandler         hardtokenprofiledatahandler;
+
 	/** Creates new LogInterfaceBean */
-    public HardTokenInterfaceBean(){
-    }
-    // Public methods.
+    public HardTokenInterfaceBean() { }
+
     /**
      * Method that initialized the bean.
      *
      * @param request is a reference to the http request.
      */
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
-
-      if(!initialized){
-        admin = ejbcawebbean.getAdminObject();
-        EjbLocalHelper ejb = new EjbLocalHelper();    
-        hardtokensession = ejb.getHardTokenSession();
-        hardtokenbatchsession = ejb.getHardTokenBatchSession();
-		AuthorizationSession authorizationsession = ejb.getAuthorizationSession();
-		UserAdminSession useradminsession = ejb.getUserAdminSession();
-	CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
-	
-        keyrecoverysession = ejb.getKeyRecoverySession();
-		
-        initialized=true;
-        
-        this.informationmemory = ejbcawebbean.getInformationMemory();
-                      
-        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession, authorizationsession , useradminsession, ejb.getCaSession(), informationmemory);
-		
-      }
+    	if(!initialized){
+    		admin = ejbcawebbean.getAdminObject();
+    		EjbLocalHelper ejb = new EjbLocalHelper();    
+    		hardtokensession = ejb.getHardTokenSession();
+    		hardtokenbatchsession = ejb.getHardTokenBatchJobSession();
+    		AuthorizationSession authorizationsession = ejb.getAuthorizationSession();
+    		UserAdminSession useradminsession = ejb.getUserAdminSession();
+    		CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
+    		keyrecoverysession = ejb.getKeyRecoverySession();
+    		initialized=true;
+    		this.informationmemory = ejbcawebbean.getInformationMemory();
+    		this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession, authorizationsession , useradminsession, ejb.getCaSession(), informationmemory);
+    	}
     }
     
-    /* Returns the first found hard token for the given username. */
+    /** Returns the first found hard token for the given username. */
     public HardTokenView getHardTokenViewWithUsername(String username, boolean includePUK) {
-      this.result=null;
-
-      Collection res = hardtokensession.getHardTokens(admin, username, includePUK);
-      Iterator iter = res.iterator();
-      if(res.size() > 0) {
-        this.result = new HardTokenView[res.size()];
-        for(int i=0;iter.hasNext();i++) {
-          this.result[i]=new HardTokenView((HardTokenData) iter.next());
-        }
-        
-        if(this.result!= null && this.result.length > 0) {
-            return this.result[0];
-        }
-        
-      }   
-      return null;        
+    	this.result=null;
+    	Collection<HardTokenData> res = hardtokensession.getHardTokens(admin, username, includePUK);
+    	Iterator<HardTokenData> iter = res.iterator();
+    	if (res.size() > 0) {
+    		this.result = new HardTokenView[res.size()];
+    		for (int i=0;iter.hasNext();i++) {
+    			this.result[i]=new HardTokenView(iter.next());
+    		}
+    		if (this.result!= null && this.result.length > 0) {
+    			return this.result[0];
+    		}
+    	}   
+    	return null;        
     }
     
     public HardTokenView getHardTokenViewWithIndex(String username, int index, boolean includePUK) {
-        HardTokenView returnval=null;
-        
-        if(result == null) {
+        HardTokenView returnval = null;
+        if (result == null) {
             getHardTokenViewWithUsername(username, includePUK);
         }
-        if(result!=null) {
+        if (result!=null) {
             if(index < result.length) {
                 returnval=result[index];
             }
@@ -113,7 +113,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     
     public int getHardTokensInCache() {
         int returnval = 0;
-        if(result!=null) {
+        if (result!=null) {
             returnval = result.length;
         }
         return returnval;
@@ -128,10 +128,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         }
         return returnval;
     }
-    
 
-    
-    
     public String[] getHardTokenIssuerAliases() {
         return (String[]) hardtokensession.getHardTokenIssuers(admin).keySet().toArray(new String[0]);
     }
@@ -154,10 +151,10 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     }
     
     public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException {
-        Iterator iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
-        while(iter.hasNext()){
-            if(((AdminGroup) iter.next()).getAdminGroupId() == admingroupid){
-                if(!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer())) {
+        Iterator<AdminGroup> iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
+        while (iter.hasNext()) {
+            if (iter.next().getAdminGroupId() == admingroupid) {
+                if (!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer())) {
                     throw new HardTokenIssuerExistsException();
                 }
                 informationmemory.hardTokenDataEdited();      		
@@ -174,15 +171,13 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         }
     }
     
-    /* Returns false if profile is used by any user or in authorization rules. */
+    /** Returns false if profile is used by any user or in authorization rules. */
     public boolean removeHardTokenIssuer(String alias) {		
         boolean issuerused = false;
         if(informationmemory.authorizedToHardTokenIssuer(alias)){
             int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
             // Check if any users or authorization rule use the profile.
-            
             issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(admin, issuerid);
-            
             if(!issuerused){
                 hardtokensession.removeHardTokenIssuer(admin, alias);
                 informationmemory.hardTokenDataEdited();
@@ -209,36 +204,27 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         }
     }
 
-/**
- * Method that checks if a token is key recoverable and also check if the administrator is authorized to the action.
- * @param tokensn
- * @param rabean
- * @return
- */
-    
+    /**
+     * Method that checks if a token is key recoverable and also check if the administrator is authorized to the action.
+     */
     public boolean isTokenKeyRecoverable(String tokensn, String username, RAInterfaceBean rabean) throws Exception{
-      boolean retval = false;	
-      X509Certificate keyRecCert = null;            
-      
-      Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);      
-      Iterator iter = result.iterator();
-      while(iter.hasNext()){      	
-      	X509Certificate cert = (X509Certificate) iter.next();
-      	if(keyrecoverysession.existsKeys(admin,cert)){      
-      		keyRecCert = cert;
-      	}
-      }
-            
-      if(keyRecCert != null){
-       retval = rabean.keyRecoveryPossible(keyRecCert,username); 
-      }
-      
-      return retval;	
+    	boolean retval = false;	
+    	X509Certificate keyRecCert = null;            
+    	Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(admin, tokensn).iterator();
+    	while(iter.hasNext()){      	
+    		X509Certificate cert = (X509Certificate) iter.next();
+    		if(keyrecoverysession.existsKeys(admin,cert)){      
+    			keyRecCert = cert;
+    		}
+    	}
+    	if (keyRecCert != null) {
+    		retval = rabean.keyRecoveryPossible(keyRecCert,username); 
+    	}
+    	return retval;	
     }
     
     public void markTokenForKeyRecovery(String tokensn,String username, RAInterfaceBean rabean) throws Exception{                   
-        Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);
-        Iterator iter = result.iterator();
+        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(admin, tokensn).iterator();
         while(iter.hasNext()){
         	X509Certificate cert = (X509Certificate) iter.next();
         	if(keyrecoverysession.existsKeys(admin,cert)){
@@ -246,19 +232,8 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         	}
         }              
     }
-    
-	
+
 	public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {	
 		return hardtokenprofiledatahandler;
 	}    
-    // Private fields.
-    private HardTokenSession hardtokensession;
-    private KeyRecoverySession keyrecoverysession;
-    private HardTokenBatchJobSession hardtokenbatchsession;        
-    private Admin                                          admin;
-    private InformationMemory                      informationmemory;
-    private boolean                                       initialized=false;
-    private HardTokenView[]                          result;
-    private HardTokenProfileDataHandler         hardtokenprofiledatahandler;
-    
 }

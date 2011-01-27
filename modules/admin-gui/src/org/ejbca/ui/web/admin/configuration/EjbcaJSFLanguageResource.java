@@ -13,7 +13,7 @@ import org.ejbca.util.HTMLTools;
  * 
  * Implements a Map used for retrieving resources.
  * @author Philip Vendil
- * $id$
+ * @version $Id$
  */
 public class EjbcaJSFLanguageResource implements Map {
 
@@ -28,7 +28,6 @@ public class EjbcaJSFLanguageResource implements Map {
 	}
 
 	public boolean containsKey(Object arg0) {
-		
 		return ejbcawebbean.getText((String) arg0) != null;
 	}
 

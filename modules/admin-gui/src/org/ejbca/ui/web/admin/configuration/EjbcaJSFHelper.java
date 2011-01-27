@@ -43,32 +43,6 @@ public class EjbcaJSFHelper {
 	
 	private boolean initialized = false;
 	
-	// Does this really work?? Looks like it would violate JEE5.. Use EjbLocalHelper!
-	@EJB
-	private RaAdminSessionLocal raAdminSession;
-	@EJB
-	private CAAdminSessionLocal caAdminSession;
-	@EJB
-	private CaSessionLocal caSession;
-	@EJB
-	private EndEntityProfileSessionLocal endEntityProfileSession;
-	@EJB
-	private ApprovalSessionLocal approvalSession;
-	@EJB
-	private ServiceSessionLocal serviceSession;
-	@EJB
-	private UserDataSourceSessionLocal userDataSourceSession;
-	@EJB
-	private PublisherSessionLocal publisherSession;
-	@EJB
-	private AuthorizationSessionLocal authorizationSession;
-	@EJB
-	private HardTokenSessionLocal hardTokenSession;
-	@EJB
-	private CertificateProfileSessionLocal certificateProfileSession;
-	@EJB
-	private ApprovalExecutionSessionLocal approvalExecutionSession;
-	
 	public EjbcaJSFHelper(){}
 	
     public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){
@@ -80,45 +54,33 @@ public class EjbcaJSFHelper {
     	}
     }
     
-    /**
-     * Returns the EJBCA title
-     */
+    /** Returns the EJBCA title */
     public String getEjbcaTitle(){
     	return getEjbcaWebBean().getGlobalConfiguration().getEjbcaTitle();
     }
     
-    /**
-     * Returns the EJBCA theme
-     */
+    /** Returns the EJBCA theme */
     public String getTheme(){
     	return getEjbcaWebBean().getCssFile();
     }
     
-    /**
-     * Returns the EJBCA base url
-     */
+    /** Returns the EJBCA base url */
     public String getEjbcaBaseURL(){
     	return getEjbcaWebBean().getBaseUrl();
     }   
     
-    /**
-     * Returns the EJBCA content string
-     */
+    /** Returns the EJBCA content string */
     public String getContent(){
     	return "text/html; charset=" + WebConfiguration.getWebContentEncoding();
     } 
     
-   /**
-    * Used for language resources.
-    */
+   /** Used for language resources. */
     public Map getText(){
     	setEjbcaWebBean(getEjbcaWebBean());
     	return text;
     }
     
-    /**
-     * Used for image resources.
-     */
+    /** Used for image resources. */
      public Map getImage(){
         setEjbcaWebBean(getEjbcaWebBean());
      	return image;
@@ -153,93 +115,39 @@ public class EjbcaJSFHelper {
 		getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
      }
      
-    public int getEntriesPerPage(){
-        return getEjbcaWebBean().getEntriesPerPage();
-    }
+     public int getEntriesPerPage(){
+    	 return getEjbcaWebBean().getEntriesPerPage();
+     }
     
-    public EjbcaWebBean getEjbcaWebBean(){
-    	
-    	if(ejbcawebbean == null){
-    		FacesContext ctx = FacesContext.getCurrentInstance();    		    	
+     public EjbcaWebBean getEjbcaWebBean(){
+    	 if(ejbcawebbean == null){
+    		 FacesContext ctx = FacesContext.getCurrentInstance();    		    	
+    		 HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
+    		 synchronized (session) {
+    			 ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
+    			 if (ejbcawebbean == null){
+    				 ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
+    				 session.setAttribute("ejbcawebbean", ejbcawebbean);
+    			 }
+    		 }
+    		 try {
+    			 ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), "/administrator");
+    		 } catch (Exception e) {
+    			 log.error(e);
+    		 }
+    	 }
+    	 return ejbcawebbean;
+     }
 
-    		HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
- 
-    		    		
-    		synchronized (session) {
-    			ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) session.getAttribute("ejbcawebbean");
-    			if (ejbcawebbean == null){
-    				ejbcawebbean = new org.ejbca.ui.web.admin.configuration.EjbcaWebBean();
-    				session.setAttribute("ejbcawebbean", ejbcawebbean);
-    			}
-    		}
-    		
-    		try {
-				ejbcawebbean.initialize((HttpServletRequest) ctx.getExternalContext().getRequest(), "/administrator");
-			} catch (Exception e) {
-				log.error(e);
-			}
-    	}
-    	
-    	return ejbcawebbean;
-    }
- 
-	public Admin getAdmin() {
-		return getEjbcaWebBean().getAdminObject();
-	  }
-    
-    public static EjbcaJSFHelper getBean(){    
-    	FacesContext context = FacesContext.getCurrentInstance();    
-    	Application app = context.getApplication();    
-    	ValueBinding binding = app.createValueBinding("#{web}");    
-    	Object value = binding.getValue(context);    
-    	return (EjbcaJSFHelper) value;
-    }
-    
-    public RaAdminSessionLocal getRaAdminSession(){
-    	return raAdminSession;
-    }
+     public Admin getAdmin() {
+    	 return getEjbcaWebBean().getAdminObject();
+     }
 
-    public CaSessionLocal getCaSession() {
-        return caSession;
-    }
-    
-    public CAAdminSessionLocal getCAAdminSession(){
-    	return caAdminSession;
-    }
-    
-    public ApprovalSessionLocal getApprovalSession(){
-    	return approvalSession;
-    }    
-
-    public ServiceSessionLocal getServiceSession(){
-    	return serviceSession;
-    }
-    
-    public UserDataSourceSessionLocal getUserDataSourceSession(){
-    	return userDataSourceSession;
-    }
-
-    public PublisherSessionLocal getPublisherSession(){
-    	return publisherSession;
-    }
-
-    public AuthorizationSessionLocal getAuthorizationSession(){
-    	return authorizationSession;
-    }
-    
-    public EndEntityProfileSessionLocal getEndEntityProfileSession() {
-        return endEntityProfileSession;
-    }
-
-    public HardTokenSessionLocal getHardTokenSession() {
-        return hardTokenSession;
-    }
-
-    public CertificateProfileSessionLocal getCertificateProfileSession() {
-        return certificateProfileSession;
-    }
-
-	public ApprovalExecutionSessionLocal getApprovalExecutionSession() {
-		return approvalExecutionSession;
-	}
+     public static EjbcaJSFHelper getBean(){    
+    	 FacesContext context = FacesContext.getCurrentInstance();    
+    	 Application app = context.getApplication();    
+    	 ValueBinding binding = app.createValueBinding("#{web}");    
+    	 Object value = binding.getValue(context);    
+    	 return (EjbcaJSFHelper) value;
+     }
 }
