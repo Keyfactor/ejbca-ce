@@ -132,7 +132,7 @@ function checkallfields(){
     <tr id="Row<%=row++%2%>"> 
       <td width="40%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("VISUALVALIDITY") %>(<%= ejbcawebbean.getText("DAYS") %>)
+          <%= ejbcawebbean.getText("VISUALVALIDITY") %> (<%= ejbcawebbean.getText("DAYS") %>)
         </div>
       </td>
       <td width="60%" valign="top"> 

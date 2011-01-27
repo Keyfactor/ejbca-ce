@@ -346,7 +346,7 @@ function checkallfields(){
 
     <% if(!editca || (editca && cainfo.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA)){ %>
     if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "") && document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value != <%= CAInfo.SIGNEDBYEXTERNALCA %>){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("VALIDITY", true)%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CERT_VALIDITY", true)%>");
       illegalfields++;
     }   
     <% }
@@ -662,7 +662,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
+        <%= ejbcawebbean.getText("CERT_VALIDITY") %> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %> <%= ejbcawebbean.getText("ORENDDATE") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Validity") %> <br />
       </td>
       <td width="50%"> 
