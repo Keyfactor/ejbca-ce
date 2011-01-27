@@ -26,6 +26,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
@@ -61,19 +62,20 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 
 	@EJB AdminEntitySessionLocal adminEntitySession;
 	@EJB AdminGroupSessionLocal adminGroupSession;
+	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalSessionLocal approvalSession;
 	@EJB AuthorizationSessionLocal authorizationSession;
-	@EJB AuthenticationSessionLocal authSession;
+	@EJB AuthenticationSessionLocal authenticationSession;
 	@EJB CAAdminSessionLocal caAdminSession;
 	@EJB CaSessionLocal caSession;
 	@EJB CertificateProfileSessionLocal certificateProfileSession;
 	@EJB CertificateStoreSessionLocal certificateStoreSession;
 	@EJB CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
-	@EJB CrlSessionLocal createCRLSession;
-	@EJB CrlCreateSessionLocal crlStoreSession;
+	@EJB CrlSessionLocal crlSession;
+	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB HardTokenBatchJobSessionLocal hardTokenBatchJobSession;
-	@EJB HardTokenSessionLocal hardtokenSession;
+	@EJB HardTokenSessionLocal hardTokenSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
 	@EJB LogSessionLocal logSession;
 	@EJB OldLogSessionLocal oldLogSession;
@@ -83,31 +85,32 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
-	@EJB UserAdminSessionLocal userSession;
+	@EJB UserAdminSessionLocal userAdminSession;
 
-	public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
-	public AdminGroupSessionLocal getAdminGroupSession() { return adminGroupSession; }
-	public AuthorizationSessionLocal getAuthorizationSession() { return authorizationSession; }
-	public AuthenticationSessionLocal getAuthenticationSession() { return authSession; }
-	public CAAdminSessionLocal getCaAdminSession() { return caAdminSession; }
-	public CaSessionLocal getCaSession() { return caSession; }
-	public CertificateProfileSessionLocal getCertificateProfileSession() { return certificateProfileSession; }
-	public CertificateStoreSessionLocal getCertificateStoreSession() { return certificateStoreSession; }
-	public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
-	public CrlSessionLocal getCreateCRLSession() { return createCRLSession; }
-	public CrlCreateSessionLocal getCrlStoreSession() { return crlStoreSession; }
-	public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
-	public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
-	public HardTokenSessionLocal getHardtokenSession() { return hardtokenSession; }
-	public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
-	public LogSessionLocal getLogSession() { return logSession; }
-	public OldLogSessionLocal getOldLogSession() { return oldLogSession; }
-	public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
-	public PublisherSessionLocal getPublisherSession() { return publisherSession; }
-	public RaAdminSessionLocal getRaSession() { return raSession; }
-	public ServiceSessionLocal getServiceSession() { return serviceSession; }
-	public SignSessionLocal getSignSession() { return signSession; }
-	public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
-	public UserAdminSessionLocal getUserSession() { return userSession; }
-	public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }
+	@Override public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }
+	@Override public AdminGroupSessionLocal getAdminGroupSession() { return adminGroupSession; }
+	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
+	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
+	@Override public AuthorizationSessionLocal getAuthorizationSession() { return authorizationSession; }
+	@Override public AuthenticationSessionLocal getAuthenticationSession() { return authenticationSession; }
+	@Override public CAAdminSessionLocal getCaAdminSession() { return caAdminSession; }
+	@Override public CaSessionLocal getCaSession() { return caSession; }
+	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return certificateProfileSession; }
+	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return certificateStoreSession; }
+	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
+	@Override public CrlSessionLocal getCrlSession() { return crlSession; }
+	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
+	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
+	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
+	@Override public HardTokenSessionLocal getHardTokenSession() { return hardTokenSession; }
+	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
+	@Override public LogSessionLocal getLogSession() { return logSession; }
+	@Override public OldLogSessionLocal getOldLogSession() { return oldLogSession; }
+	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
+	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
+	@Override public RaAdminSessionLocal getRaAdminSession() { return raSession; }
+	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
+	@Override public SignSessionLocal getSignSession() { return signSession; }
+	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
+	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
 }

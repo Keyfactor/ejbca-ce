@@ -63,7 +63,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
 
-
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
@@ -80,7 +79,7 @@ public class CAInterfaceBean implements Serializable {
     private CertificateStoreSession certificatesession;
     private CAAdminSession caadminsession;
     private CaSession caSession;
-    private CrlSession createCrlSession;
+    private CrlSession crlSession;
     private CrlCreateSession crlCreateSession;
     private AuthorizationSession authorizationsession;
     private UserAdminSession adminsession;
@@ -113,13 +112,13 @@ public class CAInterfaceBean implements Serializable {
 
         if(!initialized){
           caSession = ejb.getCaSession();
-          certificatesession = ejb.getCertStoreSession();
-          createCrlSession = ejb.getCreateCrlSession();
+          certificatesession = ejb.getCertificateStoreSession();
+          crlSession = ejb.getCrlSession();
           crlCreateSession = ejb.getCrlCreateSession();
-          caadminsession = ejb.getCAAdminSession();
+          caadminsession = ejb.getCaAdminSession();
           authorizationsession = ejb.getAuthorizationSession();
           adminsession = ejb.getUserAdminSession();
-          raadminsession = ejb.getRAAdminSession();               
+          raadminsession = ejb.getRaAdminSession();               
           signsession = ejb.getSignSession();
           hardtokensession = ejb.getHardTokenSession();               
           publishersession = ejb.getPublisherSession();               
@@ -273,7 +272,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public int getLastCRLNumber(String  issuerdn) {
-      return createCrlSession.getLastCRLNumber(administrator, issuerdn, false);      
+      return crlSession.getLastCRLNumber(administrator, issuerdn, false);      
     }
 
     /**
@@ -288,7 +287,7 @@ public class CAInterfaceBean implements Serializable {
 			final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
 			issuerdn = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
 		}
-		return createCrlSession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
+		return crlSession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
 	}
 
     /* Returns certificate profiles as a CertificateProfiles object */
@@ -341,101 +340,89 @@ public class CAInterfaceBean implements Serializable {
 	}    
 	
 	public String getRequestDataAsString() throws Exception{
-	  String returnval = null;	
-	  if(request != null ){
-	  						  				  
-	    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
-	                   + new String(Base64.encode(request))
-                       + RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;  
-	    
-	  }      
-	  return returnval;
-   }
-    
-   public void saveProcessedCertificate(Certificate cert){
-	   this.processedcert =cert;
-   }
-    
-   public Certificate getProcessedCertificate(){
-	   return this.processedcert;
-   }    
-	
-   public String getProcessedCertificateAsString() throws Exception{
-	 String returnval = null;	
-	 if(request != null ){
-		byte[] b64cert = Base64.encode(this.processedcert.getEncoded());
-		returnval = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
-		returnval += new String(b64cert);
-		returnval += RequestHelper.END_CERTIFICATE_WITH_NL;  	    
-	 }      
-	 return returnval;
-  }
-   
-   public String republish(CertificateView certificatedata){
-	String returnval = "CERTREPUBLISHFAILED";
-	
-	CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN());
-	if(certreqhist != null){
-	  CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
-	  if(certprofile != null){
-	    CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
-	    if(certprofile.getPublisherList().size() > 0){
-	    	if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
-	    			certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation())){
-	    		returnval = "CERTREPUBLISHEDSUCCESS";
-	    	}
-	    }else{
-	    	returnval = "NOPUBLISHERSDEFINED";
-	    }
-	    
-	  }else{
-	  	returnval = "CERTPROFILENOTFOUND";
-	  }	  
+		String returnval = null;	
+		if(request != null ){
+			returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
+			+ new String(Base64.encode(request))
+			+ RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;  
+		}      
+		return returnval;
 	}
-	return returnval; 
-   }
-   
-   /** Class used to sort CertReq History by users modfifytime, with latest first*/
-   private class CertReqUserCreateComparator implements Comparator{
-
-	public int compare(Object arg0, Object arg1) {		
-		return 0 - (((CertReqHistory) arg0).getUserDataVO().getTimeModified().compareTo(
-				      ((CertReqHistory) arg1).getUserDataVO().getTimeModified()));
-	}
-	   
-   }
-   
-   /**
-    * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
-    * 
-    */
-   public List<CertReqHistory> getCertReqUserDatas(String username){
-	   List<CertReqHistory> history = this.certificatesession.getCertReqHistory(administrator, username);
-	   
-	   // Sort it by timestamp, newest first;
-	   Collections.sort(history, new CertReqUserCreateComparator());
-	   	   
-	   return history;
-   }
     
-   /**
-    *  Help functions used by edit certificate profile pages used to temporary
-    *  save a profile so things can be canceled later.
-    */
-   public CertificateProfile getTempCertificateProfile(){
-	   return this.tempCertProfile;
-   }
+	public void saveProcessedCertificate(Certificate cert){
+		this.processedcert =cert;
+	}
 
-   public void setTempCertificateProfile(CertificateProfile profile){
-	   this.tempCertProfile = profile;
-   }
-   
-   /**
-    * @return true if serial number unique indexing is supported by DB.
-    */
-   public boolean isUniqueIndexForSerialNumber() {
-       return this.isUniqueIndex;
-   }
+	public Certificate getProcessedCertificate(){
+		return this.processedcert;
+	}    
 
+	public String getProcessedCertificateAsString() throws Exception{
+		String returnval = null;	
+		if(request != null ){
+			byte[] b64cert = Base64.encode(this.processedcert.getEncoded());
+			returnval = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
+			returnval += new String(b64cert);
+			returnval += RequestHelper.END_CERTIFICATE_WITH_NL;  	    
+		}      
+		return returnval;
+	}
 
+	public String republish(CertificateView certificatedata){
+		String returnval = "CERTREPUBLISHFAILED";
+		CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN());
+		if(certreqhist != null){
+			CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
+			if(certprofile != null){
+				CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
+				if(certprofile.getPublisherList().size() > 0){
+					if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
+							certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation())){
+						returnval = "CERTREPUBLISHEDSUCCESS";
+					}
+				}else{
+					returnval = "NOPUBLISHERSDEFINED";
+				}
+
+			}else{
+				returnval = "CERTPROFILENOTFOUND";
+			}	  
+		}
+		return returnval; 
+	}
+
+	/** Class used to sort CertReq History by users modfifytime, with latest first*/
+	private class CertReqUserCreateComparator implements Comparator<CertReqHistory> {
+		@Override
+		public int compare(CertReqHistory o1, CertReqHistory o2) {
+			return 0 - (o1.getUserDataVO().getTimeModified().compareTo(o2.getUserDataVO().getTimeModified()));
+		}
+	}
+
+	/**
+	 * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
+	 */
+	public List<CertReqHistory> getCertReqUserDatas(String username){
+		List<CertReqHistory> history = this.certificatesession.getCertReqHistory(administrator, username);
+		// Sort it by timestamp, newest first;
+		Collections.sort(history, new CertReqUserCreateComparator());
+		return history;
+	}
+
+	/**
+	 *  Help functions used by edit certificate profile pages used to temporary
+	 *  save a profile so things can be canceled later.
+	 */
+	public CertificateProfile getTempCertificateProfile(){
+		return this.tempCertProfile;
+	}
+
+	public void setTempCertificateProfile(CertificateProfile profile){
+		this.tempCertProfile = profile;
+	}
+
+	/** @return true if serial number unique indexing is supported by DB. */
+	public boolean isUniqueIndexForSerialNumber() {
+		return this.isUniqueIndex;
+	}
 }

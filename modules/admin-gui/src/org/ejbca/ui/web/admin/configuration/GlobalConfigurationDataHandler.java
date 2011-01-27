@@ -18,8 +18,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -32,12 +32,13 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  */
 public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
-    private RaAdminSession raadminsession;	// was *Local
-    private AuthorizationSession authorizationsession;	// was *Local
+	private static final long serialVersionUID = 1L;
+	private RaAdminSessionLocal raadminsession;
+    private AuthorizationSessionLocal authorizationsession;
     private Admin administrator;
 
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler(Admin administrator, RaAdminSession raadminsession, AuthorizationSession authorizationsession){
+    public GlobalConfigurationDataHandler(Admin administrator, RaAdminSessionLocal raadminsession, AuthorizationSessionLocal authorizationsession){
         this.raadminsession = raadminsession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;
@@ -45,7 +46,7 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
     public GlobalConfiguration loadGlobalConfiguration() throws NamingException{
         GlobalConfiguration ret = null;
-        
+        // TODO: These should be dropped or moved to property files!!
         ret = raadminsession.getCachedGlobalConfiguration(administrator);
         InitialContext ictx = new InitialContext();
         Context myenv = (Context) ictx.lookup("java:comp/env");      

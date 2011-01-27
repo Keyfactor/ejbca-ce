@@ -49,7 +49,7 @@ public class SubjectDNProxy implements java.io.Serializable {
      * @param certificatesnr the certificate serial number number to look up.
      * @return the subjectDN or null if no subjectDN is related to the given id
      */
-    public String getSubjectDN(String admindata) throws RemoteException {
+    public String getSubjectDN(String admindata) {
     	String returnval = null;
     	Certificate result = null;
 

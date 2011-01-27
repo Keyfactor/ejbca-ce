@@ -32,6 +32,7 @@ import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
@@ -62,10 +63,11 @@ public class EditServiceManagedBean extends BaseManagedBean {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
 
+	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private ServiceConfigurationView serviceConfigurationView;
 	private String serviceName = "";
 
-	public EditServiceManagedBean(){
+	public EditServiceManagedBean() {
         try {
 			setServiceConfiguration(new ServiceConfiguration());
 		} catch (IOException e) {
@@ -73,38 +75,31 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		}
 	}
 	
-    public static EditServiceManagedBean getBean(){    
-    	FacesContext context = FacesContext.getCurrentInstance();    
-    	Application app = context.getApplication();    
-    	ValueBinding binding = app.createValueBinding("#{editService}");    
-    	Object value = binding.getValue(context);    
+    public static EditServiceManagedBean getBean() {    
+    	FacesContext context = FacesContext.getCurrentInstance();
+    	Application app = context.getApplication();
+    	ValueBinding binding = app.createValueBinding("#{editService}");
+    	Object value = binding.getValue(context);
     	return (EditServiceManagedBean) value;
     }
     
-	/**
-	 * @return the serviceName
-	 */
+	/** @return the serviceName */
 	public String getServiceName() {
 		return serviceName;
 	}
 
-	/**
-	 * @param serviceName the serviceName to set
-	 */
+	/** @param serviceName the serviceName to set */
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;		
 	}
 
-	/**
-	 * @return the serviceConfigurationView
-	 */
+	/** @return the serviceConfigurationView */
 	public ServiceConfigurationView getServiceConfigurationView() {
 		return serviceConfigurationView;
 	}
 	
 	public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) throws IOException{
 		this.serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration);
-		
 	}
 
 	public String save(){
@@ -113,20 +108,18 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		try {
 			serviceConfigurationView.getServiceConfiguration(errorMessages);
 			if(errorMessages.size() == 0){
-			  EjbcaJSFHelper.getBean().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages), false);
-			  EjbcaJSFHelper.getBean().getServiceSession().activateServiceTimer(getAdmin(), serviceName);
+				ejb.getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages), false);
+				ejb.getServiceSession().activateServiceTimer(getAdmin(), serviceName);
 			}else{
 				Iterator<String> iter = errorMessages.iterator();
 				while(iter.hasNext()){
 					addErrorMessage(iter.next());
 				}
-				
 				retval = null;				
 			}
 		} catch (IOException e) {
 			addErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
 		}
-		
 		return retval;
 	}
 	
@@ -137,32 +130,23 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	public String update(){
 		return "editservice";
 	}
-	
-	
-	/**
-	 * Help method used to edit data in the custom worker type.
-	 */
+
+	/** Help method used to edit data in the custom worker type. */
 	public CustomWorkerType getCustomWorkerType(){
 		return (CustomWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomWorkerType.NAME);
 	}
 	
-	/**
-	 * Help method used to edit data in the custom action type.
-	 */
+	/** Help method used to edit data in the custom action type. */
 	public CustomActionType getCustomActionType(){
 		return (CustomActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomActionType.NAME);
 	}	
 	
-	/**
-	 * Help method used to edit data in the custom interval type.
-	 */
+	/** Help method used to edit data in the custom interval type. */
 	public CustomIntervalType getCustomIntervalType(){
 		return (CustomIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomIntervalType.NAME);
 	}
 	
-	/**
-	 * Help method used to edit data in the mail action type.
-	 */
+	/** Help method used to edit data in the mail action type. */
 	public MailActionType getMailActionType(){
 		return (MailActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(MailActionType.NAME);
 	}	
@@ -170,7 +154,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	public BaseWorkerType getBaseWorkerType() {
 		String name = null;
 		try {
-			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(new ArrayList());		
+			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(new ArrayList<String>());		
 			String cp = conf.getWorkerClassPath();
 			name = getTypeNameFromClassPath(cp);			
 		} catch (IOException e) {
@@ -183,9 +167,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return ret; 		
 	}
 	
-	/**
-	 * Help method used to edit data in the notifying worker type.
-	 */
+	/** Help method used to edit data in the notifying worker type. */
 	public BaseEmailNotifyingWorkerType getNotifyingType(){
 		log.trace(">getNotifyingType");
 		BaseEmailNotifyingWorkerType ret = null;
@@ -223,23 +205,18 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return ret;
 	}
 
-	/**
-	 * Help method used to edit data in the RenewCAWorkerType.
-	 */
+	/** Help method used to edit data in the RenewCAWorkerType. */
 	public RenewCAWorkerType getRenewType(){
 		String name = RenewCAWorkerType.NAME;
 		return (RenewCAWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
 	}
 
-	/** Help method to edit data in the publish queue worker type
-	 */
+	/** Help method to edit data in the publish queue worker type */
 	public PublishQueueWorkerType getPublishWorkerType() {
 		return (PublishQueueWorkerType)serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PublishQueueWorkerType.NAME);
 	}
 	
-	/**
-	 * Help method used to edit data in the custom interval type.
-	 */
+	/** Help method used to edit data in the custom interval type. */
 	public PeriodicalIntervalType getPeriodicalIntervalType(){
 		return (PeriodicalIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PeriodicalIntervalType.NAME);
 	}
@@ -277,14 +254,14 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 * 
 	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
 	 */
-	public List getAvailableCAs() {
+	public List<SelectItem> getAvailableCAs() {
 		return getAvailableCAs(false);
 	}
 	/** Returns the list of available CAs, also including the special option 'Any CA'.
 	 * 
 	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
 	 */
-	public List getAvailableCAsWithAnyOption() {
+	public List<SelectItem> getAvailableCAsWithAnyOption() {
 		return getAvailableCAs(true);
 	}
 
@@ -293,13 +270,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 * @param includeAllCAs if the returned list should include the constant ALLCAs or only the actually available CAs.
 	 * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
 	 */
-	private List getAvailableCAs(boolean includeAllCAs) {
-		List availableCANames = new ArrayList();
-		Collection cAIds = EjbcaJSFHelper.getBean().getCaSession().getAvailableCAs(getAdmin());
-		Iterator iter = cAIds.iterator();
+	private List<SelectItem> getAvailableCAs(boolean includeAllCAs) {
+		List<SelectItem> availableCANames = new ArrayList<SelectItem>();
+		Collection<Integer> cAIds = ejb.getCaSession().getAvailableCAs(getAdmin());
+		Iterator<Integer> iter = cAIds.iterator();
 		while(iter.hasNext()){
-			int next = ((Integer) iter.next()).intValue();
-			availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getName()));
+			int next = iter.next().intValue();
+			availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getCaAdminSession().getCAInfo(getAdmin(), next).getName()));
 		}
 		if (includeAllCAs) {
 			String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
@@ -308,16 +285,15 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return availableCANames;		
 	}
 
-	public List getAvailablePublishers(){
-		List availablePublisherNames = new ArrayList();
-		Collection publisherIds = EjbcaJSFHelper.getBean().getCAAdminSession().getAuthorizedPublisherIds(getAdmin());
-		Iterator iter = publisherIds.iterator();
+	public List<SelectItem> getAvailablePublishers(){
+		List<SelectItem> availablePublisherNames = new ArrayList<SelectItem>();
+		Collection<Integer> publisherIds = ejb.getCaAdminSession().getAuthorizedPublisherIds(getAdmin());
+		Iterator<Integer> iter = publisherIds.iterator();
 		while(iter.hasNext()){
-			int next = ((Integer) iter.next()).intValue();
+			int next = iter.next().intValue();
 			// Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
-			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), EjbcaJSFHelper.getBean().getPublisherSession().getPublisherName(getAdmin(), next)+" ("+next+")"));
+			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getPublisherSession().getPublisherName(getAdmin(), next)+" ("+next+")"));
 		}
 		return availablePublisherNames;		
 	}
-
 }

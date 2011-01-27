@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
-import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -32,7 +31,9 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * @version $Id$
  */
 public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
-    // Public constants.
+
+	private static final long serialVersionUID = 1L;
+
     public static final int TIME              = 0;
     public static final int ADMINTYPE         = 1;
     public static final int ADMINDATA         = 2;
@@ -65,7 +66,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
     
     public LogEntryView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames,
-    		String[] localsystemeventnames, String[] localmodulenames, Map  caidtonamemap) throws RemoteException{
+    		String[] localsystemeventnames, String[] localmodulenames, Map<Integer,String> caidtonamemap) {
       logentrydata = new String[NUMBEROF_FIELDS];
       for(int i=0; i<  NUMBEROF_FIELDS ; i++){
         logentrydata[i] = "";    
@@ -92,7 +93,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     }
        
     /* Sets the values according to the values in the LogEntry object.*/ 
-    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, Map caidtonamemap) throws RemoteException{
+    public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, Map<Integer,String> caidtonamemap) {
         
        logentrydata[TIME] = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(logentry.getTime());
        this.time = logentry.getTime();
@@ -123,7 +124,7 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        }
        
               
-       logentrydata[CA]    = (String) caidtonamemap.get(Integer.valueOf(logentry.getCAId()));
+       logentrydata[CA]    = caidtonamemap.get(Integer.valueOf(logentry.getCAId()));
        
        logentrydata[MODULE] = localmodulenames[logentry.getModule()];
          

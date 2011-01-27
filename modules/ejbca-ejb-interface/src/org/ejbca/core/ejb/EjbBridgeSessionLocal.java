@@ -23,6 +23,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
@@ -46,6 +47,7 @@ public interface EjbBridgeSessionLocal {
 
 	AdminEntitySessionLocal getAdminEntitySession();
 	AdminGroupSessionLocal getAdminGroupSession();
+	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
 	AuthorizationSessionLocal getAuthorizationSession();
 	AuthenticationSessionLocal getAuthenticationSession();
@@ -54,19 +56,19 @@ public interface EjbBridgeSessionLocal {
 	CertificateProfileSessionLocal getCertificateProfileSession();
 	CertificateStoreSessionLocal getCertificateStoreSession();
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
-	CrlSessionLocal getCreateCRLSession();
-	CrlCreateSessionLocal getCrlStoreSession();
+	CrlSessionLocal getCrlSession();
+	CrlCreateSessionLocal getCrlCreateSession();
 	EndEntityProfileSessionLocal getEndEntityProfileSession();
 	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();
-	HardTokenSessionLocal getHardtokenSession();
+	HardTokenSessionLocal getHardTokenSession();
 	KeyRecoverySessionLocal getKeyRecoverySession();
 	LogSessionLocal getLogSession();
 	OldLogSessionLocal getOldLogSession();
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();
-	RaAdminSessionLocal getRaSession();
+	RaAdminSessionLocal getRaAdminSession();
 	ServiceSessionLocal getServiceSession();
 	SignSessionLocal getSignSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
-	UserAdminSessionLocal getUserSession();
+	UserAdminSessionLocal getUserAdminSession();
 }

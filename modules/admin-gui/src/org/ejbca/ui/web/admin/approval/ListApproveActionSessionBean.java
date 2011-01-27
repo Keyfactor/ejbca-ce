@@ -24,6 +24,7 @@ import javax.faces.model.SelectItem;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.RAAuthorization;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.util.query.ApprovalMatch;
@@ -40,27 +41,24 @@ import org.ejbca.util.query.Query;
 public class ListApproveActionSessionBean extends BaseManagedBean {
 	//private static final Logger log = Logger.getLogger(ListApproveActionSessionBean.class);
 
+	private static final long serialVersionUID = 1L;
 	public static int QUERY_MAX_NUM_ROWS = 300;
-	
+	private static String TIME_5MIN = "" + 5 * 60 * 1000;
+	private static String TIME_30MIN = "" + 30 * 60 * 1000;
+	private static String TIME_8HOURS = "" + 8 * 60 * 60 * 1000;
+	private static String ALL_STATUSES = "" + -9;
+	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private List<SelectItem> availableStatus;
 	private String selectedStatus;	
-	
 	private List<SelectItem> availableTimeSpans;
 	private String selectedTimeSpan;
 	
 	private ApprovalDataVOViewList listData;
-	
-	private static String TIME_5MIN = "" + 5 * 60 * 1000;
-	private static String TIME_30MIN = "" + 30 * 60 * 1000;
-	private static String TIME_8HOURS = "" + 8 * 60 * 60 * 1000;
-	
-	private static String ALL_STATUSES = "" + -9;
-	
 
 	public ListApproveActionSessionBean() throws AuthorizationDeniedException{		      			 			 	 	
-	  setSelectedStatus("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-	  setSelectedTimeSpan(TIME_30MIN);
-      list();
+		setSelectedStatus("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
+		setSelectedTimeSpan(TIME_30MIN);
+		list();
 	}
 	
 	public List<SelectItem> getAvailableStatus() {
@@ -108,9 +106,9 @@ public class ListApproveActionSessionBean extends BaseManagedBean {
 		}
         List<ApprovalDataVO> result = new ArrayList<ApprovalDataVO>();
 		try {
-            RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), EjbcaJSFHelper.getBean().getRaAdminSession(),
-                    EjbcaJSFHelper.getBean().getAuthorizationSession(), EjbcaJSFHelper.getBean().getCaSession(), EjbcaJSFHelper.getBean().getEndEntityProfileSession());
-			result = EjbcaJSFHelper.getBean().getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
+            RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getRaAdminSession(),
+            		ejb.getAuthorizationSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession());
+			result = ejb.getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
 			if(result.size() == QUERY_MAX_NUM_ROWS){
 				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1", true) + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2", true);
 				FacesContext ctx = FacesContext.getCurrentInstance();

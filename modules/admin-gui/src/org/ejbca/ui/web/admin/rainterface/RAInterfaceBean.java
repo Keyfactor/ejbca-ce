@@ -125,7 +125,7 @@ public class RAInterfaceBean implements java.io.Serializable {
         this.informationmemory = ejbcawebbean.getInformationMemory();
         
         adminsession = ejb.getUserAdminSession();
-        certificatesession = ejb.getCertStoreSession();
+        certificatesession = ejb.getCertificateStoreSession();
         authorizationsession = ejb.getAuthorizationSession();
         endEntityProfileSession = ejb.getEndEntityProfileSession();
 

@@ -56,9 +56,9 @@ public class CertificateFinderBean {
 
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
-	private CAAdminSession mCaAdminSession = ejb.getCAAdminSession();
+	private CAAdminSession mCaAdminSession = ejb.getCaAdminSession();
 	private CaSession caSession = ejb.getCaSession();
-	private CertificateStoreSession mStoreSession = ejb.getCertStoreSession();
+	private CertificateStoreSession mStoreSession = ejb.getCertificateStoreSession();
 
 	private boolean mInitialized = false;
 	private Admin mAdmin;
