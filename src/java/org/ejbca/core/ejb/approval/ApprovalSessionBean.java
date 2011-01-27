@@ -731,7 +731,7 @@ s	 * @throws ApprovalRequestExpiredException
 	 * @param approvals cannot be null.
 	 * @throws IOException
 	 */
-	public final void setApprovals(ApprovalData approvalData, final Collection<Approval> approvals){
+	public void setApprovals(ApprovalData approvalData, final Collection<Approval> approvals){
 		try{
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final ObjectOutputStream oos = new ObjectOutputStream(baos);
