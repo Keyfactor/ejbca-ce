@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ca;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -246,15 +245,10 @@ public abstract class CaTestCase extends TestCase {
         	log.error("Creating CA failed!");
 			return false;
         }
-        try {
-			if ( this.certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getCertFingerprintAsString(cert.getEncoded())) == null) {
-	        	log.error("CA certificate not available in database!!");
-	        	return false;
-			}
-		} catch (CertificateEncodingException e) {
-        	log.error("", e);
-			return false;
-		}
+        if ( this.certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null) {
+        	log.error("CA certificate not available in database!!");
+        	return false;
+        }
         log.trace("<createTestCA");
 		return true;
 	}
