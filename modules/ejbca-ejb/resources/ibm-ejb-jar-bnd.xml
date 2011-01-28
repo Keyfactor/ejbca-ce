@@ -18,7 +18,7 @@
     <session name="AdminEntitySessionBean"><interface class="org.cesecore.core.ejb.authorization.AdminEntitySessionRemote" binding-name="ejbca/AdminEntitySessionRemote"/></session>  
     <session name="LogSessionBean"><interface class="org.cesecore.core.ejb.log.LogSessionRemote" binding-name="ejbca/LogSessionRemote"/></session>  
     <session name="UpgradeSessionBean"><interface class="org.ejbca.core.ejb.upgrade.UpgradeSessionRemote" binding-name="ejbca/UpgradeSessionRemote"/></session>  
-    <session name="ConfigurationSessionBean"><interface class="org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote" binding-name="ejbca/ConfigurationSessionRemote"/></session>  
+    <session name="ConfigurationSessionBean"><interface class="org.ejbca.core.ejb.config.ConfigurationSessionRemote" binding-name="ejbca/ConfigurationSessionRemote"/></session>  
     <session name="PublisherQueueSessionBean"><interface class="org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote" binding-name="ejbca/PublisherQueueSessionRemote"/></session>  
     <session name="AdminGroupSessionBean"><interface class="org.cesecore.core.ejb.authorization.AdminGroupSessionRemote" binding-name="ejbca/AdminGroupSessionRemote"/></session>  
     <session name="CertificateProfileSessionBean"><interface class="org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote" binding-name="ejbca/CertificateProfileSessionRemote"/></session>  

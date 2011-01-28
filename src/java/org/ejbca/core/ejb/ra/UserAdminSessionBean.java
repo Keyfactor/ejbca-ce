@@ -42,7 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
@@ -121,7 +121,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private EntityManager entityManager;
 
     @EJB
-    private EndEntityProfileSessionRemote endEntityProfileSession;
+    private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
     private RaAdminSessionLocal raAdminSession;
     @EJB
@@ -2143,8 +2143,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * @param numberofrows
      *            the number of rows to fetch, use 0 for default
      *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
-     * @return a collection of UserDataVO. Maximum size of Collection is defined
-     *         i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     * @return a collection of UserDataVO.
      * @throws IllegalQueryException
      *             when query parameters internal rules isn't fullfilled.
      * @see se.anatom.ejbca.util.query.Query

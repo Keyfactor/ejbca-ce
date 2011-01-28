@@ -62,7 +62,6 @@ import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -109,9 +108,7 @@ import org.w3c.dom.NodeList;
  * This is used as a workaround for the namespace prefix handling
  * in the JAX-WS
  * 
- * 
  * @author Philip Vendil 2006 dec 18
- *
  * @version $Id$
  */
 @Stateless

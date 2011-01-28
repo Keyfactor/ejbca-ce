@@ -193,6 +193,9 @@ public class EjbDependencyGraphTool {
 				if (field.isAnnotationPresent(javax.ejb.EJB.class)) {
 					interfaceDependencies.add(field.getType());
 					//log("   depends on " + field.getType().getSimpleName());
+					if (field.getType().getName().endsWith("Remote")) {
+						log("   WARNING: depends on " + field.getType().getSimpleName() + ". @Remote interface?");
+					}
 				}
 			}
 		}

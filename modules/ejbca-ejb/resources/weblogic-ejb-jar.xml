@@ -112,7 +112,7 @@
         <ejb-name>ConfigurationSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote</business-remote>
+                <business-remote>org.ejbca.core.ejb.config.ConfigurationSessionRemote</business-remote>
                 <jndi-name>ejbca/ConfigurationSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>

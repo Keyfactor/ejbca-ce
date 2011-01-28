@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.upgrade;
+package org.ejbca.core.ejb.config;
 
 import java.util.Properties;
 

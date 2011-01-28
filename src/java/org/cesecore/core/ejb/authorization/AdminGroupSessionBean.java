@@ -65,8 +65,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     private AuthorizationSessionLocal authSession;
     @EJB
     private AdminEntitySessionLocal admEntitySession;
-    @EJB 
-    private AuthorizationTreeUpdateDataSessionRemote authTreeSession;
+    @EJB
+    private AuthorizationTreeUpdateDataSessionLocal authTreeSession;
     
     /**
      * Initializes this session bean manually, primarily for use from the CLI.
