@@ -16,6 +16,7 @@ import javax.ejb.Remote;
 
 /**
  * Remote interface for CertificateStoreSession.
+ * @version $Id$
  */
 @Remote
 public interface CertificateStoreSessionRemote extends CertificateStoreSession {

@@ -16,6 +16,7 @@ import javax.ejb.Local;
 
 /**
  * Local interface for CertificateStoreSession.
+ * @version $Id$
  */
 @Local
 public interface CertificateStoreSessionLocal extends CertificateStoreSession {
