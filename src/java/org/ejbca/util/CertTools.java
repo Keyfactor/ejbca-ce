@@ -2268,28 +2268,6 @@ public class CertTools {
      } //getStringFromGeneralNames
     
     /**
-     * Generate SHA1 fingerprint in string representation.
-     *
-     * @param ba Byte array containing DER encoded Certificate.
-     *
-     * @return String containing hex format of SHA1 fingerprint.
-     */
-    public static String getCertFingerprintAsString(byte[] ba) {
-        try {
-            Certificate cert = getCertfromByteArray(ba);
-            byte[] res = generateSHA1Fingerprint(cert.getEncoded());
-
-            return new String(Hex.encode(res));
-        } catch (CertificateEncodingException cee) {
-            log.error("Error encoding X509 certificate.", cee);
-        } catch (CertificateException cee) {
-            log.error("Error decoding X509 certificate.", cee);
-        }
-
-        return null;
-    }
-
-    /**
      * Generate SHA1 fingerprint of certificate in string representation.
      *
      * @param cert Certificate.
