@@ -27,10 +27,12 @@ import org.ejbca.core.model.log.Admin;
  * and by removing the need to retrieving the profile for each card processed 
  * the network load will decrease dramatically.
  * 
- * TODO: Seems more reasonable to move caching to the EJB layer. Not a priority thoough..
+ * TODO: Seems more reasonable to move caching to the EJB layer.. or the Client..
+ * and the client is discontinued..
  *
  * @version $Id$
  */
+@Deprecated
 public class HardTokenProfileProxy {
 
     private HashMap<Integer,HardTokenProfile> profilestore;

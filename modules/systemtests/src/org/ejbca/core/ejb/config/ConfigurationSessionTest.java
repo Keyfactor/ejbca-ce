@@ -17,7 +17,6 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
 
 /**

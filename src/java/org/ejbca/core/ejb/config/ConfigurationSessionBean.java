@@ -23,7 +23,6 @@ import javax.ejb.TransactionAttributeType;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
 
 /**
  * This bean handles configuration changes for system tests.

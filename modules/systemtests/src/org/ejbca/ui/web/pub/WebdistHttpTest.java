@@ -23,7 +23,7 @@ import junit.framework.TestSuite;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
 
 import com.gargoylesoftware.htmlunit.WebClient;

@@ -28,7 +28,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionRemote;
+import org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.JndiHelper;
@@ -59,7 +59,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private EntityManager entityManager;
 
     @EJB
-    private AuthorizationTreeUpdateDataSessionRemote authorizationTreeUpdateDataSession;
+    private AuthorizationTreeUpdateDataSessionLocal authorizationTreeUpdateDataSession;
     
     @EJB
     private LogSessionLocal logSession;

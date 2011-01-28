@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -95,7 +95,7 @@ public class DemoCertReqServlet extends HttpServlet {
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
-	private UserAdminSessionRemote userAdminSession;
+	private UserAdminSessionLocal userAdminSession;
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 
@@ -327,7 +327,7 @@ public class DemoCertReqServlet extends HttpServlet {
   /**
    * @return true if the username is ok (does not already exist), false otherwise
    */
-  private final boolean checkUsername(Admin admin, String username, UserAdminSessionRemote adminsession) throws ServletException
+  private final boolean checkUsername(Admin admin, String username, UserAdminSessionLocal adminsession) throws ServletException
   {
     if (username != null) {
     	username = username.trim();

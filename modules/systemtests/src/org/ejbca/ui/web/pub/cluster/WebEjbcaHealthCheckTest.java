@@ -15,7 +15,7 @@ package org.ejbca.ui.web.pub.cluster;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.upgrade.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
 
 import com.gargoylesoftware.htmlunit.WebClient;

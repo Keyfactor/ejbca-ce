@@ -50,7 +50,7 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
     private EntityManager entityManager;
 
     @EJB
-    private AuthorizationTreeUpdateDataSessionRemote authTreeSession;
+    private AuthorizationTreeUpdateDataSessionLocal authTreeSession;
     
     @EJB
     private LogSessionLocal logSession;
