@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.web.protocol;
 
-import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -35,7 +34,6 @@ import org.ejbca.core.protocol.certificatestore.HashID;
  * 
  * @author Lars Silven Primekey
  * @version $Id$
- *
  */
 class CAInHierarchy {
 	private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -47,10 +45,10 @@ class CAInHierarchy {
 		this.subs = new HashSet<CAInHierarchy>();
 		this.testCase = _testCase;
 	}
-	X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) throws RemoteException {
+	X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) {
 		return createCA(CAInfo.SELFSIGNED, null, setOfSubjectKeyIDs);
 	}
-	private X509Certificate createCA( int signedBy, Collection<Certificate> certificateChain, Set<Integer> setOfSubjectKeyIDs ) throws RemoteException {
+	private X509Certificate createCA( int signedBy, Collection<Certificate> certificateChain, Set<Integer> setOfSubjectKeyIDs ) {
 		Assert.assertTrue( "Failed to created certificate.",
 		                   this.testCase.createTestCA(this.name, 1024, "CN="+this.name+",O=EJBCA junit,OU=CertStoreServletTest",
 		                                          signedBy, certificateChain) );

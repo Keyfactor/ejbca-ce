@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -41,7 +40,6 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
-
 
 /**
  * Tests creating certificate with extended key usage.
@@ -124,7 +122,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     public void test02SSH() throws Exception {
         certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGECERTPROFILE");
         final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
-        ArrayList list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
         certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin,"EXTKEYUSAGECERTPROFILE");
@@ -140,7 +138,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         //log.debug("Cert=" + cert.toString());
-        List ku = cert.getExtendedKeyUsage();
+        List<String> ku = cert.getExtendedKeyUsage();
         assertNull(ku);
 
         // Now add the SSH extended key usages
@@ -170,10 +168,8 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 		removeTestCA();
     }
 
-    private void createOrEditUser(final int fooCertProfile,
-			final int fooEEProfile) throws AuthorizationDeniedException,
-			UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-			CADoesntExistsException, EjbcaException, RemoteException {
+    private void createOrEditUser(final int fooCertProfile, final int fooEEProfile) throws AuthorizationDeniedException,
+			UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
 		// Make user that we know...
         boolean userExists = false;
         UserDataVO user = new UserDataVO("extkeyusagefoo","C=SE,O=AnaTom,CN=extkeyusagefoo",rsacaid,null,"foo@anatom.se",SecConst.USER_ENDUSER,fooEEProfile,fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);

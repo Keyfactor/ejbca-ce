@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.servlet.ServletConfig;
@@ -43,7 +41,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
@@ -191,7 +188,7 @@ public class CardCertReqServlet extends HttpServlet {
                 final int signCertProfile;
                 final HardTokenProfile hardTokenProfile = hardTokenSession.getHardTokenProfile(administrator, data.getTokenType());
                 {
-                    CertProfileID certProfileID = new CertProfileID(certificateStoreSession, data, administrator, hardTokenProfile);
+                    CertProfileID certProfileID = new CertProfileID(data, administrator, hardTokenProfile);
                     authCertProfile = certProfileID.getProfileID("authCertProfile", SwedishEIDProfile.CERTUSAGE_AUTHENC);
                     signCertProfile = certProfileID.getProfileID("signCertProfile", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
@@ -322,11 +319,11 @@ public class CardCertReqServlet extends HttpServlet {
     }
     private class CAID extends BaseID {
         final private CAAdminSession caAdminSession;
-        CAID(UserDataVO d, Admin a, HardTokenProfile hardTokenProfile, CAAdminSession caAdminSession) throws RemoteException, CreateException {
+        CAID(UserDataVO d, Admin a, HardTokenProfile hardTokenProfile, CAAdminSession caAdminSession) {
             super(d, a, hardTokenProfile);
             this.caAdminSession = caAdminSession;                       
         }
-        protected int getFromName(String name) throws RemoteException {
+        protected int getFromName(String name) {
             CAInfo caInfo = caAdminSession.getCAInfo(administrator, name);
             if ( caInfo!=null ) {
                 return caInfo.getCAId();
@@ -347,13 +344,11 @@ public class CardCertReqServlet extends HttpServlet {
         }
     }
     private class CertProfileID extends BaseID {
-        final CertificateStoreSession certificatestoresession;
-        CertProfileID(CertificateStoreSession c, UserDataVO d, Admin a,
-                      HardTokenProfile hardTokenProfile) throws RemoteException, CreateException {
+        CertProfileID(UserDataVO d, Admin a,
+                      HardTokenProfile hardTokenProfile) {
             super(d, a, hardTokenProfile);
-            certificatestoresession = c;
         }
-        protected int getFromName(String name) throws RemoteException {
+        protected int getFromName(String name) {
             return certificateProfileSession.getCertificateProfileId(administrator, name);
         }
         protected int getFromOldData() {
@@ -369,7 +364,7 @@ public class CardCertReqServlet extends HttpServlet {
         final EIDProfile hardTokenProfile;
         
         protected abstract int getFromHardToken(int keyType);
-        protected abstract int getFromName(String name) throws RemoteException;
+        protected abstract int getFromName(String name);
         protected abstract int getFromOldData();
         BaseID(UserDataVO d, Admin a, HardTokenProfile htp) {
             data = d;
@@ -380,7 +375,7 @@ public class CardCertReqServlet extends HttpServlet {
                 hardTokenProfile = null;
             }
         }
-        public int getProfileID(String parameterName, int keyType) throws RemoteException {
+        public int getProfileID(String parameterName, int keyType) {
             if ( hardTokenProfile!=null ) {
                 return getFromHardToken(keyType);
             }

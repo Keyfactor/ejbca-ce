@@ -216,7 +216,7 @@ public class UserAdminSessionTest extends CaTestCase {
         log.trace("<test02AddUserWithUniqueDNSerialnumber()");
     }
 
-    public void test03ChangeUserWithUniqueDNSerialnumber() throws RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    public void test03ChangeUserWithUniqueDNSerialnumber() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, EjbcaException {
         log.trace(">test03ChangeUserWithUniqueDNSerialnumber()");
 

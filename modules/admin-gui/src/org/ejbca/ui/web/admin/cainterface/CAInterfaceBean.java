@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
-import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
@@ -45,11 +42,13 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
@@ -104,12 +103,10 @@ public class CAInterfaceBean implements Serializable {
     private boolean isUniqueIndex;
 	
 	/** Creates a new instance of CaInterfaceBean */
-    public CAInterfaceBean() {
-    }
+    public CAInterfaceBean() { }
 
     // Public methods
-    public void initialize(EjbcaWebBean ejbcawebbean) throws  Exception{
-
+    public void initialize(EjbcaWebBean ejbcawebbean) {
         if(!initialized){
           caSession = ejb.getCaSession();
           certificatesession = ejb.getCertificateStoreSession();
@@ -135,45 +132,40 @@ public class CAInterfaceBean implements Serializable {
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
-      }
-    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
+    }
+
+    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) {
     	initialize(ejbcawebbean);
     }
 
     public CertificateView[] getCACertificates(int caid) {
-      CertificateView[] returnval = null;      
-      
-      Collection<Certificate> chain = signsession.getCertificateChain(administrator, caid);
-      
-      returnval = new CertificateView[chain.size()];
-      Iterator<Certificate> iter = chain.iterator();
-      int i=0;
-      while(iter.hasNext()){
-        Certificate next = (Certificate) iter.next();  
-        RevokedInfoView revokedinfo = null;
-        CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
-        if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
-          revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
-        }
-        returnval[i] = new CertificateView(next, revokedinfo,null);
-        i++;
-      }
-
-      return returnval;
+    	final Collection<Certificate> chain = signsession.getCertificateChain(administrator, caid);
+    	final CertificateView[] returnval = new CertificateView[chain.size()];
+    	final Iterator<Certificate> iter = chain.iterator();
+    	int i=0;
+    	while(iter.hasNext()){
+    		final Certificate next = iter.next();  
+    		RevokedInfoView revokedinfo = null;
+    		CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
+    		if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
+    			revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
+    		}
+    		returnval[i] = new CertificateView(next, revokedinfo, null);
+    		i++;
+    	}
+    	return returnval;
     }
     
     /**
      * Method that returns a HashMap connecting available CAIds (Integer) to CA Names (String).
-     *
      */ 
-    
     public Map<Integer, String>  getCAIdToNameMap(){
-      return informationmemory.getCAIdToNameMap();      
+    	return informationmemory.getCAIdToNameMap();      
     }
 
     /**
      * Return the name of the CA based on its ID
-     * @param caId the ca ID
+     * @param caId the CA ID
      * @return the name of the CA or null if it does not exists.
      */
     public String getName(Integer caId) {
@@ -183,39 +175,34 @@ public class CAInterfaceBean implements Serializable {
     public Collection<Integer> getAuthorizedCAs(){
       return informationmemory.getAuthorizedCAIds();
     }  
-      
-      
-    public TreeMap getEditCertificateProfileNames() {
+
+    public TreeMap<String, Integer> getEditCertificateProfileNames() {
       return informationmemory.getEditCertificateProfileNames();
     }
 
     /** Returns the profile name from id proxied */
     public String getCertificateProfileName(int profileid) {
-      return this.informationmemory.getCertificateProfileNameProxy().getCertificateProfileName(profileid);
+    	return this.informationmemory.getCertificateProfileNameProxy().getCertificateProfileName(profileid);
     }
     
-    public int getCertificateProfileId(String profilename){
-      return certificateprofiles.getCertificateProfileId(profilename);
+    public int getCertificateProfileId(String profilename) {
+    	return certificateprofiles.getCertificateProfileId(profilename);
     }
 
-
-    public CertificateProfile getCertificateProfile(String name)  throws Exception{
-      return certificateprofiles.getCertificateProfile(name);
+    public CertificateProfile getCertificateProfile(String name) throws AuthorizationDeniedException {
+    	return certificateprofiles.getCertificateProfile(name);
     }
 
-    public CertificateProfile getCertificateProfile(int id)  throws Exception{
-      return certificateprofiles.getCertificateProfile(id);
+    public CertificateProfile getCertificateProfile(int id) throws AuthorizationDeniedException {
+    	return certificateprofiles.getCertificateProfile(id);
     }
 
-    public void addCertificateProfile(String name) throws Exception{
+    public void addCertificateProfile(String name) throws CertificateProfileExistsException, AuthorizationDeniedException {
        CertificateProfile profile = new CertificateProfile();
        profile.setAvailableCAs(informationmemory.getAuthorizedCAIds());
-       
        certificateprofiles.addCertificateProfile(name, profile);
-              
     }
 
-   
     public void changeCertificateProfile(String name, CertificateProfile profile) throws Exception {
        certificateprofiles.changeCertificateProfile(name, profile);
     }
@@ -244,15 +231,15 @@ public class CAInterfaceBean implements Serializable {
         return !certificateprofileused;
     }
 
-    public void renameCertificateProfile(String oldname, String newname) throws Exception{
-       certificateprofiles.renameCertificateProfile(oldname, newname);
+    public void renameCertificateProfile(String oldname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException {
+    	certificateprofiles.renameCertificateProfile(oldname, newname);
     }
 
-    public void cloneCertificateProfile(String originalname, String newname) throws Exception{
-      certificateprofiles.cloneCertificateProfile(originalname, newname);
+    public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException {
+    	certificateprofiles.cloneCertificateProfile(originalname, newname);
     }    
       
-    public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException  {      
+    public void createCRL(String issuerdn) throws CATokenOfflineException  {      
         CA ca;
         try {
             ca = caSession.getCA(administrator, issuerdn.hashCode());
@@ -261,7 +248,8 @@ public class CAInterfaceBean implements Serializable {
         }
         crlCreateSession.run(administrator, ca);
     }
-    public void createDeltaCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException {      
+
+    public void createDeltaCRL(String issuerdn) throws CATokenOfflineException {      
         CA ca;
         try {
             ca = caSession.getCA(administrator, issuerdn.hashCode());
@@ -272,7 +260,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public int getLastCRLNumber(String  issuerdn) {
-      return crlSession.getLastCRLNumber(administrator, issuerdn, false);      
+    	return crlSession.getLastCRLNumber(administrator, issuerdn, false);      
     }
 
     /**

@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.ra;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -89,7 +88,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-	public void test000Setup() throws RemoteException {
+	public void test000Setup() {
 		LOG.trace(">test000Setup");
 		super.createTestCA(TESTCA_NAME);	// Create test CA
 		assertCAConfig(true, true, true);
@@ -142,7 +141,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 	}
 	
 	/** Assert that the CA is configured to store things as expected. */
-	private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws RemoteException {
+	private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) {
 		CAInfo caInfo = caAdminSession.getCAInfo(admin, TESTCA_NAME);
 		assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
 		assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
@@ -150,7 +149,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 	}
 
 	/** Change CA configuration for what to store and assert that the changes were made. */
-	private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws RemoteException, AuthorizationDeniedException {
+	private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException {
 		CAInfo caInfo = caAdminSession.getCAInfo(admin, TESTCA_NAME);
 		caInfo.setUseCertReqHistory(useCertReqHistory);
 		caInfo.setUseUserStorage(useUserStorage);
@@ -191,15 +190,15 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
 	}
 
-	private boolean userDataExists(UserDataVO userData) throws RemoteException {
+	private boolean userDataExists(UserDataVO userData) {
 		return userAdminSession.existsUser(admin, userData.getUsername());
 	}
 
-	private boolean certificateRequestHistoryExists(Certificate certificate) throws RemoteException {
+	private boolean certificateRequestHistoryExists(Certificate certificate) {
 		return certificateStoreSession.getCertReqHistory(admin, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate)) != null;
 	}
 
-	private boolean certificateExists(Certificate certificate) throws RemoteException {
+	private boolean certificateExists(Certificate certificate) {
 		return certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(certificate)) != null;
 	}
 }

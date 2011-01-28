@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.ws;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -281,12 +280,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
      * Takes an ApprovalRequest and cleans all ApprovalRequests with the same
      * approval id from the ApprovalSession.
      * 
-     * 
      * @param approvalRequest
-     * @throws RemoteException
      * @throws ApprovalException
      */
-    private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, Admin admin) throws RemoteException, ApprovalException {
+    private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, Admin admin) throws ApprovalException {
         Collection<ApprovalDataVO> collection = approvalSession.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
         if (!collection.isEmpty()) {
             for (ApprovalDataVO approvalDataVO : collection) {

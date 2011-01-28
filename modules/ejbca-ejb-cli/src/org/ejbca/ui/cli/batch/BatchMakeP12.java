@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.batch;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -126,7 +125,7 @@ public class BatchMakeP12 extends BaseCommand {
         return admin;
     }
 
-    private boolean getUseKeyRecovery() throws RemoteException {
+    private boolean getUseKeyRecovery() {
         if (usekeyrecovery == null) {
             usekeyrecovery = (ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin())).getEnableKeyRecovery();
         }
@@ -138,7 +137,7 @@ public class BatchMakeP12 extends BaseCommand {
      * 
      * @return Certificate[]
      */
-    private Certificate[] getCACertChain(int caid) throws Exception {
+    private Certificate[] getCACertChain(int caid) {
         getLogger().trace(">getCACertChain()");
         Certificate[] chain = (Certificate[]) ejb.getSignSession().getCertificateChain(getAdmin(), caid).toArray(new Certificate[0]);
         getLogger().trace("<getCACertChain()");

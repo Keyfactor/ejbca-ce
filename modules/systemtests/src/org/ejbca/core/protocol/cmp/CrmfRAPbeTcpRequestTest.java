@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -88,7 +87,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 
     /** This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
      */
-	public CrmfRAPbeTcpRequestTest(String arg0) throws RemoteException, CertificateException {
+	public CrmfRAPbeTcpRequestTest(String arg0) throws CertificateException {
 		super(arg0);
 		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists

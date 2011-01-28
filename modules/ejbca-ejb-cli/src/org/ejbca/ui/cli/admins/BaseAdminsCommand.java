@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli.admins;
 
-import java.rmi.RemoteException;
 import java.util.Map;
 
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -21,13 +20,12 @@ import org.ejbca.ui.cli.BaseCommand;
 
 /**
  * Base for Admins commands, contains common functions for Admins operations
- * 
  */
 public abstract class BaseAdminsCommand extends BaseCommand {
 
     protected static final String MAINCOMMAND = "admins";
 
-    protected String getParsedAccessRule(String resource) throws NumberFormatException, RemoteException {
+    protected String getParsedAccessRule(String resource) throws NumberFormatException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
@@ -44,7 +42,7 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         }
         // Check if it is a CA rule, then replace CA id with CA name.
         if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
-            Map caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
+            Map<Integer,String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
             if (resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
                 return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(Integer.valueOf(resource.substring(AccessRulesConstants.CAPREFIX.length())));
             } else {
@@ -70,7 +68,7 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         return resource;
     }
 
-    protected String getOriginalAccessRule(String resource) throws NumberFormatException, RemoteException {
+    protected String getOriginalAccessRule(String resource) throws NumberFormatException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {

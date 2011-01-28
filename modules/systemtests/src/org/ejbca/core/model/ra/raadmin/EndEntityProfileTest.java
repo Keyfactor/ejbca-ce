@@ -13,7 +13,6 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
-import java.rmi.RemoteException;
 import java.util.HashMap;
 
 import junit.framework.TestCase;
@@ -272,12 +271,11 @@ public class EndEntityProfileTest extends TestCase {
     
     /**
      * Test if the cardnumber is required in an end entity profile, and if check it is set if it was required.
-     * @throws RemoteException 
      * @throws UserDoesntFullfillEndEntityProfile 
      * @throws CertificateProfileExistsException 
      * @throws AuthorizationDeniedException 
      */
-    public void test10CardnumberRequired() throws RemoteException, CertificateProfileExistsException, AuthorizationDeniedException {
+    public void test10CardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException {
     	log.trace(">test10CardnumberRequired()");
 
         int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();

@@ -14,7 +14,6 @@
 package org.ejbca.core.model.approval.approvalrequests;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import javax.ejb.DuplicateKeyException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
@@ -420,7 +418,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return caID;
     }
 
-    private void createUser(Admin admin, String username, int caID, int endEntityProfileId, int certProfileId) throws PersistenceException, RemoteException,
+    private void createUser(Admin admin, String username, int caID, int endEntityProfileId, int certProfileId) throws PersistenceException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
@@ -430,7 +428,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         createUser(admin, userdata);
     }
 
-    private void createUser(Admin admin, UserDataVO userdata) throws PersistenceException, RemoteException, AuthorizationDeniedException,
+    private void createUser(Admin admin, UserDataVO userdata) throws PersistenceException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         userAdminSession.addUser(admin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
@@ -443,7 +441,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         log.info("created: " + userdata.getUsername());
     }
 
-    private void changeUserDN(Admin admin, String username, String newDN) throws DuplicateKeyException, RemoteException, AuthorizationDeniedException,
+    private void changeUserDN(Admin admin, String username, String newDN) throws AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
 
         UserDataVO userdata = userAdminSession.findUser(admin, username);
@@ -453,18 +451,16 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         userAdminSession.changeUser(admin, userdata, true);
     }
 
-    private void changeUserCertProfile(Admin admin, String username, int newCertProfileId) throws DuplicateKeyException, RemoteException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
-
+    private void changeUserCertProfile(Admin admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
+    UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         UserDataVO userdata = userAdminSession.findUser(admin, username);
         assertNotNull("findUser: " + username, userdata);
         userdata.setCertificateProfileId(newCertProfileId);
         userAdminSession.changeUser(admin, userdata, true);
     }
 
-    private int createEndEntityProfile(Admin admin, String endEntityProfileName, int[] certProfiles) throws RemoteException, EndEntityProfileExistsException {
+    private int createEndEntityProfile(Admin admin, String endEntityProfileName, int[] certProfiles) throws EndEntityProfileExistsException {
         EndEntityProfile profile;
-
         endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
 
         StringBuilder availableCertProfiles = new StringBuilder();

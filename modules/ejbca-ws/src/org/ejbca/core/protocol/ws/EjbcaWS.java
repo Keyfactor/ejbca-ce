@@ -823,9 +823,6 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (FinderException e) {
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw EjbcaWSHelper.getInternalException(e, logger);
-		} catch (CreateException e) {
-			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
-		    throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (ParseException e) {
 			ejbhelper.resetUserPasswordAndStatus(admin, username, olduserStatus);
 		    throw EjbcaWSHelper.getInternalException(e, logger);

@@ -22,7 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -438,7 +437,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         OCSPReq req = gen.generate("SHA1WithRSA", keys.getPrivate(), chain, "BC");
 
         // First test with a signed OCSP request that can be verified
-        Collection cacerts = new ArrayList();
+        Collection<Certificate> cacerts = new ArrayList<Certificate>();
         cacerts.add(cacert);
         ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
         X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
@@ -1228,14 +1227,14 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
-            ArrayList extendedcaservices = new ArrayList();
+            ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
-            ArrayList policies = new ArrayList(1);
+            ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
             X509CAInfo cainfo = new X509CAInfo(dn, dn, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -1323,14 +1322,14 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
-            ArrayList extendedcaservices = new ArrayList();
+            ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
-            ArrayList policies = new ArrayList(1);
+            ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
             X509CAInfo cainfo = new X509CAInfo(dn, dn, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection) null, catokeninfo, "JUnit DSA CA", -1, null, policies, // PolicyId
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit DSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -1371,7 +1370,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             assertTrue(cert.getPublicKey() instanceof DSAPublicKey);
 
             ret = true;
-            Collection coll = info.getCertificateChain();
+            Collection<Certificate> coll = info.getCertificateChain();
             Object[] certs = coll.toArray();
             cacert = (X509Certificate) certs[0];
         } catch (CAExistsException pee) {
@@ -1388,7 +1387,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     }
 
     private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
-            WaitingForApprovalException, RemoteException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
+            WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
             CADoesntExistsException {
 
         if (!userAdminSession.existsUser(admin, "ocsptest")) {

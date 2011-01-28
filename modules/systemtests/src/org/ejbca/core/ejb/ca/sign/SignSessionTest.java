@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.sign;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -258,12 +257,9 @@ public class SignSessionTest extends CaTestCase {
         super.tearDown();
     }
 
-    /**
-     * creates new user
-     * 
-     */
+    /** creates new user */
     public void test01CreateNewUser() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, RemoteException, FinderException {
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, FinderException {
         log.trace(">test01CreateNewUser()");
 
         certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
@@ -613,7 +609,7 @@ public class SignSessionTest extends CaTestCase {
 
         String altNames = CertTools.getSubjectAlternativeName(cert);
         log.debug(altNames);
-        ArrayList list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+        ArrayList<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
         assertEquals(2, list.size());
         assertTrue(list.contains("foo@a.se"));
         assertTrue(list.contains("foo@b.se"));
@@ -660,10 +656,7 @@ public class SignSessionTest extends CaTestCase {
         log.trace("<test09TestMultipleAltNames()");
     }
 
-    /**
-     * Tests creting a certificate with QC statement
-     * 
-     */
+    /** Tests creating a certificate with QC statement */
     public void test10TestQcCert() throws Exception {
         log.trace(">test10TestQcCert()");
 

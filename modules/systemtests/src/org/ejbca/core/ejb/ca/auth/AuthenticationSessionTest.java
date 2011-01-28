@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -65,12 +64,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    /**
-     * Creates a new TestAuthenticationSession object.
-     * 
-     * @param name
-     *            name
-     */
+    /** Creates a new TestAuthenticationSession object. */
     public AuthenticationSessionTest(String name) {
         super(name);
         assertTrue("Could not create TestCA.", createTestCA());
@@ -86,7 +80,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     private void createUser(Admin admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
-            throws PersistenceException, RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
         UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
@@ -101,12 +95,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
 
-    /**
-     * tests creation of new users
-     * 
-     * @throws Exception
-     *             error
-     */
+    /** tests creation of new users */
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
 
@@ -127,12 +116,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         log.trace("<test01CreateNewUser()");
     }
 
-    /**
-     * Tests authentiction of users
-     * 
-     * @throws Exception
-     *             error
-     */
+    /** Tests authentication of users */
     public void test02AuthenticateUser() throws Exception {
         log.trace(">test02AuthenticateUser()");
         // user that we know exists...
@@ -151,12 +135,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         log.trace("<test02AuthenticateUser()");
     }
 
-    /**
-     * Tests filed authentication
-     * 
-     * @throws Exception
-     *             error
-     */
+    /** Tests filed authentication */
     public void test03FailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
@@ -172,12 +151,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         log.trace("<test03FailAuthenticateUser()");
     }
 
-    /**
-     * Tests more failed authentication
-     * 
-     * @throws Exception
-     *             error
-     */
+    /** Tests more failed authentication */
     public void test04FailAuthenticateUser() throws Exception {
         log.trace(">test04FailAuthenticateUser()");
         // user that we know exists... but we issue wrong password
@@ -192,11 +166,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         log.trace("<test04FailAuthenticateUser()");
     }
 
-    /**
-     * Test reset of key recovery mark.
-     * 
-     * @throws Exception
-     */
+    /** Test reset of key recovery mark. */
     public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
@@ -351,12 +321,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         }
     }
 
-    /**
-     * Delete user after completed tests
-     * 
-     * @throws Exception
-     *             error
-     */
+    /** Delete user after completed tests */
     public void test98DeleteUsers() throws Exception {
         log.trace(">test98DeleteUsers()");
 

@@ -49,7 +49,7 @@ public class HardTokenData implements Serializable {
 	 */
     public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, 
                          int tokentype, String significantIssuerDN, HardToken hardtoken, String copyof,
-                         Collection copies){
+                         Collection<String> copies){
       this.tokensn=tokensn;
       this.username=StringTools.strip(username);
       this.createtime=createtime;
@@ -101,10 +101,9 @@ public class HardTokenData implements Serializable {
      * of this token.
      * 
      * @return A Collection of tokenSN or null of no copies have been made.
-     * 
      */
-    public Collection getCopies(){
-      return copies;	
+    public Collection<String> getCopies(){
+		return copies;
     }
 
     // Private fields
@@ -116,6 +115,6 @@ public class HardTokenData implements Serializable {
     private    String          significantIssuerDN;
     private    HardToken       hardtoken;
     private    String          copyof;
-    private    Collection      copies;
+    private    Collection<String> copies;
 
 }
