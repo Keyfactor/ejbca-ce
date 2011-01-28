@@ -23,6 +23,7 @@ package org.ejbca.core.model.authorization;
  * An exception thrown by the authenticate method in the EjbcaAthorization bean when authentication of a given certificate failed.
  *
  * @author  Philip Vendil
+ * @version $Id$
  */
 public class AuthenticationFailedException extends java.lang.Exception {
     
