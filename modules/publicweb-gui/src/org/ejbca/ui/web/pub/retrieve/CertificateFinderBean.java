@@ -14,15 +14,11 @@
 package org.ejbca.ui.web.pub.retrieve;
 
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -68,13 +64,11 @@ public class CertificateFinderBean {
 	 */
 	private int mCurrentCA;
 
-
 	/**
 	 * Empty default constructor.
 	 * NOTE: Call initialize() after creating this object.
 	 */
-	public CertificateFinderBean() {
-	}
+	public CertificateFinderBean() { }
 	
 	/**
 	 * Initializes all the session beans used by this ocject.
@@ -83,11 +77,8 @@ public class CertificateFinderBean {
 	 * <br><tt>&lt;% finder.initialize(request.getRemoteAddr()); %&gt</tt>
 	 * 
 	 * @param remoteAddress The remote address as supplied by the request JSP object.
-	 * @throws NamingException If context related errors occur.
-	 * @throws RemoteException If session bean creation fails.
-	 * @throws CreateException If session bean creation fails.
 	 */
-	public void initialize(String remoteAddress) throws NamingException, RemoteException, CreateException {
+	public void initialize(String remoteAddress) {
 		log.trace(">initialize()");
 	    mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
 	    mInitialized = true;
@@ -111,14 +102,14 @@ public class CertificateFinderBean {
 		mCurrentCA = currentCA;
 	}
 
-	public CAInfo getCAInfo() throws RemoteException {
+	public CAInfo getCAInfo() {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
 		return mInitialized ? mCaAdminSession.getCAInfo(mAdmin, mCurrentCA) : null;
 	}
 
-	public Collection<CertificateWrapper> getCACertificateChain() throws RemoteException {
+	public Collection<CertificateWrapper> getCACertificateChain() {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
@@ -135,7 +126,7 @@ public class CertificateFinderBean {
 		return ret;
 	}
 
-	public String getCADN() throws RemoteException {
+	public String getCADN() {
 		final Collection<Certificate> certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
 		if ( certs==null || certs.isEmpty() ) {
 			return "";
@@ -144,7 +135,7 @@ public class CertificateFinderBean {
 		return CertTools.getSubjectDN(cert);
 	}
 
-	public Collection<CertificateWrapper> getCACertificateChainReversed() throws RemoteException {
+	public Collection<CertificateWrapper> getCACertificateChainReversed() {
 		Collection<CertificateWrapper> ret = getCACertificateChain();
 		if (ret != null) {
 			Collections.reverse((ArrayList<CertificateWrapper>) ret);
@@ -152,7 +143,7 @@ public class CertificateFinderBean {
 		return ret;
 	}
 	
-	public boolean getOcspEnabled() throws RemoteException {
+	public boolean getOcspEnabled() {
 		CAInfo caInfo = getCAInfo();
 		boolean active = false;
 		if (caInfo != null) {
@@ -180,9 +171,8 @@ public class CertificateFinderBean {
 	 * @param result An allocated object. Data about the certificate is entered in the result object by this method.
 	 *        If no info can be found (e.g., if the certificate does not exist), the revocationDate and
 	 *        userCertificate fields of result are set to null. 
-	 * @throws RemoteException If a communication error occurs while looking up the info.
 	 */
-	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) throws RemoteException {
+	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) {
 		serialNumber = ("0000000000000000" + serialNumber).substring(serialNumber.length());	// Pad with zeroes up to 16 chars
 		if (log.isTraceEnabled()) {
 			log.trace(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
@@ -206,17 +196,14 @@ public class CertificateFinderBean {
 		}		
 	}
 
-	
 	/**
 	 * Uses the store session to look up all certificates for a subject.
 	 * The parameter <code>result</code> is updated so that it contains
 	 * the certificates as CertificateView objects.
 	 * @param subject The DN of the subject
 	 * @param result a Collection (not null) that will be filled by CertificateView objects
-	 * @throws RemoteException
 	 */
-	@SuppressWarnings("unchecked")
-	public void lookupCertificatesBySubject(String subject, Collection result) throws RemoteException {
+	public void lookupCertificatesBySubject(String subject, Collection<CertificateView> result) {
 		if (log.isTraceEnabled()) {
 			log.trace(">lookupCertificatesBySubject(" + subject + ", " + result + ")");
 		}
@@ -227,11 +214,11 @@ public class CertificateFinderBean {
 		if (subject == null || mInitialized == false) {
 			return; // We can't lookup any certificates, so return with an empty result.
 		}
-		Collection certificates = mStoreSession.findCertificatesBySubject(mAdmin, subject);
+		Collection<Certificate> certificates = mStoreSession.findCertificatesBySubject(mAdmin, subject);
 		if (certificates != null) {
-			Iterator i = certificates.iterator();
+			Iterator<Certificate> i = certificates.iterator();
 			while (i.hasNext()) {
-				Certificate cert = (Certificate)i.next();
+				Certificate cert = i.next();
 				// TODO: CertificateView is located in web.admin package, but this is web.pub package...
 				CertificateView view = new CertificateView(cert,null,null);
 				result.add(view);

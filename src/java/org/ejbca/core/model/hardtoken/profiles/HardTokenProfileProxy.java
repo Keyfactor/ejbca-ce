@@ -13,7 +13,6 @@
  
 package org.ejbca.core.model.hardtoken.profiles;
 
-import java.rmi.RemoteException;
 import java.util.HashMap;
 
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -27,24 +26,24 @@ import org.ejbca.core.model.log.Admin;
  * This is needed since hard token profiles contains print image template data
  * and by removing the need to retrieving the profile for each card processed 
  * the network load will decrease dramatically.
+ * 
+ * TODO: Seems more reasonable to move caching to the EJB layer. Not a priority thoough..
  *
  * @version $Id$
  */
 public class HardTokenProfileProxy {
 
-    private HashMap profilestore;
-	private HashMap updatecount;
+    private HashMap<Integer,HardTokenProfile> profilestore;
+	private HashMap<Integer,Integer> updatecount;
     private HardTokenSessionRemote hardTokenSession;    
     private Admin admin;
 
     /** Creates a new instance of HardTokenProfileProxy */
     public HardTokenProfileProxy(Admin admin, HardTokenSessionRemote hardtokensession){
-                    
-      this.hardTokenSession = hardtokensession;
-      this.profilestore = new HashMap();
-	  this.updatecount = new HashMap();
-      this.admin = admin;
-
+    	this.hardTokenSession = hardtokensession;
+    	this.profilestore = new HashMap<Integer,HardTokenProfile>();
+    	this.updatecount = new HashMap<Integer,Integer>();
+    	this.admin = admin;
     }
 
     /**
@@ -53,17 +52,16 @@ public class HardTokenProfileProxy {
      * @param profileid the id of the hard token profile. 
      * @return the hardtokenprofile or null if no profile exists with give id.
      */
-    public HardTokenProfile getHardTokenProfile(int profileid) throws RemoteException {
-      HardTokenProfile returnval = null;
-      Integer id = Integer.valueOf(profileid);
-      int count = 0;
-
-      if(updatecount.get(id) == null ||
-	    (count = hardTokenSession.getHardTokenProfileUpdateCount(admin, profileid)) > ((Integer)  updatecount.get(id)).intValue()){         
-        returnval = hardTokenSession.getHardTokenProfile(admin, profileid);
-        profilestore.put(id, returnval);
-		updatecount.put(id, Integer.valueOf(count));
-	  }
-      return returnval;
+    public HardTokenProfile getHardTokenProfile(int profileid) {
+    	HardTokenProfile returnval = null;
+    	Integer id = Integer.valueOf(profileid);
+    	int count = 0;
+    	if (updatecount.get(id) == null ||
+    			(count = hardTokenSession.getHardTokenProfileUpdateCount(admin, profileid)) > ((Integer)  updatecount.get(id)).intValue()) {         
+    		returnval = hardTokenSession.getHardTokenProfile(admin, profileid);
+    		profilestore.put(id, returnval);
+    		updatecount.put(id, Integer.valueOf(count));
+    	}
+    	return returnval;
     }
 }

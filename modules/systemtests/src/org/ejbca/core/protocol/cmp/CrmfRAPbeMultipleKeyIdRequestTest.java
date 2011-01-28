@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -25,9 +24,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -114,8 +110,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 
-    public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException,
-            CertificateException {
+    public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws CertificateEncodingException, CertificateException {
         super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         CryptoProviderTools.installBCProvider();

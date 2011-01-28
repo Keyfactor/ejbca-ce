@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -168,7 +167,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 	}
 
 	/** Assert that the CA is configured to store things as expected. */
-	private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws RemoteException {
+	private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) {
 		CAInfo caInfo = InterfaceCache.getCAAdminSession().getCAInfo(ADMIN, TESTCA_NAME);
 		assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
 		assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
@@ -176,7 +175,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 	}
 
 	/** Change CA configuration for what to store and assert that the changes were made. */
-	private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws RemoteException, AuthorizationDeniedException {
+	private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException {
 		CAInfo caInfo = InterfaceCache.getCAAdminSession().getCAInfo(ADMIN, TESTCA_NAME);
 		caInfo.setUseCertReqHistory(useCertReqHistory);
 		caInfo.setUseUserStorage(useUserStorage);

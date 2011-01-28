@@ -15,7 +15,6 @@ package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -77,7 +76,7 @@ public class CrmfRARequestTest extends CmpTestCase {
     private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
     private CertificateProfileSession certProfileSession = InterfaceCache.getCertificateProfileSession();
 
-    public CrmfRARequestTest(String arg0) throws CertificateEncodingException, CertificateException, RemoteException {
+    public CrmfRARequestTest(String arg0) throws CertificateEncodingException, CertificateException {
         super(arg0);
 
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);

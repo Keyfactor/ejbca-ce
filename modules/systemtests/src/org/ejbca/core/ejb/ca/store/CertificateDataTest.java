@@ -13,7 +13,6 @@
 
 package org.ejbca.core.ejb.ca.store;
 
-import java.rmi.RemoteException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -45,9 +44,6 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
-
-
-
 
 /**
  * Tests certificate store.
@@ -147,7 +143,7 @@ public class CertificateDataTest extends TestCase {
         String issuerDN = CertTools.getIssuerDN(cert);
         String subjectDN = CertTools.getSubjectDN(cert);
         // List all certificates to see
-        Collection certfps = certificateStoreSession.listAllCertificates(admin, issuerDN);
+        Collection<String> certfps = certificateStoreSession.listAllCertificates(admin, issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -156,12 +152,12 @@ public class CertificateDataTest extends TestCase {
 
         // List all certificates for user foo, which we have created in
         // TestSignSession
-        certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
         assertTrue("something weird with size, all < foos", size >= certfps.size());
         log.debug("List certs for foo: " + certfps.size());
-        Iterator iter = certfps.iterator();
+        Iterator<Certificate> iter = certs.iterator();
         while (iter.hasNext()) {
-            Certificate cert = (Certificate) iter.next();
+            Certificate cert = iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
             log.debug("revoking cert with fp=" + fp);
             // Revoke all foos certificates, note that revokeCertificate will
@@ -184,14 +180,14 @@ public class CertificateDataTest extends TestCase {
         String subjectDN = CertTools.getSubjectDN(cert);
         // List all certificates for user foo, which we have created in
         // TestSignSession
-        Collection certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
         // Verify that cert are revoked
-        Iterator iter = certfps.iterator();
+        Iterator<Certificate> iter = certfps.iterator();
         while (iter.hasNext()) {
-            Certificate cert = (Certificate) iter.next();
+            Certificate cert = iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
             CertificateInfo rev = certificateStoreSession.getCertificateInfo(admin, fp);
             log.info("revocationdate (after rev)=" + rev.getRevocationDate());
@@ -230,11 +226,11 @@ public class CertificateDataTest extends TestCase {
         assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
-        Collection certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert),
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSubjectDN(cert),
                 CertTools.getIssuerDN(cert));
-        Iterator iter = certs.iterator();
+        Iterator<Certificate> iter = certs.iterator();
         while (iter.hasNext()) {
-            Certificate xcert = (Certificate) iter.next();
+            Certificate xcert = iter.next();
             log.debug(CertTools.getSubjectDN(xcert) + " - " + CertTools.getSerialNumberAsString(xcert));
             // log.debug(certs[i].toString());
         }
@@ -262,7 +258,7 @@ public class CertificateDataTest extends TestCase {
 
         log.info("1. Looking for cert with expireDate=" + findDate);
 
-        Collection certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(new Admin(Admin.TYPE_INTERNALUSER), findDate);
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(new Admin(Admin.TYPE_INTERNALUSER), findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
         findDateSecs = data.getExpireDate().getTime() + 10000;
@@ -272,10 +268,10 @@ public class CertificateDataTest extends TestCase {
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("Some certs should have expired before this date", certs.size() != 0);
 
-        Iterator iter = certs.iterator();
+        Iterator<Certificate> iter = certs.iterator();
 
         while (iter.hasNext()) {
-            Certificate cert = (Certificate) iter.next();
+            Certificate cert = iter.next();
             Date retDate = CertTools.getNotAfter(cert);
             log.debug(retDate);
             assertTrue("This cert is not expired by the specified Date.", retDate.getTime() < findDate.getTime());
@@ -404,12 +400,12 @@ public class CertificateDataTest extends TestCase {
      */
     public void test11getCertReqHistByUsername() throws Exception {
         log.trace(">test11getCertReqHistByUsername()");
-        Collection result = certificateStoreSession.getCertReqHistory(admin, username);
+        Collection<CertReqHistory> result = certificateStoreSession.getCertReqHistory(admin, username);
         assertTrue("Error size of the returned collection.", (result.size() == 2));
 
-        Iterator iter = result.iterator();
+        Iterator<CertReqHistory> iter = result.iterator();
         while (iter.hasNext()) {
-            CertReqHistory certreqhist = (CertReqHistory) iter.next();
+            CertReqHistory certreqhist = iter.next();
             assertTrue("Error wrong DN", ((certreqhist.getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")) || (certreqhist
                     .getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
         }
@@ -527,7 +523,7 @@ public class CertificateDataTest extends TestCase {
     }
 
     private X509Certificate generateCert(int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            SignatureException, InvalidKeyException, CertificateEncodingException, CreateException, RemoteException {
+            SignatureException, InvalidKeyException, CertificateEncodingException, CreateException {
         // create a key pair and a new self signed certificate
         log.info("Generating a small key pair, might take a few seconds...");
         X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keyPair.getPrivate(), keyPair

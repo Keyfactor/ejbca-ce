@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
-import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -24,9 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
-import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -80,7 +77,7 @@ public class CrmfRequestTest extends CmpTestCase {
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-	public CrmfRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
+	public CrmfRequestTest(String arg0) throws CertificateEncodingException, CertificateException {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         CryptoProviderTools.installBCProvider();
@@ -251,7 +248,7 @@ public class CrmfRequestTest extends CmpTestCase {
     //
     // Private helper methods
     //
-    private void createCmpUser() throws RemoteException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+    private void createCmpUser() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             EjbcaException, FinderException {
         // Make user that we know...
         boolean userExists = false;

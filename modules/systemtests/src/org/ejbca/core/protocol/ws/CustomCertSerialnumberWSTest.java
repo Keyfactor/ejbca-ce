@@ -12,7 +12,6 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import javax.ejb.CreateException;
-import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
@@ -53,7 +52,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 		}
 	}
 
-	public void test01CreateCertWithCustomSN() throws CreateException, NamingException, CertificateProfileExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, IOException {
+	public void test01CreateCertWithCustomSN() throws CreateException, CertificateProfileExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, IOException {
 
 		log.debug(">test01CreateCertWithCustomSN");
 

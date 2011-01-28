@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
                  org.ejbca.ui.web.admin.cainterface.CAInfoView, org.ejbca.util.CertTools, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.SecConst,
                  org.ejbca.core.model.authorization.AuthorizationDeniedException,
-                 javax.ejb.CreateException, java.rmi.RemoteException, java.security.cert.X509Certificate" %>
+                 java.security.cert.X509Certificate" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

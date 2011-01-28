@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.servlet.http.HttpServletRequest;
@@ -216,7 +215,7 @@ public class EjbcaWSHelper {
 		return retval;
 	}
 
-	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException/*, RemoteException*/{
+	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
 		try {
 			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
 			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
@@ -276,7 +275,7 @@ public class EjbcaWSHelper {
 		}		
 	}
 	
-	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException/*, RemoteException*/ {
+	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException {
 		final CAInfo cainfo = caAdminSession.getCAInfoOrThrowException(admin,userdata.getCaName());
 		final int caid = cainfo.getCAId();
 		if (caid == 0) {
@@ -370,7 +369,7 @@ public class EjbcaWSHelper {
 	
 	
 	
-	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException/*, RemoteException*/ {
+	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException {
 	    UserDataVOWS dataWS = new UserDataVOWS();
 		String username = userdata.getUsername();
 		String caname = caAdminSession.getCAInfo(admin,userdata.getCAId()).getName();
@@ -562,7 +561,7 @@ public class EjbcaWSHelper {
 	 * @throws CreateException 
 	 * @throws ClassCastException 
 	 */
-	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) /*throws RemoteException*/ {
+	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) {
      ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
      Iterator<java.security.cert.Certificate> iter = certs.iterator();
      while(iter.hasNext()){
@@ -625,7 +624,7 @@ public class EjbcaWSHelper {
 	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
 			SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM};
 	
-	private int getTokenId(Admin admin, String tokenname) /*throws RemoteException*/ {
+	private int getTokenId(Admin admin, String tokenname) {
       int returnval = 0;
       
       // First check for soft token type
@@ -642,7 +641,7 @@ public class EjbcaWSHelper {
       return returnval;
 	}
 	
-	private String getTokenName(Admin admin, int tokenid) /*throws RemoteException*/ {
+	private String getTokenName(Admin admin, int tokenid) {
       String returnval = null;
       
       // First check for soft token type
@@ -692,7 +691,7 @@ public class EjbcaWSHelper {
 	}
 
 	protected boolean checkValidityAndSetUserPassword(Admin admin, java.security.cert.Certificate cert, String username, String password) 
-	throws /*RemoteException,*/ ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, CreateException, ApprovalException, WaitingForApprovalException {
+	throws ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
 		boolean ret = false;
 		try {
 			// Check validity of the certificate after verifying the signature

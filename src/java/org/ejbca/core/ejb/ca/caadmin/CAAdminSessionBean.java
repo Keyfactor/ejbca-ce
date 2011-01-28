@@ -411,7 +411,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             String msg = intres.getLocalizedMessage("caadmin.createdca", cainfo.getName(), Integer.valueOf(castatus));
             logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
-        //} catch (javax.ejb.CreateException e) {
         } catch (RuntimeException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);

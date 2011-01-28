@@ -258,7 +258,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
 					LOG.error(errMsg, e);			
 				}							
-
 			} catch (NoSuchAlgorithmException e) {
 				String errMsg = INTRES.getLocalizedMessage("cmp.errorcalcprotection");
 				LOG.error(errMsg, e);			
@@ -271,19 +270,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				String errMsg = INTRES.getLocalizedMessage("cmp.errorcalcprotection");
 				LOG.error(errMsg, e);			
 				resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-			/*} catch (RemoteException e) {
-				// Fatal error
-				String errMsg = intres.getLocalizedMessage("cmp.errorrevoke");
-				log.error(errMsg, e);			
-				resp = null;*/
 			}							
 		} else {
 			// If we don't have any protection to verify, we fail
 			String errMsg = INTRES.getLocalizedMessage("cmp.errornoprot");
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
 		}
-		
 		return resp;
 	}
-	
 }

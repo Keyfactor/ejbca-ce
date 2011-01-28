@@ -437,19 +437,4 @@ public class XKMSProvider implements Provider<Source> {
 
 		return retval;
     }           
-	
-	//
-	// Methods for fetching ejb session bean interfaces
-	//
-	
-    /**
-     * return the environment entries locator
-     * @return return the environment entries locator
-     */
-    protected ServiceLocator getLocator() {
-        return ServiceLocator.getInstance();
-    }
-    
-	
-
 }

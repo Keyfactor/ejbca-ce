@@ -27,7 +27,6 @@ import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
@@ -791,7 +790,7 @@ public class CmpTestCase extends CaTestCase {
         }
     }
 
-    protected int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
+    protected int checkRevokeStatus(String issuerDN, BigInteger serno) {
         int ret = RevokedCertInfo.NOT_REVOKED;
         CertificateStatus info = certificateStoreSession.getStatus(issuerDN, serno);
         ret = info.revocationReason;

@@ -33,7 +33,6 @@ import java.security.spec.KeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import javax.annotation.Resource;
-import javax.ejb.CreateException;
 import javax.ejb.EJB;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.SessionContext;
@@ -133,10 +132,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			String hardTokenSN, int responseType) throws CADoesntExistsException,
 			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
 			NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
-			SignatureException, IOException, ObjectNotFoundException, CreateException,
-			CertificateException, UserDoesntFullfillEndEntityProfile,
-			ApprovalException,
-			EjbcaException {
+			SignatureException, IOException, ObjectNotFoundException, CertificateException,
+			UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException {
 		byte[] retval = null;
 
 		// Check tokentype
@@ -238,7 +235,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
-	 * @throws EjbcaException 
 	 * @throws UserDoesntFullfillEndEntityProfile 
 	 * @throws AuthorizationDeniedException 
 	 * @throws PersistenceException 
@@ -360,7 +356,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
      */
 	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,
-	SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException,UserDoesntFullfillEndEntityProfile,
+	SignatureException, IOException, ObjectNotFoundException, CertificateException,UserDoesntFullfillEndEntityProfile,
 	ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
 	InvalidAlgorithmParameterException, PersistenceException {
 		

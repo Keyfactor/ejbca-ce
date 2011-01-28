@@ -18,7 +18,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.rmi.RemoteException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -278,7 +277,7 @@ public class AutoEnrollServletTest extends TestCase {
 		return response;
 	}
 
-	private void cleanUp(String username, String profileName) throws RemoteException{
+	private void cleanUp(String username, String profileName) {
 		try {
 			userAdminSession.revokeAndDeleteUser(admin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		} catch (Exception e) {

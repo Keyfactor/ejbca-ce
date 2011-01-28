@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,
                  org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogEntry, org.ejbca.core.model.log.Admin, org.ejbca.core.model.ra.raadmin.AdminPreference,
-                 javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
+                 javax.ejb.CreateException, org.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
                  java.util.HashMap, java.util.Map, java.util.Collection, java.util.Iterator, java.util.TreeMap, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.ILogExporter, 
                  org.ejbca.core.model.log.CsvLogExporter, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException" %>
 <html>

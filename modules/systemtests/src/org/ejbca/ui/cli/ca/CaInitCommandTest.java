@@ -1,7 +1,5 @@
 package org.ejbca.ui.cli.ca;
 
-import java.rmi.RemoteException;
-
 import junit.framework.TestCase;
 
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
@@ -62,7 +60,7 @@ public class CaInitCommandTest extends TestCase {
         }
     }
 
-    public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, RemoteException, ErrorAdminCommandException {
+    public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, ErrorAdminCommandException {
         if (certificateProfileSessionRemote.getCertificateProfile(admin, CERTIFICATE_PROFILE_NAME) == null) {
             CertificateProfile certificateProfile = new CertificateProfile();
             certificateProfileSessionRemote.addCertificateProfile(admin, CERTIFICATE_PROFILE_NAME, certificateProfile);

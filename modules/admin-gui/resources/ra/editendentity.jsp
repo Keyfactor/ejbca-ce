@@ -3,7 +3,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
-                 javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
+                 javax.ejb.CreateException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, org.apache.commons.lang.time.FastDateFormat, org.apache.commons.lang.time.DateUtils, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
 <html> 

@@ -33,6 +33,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
 	private static final long serialVersionUID = 1L;
+    private static InitialContext initialContext;	// Expensive to create
 	private RaAdminSessionLocal raadminsession;
     private AuthorizationSessionLocal authorizationsession;
     private Admin administrator;
@@ -48,8 +49,10 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
         GlobalConfiguration ret = null;
         // TODO: These should be dropped or moved to property files!!
         ret = raadminsession.getCachedGlobalConfiguration(administrator);
-        InitialContext ictx = new InitialContext();
-        Context myenv = (Context) ictx.lookup("java:comp/env");      
+        if (initialContext == null) {
+            initialContext = new InitialContext();
+        }
+        Context myenv = (Context) initialContext.lookup("java:comp/env");      
         ret.initialize( (String) myenv.lookup("ADMINDIRECTORY"),
         		WebConfiguration.getAvailableLanguages(), (String) myenv.lookup("AVAILABLETHEMES"), 
                 ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(),
