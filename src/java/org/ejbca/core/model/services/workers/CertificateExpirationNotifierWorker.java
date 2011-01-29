@@ -40,8 +40,7 @@ import org.ejbca.core.model.services.actions.MailActionInfo;
  * 
  * @author Philip Vendil, Tomas Gustavsson
  * 
- * @version: $Id: CertificateExpirationNotifierWorker.java 9780 2010-09-02
- *           15:31:17Z mikekushner $
+ * @version: $Id$
  */
 public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
