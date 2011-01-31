@@ -35,7 +35,9 @@ import javax.mail.internet.MimeMultipart;
 import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.protocol.certificatestore.HashID;
+import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests that it is possible to find certificates for all CAs that has been created.
@@ -107,9 +109,21 @@ class CertFetchAndVerify {
 			return null;
 		}
 	}
-	final private static String theURL = "http://localhost:8080/certificates/search.cgi";
+	private static String theURL;	// = "http://localhost:8080/certificates/search.cgi";
+	private String getURL() {
+		if (theURL == null) {
+			try {
+				String port = InterfaceCache.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+				theURL = "http://localhost:" + port + "/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
+			} catch (Exception e) {
+				theURL = "http://localhost:8080/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
+			}
+		}
+		return theURL;
+	}
+	
 	private X509Certificate getCert(RFC4387URL url, HashID id) throws CertificateException, IOException, URISyntaxException {
-		final String sURI = url.appendQueryToURL(theURL, id);
+		final String sURI = url.appendQueryToURL(getURL(), id);
 		log.debug("URL: '"+sURI+"'.");
 		final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
 		connection.connect();
@@ -151,7 +165,7 @@ class CertFetchAndVerify {
 	void doIt(X509Certificate theCert, Set<Integer> setOfSubjectKeyIDs) throws MalformedURLException, IOException, URISyntaxException, CertificateException, MessagingException {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  
-		final String reloadURI = "http://localhost:8080/certificates/search.cgi?reloadcache=true";
+		final String reloadURI = getURL() + "?reloadcache=true";
 		log.debug("Reload cache URL: '"+reloadURI+"'.");
 		final HttpURLConnection connection = (HttpURLConnection)new URI(reloadURI).toURL().openConnection();
 		connection.connect();
@@ -166,7 +180,7 @@ class CertFetchAndVerify {
 		final HashID keyID = HashID.getFromKeyID(theCert);
 		Assert.assertEquals("Certificate fetched by public key ID was wrong.", theCert, getCert(RFC4387URL.sKIDHash, keyID));
 
-		final String sURI = RFC4387URL.iHash.appendQueryToURL(theURL, subjectID);
+		final String sURI = RFC4387URL.iHash.appendQueryToURL(getURL(), subjectID);
 		// remove keyID from list of CA keyIds to be checked.
 		Assert.assertTrue("The certificate '"+theCert.getSubjectX500Principal().getName()+"' already tested.", setOfSubjectKeyIDs.remove(keyID.key));
 		log.debug("URL: '"+sURI+"'.");

@@ -159,7 +159,7 @@
         <enable-call-by-reference>True</enable-call-by-reference>
     </weblogic-enterprise-bean>
     <weblogic-enterprise-bean>
-        <ejb-name>LocalHardTokenSessionBean</ejb-name>
+        <ejb-name>HardTokenSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
                 <business-remote>org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote</business-remote>
@@ -274,6 +274,16 @@
             <business-interface-jndi-name-map>
                 <business-remote>org.ejbca.core.ejb.approval.ApprovalSessionRemote</business-remote>
                 <jndi-name>ejbca/ApprovalSessionRemote</jndi-name>
+            </business-interface-jndi-name-map>
+        </stateless-session-descriptor>
+        <enable-call-by-reference>True</enable-call-by-reference>
+    </weblogic-enterprise-bean>
+    <weblogic-enterprise-bean>
+        <ejb-name>ApprovalExecutionSessionBean</ejb-name>
+        <stateless-session-descriptor>
+            <business-interface-jndi-name-map>
+                <business-remote>org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote</business-remote>
+                <jndi-name>ejbca/ApprovalExecutionSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
         <enable-call-by-reference>True</enable-call-by-reference>

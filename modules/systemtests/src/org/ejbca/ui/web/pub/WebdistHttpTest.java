@@ -73,7 +73,7 @@ public class WebdistHttpTest extends TestCase {
     public void testPublicWeb() throws Exception {
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
-        String httpReqPath = "http://127.0.0.1:8080/ejbca";
+        String httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         String resourceName = "retrieve/ca_crls.jsp";
         String resourceName1 = "retrieve/ca_certs.jsp";
         String resourceName2 = "retrieve/latest_cert.jsp";
@@ -122,8 +122,8 @@ public class WebdistHttpTest extends TestCase {
     public void testPublicWebChainDownload() throws Exception {
     	
     	// This test assumes we have a default AdminCA1 installed with CAId=-1688117755
-        String httpReqPathPem = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=pem";
-        String httpReqPathJks = "http://localhost:8080/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=jks";
+        String httpReqPathPem = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=pem";
+        String httpReqPathJks = "http://localhost:" + httpPort + "/ejbca/publicweb/webdist/certdist?cmd=cachain&caid=-1688117755&format=jks";
 
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();

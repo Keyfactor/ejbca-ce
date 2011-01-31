@@ -617,15 +617,20 @@ of $APPSRV_HOME/[directory].
 </subsection>
 
 <subsection name="Weblogic">
+<note>
+WebLogic is not a preferred production platform for EJBCA and should be concidered community supported.
+The main reasons for keeping some level of support, is to test EJBCA for JEE5 complicance and to avoid
+solutions that are specific to one or the other application server.
+</note>
 <p>
-WebLogic Server 10 is JEE5 certified. EJBCA has been tested with Oracle WebLogic Server 11gR1 (10.3.3) generic distribution,
-Oracle JDK and Oracle Database 10.2.0.1-1.0 XE.
+WebLogic Server 10 is JEE5 certified. EJBCA has been tested with Oracle WebLogic Server 10.3.4.0 generic distribution,
+Oracle JDK 6 and Oracle Database 10.2.0.1-1.0 XE on Ubuntu Server 10.10 i686.
 </p>
 <p>
 The following does not work:
 <ul>
-<li>EJBCA Web Services, which uses JAX-WS does not work.</li>
-<li>Some Remote EJB calls, like fetching CA Info used by multiple EJBCA functions.</li>
+<li>EJBCA Web Services JUnit tests do not work, but the WS CLI seems fine.</li>
+<li>Email notifications are still untested and the old instrucitons are kept for reference.</li>
 </ul>
 </p>
 
@@ -656,10 +661,10 @@ Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
 <p>
 <ol>
 <li>Access the Weblogic management console at: http://127.0.0.1:7001/console/</li>
-<li>Environment -> JDBC -> DataSources:<br/>
-Create a new non-XA DataSource "EjbcaDS" with JNDI name "EjbcaDS" of type "Oracle".
+<li>Services -> JDBC -> DataSources:<br/>
+Create a new Generic DataSource "EjbcaDS" with JNDI name "EjbcaDS" of type "Oracle".
 (The URL for the pool should be something like "jdbc:oracle:thin:@127.0.0.1:1521:XE" for Oracle XE.)</li>
-<li>Deploy JSF 1.2 support: Install wlserver_10.3/common/deployable-libraries/jsf-1.2.war as a library named "jsf".</li>
+<li>Deployments -> Install -> wlserver_10.3/common/deployable-libraries/jsf-1.2.war as a library named "jsf".</li>
 <li>Increase transaction timeout: Services -> JTA -> Timeout Seconds=300</li>
 <li>Build the wlfullclient.jar library: cd ${appserver.home}/wlserver_10.3/server/lib; java -jar wljarbuilder.jar</li>
 <li>Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should
@@ -694,26 +699,20 @@ key in the properties:
 
 <li>Configure SSL in Weblogic:<br/>
 <ol>
-<li>(Optional for Weblogic 10.3:) Copy $EJBCA_HOME/p12/truststore.jks to $BEA_HOME/jre/lib/security/cacerts, so that Weblogic can trust the initial CA installed 
-when doing 'ant install'.<br/>
-You can create a new 'cacerts' file with 'rm $EJBCA_HOME/p12/truststore.jks' and then 'ant javatruststore'.
-Type 'ant -p' to get a description how you can run 'ant javatruststore' with arguments to point to a specific keystore etc.
-You can get the CA certificate with 'bin/ejbca.sh ca getrootcert cert.pem'.</li>
-<li>Configure weblogic server for SSL.<br/>
-   For Weblogic 10.3.0: 
-   Servers->examplesServer->Keystores (or SSL), select "Custom Identity and Custom Trust"<br/>
-     - Custom Identity Keystore: path to tomcat.jks generated while "ant install" (ejbca/p12/tomcat.jks),<br/>
-     - Private Key Alias: localhost (httpsserver.hostname in conf/web.properties).<br/>
-       The alias is what you configured as httpsserver.hostname in conf/web.properties<br/>
-     - Passphrase: serverpwd (httpsserver.password in conf/web.properties).<br/>
-       The password is what you configures as httpsserver.password in conf/web.properties.<br/><br/>
-     - Custom Trust Keystore: path to truststore.jks generated while "ant install" (ejbca/p12/truststore.jks),<br/>
-     - Passphrase: changeit (java.trustpassword in conf/web.properties).<br/><br/>
-   Servers->Myserver->Configuration->SSL->Advanced->Server Attributes->Two Way Client Cert Behavior:<br/>
-     - Client Certs Requested But Not Enforced<br/><br/>
-   Servers->Myserver->configuration->general, check "SSL Listen Port Enabled", note that the port should be same as httpserver.privhttps in ejbca.properties.
-   </li>
-   </ol>
+<li>Go to Environment -> Servers -> AdminServer -> KeyStores</li>
+<li>KeyStores: Custom Identity and Custom Trust</li>
+<li>Custom Identity Keystore: /path/ejbca/p12/tomcat.jks</li>
+<li>Custom Identity Keystore Passphrase: serverpwd (httpsserver.password in conf/web.properties)</li>
+<li>Custom Trust Keystore: /path/ejbca/p12/truststore.jks</li>
+<li>Custom Trust Keystore Passphrase: changeit (java.trustpassword in conf/web.properties)</li>
+<li>Go to Environment -> Servers -> AdminServer -> SSL</li>
+<li>Click Advanced</li>
+<li>Two Way Client Cert Behavior: Client Certs Requested But Not Enforced</li>
+<li>Private Key Alias: localhost (httpsserver.hostname in conf/web.properties)</li>
+<li>Private Key Passphrase: Same as in 'Custom Identity Keystore Passphrase' above.</li>
+<li>Go to Environment -> Servers -> AdminServer -> General</li>
+<li>Check 'SSL Listen Port Enabled'</li>
+</ol>
 </li>
 </ol>
 This should make the Admin GUI work, note to install the  Unlimited Strength Jurisdiction Policy Files from java.sun.com 

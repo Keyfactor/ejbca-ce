@@ -169,7 +169,11 @@ public class CertRequestHttpTest extends CaTestCase {
         OutputStream os = con.getOutputStream();
         os.write("user=reqtestunknown&password=foo123&keylength=2048".getBytes("UTF-8"));
         os.close();
-        assertEquals("Response code", 200, con.getResponseCode());
+        final int responseCode = con.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            log.info("ResponseMessage: " + con.getResponseMessage());
+            assertEquals("Response code", HttpURLConnection.HTTP_OK, responseCode);
+        }
         log.info("Content-Type: " + con.getContentType());
         boolean ok = false;
         // Some containers return the content type with a space and some
@@ -227,7 +231,11 @@ public class CertRequestHttpTest extends CaTestCase {
         OutputStream os = con.getOutputStream();
         os.write("user=reqtest&password=foo456&keylength=2048".getBytes("UTF-8"));
         os.close();
-        assertEquals("Response code", 200, con.getResponseCode());
+        final int responseCode = con.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            log.info("ResponseMessage: " + con.getResponseMessage());
+            assertEquals("Response code", HttpURLConnection.HTTP_OK, responseCode);
+        }
         boolean ok = false;
         // Some containers return the content type with a space and some
         // without...
@@ -285,7 +293,11 @@ public class CertRequestHttpTest extends CaTestCase {
         OutputStream os = con.getOutputStream();
         os.write("user=reqtest&password=foo456&keylength=2048".getBytes("UTF-8"));
         os.close();
-        assertEquals("Response code", 200, con.getResponseCode());
+        final int responseCode = con.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            log.info("ResponseMessage: " + con.getResponseMessage());
+            assertEquals("Response code", HttpURLConnection.HTTP_OK, responseCode);
+        }
         boolean ok = false;
         // Some containers return the content type with a space and some
         // without...

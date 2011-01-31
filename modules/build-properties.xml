@@ -186,14 +186,16 @@
 			<include name="lib/appserv-rt.jar"/>
 			<include name="lib/appserv-ext.jar"/>
 			<include name="lib/appserv-deployment-client.jar"/>
-			<!-- Weblogic 10.3.3 (generic) -->
+			<!-- Weblogic 10.3.4 (generic) -->
 			<include name="wlserver_10.3/server/lib/wlfullclient.jar"/> <!-- built with "java -jar wljarbuilder.jar" -->
+			<!--
 			<include name="wlserver_10.3/server/lib/wlclient.jar"/>
 			<include name="wlserver_10.3/server/lib/wlthint3client.jar"/>
 			<include name="wlserver_10.3/server/lib/webserviceclient.jar"/>
 			<include name="wlserver_10.3/server/lib/wls-api.jar"/>
 			<include name="wlserver_10.3/server/lib/wljmsclient.jar"/>
 			<include name="wlserver_10.3/server/lib/wlsafclient.jar"/>
+			-->
 			<!-- websphere -->
 			<include name="runtimes/com.ibm.*.jar"/>
 		</fileset>
@@ -223,8 +225,8 @@
 		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
 		<!-- Glassfish 2.1.1 -->
 		<include name="lib/jsf-impl.jar" />
-		<!-- WebLogic 10.3.3 -->
-		<include name="modules/javax.jsf_1.0.0.0_1-2.jar" />
+		<!-- WebLogic 10.3.4 -->
+		<include name="modules/javax.jsf_1.1.0.0_1-2.jar" />
 		<!-- websphere ? -->
 	</fileset>
 	<path id="lib.jsf.classpath">
@@ -239,7 +241,7 @@
 			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
 			<!-- Glassfish -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
-			<!-- WebLogic 10.3.3 -->
+			<!-- WebLogic 10.3.4 -->
 			<!-- websphere ? -->
 		</fileset>
 	</path>
@@ -255,7 +257,7 @@
 			<include name="lib/appserv-rt.jar" /> <!-- 2.1.1 -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
 			<include name="lib/javaee.jar" /> <!-- 2.1.1 -->
-			<!-- WebLogic 10.3.3 -->
+			<!-- WebLogic 10.3.4 -->
 			<!-- websphere ? -->
 		</fileset>
 	</path>
