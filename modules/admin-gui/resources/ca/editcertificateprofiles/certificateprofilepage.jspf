@@ -607,7 +607,7 @@ function checkallfields(){
     <%-- Basic Constraints extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_BASICCONSTRAINTS") %><br />
         <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
       </td>
       <td width="50%">
@@ -627,7 +627,7 @@ function checkallfields(){
     </tr>  
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEPATHLENGTHCONSTRAINT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_BC_PATHLENGTH") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Path%20Length%20Constraints") %><br />
         <%= ejbcawebbean.getText("PATHLENGTHCONSTRAINT") %>
       </td>
       <td width="50%">
