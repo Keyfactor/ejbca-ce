@@ -426,7 +426,7 @@ function confirmrepublish(){
        
       <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBALTNAME") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME") %></td>
 		 <td><% if(certificatedata.getSubjectAltName() == null)
 	                  out.write(ejbcawebbean.getText("ALT_NONE"));
 	                else
@@ -434,7 +434,7 @@ function confirmrepublish(){
 	         </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBDIRATTR") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTDIRATTRS") %></td>
 		 <td><% if(certificatedata.getSubjectDirAttr() == null)
 	                  out.write(ejbcawebbean.getText("SDA_NONE"));
 	                else
@@ -453,14 +453,14 @@ function confirmrepublish(){
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("BASICCONSTRAINTS") %></strong></td>
+		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("EXT_ABBR_BASICCONSTRAINTS") %></strong></td>
 		 <td><strong><%= certificatedata.getBasicConstraints(ejbcawebbean.getText("EXT_UNUSED"), ejbcawebbean.getText("CANOLIMIT"), ejbcawebbean.getText("ENDENTITY"), ejbcawebbean.getText("CAPATHLENGTH")) %></strong>
          </td>
        </tr>
        
      <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("KEYUSAGE") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_KEYUSAGE") %></td>
 		 <td><% boolean first= true;
 	                boolean none = true;
 	                if(certificatedata.getKeyUsage(CertificateProfile.DIGITALSIGNATURE)){
@@ -523,7 +523,7 @@ function confirmrepublish(){
 	         </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_EXTENDEDKEYUSAGE") %></td>
 		 <td><% String[] extendedkeyusage = certificatedata.getExtendedKeyUsageAsTexts();
 	                for(int i=0; i<extendedkeyusage.length; i++){
 	                  if(i>0)
@@ -536,7 +536,7 @@ function confirmrepublish(){
 	         </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
-		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("QUALIFIEDCERTSTATEMENT") %></td>
+		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_QCSTATEMENTS") %></td>
 		 <td><% if (certificatedata.hasQcStatement()) {
 				 out.write(ejbcawebbean.getText("YES"));
 			 } else {

@@ -356,8 +356,8 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts = new TreeMap();
     		
     		String subjectdntext = ejbcawebbean.getText("CERT_SUBJECTDN");
-    		String subjectaltnametext = ejbcawebbean.getText("SUBALTNAME");
-    		String subjectdirattrtext = ejbcawebbean.getText("SUBDIRATTR");
+    		String subjectaltnametext = ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME");
+    		String subjectdirattrtext = ejbcawebbean.getText("EXT_ABBR_SUBJECTDIRATTRS");
     		
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_UID"),Integer.valueOf(DNFieldExtractor.UID));  
     		modifyableFieldTexts.put(subjectdntext + " : " +  ejbcawebbean.getText("DN_PKIX_COMMONNAME"),Integer.valueOf(DNFieldExtractor.CN));  
