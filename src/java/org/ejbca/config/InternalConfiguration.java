@@ -65,6 +65,6 @@ public class InternalConfiguration {
 	}
 
 	public static String getDataSourceJndiNamePrefix(){
-		return ConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "java:/");
+		return ConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "");	// We need to return an empty string for WebLogic. "java:/" will be set anyway on JBoss.
 	}
 }

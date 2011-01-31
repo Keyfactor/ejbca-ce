@@ -276,9 +276,9 @@ public class PublisherTest extends TestCase {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
-            	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
-            log.debug("jndiName=" + jndiName);
+			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "");
+			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+            log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
             publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, "TESTEXTOCSP", publisher);
@@ -309,9 +309,9 @@ public class PublisherTest extends TestCase {
 		try {
 			ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-            String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "java:/")
-            	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
-            log.debug("jndiName=" + jndiName);
+			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "");
+			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+            log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
             publisher.setDataSource(jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, "TESTEXTOCSP2", publisher);

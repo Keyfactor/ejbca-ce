@@ -10,5 +10,6 @@
     </application-param>
     <prefer-application-packages>
         <package-name>antlr.*</package-name> <!-- For the Hibernate JPA Provider -->
+        <package-name>org.apache.commons.lang.*</package-name><!--  StringUtils.startsWith -->
     </prefer-application-packages>
 </weblogic-application>

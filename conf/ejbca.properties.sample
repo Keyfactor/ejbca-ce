@@ -11,7 +11,8 @@
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # Default: $APPSRV_HOME
 #appserver.home=/home/jboss/jboss-5.1.0.GA
-#appserver.home=/opt/IBM/WebSphere/AppServer/
+#appserver.home=/home/ejbca/Oracle/Middleware
+#appserver.home=/opt/IBM/WebSphere/AppServer
 #appserver.home=${env.APPSRV_HOME}
 
 # See also the section 'cluster configuration' for other JBoss options, for example

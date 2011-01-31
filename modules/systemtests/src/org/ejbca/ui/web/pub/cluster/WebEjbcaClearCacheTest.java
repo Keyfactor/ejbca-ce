@@ -59,12 +59,20 @@ public class WebEjbcaClearCacheTest extends TestCase {
 
 		URL url = new URL(httpReqPath);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        assertEquals("Response code", 200, con.getResponseCode());
+        final int responseCode = con.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            log.info("ResponseMessage: " + con.getResponseMessage());
+            assertEquals("Response code", HttpURLConnection.HTTP_OK, responseCode);
+        }
 
 		url = new URL(httpReqPathNoCommand);
 		con = (HttpURLConnection) url.openConnection();
 		// SC_BAD_REQUEST returned if we do not gove the command=clearcaches parameter in the request
-        assertEquals("Response code", 400, con.getResponseCode());
+        final int responseCodeBad = con.getResponseCode();
+        if (responseCodeBad != HttpURLConnection.HTTP_BAD_REQUEST) {
+            log.info("ResponseMessage: " + con.getResponseMessage());
+            assertEquals("Response code", HttpURLConnection.HTTP_BAD_REQUEST, responseCodeBad);
+        }
 
         log.trace("<testEjbcaHealthHttp()");
     }

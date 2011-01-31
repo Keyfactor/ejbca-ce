@@ -69,9 +69,11 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.ResponseStatus;
@@ -108,22 +110,24 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * Helper class for CMP Junit tests
  * @author tomas
  * @version $Id$
- *
  */
 public class CmpTestCase extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CmpTestCase.class);
     
-    private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceCmp = "publicweb/cmp";
-
     private static final int PORT_NUMBER = 5587;
-    private static final String CMP_HOST = "127.0.0.1";
+    private final String httpReqPath;	// = "http://127.0.0.1:8080/ejbca";
+    private final String CMP_HOST;	// = "127.0.0.1";
     
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     
 	public CmpTestCase(String arg0) {
 		super(arg0);
+		String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+		CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "127.0.0.1");
+		httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
 	}
 
 	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
