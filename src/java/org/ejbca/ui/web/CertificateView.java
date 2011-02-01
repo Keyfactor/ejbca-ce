@@ -240,23 +240,23 @@ public class CertificateView implements Serializable {
     }
 
     public String getBasicConstraints(String localizedNoneText, String localizedNolimitText, String localizedEndEntityText, String localizedCaPathLengthText) {
-    	String retval = localizedNoneText;	//ejbcawebbean.getText("NONE");
+    	String retval = localizedNoneText;	//ejbcawebbean.getText("EXT_NONE");
     	if (certificate instanceof X509Certificate) {
     		X509Certificate x509cert = (X509Certificate)certificate;
     		int bc = x509cert.getBasicConstraints();
     		if (bc == Integer.MAX_VALUE) {
-    			retval = localizedNolimitText;	//ejbcawebbean.getText("CANOLIMIT");
+    			retval = localizedNolimitText;	//ejbcawebbean.getText("EXT_PKIX_BC_CANOLIMIT");
     		} else if (bc == -1) {
-    			retval = localizedEndEntityText;	//ejbcawebbean.getText("ENDENTITY");
+    			retval = localizedEndEntityText;	//ejbcawebbean.getText("EXT_PKIX_BC_ENDENTITY");
     		} else {
-    			retval = localizedCaPathLengthText /*ejbcawebbean.getText("CAPATHLENGTH")*/ + " : " + x509cert.getBasicConstraints();                    	     			
+    			retval = localizedCaPathLengthText /*ejbcawebbean.getText("EXT_PKIX_BC_CAPATHLENGTH")*/ + " : " + x509cert.getBasicConstraints();                    	     			
     		}
     	} else if (certificate.getType().equals("CVC")) {
     		CardVerifiableCertificate cvccert = (CardVerifiableCertificate)certificate;
     		try {
     			retval = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
     		} catch (NoSuchFieldException e) {
-    	    	retval = localizedNoneText;	//ejbcawebbean.getText("NONE");
+    	    	retval = localizedNoneText;	//ejbcawebbean.getText("EXT_NONE");
     		}
     	}
     	return retval;

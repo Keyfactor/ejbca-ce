@@ -648,7 +648,7 @@ function checkallfields(){
     <%-- Authority Key Identifier (AKI) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("AUTHORITYKEYID") %><!-- <br />
+         <%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYKEYID") %><!-- <br />
          <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> -->
       </td>
       <td width="50%">
@@ -675,7 +675,7 @@ function checkallfields(){
     <%-- Subject Key Identifier (SKI) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTKEYID") %><!-- <br />
+        <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTKEYID") %><!-- <br />
         <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %> -->
       </td>
       <td width="50%">
@@ -702,7 +702,7 @@ function checkallfields(){
     <%-- Key Usage (KU) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEKEYUSAGE") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_KEYUSAGE") %><br />
         <%= ejbcawebbean.getText("KEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
@@ -722,7 +722,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("KEYUSAGE") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_KEYUSAGE") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_KEYUSAGE%>" size="9" multiple >
@@ -740,7 +740,7 @@ function checkallfields(){
     <%-- Extended Key Usage (EKU) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEEXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_EXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %><br />
         <%= ejbcawebbean.getText("EXTENDEDKEYUSAGECRITICAL") %>
       </td>
       <td width="50%">
@@ -756,7 +756,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("EXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_EXTENDEDKEYUSAGE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Extended%20Key%20Usage") %>
       </td>
       <td width="50%"> 
         <% List allekuoids = CertificateProfile.getAllExtendedKeyUsageOIDStrings();

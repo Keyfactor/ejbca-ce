@@ -865,7 +865,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("AUTHORITYKEYID") %> <br /> <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> 
+         <%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYKEYID") %> <br /> <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
