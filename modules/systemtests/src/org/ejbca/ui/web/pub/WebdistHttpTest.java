@@ -22,6 +22,7 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
@@ -36,7 +37,7 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  **/
 public class WebdistHttpTest extends TestCase {
 
-    //final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
+    final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
 
     private final String httpPort;
 
@@ -132,17 +133,18 @@ public class WebdistHttpTest extends TestCase {
         assertEquals("Response code", 200, resp.getStatusCode());
         String ctype = resp.getContentType();
         assertTrue(StringUtils.startsWith(ctype, "application/octet-stream"));
-        List list = resp.getResponseHeaders();
-        Iterator iter = list.iterator();
+        List<NameValuePair> list = resp.getResponseHeaders();
+        Iterator<NameValuePair> iter = list.iterator();
         boolean found = false;
         while (iter.hasNext()) {
-        	NameValuePair pair = (NameValuePair)iter.next();
+        	NameValuePair pair = iter.next();
+        	log.debug(pair.getName() + ": " + pair.getValue());
         	if (StringUtils.equals("Content-disposition", pair.getName())) {
         		assertEquals("attachment; filename=\"chain.pem\"", pair.getValue());
         		found = true;
         	}
         }
-        assertTrue(found);
+        assertTrue("Unable find AdminCA1 in certificate chain or parsing the response wrong.", found);
 
         settings = new WebRequestSettings(new URL(httpReqPathJks));
         resp = con.getResponse(settings);
