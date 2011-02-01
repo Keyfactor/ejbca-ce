@@ -187,15 +187,11 @@
 			<include name="lib/appserv-ext.jar"/>
 			<include name="lib/appserv-deployment-client.jar"/>
 			<!-- Weblogic 10.3.4 (generic) -->
-			<include name="wlserver_10.3/server/lib/wlfullclient.jar"/> <!-- built with "java -jar wljarbuilder.jar" -->
-			<!--
-			<include name="wlserver_10.3/server/lib/wlclient.jar"/>
-			<include name="wlserver_10.3/server/lib/wlthint3client.jar"/>
-			<include name="wlserver_10.3/server/lib/webserviceclient.jar"/>
-			<include name="wlserver_10.3/server/lib/wls-api.jar"/>
-			<include name="wlserver_10.3/server/lib/wljmsclient.jar"/>
-			<include name="wlserver_10.3/server/lib/wlsafclient.jar"/>
+			<!-- This library built with "java -jar wljarbuilder.jar" cannot be used since it also contains webservices etc..
+			<include name="wlserver_10.3/server/lib/wlfullclient.jar"/>
 			-->
+			<include name="wlserver_10.3/server/lib/wlthint3client.jar"/>
+			<include name="modules/javax.persistence_1.0.0.0_1-0-2.jar"/>
 			<!-- websphere -->
 			<include name="runtimes/com.ibm.*.jar"/>
 		</fileset>
