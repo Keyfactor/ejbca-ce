@@ -659,7 +659,7 @@ Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
 <p>
 <ol>
 <li>Access the Weblogic management console at: http://127.0.0.1:7001/console/</li>
-<li>Services -> JDBC -> DataSources:<br/>
+<li>Services -> DataSources:<br/>
 Create a new Generic DataSource "EjbcaDS" with JNDI name "EjbcaDS" of type "Oracle".
 (The URL for the pool should be something like "jdbc:oracle:thin:@127.0.0.1:1521:XE" for Oracle XE.)</li>
 <li>Deployments -> Install -> wlserver_10.3/common/deployable-libraries/jsf-1.2.war as a library named "jsf".</li>
