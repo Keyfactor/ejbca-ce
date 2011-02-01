@@ -1438,7 +1438,7 @@ function checkallfields(){
     <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
 	<td align="right">
-      <c:out value="<%= ejbcawebbean.getText(\"SUBJECTALTNAMEFIELDS\") %>"/>
+      <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTALTNAME\") %>"/>
     </td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
@@ -1552,7 +1552,7 @@ function checkallfields(){
     <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
 	<td align="right">
-	  <c:out value="<%= ejbcawebbean.getText(\"SUBJECTDIRATTRFIELDS\") %>"/>
+	  <c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_SUBJECTDIRATTRS\") %>"/>
 	</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>

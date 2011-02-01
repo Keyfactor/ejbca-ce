@@ -111,7 +111,7 @@
          <td>&nbsp;</td>
        </tr>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %></td>
 	 <td>
          </td>
        </tr>
@@ -137,7 +137,7 @@
          <td>&nbsp;</td>
        </tr>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("SUBJECTDIRATTRFIELDS") %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTDIRATTRS") %></td>
 	 <td>
          </td>
        </tr>
