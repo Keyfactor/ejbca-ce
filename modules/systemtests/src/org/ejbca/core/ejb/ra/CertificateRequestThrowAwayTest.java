@@ -50,6 +50,7 @@ import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -90,6 +91,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
 	public void test000Setup() {
 		LOG.trace(">test000Setup");
+		CryptoProviderTools.installBCProviderIfNotAvailable();
 		super.createTestCA(TESTCA_NAME);	// Create test CA
 		assertCAConfig(true, true, true);
 		LOG.trace("<test000Setup");

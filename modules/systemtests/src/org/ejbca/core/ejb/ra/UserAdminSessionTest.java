@@ -49,6 +49,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.keystore.KeyTools;
@@ -86,6 +87,7 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     public UserAdminSessionTest(String name) {
         super(name);
+		CryptoProviderTools.installBCProviderIfNotAvailable();        
         assertTrue("Could not create TestCA.", createTestCA());
     }
 
