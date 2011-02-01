@@ -780,7 +780,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTALTNAME") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %>
       </td>
       <td width="50%">
          <% if(editca)

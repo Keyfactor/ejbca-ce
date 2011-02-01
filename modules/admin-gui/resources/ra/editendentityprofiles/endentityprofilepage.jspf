@@ -706,7 +706,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
       </td>
       <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %> 
+        <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %> 
         <%= ejbcawebbean.getHelpReference("/userguide.html#Subject%20Alternative%20Names") %>
       </td>
       <td width="50%"> 
@@ -794,7 +794,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
       </td>
       <td width="40%" valign="top" align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTDIRATTRFIELDS") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTDIRATTRS") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_ADDSUBJECTDIRATTR %>" size="1" >

@@ -1199,7 +1199,7 @@ function checkUseInBatch(){
         if(numberofsubjectaltnamefields > 0 ){
       %> 
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><b><%= ejbcawebbean.getText("SUBJECTALTNAMEFIELDS") %></b></td>
+	<td align="right"><b><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %></b></td>
 	<td>&nbsp;</td>
 	<td></td>
        </tr>
@@ -1292,7 +1292,7 @@ function checkUseInBatch(){
         if(numberofsubjectdirattrfields > 0){
 %> 
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><b><%= ejbcawebbean.getText("SUBJECTDIRATTRFIELDS") %></b></td>
+	<td align="right"><b><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTDIRATTRS") %></b></td>
 	<td>&nbsp;</td>
 	<td></td>
        </tr>

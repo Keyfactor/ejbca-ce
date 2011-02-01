@@ -784,7 +784,7 @@ function checkallfields(){
     <%-- Subject Alternative Name (SAN) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTALTNAME") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %><br />
         <%= ejbcawebbean.getText("SUBJECTALTNAMECRITICAL") %>
       </td>
       <td width="50%">
@@ -806,7 +806,7 @@ function checkallfields(){
     <%-- Subject Directory Attributes (SDA) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTDIRATTRIBUTES") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTDIRATTRS") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTDIRATTRIBUTES %>" value="<%=CHECKBOX_VALUE %>" 
@@ -819,12 +819,12 @@ function checkallfields(){
     <%-- CRL Distribution Points (CRL-DP) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLDISTPOINT") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_CRLDISTRIBPOINTS") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %> <br />
         <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br />
-        <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br />
-        <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br />
-        <%= ejbcawebbean.getText("CRLISSUER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_CDP_CADEFINED") %> <br />
+        <%= ejbcawebbean.getText("EXT_PKIX_CDP_URI") %> <br />
+        <%= ejbcawebbean.getText("EXT_PKIX_CDP_CRLISSUER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>" onClick="checkusecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
@@ -874,10 +874,10 @@ function checkallfields(){
     <%-- Freshest CRL extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEFRESHESTCRL") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_FRESHESTCRL") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %> <br />
-        <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br />
-        <%= ejbcawebbean.getText("FRESHESTCRLURI") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_FCRL_CADEFINED") %> <br />
+        <%= ejbcawebbean.getText("EXT_PKIX_FCRL_URI") %>
        </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEFRESHESTCRL %>" onClick="checkusefreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1392,7 +1392,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USESUBJECTALTNAMESUBSET") %> 
+        <%= ejbcawebbean.getText("EXT_PKIX_SAN_SUBSET") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USESUBJECTALTNAMESUBSET  %>"  onclick="checkusesubjectaltnamesubsetfield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1403,7 +1403,7 @@ function checkallfields(){
     </tr>        
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
-          <%= ejbcawebbean.getText("SUBSETOFSUBJECTALTNAME") %>
+          <%= ejbcawebbean.getText("EXT_PKIX_SAN_SUBSET") %>
       </td>
       <td width="50%" valign="top">   
         <select name="<%=SELECT_SUBJECTALTNAMESUBSET%>" size="6" multiple <%if(!certificateprofiledata.getUseSubjectAltNameSubSet()){out.write(" disabled ");} %>>       
