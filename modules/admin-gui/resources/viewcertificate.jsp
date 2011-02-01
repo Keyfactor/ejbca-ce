@@ -454,7 +454,7 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("EXT_ABBR_BASICCONSTRAINTS") %></strong></td>
-		 <td><strong><%= certificatedata.getBasicConstraints(ejbcawebbean.getText("EXT_UNUSED"), ejbcawebbean.getText("CANOLIMIT"), ejbcawebbean.getText("ENDENTITY"), ejbcawebbean.getText("CAPATHLENGTH")) %></strong>
+		 <td><strong><%= certificatedata.getBasicConstraints(ejbcawebbean.getText("EXT_UNUSED"), ejbcawebbean.getText("EXT_PKIX_BC_CANOLIMIT"), ejbcawebbean.getText("EXT_PKIX_BC_ENDENTITY"), ejbcawebbean.getText("EXT_PKIX_BC_CAPATHLENGTH")) %></strong>
          </td>
        </tr>
        
