@@ -73,8 +73,7 @@ import org.ejbca.util.keystore.KeyTools;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  * 
- * @version $Id: CreateCRLSessionTest.java 9435 2010-07-14 15:18:39Z mikekushner
- *          $
+ * @version $Id$
  */
 public class CreateCRLSessionTest extends CaTestCase {
 
