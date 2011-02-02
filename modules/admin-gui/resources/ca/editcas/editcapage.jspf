@@ -796,7 +796,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("POLICYID") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %>
         <% if(!editca) out.write("<br/> <em>" + ejbcawebbean.getText("LEAVEBLANKTOUSEDEFAULT") + "</em>");%>
       </td>
       <td width="50%">
