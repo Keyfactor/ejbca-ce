@@ -23,7 +23,7 @@
     <session name="AdminGroupSessionBean"><interface class="org.cesecore.core.ejb.authorization.AdminGroupSessionRemote" binding-name="ejbca/AdminGroupSessionRemote"/></session>  
     <session name="CertificateProfileSessionBean"><interface class="org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote" binding-name="ejbca/CertificateProfileSessionRemote"/></session>  
     <session name="OldLogSessionBean"><interface class="org.cesecore.core.ejb.log.OldLogSessionRemote" binding-name="ejbca/OldLogSessionRemote"/></session>  
-    <session name="LocalHardTokenSessionBean"><interface class="org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote" binding-name="ejbca/HardTokenSessionRemote"/></session>  
+    <session name="HardTokenSessionBean"><interface class="org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote" binding-name="ejbca/HardTokenSessionRemote"/></session>  
     <session name="ServiceDataSessionBean"><interface class="org.ejbca.core.ejb.services.ServiceDataSessionRemote" binding-name="ejbca/ServiceDataSessionRemote"/></session>  
     <session name="CAAdminSessionBean"><interface class="org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote" binding-name="ejbca/CAAdminSessionRemote"/></session>  
     <session name="AuthorizationSessionBean"><interface class="org.ejbca.core.ejb.authorization.AuthorizationSessionRemote" binding-name="ejbca/AuthorizationSessionRemote"/></session>  
@@ -35,6 +35,7 @@
     <session name="CertificateRequestSessionBean"><interface class="org.ejbca.core.ejb.ra.CertificateRequestSessionRemote" binding-name="ejbca/CertificateRequestSessionRemote"/></session>  
     <session name="CaSessionBean"><interface class="org.ejbca.core.ejb.ca.caadmin.CaSessionRemote" binding-name="ejbca/CaSessionRemote"/></session>  
     <session name="ApprovalSessionBean"><interface class="org.ejbca.core.ejb.approval.ApprovalSessionRemote" binding-name="ejbca/ApprovalSessionRemote"/></session>  
+    <session name="ApprovalExecutionSessionBean"><interface class="org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote" binding-name="ejbca/ApprovalExecutionSessionRemote"/></session>  
     <session name="CrlSessionBean"><interface class="org.cesecore.core.ejb.ca.crl.CrlSessionRemote" binding-name="ejbca/CrlSessionRemote"/></session>  
     <session name="EjbcaHardTokenBatchJobSessionBean"><interface class="org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionRemote" binding-name="ejbca/HardTokenBatchJobSessionRemote"/></session>  
     <session name="CertificateStoreSessionBean"><interface class="org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote" binding-name="ejbca/CertificateStoreSessionRemote"/></session>  
