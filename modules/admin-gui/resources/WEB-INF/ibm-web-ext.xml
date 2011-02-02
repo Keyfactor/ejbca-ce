@@ -16,7 +16,7 @@
     <auto-encode-requests value="false"/>
     <auto-encode-responses value="false"/>
     <enable-directory-browsing value="false"/>
-    <enable-file-serving value="false"/>
+    <enable-file-serving value="true"/>
     <pre-compile-jsps value="true"/>
     <enable-reloading value="true"/>
     <enable-serving-servlets-by-class-name value="false" />	
