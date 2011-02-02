@@ -3096,14 +3096,15 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
   </p>
   </subsubsection>
   
-  <subsubsection name="Missing named Brainpool curves in Java">
+  <subsubsection name="Using named Brainpool curves in Java PKCS#11">
   <p>
-  At the time of writing, Oracle Java does not have named curve definitions for the Brainpool curves. We have made a patch which is waiting for approval in the OpenJDK 7, see <a href="https://bugs.openjdk.java.net/show_bug.cgi?id=100162">JDK bug 100162</a>. You may download a compiled version together with an installation script for Debian-based operating systems <a href="https://sourceforge.net/projects/ejbca/files/JDK_patches/Brainpool/">from Sourceforge</a>. 
-  If the script does not work for you can replace the class file manually. See the included readme file for instructions.
+  At the time of writing, Oracle Java does not have named curve definitions for the Brainpool curves. 
+  PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
   </p>
   <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2012">ECA-2012</a>.</p>
   <p>The patch should work on all HSMs that have <i>named curve support</i> for Brainpool. It has been tested on SafeNet Luna SA and Utimaco CryptoServer. SafeNet ProtectServer supports Brainpool but not using named curves, see below for brainpool support on ProtectServer using custom domain parameters.</p>
-  <p>With the patch applied you can generate and use brainpool curves in the HSM. Example clientToolBox commands to generate a key:</p>
+  <p>With the patch applied you can create and use CAs with brainpool curves in the HSM. Example clientToolBox commands to generate a key:</p>
   <source>
 ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /usr/lunasa/lib/libCryptoki2_64.so brainpoolP160r1 keyAliasBp160 1
 ./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /usr/lunasa/lib/libCryptoki2_64.so 1
@@ -3111,6 +3112,30 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
 ./ejbcaClientToolBox.sh PKCS11HSMKeyTool generate /etc/utimaco/libcs2_pkcs11.so brainpoolP160r1 keyAliasBp160 1
 ./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /etc/utimaco/libcs2_pkcs11.so 1
   </source>
+  </subsubsection>
+
+  <subsubsection name="Using SHA224WithECDSA in Java PKCS#11">
+  <p>
+  At the time of writing, Oracle Java does not have support for SHA224WithECDSA in the PKCS#11 provider. 
+  PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
+  </p>
+  <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2013">ECA-2013</a>.</p>
+  <p>The patch should work on all HSMs that have support for SHA224WithECDSA. It has been tested on SafeNet Luna SA and Utimaco CryptoServer.
+  </p><p>With the patch applied you can create CAs using HSMs with the SHA224WithECDSA algorithm.
+  </p>
+  </subsubsection>
+
+  <subsubsection name="Using SHA256WithRSAandMGF1 (RSA-PSS) in Java PKCS#11 ">
+  <p>
+  At the time of writing, Oracle Java does not have support for SHA256WithRSAandMGF1 (also known as RSASSA-PSS) in the PKCS#11 provider. 
+  PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
+  You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
+  </p>
+  <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
+  <p>The patch should work on all HSMs that have support for SHA56WithRSAandMGF1.
+  </p><p>With the patch applied you can create CAs using HSMs with the SHA256WithRSAandMGF1 (and SHA384 and SHA512) algorithm.
+  </p>
   </subsubsection>
   
   <subsubsection name="Issue with explicit parameters in Java">
