@@ -1036,6 +1036,9 @@ Sample code can be taken from:
 <ul>
 <li>The JUnit tests for the WS-API: modules/systemtests/src/org/ejbca/core/protocol/ws/EjbcaWSTest.java</li>
 <li>The WS-API CLI: modules/ejbca-ws-cli/src/org/ejbca/core/protocol/ws/client/*.java</li>
+<li>A fully working RA Admin sample program written in Java and using the web services API; this may be downloaded from <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA">the WebServiceRA project on SourceForge</a>.  
+For more information, see the <a href="howto.html#Creating and Running a custom RA Administrator application using EJBCA Web Services and Java">Web Services section of the howto file</a>.
+</li>
 </ul>
 </p>
 </subsection>
