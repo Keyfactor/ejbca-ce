@@ -906,7 +906,7 @@ function checkallfields(){
     <%-- Certificate Policies extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_CERTIFICATEPOLICIES") %><br />
         <%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
       </td>
       <td width="50%">
@@ -938,7 +938,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_DELETE_POLICY + i %>" value="<%= ejbcawebbean.getText("DELETE") %>"/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
           </tr>
         </table>
       </td>
@@ -957,7 +957,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_POLICY %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
           </tr>
         </table>
       <td width="50%">
