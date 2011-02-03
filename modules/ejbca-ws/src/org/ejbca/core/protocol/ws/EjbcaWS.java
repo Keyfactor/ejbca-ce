@@ -2662,4 +2662,44 @@ public class EjbcaWS implements IEjbcaWS {
             logger.flush();
         }
 	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getLastCAChain(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, String, String)
+	 */
+	public List<Certificate> getLastCAChain(String caname)
+			throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+		if (log.isTraceEnabled()) {
+			log.trace(">getLastCAChain: "+caname);
+		}
+		final List<Certificate> retval = new ArrayList<Certificate>();
+		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSession, userAdminSession);
+		Admin admin = ejbhelper.getAdmin();
+        final IPatternLogger logger = TransactionLogger.getPatternLogger();
+        logAdminName(admin,logger);
+		try {
+			CAInfo info = caAdminSession.getCAInfoOrThrowException(admin, caname);
+			if (info.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE){
+				return retval;
+			}
+     		Collection<java.security.cert.Certificate> certs = info.getCertificateChain();
+			Iterator<java.security.cert.Certificate> iter = certs.iterator();
+			while (iter.hasNext()){
+				retval.add(new Certificate (iter.next ()));
+			}
+		} catch (EJBException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+		} catch (CertificateEncodingException e) {
+            throw EjbcaWSHelper.getInternalException(e, logger);
+        } catch( RuntimeException t ) {
+            logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
+            throw t;
+        } finally {
+            logger.writeln();
+            logger.flush();
+        }
+		if (log.isTraceEnabled()) {
+			log.trace("<getLastCAChain: "+caname);
+		}
+		return retval;
+	}
 }
