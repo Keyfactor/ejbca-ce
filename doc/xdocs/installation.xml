@@ -731,7 +731,7 @@ EJBCA 4.0alpha2 has been tested with WebSphere AS for Developers 7.0.0.13, DB2 9
 </p>
 <p>
 After following these instructions, you will be able to build, deploy, start and install EJBCA.<br/>
-You will NOT be able to use database logs, Admin GUI, EJBCA WS, XKMS, approvals and additional components that depends on remote EJB lookup.
+You will NOT be able to use database logs, EJBCA WS, XKMS or anything that requires serialization of Certificates over RMI.
 </p>
 <p>Install the Unlimited strength crypto policy files for the IBM java shipped with Websphere. 
 You need to download these files from IBM. The IBM policy files version 1.4.2 works with IBM JDK 6.</p>
@@ -798,12 +798,13 @@ as mail.jndi-name configured in conf/mail.properties (EjbcaMail).</li>
 <li>Database name: ejbca</li>
 <li>Server name: 127.0.0.1</li>
 <li>Port number: 50000</li>
-<li>Click on the EjbcaDS DataSource → JAAS - J2C authentication data → New</li>
+<li>Click on the EjbcaDS DataSource -> JAAS - J2C authentication data -> New</li>
 <li>Alias: &lt;database username&gt;</li>
 <li>UserId: &lt;database username&gt;</li>
 <li>Password: &lt;database password&gt;</li>
 <li>Save</li>
 <li>Go back to the DataSource and select the new authentication info for "Component-managed authentication alias". Save.</li>
+<li>Edit custom properties for the DataSource and set isolation level to 2.</li>
 </ul>
 </li> 
 </ol>
@@ -834,8 +835,8 @@ Efter deployment and installation you want to configure SSL in Websphere so you 
 The admin-GUI in EJBCA requires client certificate authentication.  
 <br/>Configure the SSL port to require client certificate in order to access the admin-GUI:
 <ol>
-  <li>Navigate to Security -> SSL certificate and key management -> Quality of protection (QoP) settings: Client authentication=Supported</li>
-  <li>Navigate to Security -> SSL certificate and key management <br/>
+  <li>Navigate to Security -> SSL certificate and key management -> NodeDefaultSSLSettings -> Quality of protection (QoP) settings: Client authentication=Supported</li>
+  <li>Navigate to Security -> SSL certificate and key management -> Key stores and certificates<br/>
   NodeDefaultKeyStore=/usr/local/ejbca/p12/tomcat.jks<br/>
   NodeDefaultTrustStore=/usr/local/ejbca/p12/truststore.jks<br/>
   </li>
