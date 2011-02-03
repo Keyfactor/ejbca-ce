@@ -21,6 +21,7 @@ import java.security.SignatureException;
 import java.security.cert.CertStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -1557,7 +1558,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void cvcRequest(String rootcadn, String rootcaname, String subcadn, String subcaname, String username, String keyspec, String keyalg,
             String signalg) throws Exception {
 
+		try {
+			ejbcaraws.getLastCAChain("sorry-no-such-ca-here");
+			fail ("Should not happen");
+		}
+		catch (CADoesntExistsException_Exception e){
+		}
         createCVCCA(rootcadn, rootcaname, subcadn, subcaname, keyspec, keyalg, signalg);
+        List<Certificate> ca_path = ejbcaraws.getLastCAChain(subcaname);
+        assertEquals ("Must be two", 2, ca_path.size());
 
         // 
         // create a set of requests for WS test
@@ -1629,6 +1638,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
         CVCertificate dvcert = (CVCertificate) parsedObject;
         b64cert = wscvcacert.getCertificateData();
+        assertTrue ("CVCA", Arrays.equals(wscvcacert.getRawCertificateData(), ca_path.get(1).getRawCertificateData()));
+        assertTrue ("DVCA", Arrays.equals(wsdvcert.getRawCertificateData(), ca_path.get(0).getRawCertificateData()));
         parsedObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
         CVCertificate cvcacert = (CVCertificate) parsedObject;
         assertEquals(AuthorizationRoleEnum.DV_D, dvcert.getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole());
@@ -2125,6 +2136,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Now test our WS API that it has set status to "WAITING_FOR_CERTIFICATE_RESPONSE"
         dvinfo = caAdminSessionRemote.getCAInfo(intAdmin, caname);
         assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
+        assertEquals ("DV should not be available", ejbcaraws.getLastCAChain(caname).size (),0);
         // Check to see that is really is a new keypair
         pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
         pubk2 = new String(Base64.encode(cert.getCertificateBody().getPublicKey().getEncoded(), false));
