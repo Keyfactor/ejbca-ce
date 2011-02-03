@@ -102,6 +102,7 @@
 	<condition property="exclude-xerces">
 		<or>
 			<matches pattern="jboss6" string="${appserver.subtype}"/>
+			<matches pattern="glassfish" string="${appserver.type}"/>
 			<!-- ... -->
 		</or>
 	</condition>
