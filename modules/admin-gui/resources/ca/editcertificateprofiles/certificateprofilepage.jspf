@@ -938,7 +938,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_DELETE_POLICY + i %>" value="<%= ejbcawebbean.getText("DELETE") %>"/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %><br/><%= ejbcawebbean.getText("EXT_PKIX_CP_USERNOTICE") %><br/><%= ejbcawebbean.getText("EXT_PKIX_CP_CPSURI") %></td>
           </tr>
         </table>
       </td>
@@ -957,7 +957,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_POLICY %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_CP_POLICYID") %><br/><%= ejbcawebbean.getText("EXT_PKIX_CP_USERNOTICE") %><br/><%= ejbcawebbean.getText("EXT_PKIX_CP_CPSURI") %></td>
           </tr>
         </table>
       <td width="50%">
@@ -970,7 +970,7 @@ function checkallfields(){
     <%-- Authority Information Access (AIA) extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEAUTHORITYINFORMATIONACCESS") %> 
+        <%= ejbcawebbean.getText("EXT_PKIX_AUTHORITYINFOACCESS") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEAUTHORITYINFORMATIONACCESS %>" onClick="checkuseaiafield()" value="<%=CHECKBOX_VALUE %>" 
@@ -981,8 +981,8 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %><br />
-        <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_CADEFINED") %><br />
+        <%= ejbcawebbean.getText("EXT_PKIX_AIA_OCSP_URI") %> <%= ejbcawebbean.getHelpReference("/userguide.html#OCSP%20Service%20Locator") %>
       </td>
       <%-- ocsp service locator part of authority information access (aia) extension --%>
       <td width="50%">
@@ -1018,7 +1018,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_DELETE_CAISSUERURI + i %>" value="<%= ejbcawebbean.getText("DELETE") %>"/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CAISSUERURI") %></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %></td>
           </tr>
         </table>
       </td>
@@ -1035,7 +1035,7 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_CAISSUERURI %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseAuthorityInformationAccess() ? "" : "disabled"%>/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CAISSUERURI") %></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %></td>
           </tr>
         </table>
       <td width="50%">
@@ -1230,7 +1230,7 @@ function checkallfields(){
     <%-- OCSP No Check extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("OCSPNOCHECK") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_OCSPNOCHECK") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEOCSPNOCHECK %>" value="<%=CHECKBOX_VALUE %>" 
@@ -1243,7 +1243,7 @@ function checkallfields(){
     <%-- MS Template extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEMSTEMPLATE") %> 
+        <%= ejbcawebbean.getText("EXT_MS_TEMPLATE") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEMSTEMPLATE %>"  onclick="checkusemstemplatefield()" value="<%=CHECKBOX_VALUE %>" 
@@ -1254,8 +1254,8 @@ function checkallfields(){
     </tr>    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
-        <%= ejbcawebbean.getText("MSTEMPLATE") %><br />
-        <%= ejbcawebbean.getText("ONLYVALUE") %>
+        <%= ejbcawebbean.getText("EXT_MS_TEMPLATE") %><br />
+        <%= ejbcawebbean.getText("EXT_MS_TEMPLATE_ONLYVALUE") %>
       </td>
       <td width="50%"> 
         <select name="<%=SELECT_MSTEMPLATE%>"  <% if(!certificateprofiledata.getUseMicrosoftTemplate()) out.write(" disabled "); %>>
@@ -1274,7 +1274,7 @@ function checkallfields(){
     <%-- SEIS Card Number extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECARDNUMBER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
+        <%= ejbcawebbean.getText("EXT_SEIS_CARDNUMBER") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Cardnumber") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECARDNUMBER %>"  value="<%=CHECKBOX_VALUE %>" 
