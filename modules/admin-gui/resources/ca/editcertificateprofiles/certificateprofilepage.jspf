@@ -1338,7 +1338,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USECNPOSTFIX") %> 
+        <%= ejbcawebbean.getText("CERT_SUBJECTDN_CNPOSTFIX") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECNPOSTFIX  %>"  onclick="checkusecnpostfixfield()" value="<%=CHECKBOX_VALUE %>" 
