@@ -816,7 +816,7 @@ function checkallfields(){
     <% if(!isexternal){ %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEUTF8POLICYTEXT") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_CP_UTF8NOTICETEXT") %>
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USEUTF8POLICYTEXT %>" value="<%=CHECKBOX_VALUE %>" 
