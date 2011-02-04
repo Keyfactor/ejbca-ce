@@ -1059,7 +1059,7 @@ function checkallfields(){
     <%-- Qualified Certificate Statements (qcStatements) extension --%>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right" > 
-        <%= ejbcawebbean.getText("USEQUALIFIEDCERTSTATEMENT") %>
+        <%= ejbcawebbean.getText("EXT_PKIX_QCSTATEMENT") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEQCSTATEMENT %>" onClick="checkuseqcstatementfield()" value="<%=CHECKBOX_VALUE %>" 
