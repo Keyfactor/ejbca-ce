@@ -1082,7 +1082,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEPKIXQCSYNTAXV2") %></td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_PKIX_QCS_PKIXQCSYNTAXV2") %></td>
       <td width="50%" valign="top">
          <input type="checkbox" name="<%=CHECKBOX_USEPKIXQCSYNTAXV2 %>" value="<%=CHECKBOX_VALUE %>" 
            <%
@@ -1095,7 +1095,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("SEMANTICID") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_PKIX_QCS_SEMANTICSID") %> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="20" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
@@ -1104,7 +1104,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("RANAME") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_PKIX_QCS_NAMERA") %> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
