@@ -1113,7 +1113,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSIQCCOMPLIANCE") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_ETSI_QCS_QCCOMPLIANCE") %> </td>
       <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIQCCOMPLIANCE %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseQCStatement())
@@ -1125,7 +1125,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSISECUREDEVICE") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_ETSI_QCS_SSCD") %> </td>
       <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSISIGNATUREDEVICE %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseQCStatement())
@@ -1137,7 +1137,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSITRANSACTIONLIMIT") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_ETSI_QCS_VALUELIMIT") %> </td>
       <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIVALUELIMIT %>" onClick="checkuseetsivaluelimitfield()" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseQCStatement())
