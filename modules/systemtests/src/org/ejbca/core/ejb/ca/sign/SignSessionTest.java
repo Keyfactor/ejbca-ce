@@ -70,6 +70,8 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -424,6 +426,17 @@ public class SignSessionTest extends CaTestCase {
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
+
+        // Verify error handling
+        UserDataVO badUserData = new UserDataVO();
+        badUserData.setCAId(rsacaid);
+        p10 = new PKCS10RequestMessage(bcp10);
+        try {
+        	signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, badUserData);
+            assertFalse("Was able to create certificate when it should have failed.", true);
+        } catch (SignRequestException e) {
+        	log.info("Expected exception caught (no password supplied): " + e.getMessage());
+        }
         log.trace("<test03TestBCPKCS10()");
     }
 
@@ -1953,6 +1966,26 @@ public class SignSessionTest extends CaTestCase {
         caAdminSession.editCA(admin, cainfo);
     } // test32TestCertReqHistory
 
+    /**
+     * Test several cases where certificate generation should fail.
+     */
+    public void test33certCreationErrorHandling() throws Exception {
+        log.trace(">test33certCreationErrorHandling");
+        log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
+        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        final X509Certificate notSelfSignedCert = CertTools.genSelfCert("CN=notSelfSigned", 1, null, rsakeys.getPrivate(), rsakeys2.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        try {
+            signSession.createCertificate(admin, "foo", "foo123", notSelfSignedCert);
+            assertFalse("Tried to create cert from old certificate that wasn't self signed! Did not throw SignRequestSignatureException.", true);
+        } catch (SignRequestSignatureException e) {
+        	log.info("Got expected exception: " + e.getMessage());
+        }
+        log.trace("<test33certCreationErrorHandling");
+    }
+
+
+    
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
 
