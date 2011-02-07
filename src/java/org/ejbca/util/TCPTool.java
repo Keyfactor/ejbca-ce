@@ -13,7 +13,6 @@
 package org.ejbca.util;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -27,20 +26,6 @@ import com.novell.ldap.LDAPException;
  */
 public class TCPTool {
     private static final Logger log = Logger.getLogger(TCPTool.class);
-
-	/**
-	 * Probe a TCP port connection at hostname:port.  
-	 * @param timeout in milliseconds
-	 * @return true if a connection was made before the timeout
-	 */
-	public static boolean probeConnection(String hostname, int port, int timeout) {
-		try {
-			probeConnectionRaw(hostname, port, timeout);
-		} catch (IOException e) {
-			return false;
-		} 
-		return true;
-	}
 
 	/**
 	 * Probe a TCP port connection at hostname:port.  
@@ -61,7 +46,7 @@ public class TCPTool {
 	 * @param timeout in milliseconds
 	 * @throws IOException if the connection fails
 	 */
-	public static void probeConnectionRaw(String hostname, int port, int timeout) throws IOException {
+	private static void probeConnectionRaw(String hostname, int port, int timeout) throws IOException {
 		if (log.isTraceEnabled()) {
 			log.trace(">probeConnectionRaw("+hostname+", "+port+", "+timeout+")");			
 		}
@@ -71,17 +56,5 @@ public class TCPTool {
 		if (log.isTraceEnabled()) {
 			log.trace("<probeConnectionRaw");			
 		}
-	}
-
-	/**
-	 * Try to acquire this nodes IP address
-	 */
-	public static String getNodeIP() {
-		String nodeIP = "127.0.0.1";
-        try {
-        	nodeIP = InetAddress.getLocalHost().getHostAddress();
-        } catch (java.net.UnknownHostException uhe) {
-        }
-		return nodeIP;
 	}
 }
