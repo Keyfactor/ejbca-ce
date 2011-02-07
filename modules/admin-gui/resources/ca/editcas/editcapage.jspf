@@ -362,7 +362,7 @@ function checkallfields(){
     if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_CRLPERIOD %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRLPERIOD")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRL_CA_CRLPERIOD")%>");
       illegalfields++;
     }
     if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_CRLISSUEINTERVAL%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
@@ -372,7 +372,7 @@ function checkallfields(){
     if(!checkFieldForCombineTime("document.ca.<%=TEXTFIELD_DELTACRLPERIOD%>","<%= ejbcawebbean.getText("INVALIDTIMEFORMAT") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_DELTACRLPERIOD %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("DELTACRLPERIOD")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD")%>");
       illegalfields++;
     }
     <%  }
@@ -982,7 +982,7 @@ function checkallfields(){
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_CRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -998,7 +998,7 @@ function checkallfields(){
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLISSUEINTERVAL") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_ISSUEINTERVAL") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -1014,7 +1014,7 @@ function checkallfields(){
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("CRLOVERLAPTIME") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_OVERLAPTIME") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
      </td>
      <td width="50%">
           <% if (isexternal) {
@@ -1030,7 +1030,7 @@ function checkallfields(){
 
    <tr id="Row<%=row++%2%>"> 
      <td width="50%"  align="right"> 
-       <%= ejbcawebbean.getText("DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
+       <%= ejbcawebbean.getText("CRL_CA_DELTACRLPERIOD") + " " + ejbcawebbean.getText("COMBINETIMEFORMAT") %> <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Period") %>
        <br/>
        <em><%= ejbcawebbean.getText("NODELTACRLTIP") %></em>
      </td>
@@ -1048,7 +1048,7 @@ function checkallfields(){
 
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br />&nbsp;
+       <%= ejbcawebbean.getText("CRL_CA_CRLPUBLISHERS") %> <br />&nbsp;
      </td>
      <td width="50%"> 
        <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
