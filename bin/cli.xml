@@ -114,6 +114,7 @@ appserver.home         : ${appserver.home}
 		
 		<ejbca:cli arg='ra adduser tomcat ${httpsserver.password} "${httpsserver.dn}" "${httpsserver.an}" "${ca.name}" null 1 JKS SERVER'/>
 		<ejbca:cli arg="ra setclearpwd tomcat ${httpsserver.password}"/>
+		<ejbca:cli arg="batch tomcat"/>
         <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
            	<istrue value="${superadmin.batch}" />
         </condition>
@@ -125,16 +126,27 @@ appserver.home         : ${appserver.home}
 		if it is not an issue with the Ant classloader
 		For in ejbca.home in order to have the p12 directory as a child of it.
 		-->
-		<delete file="${ejbca.home}/p12/superadmin.p12" />
-		<ejbca:cli arg="batch" />
+		<delete file="${ejbca.home}/p12/superadmin.p12" quiet="true"/>
+        <condition property="superadmin.batch.true" value="set">
+           	<istrue value="${superadmin.batch}" />
+        </condition>
+		<antcall target="ejbca:batchsuperadmin"/>
 		<fail message="Batch generation failed!">
 			<condition>
-                <and>
-		            <not><available filepath="${ejbca.home}/p12" file="superadmin.p12"/></not>
-           			<istrue value="${superadmin.batch}" />
-                </and>
+				<or>
+					<not><available filepath="${ejbca.home}/p12" file="tomcat.jks"/></not>
+                	<and>
+		            	<not><available filepath="${ejbca.home}/p12" file="superadmin.p12"/></not>
+           				<istrue value="${superadmin.batch}" />
+                	</and>
+				</or>
 			</condition>
 		</fail>
+	</target>
+	
+	<!-- Only try to batch generate superadmin if if keystoretyp is P12 -->
+	<target name="ejbca:batchsuperadmin" if="superadmin.batch.true">
+		<ejbca:cli arg="batch superadmin"/>
 	</target>
     
 	<target name="ejbca:cli" description="Handy hook to run a command">
