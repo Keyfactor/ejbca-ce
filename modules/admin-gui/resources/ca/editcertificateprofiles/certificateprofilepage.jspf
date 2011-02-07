@@ -1176,7 +1176,7 @@ function checkallfields(){
       </td>
     </tr>                     
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSIRETENTIONPERIOD") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_ETSI_QCS_RETENTIONPERIOD") %> </td>
       <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIRETENTIONPERIOD %>" onClick="checkusetsiretentionperiod()" value="<%=CHECKBOX_VALUE %>"
            <%
                if(!certificateprofiledata.getUseQCStatement())
@@ -1197,7 +1197,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEQCCUSTOMSTRING") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_PKIX_QCS_CUSTOMSTRING") %> </td>
       <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCCUSTOMSTRING %>" onClick="checkuseqccustomstring()" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseQCStatement())
@@ -1209,7 +1209,7 @@ function checkallfields(){
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGOID") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_PKIX_QCS_CUSTOMSTR_OID") %> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="20" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
                       out.write(" disabled "); 
@@ -1218,7 +1218,7 @@ function checkallfields(){
       </td>
     </tr>     
     <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGTEXT") %> </td>
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("EXT_PKIX_QCS_CUSTOMSTR_TEXT") %> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
                       out.write(" disabled "); 
