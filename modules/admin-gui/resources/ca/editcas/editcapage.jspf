@@ -932,7 +932,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %>
+        <%= ejbcawebbean.getText("CRL_CA_DEFAULTCRLURI") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Distribution%20Points") %>
         <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
@@ -949,7 +949,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("DEFAULTCRLISSUER") %>
+        <%= ejbcawebbean.getText("CRL_CA_DEFAULTCRLISSUER") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
@@ -965,7 +965,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CADEFINEDFRESHESTCRL") %>
+        <%= ejbcawebbean.getText("CRL_CA_DEFAULTFCRLURI") %>
         <%= ejbcawebbean.getHelpReference("/userguide.html#Freshest%20CRL") %>
         <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
