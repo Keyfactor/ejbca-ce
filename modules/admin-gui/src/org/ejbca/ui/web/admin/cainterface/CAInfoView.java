@@ -66,17 +66,17 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
   
     
    /** A info text strings must contain:
-    * CANAME, CERT_SUBJECTDN, EXT_PKIX_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRLPERIOD, CRLISSUEINTERVAL, CRLOVERLAPTIME, DELTACRLPERIOD
+    * CANAME, CERT_SUBJECTDN, EXT_PKIX_SUBJECTALTNAME, CATYPE, EXPIRES, STATUS, CATOKENSTATUS, DESCRIPTION, CRL_CA_CRLPERIOD, CRL_CA_ISSUEINTERVAL, CRL_CA_OVERLAPTIME, CRL_CA_DELTACRLPERIOD
     * It must also have "" in pos nr 4 (CASPACER) 
     * It must also have "" in pos nr 9 (CRLSPACER) 
     */
    public static String[] X509CA_CAINFODATATEXTS = {"CANAME","CERT_SUBJECTDN","EXT_PKIX_SUBJECTALTNAME","CATYPE","",
-                                                    "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
-                                                    "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "DELTACRLPERIOD", "CRLPUBLISHERS", "", "OCSPSERVICE"};
+                                                    "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
+                                                    "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD", "CRL_CA_CRLPUBLISHERS", "", "OCSPSERVICE"};
 
    public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATYPE","",
-       "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
-       "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "DELTACRLPERIOD"};
+       "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
+       "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD"};
 
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
