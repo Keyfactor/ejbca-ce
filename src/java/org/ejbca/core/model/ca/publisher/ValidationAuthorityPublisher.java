@@ -28,7 +28,6 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.X509Principal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
@@ -249,17 +248,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 		} catch (Exception e) {
 			throwPublisherException(e, prep);
 		}
-		// If we managed to update the OCSP database, and protection is enabled, we have to update the protection database
-		if (!fail && getProtect()) {
-			X509Certificate cert = (X509Certificate)incert;
-			String fp = CertTools.getFingerprintAsString(cert);
-			String serno = cert.getSerialNumber().toString();
-			String issuer = CertTools.getIssuerDN(cert);
-			String subject = CertTools.getSubjectDN(cert);
-			long expire = cert.getNotAfter().getTime();
-			CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason, username, tag, certificateProfileId, lastUpdate);
-		}
-		return true;
+		return !fail;
 	}
 	private class StoreCRLPreparer implements Preparer {
 		private final String base64Crl;
