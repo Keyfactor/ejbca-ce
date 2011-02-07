@@ -887,7 +887,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("CRLNUMBER") %> <br /> <%= ejbcawebbean.getText("CRLNUMBERCRITICAL") %> 
+         <%= ejbcawebbean.getText("CRL_EXT_CRLNUMBER") %> <br /> <%= ejbcawebbean.getText("CRLNUMBERCRITICAL") %> 
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECRLNUMBER %>" onClick="checkusefield('<%=CHECKBOX_USECRLNUMBER %>', '<%=CHECKBOX_CRLNUMBERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
