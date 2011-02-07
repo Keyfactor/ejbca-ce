@@ -15,8 +15,6 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-
 
 /**
  * Value object holding the data contained in a PublisherQueueData record in the database. 
@@ -26,7 +24,7 @@ import org.apache.log4j.Logger;
  */
 public class PublisherQueueData implements java.io.Serializable {
 
-    private static final Logger log = Logger.getLogger(PublisherQueueData.class);
+    //private static final Logger log = Logger.getLogger(PublisherQueueData.class);
 
     /**
      * Determines if a de-serialized file is compatible with this class.

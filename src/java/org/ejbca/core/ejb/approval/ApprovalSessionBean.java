@@ -47,7 +47,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
 import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovedActionAdmin;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -614,7 +613,6 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 	 * After someone have rejected the request noone else can approve it
 	 * 
 s	 * @throws ApprovalRequestExpiredException 
-	 * @throws ApprovalRequestExecutionException 
 	 * @throws ApprovalException 
 	 */
 	private void reject(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException,  ApprovalException {
