@@ -61,7 +61,7 @@ install this package. Further information on this can be found in the Sun docume
 the JCE.
 </note>
 <note>
-The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish, Weblogic and OC4J. 
+The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish and Weblogic. 
 If you want to deploy on these application servers, read the section for your application server below. You mileage may vary on
 other appservers than JBoss, which is the most well supported.
 </note>
