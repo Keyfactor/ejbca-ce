@@ -97,12 +97,13 @@ public class YearMonthDayTimeTest extends TestCase {
 	}
 	
 	/**
-	 * Test calculation of days from a given date
+	 * Test calculation of days from a given date.
 	 */
 	public void test04DaysFrom() throws Exception {
 		YearMonthDayTime oneYear = YearMonthDayTime.getInstance("1y");
 		YearMonthDayTime oneMonth = YearMonthDayTime.getInstance("1mo");
 		YearMonthDayTime oneDay = YearMonthDayTime.getInstance("1d");
+		YearMonthDayTime twentyDays = YearMonthDayTime.getInstance("20d");
 		
 		Calendar today = Calendar.getInstance();
 		today.set(2009, 7, 19, 0, 0, 0);
@@ -110,6 +111,43 @@ public class YearMonthDayTimeTest extends TestCase {
 		assertEquals("one year", 365, oneYear.daysFrom(today.getTime()));
 		assertEquals("one month", 31, oneMonth.daysFrom(today.getTime()));
 		assertEquals("one day", 1, oneDay.daysFrom(today.getTime()));
+		
+		// Day light savings time: winter +20 days and there is summer time
+		today.set(2011, 2, 7, 9, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 2, 7, 0, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 2, 7, 23, 59, 59);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 2, 7, 2, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 2, 7, 3, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 2, 7, 4, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 9, 11, 0, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 9, 11, 23, 59, 59);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 9, 11, 2, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 9, 11, 3, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 9, 11, 4, 0, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
+		
+		today.set(2011, 6, 10, 23, 59, 0);
+		assertEquals("20 days", 20, twentyDays.daysFrom(today.getTime()));
 	}
 	
 	/**
