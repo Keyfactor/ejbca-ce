@@ -109,14 +109,29 @@ public class YearMonthDayTime {
 	 * @return Number of days from date until the years, months and days this object represents has elapsed
 	 * */
 	public long daysFrom(Date date) {
+		final long result;
+		
+		// Get a calendar for the date we want to compare with
+		// We are only counting whole days so set the time to 12:00 (noon)
      	Calendar cal = Calendar.getInstance();
      	cal.setTime(date);
+     	cal.set(Calendar.HOUR_OF_DAY, 12);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        final long fromTime = cal.getTimeInMillis();
+        
+        // Step forward a number of years, months and days
     	cal.add(Calendar.YEAR, (int) getYears());
     	cal.add(Calendar.MONTH, (int) getMonths());
     	cal.add(Calendar.DATE, (int) getDays());
-    	Calendar now = Calendar.getInstance();
-    	now.setTime(date);
-       	return (long) ((cal.getTimeInMillis() - now.getTimeInMillis()) / (1000*60*60*24));
+    	
+    	// Calculate the time difference in days between the two times
+    	final double diff = ((double)(cal.getTimeInMillis() - fromTime)) / (double)(1000*60*60*24);
+    	
+    	// Due to day light savings time it might not be an integer number
+    	result = (long) Math.round(diff); 
+    	
+       	return result;
 	}
 	
 	/**
