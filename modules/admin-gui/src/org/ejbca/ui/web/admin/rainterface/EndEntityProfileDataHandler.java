@@ -22,6 +22,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -158,23 +159,20 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     
     /**
      * Help function that checks if administrator is authorized to edit profile.
-     * @throws AuthorizationDeniedException 
+     * @param profile is the end entity profile or null for SecConst.EMPTY_ENDENTITYPROFILE
+     * @param editcheck is true for edit, add, remove, clone and rename operations. false for get.
      */    
     private boolean authorizedToProfile(EndEntityProfile profile, boolean editcheck)  {
         boolean returnval = false;
         boolean allexists = false;
 
-        if (!(editcheck && !authorizationsession.isAuthorizedNoLog(administrator, "/ra_functionality/edit_end_entity_profiles"))
-                && !((profile == null && editcheck) && !authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"))) {
-
-        	// Below line can be changed to use directly caSession.getAvailableCAs(admin) instead, it does exactly what the below line does, but simpler.
-            HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizationsession.getAuthorizedCAIds(administrator, caSession
-                    .getAvailableCAs()));
-    
+        if (!editcheck || authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR) ||
+        		(authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null)) {
             if (profile == null) {
                 returnval = true;
             } else {
-                String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
+            	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
+                final String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
                 if (availablecasstring == null || availablecasstring.equals("")) {
                     allexists = true;
                 } else {
