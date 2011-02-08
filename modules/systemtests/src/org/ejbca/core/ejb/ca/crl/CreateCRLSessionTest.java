@@ -498,11 +498,31 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         log.trace("<test07CRLFreshestCRL()");
     }
+
     public void test08TestCRLStore() throws Exception {
         log.trace(">test08TestCRLStore()");
     	final String result = ValidationAuthorityTst.testCRLStore(ca, this.createCrlSession);
     	assertNull(result, result);
         log.trace("<test08TestCRLStore()");
+    }
+
+    public void test09CrlGenerateForAll() throws Exception {
+        log.trace(">test09CrlGenerateForAll()");
+        final X509CAInfo cainfo = (X509CAInfo) caAdminSession.getCAInfo(admin, caid);
+        cainfo.setCRLIssueInterval(1);	// Issue very often..
+        cainfo.setDeltaCRLPeriod(1);	// Issue very often..
+        caAdminSession.editCA(admin, cainfo);
+        ca = caSession.getCA(admin, caid);
+        Thread.sleep(1000);
+        final X509CRL x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        crlStoreSession.createCRLs(admin);
+        final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        assertTrue("Did not generate a newer CRL.", x509crlAfter.getThisUpdate().after(x509crl.getThisUpdate()));
+        final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
+        crlStoreSession.createDeltaCRLs(admin);
+        final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
+        assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
+        log.trace("<test09CrlGenerateForAll()");
     }
 
     public void test99CleanUp() throws Exception {
