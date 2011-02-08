@@ -51,7 +51,7 @@
     </target>
 
     <target name="compile-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-common-web"/></target>
-    <target name="compile" depends="setup, compile-external-deps">
+    <target name="compile" depends="with.clover, setup, compile-external-deps">
         <javac srcdir="${src.dir}" destdir="${build.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath"/>
     </target>
