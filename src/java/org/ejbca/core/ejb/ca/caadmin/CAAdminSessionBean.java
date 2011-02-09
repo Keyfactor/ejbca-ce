@@ -1845,57 +1845,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         String msg = intres.getLocalizedMessage("caadmin.revokedca", cadata.getName(), Integer.valueOf(reason));
         logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAREVOKED, msg);
-    } // revokeCA
-
-    /**
-     * Method that should be used when upgrading from EJBCA 3.1 to EJBCA 3.2,
-     * changes class name of nCipher HardToken HSMs after code re-structure.
-     * 
-     * @param admin
-     *            Administrator probably Admin.TYPE_CACOMMANDLINE_USER
-     * @param caid
-     *            id of CA to upgrade
-     */
-    public void upgradeFromOldCAHSMKeyStore(Admin admin, int caid) {
-        try {
-            // check authorization
-            if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
-                if(!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
-                    Authorizer.throwAuthorizationException(admin, "/super_administrator", null);
-                }
-            }
-            CAData cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-            //CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
-            CA ca = cadata.getCA();
-            CATokenContainer token = ca.getCAToken();
-            CATokenInfo tokeninfo = token.getCATokenInfo();
-            HardCATokenInfo htokeninfo = null;
-            if (tokeninfo instanceof HardCATokenInfo) {
-                log.error("(this is not an error) Found hard token for ca with id: " + caid);
-                htokeninfo = (HardCATokenInfo) tokeninfo;
-            } else {
-                log.error("(this is not an error) No need to update soft token for ca with id: " + caid);
-            }
-            if (htokeninfo != null) {
-                String oldtoken = htokeninfo.getClassPath();
-                if (oldtoken.equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") || oldtoken.equals("se.primeKey.caToken.nFast.NFastCAToken")) {
-                    htokeninfo.setClassPath(org.ejbca.core.model.ca.catoken.NFastCAToken.class.getName());
-                    log.error("(this is not an error) Updated catoken classpath (" + oldtoken + ") for ca with id: " + caid);
-                    token.updateCATokenInfo(htokeninfo);
-                    ca.setCAToken(token);
-                    cadata.setCA(ca);
-                } else {
-                    log.error("(this is not an error) No need to update catoken classpath (" + oldtoken + ") for ca with id: " + caid);
-                }
-            }
-        } catch (Exception e) {
-            log.error("An error occured when trying to upgrade hard token classpath: ", e);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED,
-                    "An error occured when trying to upgrade hard token classpath", e);
-            throw new EJBException(e);
-        }
-
-    } // upgradeFromOldCAHSMKeyStore
+    }
 
     /**
      * Method that is used to create a new CA from an imported keystore from
