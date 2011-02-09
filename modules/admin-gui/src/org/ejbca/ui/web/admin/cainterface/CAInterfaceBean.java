@@ -358,7 +358,7 @@ public class CAInterfaceBean implements Serializable {
 
 	public String republish(CertificateView certificatedata){
 		String returnval = "CERTREPUBLISHFAILED";
-		CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN());
+		CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped());
 		if(certreqhist != null){
 			CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
 			if(certprofile != null){
