@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -32,11 +33,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
@@ -45,6 +48,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
@@ -54,6 +58,8 @@ import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.X509ResponseMessage;
+import org.ejbca.core.protocol.cmp.CmpResponseMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -192,7 +198,7 @@ public class CAsTest extends CaTestCase {
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
             
-            // Check CMP RA sercret, default value empty string
+            // Check CMP RA secret, default value empty string
             X509CAInfo xinfo = (X509CAInfo)info;
             assertNotNull(xinfo.getCmpRaAuthSecret());
             assertEquals("", xinfo.getCmpRaAuthSecret());
@@ -1688,6 +1694,198 @@ public class CAsTest extends CaTestCase {
         }
     } // test15ExternalExpiredCA
 
+    /** Try to create a CA using invalid parameters */
+    public void test16InvalidCreateCaActions() throws Exception {
+        log.trace(">test16InvalidCreateCaActions()");
+        removeTestCA("TESTFAIL"); // We cant be sure this CA was not left over from
+        // some other failed test
+        adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+        catokeninfo.setSignKeySpec("1024");
+        catokeninfo.setEncKeySpec("1024");
+        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        // Create and active OSCP CA Service.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TEST", "", "1024",
+        		AlgorithmConstants.KEYALGORITHM_RSA));
+
+        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+        		CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+        		24, // CRLPeriod
+        		0, // CRLIssueInterval
+        		10, // CRLOverlapTime
+        		10, // Delta CRL period
+        		new ArrayList<Integer>(), true, // Authority Key Identifier
+        		false, // Authority Key Identifier Critical
+        		true, // CRL Number
+        		false, // CRL Number Critical
+        		null, // defaultcrldistpoint
+        		null, // defaultcrlissuer
+        		null, // defaultocsplocator
+        		null, // defaultfreshestcrl
+        		true, // Finish User
+        		extendedcaservices, false, // use default utf8 settings
+        		new ArrayList<Integer>(), // Approvals Settings
+        		1, // Number of Req approvals
+        		false, // Use UTF8 subject DN by default
+        		true, // Use LDAP DN order by default
+        		false, // Use CRL Distribution Point on CRL
+        		false, // CRL Distribution Point on CRL critical
+        		true, true, // isDoEnforceUniquePublicKeys
+        		true, // isDoEnforceUniqueDistinguishedName
+        		false, // isDoEnforceUniqueSubjectDNSerialnumber
+        		true, // useCertReqHistory
+        		true, // useUserStorage
+        		true, // useCertificateStorage
+        		null //cmpRaAuthSecret
+        );
+
+        // Try to create the CA as an unprivileged user
+        try {
+        	caAdminSession.createCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), cainfo);
+        	assertTrue("Was able to create CA as unprivileged user.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        // Try to create the CA with a 0 >= CA Id < CAInfo.SPECIALCAIDBORDER
+        setPrivateFieldInSuper(cainfo, "caid", CAInfo.SPECIALCAIDBORDER-1);
+        try {
+        	caAdminSession.createCA(admin, cainfo);
+        	assertTrue("Was able to create CA with reserved CA Id.", false);
+        } catch (CAExistsException e) {
+        	// Expected
+        }
+        // Try to create a CA where the CA Id already exists (but not the name)
+        CAInfo caInfoTest = caAdminSession.getCAInfo(admin, "TEST");
+        setPrivateFieldInSuper(cainfo, "caid", caInfoTest.getCAId());
+        try {
+        	caAdminSession.createCA(admin, cainfo);
+        	assertTrue("Was able to create CA with CA Id of already existing CA.", false);
+        } catch (CAExistsException e) {
+        	// Expected
+        }
+        log.trace("<test16InvalidCreateCaActions()");
+    }
+
+    public void test17InvalidEditCaActions() throws Exception {
+        log.trace(">test17InvalidEditCaActions()");
+        CAInfo caInfoTest = caAdminSession.getCAInfo(admin, "TEST");
+        // Try to edit the CA as an unprivileged user
+        try {
+            caAdminSession.editCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfoTest);
+        	assertTrue("Was able to edit CA as unprivileged user.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        // Try to edit the CA with 'null' authentication code
+        CATokenInfo caTokenInfoTest = caInfoTest.getCATokenInfo();
+        caTokenInfoTest.setAuthenticationCode(null);
+        caInfoTest.setCATokenInfo(caTokenInfoTest);
+        try {
+            caAdminSession.editCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfoTest);
+        	assertTrue("Was able to edit CA with null authentication code.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        // Try to edit the CA with wrong authentication code
+        caInfoTest.getCATokenInfo().setAuthenticationCode("wrong code");
+        caInfoTest.setCATokenInfo(caTokenInfoTest);
+        try {
+            caAdminSession.editCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfoTest);
+        	assertTrue("Was able to edit CA with null authentication code.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        log.trace("<test17InvalidEditCaActions()");
+    }
+    
+    /** Get CA Info using an unprivileged admin. This will fail, and I'm not sure it shouldn't.. */
+    public void test18UnprivilegedCaInfoFetch() throws Exception {
+        log.trace(">test18UnprivilegedCaInfoFetch()");
+        // Try to get CAInfo as an unprivileged user
+        try {
+            caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "TEST");
+        	assertTrue("Was able to get CA info as unprivileged user.", false);
+        } catch (CADoesntExistsException e) {
+        	// Expected
+        }
+        try {
+            caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "CN=TEST".hashCode());
+        	assertTrue("Was able to get CA info as unprivileged user.", false);
+        } catch (CADoesntExistsException e) {
+        	// Expected
+        }
+        log.trace("<test18UnprivilegedCaInfoFetch()");
+    }
+    
+    public void test19UnprivilegedCaMakeRequest() throws Exception {
+        log.trace(">test19UnprivilegedCaMakeRequest()");
+        try {
+            caAdminSession.makeRequest(new Admin(Admin.TYPE_PUBLIC_WEB_USER), 0, null, false, false, false, null);
+        	assertTrue("Was able to make request to CA as unprivileged user.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        log.trace("<test19UnprivilegedCaMakeRequest()");
+    }
+    
+    public void test20BadCaReceiveResponse() throws Exception {
+        log.trace(">test20BadCaReceiveResponse()");
+        try {
+            caAdminSession.receiveResponse(new Admin(Admin.TYPE_PUBLIC_WEB_USER), 0, null, null, null);
+        	assertTrue("Was able to receiveResponse for a CA as unprivileged user.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        try {
+            caAdminSession.receiveResponse(admin, -1, null, null, null);
+        	assertTrue("Was able to receiveResponse for a CA that does not exist.", false);
+        } catch (EjbcaException e) {
+        	// Expected
+        }
+        try {
+            caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), new CmpResponseMessage(), null, null);
+        	assertTrue("Was able to receiveResponse for a CA with a non X509ResponseMessage.", false);
+        } catch (EjbcaException e) {
+        	// Expected
+        }
+        try {
+        	IResponseMessage resp = new X509ResponseMessage();
+        	resp.setCertificate(caAdminSession.getCAInfo(admin, "TEST").getCertificateChain().iterator().next());
+            caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), resp, null, null);
+        	assertTrue("Was able to receiveResponse for a CA that is not 'signed by external'.", false);
+        } catch (EjbcaException e) {
+        	// Expected
+        }
+        log.trace("<test20BadCaReceiveResponse()");
+    }
+
+    public void test21UnprivilegedCaProcessRequest() throws Exception {
+        log.trace(">test21UnprivilegedCaProcessRequest()");
+        CAInfo caInfo = caAdminSession.getCAInfo(admin, "TEST");
+        try {
+            // Try to process a request for a CA with an unprivileged user.
+            caAdminSession.processRequest(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfo, null);
+        	assertTrue("Was able to process request to CA as unprivileged user.", false);
+        } catch (AuthorizationDeniedException e) {
+        	// Expected
+        }
+        // Try to process a request for a CA with a 0 >= CA Id < CAInfo.SPECIALCAIDBORDER
+        setPrivateFieldInSuper(caInfo, "caid", CAInfo.SPECIALCAIDBORDER-1);
+        try {
+            caAdminSession.processRequest(admin, caInfo, null);
+        	assertTrue("Was able to create CA with reserved CA Id.", false);
+        } catch (CAExistsException e) {
+        	// Expected
+        }
+        log.trace("<test21UnprivilegedCaProcessRequest()");
+    }
+    
+
     /**
      * Preemtively remove CA in case it was created by a previous run:
      * @throws AuthorizationDeniedException 
@@ -1704,4 +1902,19 @@ public class CAsTest extends CaTestCase {
             
         }
     }
+
+    /** Used for direct manipulation of objects without setters. */
+	private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
+		log.trace(">setPrivateField");
+		try {
+			Field field = object.getClass().getSuperclass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(object, value);
+		} catch (Exception e) {
+			log.error("", e);
+			assertTrue("Could not set " + fieldName + " to " + value + ": " + e.getMessage(), false);
+		}
+		log.trace("<setPrivateField");
+	}
+
 }
