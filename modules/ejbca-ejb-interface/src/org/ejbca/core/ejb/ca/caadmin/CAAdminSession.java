@@ -299,17 +299,6 @@ public interface CAAdminSession {
     public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
-     * Method that should be used when upgrading from EJBCA 3.1 to EJBCA 3.2,
-     * changes class name of nCipher HardToken HSMs after code re-structure.
-     * 
-     * @param admin
-     *            Administrator probably Admin.TYPE_CACOMMANDLINE_USER
-     * @param caid
-     *            id of CA to upgrade
-     */
-    public void upgradeFromOldCAHSMKeyStore(Admin admin, int caid);
-
-    /**
      * Method that is used to create a new CA from an imported keystore from
      * another type of CA, for example OpenSSL.
      * 
