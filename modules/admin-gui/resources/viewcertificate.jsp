@@ -636,9 +636,9 @@ function confirmrepublish(){
        <tr id="Row<%=row%2%>">
           <td>               
             <% if(!cacerts){ %>
-            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a><br/>
-            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br/>
-            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDNUnEscaped() %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a><br/>
+            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDNUnEscaped() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br/>
+            <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDNUnEscaped() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
             <% } %>
             &nbsp;
           </td>   

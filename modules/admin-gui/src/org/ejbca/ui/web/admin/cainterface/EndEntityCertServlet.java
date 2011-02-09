@@ -31,6 +31,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
+import org.ejbca.util.HTMLTools;
 
 
 /**
@@ -122,7 +123,7 @@ public class EndEntityCertServlet extends HttpServlet {
         	
         	BigInteger certsn = new BigInteger(certificatesn,16);
         	        	        
-        	// Fetch the certificate and at the samt time check that the user is authorized to it.
+        	// Fetch the certificate and at the same time check that the user is authorized to it.
         	
         	try {
 				rabean.loadCertificates(certsn, issuerdn);
