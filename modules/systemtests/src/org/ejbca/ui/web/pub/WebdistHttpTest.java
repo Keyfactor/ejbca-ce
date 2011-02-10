@@ -139,7 +139,7 @@ public class WebdistHttpTest extends TestCase {
         while (iter.hasNext()) {
         	NameValuePair pair = iter.next();
         	log.debug(pair.getName() + ": " + pair.getValue());
-        	if (StringUtils.equals("Content-disposition", pair.getName())) {
+        	if (StringUtils.equalsIgnoreCase("Content-disposition", pair.getName())) {
         		assertEquals("attachment; filename=\"chain.pem\"", pair.getValue());
         		found = true;
         	}
