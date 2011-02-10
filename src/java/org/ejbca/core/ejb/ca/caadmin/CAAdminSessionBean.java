@@ -537,27 +537,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
-        CAInfo cainfo = null;
-       // try {
-            CA ca = caSession.getCA(admin, name);
-            cainfo = ca.getCAInfo();
-            if (!authorizedToCA(admin, cainfo.getCAId())) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Admin (" + admin.toString() + ") is not authorized to CA: " + name);
-                }
-                String msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);
-                throw new CADoesntExistsException(msg);
-            }
-       // } catch (CADoesntExistsException ce) {
-            // Just re-throw, getCAInternal has already logged that the CA does
-            // not exist
-        //    throw ce;
-       // } catch (Exception e) {
-         //   String msg = intres.getLocalizedMessage("caadmin.errorgetcainfo", name);
-         //   log.error(msg, e);
-        //    throw new EJBException(e);
-        //}
-        return cainfo;
+        return caSession.getCA(admin, name).getCAInfo();
     }
 
     /**
@@ -582,24 +562,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // it
         }
         return caInfo;
-    } // getCAInfo
+    }
 
-    /**
-     * Returns a value object containing nonsensitive information about a CA
-     * give it's CAId.
-     * 
-     * @param admin
-     *            administrator calling the method
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for
-     * @return CAInfo value object, never null
-     * @throws CADoesntExistsException
-     *             if CA with caid does not exist or admin is not authorized to CA
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public CAInfo getCAInfoOrThrowException(Admin admin, int caid) throws CADoesntExistsException {
         return getCAInfoOrThrowException(admin, caid, false);
-
     }
 
     /**
