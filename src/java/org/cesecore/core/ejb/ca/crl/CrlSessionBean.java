@@ -37,7 +37,6 @@ import org.ejbca.core.model.log.LogConstants;
  * CRLs are signed using RSASignSessionBean.
  * 
  * @version $Id$
- *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -51,18 +50,7 @@ public class CrlSessionBean extends CrlSessionBeanBase implements CrlSessionLoca
 	@EJB
 	LogSessionLocal logSession;
 
-	/**
-	 * Stores a CRL
-	 *
-	 * @param incrl  The DER coded CRL to be stored.
-	 * @param cafp   Fingerprint (hex) of the CAs certificate.
-	 * @param number CRL number.
-	 * @param issuerDN the issuer of the CRL
-	 * @param thisUpdate when this CRL was created
-	 * @param nextUpdate when this CRL expires
-	 * @param deltaCRLIndicator -1 for a normal CRL and 1 for a deltaCRL
-	 * @return true if storage was successful.
-	 */
+	@Override
 	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator) {
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCRL(" + cafp + ", " + number + ")");
@@ -89,17 +77,11 @@ public class CrlSessionBean extends CrlSessionBeanBase implements CrlSessionLoca
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cesecore.core.ejb.ca.crl.CrlSessionBeanBase#getEntityManager()
-	 */
 	@Override
 	EntityManager getEntityManager() {
 		return this.entityManager;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.cesecore.core.ejb.ca.crl.CrlSessionBeanBase#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.Certificate, int, java.lang.String)
-	 */
 	@Override
 	void log(Admin admin, int hashCode, int moduleCa, Date date,
 	         String string, Certificate cert, int eventInfoGetlastcrl, String msg) {

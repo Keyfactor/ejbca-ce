@@ -47,11 +47,10 @@ import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
 /**
- * The upgrade session bean is used to upgrade the database between ejbca
+ * The upgrade session bean is used to upgrade the database between EJBCA
  * releases.
  * 
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UpgradeSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -72,13 +71,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	upgradeSession = sessionContext.getBusinessObject(UpgradeSessionLocal.class);
     }
 
-    /**
-     * Upgrades the database
-     *
-     * @param admin
-     * @return true or false if upgrade was done or not
-     */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost) {
         if (log.isTraceEnabled()) {
             log.trace(">upgrade(" + admin.toString() + ")");
@@ -196,6 +190,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	return ret;
     }
 
+    @Override
     public void postMigrateDatabase400SmallTables() {
     	log.info(" Processing CertificateProfileData entities.");
     	final List<CertificateProfileData> cpds = CertificateProfileData.findAll(entityManager);
@@ -227,6 +222,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	gcd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, gcd.getDataUnsafe()));
     }
     
+    @Override
     public void postMigrateDatabase400HardTokenData(List<String> subSet) {
     	for (String tokenSN : subSet) {
     		HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokenSN);

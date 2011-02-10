@@ -32,13 +32,16 @@ import org.ejbca.util.query.IllegalQueryException;
  */
 public interface ApprovalSession {
 
+
     /**
-     * Method used to add an approval to database. The main key of an approval
-     * is the approval id, which should be unique for one administrator doing
-     * one type of action, requesting the same action twice should result in the
-     * same approvalId If the approvalId already exists, with a non expired
-     * approval an ApprovalException is thrown otherwise is an new approval
-     * request added to the database
+     * Method used to add an approval to database.
+     * 
+     * The main key of an approval is the approvalId, which should be unique
+     * for one administrator doing one type of action, requesting the same
+     * action twice should result in the same approvalId
+     * 
+     * If the approvalId already exists, with a non expired approval, a new approval
+     * request is added to the database. An approvalException is thrown otherwise
      * 
      * @throws ApprovalException
      *             if an approval already exists for this request.
@@ -47,16 +50,17 @@ public interface ApprovalSession {
 
     /**
      * Method that goes through exists approvals in database to see if there
-     * exists any approved action. If goes through all approvalrequests with the
-     * given Id and checks their status, if any have status approved it returns
-     * STATUS_APPROVED. This method should be used by action requiring the
-     * requesting administrator to poll to see if it have been approved and only
-     * have one step, othervise use the method with the step parameter.
+     * exists any approved action.
      * 
-     * @param admin
-     * @param approvalId
-     * @return the number of approvals left, 0 if approved othervis is the
-     *         ApprovalDataVO.STATUS constants returned indicating the statys.
+     * If goes through all approvalrequests with the given Id and checks their
+     * status, if any have status approved it returns STATUS_APPROVED.
+     * 
+     * This method should be used by action requiring the requesting
+     * administrator to poll to see if it have been approved and only have one
+     * step, otherwise use the method with the step parameter.
+     * 
+     * @return the number of approvals left, 0 if approved otherwise is the
+     *         ApprovalDataVO.STATUS constants returned indicating the status.
      * @throws ApprovalException
      *             if approvalId doesn't exists
      * @throws ApprovalRequestExpiredException
@@ -70,11 +74,14 @@ public interface ApprovalSession {
     /**
      * Method that goes through exists approvals in database to see if there
      * exists any approved. This is the default method for simple single step
-     * approvals. If goes through all approvalrequests with the given Id and
-     * checks their status, if any have status approved it returns
-     * STATUS_APPROVED. This method should be used by action requiring the
-     * requesting administrator to poll to see if it have been approved and only
-     * have one step, othervise use the method with the step parameter.
+     * approvals.
+     * 
+     * If goes through all approvalrequests with the given Id and checks their
+     * status, if any have status approved it returns STATUS_APPROVED.
+     * 
+     * This method should be used by action requiring the requesting
+     * administrator to poll to see if it have been approved and only have one
+     * step, othervise use the method with the step parameter.
      * 
      * @param admin
      * @param approvalId
@@ -96,46 +103,37 @@ public interface ApprovalSession {
      * 
      * @param admin
      * @param approvalId
-     * @param step
-     *            in approval to mark
-     * @throws ApprovalException
-     *             if approvalId doesn't exists,
+     * @param step in approval to mark
+     * @throws ApprovalException if approvalId doesn't exists,
      */
     public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method used to remove an approval from database.
      * 
-     * @param id
-     *            , the uniqu id of the approvalrequest, not the same as
-     *            approvalId
-     * @throws ApprovalException
+     * @param id the unique id of the approvalrequest, not the same as approvalId
      */
     public void removeApprovalRequest(Admin admin, int id) throws ApprovalException;
 
     /**
-     * Method used to reject an approval requests. It does the follwing 1.
-     * checks if the approval with the status waiting exists, throws an
-     * ApprovalRequestDoesntExistException otherwise 2. check if the
-     * administrator is authorized using the follwing rules: 2.1 if
-     * getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
+     * Method used to reject an approval requests.
+     * 
+     * It does the follwing 1. checks if the approval with the status waiting
+     * exists, throws an ApprovalRequestDoesntExistException otherwise
+     * 
+     * 2. check if the administrator is authorized using the follwing rules: 2.1
+     * if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
      * authorized to AccessRulesConstants.REGULAR_APPROVECAACTION othervise
      * AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
      * end entity profile. 2.2 Checks if the admin is authoried to the approval
-     * requests getCAId() 3. looks upp the username of the administrator and
-     * checks that no approval have been made by this user earlier. 4. Runs the
-     * approval command in the end entity bean.
+     * requests getCAId()
      * 
-     * @param admin
-     * @param approvalId
-     * @param approval
-     * @param gc
-     *            is the GlobalConfiguration used for notification info
-     * @throws ApprovalRequestExpiredException
-     * @throws AuthorizationDeniedException
-     * @throws ApprovalRequestDoesntExistException
-     * @throws ApprovalException
-     * @throws AdminAlreadyApprovedRequestException
+     * 3. looks upp the username of the administrator and checks that no
+     * approval have been made by this user earlier.
+     * 
+     * 4. Runs the approval command in the end entity bean.
+     * 
+     * @param gc is the GlobalConfiguration used for notification info
      */
     public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
@@ -147,7 +145,7 @@ public interface ApprovalSession {
     public ApprovalDataVO findNonExpiredApprovalRequest(org.ejbca.core.model.log.Admin admin, int approvalId);
 
     /**
-     * Method that takes an approvalId and returns all aprovalrequests for this.
+     * Method that takes an approvalId and returns all approval requests for this.
      * 
      * @param admin
      * @param approvalId
@@ -159,13 +157,11 @@ public interface ApprovalSession {
      * Method returning a list of approvals from the give query
      * 
      * @param admin
-     * @param query
-     *            should be a Query object containing ApprovalMatch and
+     * @param query should be a Query object containing ApprovalMatch and
      *            TimeMatch
-     * @param index
-     *            where the resultset should start.
+     * @param index where the ResultSet should start.
      * @param caAuthorizationString
-     *            a list of auhtorized CA Ids in the form 'cAId=... OR cAId=...'
+     *            a list of authorized CA Ids in the form 'cAId=... OR cAId=...'
      * @param endEntityProfileAuthorizationString
      *            a list of authorized end entity profile ids in the form
      *            '(endEntityProfileId=... OR endEntityProfileId=...) objects
@@ -177,13 +173,4 @@ public interface ApprovalSession {
     public List<ApprovalDataVO> query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
             java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException;
-
-    /**
-     * Get a list of all pending approvals ids. This was written for the upgrade
-     * to EJBCA 3.10.
-     * 
-     * @return a List<Integer> with all pending approval ids, never null
-     */
-    public List<Integer> getAllPendingApprovalIds();
-
 }

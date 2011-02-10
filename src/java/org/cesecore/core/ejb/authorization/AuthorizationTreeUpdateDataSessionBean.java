@@ -47,9 +47,7 @@ public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTree
      */
     private AuthorizationTreeUpdateData authTreeData = null;
 
-    /**
-     * Returns a reference to the AuthorizationTreeUpdateData
-     */
+    @Override
     public AuthorizationTreeUpdateData getAuthorizationTreeUpdateData() {
         if (authTreeData == null) {
             authTreeData = AuthorizationTreeUpdateData.findByPrimeKey(entityManager,
@@ -69,10 +67,7 @@ public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTree
         return authTreeData;
     }
 
-    /**
-     * Method incrementing the authorization tree update number and thereby
-     * signaling to other beans that they should reconstruct their access trees.
-     */
+    @Override
     public void signalForAuthorizationTreeUpdate() {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">signalForAuthorizationTreeUpdate");
@@ -82,5 +77,4 @@ public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTree
             LOG.trace("<signalForAuthorizationTreeUpdate");
         }
     }
-
 }

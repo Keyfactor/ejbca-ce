@@ -72,6 +72,10 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 
 	Collection<Approval> getApprovals(ApprovalData approvalData);
 
+	/**
+	 * Encode a Collection of Approval and set it in ApprovalData object.
+	 * @param approvals cannot be null.
+	 */
 	void setApprovals(ApprovalData approvalData, Collection<Approval> approvals);
 
 	ApprovalRequest getApprovalRequest(ApprovalData approvalData);

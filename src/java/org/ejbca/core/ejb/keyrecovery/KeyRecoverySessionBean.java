@@ -53,12 +53,9 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 
 /**
- * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
- * ejb-jar.xml.
+ * Stores key recovery data.
  *
  * @version $Id$
- *
- *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "KeyRecoverySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -72,9 +69,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-	//This might lead to a circular dependency when using EJB injection..
-    /*@EJB
-    private SignSessionLocal signSession;*/
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -145,16 +139,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         } 
     }
     
-    /**
-     * Adds a certificates keyrecovery data to the database.
-     *
-     * @param admin the administrator calling the function
-     * @param certificate the certificate used with the keypair.
-     * @param username of the administrator
-     * @param keypair the actual keypair to save.
-     *
-     * @return false if the certificates keyrecovery data already exists.
-     */
+    @Override
     public boolean addKeyRecoveryData(Admin admin, Certificate certificate, String username, KeyPair keypair) {
     	if (log.isTraceEnabled()) {
             log.trace(">addKeyRecoveryData(user: " + username + ")");
@@ -180,18 +165,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-    /**
-     * Updates keyrecovery data
-     *
-     * @param admin the administrator calling the function
-     * @param certificate the certificate used with the keypair.
-     * @param markedasrecoverable DOCUMENT ME!
-     * @param keypair the actual keypair to save.
-     *
-     * @return false if certificates keyrecovery data doesn't exists
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+    @Override
     public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair) {
     	if (log.isTraceEnabled()) {
             log.trace(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString(16) + ", " +
@@ -223,14 +197,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-    /**
-     * Removes a certificates keyrecovery data from the database.
-     *
-     * @param admin the administrator calling the function
-     * @param certificate the certificate used with the keys about to be removed.
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+    @Override
     public void removeKeyRecoveryData(Admin admin, Certificate certificate) {
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16);
     	if (log.isTraceEnabled()) {
@@ -256,14 +223,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         log.trace("<removeKeyRecoveryData()");
     }
 
-    /**
-     * Removes a all keyrecovery data saved for a user from the database.
-     *
-     * @param admin DOCUMENT ME!
-     * @param username DOCUMENT ME!
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+    @Override
     public void removeAllKeyRecoveryData(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
             log.trace(">removeAllKeyRecoveryData(user: " + username + ")");
@@ -285,19 +245,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         log.trace("<removeAllKeyRecoveryData()");
     }
 
-    /**
-     * Returns the keyrecovery data for a user. Observe only one certificates key can be recovered
-     * for every user at the time.
-     *
-     * @param admin 
-     * @param username
-     * @param endentityprofileid, the end entity profile id the user belongs to.
-     *
-     * @return the marked keyrecovery data  or null if no recoverydata can be found.
-     * @throws AuthorizationDeniedException 
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+    @Override
     public KeyRecoveryData keyRecovery(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">keyRecovery(user: " + username + ")");
@@ -337,28 +285,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-    
 	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_KEYRECOVERY = {
 		new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest.class.getName(),null),		
 	};
 	
-    /**
-     * Marks a users newest certificate for key recovery. Newest means certificate with latest not
-     * before date.
-     *
-     * @param admin the administrator calling the function
-     * @param username or the user.
-     * @param the end entity profile of the user, used for access control
-     * @param gc The GlobalConfiguration used to extract approval information
-     *
-     * @return true if operation went successful or false if no certificates could be found for
-     *         user, or user already marked.
-     * @throws AuthorizationDeniedException 
-     * @throws WaitingForApprovalException 
-     * @throws ApprovalException 
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+	@Override
     public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	if (log.isTraceEnabled()) {
             log.trace(">markNewestAsRecoverable(user: " + username + ")");
@@ -406,20 +337,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-    /**
-     * Marks a users certificate for key recovery.
-     *
-     * @param admin the administrator calling the function
-     * @param certificate the certificate used with the keys about to be removed.
-     * @param gc The GlobalConfiguration used to extract approval information
-     *
-     * @return true if operation went successful or false if  certificate couldn't be found.
-     * @throws AuthorizationDeniedException 
-     * @throws WaitingForApprovalException 
-     * @throws ApprovalException 
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+	@Override
     public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
@@ -449,14 +367,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-    /**
-     * Resets keyrecovery mark for a user,
-     *
-     * @param admin DOCUMENT ME!
-     * @param username DOCUMENT ME!
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
+	@Override
     public void unmarkUser(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
             log.trace(">unmarkUser(user: " + username + ")");
@@ -471,17 +382,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         log.trace("<unmarkUser()");
     }
 
-    /**
-     * Returns true if a user is marked for key recovery.
-     *
-     * @param admin DOCUMENT ME!
-     * @param username DOCUMENT ME!
-     *
-     * @return true if user is already marked for key recovery.
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean isUserMarked(Admin admin, String username) {
     	if (log.isTraceEnabled()) {
             log.trace(">isUserMarked(user: " + username + ")");
@@ -503,17 +405,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         return returnval;
     }
 
-    /**
-     * Returns true if specified certificates keys exists in database.
-     *
-     * @param admin the administrator calling the function
-     * @param certificate the certificate used with the keys about to be removed.
-     *
-     * @return true if user is already marked for key recovery.
-     *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsKeys(Admin admin, Certificate certificate) {
         log.trace(">existsKeys()");
         boolean returnval = false;

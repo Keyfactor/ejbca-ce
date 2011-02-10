@@ -19,21 +19,23 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 
+/**
+ * Provides access to authentication system.
+ * @version $Id$
+ */
 public interface AuthenticationSession {
+
     /**
      * Authenticates a user to the user database and returns the user DN.
-     * 
-     * @param username
-     *            unique username within the instance
-     * @param password
-     *            password for the user
+     *
+     * @param username unique username within the instance
+     * @param password password for the user
+     *
      * @return UserDataVO, never returns null
-     * @throws ObjectNotFoundException
-     *             if the user does not exist.
-     * @throws AuthStatusException
-     *             If the users status is incorrect.
-     * @throws AuthLoginException
-     *             If the password is incorrect.
+     *
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException If the users status is incorrect.
+     * @throws AuthLoginException If the password is incorrect.
      */
     public UserDataVO authenticateUser(Admin admin, String username, String password)
             throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
@@ -47,9 +49,7 @@ public interface AuthenticationSession {
      * should be set to generated. In this case this counter will be decreased,
      * and if it reaches 0 status will be generated.
      * 
-     * @param data
-     * @throws ObjectNotFoundException
-     *             if the user does not exist.
+     * @throws ObjectNotFoundException if the user does not exist.
      */
     public void finishUser(UserDataVO data) throws ObjectNotFoundException;
 

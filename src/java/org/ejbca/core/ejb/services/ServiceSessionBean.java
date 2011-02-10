@@ -145,12 +145,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     	serviceSession = sessionContext.getBusinessObject(ServiceSessionLocal.class);
     }
         			
-    /**
-     * Adds a Service to the database.
-     * 
-     * @throws ServiceExistsException
-     *             if service already exists.
-     */
+    @Override
     public void addService(Admin admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ")");
@@ -159,13 +154,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<addService()");
     }
 
-    /**
-     * Adds a service to the database. Used for importing and exporting profiles
-     * from xml-files.
-     * 
-     * @throws ServiceExistsException
-     *             if service already exists.
-     */
+    @Override
     public void addService(Admin admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ", id: " + id + ")");
@@ -197,16 +186,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<addService()");
     }
 
-
-
-    /**
-     * Adds a service with the same content as the original.
-     * 
-     * @throws ServiceExistsException
-     *             if service already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
+    @Override
     public void cloneService(Admin admin, String oldname, String newname) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">cloneService(name: " + oldname + ")");
@@ -241,10 +221,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<cloneService()");
     }
 
-    /**
-     * Removes a service from the database.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean removeService(Admin admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">removeService(name: " + name + ")");
@@ -277,12 +255,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return retval;
     }
 
-    /**
-     * Renames a service
-     * 
-     * @throws ServiceExistsException
-     *             if service already exists.
-     */
+    @Override
     public void renameService(Admin admin, String oldname, String newname) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">renameService(from " + oldname + " to " + newname + ")");
@@ -311,12 +284,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<renameService()");
     }
 
-    /**
-     * Retrieves a Collection of id:s (Integer) to visible authorized services.
-     * Currently is the only check if the superadmin can see them all
-     * 
-     * @return Collection of id:s (Integer)
-     */
+    @Override
     public Collection<Integer> getAuthorizedVisibleServiceIds(Admin admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
@@ -336,14 +304,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return allVisibleServiceIds;
     }
 
-
-
-    /**
-     * Retrieves a named service.
-     * 
-     * @returns the service configuration or null if it doesn't exist.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public ServiceConfiguration getService(Admin admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">getService: " + name);
@@ -359,14 +321,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return returnval;
     }
 
-
-
-    /**
-     * Returns a service id, given it's service name
-     * 
-     * @return the id or 0 if the service cannot be found.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public int getServiceId(Admin admin, String name) {
         int returnval = 0;
         ServiceData serviceData = serviceDataSession.findByName(name);
@@ -376,18 +332,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return returnval;
     }
 
-
-
-    /**
-     * Activates the timer for a named service. The service must already be
-     * previously added.
-     * 
-     * @param admin
-     *            The administrator performing the action
-     * @param name
-     *            the name of the service for which to activate the timer
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public void activateServiceTimer(Admin admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">activateServiceTimer(name: " + name + ")");
@@ -428,12 +374,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return  id;
     }
     
-    /**
-     * Returns a Service name given its id.
-     * 
-     * @return the name or null if id doesnt exists
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public String getServiceName(Admin admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getServiceName(id: " + id + ")");
@@ -529,14 +471,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<ejbTimeout");
     }
     
-    /**
-     * Reads the current timeStamp values and tries to update them in a single transaction.
-     * If the database commit is successful the method returns the worker, otherwise an
-     * exception is thrown.
-     * 
-     * Should only be called from timeoutHandler
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public IWorker getWorkerIfItShouldRun(Integer serviceId, long nextTimeout) {
     	IWorker worker = null;
         ServiceData serviceData = serviceDataSession.findById(serviceId);
@@ -601,6 +537,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public void executeServiceInTransaction(IWorker worker, String serviceName) {
         try {
 			// Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since we have circular dependencies! 
@@ -631,13 +568,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
     }
 
-    /**
-     * Updates service configuration, but does not re-set the timer
-     * 
-     * @param noLogging
-     *            if true no logging (to the database will be done
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
         if (log.isTraceEnabled()) {
             log.trace(">changeService(name: " + name + ")");
@@ -679,12 +611,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<changeService()");
     }
     
-    /**
-     * Loads and activates all the services from database that are active
-     * 
-     */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public void load() {
         // Get all services
         Collection<Timer> currentTimers = timerService.getTimers(); 
@@ -714,10 +643,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
     }
     
-    /**
-     * Internal method used from load() to separate timer access from database access transactions.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public Map<Integer,Long> getNewServiceTimeouts(HashSet<Serializable> existingTimers) {
     	Map<Integer,Long> ret = new HashMap<Integer,Long>();
         HashMap<Integer, String> idToNameMap = getServiceIdToNameMap(intAdmin);
@@ -742,12 +669,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     	return ret;
     }
 
-    /**
-     * Cancels all existing timers a unload
-     * 
-     */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public void unload() {
     	log.debug("Unloading all timers.");
         // Get all services
@@ -767,21 +691,16 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     
     /**
      * Adds a timer to the bean, and cancels all existing timeouts for this id.
-     * 
-     * @param id
-     *            the id of the timer
-     * @return 
+     * @param id the id of the timer
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
     private Timer addTimer(long interval, Integer id) {
         return timerService.createTimer(interval, id);
     }
 
-    /**
-     * cancels a timer with the given Id
-     */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public void cancelTimer(Integer id) {
         for (Timer next : (Collection<Timer>) timerService.getTimers()) {
             try {
@@ -831,10 +750,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return worker;
     }
     
-    /**
-     * Return the configured interval for the specified worker or IInterval.DONT_EXECUTE if it could not be found.
-     */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public long getServiceInterval(Integer serviceId) {
     	long ret = IInterval.DONT_EXECUTE;
         ServiceData htp = serviceDataSession.findById(serviceId);
@@ -854,13 +771,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         return ret;
     }
     
-    /**
-     * Finds a service configuration by id.
-     * 
-     * @returns the service configuration or null if it doesn't exist.
-     * @throws EJBException if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public ServiceConfiguration getServiceConfiguration(Admin admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getServiceConfiguration: " + id);
@@ -890,14 +802,9 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
         return returnval;
     }
-    
 
-    
-    /**
-     * Method creating a hashmap mapping service id (Integer) to service name
-     * (String).
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public HashMap<Integer, String> getServiceIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<ServiceData> result = serviceDataSession.findAll();

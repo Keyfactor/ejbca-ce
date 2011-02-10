@@ -55,10 +55,7 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
     @EJB
     private LogSessionLocal logSession;
     
-    /**
-     * Adds a Collection of AdminEnity to the admingroup. Changes their values
-     * if they already exists. Does not give any errors if the admin group does not exist.
-     */
+    @Override
     public void addAdminEntities(final Admin admin, final String admingroupname, final Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
@@ -82,9 +79,7 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
         }
     }
 
-    /**
-     * Removes a Collection of AdminEntity from the administrator group.
-     */
+    @Override
     public void removeAdminEntities(final Admin admin, final String admingroupname, final Collection<AdminEntity> adminentities) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
@@ -105,5 +100,4 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
             }
         }
     }
-
 }

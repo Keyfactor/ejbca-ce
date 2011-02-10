@@ -38,13 +38,7 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
     /** @return return the query results as a List. */
     List<ServiceData> findAll();
 
-    /**
-     * Adds a new ServiceData object with the given parameters to persistence.
-     * 
-     * @param id
-     * @param name
-     * @param serviceConfiguration
-     */
+    /** Adds a new ServiceData object with the given parameters to persistence. */
     void addServiceData(Integer id, String name, ServiceConfiguration serviceConfiguration);
 
     /**
@@ -55,7 +49,6 @@ public interface ServiceDataSessionLocal extends ServiceDataSession {
 
     /**
      * Removes given parameter from persistence.
-     * 
      * @param serviceData
      */
      void removeServiceData(Integer id);

@@ -25,26 +25,20 @@ import org.ejbca.core.model.log.Admin;
  */
 public interface AdminGroupSession {
 
-    /**
-     * Adds a Collection of AccessRule to an an admin group.
-     */
+    /** Adds a Collection of AccessRule to an an admin group. */
     public void addAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
     
     /**
-     * Method to add an admingroup.
+     * Method to add an AdminGroup.
      * 
-     * @param admingroupname
-     *            name of new admingroup, has to be unique.
-     * @throws AdminGroupExistsException
-     *             if admingroup already exists.
+     * @param admingroupname name of new AdminGroup, have to be unique.
+     * @throws AdminGroupExistsException if AdminGroup already exists.
      */
-    public void addAdminGroup(Admin admin, String admingroupname)
-            throws AdminGroupExistsException;
+    public void addAdminGroup(Admin admin, String admingroupname) throws AdminGroupExistsException;
     
 
     /**
-     * Method to check if an administrator exists in the specified admingroup.
-     * 
+     * Method to check if an administrator exists in the specified AdminGroup.
      * @return true if administrator exists in group
      */
     public boolean existsAdministratorInGroup(Admin admin, int admingrouppk);
@@ -56,9 +50,8 @@ public interface AdminGroupSession {
     public void init(Admin admin, int caid, String superAdminCN) throws AdminGroupExistsException;
     
     /**
-     * Method to get a reference to a admingroup.
-     * 
-     * @return The Admin group, null if it doesn't exist. 
+     * Method to get a reference to a AdminGroup.
+     * @return The AdminGroup, null if it doesn't exist. 
      */
     public AdminGroup getAdminGroup(Admin admin, String admingroupname);
     
@@ -71,10 +64,8 @@ public interface AdminGroupSession {
      * <p/>
      * The AdminGroup objects only contains only name and caid and no accessdata
      * 
-     * @param admin
-     *            The current administrator
-     * @param availableCaIds
-     *            A Collection<Integer> of all CA Ids
+     * @param admin The current administrator
+     * @param availableCaIds A Collection<Integer> of all CA Ids
      */
     public Collection<AdminGroup> getAuthorizedAdminGroupNames(Admin admin, Collection<Integer> availableCaIds);
     
@@ -84,23 +75,16 @@ public interface AdminGroupSession {
      */
     public void removeAccessRules(Admin admin, String admingroupname, List<String> accessrules);
 
-    /**
-     * Replaces a groups accessrules with a new set of rules
-     */
+    /** Replaces a group's accessrules with a new set of rules */
     public void replaceAccessRules(Admin admin, String admingroupname, Collection<AccessRule> accessrules);
     
-    /**
-     * Method to remove a admingroup.
-     */
+    /** Method to remove a AdminGroup. */
     public void removeAdminGroup(Admin admin, String admingroupname);
     
     /**
-     * Metod to rename a admingroup
-     * 
-     * @throws AdminGroupExistsException
-     *             if admingroup already exists.
+     * Renames an AdminGroup.
+     * @throws AdminGroupExistsException if AdminGroup already exists.
      */
-    public void renameAdminGroup(Admin admin, String oldname, String newname)
-            throws AdminGroupExistsException;
+    public void renameAdminGroup(Admin admin, String oldname, String newname) throws AdminGroupExistsException;
     
 }

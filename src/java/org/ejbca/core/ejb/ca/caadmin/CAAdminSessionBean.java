@@ -178,16 +178,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CryptoProviderTools.installBCProvider();
     }
 
-    /**
-     * A method designed to be called at startuptime to speed up the (next)
-     * first request to a CA. This method will initialize the CA-cache with all
-     * CAs, if they are not already in the cache. Can have a side-effect of
-     * upgrading a CA, therefore the Required transaction setting.
-     * 
-     * @param admin
-     *            administrator calling the method
-     * 
-     */
+    @Override
     public void initializeAndUpgradeCAs(Admin admin) {
     	Collection<CAData> result = CAData.findAll(entityManager);
     	Iterator<CAData> iter = result.iterator();
@@ -205,20 +196,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     	}
     }
 
-    /**
-     * Method used to create a new CA.
-     * 
-     * The cainfo parameter should at least contain the following information.
-     * SubjectDN Name (if null then is subjectDN used). Validity a CATokenInfo
-     * Description (optional) Status (SecConst.CA_ACTIVE or
-     * SecConst.CA_WAITING_CERTIFICATE_RESPONSE) SignedBy (CAInfo.SELFSIGNED,
-     * CAInfo.SIGNEDBYEXTERNALCA or CAId of internal CA)
-     * 
-     * For other optional values see:
-     * 
-     * @see org.ejbca.core.model.ca.caadmin.CAInfo
-     * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
-     */
+    @Override
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
     	if (log.isTraceEnabled()) {
@@ -424,19 +402,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     	}
     }
 
-    /**
-     * Method used to edit the data of a CA.
-     * 
-     * Not all of the CAs data can be edited after the creation, therefore will
-     * only the values from CAInfo that is possible be uppdated.
-     * 
-     * @param cainfo
-     *            CAInfo object containing values that will be updated
-     * 
-     *            For values see:
-     * @see org.ejbca.core.model.ca.caadmin.CAInfo
-     * @see org.ejbca.core.model.ca.caadmin.X509CAInfo
-     */
+    @Override
     public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException {
         boolean xkmsrenewcert = false;
         boolean cmsrenewcert = false;
@@ -520,46 +486,23 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, cainfo.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, fe);
             throw new EJBException(fe);
         }
-    } // editCA
+    }
 
-    /**
-     * Returns a value object containing non-sensitive information about a CA
-     * give it's name.
-     * 
-     * @param admin
-     *            administrator calling the method
-     * @param name
-     *            human readable name of CA
-     * @return CAInfo value object, never null
-     * @throws CADoesntExistsException
-     *             if CA with name does not exist or admin is not authorized to
-     *             CA
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public CAInfo getCAInfoOrThrowException(Admin admin, String name) throws CADoesntExistsException {
         return caSession.getCA(admin, name).getCAInfo();
     }
 
-    /**
-     * Returns a value object containing non-sensitive information about a CA
-     * give it's name.
-     * 
-     * @param admin
-     *            administrator calling the method
-     * @param name
-     *            human readable name of CA
-     * @return CAInfo value object or null if CA does not exist or admin is not
-     *         authorized to CA
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public CAInfo getCAInfo(Admin admin, String name) {
         CAInfo caInfo = null;
         try {
             caInfo = getCAInfoOrThrowException(admin, name);
         } catch (CADoesntExistsException e) {
-            // NOPMD ignore, we want to return null and
-            // getCAInfoOrThrowException already logged that we could not find
-            // it
+            // NOPMD ignore, we want to return null and getCAInfoOrThrowException already logged
+        	// that we could not find it
         }
         return caInfo;
     }
@@ -635,78 +578,35 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return cainfo;
     }
 
-    /**
-     * Returns a value object containing non-sensitive information about a CA
-     * give it's CAId.
-     * 
-     * @param admin
-     *            administrator calling the method
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for
-     * @return CAInfo value object or null if CA does not exist or administrator
-     *         is not authorized to CA
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public CAInfo getCAInfo(Admin admin, int caid) {
         // No sign test for the standard method
         return getCAInfo(admin, caid, false);
     }
 
-    /**
-     * Returns a value object containing non-sensitive information about a CA
-     * give it's CAId.
-     * 
-     * If doSignTest is true, and the CA is active and the CA is included in
-     * healthcheck (cainfo.getIncludeInHealthCheck()), a signature with the test
-     * keys is performed to set the CA Token status correctly.
-     * 
-     * @param admin
-     *            administrator calling the method
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for
-     * @param doSignTest
-     *            true if a test signature should be performed, false if only
-     *            the status from token info is checked. Should normally be set
-     *            to false.
-     * @return CAInfo value object or null if CA does not exist or administrator
-     *         is not authorized to CA
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public CAInfo getCAInfo(Admin admin, int caid, boolean doSignTest) {
         CAInfo caInfo = null;
         try {
             caInfo = getCAInfoOrThrowException(admin, caid, doSignTest);
         } catch (CADoesntExistsException e) {
-            // NOPMD ignore, we want to return null and
-            // getCAInfoOrThrowException already logged that we could not find
-            // it
+            // NOPMD ignore, we want to return null and getCAInfoOrThrowException already logged
+        	// that we could not find it
         }
         return caInfo;
-    } // getCAInfo
+    }
 
-
-    /**
-     * Verify that a CA exists. (This method does not check admin privileges and
-     * will leak the existence of a CA.)
-     * 
-     * @param caid
-     *            is the id of the CA
-     * @throws CADoesntExistsException
-     *             if the CA isn't found
-     */
+    @Override
     public void verifyExistenceOfCA(int caid) throws CADoesntExistsException {
     	// TODO: Test if "SELECT a.caId FROM CAData a WHERE a.caId=:caId" improves performance
     	CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
     }
 
-    /**
-     * Returns a HashMap containing mappings of caid (Integer) to CA name
-     * (String) of all CAs in the system.
-     * 
-     * @return HashMap with Integer->String mappings
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public HashMap<Integer, String> getCAIdToNameMap(Admin admin) {
+    @Override
+    public HashMap<Integer,String> getCAIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<CAData> result = CAData.findAll(entityManager);
         Iterator<CAData> iter = result.iterator();
@@ -717,43 +617,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return returnval;
     }
 
-    /**
-     * Creates a certificate request that should be sent to External Root CA for
-     * processing. To create a normal request using the CAs currently active
-     * signature keys use false for all of regenerateKeys, usenextkey and
-     * activatekey.
-     * 
-     * There are three paths: current key, new key or existing next key. Down
-     * these paths there are first two choices activate or don't activate, not
-     * applicable for current key that is always active. And lastly the choice
-     * if CA status should be set to waiting_for_certificate_response, can be
-     * automatically determined depending on if a new key has been activated,
-     * making the CA unable to continue issuing certificate until a response is
-     * received.
-     * 
-     * @param admin
-     *            the administrator performing the action
-     * @param caid
-     *            id of the CA that should create the request
-     * @param cachain
-     *            A Collection of CA-certificates, can be either a collection of Certificate or byte[], or even empty collection or null.
-     * @param regenerateKeys
-     *            if renewing a CA this is used to also generate a new KeyPair,
-     *            if this is true and activatekey is false, the new key will not
-     *            be activated immediately, but added as "next" signingkey.
-     * @param usenextkey
-     *            if regenerateKey is true this should be false. Otherwise it
-     *            makes a request using an already existing "next" signing key,
-     *            perhaps from a previous call with regenerateKeys true.
-     * @param activatekey
-     *            if regenerateKey is true or usenextkey is true, setting this
-     *            flag to true makes the new or "next" key be activated when the
-     *            request is created.
-     * @param keystorepass
-     *            password used when regenerating keys or activating keys, can
-     *            be null if regenerateKeys and activatekey is false.
-     * @return request message in binary format, can be a PKCS10 or CVC request
-     */
+    @Override
     public byte[] makeRequest(Admin admin, int caid, Collection<?> cachainin, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
             throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException,
             CATokenAuthenticationFailedException {
@@ -927,28 +791,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.trace("<makeRequest: " + caid);
         }
         return returnval;
-    } // makeRequest
+    }
 
-    /**
-     * If the CA can do so, this method signs a nother entitys CSR, for
-     * authentication. Prime example of for EU EAC ePassports where the DVs
-     * initial certificate request is signed by the CVCA. The signature
-     * algorithm used to sign the request will be whatever algorithm the CA uses
-     * to sign certificates.
-     * 
-     * @param admin
-     * @param caid
-     *            the CA that should sign the request
-     * @param request
-     *            binary certificate request, the format should be understood by
-     *            the CA
-     * @return binary certificate request, which is the same as passed in except
-     *         also signed by the CA, or it might be the exact same if the CA
-     *         does not support request signing
-     * @throws AuthorizationDeniedException
-     * @throws CADoesntExistsException
-     * @throws CATokenOfflineException
-     */
+    @Override
     public byte[] signRequest(Admin admin, int caid, byte[] request, boolean usepreviouskey, boolean createlinkcert) throws AuthorizationDeniedException,
             CADoesntExistsException, CATokenOfflineException {
        if(!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
@@ -973,29 +818,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return returnval;
     }
 
-    /**
-     * Receives a certificate response from an external CA and sets the newly
-     * created CAs status to active.
-     * 
-     * @param admin
-     *            The administrator performing the action
-     * @param caid
-     *            The caid (DN.hashCode()) of the CA that is receiving this
-     *            response
-     * @param responsemessage
-     *            X509ResponseMessage with the certificate issued to this CA
-     * @param chain
-     *            an optional collection with the CA certificate(s), or null. If
-     *            given the complete chain (except this CAs own certificate must
-     *            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates. 
-     * @param tokenAuthenticationCode
-     *            the CA token authentication code, if we need to activate new
-     *            CA keys. Otherwise this can be null. This is needed if we have
-     *            generated a request with new CA keys, but not activated the
-     *            new keys immediately. See makeRequest method
-     * 
-     * @throws EjbcaException
-     */
+    @Override
     public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<?> cachain, String tokenAuthenticationCode)
             throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException {
         // check authorization
@@ -1015,7 +838,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Get CA info.
-        //CADataLocal cadata = null;
         CAData cadata = CAData.findById(entityManager, Integer.valueOf(caid));
         if (cadata == null) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
@@ -1023,9 +845,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new EjbcaException(msg);
         }
         try {
-            //cadata = this.cadatahome.findByPrimaryKey(Integer.valueOf(caid));
             CA ca = cadata.getCA();
-
             try {
                 if (responsemessage instanceof X509ResponseMessage) {
                     cacert = ((X509ResponseMessage) responsemessage).getCertificate();
@@ -1228,15 +1048,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         String msg = intres.getLocalizedMessage("caadmin.certrespreceived", Integer.valueOf(caid));
         logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
-    } // recieveResponse
+    }
 
-    /**
-     * Processes a Certificate Request from an external CA.
-     * 
-     * @param cainfo
-     *            the info for the CA that should be created, or already exists.
-     *            Don't forget to set signedBy in the info.
-     */
+    @Override
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage) throws CAExistsException, CADoesntExistsException,
             AuthorizationDeniedException, CATokenOfflineException {
         final CA ca;
@@ -1425,13 +1239,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
         }
-
         return returnval;
-    } // processRequest
+    }
 
-    /**
-     * Add an external CA's certificate as a CA
-     */
+    @Override
     public void importCACertificate(Admin admin, String caname, Collection<Certificate> certificates) throws CreateException {
         Certificate caCertificate = (Certificate) certificates.iterator().next();
         CA ca = null;
@@ -1526,16 +1337,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
     }
 
-    /**
-     * Inits an external CA service. this means that a new key and certificate
-     * will be generated for this service, if it exists before. If it does not
-     * exist before it will be created.
-     * 
-     * @throws CATokenOfflineException
-     * @throws AuthorizationDeniedException
-     * @throws IllegalKeyStoreException
-     * @throws UnsupportedEncodingException
-     */
+    @Override
     public void initExternalCAService(Admin admin, int caid, ExtendedCAServiceInfo info) throws CATokenOfflineException, AuthorizationDeniedException,
             CADoesntExistsException, UnsupportedEncodingException, IllegalKeyStoreException {
         // check authorization
@@ -1565,22 +1367,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     }
 
-    /**
-     * Renews a existing CA certificate using the same keys as before, or
-     * generating new keys. Data about new CA is taken from database. This
-     * method is used for renewing CAs internally in EJBCA. For renewing CAs
-     * signed by external CAs, makeRequest is used to generate a certificate
-     * request.
-     * 
-     * @param caid
-     *            the caid of the CA that will be renewed
-     * @param keystorepass
-     *            password used when regenerating keys, can be null if
-     *            regenerateKeys is false.
-     * @param regenerateKeys
-     *            , if true and the CA have a softCAToken the keys are
-     *            regenerated before the certrequest.
-     */
+    @Override
     public void renewCA(Admin admin, int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException,
             CertPathValidatorException, CATokenOfflineException, CATokenAuthenticationFailedException {
         if (log.isTraceEnabled()) {
@@ -1746,16 +1533,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isTraceEnabled()) {
             log.trace("<CAAdminSession, renewCA(), caid=" + caid);
         }
-    } // renewCA
+    }
 
     /**
-     * Soft keystores can not have empty passwords, it probably mens to use the
+     * Soft KeyStores can not have empty passwords, it probably means to use the
      * default one
      * 
-     * @param keystorepass
-     *            The password that can not be empty if SW.
-     * @param tokenInfo
-     *            Tells if SW.
+     * @param keystorepass The password that can not be empty if SW.
+     * @param tokenInfo Used to determine if it is a soft token
      * @return The password to use.
      */
     private String getDefaultKeyStorePassIfSWAndEmpty(final String keystorepass, CATokenInfo tokenInfo) {
@@ -1767,13 +1552,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return keystorepass;
     }
 
-    /**
-     * Method that revokes the CA. After this is all certificates created by
-     * this CA revoked and a final CRL is created.
-     * 
-     * @param reason
-     *            one of RevokedCertInfo.REVOCATION_REASON values.
-     */
+    @Override
     public void revokeCA(Admin admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
         // check authorization
         if(!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
@@ -1815,25 +1594,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAREVOKED, msg);
     }
 
-    /**
-     * Method that is used to create a new CA from an imported keystore from
-     * another type of CA, for example OpenSSL.
-     * 
-     * @param admin
-     *            Administrator
-     * @param caname
-     *            the CA-name (human readable) the newly created CA will get
-     * @param p12file
-     *            a byte array of old server p12 file.
-     * @param keystorepass
-     *            used to unlock the keystore.
-     * @param privkeypass
-     *            used to unlock the private key.
-     * @param privateSignatureKeyAlias
-     *            the alias for the private key in the keystore.
-     * @param privateEncryptionKeyAlias
-     *            the alias for the private encryption key in the keystore
-     */
+    @Override
     public void importCAFromKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws Exception {
         try {
@@ -1885,30 +1646,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
             throw new EJBException(e);
         }
-    } // importCAFromKeyStore
+    }
 
-    /**
-     * Removes the catoken keystore from the database and sets its status to
-     * {@link ICAToken#STATUS_OFFLINE}.
-     * 
-     * The signature algorithm, encryption algorithm, key algorithm and other
-     * properties are not removed so that the keystore can later by restored by
-     * using
-     * {@link CAAdminSessionBean#restoreCAKeyStore(Admin, String, byte[], String, String, String, String)}
-     * .
-     * 
-     * @param admin
-     *            Administrator
-     * @param caname
-     *            Name (human readable) of CA for which the keystore should be
-     *            removed
-     * 
-     * @throws EJBException
-     *             in case if the catoken is not a soft catoken
-     * 
-     * @see CAAdminSessionBean#exportCAKeyStore(Admin, String, String, String,
-     *      String, String)
-     */
+    @Override
     public void removeCAKeyStore(Admin admin, String caname) throws EJBException {
         try {
             // check authorization
@@ -1946,33 +1686,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
             throw new EJBException(e);
         }
-    } // removeCAKeyStore
+    }
 
-    /**
-     * Restores the keys for the catoken from a keystore.
-     * 
-     * @param admin
-     *            Administrator
-     * @param caname
-     *            Name (human readable) of the CA for which the keystore should
-     *            be restored
-     * @param p12file
-     *            The keystore to read keys from
-     * @param keystorepass
-     *            Password for the keystore
-     * @param privkeypass
-     *            Password for the private key
-     * @param privateSignatureKeyAlias
-     *            Alias of the signature key in the keystore
-     * @param privateEncryptionKeyAlias
-     *            Alias of the encryption key in the keystore
-     * 
-     * @throws EJBException
-     *             in case of the catoken is not a soft catoken or if the ca
-     *             already has an active catoken or if any of the aliases can
-     *             not be found or if the keystore does not contain the right
-     *             private key
-     */
+    @Override
     public void restoreCAKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws EJBException {
         try {
@@ -2070,35 +1786,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg, e);
             throw new EJBException(e);
         }
-    } // restoreCAKeyStore
+    }
 
-    /**
-     * Method that is used to create a new CA from keys and certificates.
-     * 
-     * @param admin
-     * @param caname
-     *            The name the new CA will have
-     * @param keystorepass
-     *            The keystore password the CA will have
-     * @param signatureCertChain
-     *            The CA certificate(s)
-     * @param p12PublicSignatureKey
-     *            CA public signature key
-     * @param p12PrivateSignatureKey
-     *            CA private signature key
-     * @param p12PrivateEncryptionKey
-     *            CA private encryption key, or null to generate a new
-     *            encryption key
-     * @param p12PublicEncryptionKey
-     *            CA public encryption key, or null to generate a new encryption
-     *            key
-     * 
-     * @throws Exception
-     * @throws CATokenAuthenticationFailedException
-     * @throws CATokenOfflineException
-     * @throws IllegalKeyStoreException
-     * @throws CreateException
-     */
+    @Override
     public void importCAFromKeys(Admin admin, String caname, String keystorepass, Certificate[] signatureCertChain, PublicKey p12PublicSignatureKey,
             PrivateKey p12PrivateSignatureKey, PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey) throws Exception,
             CATokenAuthenticationFailedException, CATokenOfflineException, IllegalKeyStoreException, CreateException {
@@ -2121,25 +1811,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CACREATED, msg);
     }
 
-    /**
-     * Method that is used to create a new CA from keys on an HSM and
-     * certificates in a file.
-     * 
-     * @param admin
-     *            Administrator
-     * @param caname
-     *            the CA-name (human readable) the newly created CA will get
-     * @param signatureCertChain
-     *            chain of certificates, this CAs certificate first.
-     * @param catokenpassword
-     *            used to unlock the HSM keys.
-     * @param catokenclasspath
-     *            classpath to one of the HardToken classes, for example
-     *            org.ejbca.core.model.ca.catoken.PKCS11CAToken.
-     * @param catokenproperties
-     *            the catoken properties, same as usually entered in the
-     *            adminGUI for hard token CAs.
-     */
+    @Override
     public void importCAFromHSM(Admin admin, String caname, Certificate[] signatureCertChain, String catokenpassword, String catokenclasspath,
             String catokenproperties) throws Exception {
         String signatureAlgorithm = CertTools.getSignatureAlgorithm((Certificate) signatureCertChain[0]);
@@ -2163,23 +1835,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     /**
-     * 
-     * @param admin
-     * @param caname
-     * @param keystorepass
-     * @param signatureCertChain
-     * @param catoken
      * @param keyAlgorithm
      *            keyalgorithm for extended CA services, OCSP, XKMS, CMS.
      *            Example AlgorithmConstants.KEYALGORITHM_RSA
      * @param keySpecification
      *            keyspecification for extended CA services, OCSP, XKMS, CMS.
      *            Example 2048
-     * @throws Exception
-     * @throws CATokenAuthenticationFailedException
-     * @throws CATokenOfflineException
-     * @throws IllegalKeyStoreException
-     * @throws CreateException
      */
     private CA importCA(Admin admin, String caname, String keystorepass, Certificate[] signatureCertChain, CATokenContainer catoken, String keyAlgorithm,
             String keySpecification) throws Exception, CATokenAuthenticationFailedException, CATokenOfflineException, IllegalKeyStoreException, CreateException {
@@ -2319,34 +1980,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         //cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
         crlCreateSession.run(admin, ca);
         return ca;
-    } // importCA
+    }
 
-    /**
-     * Exports a CA to file. The method only works for soft tokens.
-     * 
-     * @param admin
-     *            Administrator
-     * @param caname
-     *            the CA-name (human readable) the CA
-     * @param keystorepass
-     *            used to lock the keystore.
-     * @param privkeypass
-     *            used to lock the private key.
-     * @param privateSignatureKeyAlias
-     *            the alias for the private signature key in the keystore.
-     * @param privateEncryptionKeyAlias
-     *            the alias for the private encryption key in teh keystore
-     * 
-     * @return A byte array of the CAs p12 in case of X509 CA and pkcs8 private
-     *         certificate signing key in case of CVC CA.
-     */
+    @Override
     public byte[] exportCAKeyStore(Admin admin, String caname, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
             String privateEncryptionKeyAlias) throws Exception {
         log.trace(">exportCAKeyStore");
         try {
         	CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
         	CA thisCa = cadata.getCA();
-            //CA thisCa = cadatahome.findByName(caname).getCA();
             // Make sure we are not trying to export a hard or invalid token
             CATokenContainer thisCAToken = thisCa.getCAToken();
             int tokentype = thisCAToken.getCATokenType();
@@ -2399,7 +2041,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
                 keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass.toCharArray(), certificateChainSignature);
                 keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass.toCharArray(), certificateChainEncryption);
-                // Return keystore as byte array and clean up
+                // Return KeyStore as byte array and clean up
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 keystore.store(baos, keystorepass.toCharArray());
                 if (keystore.isKeyEntry(privateSignatureKeyAlias)) {
@@ -2419,15 +2061,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEXPORTED, msg, e);
             throw new EJBException(e);
         }
-    } // exportCAKeyStore
+    }
 
-    /**
-     * Method returning a Collection of Certificate of all CA certificates known
-     * to the system. Certificates for External CAs or CAs that are awaiting
-     * certificate response are not returned, because we don't have certificates
-     * for them. Uses getAvailableCAs to list CAs.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Certificate> getAllCACertificates() {
         ArrayList<Certificate> returnval = new ArrayList<Certificate>();
 
@@ -2440,37 +2077,23 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (cadata == null) {
                 	log.error("Can't find CA: " + caid);
                 }
-                //CADataLocal cadata = cadatahome.findByPrimaryKey(caid);
                 CA ca = cadata.getCA();
                 if (log.isDebugEnabled()) {
                     log.debug("Getting certificate chain for CA: " + ca.getName() + ", " + ca.getCAId());
                 }
                 returnval.add(ca.getCACertificate());
             }
-        /*} catch (javax.ejb.FinderException fe) {
-            log.error("Can't find CA: ", fe);*/
         } catch (UnsupportedEncodingException uee) {
             throw new EJBException(uee);
         } catch (IllegalKeyStoreException e) {
             throw new EJBException(e);
         }
         return returnval;
-    } // getAllCACertificates
+    }
 
-    /**
-     * Retrieve fingerprint for all keys as a String. Used for testing.
-     * 
-     * FIXME: Fix exception handling for this method.
-     * 
-     * @param admin
-     *            Administrator
-     * @param caname
-     *            the name of the CA whose fingerprint should be retrieved.
-     * @throws Exception if the CA is not a soft token CA, or if authorization fails.
-     *
-     */
+    //FIXME: Fix exception handling for this method.
+    @Override
     public String getKeyFingerPrint(Admin admin, String caname) throws Exception {
-      
             if (admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
                 if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
                     Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
@@ -2478,7 +2101,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         	CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
         	CA thisCa = cadata.getCA();
-            //CA thisCa = cadatahome.findByName(caname).getCA();
 
             // Make sure we are not trying to export a hard or invalid token
             if (thisCa.getCAType() != CATokenConstants.CATOKENTYPE_P12) {
@@ -2494,38 +2116,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             md.update(p12PrivateCertSignKey.getEncoded());
             md.update(p12PrivateCRLSignKey.getEncoded());
             return new String(Hex.encode(md.digest()));
-   
-    } // getKeyFingerPrint
+    }
 
-    /**
-     * Activates an 'Offline' CA Token and sets the CA status to acitve and
-     * ready for use again. The admin must be authorized to
-     * "/ca_functionality/basic_functions/activate_ca" inorder to
-     * activate/deactivate.
-     * 
-     * @param admin
-     *            the adomistrator calling the method
-     * @param caid
-     *            the is of the ca to activate
-     * @param the
-     *            authorizationcode used to unlock the CA tokens private keys.
-     * @param gc
-     *            is the GlobalConfiguration used to extract approval
-     *            information
-     * 
-     * @throws AuthorizationDeniedException
-     *             it the administrator isn't authorized to activate the CA.
-     * @throws CATokenAuthenticationFailedException
-     *             if the current status of the ca or authenticationcode is
-     *             wrong.
-     * @throws CATokenOfflineException
-     *             if the CA token is still off-line when calling the method.
-     * @throws ApprovalException
-     *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
-     */
+    @Override
     public void activateCAToken(Admin admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
             CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException {
         // Authorize
@@ -2568,7 +2161,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new EJBException(msg);
             }
-            //CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
             boolean cATokenDisconnected = false;
             try {
                 if ((cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == ICAToken.STATUS_OFFLINE) {
@@ -2619,22 +2211,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN = { new ApprovalOveradableClassName(
             org.ejbca.core.model.approval.approvalrequests.ActivateCATokenApprovalRequest.class.getName(), null), };
 
-    /**
-     * Deactivates an 'active' CA token and sets the CA status to offline. The
-     * admin must be authorized to
-     * "/ca_functionality/basic_functions/activate_ca" inorder to
-     * activate/deactivate.
-     * 
-     * @param admin
-     *            the adomistrator calling the method
-     * @param caid
-     *            the is of the ca to activate.
-     * 
-     * @throws AuthorizationDeniedException
-     *             it the administrator isn't authorized to activate the CA.
-     * @throws EjbcaException
-     *             if the given caid couldn't be found or its status is wrong.
-     */
+    @Override
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException {
         // Authorize
         if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA)) {
@@ -2656,7 +2233,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
                 throw new EJBException(msg);
             }
-            //CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
             if (cadata.getStatus() == SecConst.CA_EXTERNAL) {
                 String msg = intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid));
                 log.info(msg);
@@ -2684,9 +2260,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }*/
     }
 
-    /**
-     * Method used to check if certificate profile id exists in any CA.
-     */
+    /** Method used to check if certificate profile id exists in any CA. */
+    @Override
     public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid) {
         boolean returnval = false;
         try {
@@ -2702,41 +2277,19 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return returnval;
     }
 
-    /**
-     * Encrypts data with a CA key.
-     * 
-     * @param caid
-     *            identifies the CA
-     * @param data
-     *            is the data to process
-     * @return processed data
-     * @throws Exception
-     */
+    @Override
     public byte[] encryptWithCA(int caid, byte[] data) throws Exception {
     	CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-        //CADataLocal caData = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
         return caData.getCA().encryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
     }
 
-    /**
-     * Decrypts data with a CA key.
-     * 
-     * @param caid
-     *            identifies the CA
-     * @param data
-     *            is the data to process
-     * @return processed data
-     * @throws Exception
-     */
+    @Override
     public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
     	CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
         return caData.getCA().decryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
     }
 
-    /**
-     * Method used to check if publishers id exists in any CAs CRLPublishers
-     * Collection.
-     */
+    @Override
     public boolean exitsPublisherInCAs(Admin admin, int publisherid) {
         boolean returnval = false;
         try {
@@ -2753,24 +2306,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (java.io.UnsupportedEncodingException e) {
         } catch (IllegalKeyStoreException e) {
         }
-
         return returnval;
     }
 
-    /**
-     * Help method that checks the CA data config and the certificate profile if
-     * the specified action requires approvals and how many
-     * 
-     * @param is
-     *            the administrator requesting this operation
-     * @param action
-     *            one of CAInfo.REQ_APPROVAL_ constants
-     * @param caid
-     *            of the ca to check
-     * @param certprofile
-     *            of the ca to check
-     * @return 0 if no approvals is required otherwise the number of approvals
-     */
+    @Override
     public int getNumOfApprovalRequired(Admin admin, int action, int caid, int certProfileId) {
         int retval = 0;
         CAInfo cainfo = getCAInfo(admin, caid);
@@ -2786,23 +2325,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return retval;
     }
 
-    /**
-     * Method that publishes the given CA certificate chain to the list of
-     * publishers. Is mainly used when CA is created.
-     * 
-     * @param admin
-     *            Information about the administrator or admin preforming the
-     *            event.
-     * @param certificatechain
-     *            certchain of certificate to publish
-     * @param usedpublishers
-     *            a collection if publisher id's (Integer) indicating which
-     *            publisher that should be used.
-     * @param caDataDN
-     *            DN from CA data. If a the CA certificate does not have a DN
-     *            object to be used by the publisher this DN could be searched
-     *            for the object.
-     */
+    @Override
     public void publishCACertificate(Admin admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers, String caDataDN) {
         try {
             Object[] certs = certificatechain.toArray();
@@ -2868,14 +2391,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
     }
 
-
-
-    /**
-     * Retrives a Collection of id:s (Integer) to authorized publishers.
-     * 
-     * @param admin
-     * @return Collection of id:s (Integer)
-     */
+    @Override
     public Collection<Integer> getAuthorizedPublisherIds(Admin admin) {
         HashSet<Integer> returnval = new HashSet<Integer>();
         try {
@@ -2898,14 +2414,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
 
-  
-    /**
-     * Used by healthcheck. Validate that CAs are online and optionally performs
-     * a signature test.
-     * 
-     * @return an error message or an empty String if all are ok.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public String healthCheck() {
         String returnval = "";
         final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -2926,19 +2436,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return returnval;
     }
 
-    /**
-     * Method used to perform a extended CA Service, like OCSP CA Service.
-     *
-     * @param admin   Information about the administrator or admin preforming the event.
-     * @param caid    the ca that should perform the service
-     * @param request a service request.
-     * @return A corresponding response.
-     * @throws IllegalExtendedCAServiceRequestException
-     *                                 if the request was invalid.
-     * @throws ExtendedCAServiceNotActiveException
-     *                                 thrown when the service for the given CA isn't activated
-     * @throws CADoesntExistsException The given caid doesn't exists.
-     */
+    @Override
     public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException {
         // Get CA that will process request

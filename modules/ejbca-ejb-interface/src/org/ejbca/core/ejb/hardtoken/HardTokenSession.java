@@ -12,15 +12,24 @@
  *************************************************************************/
 package org.ejbca.core.ejb.hardtoken;
 
+import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
+import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
+import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
+import org.ejbca.core.model.hardtoken.types.HardToken;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 
 /** Session bean for managing hard tokens, hard token profiles and hard token issuers. 
  * A hard token is a smart card, usb token and similar. A generic thing actually.
@@ -28,483 +37,310 @@ import org.ejbca.core.model.hardtoken.UnavailableTokenException;
  * @version $Id$
  */
 public interface HardTokenSession {
-    /**
+
+	/**
      * Adds a hard token profile to the database.
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @throws HardTokenProfileExistsException if hard token already exists.
      */
-    public void addHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String name,
-            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile) throws HardTokenProfileExistsException;
+    public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException;
 
     /**
      * Adds a hard token profile to the database. Used for importing and
      * exporting profiles from xml-files.
      * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @throws HardTokenProfileExistsException if hard token already exists.
      */
-    public void addHardTokenProfile(org.ejbca.core.model.log.Admin admin, int profileid, java.lang.String name,
-            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile) throws HardTokenProfileExistsException;
+    public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException;
 
-    /**
-     * Updates hard token profile data
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    public void changeHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String name,
-            org.ejbca.core.model.hardtoken.profiles.HardTokenProfile profile);
+    /** Updates hard token profile data. */
+    public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile);
 
     /**
      * Adds a hard token profile with the same content as the original profile,
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @throws HardTokenProfileExistsException if hard token already exists.
      */
-    public void cloneHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws HardTokenProfileExistsException;
+    public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException;
 
-    /**
-     * Removes a hard token profile from the database.
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    public void removeHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String name);
+    /** Removes a hard token profile from the database. */
+    public void removeHardTokenProfile(Admin admin, String name);
 
     /**
      * Renames a hard token profile
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @throws HardTokenProfileExistsException if hard token already exists.
      */
-    public void renameHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String oldname, java.lang.String newname)
-            throws HardTokenProfileExistsException;
+    public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException;
 
     /**
-     * Retrives a Collection of id:s (Integer) to authorized profiles.
+     * Retrieves a Collection of id:s (Integer) to authorized profiles.
      * Authorized hard token profiles are profiles containing only authorized
      * certificate profiles and caids.
      * 
      * @return Collection of id:s (Integer)
      */
-    public java.util.Collection<Integer> getAuthorizedHardTokenProfileIds(org.ejbca.core.model.log.Admin admin);
+    public Collection<Integer> getAuthorizedHardTokenProfileIds(Admin admin);
 
-    /**
-     * Method creating a hashmap mapping profile id (Integer) to profile name
-     * (String).
-     */
-    public java.util.HashMap<Integer, String> getHardTokenProfileIdToNameMap(org.ejbca.core.model.log.Admin admin);
+    /** @return a mapping of profile id (Integer) to profile name (String). */
+    public HashMap<Integer, String> getHardTokenProfileIdToNameMap(Admin admin);
 
-    /**
-     * Retrives a named hard token profile.
-     */
-    public org.ejbca.core.model.hardtoken.profiles.HardTokenProfile getHardTokenProfile(org.ejbca.core.model.log.Admin admin, java.lang.String name);
+    /** Retrieves a named hard token profile. */
+    public HardTokenProfile getHardTokenProfile(Admin admin, String name);
 
-    /**
-     * Finds a hard token profile by id.
-     */
-    public org.ejbca.core.model.hardtoken.profiles.HardTokenProfile getHardTokenProfile(org.ejbca.core.model.log.Admin admin, int id);
+    /** Finds a hard token profile by id. */
+    public HardTokenProfile getHardTokenProfile(Admin admin, int id);
 
     /**
      * Help method used by hard token profile proxys to indicate if it is time
      * to update it's profile data.
      */
-    public int getHardTokenProfileUpdateCount(org.ejbca.core.model.log.Admin admin, int hardtokenprofileid);
+    public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid);
 
-    /**
-     * Returns a hard token profile id, given it's hard token profile name
-     * 
-     * @return the id or 0 if hardtokenprofile cannot be found.
-     */
-    public int getHardTokenProfileId(org.ejbca.core.model.log.Admin admin, java.lang.String name);
+    /** @return a hard token profile id from it's name or 0 if it can't be found. */
+    public int getHardTokenProfileId(Admin admin, String name);
 
     /**
      * Returns a hard token profile name given its id.
-     * 
-     * @return the name or null if id noesnt exists
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @return the name or null if id doesn't exist
      */
-    public java.lang.String getHardTokenProfileName(org.ejbca.core.model.log.Admin admin, int id);
+    public String getHardTokenProfileName(Admin admin, int id);
 
     /**
      * Adds a hard token issuer to the database.
-     * 
      * @return false if hard token issuer already exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public boolean addHardTokenIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String alias, int admingroupid,
-            org.ejbca.core.model.hardtoken.HardTokenIssuer issuerdata);
+    public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata);
 
     /**
      * Updates hard token issuer data
-     * 
      * @return false if alias doesn't exists
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public boolean changeHardTokenIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String alias, org.ejbca.core.model.hardtoken.HardTokenIssuer issuerdata);
+    public boolean changeHardTokenIssuer(Admin admin, String alias, HardTokenIssuer issuerdata);
 
     /**
      * Adds a hard token issuer with the same content as the original issuer,
-     * 
-     * @return false if the new alias or certificatesn already exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @return false if the new alias or certificatesn already exists (???)
      */
-    public boolean cloneHardTokenIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String oldalias, java.lang.String newalias, int admingroupid);
+    public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, int admingroupid);
 
-    /**
-     * Removes a hard token issuer from the database.
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    public void removeHardTokenIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String alias);
+    /** Removes a hard token issuer from the database. */
+    public void removeHardTokenIssuer(Admin admin, String alias);
 
     /**
      * Renames a hard token issuer
-     * 
-     * @return false if new alias or certificatesn already exists
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @return false if new alias or certificatesn already exists (???)
      */
-    public boolean renameHardTokenIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String oldalias, java.lang.String newalias, int newadmingroupid);
+    public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias, int newadmingroupid);
 
     /**
      * Method to check if an administrator is authorized to issue hard tokens
      * for the given alias.
      * 
-     * @param admin
-     *            administrator to check
-     * @param alias
-     *            alias of hardtoken issuer.
+     * @param admin administrator to check
+     * @param alias alias of hardtoken issuer.
      * @return true if administrator is authorized to issue hardtoken with given
      *         alias.
      */
-    public boolean getAuthorizedToHardTokenIssuer(org.ejbca.core.model.log.Admin admin, java.lang.String alias);
+    public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias);
 
     /**
      * Returns the available hard token issuers authorized to the administrator.
-     * 
      * @return A collection of available HardTokenIssuerData.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public java.util.Collection<HardTokenIssuerData> getHardTokenIssuerDatas(org.ejbca.core.model.log.Admin admin);
+    public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(Admin admin);
 
     /**
-     * Returns the available hard token issuer alliases authorized to the
+     * Returns the available hard token issuer aliases authorized to the
      * administrator.
      * 
      * @return A collection of available hard token issuer aliases.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public java.util.Collection<String> getHardTokenIssuerAliases(org.ejbca.core.model.log.Admin admin);
+    public Collection<String> getHardTokenIssuerAliases(Admin admin);
 
     /**
      * Returns the available hard token issuers authorized to the administrator.
-     * 
-     * @return A treemap of available hard token issuers.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @return A TreeMap of available hard token issuers.
      */
-    public java.util.TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(org.ejbca.core.model.log.Admin admin);
+    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(Admin admin);
 
-    /**
-     * Returns the specified hard token issuer.
-     * 
-     * @return the hard token issuer data or null if hard token issuer doesn't
-     *         exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
+    /** @return the hard token issuer data or null if it doesn't exist. */
     public org.ejbca.core.model.hardtoken.HardTokenIssuerData getHardTokenIssuerData(org.ejbca.core.model.log.Admin admin, java.lang.String alias);
 
-    /**
-     * Returns the specified hard token issuer.
-     * 
-     * @return the hard token issuer data or null if hard token issuer doesn't
-     *         exists.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
+    /** @return the hard token issuer data or null if it doesn't exist. */
     public org.ejbca.core.model.hardtoken.HardTokenIssuerData getHardTokenIssuerData(org.ejbca.core.model.log.Admin admin, int id);
 
-    /**
-     * Returns the number of available hard token issuer.
-     * 
-     * @return the number of available hard token issuer.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    public int getNumberOfHardTokenIssuers(org.ejbca.core.model.log.Admin admin);
+    /** @return the number of available hard token issuers. */
+    public int getNumberOfHardTokenIssuers(Admin admin);
 
-    /**
-     * Returns a hard token issuer id given its alias.
-     * 
-     * @return id number of hard token issuer.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    public int getHardTokenIssuerId(org.ejbca.core.model.log.Admin admin, java.lang.String alias);
+    /** @return a hard token issuer id given its alias. */
+    public int getHardTokenIssuerId(Admin admin, String alias);
 
-    /**
-     * Returns a hard token issuer alias given its id.
-     * 
-     * @return the alias or null if id noesnt exists
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    public java.lang.String getHardTokenIssuerAlias(org.ejbca.core.model.log.Admin admin, int id);
+    /** @return the alias or null if id doesn't exist. */
+    public String getHardTokenIssuerAlias(Admin admin, int id);
 
     /**
      * Checks if a hard token profile is among a hard tokens issuers available
      * token types.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param issuerid
-     *            the id of the issuer to check.
-     * @param userdata
-     *            the data of user about to be generated
+     * @param admin the administrator calling the function
+     * @param issuerid the id of the issuer to check.
+     * @param userdata the data of user about to be generated
      * @throws UnavailableTokenException
      *             if users tokentype isn't among hard token issuers available
      *             tokentypes.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public void getIsHardTokenProfileAvailableToIssuer(org.ejbca.core.model.log.Admin admin, int issuerid, org.ejbca.core.model.ra.UserDataVO userdata)
-            throws UnavailableTokenException;
+    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException;
 
     /**
      * Adds a hard token to the database
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @param username
-     *            the user owning the token.
-     * @param significantissuerdn
-     *            indicates which CA the hard token should belong to.
-     * @param hardtokendata
-     *            the hard token data
-     * @param certificates
-     *            a collection of certificates places in the hard token
-     * @param copyof
-     *            indicates if the newly created token is a copy of an existing
-     *            token. Use null if token is an original
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     * @throws HardTokenExistsException
-     *             if tokensn already exists in databas.
+     * @param admin the administrator calling the function
+     * @param tokensn The serial number of token.
+     * @param username the user owning the token.
+     * @param significantissuerdn indicates which CA the hard token should belong to.
+     * @param hardtokendata the hard token data
+     * @param certificates a collection of certificates places in the hard token
+     * @param copyof indicates if the newly created token is a copy of an existing
+     *            token. Use null if token is an original.
+     * @throws HardTokenExistsException if tokensn already exists in database.
      */
-    public void addHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, java.lang.String username, java.lang.String significantissuerdn,
-            int tokentype, org.ejbca.core.model.hardtoken.types.HardToken hardtokendata, java.util.Collection<Certificate> certificates, java.lang.String copyof)
+    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn,
+            int tokentype, HardToken hardtokendata, Collection<Certificate> certificates, String copyof)
             throws HardTokenExistsException;
 
     /**
-     * changes a hard token data in the database
+     * Changes a hard token data in the database.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @param hardtokendata
-     *            the hard token data
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @param admin the administrator calling the function
+     * @param tokensn The serial number of token.
+     * @param hardtokendata the hard token data
      * @throws HardTokenDoesntExistsException
-     *             if tokensn doesn't exists in databas.
+     *             if tokensn doesn't exists in database.
      */
-    public void changeHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, int tokentype,
-            org.ejbca.core.model.hardtoken.types.HardToken hardtokendata) throws HardTokenDoesntExistsException;
+    public void changeHardToken(Admin admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException;
 
     /**
-     * removes a hard token data from the database
+     * Removes a hard token data from the database.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @param admin the administrator calling the function
+     * @param tokensn The serial number of token.
      * @throws HardTokenDoesntExistsException
-     *             if tokensn doesn't exists in databas.
+     *             if tokensn doesn't exists in database.
      */
-    public void removeHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn)
-            throws HardTokenDoesntExistsException;
+    public void removeHardToken(Admin admin, String tokensn) throws HardTokenDoesntExistsException;
 
     /**
-     * Checks if a hard token serialnumber exists in the database
+     * Checks if a hard token serial number exists in the database
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
+     * @param admin the administrator calling the function
+     * @param tokensn The serial number of token.
      * @return true if it exists or false otherwise.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public boolean existsHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn);
+    public boolean existsHardToken(Admin admin, String tokensn);
 
     /**
-     * returns hard token data for the specified tokensn
+     * Returns hard token data for the specified tokensn.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @return the hard token data or NULL if tokensn doesnt exists in database.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @param admin the administrator calling the function
+     * @param tokensn The serial number of token.
+     * @return the hard token data or null if tokensn doesn't exists in database.
      */
-    public org.ejbca.core.model.hardtoken.HardTokenData getHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, boolean includePUK)
-            throws AuthorizationDeniedException;
+    public HardTokenData getHardToken(Admin admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException;
 
     /**
-     * returns hard token data for the specified user
+     * Returns hard token data for the specified user.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param username
-     *            The username owning the tokens.
+     * @param admin the administrator calling the function
+     * @param username The username owning the tokens.
      * @return a Collection of all hard token user data.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public java.util.Collection<HardTokenData> getHardTokens(org.ejbca.core.model.log.Admin admin, java.lang.String username, boolean includePUK);
+    public Collection<HardTokenData> getHardTokens(Admin admin, String username, boolean includePUK);
 
     /**
      * Method that searches the database for a tokensn. It returns all
-     * hardtokens with a serialnumber that begins with the given searchpattern.
+     * HardTokens with a serial number that begins with the given search-pattern.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param searchpattern
-     *            of begining of hard token sn
+     * @param admin the administrator calling the function
+     * @param searchpattern of beginning of hard token sn
      * @return a Collection of username(String) matching the search string
      */
-    public java.util.Collection<String> matchHardTokenByTokenSerialNumber(org.ejbca.core.model.log.Admin admin, java.lang.String searchpattern);
+    public Collection<String> matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern);
 
     /**
-     * Adds a mapping between a hard token and a certificate
+     * Adds a mapping between a hard token and a certificate.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @param certificate
-     *            the certificate to map to.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @param admin the administrator calling the function
+     * @param tokensn The serialnumber of token.
+     * @param certificate the certificate to map to.
      */
-    public void addHardTokenCertificateMapping(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, java.security.cert.Certificate certificate);
+    public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate);
 
     /**
-     * Removes a mapping between a hard token and a certificate
+     * Removes a mapping between a hard token and a certificate.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param certificate
-     *            the certificate to map to.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @param admin the administrator calling the function
+     * @param certificate the certificate to map to.
      */
-    public void removeHardTokenCertificateMapping(org.ejbca.core.model.log.Admin admin, java.security.cert.Certificate certificate);
+    public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate);
 
     /**
      * Returns all the X509Certificates places in a hard token.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
+     * @param admin the administrator calling the function
+     * @param tokensn The serialnumber of token.
      * @return a collection of X509Certificates
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
      */
-    public java.util.Collection<Certificate> findCertificatesInHardToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn);
+    public Collection<Certificate> findCertificatesInHardToken(Admin admin, String tokensn);
 
     /**
-     * Returns the tokensn that the have blongs to a given certificatesn and
+     * Returns the tokensn that belongs to a given certificatesn and
      * tokensn.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param certificatesn
-     *            The serialnumber of certificate.
-     * @param issuerdn
-     *            the issuerdn of the certificate.
-     * @return the serialnumber or null if no tokensn could be found.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @param admin the administrator calling the function
+     * @param certificatesn The serial number of certificate.
+     * @param issuerdn the issuerdn of the certificate.
+     * @return the serial number or null if no tokensn could be found.
      */
-    public java.lang.String findHardTokenByCertificateSNIssuerDN(org.ejbca.core.model.log.Admin admin, java.math.BigInteger certificatesn,
-            java.lang.String issuerdn);
+    public String findHardTokenByCertificateSNIssuerDN(Admin admin, BigInteger certificatesn, String issuerdn);
 
     /**
      * Method used to signal to the log that token was generated successfully.
      * 
-     * @param admin
-     *            administrator performing action
-     * @param tokensn
-     *            tokensn of token generated
-     * @param username
-     *            username of user token was generated for.
+     * @param admin administrator performing action
+     * @param tokensn tokensn of token generated
+     * @param username username of user token was generated for.
      * @param significantissuerdn
      *            indicates which CA the hard token should belong to.
      */
-    public void tokenGenerated(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, java.lang.String username, java.lang.String significantissuerdn);
+    public void tokenGenerated(Admin admin, String tokensn, String username, String significantissuerdn);
 
     /**
-     * Method used to signal to the log that error occured when generating
+     * Method used to signal to the log that error occurred when generating
      * token.
      * 
-     * @param admin
-     *            administrator performing action
-     * @param tokensn
-     *            tokensn of token.
-     * @param username
-     *            username of user token was generated for.
+     * @param admin administrator performing action
+     * @param tokensn tokensn of token.
+     * @param username username of user token was generated for.
      * @param significantissuerdn
      *            indicates which CA the hard token should belong to.
      */
-    public void errorWhenGeneratingToken(org.ejbca.core.model.log.Admin admin, java.lang.String tokensn, java.lang.String username,
-            java.lang.String significantissuerdn);
+    public void errorWhenGeneratingToken(Admin admin, String tokensn, String username, String significantissuerdn);
 
     /**
      * Method to check if a certificate profile exists in any of the hard token
-     * profiles. Used to avoid desyncronization of certificate profile data.
+     * profiles. Used to avoid desynchronization of certificate profile data.
      * 
-     * @param id
-     *            the certificateprofileid to search for.
-     * @return true if certificateprofileid exists in any of the hard token
+     * @param id the CertificateProfile id to search for.
+     * @return true if CertificateProfile id exists in any of the hard token
      *         profiles.
      */
-    public boolean existsCertificateProfileInHardTokenProfiles(org.ejbca.core.model.log.Admin admin, int id);
+    public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id);
 
     /**
      * Method to check if a hard token profile exists in any of the hard token
-     * issuers. Used to avoid desyncronization of hard token profile data.
+     * issuers. Used to avoid desynchronization of hard token profile data.
      * 
-     * @param id
-     *            the hard token profileid to search for.
-     * @return true if hard token profileid exists in any of the hard token
+     * @param id the hard token profile id to search for.
+     * @return true if hard token profile id exists in any of the hard token
      *         issuers.
      */
-    public boolean existsHardTokenProfileInHardTokenIssuer(org.ejbca.core.model.log.Admin admin, int id);
+    public boolean existsHardTokenProfileInHardTokenIssuer(Admin admin, int id);
 }

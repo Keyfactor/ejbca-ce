@@ -16,18 +16,20 @@ import java.util.Properties;
 
 import javax.ejb.Remote;
 
+/**
+ * @version $Id$
+ */
 @Remote
 public interface ConfigurationSessionRemote {
-    /**
+
+	/**
      * Try to backup the current configuration.
-     * 
      * @return false if a backup already exists.
      */
     public boolean backupConfiguration();
 
     /**
      * Restore configuration from backup.
-     * 
      * @return false if no backup exists.
      */
     public boolean restoreConfiguration();
@@ -44,15 +46,12 @@ public interface ConfigurationSessionRemote {
      */
     public boolean updateProperty(String key, String value);
 
-    /**
-     * Verifies that the property is set to the expected value.
-     */
+    /** Verifies that the property is set to the expected value. */
     public boolean verifyProperty(String key, String value);
 
-    /**
-     * Returns a property from the current server configuration
-     */
+    /** Returns a property from the current server configuration. */
     public String getProperty(String key, String defaultValue);
 
+    /** @return all currently used properties */
     public Properties getAllProperties();
 }

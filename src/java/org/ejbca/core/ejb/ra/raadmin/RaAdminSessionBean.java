@@ -30,12 +30,9 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
- * Stores data used by web server clients. Uses JNDI name for datasource as
- * defined in env 'Datasource' in ejb-jar.xml.
+ * Stores data used by web server clients.
  * 
  * @version $Id: RaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund$
- * 
- * 
  */
 @Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "RaAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -60,11 +57,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     @EJB
     private LogSessionLocal logSession;
 
-
-    /**
-     * Finds the admin preference belonging to a certificate serialnumber (??).
-     * Returns null if admin doesn't exists.
-     */
+    @Override
     public AdminPreference getAdminPreference(Admin admin, String certificatefingerprint) {
         if (log.isTraceEnabled()) {
             log.trace(">getAdminPreference()");
@@ -80,10 +73,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         return ret;
     }
 
-    /**
-     * Adds a admin preference to the database. Returns false if admin already
-     * exists.
-     */
+    @Override
     public boolean addAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">addAdminPreference(fingerprint : " + certificatefingerprint + ")");
@@ -114,10 +104,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         return ret;
     }
 
-    /**
-     * Changes the admin preference in the database. Returns false if admin
-     * doesn't exists.
-     */
+    @Override
     public boolean changeAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">changeAdminPreference(fingerprint : " + certificatefingerprint + ")");
@@ -125,10 +112,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         return updateAdminPreference(admin, certificatefingerprint, adminpreference, true);
     }
 
-    /**
-     * Changes the admin preference in the database. Returns false if admin
-     * doesn't exists.
-     */
+    @Override
     public boolean changeAdminPreferenceNoLog(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">changeAdminPreferenceNoLog(fingerprint : " + certificatefingerprint + ")");
@@ -136,10 +120,8 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         return updateAdminPreference(admin, certificatefingerprint, adminpreference, false);
     }
 
-    /**
-     * Checks if a admin preference exists in the database.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsAdminPreference(Admin admin, String certificatefingerprint) {
         if (log.isTraceEnabled()) {
             log.trace(">existsAdminPreference(fingerprint : " + certificatefingerprint + ")");
@@ -154,14 +136,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         return ret;
     }
 
-    /**
-     * Function that returns the default admin preference.
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    // We access an entity manager.. we must have be in a transaction!
+    @Override
     public AdminPreference getDefaultAdminPreference(Admin admin) {
         if (log.isTraceEnabled()) {
             log.trace(">getDefaultAdminPreference()");
@@ -186,12 +161,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         return ret;
     }
 
-    /**
-     * Function that saves the default admin preference.
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
+    @Override
     public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">saveDefaultAdminPreference()");
@@ -213,16 +183,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         }
     }
 
-
-
-
-    /**
-     * Flushes the cached GlobalConfiguration value and reads the current one
-     * from persitence.
-     * 
-     * @return a fresh GlobalConfiguration from persistence, or null of no such
-     *         configuration exists.
-     */
+    @Override
     public GlobalConfiguration flushCache() {
         GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
         GlobalConfiguration result = null;
@@ -230,20 +191,11 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
             result = gcdata.getGlobalConfiguration();
             globalconfigurationCache.setGlobalconfiguration(result);
         }
-
         return result;
     }
 
-    /**
-     * Retrieves the cached GlobalConfiguration. This cache is updated from
-     * persistence either by the time specified by
-     * {@link #MIN_TIME_BETWEEN_GLOBCONF_UPDATES} or when {@link #flushCache()}
-     * is executed. This method should be used in all cases where a quick
-     * response isn't necessary, otherwise use {@link #flushCache()}.
-     * 
-     * @return the cached GlobalConfiguration value.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public GlobalConfiguration getCachedGlobalConfiguration(Admin admin) {
         GlobalConfiguration result;
         try {
@@ -278,12 +230,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         }
     }
 
-    /**
-     * Saves the globalconfiguration
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
+    @Override
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
@@ -314,9 +261,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         }
     }
 
-    /**
-     * Clear and load global configuration cache.
-     */
+    @Override
     public void flushGlobalConfigurationCache()  {
     	if (log.isTraceEnabled()) {
     		log.trace(">flushGlobalConfigurationCache()");

@@ -56,8 +56,6 @@ import org.ejbca.util.query.Query;
 
 /**
  * Stores data used by web server clients.
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
- *
  *
  * @version $Id$
  */
@@ -126,6 +124,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         }
     }
     
+    @Override
     public Collection<String> getAvailableLogDevices() {
     	final ArrayList<String> ret = new ArrayList<String>();
     	final Iterator<ILogDevice> i = logdevices.iterator();
@@ -136,6 +135,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     	return ret;
     }
 
+    @Override
     public Collection<String> getAvailableQueryLogDevices() {
     	final ArrayList<String> ret = new ArrayList<String>();
     	final Iterator<ILogDevice> i = logdevices.iterator();
@@ -149,40 +149,22 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     	return ret;
     }
 
-    /**
-     * Session beans main function. Takes care of the logging functionality.
-     *
-     * @param admin the administrator performing the event.
-     * @param time the time the event occurred.
-     * @param username the name of the user involved or null if no user is involved.
-     * @param certificate the certificate involved in the event or null if no certificate is involved.
-     * @param event id of the event, should be one of the org.ejbca.core.model.log.LogConstants.EVENT_ constants.
-     * @param comment comment of the event.
-     */
+    @Override
     public void log(final Admin admin, final int caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment) {
         doLog(admin, caid, module, time, username, certificate, event, comment, null);
     }
 
-    /**
-     * Same as above but with the difference of CAid which is taken from the issuerdn of given certificate.
-     */
+    @Override
     public void log(final Admin admin, final Certificate caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment) {
         doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, null);
     }
 
-    /**
-     * Overloaded function that also logs an exception
-     * See function above for more documentation.
-     *
-     * @param exception the exception that has occured
-     */
+    @Override
     public void log(final Admin admin, final int caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment, final Exception exception) {
         doLog(admin, caid, module, time, username, certificate, event, comment, exception);
     }
 
-    /**
-     * Same as above but with the difference of CAid which is taken from the issuerdn of given certificate.
-     */
+    @Override
     public void log(final Admin admin, final Certificate caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment, final Exception exception) {
         doLog(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     }
@@ -209,18 +191,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         }
     }
 
-    /**
-     * Method to export log records according to a customized query on the log db data. The parameter query should be a legal Query object.
-     *
-     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
-     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-     * @param logexporter is the obbject that converts the result set into the desired log format 
-     * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT, returns null if there is nothing to export
-     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
-     * @throws Exception differs depending on the ILogExporter implementation
-     * @see org.ejbca.util.query.Query
-     *
-     */
+    @Override
     public byte[] export(final String deviceName, final Admin admin, final Query query, final String viewlogprivileges, final String capriviledges, final ILogExporter logexporter, final int maxResults) throws IllegalQueryException, Exception {
     	byte[] result = null;
     	final Iterator<ILogDevice> i = logdevices.iterator();
@@ -236,16 +207,8 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         }
 		return result;
     }
-    
-    /**
-     * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
-     *
-     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
-     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-     * @return a collection of LogEntry. Maximum size of Collection is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
-     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
-     * @see org.ejbca.util.query.Query
-     */
+
+    @Override
     public Collection<LogEntry> query(final String deviceName, final Query query, final String viewlogprivileges, final String capriviledges, final int maxResults) throws IllegalQueryException {
     	if (LOG.isTraceEnabled()) {
     		LOG.trace(">query()");
@@ -262,11 +225,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 		return result;
     }
 
-    /**
-     * Loads the log configuration from the database.
-     *
-     * @return the logconfiguration
-     */
+    @Override
     public LogConfiguration loadLogConfiguration(final int caid) {
         // Check if log configuration exists, else create one.
         LogConfiguration ret = null; 
@@ -297,34 +256,24 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         return ret;
     }
 
-    /**
-     * Saves the log configuration to the database without logging.
-     * Should only be used from loadLogConfiguration(..)
-     * @param logConfiguration the logconfiguration to save.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public void saveNewLogConfiguration(final int caid, final LogConfiguration logConfiguration) {
 		entityManager.persist(new LogConfigurationData(caid, logConfiguration));
         // Update cache
 		logConfCache.put(Integer.valueOf(caid), logConfiguration);
     }
-    
-    /**
-     * Saves the log configuration to the database.
-     *
-     * @param logconfiguration the logconfiguration to save.
-     */
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void saveLogConfiguration(final Admin admin, final int caid, final LogConfiguration logconfiguration) {
     	internalSaveLogConfigurationNoFlushCache(admin, caid, logconfiguration);
         // Update cache
 		logConfCache.put(Integer.valueOf(caid), logconfiguration);    	
     }
-    
-    /** Do not use, use saveLogConfiguration instead.
-     * Used internally for testing only. Updates configuration without flushing caches.
-     */
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void internalSaveLogConfigurationNoFlushCache(final Admin admin, final int caid, final LogConfiguration logconfiguration) {
         try {
         	log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
@@ -342,10 +291,8 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
         }
     }
 
-    /**
-     * Clear and reload log profile caches.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public void flushConfigurationCache() {
     	logConfCache.emptyCache();
     	if (LOG.isDebugEnabled()) {
@@ -353,10 +300,8 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     	}
     }
 
-	/**
-     * Methods for testing that a log-row is never rolled back if the rest of the transaction is.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
 	public void testRollback(final long rollbackTestTime) {
     	final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 		log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,

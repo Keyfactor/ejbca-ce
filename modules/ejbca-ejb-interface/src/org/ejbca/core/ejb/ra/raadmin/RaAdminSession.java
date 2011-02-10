@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /** Session bean to handle RA administration, which means admin preferences, global configuration and such.
@@ -25,53 +26,38 @@ public interface RaAdminSession {
      * Finds the admin preference belonging to a certificate serialnumber.
      * Returns null if admin doesn't exists.
      */
-    org.ejbca.core.model.ra.raadmin.AdminPreference getAdminPreference(Admin admin, java.lang.String certificatefingerprint);
+    AdminPreference getAdminPreference(Admin admin, String certificatefingerprint);
 
     /**
      * Adds a admin preference to the database. Returns false if admin already
      * exists.
      */
-    boolean addAdminPreference(Admin admin, java.lang.String certificatefingerprint,
-            org.ejbca.core.model.ra.raadmin.AdminPreference adminpreference);
+    boolean addAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
      */
-    boolean changeAdminPreference(Admin admin, java.lang.String certificatefingerprint,
-            org.ejbca.core.model.ra.raadmin.AdminPreference adminpreference);
+    boolean changeAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
      */
-    boolean changeAdminPreferenceNoLog(Admin admin, java.lang.String certificatefingerprint,
-            org.ejbca.core.model.ra.raadmin.AdminPreference adminpreference);
+    boolean changeAdminPreferenceNoLog(Admin admin, String certificatefingerprint, AdminPreference adminpreference);
 
-    /**
-     * Checks if a admin preference exists in the database.
-     */
-    boolean existsAdminPreference(Admin admin, java.lang.String certificatefingerprint);
+    /** Checks if a admin preference exists in the database. */
+    boolean existsAdminPreference(Admin admin, String certificatefingerprint);
 
-    /**
-     * Function that returns the default admin preference.
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    org.ejbca.core.model.ra.raadmin.AdminPreference getDefaultAdminPreference(Admin admin);
+    /** Function that returns the default admin preference. */
+    AdminPreference getDefaultAdminPreference(Admin admin);
 
-    /**
-     * Function that saves the default admin preference.
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    void saveDefaultAdminPreference(Admin admin, org.ejbca.core.model.ra.raadmin.AdminPreference defaultadminpreference);
+    /** Function that saves the default admin preference. */
+    void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference);
 
     /**
      * Flushes the cached GlobalConfiguration value and reads the current one
-     * from persitence.
+     * from persistence.
      * 
      * @return a fresh GlobalConfiguration from persistence, or null of no such
      *         configuration exists.
@@ -79,24 +65,20 @@ public interface RaAdminSession {
     GlobalConfiguration flushCache();
     
     /**
-     * Loads the global configuration from the database.
+     * Retrieves the cached GlobalConfiguration. This cache is updated from
+     * persistence either by the time specified by
+     * {@link #MIN_TIME_BETWEEN_GLOBCONF_UPDATES} or when {@link #flushCache()}
+     * is executed. This method should be used in all cases where a quick
+     * response isn't necessary, otherwise use {@link #flushCache()}.
      * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * @return the cached GlobalConfiguration value.
      */
-    org.ejbca.core.model.ra.raadmin.GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
+    GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
 
-    /**
-     * Saves the globalconfiguration
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
-     */
-    void saveGlobalConfiguration(Admin admin, org.ejbca.core.model.ra.raadmin.GlobalConfiguration globconf);
+    /** Saves the GlobalConfiguration. */
+    void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf);
 
-    /**
-     * Clear and load global configuration cache.
-     */
+    /** Clear and load global configuration cache. */
     void flushGlobalConfigurationCache();
 
 
