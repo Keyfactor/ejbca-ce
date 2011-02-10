@@ -12,8 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.List;
 
+import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
@@ -37,68 +41,46 @@ import org.ejbca.util.query.IllegalQueryException;
  * @version $Id$
  */
 public interface UserAdminSession {
+
     /**
-     * Implements IUserAdminSession::addUser. Implements a mechanism that uses
-     * UserDataEntity Bean. Important, this method is old and shouldn't be used,
-     * user addUser(..UserDataVO...) instead.
+     * Important: this method is old and shouldn't be used, use
+     * addUser(..UserDataVO...) instead.
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param username
-     *            the unique username.
-     * @param password
-     *            the password used for authentication.
-     * @param subjectdn
-     *            the DN the subject is given in his certificate.
-     * @param subjectaltname
-     *            the Subject Alternative Name to be used.
-     * @param email
-     *            the email of the subject or null.
-     * @param clearpwd
-     *            true if the password will be stored in clear form in the db,
-     *            otherwise it is hashed.
+     * @param admin the administrator performing the action
+     * @param username the unique user name.
+     * @param password the password used for authentication.
+     * @param subjectdn the DN the subject is given in his certificate.
+     * @param subjectaltname the Subject Alternative Name to be used.
+     * @param email the email of the subject or null.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *            db, otherwise it is hashed.
      * @param endentityprofileid
      *            the id number of the end entity profile bound to this user.
-     * @param certificateprofileid
-     *            the id number of the certificate profile that should be
-     *            generated for the user.
-     * @param type
-     *            of user i.e administrator, keyrecoverable and/or
+     * @param certificateprofileid the id number of the certificate profile
+     *            that should be generated for the user.
+     * @param type of user i.e administrator, keyrecoverable and/or
      *            sendnotification, from SecConst.USER_XX.
-     * @param tokentype
-     *            the type of token to be generated, one of SecConst.TOKEN
-     *            constants
-     * @param hardwaretokenissuerid
-     *            , if token should be hard, the id of the hard token issuer,
-     *            else 0.
-     * @param caid
-     *            the CA the user should be issued from.
-     * @throws WaitingForApprovalException
-     * @throws UserDoesntFullfillEndEntityProfile
-     * @throws AuthorizationDeniedException
-     * @throws PersistenceException
-     * @throws CADoesntExistsException
-     *             if the caid of the user does not exist
-     * @throws EjbcaException
+     * @param tokentype the type of token to be generated, one of
+     *            SecConst.TOKEN constants
+     * @param hardwaretokenissuerid if token should be hard, the id of the hard
+     *            token issuer, else 0.
+     * @param caid the CA the user should be issued from.
+     * @throws CADoesntExistsException if the caid of the user does not exist
      */
-    public void addUser(Admin admin, java.lang.String username, java.lang.String password, java.lang.String subjectdn,
-            java.lang.String subjectaltname, java.lang.String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, int type,
-            int tokentype, int hardwaretokenissuerid, int caid) throws PersistenceException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, CADoesntExistsException, EjbcaException;
+    public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email,
+    		boolean clearpwd, int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid)
+    		throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+    		CADoesntExistsException, EjbcaException;
 
     /**
      * addUserFromWS is called from EjbcaWS if profile specifies merge data from
      * profile to user we merge them before calling addUser
      * 
-     * @param admin
-     *            the administrator pwrforming the action
-     * @param userdata
-     *            a UserDataVO object, the fields status, timecreated and
+     * @param admin the administrator pwrforming the action
+     * @param userdata a UserDataVO object, the fields status, timecreated and
      *            timemodified will not be used.
-     * @param clearpwd
-     *            true if the password will be stored in clear form in the db,
-     *            otherwise it is hashed.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *            db, otherwise it is hashed.
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
@@ -115,23 +97,17 @@ public interface UserAdminSession {
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      */
-    public void addUserFromWS(Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            PersistenceException, WaitingForApprovalException,
-            CADoesntExistsException, org.ejbca.core.EjbcaException;
+    public void addUserFromWS(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
-     * Implements IUserAdminSession::addUser. Implements a mechanism that uses
-     * UserDataEntity Bean.
+     * Add a new user.
      * 
-     * @param admin
-     *            the administrator pwrforming the action
-     * @param userdata
-     *            a UserDataVO object, the fields status, timecreated and
+     * @param admin the administrator performing the action
+     * @param userdata a UserDataVO object, the fields status, timecreated and
      *            timemodified will not be used.
-     * @param clearpwd
-     *            true if the password will be stored in clear form in the db,
-     *            otherwise it is hashed.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *            db, otherwise it is hashed.
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
@@ -141,52 +117,39 @@ public interface UserAdminSession {
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
-     * @throws CADoesntExistsException
-     *             if the caid of the user does not exist
      * @throws EjbcaException
      *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
+     * @throws WaitingForApprovalException
      */
-    public void addUser(Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            PersistenceException, WaitingForApprovalException,
-            CADoesntExistsException, EjbcaException;
+    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
-     * Changes data for a user in the database speciefied by username.
+     * Changes data for a user in the database specified by username.
+     * 
      * Important, this method is old and shouldn't be used, user
      * changeUser(..UserDataVO...) instead.
      * 
-     * @param username
-     *            the unique username.
-     * @param password
-     *            the password used for authentication.*
-     * @param subjectdn
-     *            the DN the subject is given in his certificate.
-     * @param subjectaltname
-     *            the Subject Alternative Name to be used.
-     * @param email
-     *            the email of the subject or null.
-     * @param endentityprofileid
-     *            the id number of the end entity profile bound to this user.
-     * @param certificateprofileid
-     *            the id number of the certificate profile that should be
-     *            generated for the user.
-     * @param type
-     *            of user i.e administrator, keyrecoverable and/or
-     *            sendnotification
-     * @param tokentype
-     *            the type of token to be generated, one of SecConst.TOKEN
-     *            constants
-     * @param hardwaretokenissuerid
-     *            if token should be hard, the id of the hard token issuer, else
-     *            0.
-     * @param status
-     *            the status of the user, from UserDataConstants.STATUS_X
-     * @param caid
-     *            the id of the CA that should be used to issue the users
-     *            certificate
+     * @param username the unique username.
+     * @param password the password used for authentication.*
+     * @param subjectdn the DN the subject is given in his certificate.
+     * @param subjectaltname the Subject Alternative Name to be used.
+     * @param email the email of the subject or null.
+     * @param endentityprofileid the id number of the end entity profile bound
+     *             to this user.
+     * @param certificateprofileid the id number of the certificate profile
+     *             that should be generated for the user.
+     * @param type of user i.e administrator, keyrecoverable and/or
+     *             sendnotification
+     * @param tokentype the type of token to be generated, one of
+     *             SecConst.TOKEN constants
+     * @param hardwaretokenissuerid if token should be hard, the id of the hard
+     *             token issuer, else 0.
+     * @param status the status of the user, from UserDataConstants.STATUS_X
+     * @param caid the id of the CA that should be used to issue the users
+     *             certificate
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
@@ -202,27 +165,22 @@ public interface UserAdminSession {
      *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * 
      * @deprecated use {@link #changeUser(Admin, UserDataVO, boolean)} instead
      */
-    public void changeUser(Admin admin, java.lang.String username, java.lang.String password, java.lang.String subjectdn,
-            java.lang.String subjectaltname, java.lang.String email, boolean clearpwd, int endentityprofileid, int certificateprofileid, int type,
-            int tokentype, int hardwaretokenissuerid, int status, int caid) throws AuthorizationDeniedException,
-            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-            CADoesntExistsException, EjbcaException;
+    @Deprecated
+    public void changeUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
+    		int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int status, int caid) throws AuthorizationDeniedException,
+            UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
-     * Implements IUserAdminSession::changeUser..
+     * Change user information.
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param userdata
-     *            a UserDataVO object, timecreated and timemodified will not be
-     *            used.
-     * @param clearpwd
-     *            true if the password will be stored in clear form in the db,
-     *            otherwise it is hashed.
+     * @param admin the administrator performing the action
+     * @param userdata a UserDataVO object, timecreated and timemodified will
+     *             not be used.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *             db, otherwise it is hashed.
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
@@ -244,18 +202,14 @@ public interface UserAdminSession {
             WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
-     * Implements IUserAdminSession::changeUser..
+     * Change user information.
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param userdata
-     *            a UserDataVO object, timecreated and timemodified will not be
-     *            used.
-     * @param clearpwd
-     *            true if the password will be stored in clear form in the db,
-     *            otherwise it is hashed.
-     * @param fromWebService
-     *            The service is called from webService
+     * @param admin the administrator performing the action
+     * @param userdata a UserDataVO object, timeCreated and timeModified will
+     *             not be used.
+     * @param clearpwd true if the password will be stored in clear form in the
+     *             db, otherwise it is hashed.
+     * @param fromWebService The service is called from webService
      * @throws AuthorizationDeniedException
      *             if administrator isn't authorized to add user
      * @throws UserDoesntFullfillEndEntityProfile
@@ -263,16 +217,14 @@ public interface UserAdminSession {
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
-     * @throws CADoesntExistsException
-     *             if the caid of the user does not exist
+     * @throws CADoesntExistsException if the caid of the user does not exist
      * @throws EjbcaException
      *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
-     * @throws javax.ejb.EJBException
-     *             if the user does not exist
+     * @throws EJBException if the user does not exist
      */
-    public void changeUser(Admin admin, org.ejbca.core.model.ra.UserDataVO userdata, boolean clearpwd, boolean fromWebService)
+    public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
@@ -280,31 +232,22 @@ public interface UserAdminSession {
      * Deletes a user from the database. The users certificates must be revoked
      * BEFORE this method is called.
      * 
-     * @param username
-     *            the unique username.
-     * @throws NotFoundException
-     *             if the user does not exist
-     * @throws RemoveException
-     *             if the user could not be removed
+     * @param username the unique username.
+     * @throws NotFoundException if the user does not exist
+     * @throws RemoveException if the user could not be removed
      */
-    public void deleteUser(Admin admin, java.lang.String username)
-            throws AuthorizationDeniedException, NotFoundException, RemoveException;
+    public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException;
 
     /**
-     * Resets the remaining failed login attempts counter to the user's max
-     * login attempts value.
+	 * Resets the remaining failed login attempts counter to the user's max login attempts value.
+	 * This method does nothing if the counter value is set to UNLIMITED (-1 or not set at all).
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param username
-     *            the unique username of the user
-     * @throws AuthorizationDeniedException
-     *             if administrator isn't authorized to edit user
-     * @throws FinderException
-     *             if the entity does not exist
+     * @param admin the administrator performing the action
+     * @param username the unique username of the user
+     * @throws AuthorizationDeniedException if administrator isn't authorized to edit user
+     * @throws FinderException if the entity does not exist
      */
-    public void resetRemainingLoginAttempts(Admin admin, java.lang.String username)
-            throws AuthorizationDeniedException, FinderException;
+    public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException;
 
     /**
      * Decrements the remaining failed login attempts counter. If the counter
@@ -312,17 +255,13 @@ public interface UserAdminSession {
      * {@link UserDataConstants#STATUS_GENERATED} if it wasn't that already.
      * This method does nothing if the counter value is set to UNLIMITED (-1).
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param username
-     *            the unique username of the user
-     * @throws AuthorizationDeniedException
-     *             if administrator isn't authorized to edit user
-     * @throws FinderException
-     *             if the entity does not exist
+     * @param admin the administrator performing the action
+     * @param username the unique username of the user
+     * @throws AuthorizationDeniedException if administrator isn't authorized
+     *            to edit user
+     * @throws FinderException if the entity does not exist
      */
-    public void decRemainingLoginAttempts(Admin admin, java.lang.String username)
-            throws AuthorizationDeniedException, FinderException;
+    public void decRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException;
 
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0.
@@ -330,237 +269,157 @@ public interface UserAdminSession {
      * -1 is not stored in the database. Also sets status of user to generated
      * once the request counter reaches zero.
      * 
-     * @param username
-     *            the unique username.
-     * @param status
-     *            the new status, from 'UserData'.
-     * @throws WaitingForApprovalException
-     * @throws ApprovalException
-     * @throws FinderException
-     *             if user does not exist
+     * @param username the unique username.
+     * @param status the new status, from 'UserData'.
+     * @throws FinderException if user does not exist
      */
-    public int decRequestCounter(Admin admin, java.lang.String username)
-            throws AuthorizationDeniedException, FinderException, ApprovalException,
-            WaitingForApprovalException;
+    public int decRequestCounter(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
 
     /**
      * Cleans the certificate serial number from the user data. Should be called
      * after the data has been used.
      * 
-     * @param data
-     * @throws ObjectNotFoundException
-     *             if the user does not exist.
+     * @throws ObjectNotFoundException if the user does not exist.
      */
     public void cleanUserCertDataSN(UserDataVO data) throws ObjectNotFoundException;
 
     /**
      * Removes the certificate serial number from the user data.
-     * 
-     * @param admin
-     * @param username
-     *            the unique username.
-     * @throws AuthorizationDeniedException
-     * @throws FinderException
-     * @throws ApprovalException
-     * @throws WaitingForApprovalException
+     * @param username the unique username.
      */
-    public void cleanUserCertDataSN(Admin admin, java.lang.String username)
-            throws AuthorizationDeniedException, FinderException, ApprovalException,
-            WaitingForApprovalException;
+    public void cleanUserCertDataSN(Admin admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
 
     /**
      * Changes status of a user.
      * 
-     * @param username
-     *            the unique username.
-     * @param status
-     *            the new status, from 'UserData'.
+     * @param username the unique username.
+     * @param status the new status, from 'UserData'.
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
-     * @throws WaitingForApprovalException
-     *             if approval is required and the action have been added in the
-     *             approval queue.
+     * @throws WaitingForApprovalException if approval is required and the
+     *             action have been added in the approval queue.
      */
-    public void setUserStatus(Admin admin, java.lang.String username, int status)
-            throws AuthorizationDeniedException, FinderException, ApprovalException,
-            WaitingForApprovalException;
+    public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
 
     /**
      * Sets a new password for a user.
      * 
-     * @param admin
-     *            the administrator pwrforming the action
-     * @param username
-     *            the unique username.
-     * @param password
-     *            the new password for the user, NOT null.
+     * @param admin the administrator performing the action
+     * @param username the unique username.
+     * @param password the new password for the user, NOT null.
      */
-    public void setPassword(Admin admin, java.lang.String username, java.lang.String password)
-            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
-            FinderException;
+    public void setPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 
     /**
      * Sets a clear text password for a user.
      * 
-     * @param admin
-     *            the administrator pwrforming the action
-     * @param username
-     *            the unique username.
-     * @param password
-     *            the new password to be stored in clear text. Setting password
-     *            to 'null' effectively deletes any previous clear text
-     *            password.
+     * @param admin the administrator pwrforming the action
+     * @param username the unique username.
+     * @param password the new password to be stored in clear text. Setting
+     *            password to 'null' effectively deletes any previous clear
+     *            text password.
      */
-    public void setClearTextPassword(Admin admin, java.lang.String username, java.lang.String password)
-            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
-            FinderException;
+    public void setClearTextPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 
     /**
      * Verifies a password for a user.
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param username
-     *            the unique username.
-     * @param password
-     *            the password to be verified.
+     * @param admin the administrator performing the action
+     * @param username the unique username.
+     * @param password the password to be verified.
      */
-    public boolean verifyPassword(Admin admin, java.lang.String username, java.lang.String password)
-            throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException,
-            FinderException;
+    public boolean verifyPassword(Admin admin, String username, String password) throws UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException;
 
-    public void revokeAndDeleteUser(Admin admin, java.lang.String username, int reason)
-            throws AuthorizationDeniedException, ApprovalException,
-            WaitingForApprovalException, RemoveException, NotFoundException;
+    /** Revoke and then delete a user. */
+    public void revokeAndDeleteUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException;
 
     /**
      * Method that revokes a user.
-     * 
-     * @param username
-     *            the username to revoke.
-     * @throws AlreadyRevokedException
+     * @param username the username to revoke.
+     * @throws AlreadyRevokedException if the certificate was already revoked
      */
-    public void revokeUser(Admin admin, java.lang.String username, int reason)
-            throws AuthorizationDeniedException, FinderException, ApprovalException,
-            WaitingForApprovalException, AlreadyRevokedException;
+    public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
-     * Method that revokes a certificate for a user.
-     * It can also be used to un-revoke a certificate that has been revoked with reason ON_HOLD. This is done by giving reason RevokedCertInfo.NOT_REVOKED (or RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
+     * Method that revokes a certificate for a user. It can also be used to
+     * un-revoke a certificate that has been revoked with reason ON_HOLD. This
+     * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
+     * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param certserno
-     *            the serno of certificate to revoke.
-     * @param username
-     *            the username to revoke.
-     * @param reason
-     *            the reason of revocation, one of the RevokedCertInfo.XX
-     *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a certificate on hold.
-     * @throws AlreadyRevokedException
-     *             if the certificate was already revoked
+     * @param admin the administrator performing the action
+     * @param certserno the serno of certificate to revoke.
+     * @param username the username to revoke.
+     * @param reason the reason of revocation, one of the RevokedCertInfo.XX
+     *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
+     *            certificate on hold.
+     * @throws AlreadyRevokedException if the certificate was already revoked
      */
-    public void revokeCert(Admin admin, java.math.BigInteger certserno, java.lang.String issuerdn, java.lang.String username,
-            int reason) throws AuthorizationDeniedException, FinderException,
-            ApprovalException, WaitingForApprovalException,
-            AlreadyRevokedException;
+    public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,
+    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Method that looks up the username and email address for a administrator
      * and returns the populated Admin object.
      * 
-     * @param certificate
-     *            is the administrators certificate
+     * @param certificate is the administrators certificate
      */
-    public Admin getAdmin(java.security.cert.Certificate certificate);
+    public Admin getAdmin(Certificate certificate);
 
     /**
-     * Finds a user.
+     * Finds a user by username.
      * 
-     * @param admin
-     *            the administrator performing the action
-     * @param username
-     *            username.
+     * @param admin the administrator performing the action
      * @return UserDataVO or null if the user is not found.
      */
-    public org.ejbca.core.model.ra.UserDataVO findUser(Admin admin, java.lang.String username)
-            throws AuthorizationDeniedException;
+    public UserDataVO findUser(Admin admin, String username) throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its subject and issuer DN.
-     * 
-     * @param admin
-     * @param subjectdn
-     * @param issuerdn
      * @return UserDataVO or null if the user is not found.
      */
-    public org.ejbca.core.model.ra.UserDataVO findUserBySubjectAndIssuerDN(Admin admin, java.lang.String subjectdn,
-            java.lang.String issuerdn) throws AuthorizationDeniedException;
+    public UserDataVO findUserBySubjectAndIssuerDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its subject DN.
-     * 
-     * @param admin
-     * @param subjectdn
      * @return UserDataVO or null if the user is not found.
      */
-    public org.ejbca.core.model.ra.UserDataVO findUserBySubjectDN(Admin admin, java.lang.String subjectdn)
-            throws AuthorizationDeniedException;
+    public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its Email.
-     * 
-     * @param email
      * @return UserDataVO or null if the user is not found.
      */
-    public java.util.Collection<UserDataVO> findUserByEmail(Admin admin, java.lang.String email)
-            throws AuthorizationDeniedException;
-
-    /**
-     * Method that checks if user with specified users certificate exists in
-     * database
-     * 
-     * @deprecated This method no longer verifies the admin-flag of end entities
-     *             since this feature was dropped in EJBCA 3.8.0
-     * @param subjectdn
-     * @throws AuthorizationDeniedException
-     *             if user doesn't exist
-     */
-    public void checkIfCertificateBelongToAdmin(Admin admin, java.math.BigInteger certificatesnr, java.lang.String issuerdn)
-            throws AuthorizationDeniedException;
+    public Collection<UserDataVO> findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if user with specified users certificate exists in
      * database
      * 
      * @param subjectdn
-     * @throws AuthorizationDeniedException
-     *             if user doesn't exist
+     * @throws AuthorizationDeniedException if user doesn't exist
      */
-    public void checkIfCertificateBelongToUser(Admin admin, java.math.BigInteger certificatesnr, java.lang.String issuerdn)
-            throws AuthorizationDeniedException;
+    public void checkIfCertificateBelongToUser(Admin admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException;
 
     /**
      * Finds all users with a specified status.
      * 
-     * @param status
-     *            the status to look for, from 'UserData'.
+     * @param status the status to look for, from 'UserData'.
      * @return Collection of UserDataVO
      */
-    public java.util.Collection<UserDataVO> findAllUsersByStatus(Admin admin, int status) throws FinderException;
+    public Collection<UserDataVO> findAllUsersByStatus(Admin admin, int status) throws FinderException;
 
     /**
-     * Finds all users registered to a specified ca.
+     * Finds all users registered to a specified CA.
      * 
-     * @param caid
-     *            the caid of the CA, from 'UserData'.
+     * @param caid the caid of the CA, from 'UserData'.
      * @return Collection of UserDataVO, or empty collection if the query is
      *         illegal or no users exist
      */
-    public java.util.Collection<UserDataVO> findAllUsersByCaId(Admin admin, int caid);
+    public Collection<UserDataVO> findAllUsersByCaId(Admin admin, int caid);
 
     /**
-     * Finds all batch users with a specified status and returns the first UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT.
+     * Finds all batch users with a specified status and returns the first
+     * UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT.
      * 
      * @param status the status, from 'UserData'.
      * @return all UserDataVO objects or an empty list
@@ -571,69 +430,61 @@ public interface UserAdminSession {
      * Method to execute a customized query on the ra user data. The parameter
      * query should be a legal Query object.
      * 
-     * @param query
-     *            a number of statments compiled by query class to a SQL
-     *            'WHERE'-clause statment.
-     * @param caauthorizationstring
-     *            is a string placed in the where clause of SQL query indication
-     *            which CA:s the administrator is authorized to view.
-     * @param endentityprofilestring
-     *            is a string placed in the where clause of SQL query indication
-     *            which endentityprofiles the administrator is authorized to
-     *            view.
-     * @param numberofrows
-     *            the number of rows to fetch, use 0 for default
+     * @param query a number of statements compiled by query class to a SQL
+     *            'WHERE'-clause statement.
+     * @param caauthorizationstring is a string placed in the where clause of
+     *            SQL query indication which CA:s the administrator is
+     *            authorized to view.
+     * @param endentityprofilestring is a string placed in the where clause of
+     *            SQL query indication which endentityprofiles the
+     *            administrator is authorized to view.
+     * @param numberofrows the number of rows to fetch, use 0 for default
      *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
-     * @return a collection of UserDataVO. Maximum size of Collection is defined
-     *         i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
-     * @throws IllegalQueryException
-     *             when query parameters internal rules isn't fullfilled.
-     * @see se.anatom.ejbca.util.query.Query
+     * @return a collection of UserDataVO.
+     * @throws IllegalQueryException when query parameters internal rules isn't
+     *            fulfilled.
+     * @see org.ejbca.util.query.Query
      */
     public java.util.Collection<UserDataVO> query(Admin admin, org.ejbca.util.query.Query query, java.lang.String caauthorizationstring,
             java.lang.String endentityprofilestring, int numberofrows) throws IllegalQueryException;
 
     /**
      * Methods that checks if a user exists in the database having the given
-     * endentityprofileid. This function is mainly for avoiding desyncronisation
-     * when a end entity profile is deleted.
+     * EndEntityProfile id. This function is mainly for avoiding
+     * desynchronization when a end entity profile is deleted.
      * 
-     * @param endentityprofileid
-     *            the id of end entity profile to look for.
-     * @return true if endentityprofileid exists in userdatabase.
+     * @param endentityprofileid the id of end entity profile to look for.
+     * @return true if EndEntityProfile id exists in UserData table.
      */
     public boolean checkForEndEntityProfileId(Admin admin, int endentityprofileid);
 
     /**
      * Methods that checks if a user exists in the database having the given
-     * certificateprofileid. This function is mainly for avoiding
-     * desyncronisation when a certificateprofile is deleted.
+     * CertificateProfile id. This function is mainly for avoiding
+     * desynchronization when a CertificateProfile is deleted.
      * 
-     * @param certificateprofileid
-     *            the id of certificateprofile to look for.
-     * @return true if certificateproileid exists in userdatabase.
+     * @param certificateprofileid the id of CertificateProfile to look for.
+     * @return true if certificateproileid exists in UserData table.
      */
     public boolean checkForCertificateProfileId(Admin admin, int certificateprofileid);
 
     /**
      * Methods that checks if a user exists in the database having the given
-     * caid. This function is mainly for avoiding desyncronisation when a CAs is
-     * deleted.
+     * caid. This function is mainly for avoiding desynchronization when a CAs
+     * is deleted.
      * 
-     * @param caid
-     *            the id of CA to look for.
-     * @return true if caid exists in userdatabase.
+     * @param caid the id of CA to look for.
+     * @return true if caid exists in UserData table.
      */
     public boolean checkForCAId(Admin admin, int caid);
 
     /**
      * Methods that checks if a user exists in the database having the given
-     * hard token profile id. This function is mainly for avoiding
-     * desyncronisation when a hard token profile is deleted.
+     * HardTokenProfile id. This function is mainly for avoiding
+     * desynchronization when a HardTokenProfile is deleted.
      * 
-     * @param profileid
-     *            of hardtokenprofile to look for.
-     * @return true if proileid exists in userdatabase.
+     * @param profileid of HardTokenProfile to look for.
+     * @return true if profileid exists in UserData table.
      */
     public boolean checkForHardTokenProfileId(Admin admin, int profileid);
 
@@ -644,42 +495,39 @@ public interface UserAdminSession {
      * 
      * @return true if username already exists.
      */
-    public boolean existsUser(Admin admin, java.lang.String username);
+    public boolean existsUser(Admin admin, String username);
 
     /**
-     * Park a user's certificate for key recovery and set the user status to
+     * Mark a user's certificate for key recovery and set the user status to
      * UserDataConstants.STATUS_KEYRECOVERY.
      * 
-     * @param admin
-     *            used to authorize this action
-     * @param username
-     *            is the user to key recover a certificate for
-     * @param certificate
-     *            is the certificate to recover the keys for. Use 'null' to
-     *            recovery the certificate with latest not before date.
-     * @return true if the operation was succesful
-     * @throws WaitingForApprovalException
-     * @throws ApprovalException
-     * @throws AuthorizationDeniedException
+     * @param admin used to authorize this action
+     * @param username is the user to key recover a certificate for
+     * @param certificate is the certificate to recover the keys for. Use
+     *            'null' to recovery the certificate with latest not before
+     *            date.
+     * @return true if the operation was successful
      */
-    public boolean prepareForKeyRecovery(Admin admin, java.lang.String username, int endEntityProfileId,
-            java.security.cert.Certificate certificate) throws AuthorizationDeniedException,
-            ApprovalException, WaitingForApprovalException;
+    public boolean prepareForKeyRecovery(Admin admin, String username, int endEntityProfileId, Certificate certificate)
+    		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
     
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
      * 
      * @return Collection of UserDataVO
-     * 
-     * TODO: Moved here from Local interface. Move back.
      */
-    public java.util.Collection<UserDataVO> findAllUsersWithLimit(Admin admin) throws FinderException;
+    // TODO: Move to Local interface.
+    public Collection<UserDataVO> findAllUsersWithLimit(Admin admin) throws FinderException;
     
     /**
-     * Selects a list of specific list of UserData entities, as filtered by the below parameters. 
+     * Selects a list of specific list of UserDataVO entities, as filtered by
+     * the below parameters. 
      * 
-     * @param caIds The list of CAIDs to filter by. If this list is empty, all the UserData objects that match the given expiration and status are returned.
-     * @param timeModified Not modified since this date, as expressed by a Long value 
+     * @param caIds The list of CAIDs to filter by. If this list is empty, all
+     *            the UserData objects that match the given expiration and
+     *            status are returned.
+     * @param timeModified Not modified since this date, as expressed by a Long
+     *            value 
      * @param status Status of the requested CAIDs
      * @return
      */

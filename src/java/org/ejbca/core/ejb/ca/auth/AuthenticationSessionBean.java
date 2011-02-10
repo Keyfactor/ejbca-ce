@@ -43,9 +43,9 @@ import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Authenticates users towards a user database.
+ * @see AuthenticationSession
  *
  * @version $Id$
- *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthenticationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -64,18 +64,7 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /**
-     * Authenticates a user to the user database and returns the user DN.
-     *
-     * @param username unique username within the instance
-     * @param password password for the user
-     *
-     * @return UserDataVO, never returns null
-     *
-     * @throws ObjectNotFoundException if the user does not exist.
-     * @throws AuthStatusException If the users status is incorrect.
-     * @throws AuthLoginException If the password is incorrect.
-     */
+    @Override
     public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
     	if (log.isTraceEnabled()) {
@@ -137,16 +126,7 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
         }
     }
 
-	/**
-	 * Set the status of a user to finished, called when a user has been successfully processed. If
-	 * possible sets users status to UserData.STATUS_GENERATED, which means that the user cannot
-	 * be authenticated anymore. NOTE: May not have any effect of user database is remote.
-	 * User data may contain a counter with nr of requests before used should be set to generated. In this case
-	 * this counter will be decreased, and if it reaches 0 status will be generated. 
-	 *
-	 * @param data
-	 * @throws ObjectNotFoundException if the user does not exist.
-	 */
+    @Override
 	public void finishUser(UserDataVO data) throws ObjectNotFoundException {
 		if (log.isTraceEnabled()) {
 			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");

@@ -37,7 +37,7 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
 /**
- * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
+ * Used by hardtoken batch clients to retrieve users to generate from EJBCA RA.
  *
  * @version $Id$
  */
@@ -60,14 +60,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     @EJB
     private LogSessionLocal logSession;
 
-    /**
-     * Returns the next user scheduled for batch generation for the given issuer.
-     *
-     * @param admin the administrator performing the actions
-     *
-     * @return The next user to generate or NULL if there are no users i queue.
-     * @throws EJBException if a communication or other error occurs.
-     */
+    @Override
     public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
     	log.trace(">getNextHardTokenToGenerate()");
     	UserDataVO returnval = null;
@@ -98,18 +91,10 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	return returnval;
     }
 
-    /**
-     * Returns a Collection of users scheduled for batch generation for the given issuer.
-     * A maximum of MAX_RETURNED_QUEUE_SIZE users will be returned by call.
-     *
-     * @param admin the administrator performing the actions
-     *
-     * @return A Collection of users to generate or NULL if there are no users i queue.
-     * @throws EJBException if a communication or other error occurs.
-     */
-    public Collection getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException {
+    @Override
+    public Collection<UserDataVO> getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException {
     	log.trace(">getNextHardTokensToGenerate()");
-    	ArrayList<UserDataVO> returnval = new ArrayList<UserDataVO>();
+    	List<UserDataVO> returnval = new ArrayList<UserDataVO>();
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
@@ -134,17 +119,8 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	return returnval;
     }
 
-    /**
-     * Returns the indexed user in queue scheduled for batch generation for the given issuer.
-     * 
-     * TODO: Since there is no guarantee that the database query always will return entries in the same order, this functionality might be broken!
-     *
-     * @param admin the administrator performing the actions
-     * @param index index in queue of user to retrieve. (First position is 1 according to old JDBC implementation.)
-     *
-     * @return The next token to generate or NULL if the given user doesn't exist in queue.
-     * @throws EJBException if a communication or other error occurs.
-     */
+    // TODO: Since there is no guarantee that the database query always will return entries in the same order, this functionality might be broken!
+    @Override
     public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException {
     	log.trace(">getNextHardTokenToGenerateInQueue()");
     	UserDataVO returnval=null;
@@ -168,14 +144,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	return returnval;
     }
 
-    /**
-     * Returns the number of users scheduled for batch generation for the given issuer.
-     *
-     * @param admin the administrator performing the actions
-     *
-     * @return the number of users to generate.
-     * @throws EJBException if a communication or other error occurs.
-     */
+    @Override
     public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
     	log.trace(">getNumberOfHardTokensToGenerate()");
     	int count = 0;
@@ -187,13 +156,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     	return count;
     }
 
-    /**
-     * Methods that checks if a user exists in the database having the given hard token issuer id. This function is mainly for avoiding
-     * desyncronisation when a hard token issuer is deleted.
-     *
-     * @param hardtokenissuerid the id of hard token issuer to look for.
-     * @return true if hardtokenissuerid exists in userdatabase.
-     */
+    @Override
     public boolean checkForHardTokenIssuerId(Admin admin, int hardtokenissuerid){
     	if (log.isTraceEnabled()) {
             log.trace(">checkForHardTokenIssuerId(id: " + hardtokenissuerid + ")");

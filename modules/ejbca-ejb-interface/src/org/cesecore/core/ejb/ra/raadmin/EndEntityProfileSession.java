@@ -23,7 +23,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
  * 
  * @author Mike Kushner
  * @version $Id$
- * 
  */
 public interface EndEntityProfileSession {
 
@@ -32,26 +31,20 @@ public interface EndEntityProfileSession {
     /**
      * Adds a profile to the database.
      * 
-     * @param admin
-     *            administrator performing task
-     * @param profilename
-     *            readable profile name
-     * @param profile
-     *            profile to be added
+     * @param admin administrator performing task
+     * @param profilename readable profile name
+     * @param profile profile to be added
      */
     void addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException;
 
     /**
      * Adds a profile to the database.
      * 
-     * @param admin
-     *            administrator performing task
-     * @param profileid
-     *            internal ID of new profile, use only if you know it's right.
-     * @param profilename
-     *            readable profile name
-     * @param profile
-     *            profile to be added
+     * @param admin administrator performing task
+     * @param profileid internal ID of new profile, use only if you know it's
+     *            right.
+     * @param profilename readable profile name
+     * @param profile profile to be added
      */
     void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException;
 
@@ -61,50 +54,34 @@ public interface EndEntityProfileSession {
      */
     void cloneEndEntityProfile(Admin admin, String originalprofilename, String newprofilename) throws EndEntityProfileExistsException;
 
-    /**
-     * 
-     * @return an unused end id number.
-     */
+    /** @return an unused end id number. */
     int findFreeEndEntityProfileId();
 
     /**
-     * Removes an end entity profile from the database.
-     * 
-     * @throws javax.ejb.EJBException
-     *             if a communication or other error occurs.
+     * Removes an end entity profile from the database, does not throw any
+     * errors if the profile does not exist.
      */
     void removeEndEntityProfile(Admin admin, String profilename);
 
-    /**
-     * Renames a end entity profile
-     */
+    /** Renames a end entity profile. */
     void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException;
 
-    /**
-     * Updates profile data
-     */
+    /** Updates profile data. */
     void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile);
 
     /**
-     * Do not use, use changeEndEntityProfile instead. Used internally for
+     * Do NOT use, use changeEndEntityProfile instead. Used internally for
      * testing only. Updates a profile without flushing caches.
      */
     void internalChangeEndEntityProfileNoFlushCache(Admin admin, String profilename, EndEntityProfile profile);
 
-    /**
-     * Retrives a Collection of id:s (Integer) to authorized profiles.
-     */
+    /** Retrieves a Collection of id:s (Integer) to authorized profiles. */
     Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin);
 
-    /**
-     * Method creating a hashmap mapping profile id (Integer) to profile name
-     * (String).
-     */
+    /** @return mapping of profile id (Integer) to profile name (String). */
     HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin);
 
-    /**
-     * Clear and reload end entity profile caches.
-     */
+    /** Clear and reload end entity profile caches. */
     void flushProfileCache();
 
     /**
@@ -114,56 +91,49 @@ public interface EndEntityProfileSession {
     EndEntityProfile getEndEntityProfile(Admin admin, int id);
 
     /**
-     * Finds a end entity profile by id.
-     * 
+     * Get a copy of an EndEntityProfile.
      * @return EndEntityProfile (cloned) or null if it does not exist
      */
     EndEntityProfile getEndEntityProfile(Admin admin, java.lang.String profilename);
 
     /**
      * Returns a end entity profiles id, given it's profilename
-     * 
      * @return the id or 0 if profile cannot be found.
      */
     int getEndEntityProfileId(Admin admin, java.lang.String profilename);
 
     /**
      * Returns a end entity profiles name given it's id.
-     * 
-     * @return profilename or null if profile id doesn't exists.
+     * @return profile's name or null if profile id doesn't exists.
      */
     String getEndEntityProfileName(Admin admin, int id);
 
     /**
-     * Method to check if a certificateprofile exists in any of the end entity
-     * profiles. Used to avoid desyncronization of certificate profile data.
+     * Method to check if a CertificateProfile exists in any of the end entity
+     * profiles. Used to avoid desynchronization of certificate profile data.
      * 
-     * @param certificateprofileid
-     *            the certificatetype id to search for.
-     * @return true if certificateprofile exists in any of the end entity
-     *         profiles.
+     * @param certificateprofileid the CertificateProfile's id to search for.
+     * @return true if CertificateProfile exists in any EndEntityProfile.
      */
     boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid);
 
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
-     * avoid desyncronization of CA data.
+     * avoid desynchronization of CA data.
      * 
-     * @param caid
-     *            the caid to search for.
-     * @return true if ca exists in any of the end entity profiles.
+     * @param caid the caid to search for.
+     * @return true if CA exists in any of the end entity profiles.
      */
     boolean existsCAInEndEntityProfiles(Admin admin, int caid);
 
     /**
-     * A method designed to be called at startuptime to (possibly) upgrade end
+     * A method designed to be called at startup time to (possibly) upgrade end
      * entity profiles. This method will read all End Entity Profiles and as a
      * side-effect upgrade them if the version if changed for upgrade. Can have
      * a side-effect of upgrading a profile, therefore the Required transaction
      * setting.
      * 
-     * @param admin
-     *            administrator calling the method
+     * @param admin administrator calling the method
      */
     void initializeAndUpgradeProfiles(Admin admin);
 

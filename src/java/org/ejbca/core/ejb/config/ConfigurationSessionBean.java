@@ -28,7 +28,6 @@ import org.ejbca.core.ejb.JndiHelper;
  * This bean handles configuration changes for system tests.
  * 
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -36,56 +35,38 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * Verify that EJBCA isn't running in production mode.
-     */
+    /** Verify that EJBCA isn't running in production mode. */
     private void assertIsNotInProductionMode() throws EJBException {
         if (EjbcaConfiguration.getIsInProductionMode()) {
             throw new EJBException("Configuration can not be altered in production mode.");
         }
     }
 
-    /**
-     * Try to backup the current configuration.
-     * 
-     * @return false if a backup already exists.
-     */
+    @Override
     public boolean backupConfiguration() {
         assertIsNotInProductionMode();
         return ConfigurationHolder.backupConfiguration();
     }
 
-    /**
-     * Restore configuration from backup.
-     * 
-     * @return false if no backup exists.
-     */
+    @Override
     public boolean restoreConfiguration() {
         assertIsNotInProductionMode();
         return ConfigurationHolder.restoreConfiguration();
     }
 
-    /**
-     * Makes sure there is a backup of the configuration and then alters the
-     * active configuration with all the properties.
-     */
+    @Override
     public boolean updateProperties(Properties properties) {
         assertIsNotInProductionMode();
         return ConfigurationHolder.updateConfiguration(properties);
     }
 
-    /**
-     * Makes sure there is a backup of the configuration and then alters the
-     * active configuration with the property.
-     */
+    @Override
     public boolean updateProperty(String key, String value) {
         assertIsNotInProductionMode();
         return ConfigurationHolder.updateConfiguration(key, value);
     }
 
-    /**
-     * Verifies that the property is set to the expected value.
-     */
+    @Override
     public boolean verifyProperty(String key, String value) {
         assertIsNotInProductionMode();
         String configValue = ConfigurationHolder.getString(key, null);
@@ -98,17 +79,13 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
         return value.equals(configValue);
     }
 
-    /**
-     * Returns a property from the current server configuration
-     */
+    @Override
     public String getProperty(String key, String defaultValue) {
         assertIsNotInProductionMode();
         return ConfigurationHolder.getString(key, defaultValue);
     }
 
-    /**
-     * @return all currently used properties
-     */
+    @Override
     public Properties getAllProperties() {
         assertIsNotInProductionMode();
         return ConfigurationHolder.getAsProperties();

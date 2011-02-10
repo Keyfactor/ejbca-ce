@@ -20,19 +20,17 @@ import org.ejbca.core.model.log.Admin;
 /**
  * 
  * @version $Id$
- *
  */
 public interface AdminEntitySession {
  
     /**
      * Adds a Collection of AdminEnity to the admingroup. Changes their values
-     * if they already exists.
+     * if they already exists. Does not give any errors if the admin group does
+     * not exist.
      */
     public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
     
-    /**
-     * Removes a Collection of AdminEntity from the administrator group.
-     */
+    /** Removes a Collection of AdminEntity from the administrator group. */
     public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
     
 }

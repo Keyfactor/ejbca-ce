@@ -85,20 +85,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @EJB
     private LogSessionLocal logSession;
 
-    /**
-     * Method used to add an approval to database.
-     * 
-     * The main key of an approval is the approvalId, which should be unique
-     * for one administrator doing one type of action, requesting the same
-     * action twice should result in the same approvalId
-     * 
-     * If the approvalId already exists, with a non expired approval, a new approval
-     * request is added to the database. An approvalException is thrown otherwise
-     * 
-     * @throws ApprovalException
-     *             if an approval already exists for this request.
-     * 
-     */
+    @Override
     public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException {
         log.trace(">addApprovalRequest");
         int approvalId = approvalRequest.generateApprovalId();
@@ -143,16 +130,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace("<addApprovalRequest");
     }
 
-    /**
-     * Method used to remove an approval from database.
-     * 
-     * @param id
-     *            , the uniqu id of the approvalrequest, not the same as
-     *            approvalId
-     * 
-     * @throws ApprovalException
-     * 
-     */
+    @Override
     public void removeApprovalRequest(Admin admin, int id) throws ApprovalException {
         log.trace(">removeApprovalRequest");
         try {
@@ -174,26 +152,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace("<removeApprovalRequest");
     }
 
-    /**
-     * Method used to reject an approval requests.
-     * 
-     * It does the follwing 1. checks if the approval with the status waiting
-     * exists, throws an ApprovalRequestDoesntExistException otherwise
-     * 
-     * 2. check if the administrator is authorized using the follwing rules: 2.1
-     * if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
-     * authorized to AccessRulesConstants.REGULAR_APPROVECAACTION othervise
-     * AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
-     * end entity profile. 2.2 Checks if the admin is authoried to the approval
-     * requests getCAId()
-     * 
-     * 3. looks upp the username of the administrator and checks that no
-     * approval have been made by this user earlier.
-     * 
-     * 4. Runs the approval command in the end entity bean.
-     * 
-     * @param gc is the GlobalConfiguration used for notification info
-     */
+    @Override
     public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
         log.trace(">reject");
@@ -228,13 +187,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace("<reject");
     }
     
-    /** Verifies that an administrator can approve an action, i.e. that it is not the same admin approving the request as made the request originally.
-     * An admin is not allowed to approve his/her own actions.
-     * 
-     * @param admin the administrator that tries to approve the action
-     * @param adl the action that the administrator tries to approve
-     * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
-     */
+    @Override
     public void checkExecutionPossibility(Admin admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
         // Check that the approvers username doesn't exists among the existing
         // usernames.
@@ -273,9 +226,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
     }
 
-    /**
-     * Help method for approve and reject.
-     */
+    @Override
     public ApprovalData isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId) throws ApprovalException, AuthorizationDeniedException {
         ApprovalData retval = findNonExpiredApprovalDataLocal(approvalId);
         if (retval != null) {
@@ -304,29 +255,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return retval;
     }
 
-    /**
-     * Method that goes through exists approvals in database to see if there
-     * exists any approved action.
-     * 
-     * If goes through all approvalrequests with the given Id and checks their
-     * status, if any have status approved it returns STATUS_APPROVED.
-     * 
-     * This method should be used by action requiring the requesting
-     * administrator to poll to see if it have been approved and only have one
-     * step, othervise use the method with the step parameter.
-     * 
-     * @param admin
-     * @param approvalId
-     * @return the number of approvals left, 0 if approved othervis is the
-     *         ApprovalDataVO.STATUS constants returned indicating the statys.
-     * @throws ApprovalException
-     *             if approvalId doesn't exists
-     * @throws ApprovalRequestExpiredException
-     *             Throws this exception one time if one of the approvals have
-     *             expired, once notified it wont throw it anymore. But If the
-     *             request is multiple steps and user have already performed
-     *             that step, the Exception will always be thrown.
-     */
+    @Override
     public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">isApproved, approvalId" + approvalId);
@@ -351,47 +280,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return retval;
     }
 
-    /**
-     * Method that goes through exists approvals in database to see if there
-     * exists any approved. This is the default method for simple single step
-     * approvals.
-     * 
-     * If goes through all approvalrequests with the given Id and checks their
-     * status, if any have status approved it returns STATUS_APPROVED.
-     * 
-     * This method should be used by action requiring the requesting
-     * administrator to poll to see if it have been approved and only have one
-     * step, othervise use the method with the step parameter.
-     * 
-     * @param admin
-     * @param approvalId
-     * @return the number of approvals left, 0 if approved othervis is the
-     *         ApprovalDataVO.STATUS constants returned indicating the status.
-     * @throws ApprovalException
-     *             if approvalId doesn't exists
-     * @throws ApprovalRequestExpiredException
-     *             Throws this exception one time if one of the approvals have
-     *             expired, once notified it wont throw it anymore. But If the
-     *             request is multiple steps and user have already performed
-     *             that step, the Exception will always be thrown.
-     * 
-     */
+    @Override
     public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException {
         return isApproved(admin, approvalId, 0);
     }
 
-    /**
-     * Method that marks a certain step of a a non-executable approval as done.
-     * When the last step is performed the approvel is marked as EXPRIED.
-     * 
-     * @param admin
-     * @param approvalId
-     * @param step
-     *            in approval to mark
-     * @throws ApprovalException
-     *             if approvalId doesn't exists,
-     * 
-     */
+    @Override
     public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">markAsStepDone, approvalId" + approvalId + ", step " + step);
@@ -408,12 +302,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         log.trace("<markAsStepDone.");
     }
 
-    /**
-     * Method returning an approval requests with status 'waiting', 'Approved'
-     * or 'Reject' returns null if no non expired exists
-     * 
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public ApprovalDataVO findNonExpiredApprovalRequest(Admin admin, int approvalId) {
         ApprovalDataVO retval = null;
         ApprovalData data = findNonExpiredApprovalDataLocal(approvalId);
@@ -439,15 +329,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return retval;
     }
 
-    /**
-     * Method that takes an approvalId and returns all approval requests for this.
-     * 
-     * @param admin
-     * @param approvalId
-     * @return and collection of ApprovalDataVO, empty if no approvals exists.
-     * 
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<ApprovalDataVO> findApprovalDataVO(Admin admin, int approvalId) {
         log.trace(">findApprovalDataVO");
         ArrayList<ApprovalDataVO> retval = new ArrayList<ApprovalDataVO>();
@@ -461,27 +344,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return retval;
     }
 
-    /**
-     * Method returning a list of approvals from the give query
-     * 
-     * @param admin
-     * @param query
-     *            should be a Query object containing ApprovalMatch and
-     *            TimeMatch
-     * @param index
-     *            where the resultset should start.
-     * @param caAuthorizationString
-     *            a list of auhtorized CA Ids in the form 'cAId=... OR cAId=...'
-     * @param endEntityProfileAuthorizationString
-     *            a list of authorized end entity profile ids in the form
-     *            '(endEntityProfileId=... OR endEntityProfileId=...) objects
-     *            only
-     * @return a List of ApprovalDataVO, never null
-     * @throws AuthorizationDeniedException
-     * @throws IllegalQueryException
-     * 
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public List<ApprovalDataVO> query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
@@ -514,17 +378,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         return returnData;
     }
 
-    /**
-     * Get a list of all pending approvals ids. This was written for the upgrade
-     * to EJBCA 3.10.
-     * 
-     * @return a List<Integer> with all pending approval ids, never null
-     */
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public List<Integer> getAllPendingApprovalIds() {
-    	return ApprovalData.findByApprovalIdsByStatus(entityManager, ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);
-    }
-
+    @Override
     public void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
             String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest,
             Approval approval) {
@@ -609,11 +463,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
 	/**
-	 * Method that rejects an apporval.
-	 * After someone have rejected the request noone else can approve it
-	 * 
-s	 * @throws ApprovalRequestExpiredException 
-	 * @throws ApprovalException 
+	 * Method that rejects an approval.
+	 * After someone have rejected the request no-one else can approve it
 	 */
 	private void reject(final ApprovalData approvalData, final Approval approval) throws ApprovalRequestExpiredException,  ApprovalException {
 		if(approvalData.haveRequestOrApprovalExpired()){
@@ -667,7 +518,7 @@ s	 * @throws ApprovalRequestExpiredException
 	 * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the statys.
 	 * @throws ApprovalRequestExpiredException if the request or approval have expired, the status will be EXPIREDANDNOTIFIED in this case. 
 	 */
-	public int isApproved(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {    	
+	private int isApproved(final ApprovalData approvalData, final int step) throws ApprovalRequestExpiredException {    	
 		if(getApprovalRequest(approvalData).isStepDone(step)){
 			return ApprovalDataVO.STATUS_EXPIRED;
 		}
@@ -694,6 +545,7 @@ s	 * @throws ApprovalRequestExpiredException
     	return getApprovalRequest(approvalData).getRequestAdmin().getUsername();
     }
 
+    @Override
     public ApprovalRequest getApprovalRequest(final ApprovalData approvalData) {
 		return ApprovalDataUtil.getApprovalRequest(approvalData.getRequestdata());
 	}
@@ -711,7 +563,7 @@ s	 * @throws ApprovalRequestExpiredException
 		}
 	}
 
-	/** Method that returns the approval data value object. */
+	@Override
 	public ApprovalDataVO getApprovalDataVO(ApprovalData approvalData) {
 		approvalData.haveRequestOrApprovalExpired();
 		return new ApprovalDataVO(approvalData.getId(), approvalData.getApprovalid(), approvalData.getApprovaltype(),
@@ -720,15 +572,12 @@ s	 * @throws ApprovalRequestExpiredException
 				approvalData.getRequestDate(), approvalData.getExpireDate(), approvalData.getRemainingapprovals());
 	}
 
+	@Override
 	public Collection<Approval> getApprovals(ApprovalData approvalData) {   
 		return ApprovalDataUtil.getApprovals(approvalData.getApprovaldata());
 	}
 
-	/**
-	 * Collection of Approval
-	 * @param approvals cannot be null.
-	 * @throws IOException
-	 */
+	@Override
 	public void setApprovals(ApprovalData approvalData, final Collection<Approval> approvals){
 		try{
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();

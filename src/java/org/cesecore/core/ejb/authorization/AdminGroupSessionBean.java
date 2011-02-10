@@ -45,7 +45,6 @@ import org.ejbca.core.model.log.LogConstants;
  * Handles AdminGroup entities. 
  * 
  * @version $Id$
- *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AdminGroupSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -68,10 +67,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     @EJB
     private AuthorizationTreeUpdateDataSessionLocal authTreeSession;
     
-    /**
-     * Initializes this session bean manually, primarily for use from the CLI.
-     * @throws AdminGroupExistsException 
-     */
+    @Override
     public void init(final Admin admin, final int caid, final String superAdminCN) throws AdminGroupExistsException {
         // Check if admingroup table is empty, if so insert default superuser
         // and create "special edit accessrules count group"
@@ -145,10 +141,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
     
     }
    
-    /**
-     * Adds a Collection of AccessRule to an an admin group.
-     * 
-     */
+    @Override
     public void addAccessRules(final Admin admin, final String admingroupname, final Collection<AccessRule> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
@@ -170,14 +163,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         }
     }
    
-    /**
-     * Method to add an admingroup.
-     * 
-     * @param admingroupname
-     *            name of new admingroup, have to be unique.
-     * @throws AdminGroupExistsException
-     *             if admingroup already exists.
-     */
+    @Override
     public void addAdminGroup(final Admin admin, final String admingroupname) throws AdminGroupExistsException {
         if (!(admingroupname.equals(AdminGroup.DEFAULTGROUPNAME))) {
             boolean success = false;
@@ -203,12 +189,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         }
     }
     
-    /**
-     * Method to check if an administrator exists in the specified admingroup.
-     * 
-     * @return true if administrator exists in group
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsAdministratorInGroup(final Admin admin, final int admingrouppk) {
         boolean returnval = false;
         final AdminGroupData agdl = AdminGroupData.findByPrimeKey(entityManager, Integer.valueOf(admingrouppk));
@@ -220,12 +202,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         return returnval;
     }
     
-    /**
-     * Method to get a reference to a admingroup.
-     * 
-     * @return The Admin group, null if it doesn't exist. 
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public AdminGroup getAdminGroup(final Admin admin, final String admingroupname) {
         AdminGroup returnval = null;
         final AdminGroupData agd = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -237,22 +215,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         return returnval;
     }
 
-
-    /**
-     * Returns a Collection of AdminGroup the administrator is authorized to.
-     * <p/>
-     * SuperAdmin is authorized to all groups Other admins are only authorized
-     * to the groups containing a subset of authorized CA that the admin himself
-     * is authorized to.
-     * <p/>
-     * The AdminGroup objects only contains only name and caid and no accessdata
-     * 
-     * @param admin
-     *            The current administrator
-     * @param availableCaIds
-     *            A Collection<Integer> of all CA Ids
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<AdminGroup> getAuthorizedAdminGroupNames(final Admin admin, final Collection<Integer> availableCaIds) {
         final ArrayList<AdminGroup> returnval = new ArrayList<AdminGroup>();
         boolean issuperadmin = false;
@@ -320,12 +284,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         }
         return returnval;
     }
-    
 
-    
-    /**
-     * Method to remove a admingroup.
-     */
+    @Override
     public void removeAdminGroup(final Admin admin, final String admingroupname) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Removing admin group " + admingroupname);
@@ -351,13 +311,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
             }
         }
     }
-    
 
-    /**
-     * Removes a Collection of (String) containing accessrules to remove from
-     * admin group.
-     * 
-     */
+    @Override
     public void removeAccessRules(final Admin admin, final String admingroupname, final List<String> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
@@ -378,10 +333,8 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
             }
         }
     }
-    
-    /**
-     * Replaces a groups accessrules with a new set of rules
-     */
+
+    @Override
     public void replaceAccessRules(final Admin admin, final String admingroupname, final Collection<AccessRule> accessrules) {
         if (!admingroupname.equals(AdminGroup.DEFAULTGROUPNAME)) {
             try {
@@ -410,12 +363,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         }
     }
   
-    /**
-     * Method to rename a admingroup
-     * 
-     * @throws AdminGroupExistsException
-     *             if admingroup already exists.
-     */
+    @Override
     public void renameAdminGroup(final Admin admin, final String oldname, final String newname) throws AdminGroupExistsException {
         if (!(oldname.equals(AdminGroup.DEFAULTGROUPNAME))) {
             boolean success = false;
@@ -493,9 +441,7 @@ public class AdminGroupSessionBean implements AdminGroupSessionLocal, AdminGroup
         }
         agl.removeAccessRules(entityManager, remove);
     }
-    
-    /**
-     */
+
     private void removeAndAddDefaultPublicWebGroupRules(final AdminGroupData agl) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Removing old and adding new accessrules and admin entitites to admin group " + agl.getAdminGroupName());

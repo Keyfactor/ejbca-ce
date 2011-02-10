@@ -74,20 +74,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @EJB
     private LogSessionLocal logSession;
 
-    /**
-     * Adds a certificate profile to the database.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param profileid
-     *            internal ID of new certificate profile, use only if you know
-     *            it's right.
-     * @param profilename
-     *            readable name of new certificate profile
-     * @param profile
-     *            the profile to be added
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void addCertificateProfile(final Admin admin, final int profileid, final String profilename, final CertificateProfile profile)
             throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(profilename)) {
@@ -117,39 +105,22 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
     }
 
-    /**
-     * Adds a certificate profile to the database.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param profilename
-     *            readable name of new certificate profile
-     * @param profile
-     *            the profile to be added
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void addCertificateProfile(final Admin admin, final String profilename, final CertificateProfile profile)
             throws CertificateProfileExistsException {
         addCertificateProfile(admin, findFreeCertificateProfileId(), profilename, profile);
     }
 
-    /**
-     * Updates certificateprofile data
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void changeCertificateProfile(final Admin admin, final String profilename, final CertificateProfile profile) {
         internalChangeCertificateProfileNoFlushCache(admin, profilename, profile);
         flushProfileCache();
     }
-    
-    /**
-    /** Do not use, use changeCertificateProfile instead.
-     * Used internally for testing only. Updates a profile without flushing caches.
-     */
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void internalChangeCertificateProfileNoFlushCache(final Admin admin, final String profilename, final CertificateProfile profile) {
         final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, profilename);
         if (pdl == null) {
@@ -162,9 +133,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
     }
 
-    /**
-     * Clear and reload certificate profile caches.
-     */
+    @Override
     public void flushProfileCache() {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
@@ -176,17 +145,9 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace("<flushProfileCache");
         }
-    } // flushProfileCache
+    }
 
-    /**
-     * Retrives a Collection of id:s (Integer) to authorized profiles.
-     *
-     * @param certprofiletype should be either CertificateDataBean.CERTTYPE_ENDENTITY, CertificateDataBean.CERTTYPE_SUBCA, CertificateDataBean.CERTTYPE_ROOTCA,
-     *                        CertificateDataBean.CERTTYPE_HARDTOKEN (i.e EndEntity certificates and Hardtoken fixed profiles) or 0 for all.
-     *                        Retrives certificate profile names sorted.
-     * @param authorizedCaIds Collection<Integer> of authorized CA Ids for the specified Admin
-     * @return Collection of id:s (Integer)
-     */
+    @Override
     public Collection<Integer> getAuthorizedCertificateProfileIds(final Admin admin, final int certprofiletype, final Collection<Integer> authorizedCaIds) {
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         final HashSet<Integer> authorizedcaids = new HashSet<Integer>(authorizedCaIds);
@@ -239,13 +200,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return returnval;
     }
     
-    /**
-     * Finds a certificate profile by id.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @return CertificateProfile (cloned) or null if it can not be found.
-     */
+    @Override
     public CertificateProfile getCertificateProfile(final Admin admin, final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getCertificateProfile(" + id + ")");
@@ -301,9 +256,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return returnval;
     }
 
-    /**
-     * Retrieves a named certificate profile or null if none was found.
-     */
+    @Override
     public CertificateProfile getCertificateProfile(final Admin admin, final String profilename) {
         final Integer id = getCertificateProfileNameIdMapInternal().get(profilename);
         if (id == null) {
@@ -313,13 +266,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
     }
 
-    /**
-     * Method creating a hashmap mapping profile id (Integer) to profile name
-     * (String).
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     */
+    @Override
     public Map<Integer, String> getCertificateProfileIdToNameMap(final Admin admin) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getCertificateProfileIdToNameMap");
@@ -327,42 +274,25 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return getCertificateProfileIdNameMapInternal();
     }
 
-    /**
-     * Adds a certificateprofile with the same content as the original
-     * certificateprofile,
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @param orgprofilename
-     *            readable name of old certificate profile
-     * @param newprofilename
-     *            readable name of new certificate profile
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void cloneCertificateProfile(final Admin admin, final String orgprofilename, final String newprofilename,
             final Collection<Integer> authorizedCaIds) throws CertificateProfileExistsException {
         CertificateProfile profile = null;
-
         if (isCertificateProfileNameFixed(newprofilename)) {
             final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", newprofilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
                     msg);
             throw new CertificateProfileExistsException(msg);
         }
-
         try {
             profile = (CertificateProfile) getCertificateProfile(admin, orgprofilename).clone();
-
             boolean issuperadmin = false;
-          
             issuperadmin = authSession.isAuthorizedNoLog(admin, "/super_administrator");
-          
-
             if (!issuperadmin && profile.isApplicableToAnyCA()) {
                 // Not superadministrator, do not use ANYCA;
                 profile.setAvailableCAs(authorizedCaIds);
             }
-
             if (CertificateProfileData.findByProfileName(entityManager, newprofilename) == null) {
                 entityManager.persist(new CertificateProfileData(findFreeCertificateProfileId(), newprofilename, profile));
                 flushProfileCache();
@@ -375,18 +305,11 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                 throw new CertificateProfileExistsException();
             }
         } catch (CloneNotSupportedException f) {
-            throw new EJBException(f); // If this happens it's a programming
-            // error. Throw an exception!
+            throw new EJBException(f); // If this happens it's a programming error. Throw an exception!
         }
     }
 
-    /**
-     * Returns a certificate profile id, given it's certificate profile name
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @return the id or 0 if certificateprofile cannot be found.
-     */
+    @Override
     public int getCertificateProfileId(final Admin admin, final String certificateprofilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getCertificateProfileId: " + certificateprofilename);
@@ -402,14 +325,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return returnval;
     }
 
-    /**
-     * Returns a certificateprofiles name given it's id.
-     * 
-     * @param admin
-     *            Administrator performing the operation
-     * @return certificateprofilename or null if certificateprofile id doesn't
-     *         exists.
-     */
+    @Override
     public String getCertificateProfileName(final Admin admin, final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getCertificateProfileName: " + id);
@@ -421,10 +337,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return returnval;
     }
 
-    /**
-     * Renames a certificateprofile
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void renameCertificateProfile(final Admin admin, final String oldprofilename, final String newprofilename)
             throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(newprofilename)) {
@@ -458,15 +372,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
     }
 
-    /**
-     * A method designed to be called at startuptime to (possibly) upgrade certificate profiles.
+    /* 
      * This method will read all Certificate Profiles and as a side-effect upgrade them if the version if changed for upgrade.
      * Can have a side-effect of upgrading a profile, therefore the Required transaction setting.
-     * 
-     * @param admin administrator calling the method
-     * 
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void initializeAndUpgradeProfiles(final Admin admin) {
         final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
         final Iterator<CertificateProfileData> iter = result.iterator();
@@ -482,14 +393,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         flushProfileCache();
     }
 
-
-
-    /**
-     * Removes a certificateprofile from the database, does not throw any errors if the profile does not exist.
-     *
-     * @param admin Administrator performing the operation
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void removeCertificateProfile(final Admin admin, final String profilename) {
         try {
                 final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, profilename);
@@ -509,14 +414,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         }
     }
-    
-    /**
-     * Method to check if a CA exists in any of the certificate profiles. Used to avoid desyncronization of CA data.
-     *
-     * @param admin Administrator performing the operation
-     * @param caid  the caid to search for.
-     * @return true if ca exists in any of the certificate profiles.
-     */
+
+    @Override
     public boolean existsCAInCertificateProfiles(final Admin admin, final int caid) {
         boolean exists = false;
         final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
@@ -539,13 +438,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         }
         return exists;
     }
-    
-    /**
-     * Method to check if a Publisher exists in any of the certificate profiles. Used to avoid desyncronization of publisher data.
-     *
-     * @param publisherid the publisherid to search for.
-     * @return true if publisher exists in any of the certificate profiles.
-     */
+
+    @Override
     public boolean existsPublisherInCertificateProfiles(final Admin admin, final int publisherid) {
         boolean exists = false;
         final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
@@ -603,6 +497,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         return false;
     }
 
+    @Override
     public int findFreeCertificateProfileId() {
         final Random random = new Random(new Date().getTime());
         int id = random.nextInt();

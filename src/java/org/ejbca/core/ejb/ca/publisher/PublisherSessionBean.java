@@ -81,15 +81,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @EJB
     private LogSessionLocal logSession;
 
-    /**
-     * Stores the certificate to the given collection of publishers. See
-     * BasePublisher class for further documentation about function
-     * 
-     * @param publisherids
-     *            a Collection (Integer) of publisherids.
-     * @return true if successful result on all given publishers, or if publisherids is null or empty
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher
-     */
+    @Override
     public boolean storeCertificate(Admin admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
             int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation) {
@@ -97,14 +89,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
     }
 
-    /**
-     * Revokes the certificate in the given collection of publishers. See
-     * BasePublisher class for further documentation about function
-     * 
-     * @param publisherids
-     *            a Collection (Integer) of publisherids.
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher
-     */
+    @Override
     public void revokeCertificate(Admin admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
             long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
         storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, userDN, cafp,
@@ -113,24 +98,6 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     /**
      * The same basic method is be used for both store and revoke
-     * 
-     * @param admin
-     * @param logInfoEvent
-     * @param logErrorEvent
-     * @param publisherids
-     * @param cert
-     * @param username
-     * @param password
-     * @param userDN
-     * @param cafp
-     * @param status
-     * @param type
-     * @param revocationDate
-     * @param revocationReason
-     * @param tag
-     * @param certificateProfileId
-     * @param lastUpdate
-     * @param extendedinformation
      * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
      */
     private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection<Integer> publisherids, Certificate cert, String username,
@@ -205,15 +172,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
     
-    /**
-     * Stores the crl to the given collection of publishers. See BasePublisher
-     * class for further documentation about function
-     * 
-     * @param publisherids
-     *            a Collection (Integer) of publisherids.
-     * @return true if sucessfull result on all given publishers
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher
-     */
+    @Override
     public boolean storeCRL(Admin admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String userDN) {
         log.trace(">storeCRL");
         Iterator<Integer> iter = publisherids.iterator();
@@ -271,13 +230,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Test the connection to of a publisher
-     * 
-     * @param publisherid
-     *            the id of the publisher to test.
-     * @see org.ejbca.core.model.ca.publisher.BasePublisher
-     */
+    @Override
     public void testConnection(Admin admin, int publisherid) throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
@@ -305,14 +258,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
     }
 
-    /**
-     * Adds a publisher to the database.
-     * 
-     * @throws PublisherExistsException
-     *             if hard token already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
+    @Override
     public void addPublisher(Admin admin, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ")");
@@ -321,12 +267,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         log.trace("<addPublisher()");
     }
 
-    /**
-     * Adds a publisher to the database. Used for importing and exporting
-     * profiles from xml-files.
-     * 
-     * @throws PublisherExistsException if publisher already exists.
-     */
+    @Override
     public void addPublisher(Admin admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
@@ -354,9 +295,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         log.trace("<addPublisher()");
     }
 
-    /**
-     * Updates publisher data
-     */
+    @Override
     public void changePublisher(Admin admin, String name, BasePublisher publisher) {
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
@@ -373,13 +312,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         log.trace("<changePublisher()");
     }
 
-    /**
-     * Adds a publisher with the same content as the original.
-     * 
-     * @throws PublisherExistsException
-     *             if publisher already exists.
-     * @throws EJBException if a communication or other error occurs.
-     */
+    @Override
     public void clonePublisher(Admin admin, String oldname, String newname) {
         if (log.isTraceEnabled()) {
             log.trace(">clonePublisher(name: " + oldname + ")");
@@ -408,9 +341,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         log.trace("<clonePublisher()");
     }
 
-    /**
-     * Removes a publisher from the database.
-     */
+    @Override
     public void removePublisher(Admin admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">removePublisher(name: " + name + ")");
@@ -433,14 +364,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         log.trace("<removePublisher()");
     }
 
-    /**
-     * Renames a publisher
-     * 
-     * @throws PublisherExistsException
-     *             if publisher already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
+    @Override
     public void renamePublisher(Admin admin, String oldname, String newname) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
@@ -464,19 +388,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         log.trace("<renamePublisher()");
     }
 
-    /**
-     * Retrieves a Collection of id:s (Integer) for all authorized publishers if
-     * the Admin has the SUPERADMIN role.
-     * 
-     * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
-     * administrator.
-     * 
-     * @param admin
-     *            Should be an Admin with superadmin credentials
-     * @return Collection of id:s (Integer)
-     * @throws AuthorizationDeniedException
-     *             if the admin does not have superadmin credentials
-     */
+    @Override
     public Collection<Integer> getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
         if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
@@ -489,11 +401,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Method creating a hashmap mapping publisher id (Integer) to publisher
-     * name (String).
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public HashMap<Integer,String> getPublisherIdToNameMap(Admin admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
@@ -504,13 +413,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Retrives a named publisher.
-     * 
-     * @return a BasePublisher or null of a publisher with the given id does not
-     *         exist
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public BasePublisher getPublisher(Admin admin, String name) {
         BasePublisher returnval = null;
         PublisherData pd = PublisherData.findByName(entityManager, name);
@@ -520,13 +424,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Finds a publisher by id.
-     * 
-     * @return a BasePublisher or null of a publisher with the given id does not
-     *         exist
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public BasePublisher getPublisher(Admin admin, int id) {
         BasePublisher returnval = null;
         PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(id));
@@ -536,11 +435,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Help method used by publisher proxys to indicate if it is time to update
-     * it's data.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public int getPublisherUpdateCount(Admin admin, int publisherid) {
         int returnval = 0;
         PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
@@ -550,12 +446,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Returns a publisher id, given it's publishers name
-     * 
-     * @return the id or 0 if the publisher cannot be found.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public int getPublisherId(Admin admin, String name) {
         int returnval = 0;
         PublisherData pd = PublisherData.findByName(entityManager, name);
@@ -565,12 +457,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Returns a publishers name given its id.
-     * 
-     * @return the name or null if id doesn't exists
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public String getPublisherName(Admin admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherName(id: " + id + ")");
@@ -584,13 +472,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * Use from Healtcheck only! Test connection for all publishers. No
-     * authorization checks are performed.
-     * 
-     * @return an error message or an empty String if all are ok.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public String testAllConnections() {
         log.trace(">testAllPublishers");
         String returnval = "";
@@ -628,9 +511,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     	return Integer.valueOf(id);
     }
 
-    /**
-     * Method that returns the publisher data and updates it if necessary.
-     */
+    /** @return the publisher data and updates it if necessary. */
     private BasePublisher getPublisher(PublisherData pData) {
         BasePublisher publisher = pData.getCachedPublisher();
         if (publisher == null) {

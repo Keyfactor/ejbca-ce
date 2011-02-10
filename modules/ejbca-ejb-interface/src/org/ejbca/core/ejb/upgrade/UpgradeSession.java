@@ -15,7 +15,8 @@ package org.ejbca.core.ejb.upgrade;
 import org.ejbca.core.model.log.Admin;
 
 public interface UpgradeSession {
-    /**
+
+	/**
      * Upgrades the database
      * 
      * @param admin

@@ -52,6 +52,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
     private EntityManager entityManager;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
 	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		String uid = null;
 		if (certificate != null) {
@@ -66,6 +67,7 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment));
 	}
 
+    @Override
 	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		log.trace(">query()");
 		if (capriviledges == null || capriviledges.length() == 0 || !query.isLegalQuery()) {

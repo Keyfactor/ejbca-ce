@@ -51,7 +51,6 @@ import org.ejbca.util.CertTools;
  * Business class for CRL actions, i.e. running CRLs. CRUD operations can be found in CrlSession.
  * 
  * @version $Id$
- *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -74,18 +73,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     private CrlSessionLocal crlSession;
     @EJB
     private PublisherSessionLocal publisherSession;
-    
-    /**
-     * Requests for a CRL to be created with the passed (revoked) certificates. 
-     * Generates the CRL and stores it in the database.
-     *
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param certs collection of RevokedCertInfo object.
-     * @param basecrlnumber the CRL number of the Base CRL to generate a deltaCRL, -1 to generate a full CRL
-     * @return The newly created CRL in DER encoded byte form or null, use CertTools.getCRLfromByteArray to convert to X509CRL.
-     * @throws CATokenOfflineException 
-     */
+
+    @Override
     public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
         if (log.isTraceEnabled()) {
                 log.trace(">createCRL(Collection)");
@@ -142,31 +131,13 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         }
         return crlBytes;
     }
-    
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then
-     * creates their CRLs. No overlap is used. This method can be called by a
-     * scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * 
-     * @return the number of crls created.
-     * @throws EJBException
-     *             om ett kommunikations eller systemfel intr?ffar.
-     */
+
+    @Override
     public int createCRLs(Admin admin) {
         return createCRLs(admin, null, 0);
     }
-    
-    /**
-     * Generates the CRL and potentially deltaCRL and stores it in the database.
-     * 
-     * @param admin
-     * @param ca
-     * @param cainfo
-     * @throws CATokenOfflineException
-     */
+
+    @Override
     public void createCRLs(Admin admin, CA ca, CAInfo cainfo) throws CATokenOfflineException {
         final String fp = run(admin, ca);
         // If we could not create a full CRL (for example CVC CAs does not even
@@ -178,33 +149,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
             }
         }
     }
-    
-    /**
-     * Method that checks if there are any CRLs needed to be updated and then
-     * creates their CRLs. A CRL is created: 1. if the current CRL expires
-     * within the crloverlaptime (milliseconds) 2. if a crl issue interval is
-     * defined (>0) a CRL is issued when this interval has passed, even if the
-     * current CRL is still valid
-     * 
-     * This method can be called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param caids
-     *            list of CA ids (Integer) that will be checked, or null in
-     *            which case ALL CAs will be checked
-     * @param addtocrloverlaptime
-     *            given in milliseconds and added to the CRL overlap time, if
-     *            set to how often this method is run (poll time), it can be
-     *            used to issue a new CRL if the current one expires within the
-     *            CRL overlap time (configured in CA) and the poll time. The
-     *            used CRL overlap time will be (crloverlaptime +
-     *            addtocrloverlaptime)
-     * 
-     * @return the number of crls created.
-     * @throws EJBException
-     *             if communication or system error occurrs
-     */
+
+    @Override
     public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime) {
         int createdcrls = 0;
         try {
@@ -234,42 +180,13 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         }
         return createdcrls;
     }
-    
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and
-     * then creates their delta CRLs. No overlap is used. This method can be
-     * called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * 
-     * @return the number of delta crls created.
-     * @throws EJBException
-     *             if communication or system error happens
-     */
+
+    @Override
     public int createDeltaCRLs(Admin admin) {
         return createDeltaCRLs(admin, null, 0);
     }
 
-   
-
-    /**
-     * Method that checks if there are any delta CRLs needed to be updated and
-     * then creates them. This method can be called by a scheduler or a service.
-     * 
-     * @param admin
-     *            administrator performing the task
-     * @param caids
-     *            list of CA ids (Integer) that will be checked, or null in
-     *            which case ALL CAs will be checked
-     * @param crloverlaptime
-     *            A new delta CRL is created if the current one expires within
-     *            the crloverlaptime given in milliseconds
-     * 
-     * @return the number of delta crls created.
-     * @throws EJBException
-     *             if communication or system error occurrs
-     */
+    @Override
     public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime) {
         int createddeltacrls = 0;
         try {
@@ -300,16 +217,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         return createddeltacrls;
     }
 
-    
-    /**
-     * (Re-)Publish the last CRLs for a CA.
-     *
-     * @param admin            Information about the administrator or admin preforming the event.
-     * @param caCert           The certificate for the CA to publish CRLs for
-     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
-     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
-     * @param doPublishDeltaCRL should delta CRLs be published?
-     */
+    @Override
     public void publishCRL(Admin admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
         if ( usedpublishers==null ) {
                 return;
@@ -335,20 +243,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         }
     }
     
-    /**
-     * Method that checks if the CRL is needed to be updated for the CA and creates the CRL, if necessary. A CRL is created:
-     * 1. if the current CRL expires within the crloverlaptime (milliseconds)
-     * 2. if a CRL issue interval is defined (>0) a CRL is issued when this interval has passed, even if the current CRL is still valid
-     *  
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param addtocrloverlaptime given in milliseconds and added to the CRL overlap time, if set to how often this method is run (poll time), it can be used to issue a new CRL if the current one expires within
-     * the CRL overlap time (configured in CA) and the poll time. The used CRL overlap time will be (crloverlaptime + addtocrloverlaptime) 
-     *
-     * @return true if a CRL was created
-     * @throws EJBException if communication or system error occurs
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public boolean runNewTransactionConditioned(Admin admin, CA ca, long addtocrloverlaptime) throws CATokenOfflineException {
         boolean ret = false;
         Date currenttime = new Date();
@@ -459,17 +355,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         return ret;
     }
 
-    /**
-     * Method that checks if the delta CRL needs to be updated and then creates it.
-     *
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
-         * 
-     * @return true if a Delta CRL was created
-     * @throws EJBException if communication or system error occurrs
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
     public boolean runDeltaCRLnewTransactionConditioned(Admin admin, CA ca, long crloverlaptime) throws CATokenOfflineException {
         boolean ret = false;
                 Date currenttime = new Date();
@@ -543,17 +430,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                 return ret;
     }
 
-        /**
-         * Generates a new CRL by looking in the database for revoked certificates and generating a
-         * CRL. This method also "archives" certificates when after they are no longer needed in the CRL. 
-     * Generates the CRL and stores it in the database.
-         *
-         * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-         * @return fingerprint (primarey key) of the generated CRL or null if generation failed
-         * 
-         * @throws EJBException if a communications- or system error occurs
-         */
+    @Override
     public String run(Admin admin, CA ca) throws CATokenOfflineException {
         if (log.isTraceEnabled()) {
                 log.trace(">run()");
@@ -637,19 +514,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
         return ret;
     }
 
-    /**
-     * Generates a new Delta CRL by looking in the database for revoked certificates since the last complete CRL issued and generating a
-     * CRL with the difference. If either of baseCrlNumber or baseCrlCreateTime is -1 this method will try to query the database for the last complete CRL.
-     * Generates the CRL and stores it in the database.
-     *
-     * @param admin administrator performing the task
-     * @param ca the CA this operation regards
-     * @param baseCrlNumber base crl number to be put in the delta CRL, this is the CRL number of the previous complete CRL. If value is -1 the value is fetched by querying the database looking for the last complete CRL.
-     * @param baseCrlCreateTime the time the base CRL was issued. If value is -1 the value is fetched by querying the database looking for the last complete CRL. 
-     * @return the bytes of the Delta CRL generated or null of no delta CRL was generated.
-     * 
-     * @throws EJBException if a communications- or system error occurs
-     */
+    @Override
     public byte[] runDeltaCRL(Admin admin, CA ca, int baseCrlNumber, long baseCrlCreateTime) throws CATokenOfflineException {
                 if (ca == null) {
                         throw new EJBException("No CA specified.");

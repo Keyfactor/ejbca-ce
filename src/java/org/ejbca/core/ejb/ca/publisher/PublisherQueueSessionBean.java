@@ -50,7 +50,7 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
 /**
- * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchonously. 
+ * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
  *
  * @author Tomas Gustavsson
  * @version $Id$
@@ -77,13 +77,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	publisherQueueSession = sessionContext.getBusinessObject(PublisherQueueSessionLocal.class);
     }
 
-    /**
-     * Adds an entry to the publisher queue.
-	 *
-	 * @param publisherId the publisher that this should be published to
-	 * @param publishType the type of entry it is, {@link PublisherQueueData#PUBLISH_TYPE_CERT} or CRL
-     * @throws CreateException if the entry can not be created
-     */
+    @Override
     public void addQueueData(int publisherId, int publishType, String fingerprint, PublisherQueueVolatileData queueData, int publishStatus) throws CreateException {
     	if (log.isTraceEnabled()) {
             log.trace(">addQueueData(publisherId: " + publisherId + ")");
@@ -96,9 +90,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	log.trace("<addQueueData()");
     }
 
-    /**
-     * Removes an entry from the publisher queue.
-     */
+    @Override
     public void removeQueueData(String pk) {
     	if (log.isTraceEnabled()) {
             log.trace(">removeQueueData(pk: " + pk + ")");
@@ -118,11 +110,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		log.trace("<removeQueueData()");
     }
 
-    /**
-     * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
-	 *
-	 * @return Collection of PublisherQueueData, never null
-     */
+    @Override
     public Collection<PublisherQueueData> getPendingEntriesForPublisher(int publisherId) {
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisher(publisherId: " + publisherId + ")");
@@ -142,25 +130,12 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	return ret;
     }
 
-    /**
-     * Gets the number of pending entries for a publisher.
-     * @param publisherId The publisher to count the number of pending entries for.
-     * @return The number of pending entries.
-     */
+    @Override
     public int getPendingEntriesCountForPublisher(int publisherId) {
     	return Long.valueOf(org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId)).intValue();
     }
     
-    /**
-     * Gets an array with the number of new pending entries for a publisher in each intervals specified by 
-     * <i>lowerBounds</i> and <i>upperBounds</i>. 
-     * 
-     * The interval is defined as from lowerBounds[i] to upperBounds[i] and the unit is seconds from now. 
-     * A negative value results in no boundary.
-     * 
-     * @param publisherId The publisher to count the number of pending entries for.
-     * @return Array with the number of pending entries corresponding to each element in <i>interval</i>.
-     */
+    @Override
     public int[] getPendingEntriesCountForPublisherInIntervals(int publisherId, int[] lowerBounds, int[] upperBounds) {
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesCountForPublisherInIntervals(publisherId: " + publisherId + ", lower:" + Arrays.toString(lowerBounds) + ", upper:" + Arrays.toString(upperBounds) +  ")");
@@ -177,13 +152,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	return result;
     }
     
-    /**
-     * Finds all entries with status PublisherQueueData.STATUS_PENDING for a specific publisherId.
-	 *
-	 * @param orderBy order by clause for the SQL to the database, for example "order by timeCreated desc".
-	 * 
-	 * @return Collection of PublisherQueueData, never null
-     */
+    @Override
     public Collection<PublisherQueueData> getPendingEntriesForPublisherWithLimit(int publisherId, int limit, int timeout, String orderBy) {
     	if (log.isTraceEnabled()) {
             log.trace(">getPendingEntriesForPublisherWithLimit(publisherId: " + publisherId + ")");
@@ -206,11 +175,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	return ret;
     }
 
-    /**
-     * Finds all entries for a specific fingerprint.
-	 *
-	 * @return Collection of PublisherQueueData, never null
-     */
+    @Override
     public Collection<PublisherQueueData> getEntriesByFingerprint(String fingerprint) {
     	if (log.isTraceEnabled()) {
             log.trace(">getEntriesByFingerprint(fingerprint: " + fingerprint + ")");
@@ -231,12 +196,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     	return ret;
     }
 
-    /** Updates a record with new status
-     * 
-     * @param pk primary key of data entry
-     * @param status status from PublisherQueueData.STATUS_SUCCESS etc, or -1 to not update status
-     * @param tryCounter an updated try counter, or -1 to not update counter
-     */
+    @Override
     public void updateData(String pk, int status, int tryCounter) {
     	if (log.isTraceEnabled()) {
             log.trace(">updateData(pk: " + pk + ", status: "+status+")");
@@ -256,19 +216,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		log.trace("<updateData()");
     }
     
-	/**
-	 * Intended for use from PublishQueueProcessWorker.
-	 * 
-	 * Publishing algorithm that is a plain fifo queue, but limited to selecting entries to republish at 100 records at a time. It will select from the database for this particular publisher id, and process 
-	 * the record that is returned one by one. The records are ordered by date, descending so the oldest record is returned first. 
-	 * Publishing is tried every time for every record returned, with no limit.
-     * Repeat this process as long as we actually manage to publish something this is because when publishing starts to work we want to publish everything in one go, if possible.
-     * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
-     * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
-	 * 
-	 * @param publisherId
-	 * @throws PublisherException 
-	 */
+    @Override
 	public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId, BasePublisher publisher) {
 		int successcount = 0;
 		// Repeat this process as long as we actually manage to publish something
@@ -283,12 +231,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		} while ( (successcount > 0) && (totalcount < 20000) );
 	}
 
-    /**
-     * @param publisherId
-     * @param c
-     * @return how many publishes that succeeded
-     * @throws PublisherException
-     */
+    /** @return how many publishes that succeeded */
     private int doPublish(Admin admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
         if (log.isDebugEnabled()) {
             log.debug("Found " + c.size() + " certificates to republish for publisher " + publisherId);
@@ -411,10 +354,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
         return successcount;
     }
 
-    /**
-     * Publishers do not run a part of regular transactions and expect to run in auto-commit mode.
-     */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public boolean storeCertificateNonTransactional(BasePublisher publisher, Admin admin, Certificate cert, String username, String password, String userDN,
     		String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
     		long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
@@ -422,10 +363,9 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                 tag, certificateProfileId, lastUpdate, extendedinformation);
     }
 
-    /**
-     * Publishers do not run a part of regular transactions and expect to run in auto-commit mode.
-     */
+    /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
     public boolean storeCRLNonTransactional(BasePublisher publisher, Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
     	return publisher.storeCRL(admin, incrl, cafp, number, userDN);
     }

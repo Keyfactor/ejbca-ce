@@ -42,11 +42,8 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
- * Stores data used by web server clients. Uses JNDI name for datasource as
- * defined in env 'Datasource' in ejb-jar.xml.
- * 
+ * @see AuthorizationSession
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthorizationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -60,7 +57,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     @EJB
     private AuthorizationTreeUpdateDataSessionLocal authorizationTreeUpdateDataSession;
-    
     @EJB
     private LogSessionLocal logSession;
 
@@ -69,9 +65,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     
     private String[] customaccessrules = null;
     
-    /**
-     * Default create for SessionBean without any creation Arguments.
-     */
+    /** Default create for SessionBean without any creation Arguments. */
     @PostConstruct
     public void ejbCreate() {
     	if (log.isTraceEnabled()) {
@@ -91,18 +85,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return authCache.getAuthorizer();
     }
 
-
-    /**
-     * Method to check if a user is authorized to a certain resource.
-     * 
-     * @param admin
-     *            the administrator about to be authorized, see
-     *            org.ejbca.core.model.log.Admin class.
-     * @param resource
-     *            the resource to check authorization for.
-     * @return true if authorized
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean isAuthorized(Admin admin, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
@@ -110,19 +94,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return getAuthorizer().isAuthorized(admin, resource);
     }
 
-    /**
-     * Method to check if a user is authorized to a certain resource without
-     * performing any logging.
-     * 
-     * @param admin
-     *            the administrator about to be authorized, see
-     *            org.ejbca.core.model.log.Admin class.
-     * @param resource
-     *            the resource to check authorization for.
-     * @return true if authorized, but not false if not authorized, throws
-     *         exception instead so return value can safely be ignored.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean isAuthorizedNoLog(Admin admin, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
@@ -130,12 +103,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return getAuthorizer().isAuthorizedNoLog(admin, resource);
     }
 
-    /**
-     * Method to check if a group is authorized to a resource.
-     * 
-     * @return true if authorized
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean isGroupAuthorized(Admin admin, int adminGroupId, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
@@ -143,13 +112,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return getAuthorizer().isGroupAuthorized(admin, adminGroupId, resource);
     }
 
-    /**
-     * Method to check if a group is authorized to a resource without any
-     * logging.
-     * 
-     * @return true if authorized
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean isGroupAuthorizedNoLog(int adminGroupId, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
@@ -157,17 +121,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return getAuthorizer().isGroupAuthorizedNoLog(adminGroupId, resource);
     }
 
-
-
-    /**
-     * Checks that the given Admin is authorized to all CAs in the given group. Will return true if the group is empty.
-     * 
-     * @param administrator Admin token to check
-     * @param admingroupname Name of group to check in.
-     * 
-     * @throws AdminGroupDoesNotExistException
-     *             if the admin group doesn't exist.
-     */
+    @Override
     public boolean isAuthorizedToGroup(Admin administrator, String admingroupname) throws AdminGroupDoesNotExistException {
         HashSet<Integer> al = new HashSet<Integer>();
         AdminGroupData adminGroupData = AdminGroupData.findByGroupName(entityManager, admingroupname);
@@ -200,27 +154,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return result;
     }
 
-    /**
-     * Method used to collect an administrators available access rules based on
-     * which rule he himself is authorized to.
-     * 
-     * @param admin
-     *            is the administrator calling the method.
-     * @param availableCaIds
-     *            A Collection<Integer> of all CA Ids
-     * @param enableendentityprofilelimitations
-     *            Include End Entity Profile access rules
-     * @param usehardtokenissuing
-     *            Include Hard Token access rules
-     * @param usekeyrecovery
-     *            Include Key Recovery access rules
-     * @param authorizedEndEntityProfileIds
-     *            A Collection<Integer> of all auhtorized End Entity Profile ids
-     * @param authorizedUserDataSourceIds
-     *            A Collection<Integer> of all auhtorized user data sources ids
-     * @return a Collection of String containing available accessrules.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<String> getAuthorizedAvailableAccessRules(Admin admin, Collection<Integer> availableCaIds, boolean enableendentityprofilelimitations,
             boolean usehardtokenissuing, boolean usekeyrecovery, Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds) {
         AvailableAccessRules availableAccessRules = new AvailableAccessRules(admin, getAuthorizer(), customaccessrules, availableCaIds,
@@ -228,47 +163,20 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return availableAccessRules.getAvailableAccessRules(admin, authorizedEndEntityProfileIds, authorizedUserDataSourceIds);
     }
 
-    /**
-     * Method used to return an Collection of Integers indicating which CAids a
-     * administrator is authorized to access.
-     * 
-     * @param admin
-     *            The current administrator
-     * @param availableCaIds
-     *            A Collection<Integer> of all CA Ids
-     * @return Collection of Integer
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Integer> getAuthorizedCAIds(Admin admin, Collection<Integer> availableCaIds) {
         return getAuthorizer().getAuthorizedCAIds(admin, availableCaIds);
     }
 
-    /**
-     * Method used to return an Collection of Integers indicating which end
-     * entity profiles the administrator is authorized to view.
-     * 
-     * @param admin
-     *            the administrator
-     * @param rapriviledge
-     *            should be one of the end entity profile authorization constans
-     *            defined in AccessRulesConstants.
-     * @param authorizedEndEntityProfileIds
-     *            A Collection<Integer> of all auhtorized EEP ids
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge, Collection<Integer> availableEndEntityProfileId) {
         return getAuthorizer().getAuthorizedEndEntityProfileIds(admin, rapriviledge, availableEndEntityProfileId);
     }
 
-    /**
-     * Method to check if an end entity profile exists in any end entity profile
-     * rules. Used to avoid desyncronization of profilerules.
-     * 
-     * @param profileid
-     *            the profile id to search for.
-     * @return true if profile exists in any of the accessrules.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsEndEntityProfileInRules(Admin admin, int profileid) {
     	if (log.isTraceEnabled()) {
         	log.trace(">existsEndEntityProfileInRules("+profileid+")");    		
@@ -281,31 +189,20 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     	return count > 0;
     }
 
-    /**
-     * Method to check if a ca exists in any ca specific rules. Used to avoid
-     * desyncronization of CA rules when ca is removed
-     * 
-     * @param caid
-     *            the ca id to search for.
-     * @return true if ca exists in any of the accessrules.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsCAInRules(Admin admin, int caid) {
         return existsCAInAdminGroups(caid) && existsCAInAccessRules(caid);
     }
 
-    /**
-     * Method to force an update of the authorization rules without any wait.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public void forceRuleUpdate(Admin admin) {
         authorizationTreeUpdateDataSession.signalForAuthorizationTreeUpdate();
         updateAuthorizationTree();
     }
 
-    /**
-     * Clear and load authorization rules cache.
-     */
+    @Override
     public void flushAuthorizationRuleCache()  {
     	if (log.isTraceEnabled()) {
     		log.trace(">flushAuthorizationRuleCache()");
@@ -350,9 +247,6 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     	return count > 0;
     }
 
-
-
-
     /**
      * Method used check if a reconstruction of authorization tree is needed in
      * the authorization beans.
@@ -372,9 +266,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return ret;
     }
 
-    /**
-     * Returns all the AdminGroups
-     */
+    /** Returns all the AdminGroups */
     private Collection<AdminGroup> getAdminGroups() {
         ArrayList<AdminGroup> returnval = new ArrayList<AdminGroup>();
         Iterator<AdminGroupData> iter = AdminGroupData.findAll(entityManager).iterator();
@@ -384,9 +276,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         return returnval;
     }
     
-    /**
-     * method updating authorization tree.
-     */
+    /** method updating authorization tree. */
     private void updateAuthorizationTree() {
         if (log.isDebugEnabled()) {
             log.debug("updateAuthorizationTree");
@@ -398,7 +288,4 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         int authorizationtreeupdatenumber = authorizationTreeUpdateDataSession.getAuthorizationTreeUpdateData().getAuthorizationTreeUpdateNumber();
         authCache.updateAuthorizationCache(getAdminGroups(), authorizationtreeupdatenumber);
     }
-
-
-
 }

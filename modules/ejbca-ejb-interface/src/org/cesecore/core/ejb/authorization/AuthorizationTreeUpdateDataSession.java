@@ -19,9 +19,7 @@ import org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateData;
  */
 public interface AuthorizationTreeUpdateDataSession {
 
-    /**
-     * Returns a reference to the AuthorizationTreeUpdateData
-     */
+    /** Returns a reference to the AuthorizationTreeUpdateData. */
     AuthorizationTreeUpdateData getAuthorizationTreeUpdateData();
     
     /**

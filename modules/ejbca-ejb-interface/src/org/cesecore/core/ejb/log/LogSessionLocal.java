@@ -26,7 +26,7 @@ public interface LogSessionLocal extends LogSession {
     /**
      * Saves the log configuration to the database without logging.
      * Should only be used from loadLogConfiguration(..)
-     * @param logConfiguration the logconfiguration to save.
+     * @param logConfiguration the LogConfiguration to save.
      */
 	public void saveNewLogConfiguration(int caid, LogConfiguration logConfiguration);
 }

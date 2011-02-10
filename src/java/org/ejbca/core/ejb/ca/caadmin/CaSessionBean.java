@@ -52,7 +52,6 @@ import org.ejbca.util.CertTools;
  * operations.
  * 
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CaSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -71,12 +70,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @EJB
     private LogSessionLocal logSession;
 
-    
-    
-    /**
-     * Makes sure that no CAs are cached to ensure that we read from database
-     * next time we try to access it.
-     */
+    @Override
     public void flushCACache() {
     	CaHelperCache.lastCACacheUpdateTime = -1;
         CACacheManager.instance().removeAll();
@@ -85,20 +79,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
     }
 
-    /**
-     * Get the CA object performing the regular authorization check. Checks if
-     * the CA has expired or the certificate isn't valid yet and in that case
-     * sets the correct CA status.
-     * 
-     * @param admin
-     *            the admin retrieving the CA
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for
-     * @return CA value object, never null
-     * @throws CADoesntExistsException
-     *             if CA with caid does not exist or admin is not authorized to
-     *             CA
-     */
+    @Override
     public CA getCA(Admin admin, int caid) throws CADoesntExistsException {
         if (!authorizedToCA(admin, caid)) {
             if (log.isDebugEnabled()) {
@@ -110,24 +91,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return getCAInternal(caid, null);
     }
     
-    /**
-     * Get the CA object performing the regular authorization check. Checks if
-     * the CA has expired or the certificate isn't valid yet and in that case
-     * sets the correct CA status.
-     * 
-     * @param admin
-     *            the admin retrieving the CA
-     * @param name
-     *            name of the CA that we're searching for
-     * @return CA value object, never null
-     * @throws CADoesntExistsException
-     *             if CA with caid does not exist or admin is not authorized to
-     *             CA
-     */
+    @Override
     public CA getCA(Admin admin, String name) throws CADoesntExistsException {
-  
         CA ca = getCAInternal(-1, name);
-        
         if (!authorizedToCA(admin, ca.getCAId())) {
             if (log.isDebugEnabled()) {
                 log.debug("Admin (" + admin.toString() + ") is not authorized to CA with name: " + name);
@@ -138,16 +104,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return ca;
     }
 
-    /**
-     * Method used to remove a CA from the system.
-     * 
-     * You should first check that the CA isn't used by any EndEntity, Profile
-     * or AccessRule before it is removed. CADataHandler for example makes this
-     * check.
-     * 
-     * Should be used with care. If any certificate has been created with the CA
-     * use revokeCA instead and don't remove it.
-     */
+    @Override
     public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException {
         // check authorization
         if (!authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
@@ -175,13 +132,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
     }
 
-    /**
-     * Renames the name of CA used in administrators web interface. This name
-     * doesn't have to be the same as SubjectDN and is only used for reference.
-     */
+    @Override
     public void renameCA(Admin admin, String oldname, String newname) throws CAExistsException, AuthorizationDeniedException {
         // Get CA from database
-
         CAData cadata = CAData.findByName(entityManager, oldname);
         if (cadata == null) {
             String msg = intres.getLocalizedMessage("caadmin.errorrenameca", oldname);
@@ -273,30 +226,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return ca;
     }
 
-    /**
-     * Method returning id's of all CA's available in the system database. Note
-     * that this method does not check for authorization and can thus leak
-     * information.
-     * 
-     * @return a Collection (Integer) of CA id's
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Integer> getAvailableCAs() {
         return CAData.findAllCaIds(entityManager);
     }
 
-    /**
-     * Method returning id's of all CA's available to the system that the
-     * administrator is authorized to i.e. not having status "external" or
-     * "waiting for certificate response"
-     * 
-     * @param admin
-     *            The administrator
-     * @return a Collection<Integer> of available CA id's
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Integer> getAvailableCAs(Admin admin) {
         return authorizationSession.getAuthorizedCAIds(admin, getAvailableCAs());
     }
@@ -364,8 +301,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      * @param name
      *            human readable name of CA, used instead of caid if caid == -1,
      *            can be null of caid != -1
-     * @throws CADoesntExistsException
-     *             if no CA was found
+     * @throws CADoesntExistsException if no CA was found
      */
     private CAData getCADataBean(int caid, String name) throws UnsupportedEncodingException, IllegalKeyStoreException, CADoesntExistsException {
         CAData cadata = null;
@@ -420,8 +356,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
             return true; // Skip database seach since this is always ok
         }
-
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
-
 }

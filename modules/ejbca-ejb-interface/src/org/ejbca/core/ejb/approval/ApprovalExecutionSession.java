@@ -25,23 +25,24 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 public interface ApprovalExecutionSession {
 
     /**
-     * Method used to approve an approval requests. It does the follwing 1.
-     * checks if the approval with the status waiting exists, throws an
-     * ApprovalRequestDoesntExistException otherwise 2. check if the
-     * administrator is authorized using the follwing rules: 2.1 if
-     * getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
-     * authorized to AccessRulesConstants.REGULAR_APPROVECAACTION othervise
-     * AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
-     * end entity profile. 2.2 Checks if the admin is authoried to the approval
-     * requests getCAId() 3. looks upp the username of the administrator and
-     * checks that no approval have been made by this user earlier. 4. Runs the
-     * approval command in the end entity bean.
+     * Method used to approve an approval requests.
      * 
-     * @param admin
-     * @param approvalId
-     * @param approval
-     * @param gc
-     *            is the GlobalConfiguration used for notification info
+     * It does the following 1. checks if the approval with the status waiting
+     * exists, throws an ApprovalRequestDoesntExistException otherwise
+     * 
+     * 2. check if the administrator is authorized using the following rules:
+     * 2.1 if getEndEntityProfile is ANY_ENDENTITYPROFILE then check if the admin is
+     * authorized to AccessRulesConstants.REGULAR_APPROVECAACTION otherwise
+     * AccessRulesConstants.REGULAR_APPORVEENDENTITY and APPROVAL_RIGHTS for the
+     * end entity profile.
+     * 2.2 Checks if the admin is authoried to the approval requests getCAId()
+     * 
+     * 3. looks up the username of the administrator and checks that no
+     * approval have been made by this user earlier.
+     * 
+     * 4. Runs the approval command in the end entity bean.
+     * 
+     * @param gc is the GlobalConfiguration used for notification info
      * @throws ApprovalRequestExpiredException
      * @throws ApprovalRequestExecutionException
      * @throws AuthorizationDeniedException
@@ -51,6 +52,4 @@ public interface ApprovalExecutionSession {
      */
     public void approve(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException;
-
-
 }

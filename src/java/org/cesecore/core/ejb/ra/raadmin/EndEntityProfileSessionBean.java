@@ -69,34 +69,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @EJB
     private LogSessionLocal logSession;
 
-    /**
-     * Adds a profile to the database.
-     * 
-     * @param admin
-     *            administrator performing task
-     * @param profilename
-     *            readable profile name
-     * @param profile
-     *            profile to be added
-     * 
-     */
+    @Override
     public void addEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
         addEndEntityProfile(admin, findFreeEndEntityProfileId(), profilename, profile);
     }
 
-    /**
-     * Adds a profile to the database.
-     * 
-     * @param admin
-     *            administrator performing task
-     * @param profileid
-     *            internal ID of new profile, use only if you know it's right.
-     * @param profilename
-     *            readable profile name
-     * @param profile
-     *            profile to be added
-     * 
-     */
+    @Override
     public void addEndEntityProfile(final Admin admin, final int profileid, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
             final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
@@ -135,18 +113,13 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
     }
 
-    /**
-     * Updates profile data
-     */
+    @Override
     public void changeEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) {
         internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
         flushProfileCache();
     }
 
-    /**
-     * Adds a end entity profile to a group with the same content as the
-     * original profile.
-     */
+    @Override
     public void cloneEndEntityProfile(final Admin admin, final String orgname, final String newname) throws EndEntityProfileExistsException {
         if (newname.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
@@ -181,16 +154,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
     }
 
-    /**
-     * Method to check if a certificateprofile exists in any of the end entity
-     * profiles. Used to avoid desyncronization of certificate profile data.
-     * 
-     * @param profileid
-     *            the certificatetype id to search for.
-     * @return true if certificateprofile exists in any of the end entity
-     *         profiles.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsCertificateProfileInEndEntityProfiles(final Admin admin, final int profileid) {
         String[] availprofiles = null;
         boolean exists = false;
@@ -208,15 +173,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return exists;
     }
 
-    /**
-     * Method to check if a CA exists in any of the end entity profiles. Used to
-     * avoid desyncronization of CA data.
-     * 
-     * @param caid
-     *            the caid to search for.
-     * @return true if ca exists in any of the end entity profiles.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public boolean existsCAInEndEntityProfiles(final Admin admin, final int caid) {
         String[] availablecas = null;
         boolean exists = false;
@@ -238,6 +196,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return exists;
     }
 
+    @Override
     public int findFreeEndEntityProfileId() {
     	int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
     	// Never generate id's less than 10000
@@ -247,9 +206,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return id;
     }
 
-    /**
-     * Clear and reload end entity profile caches.
-     */
+    @Override
     public void flushProfileCache() {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
@@ -263,12 +220,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
     }
 
-    /**
-     * Finds a end entity profile by id.
-     * 
-     * @return EndEntityProfile (cloned) or null if it does not exist
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public EndEntityProfile getEndEntityProfile(final Admin admin, final String profilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + profilename + ")");
@@ -288,10 +241,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return returnval;
     }
 
-    /**
-     * Retrieves a Collection of id:s (Integer) to authorized profiles.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final Admin admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
@@ -337,12 +288,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return returnval;
     }
 
-    /**
-     * Finds a end entity profile by id.
-     * 
-     * @return EndEntityProfile (cloned) or null if it does not exist
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public EndEntityProfile getEndEntityProfile(final Admin admin, final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + id + ")");
@@ -368,12 +315,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return returnval;
     }
 
-    /**
-     * Returns a end entity profiles id, given it's profilename
-     * 
-     * @return the id or 0 if profile cannot be found.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public int getEndEntityProfileId(final Admin admin, final String profilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
@@ -392,12 +335,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return returnval;
     }
 
-    /**
-     * Returns a end entity profiles name given it's id.
-     * 
-     * @return profilename or null if profile id doesn't exists.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public String getEndEntityProfileName(final Admin admin, final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfilename(" + id + ")");
@@ -413,11 +352,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return returnval;
     }
 
-    /**
-     * Method creating a hashmap mapping profile id (Integer) to profile name
-     * (String).
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public HashMap<Integer, String> getEndEntityProfileIdToNameMap(final Admin admin) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getEndEntityProfileIdToNameMap");
@@ -425,17 +361,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         return getEndEntityProfileIdNameMapInternal();
     }
 
-
-    /**
-     * A method designed to be called at startuptime to (possibly) upgrade end
-     * entity profiles. This method will read all End Entity Profiles and as a
-     * side-effect upgrade them if the version if changed for upgrade. Can have
-     * a side-effect of upgrading a profile, therefore the Required transaction
-     * setting.
-     * 
-     * @param admin
-     *            administrator calling the method
-     */
+    @Override
     public void initializeAndUpgradeProfiles(final Admin admin) {
     	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
     	final Iterator<EndEntityProfileData> iter = result.iterator();
@@ -449,11 +375,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         flushProfileCache();
     }
-    
-    /**
-     * Do not use, use changeEndEntityProfile instead. Used internally for
-     * testing only. Updates a profile without flushing caches.
-     */
+
+    @Override
     public void internalChangeEndEntityProfileNoFlushCache(final Admin admin, final String profilename, final EndEntityProfile profile) {
     	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         if (pdl == null) {
@@ -468,9 +391,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
     }
 
-    /**
-     * Removes an end entity profile from the database, does not throw any errors if the profile does not exist.
-     */
+    @Override
     public void removeEndEntityProfile(final Admin admin, final String profilename) {
         try {
         	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
@@ -492,9 +413,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
     }
 
-    /**
-     * Renames a end entity profile
-     */
+    @Override
     public void renameEndEntityProfile(final Admin admin, final String oldprofilename, final String newprofilename) throws EndEntityProfileExistsException {
         if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);

@@ -51,8 +51,8 @@ import org.ejbca.util.Base64GetHashMap;
 
 /**
  * Stores data used by web server clients.
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
- *
+ * 
+ * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UserDataSourceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -72,16 +72,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     @EJB
     private LogSessionLocal logSession;
 
-    /**
-     * Main method used to fetch userdata from the given user data sources
-     * See BaseUserDataSource class for further documentation about function
-     *
-     * Checks that the administrator is authorized to fetch userdata.
-     * 
-     * @param userdatasourceids a Collection (Integer) of userdatasource Ids.
-     * @return Collection of UserDataSourceVO, empty if no userdata could be found.
-     * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
-     */
+    @Override
     public Collection<UserDataSourceVO> fetch(Admin admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
     	Iterator<Integer> iter = userdatasourceids.iterator();
     	ArrayList<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
@@ -116,18 +107,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return result;
     }
 
-    /**
-     * method used to remove userdata from the given user data sources.
-     * This functionality is optianal of a user data implementation and
-     * is not certain it is implemented
-     * See BaseUserDataSource class for further documentation about function
-     *
-     * Checks that the administrator is authorized to remove userdata.
-     * 
-     * @param userdatasourceids a Collection (Integer) of userdatasource Ids.
-     * @return true if the user was remove successfully from at least one of the user data sources.
-     * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
-     */
+    @Override
     public boolean removeUserData(Admin admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
     	boolean retval = false;
     	Iterator<Integer> iter = userdatasourceids.iterator();
@@ -163,12 +143,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     	return retval;
     }
 
-	/**
-     * Test the connection to a user data source
-     *
-     * @param userdatasourceid the id of the userdatasource to test.
-     * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
-     */
+    @Override
     public void testConnection(Admin admin, int userdatasourceid) throws UserDataSourceConnectionException {
     	if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + userdatasourceid + ")");
@@ -202,12 +177,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     	}
     }
 
-    /**
-     * Adds a user data source to the database.
-     *
-     * @throws UserDataSourceExistsException if user data source already exists.
-     * @throws EJBException             if a communication or other error occurs.
-     */
+    @Override
     public void addUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ")");
@@ -216,12 +186,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         log.trace("<addUserDataSource()");
     }
 
-    /**
-     * Adds a user data source to the database.
-     * Used for importing and exporting profiles from xml-files.
-     *
-     * @throws UserDataSourceExistsException if user data source already exists.
-     */
+    @Override
     public void addUserDataSource(Admin admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ", id: " + id + ")");
@@ -253,9 +218,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         log.trace("<addUserDataSource()");
     }
 
-    /**
-     * Updates user data source data
-     */
+    @Override
     public void changeUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) {
     	if (log.isTraceEnabled()) {
             log.trace(">changeUserDataSource(name: " + name + ")");
@@ -281,13 +244,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         log.trace("<changeUserDataSource()");
     }
 
-    /**
-     * Adds a user data source with the same content as the original.
-     * @throws UserDataSourceExistsException 
-     *
-     * @throws UserDataSourceExistsException if user data source already exists.
-     * @throws EJBException             if a communication or other error occurs.
-     */
+    @Override
     public void cloneUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">cloneUserDataSource(name: " + oldname + ")");
@@ -323,11 +280,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         log.trace("<cloneUserDataSource()");
     }
 
-    /**
-     * Removes a user data source from the database.
-     *
-     * @throws EJBException if a communication or other error occurs.
-     */
+    @Override
     public boolean removeUserDataSource(Admin admin, String name) {
     	if (log.isTraceEnabled()) {
     		log.trace(">removeUserDataSource(name: " + name + ")");
@@ -356,11 +309,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     	return retval;
     }
 
-    /**
-     * Renames a user data source
-     *
-     * @throws UserDataSourceExistsException if user data source already exists.
-     */
+    @Override
     public void renameUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">renameUserDataSource(from " + oldname + " to " + newname + ")");
@@ -389,19 +338,12 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         log.trace("<renameUserDataSource()");
     }
 
-    /**
-     * Retrieves a Collection of id:s (Integer) to authorized user data sources.
-     *
-     * @param indicates if sources with anyca set should be included
-     * @return Collection of id:s (Integer)
-     */
+    @Override
     public Collection<Integer> getAuthorizedUserDataSourceIds(Admin admin, boolean includeAnyCA) {
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
-     
         superadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-      
         Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -424,10 +366,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return returnval;
     }
 
-    /**
-     * Method creating a hashmap mapping user data source id (Integer) to user data source name (String).
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public HashMap<Integer,String> getUserDataSourceIdToNameMap(Admin admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Collection<UserDataSourceData> result = UserDataSourceData.findAll(entityManager);
@@ -439,10 +379,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return returnval;
     }
 
-    /**
-     * Retrieves a named user data source.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public BaseUserDataSource getUserDataSource(Admin admin, String name) {
         BaseUserDataSource returnval = null;
         UserDataSourceData udsd = UserDataSourceData.findByName(entityManager, name);
@@ -458,10 +396,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return returnval;
     }
 
-    /**
-     * Finds a user data source by id.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public BaseUserDataSource getUserDataSource(Admin admin, int id) {
         BaseUserDataSource returnval = null;
         UserDataSourceData udsd = UserDataSourceData.findById(entityManager, id);
@@ -477,11 +413,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return returnval;
     }
 
-    /**
-     * Help method used by user data source proxys to indicate if it is time to
-     * update it's data.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public int getUserDataSourceUpdateCount(Admin admin, int userdatasourceid) {
         int returnval = 0;
         UserDataSourceData udsd = UserDataSourceData.findById(entityManager, userdatasourceid);
@@ -491,12 +424,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return returnval;
     }
 
-    /**
-     * Returns a user data source id, given it's user data source name
-     *
-     * @return the id or 0 if the user data source cannot be found.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public int getUserDataSourceId(Admin admin, String name) {
         int returnval = 0;
         UserDataSourceData udsd = UserDataSourceData.findByName(entityManager, name);
@@ -506,13 +435,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return returnval;
     }
 
-    /**
-     * Returns a user data source name given its id.
-     *
-     * @return the name or null if id doesnt exists
-     * @throws EJBException if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public String getUserDataSourceName(Admin admin, int id) {
     	if (log.isTraceEnabled()) {
             log.trace(">getUserDataSourceName(id: " + id + ")");
@@ -609,9 +533,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return Integer.valueOf(id);
     }
 
-    /**
-     * Method that returns the userdatasource data and updates it if necessary.
-     */
+    /** Method that returns the UserDataSource data and updates it if necessary. */
     private BaseUserDataSource getUserDataSource(UserDataSourceData udsData) {
     	BaseUserDataSource userdatasource = udsData.getCachedUserDataSource();
         if (userdatasource == null) {

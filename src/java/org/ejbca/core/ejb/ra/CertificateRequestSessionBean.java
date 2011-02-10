@@ -83,11 +83,8 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
- * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
  * @version $Id$
- * 
- *
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -117,17 +114,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     @Resource
     private SessionContext sessionContext;
 
-	/**
-	 * Edits or adds a user and generates a certificate for that user in a single transaction.
-     * 
-	 * @param admin is the requesting administrator
-	 * @param userdata contains information about the user that is about to get a certificate
-	 * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
-	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
-	 * @param hardTokenSN is the hard token to associate this or null
-	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
-     * @return a encoded certificate of the type specified in responseType 
-	 */
+    @Override
 	public byte[] processCertReq(Admin admin, UserDataVO userdata, String req, int reqType,
 			String hardTokenSN, int responseType) throws CADoesntExistsException,
 			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
@@ -224,24 +211,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		return retval;
 	}
 
-	/**
-	 * Edits or adds a user and generates a certificate for that user in a single transaction.
-     * Username and password in userdata and req message must match.
-     * 
-	 * @param admin is the requesting administrator
-	 * @param userdata contains information about the user that is about to get a certificate
-	 * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
-	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
-	 * @param hardTokenSN is the hard token to associate this or null
-	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
-     * @return a encoded certificate of the type specified in responseType 
-	 * @throws UserDoesntFullfillEndEntityProfile 
-	 * @throws AuthorizationDeniedException 
-	 * @throws PersistenceException 
-	 * @throws EjbcaException 
-	 */
+    @Override
 	public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException {
-		
 		// Check tokentype
 		if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
 			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
@@ -262,17 +233,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	}
 	
 	/**
-	 * @param admin
-	 * @param userdata
-	 * @param caid
-	 * @param username
-	 * @throws AuthorizationDeniedException
-	 * @throws WrongTokenTypeException
-	 * @throws UserDoesntFullfillEndEntityProfile
-	 * @throws ApprovalException
-	 * @throws PersistenceException
 	 * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
-	 * @throws EjbcaException 
 	 */
 	private void addOrEditUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromwebservice) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
@@ -342,18 +303,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		return retval;
 	}
 
-	/**
-	 * Edits or adds a user and generates a keystore for that user in a single transaction.
-     * Used from EjbcaWS.
-     * 
-	 * @param admin is the requesting administrator
-	 * @param userdata contains information about the user that is about to get a keystore
-	 * @param hardTokenSN is the hard token to associate this or null
-     * @param keyspec name of ECDSA key or length of RSA and DSA keys  
-     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
-     * @param createJKS true to create a JKS, false to create a PKCS12
-     * @return an encoded keystore of the type specified in responseType 
-     */
+	@Override
 	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,
 	SignatureException, IOException, ObjectNotFoundException, CertificateException,UserDoesntFullfillEndEntityProfile,

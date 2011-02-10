@@ -47,24 +47,22 @@ public interface CaSession {
      * administrator is authorized to i.e. not having status "external" or
      * "waiting for certificate response"
      * 
-     * @param admin
-     *            The administrator
+     * @param admin The administrator
      * @return a Collection<Integer> of available CA id's
      */
     public Collection<Integer> getAvailableCAs(Admin admin);
     
     /**
-     * Get the CA object. Does not perform any authorization check. Checks if
+     * Get the CA object performing the regular authorization check. Checks if
      * the CA has expired or the certificate isn't valid yet and in that case
      * sets the correct CA status.
      * 
-     * @param admin
-     *            is used for logging
-     * @param caid
-     *            identifies the CA
-     * @return the CA object
+     * @param admin the admin retrieving the CA
+     * @param caid numerical id of CA (subjectDN.hashCode()) that we search for
+     * @return CA value object, never null
      * @throws CADoesntExistsException
-     *             if no CA was found
+     *             if CA with caid does not exist or admin is not authorized to
+     *             CA
      */
     public CA getCA(Admin admin, int caid) throws CADoesntExistsException;
   
@@ -73,10 +71,8 @@ public interface CaSession {
      * the CA has expired or the certificate isn't valid yet and in that case
      * sets the correct CA status.
      * 
-     * @param admin
-     *            the admin retrieving the CA
-     * @param name
-     *            name of the CA that we're searching for
+     * @param admin the admin retrieving the CA
+     * @param name name of the CA that we're searching for
      * @return CA value object, never null
      * @throws CADoesntExistsException
      *             if CA with caid does not exist or admin is not authorized to
@@ -85,11 +81,14 @@ public interface CaSession {
     public CA getCA(Admin admin, String name) throws CADoesntExistsException;
     
     /**
-     * Method used to remove a CA from the system. You should first check that
-     * the CA isn't used by any EndEntity, Profile or AccessRule before it is
-     * removed. CADataHandler for example makes this check. Should be used with
-     * care. If any certificate has been created with the CA use revokeCA
-     * instead and don't remove it.
+     * Method used to remove a CA from the system.
+     * 
+     * You should first check that the CA isn't used by any EndEntity, Profile
+     * or AccessRule before it is removed. CADataHandler for example makes this
+     * check.
+     * 
+     * Should be used with care. If any certificate has been created with the CA
+     * use revokeCA instead and don't remove it.
      */
     public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException;
 

@@ -116,15 +116,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private static final String ENCRYPTEDDATA = "ENCRYPTEDDATA";
     public static final int NO_ISSUER = 0;
 
-    /**
-     * Adds a hard token profile to the database.
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ")");
@@ -133,14 +126,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<addHardTokenProfile()");
     }
 
-    /**
-     * Adds a hard token profile to the database. Used for importing and
-     * exporting profiles from xml-files.
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ", id: " + profileid + ")");
@@ -160,11 +147,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<addHardTokenProfile()");
     }
 
-    /**
-     * Updates hard token profile data
-     * 
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile) {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardTokenProfile(name: " + name + ")");
@@ -183,15 +167,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<changeHardTokenProfile()");
     }
 
-    /**
-     * Adds a hard token profile with the same content as the original profile,
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">cloneHardTokenProfile(name: " + oldname + ")");
@@ -216,13 +193,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<cloneHardTokenProfile()");
     }
 
-    /**
-     * Removes a hard token profile from the database.
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void removeHardTokenProfile(Admin admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenProfile(name: " + name + ")");
@@ -247,13 +219,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<removeHardTokenProfile()");
     }
 
-    /**
-     * Renames a hard token profile
-     * 
-     * @throws HardTokenProfileExistsException
-     *             if hard token already exists.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">renameHardTokenProfile(from " + oldname + " to " + newname + ")");
@@ -279,14 +246,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<renameHardTokenProfile()");
     }
 
-    /**
-     * Retrives a Collection of id:s (Integer) to authorized profiles.
-     * 
-     * Authorized hard token profiles are profiles containing only authorized
-     * certificate profiles and caids.
-     * 
-     * @return Collection of id:s (Integer)
-     */
+    @Override
     public Collection<Integer> getAuthorizedHardTokenProfileIds(Admin admin) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
         HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(admin,
@@ -309,10 +269,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Method creating a hashmap mapping profile id (Integer) to profile name
-     * (String).
-     */
+    @Override
     public HashMap<Integer, String> getHardTokenProfileIdToNameMap(Admin admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
@@ -324,9 +281,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Retrives a named hard token profile.
-     */
+    @Override
     public HardTokenProfile getHardTokenProfile(Admin admin, String name) {
         HardTokenProfile returnval = null;
         HardTokenProfileData htpd = HardTokenProfileData.findByName(entityManager, name);
@@ -336,9 +291,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Finds a hard token profile by id.
-     */
+    @Override
     public HardTokenProfile getHardTokenProfile(Admin admin, int id) {
         HardTokenProfile returnval = null;
         HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id));
@@ -348,10 +301,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Help method used by hard token profile proxys to indicate if it is time
-     * to update it's profile data.
-     */
+    @Override
     public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid) {
         int returnval = 0;
         HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(hardtokenprofileid));
@@ -361,11 +311,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns a hard token profile id, given it's hard token profile name
-     * 
-     * @return the id or 0 if hardtokenprofile cannot be found.
-     */
+    @Override
     public int getHardTokenProfileId(Admin admin, String name) {
         int returnval = 0;
         HardTokenProfileData htpd = HardTokenProfileData.findByName(entityManager, name);
@@ -375,11 +321,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns a hard token profile name given its id.
-     * 
-     * @return the name or null if id doesn't exist
-     */
+    @Override
     public String getHardTokenProfileName(Admin admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenProfileName(id: " + id + ")");
@@ -393,14 +335,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Adds a hard token issuer to the database.
-     * 
-     * @return false if hard token issuer already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata) {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenIssuer(alias: " + alias + ")");
@@ -426,14 +362,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Updates hard token issuer data
-     * 
-     * @return false if alias doesn't exists
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public boolean changeHardTokenIssuer(Admin admin, String alias, HardTokenIssuer issuerdata) {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardTokenIssuer(alias: " + alias + ")");
@@ -455,24 +385,17 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnvalue;
     }
 
-    /**
-     * Adds a hard token issuer with the same content as the original issuer,
-     * 
-     * @return false if the new alias or certificatesn already exists.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, int admingroupid) {
         if (log.isTraceEnabled()) {
             log.trace(">cloneHardTokenIssuer(alias: " + oldalias + ")");
         }
-        HardTokenIssuer issuerdata = null;
         boolean returnval = false;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, oldalias);
         if (htih != null) {
             try {
-                issuerdata = (HardTokenIssuer) htih.getHardTokenIssuer().clone();
+            	HardTokenIssuer issuerdata = (HardTokenIssuer) htih.getHardTokenIssuer().clone();
                 returnval = addHardTokenIssuer(admin, newalias, admingroupid, issuerdata);
             } catch (CloneNotSupportedException e) {
             }
@@ -490,13 +413,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Removes a hard token issuer from the database.
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void removeHardTokenIssuer(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenIssuer(alias: " + alias + ")");
@@ -521,14 +439,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<removeHardTokenIssuer()");
     }
 
-    /**
-     * Renames a hard token issuer
-     * 
-     * @return false if new alias or certificatesn already exists
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias, int newadmingroupid) {
         if (log.isTraceEnabled()) {
             log.trace(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
@@ -555,17 +467,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnvalue;
     }
 
-    /**
-     * Method to check if an administrator is authorized to issue hard tokens
-     * for the given alias.
-     * 
-     * @param admin
-     *            administrator to check
-     * @param alias
-     *            alias of hardtoken issuer.
-     * @return true if administrator is authorized to issue hardtoken with given
-     *         alias.
-     */
+    @Override
     public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getAuthorizedToHardTokenIssuer(" + alias + ")");
@@ -582,11 +484,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the available hard token issuers authorized to the administrator.
-     * 
-     * @return A collection of available HardTokenIssuerData.
-     */
+    @Override
     public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(Admin admin) {
         log.trace(">getHardTokenIssuerDatas()");
         ArrayList<HardTokenIssuerData> returnval = new ArrayList<HardTokenIssuerData>();
@@ -604,12 +502,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the available hard token issuer alliases authorized to the
-     * administrator.
-     * 
-     * @return A collection of available hard token issuer aliases.
-     */
+    @Override
     public Collection<String> getHardTokenIssuerAliases(Admin admin) {
         log.trace(">getHardTokenIssuerAliases()");
         ArrayList<String> returnval = new ArrayList<String>();
@@ -627,11 +520,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the available hard token issuers authorized to the administrator.
-     * 
-     * @return A treemap of available hard token issuers.
-     */
+    @Override
     public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(Admin admin) {
         log.trace(">getHardTokenIssuers()");
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
@@ -649,12 +538,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the specified hard token issuer.
-     * 
-     * @return the hard token issuer data or null if hard token issuer doesn't
-     *         exists.
-     */
+    @Override
     public HardTokenIssuerData getHardTokenIssuerData(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(alias: " + alias + ")");
@@ -668,12 +552,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the specified hard token issuer.
-     * 
-     * @return the hard token issuer data or null if hard token issuer doesn't
-     *         exists.
-     */
+    @Override
     public HardTokenIssuerData getHardTokenIssuerData(Admin admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(id: " + id + ")");
@@ -687,11 +566,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the number of available hard token issuer.
-     * 
-     * @return the number of available hard token issuer.
-     */
+    @Override
     public int getNumberOfHardTokenIssuers(Admin admin) {
         log.trace(">getNumberOfHardTokenIssuers()");
         int returnval = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findAll(entityManager).size();
@@ -699,11 +574,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns a hard token issuer id given its alias.
-     * 
-     * @return id number of hard token issuer.
-     */
+    @Override
     public int getHardTokenIssuerId(Admin admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerId(alias: " + alias + ")");
@@ -717,11 +588,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns a hard token issuer alias given its id.
-     * 
-     * @return the alias or null if id noesnt exists
-     */
+    @Override
     public String getHardTokenIssuerAlias(Admin admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerAlias(id: " + id + ")");
@@ -735,21 +602,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Checks if a hard token profile is among a hard tokens issuers available
-     * token types.
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param issuerid
-     *            the id of the issuer to check.
-     * @param userdata
-     *            the data of user about to be generated
-     * 
-     * @throws UnavailableTokenException
-     *             if users tokentype isn't among hard token issuers available
-     *             tokentypes.
-     */
+    @Override
     public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException {
         if (log.isTraceEnabled()) {
             log.trace(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType() + ")");
@@ -768,29 +621,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<getIsTokenTypeAvailableToIssuer()");
     }
 
-    /**
-     * Adds a hard token to the database
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @param username
-     *            the user owning the token.
-     * @param significantissuerdn
-     *            indicates which CA the hard token should belong to.
-     * @param hardtokendata
-     *            the hard token data
-     * @param certificates
-     *            a collection of certificates places in the hard token
-     * @param copyof
-     *            indicates if the newly created token is a copy of an existing
-     *            token. Use null if token is an original
-     * 
-     * @throws HardTokenExistsException
-     *             if tokensn already exists in databas.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata,
             Collection<Certificate> certificates, String copyof) throws HardTokenExistsException {
         if (log.isTraceEnabled()) {
@@ -830,20 +662,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<addHardToken()");
     }
 
-    /**
-     * changes a hard token data in the database
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @param hardtokendata
-     *            the hard token data
-     * 
-     * @throws HardTokenDoesntExistsException
-     *             if tokensn doesn't exists in databas.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void changeHardToken(Admin admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardToken(tokensn : " + tokensn + ")");
@@ -869,20 +689,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<changeHardToken()");
     }
 
-    /**
-     * removes a hard token data from the database
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     * @throws HardTokenDoesntExistsException
-     *             if tokensn doesn't exists in databas.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void removeHardToken(Admin admin, String tokensn) throws HardTokenDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardToken(tokensn : " + tokensn + ")");
@@ -915,16 +723,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<removeHardToken()");
     }
 
-    /**
-     * Checks if a hard token serialnumber exists in the database
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * 
-     * @return true if it exists or false otherwise.
-     */
+    @Override
     public boolean existsHardToken(Admin admin, String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace(">existsHardToken(tokensn : " + tokensn + ")");
@@ -937,18 +736,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return ret;
     }
 
-    /**
-     * returns hard token data for the specified tokensn
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * 
-     * @return the hard token data or NULL if tokensn doesnt exists in database.
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
+    @Override
     public HardTokenData getHardToken(Admin admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(tokensn :" + tokensn + ")");
@@ -993,16 +781,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * returns hard token data for the specified user
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param username
-     *            The username owning the tokens.
-     * 
-     * @return a Collection of all hard token user data.
-     */
+    @Override
     public Collection<HardTokenData> getHardTokens(Admin admin, String username, boolean includePUK) {
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(username :" + username + ")");
@@ -1047,35 +826,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Method that searches the database for a tokensn. It returns all
-     * hardtokens with a serialnumber that begin with the given searchpattern.
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param searchpattern
-     *            of begining of hard token sn
-     * @return a Collection of username(String) matching the search string
-     */
+    @Override
     public Collection<String> matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
         return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
 
-    /**
-     * Adds a mapping between a hard token and a certificate
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * @param certificate
-     *            the certificate to map to.
-     * 
-     * @throws EJBException
-     *             if a communication or other error occurs.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate) {
         String certificatesn = CertTools.getSerialNumberAsString(certificate);
         if (log.isTraceEnabled()) {
@@ -1101,16 +859,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<addHardTokenCertificateMapping()");
     }
 
-    /**
-     * Removes a mapping between a hard token and a certificate
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param certificate
-     *            the certificate to map to.
-     * 
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate) {
         String certificatesn = CertTools.getSerialNumberAsString(certificate);
         if (log.isTraceEnabled()) {
@@ -1136,12 +886,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     /**
-     * Removes all mappings between a hard token and a certificate
+     * Removes all mappings between a hard token and a certificate.
      * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            the serial number to remove.
+     * @param admin the administrator calling the function
+     * @param tokensn the serial number to remove.
      */
     private void removeHardTokenCertificateMappings(Admin admin, String tokensn) {
         if (log.isTraceEnabled()) {
@@ -1163,16 +911,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         log.trace("<removeHardTokenCertificateMappings()");
     }
 
-    /**
-     * Returns all the X509Certificates places in a hard token.
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param tokensn
-     *            The serialnumber of token.
-     * 
-     * @return a collection of X509Certificates
-     */
+    @Override
     public Collection<Certificate> findCertificatesInHardToken(Admin admin, String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesInHardToken(username :" + tokensn + ")");
@@ -1194,19 +933,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Returns the tokensn that the have blongs to a given certificatesn and
-     * tokensn.
-     * 
-     * @param admin
-     *            the administrator calling the function
-     * @param certificatesn
-     *            The serialnumber of certificate.
-     * @param issuerdn
-     *            the issuerdn of the certificate.
-     * 
-     * @return the serialnumber or null if no tokensn could be found.
-     */
+    @Override
     public String findHardTokenByCertificateSNIssuerDN(Admin admin, BigInteger certificatesn, String issuerdn) {
         if (log.isTraceEnabled()) {
             log.trace("<findHardTokenByCertificateSNIssuerDN(certificatesn :" + certificatesn + ", issuerdn :" + issuerdn + ")");
@@ -1223,19 +950,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
-    /**
-     * Method used to signal to the log that token was generated successfully.
-     * 
-     * @param admin
-     *            administrator performing action
-     * @param tokensn
-     *            tokensn of token generated
-     * @param username
-     *            username of user token was generated for.
-     * @param significantissuerdn
-     *            indicates which CA the hard token should belong to.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void tokenGenerated(Admin admin, String tokensn, String username, String significantissuerdn) {
         int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
         try {
@@ -1246,20 +962,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
     }
 
-    /**
-     * Method used to signal to the log that error occured when generating
-     * token.
-     * 
-     * @param admin
-     *            administrator performing action
-     * @param tokensn
-     *            tokensn of token.
-     * @param username
-     *            username of user token was generated for.
-     * @param significantissuerdn
-     *            indicates which CA the hard token should belong to.
-     */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
     public void errorWhenGeneratingToken(Admin admin, String tokensn, String username, String significantissuerdn) {
         int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
         try {
@@ -1270,15 +974,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
     }
 
-    /**
-     * Method to check if a certificate profile exists in any of the hard token
-     * profiles. Used to avoid desyncronization of certificate profile data.
-     * 
-     * @param id
-     *            the certificateprofileid to search for.
-     * @return true if certificateprofileid exists in any of the hard token
-     *         profiles.
-     */
+    @Override
     public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id) {
         HardTokenProfile profile = null;
         Collection<Integer> certprofiles = null;
@@ -1297,15 +993,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return exists;
     }
 
-    /**
-     * Method to check if a hard token profile exists in any of the hard token
-     * issuers. Used to avoid desyncronization of hard token profile data.
-     * 
-     * @param id
-     *            the hard token profileid to search for.
-     * @return true if hard token profileid exists in any of the hard token
-     *         issuers.
-     */
+    @Override
     public boolean existsHardTokenProfileInHardTokenIssuer(Admin admin, int id) {
         HardTokenIssuer issuer = null;
         Collection<Integer> hardtokenissuers = null;
@@ -1352,9 +1040,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return Integer.valueOf(id);
     }
 
-    /**
-     * Method that returns the hard token data from a hashmap and updates it if necessary.
-     */
+    /** Method that returns the hard token data from a hashmap and updates it if necessary. */
     private HardToken getHardToken(Admin admin, int encryptcaid, boolean includePUK, HashMap data) {
         HardToken returnval = null;
 

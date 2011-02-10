@@ -16,6 +16,7 @@ import javax.ejb.Local;
 
 /**
  * Local interface for PublisherSession.
+ * @version $Id$
  */
 @Local
 public interface PublisherSessionLocal extends PublisherSession {
