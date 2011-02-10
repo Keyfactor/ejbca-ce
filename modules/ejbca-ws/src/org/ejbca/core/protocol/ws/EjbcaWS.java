@@ -2447,8 +2447,7 @@ public class EjbcaWS implements IEjbcaWS {
 			EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSession, userAdminSession);
 			Admin admin = ejbhelper.getAdmin(true);
             logAdminName(admin,logger);
-			CAInfo info = caAdminSession.getCAInfoOrThrowException(admin, caname);
-			CA ca = caSession.getCA(admin, info.getCAId());
+			CA ca = caSession.getCA(admin, caname);
 			crlStoreSession.run(admin, ca);
 		} catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);

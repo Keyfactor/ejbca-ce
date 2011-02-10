@@ -1804,22 +1804,20 @@ public class CAsTest extends CaTestCase {
     }
     
     /** Get CA Info using an unprivileged admin. This will fail, and I'm not sure it shouldn't.. */
-    public void test18UnprivilegedCaInfoFetch() throws Exception {
-        log.trace(">test18UnprivilegedCaInfoFetch()");
+    public void test18PublicWebCaInfoFetch() throws Exception {
+        log.trace(">test18PublicWebCaInfoFetch()");
         // Try to get CAInfo as an unprivileged user
         try {
             caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "TEST");
-        	assertTrue("Was able to get CA info as unprivileged user.", false);
         } catch (CADoesntExistsException e) {
-        	// Expected
+        	assertTrue("Was not able to get CA info as public web user.", false);
         }
         try {
             caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "CN=TEST".hashCode());
-        	assertTrue("Was able to get CA info as unprivileged user.", false);
         } catch (CADoesntExistsException e) {
-        	// Expected
+        	assertTrue("Was not able to get CA info as public web user.", false);
         }
-        log.trace("<test18UnprivilegedCaInfoFetch()");
+        log.trace("<test18PublicWebCaInfoFetch()");
     }
     
     public void test19UnprivilegedCaMakeRequest() throws Exception {

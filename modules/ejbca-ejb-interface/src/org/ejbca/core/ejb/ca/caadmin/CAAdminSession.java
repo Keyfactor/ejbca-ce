@@ -90,29 +90,32 @@ public interface CAAdminSession {
     public org.ejbca.core.model.ca.caadmin.CAInfo getCAInfo(Admin admin, String name);
 
     /**
-     * Returns a value object containing nonsensitive information about a CA
-     * give it's CAId.
+     * Returns a value object containing non-sensitive information about a CA
+     * give it's name.
      * 
-     * @param admin
-     *            administrator calling the method
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode())
-     * @return value object
-     * @throws CADoesntExistsException
-     *             if no such CA exists
+     * The Public Web user should be authorized to use this for fetching info
+     * on any CA.
+     * 
+     * @param admin administrator calling the method
+     * @param name human readable name of CA
+     * @return CAInfo value object, never null
+     * @throws CADoesntExistsException if CA with name does not exist or admin
+     *  is not authorized to CA
      */
     public org.ejbca.core.model.ca.caadmin.CAInfo getCAInfoOrThrowException(Admin admin, int caid)
             throws CADoesntExistsException;
 
     /**
-     * Returns a value object containing nonsensitive information about a CA
-     * give it's CAId.
+     * Returns a value object containing non-sensitive information about a CA
+     * give it's name.
      * 
-     * @param admin
-     *            administrator calling the method
-     * @param caid
-     *            numerical id of CA (subjectDN.hashCode())
-     * @return value object or null if CA does not exist
+     * The Public Web user should be authorized to use this for fetching info
+     * on any CA.
+     * 
+     * @param admin administrator calling the method
+     * @param name human readable name of CA
+     * @return CAInfo value object or null if CA does not exist or admin is not
+     *  authorized to CA
      */
     public org.ejbca.core.model.ca.caadmin.CAInfo getCAInfo(Admin admin, int caid);
 
