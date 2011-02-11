@@ -292,11 +292,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Certificate chain
         Collection<Certificate> certificatechain = null;
-        String sequence = catoken.getCATokenInfo().getKeySequence(); // get from
-        // CAtoken
-        // to make
-        // sure it
-        // is fresh
+        String sequence = catoken.getCATokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
         if (cainfo.getSignedBy() == CAInfo.SELFSIGNED) {
             try {
                 // create selfsigned certificate
@@ -338,7 +334,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Create CA signed by other internal CA.
             try {
             	CAData signcadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(cainfo.getSignedBy()));
-                //CADataLocal signcadata = cadatahome.findByPrimaryKey(Integer.valueOf(cainfo.getSignedBy()));
                 CA signca = signcadata.getCA();
                 // Check that the signer is valid
                 checkSignerValidity(admin, signcadata);
@@ -382,7 +377,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Store CA in database.
         try {
         	entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), castatus, ca));
-            //cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), castatus, ca);
             if (castatus == SecConst.CA_ACTIVE) {
                 // create initial CRL
                 crlCreateSession.createCRLs(admin, ca, cainfo);
@@ -644,7 +638,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAData cadata = null;
         try {
         	cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-            //cadata = this.cadatahome.findByPrimaryKey(Integer.valueOf(caid));
             CA ca = cadata.getCA();
             String caname = ca.getName();
 
@@ -821,7 +814,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage, Collection<?> cachain, String tokenAuthenticationCode)
             throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException {
-        // check authorization
         Certificate cacert = null;
         // Check authorization
         try {
@@ -1066,27 +1058,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Check that CA doesn't already exists
         CAData oldcadata = null;
-        //try {
-            int caid = cainfo.getCAId();
-            if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
-                String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new CAExistsException(msg);
-            }
-            oldcadata = CAData.findById(entityManager, Integer.valueOf(caid));
-            //oldcadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
-        /*} catch (javax.ejb.FinderException fe) {
-        }*/
+        int caid = cainfo.getCAId();
+        if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new CAExistsException(msg);
+        }
+        oldcadata = CAData.findById(entityManager, Integer.valueOf(caid));
         // If it did not exist with a certain DN (caid) perhaps a CA with the
         // same CA name exists?
         if (oldcadata == null) {
-            //try {
-            	oldcadata = CAData.findByName(entityManager, cainfo.getName());
-                //oldcadata = cadatahome.findByName(cainfo.getName());
-            /*} catch (javax.ejb.FinderException fe) {
-            }*/
+        	oldcadata = CAData.findByName(entityManager, cainfo.getName());
         }
-
         boolean processinternalca = false;
         if (oldcadata != null) {
             // If we find an already existing CA, there is a good chance that we
@@ -1124,7 +1107,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
             try {
             	CAData signcadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(cainfo.getSignedBy()));
-                //CADataLocal signcadata = cadatahome.findByPrimaryKey(Integer.valueOf(cainfo.getSignedBy()));
                 CA signca = signcadata.getCA();
                 try {
                     // Check that the signer is valid
@@ -1332,7 +1314,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         ca.setCAToken(token);
         // set status to active
         entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca));
-        //cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);
         // Publish CA certificates.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
     }
@@ -1348,23 +1329,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Get CA info.
-        //try {
-            CAData cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-            //cadata = this.cadatahome.findByPrimaryKey(Integer.valueOf(caid));
-            CA ca = cadata.getCA();
-            if (ca.getStatus() == SecConst.CA_OFFLINE) {
-                String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getName());
-                throw new CATokenOfflineException(msg);
-            }
-            ArrayList<ExtendedCAServiceInfo> infos = new ArrayList<ExtendedCAServiceInfo>();
-            infos.add(info);
-            activateAndPublishExternalCAServices(admin, infos, ca);
-            // Update CA in database
-            cadata.setCA(ca);
-        /*} catch (FinderException e) {
-            throw new CADoesntExistsException("caid=" + caid);
-        }*/
-
+        CAData cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
+        CA ca = cadata.getCA();
+        if (ca.getStatus() == SecConst.CA_OFFLINE) {
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getName());
+        	throw new CATokenOfflineException(msg);
+        }
+        ArrayList<ExtendedCAServiceInfo> infos = new ArrayList<ExtendedCAServiceInfo>();
+        infos.add(info);
+        activateAndPublishExternalCAServices(admin, infos, ca);
+        // Update CA in database
+        cadata.setCA(ca);
     }
 
     @Override
@@ -1405,11 +1380,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (regenerateKeys) {
                 boolean renew = true;
                 keystorepass = getDefaultKeyStorePassIfSWAndEmpty(keystorepass, caToken.getCATokenInfo());
-                caToken.generateKeys(keystorepass, renew, true); // for internal
-                // CAs the new
-                // keys are
-                // always
-                // activated
+                // for internal CAs the new keys are always activated
+                caToken.generateKeys(keystorepass, renew, true);
                 // We need to save all this
                 ca.setCAToken(caToken);
                 cadata.setCA(ca);
@@ -1432,7 +1404,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     CATokenManager.instance().removeCAToken(ca.getCAId());
                 }
             	cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-                //cadata = this.cadatahome.findByPrimaryKey(Integer.valueOf(caid));
                 ca = cadata.getCA();
                 // In order to generate a certificate with this keystore we must
                 // make sure it is activated
@@ -1454,15 +1425,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             .getCertificateProfileId(), null, null, 0, 0, null);
 
                     CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(admin, ca.getCertificateProfileId());
-                    String sequence = caToken.getCATokenInfo().getKeySequence(); // get
-                    // from
-                    // CAtoken
-                    // to
-                    // make
-                    // sure
-                    // it
-                    // is
-                    // fresh
+                    // get from CAtoken to make sure it is fresh
+                    String sequence = caToken.getCATokenInfo().getKeySequence();
                     cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, ca.getValidity(),
                             certprofile, sequence);
                     // Build Certificate Chain
@@ -1474,7 +1438,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     if (ca.getSignedBy() > CAInfo.SPECIALCAIDBORDER || ca.getSignedBy() < 0) {
                         // Create CA signed by other internal CA.
                     	CAData signcadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(ca.getSignedBy()));
-                        //CADataLocal signcadata = cadatahome.findByPrimaryKey(Integer.valueOf(ca.getSignedBy()));
                         CA signca = signcadata.getCA();
                         // Check that the signer is valid
                         checkSignerValidity(admin, signcadata);
@@ -1716,7 +1679,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // load keystore
             KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
             keystore.load(new ByteArrayInputStream(p12file), keystorepass.toCharArray());
-            // Extract signarture keys
+            // Extract signature keys
             if (privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias)) {
                 throw new Exception("Alias \"" + privateSignatureKeyAlias + "\" not found.");
             }
@@ -1977,7 +1940,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
         // Store CA in database.
         entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca));
-        //cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
         crlCreateSession.run(admin, ca);
         return ca;
     }
@@ -2148,64 +2110,57 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String msg = intres.getLocalizedMessage("ra.approvalcaactivation");
             throw new WaitingForApprovalException(msg);
         }
-
-        //try {
-            if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
-                String msg = intres.getLocalizedMessage("caadmin.erroractivatetoken", Integer.valueOf(caid));
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new CATokenAuthenticationFailedException(msg);
-            }
-            CAData cadata = CAData.findById(entityManager, Integer.valueOf(caid));
-            if (cadata == null) {
-                String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", Integer.valueOf(caid));
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new EJBException(msg);
-            }
-            boolean cATokenDisconnected = false;
-            try {
-                if ((cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == ICAToken.STATUS_OFFLINE) {
-                    cATokenDisconnected = true;
-                }
-            } catch (IllegalKeyStoreException e) {
-                String msg = intres.getLocalizedMessage("caadmin.errorreadingtoken", Integer.valueOf(caid));
-                log.error(msg, e);
-            } catch (UnsupportedEncodingException e) {
-                String msg = intres.getLocalizedMessage("caadmin.errorreadingtoken", Integer.valueOf(caid));
-                log.error(msg, e);
-            }
-            if (cadata.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected) {
-                try {
-                    cadata.getCA().getCAToken().activate(authorizationcode);
-                    // If the CA was off-line, this is activation of the CA, if
-                    // only the token was disconnected we only connect the token
-                    // If CA is waiting for certificate response we can not
-                    // change this status just by activating the token.
-                    if (cadata.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
-                        cadata.setStatus(SecConst.CA_ACTIVE);
-                    }
-                    // Invalidate CA cache to refresh information
-                    CACacheManager.instance().removeCA(cadata.getCaId().intValue());
-                    String msg = intres.getLocalizedMessage("caadmin.catokenactivated", cadata.getName());
-                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
-                } catch (CATokenAuthenticationFailedException e) {
-                    String msg = intres.getLocalizedMessage("caadmin.badcaactivationcode", cadata.getName());
-                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAACTIVATIONCODE, msg);
-                    throw e;
-                } catch (IllegalKeyStoreException e) {
-                    throw new EJBException(e);
-                } catch (UnsupportedEncodingException e) {
-                    throw new EJBException(e);
-                }
-            } else {
-                String msg = intres.getLocalizedMessage("caadmin.errornotoffline", cadata.getName());
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new CATokenAuthenticationFailedException(msg);
-            }
-        /*} catch (javax.ejb.FinderException fe) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", Integer.valueOf(caid));
-            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-            throw new EJBException(fe);
-        }*/
+        if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
+        	String msg = intres.getLocalizedMessage("caadmin.erroractivatetoken", Integer.valueOf(caid));
+        	logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new CATokenAuthenticationFailedException(msg);
+        }
+        CAData cadata = CAData.findById(entityManager, Integer.valueOf(caid));
+        if (cadata == null) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", Integer.valueOf(caid));
+        	logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new EJBException(msg);
+        }
+        boolean cATokenDisconnected = false;
+        try {
+        	if ((cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == ICAToken.STATUS_OFFLINE) {
+        		cATokenDisconnected = true;
+        	}
+        } catch (IllegalKeyStoreException e) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorreadingtoken", Integer.valueOf(caid));
+        	log.error(msg, e);
+        } catch (UnsupportedEncodingException e) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorreadingtoken", Integer.valueOf(caid));
+        	log.error(msg, e);
+        }
+        if (cadata.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected) {
+        	try {
+        		cadata.getCA().getCAToken().activate(authorizationcode);
+        		// If the CA was off-line, this is activation of the CA, if
+        		// only the token was disconnected we only connect the token
+        		// If CA is waiting for certificate response we can not
+        		// change this status just by activating the token.
+        		if (cadata.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+        			cadata.setStatus(SecConst.CA_ACTIVE);
+        		}
+        		// Invalidate CA cache to refresh information
+        		CACacheManager.instance().removeCA(cadata.getCaId().intValue());
+        		String msg = intres.getLocalizedMessage("caadmin.catokenactivated", cadata.getName());
+        		logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+        	} catch (CATokenAuthenticationFailedException e) {
+        		String msg = intres.getLocalizedMessage("caadmin.badcaactivationcode", cadata.getName());
+        		logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAACTIVATIONCODE, msg);
+        		throw e;
+        	} catch (IllegalKeyStoreException e) {
+        		throw new EJBException(e);
+        	} catch (UnsupportedEncodingException e) {
+        		throw new EJBException(e);
+        	}
+        } else {
+        	String msg = intres.getLocalizedMessage("caadmin.errornotoffline", cadata.getName());
+        	logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new CATokenAuthenticationFailedException(msg);
+        }
     }
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_ACTIVATECATOKEN = { new ApprovalOveradableClassName(
@@ -2219,45 +2174,38 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
             throw new AuthorizationDeniedException(msg);
         }
-
-       // try {
-            if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
-                // This should never happen.
-                String msg = intres.getLocalizedMessage("caadmin.errordeactivatetoken", Integer.valueOf(caid));
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new EjbcaException(msg);
-            }
-            CAData cadata = CAData.findById(entityManager, Integer.valueOf(caid));
-            if (cadata == null) {
-                String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", Integer.valueOf(caid));
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new EJBException(msg);
-            }
-            if (cadata.getStatus() == SecConst.CA_EXTERNAL) {
-                String msg = intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid));
-                log.info(msg);
-                return;
-            } else if (cadata.getStatus() == SecConst.CA_ACTIVE) {
-                try {
-                    cadata.getCA().getCAToken().deactivate();
-                    cadata.setStatus(SecConst.CA_OFFLINE);
-                    // Invalidate CA cache to refresh information
-                    CACacheManager.instance().removeCA(cadata.getCaId().intValue());
-                    String msg = intres.getLocalizedMessage("caadmin.catokendeactivated", cadata.getName());
-                    logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
-                } catch (Exception e) {
-                    throw new EJBException(e);
-                }
-            } else {
-                String msg = intres.getLocalizedMessage("caadmin.errornotonline", cadata.getName());
-                logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-                throw new EjbcaException(msg);
-            }
-        /*} catch (javax.ejb.FinderException fe) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", Integer.valueOf(caid));
-            logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
-            throw new EJBException(fe);
-        }*/
+        if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {
+        	// This should never happen.
+        	String msg = intres.getLocalizedMessage("caadmin.errordeactivatetoken", Integer.valueOf(caid));
+        	logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new EjbcaException(msg);
+        }
+        CAData cadata = CAData.findById(entityManager, Integer.valueOf(caid));
+        if (cadata == null) {
+        	String msg = intres.getLocalizedMessage("caadmin.errorcanotfound", Integer.valueOf(caid));
+        	logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new EJBException(msg);
+        }
+        if (cadata.getStatus() == SecConst.CA_EXTERNAL) {
+        	String msg = intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid));
+        	log.info(msg);
+        	return;
+        } else if (cadata.getStatus() == SecConst.CA_ACTIVE) {
+        	try {
+        		cadata.getCA().getCAToken().deactivate();
+        		cadata.setStatus(SecConst.CA_OFFLINE);
+        		// Invalidate CA cache to refresh information
+        		CACacheManager.instance().removeCA(cadata.getCaId().intValue());
+        		String msg = intres.getLocalizedMessage("caadmin.catokendeactivated", cadata.getName());
+        		logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
+        	} catch (Exception e) {
+        		throw new EJBException(e);
+        	}
+        } else {
+        	String msg = intres.getLocalizedMessage("caadmin.errornotonline", cadata.getName());
+        	logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAEDITED, msg);
+        	throw new EjbcaException(msg);
+        }
     }
 
     /** Method used to check if certificate profile id exists in any CA. */
@@ -2409,7 +2357,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     private boolean authorizedToCA(Admin admin, int caid) {
         if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
-            return true; // Skip database seach since this is always ok
+            return true; // Skip database search since this is always ok
         }
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
@@ -2529,7 +2477,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 try {
                     ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
                     // The OCSP certificate is the same as the CA signing
-                    // certifcate
+                    // certificate
                 } catch (Exception fe) {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "OCSPCAService");
                     logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg,
