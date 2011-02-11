@@ -141,7 +141,6 @@ import org.ejbca.util.keystore.KeyTools;
  * Administrates and manages CAs in EJBCA system.
  * 
  * @version $Id$
- * 
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -337,7 +336,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 CA signca = signcadata.getCA();
                 // Check that the signer is valid
                 checkSignerValidity(admin, signcadata);
-                // Create cacertificate
+                // Create CA certificate
                 Certificate cacertificate = null;
 
                 UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName, null, 0, 0, 0, cainfo
@@ -386,7 +385,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (RuntimeException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg);
-            //throw new EJBException(e);
             throw e;
         }
         // Update local OCSP's CA certificate cache
@@ -651,8 +649,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // create empty list if input was null
                 chain = new ArrayList<Certificate>();
             }
-            // AR+ patch to make SPOC independent of external CVCA certs for automatic renewals
-            // i.e. if we don't pass a ca certificate as parameter we try to find a suitable CA certificate in the database, among existing CAs 
+            // AR+ patch to make SPOC independent of external CVCA certificates for automatic renewals
+            // i.e. if we don't pass a CA certificate as parameter we try to find a suitable CA certificate in the database, among existing CAs 
             // (can be a simple imported CA-certificate of external CA)
             if (chain.isEmpty() &&
             	ca.getCAType() == CAInfo.CATYPE_CVC &&
@@ -932,7 +930,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             if ((e2 instanceof InvalidKeyException) || (e2 instanceof IllegalArgumentException)) {
                                 log.trace(e2);
                             } else {
-                                // If it's not invalid key or missing auth code,
+                                // If it's not invalid key or missing authentication code,
                                 // we want to see more of the error
                                 log.debug("Error: ", e2);
                             }
@@ -941,7 +939,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                     ca.setCertificateChain(chain);
 
-                    // Publish CA Cert
+                    // Publish CA Certificate
                     publishCACertificate(admin, chain, ca.getCRLPublishers(), ca.getSubjectDN());
 
                     // Set status to active, so we can sign certificates for the
@@ -952,7 +950,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     // activate External CA Services
                     Iterator<Integer> iter = ca.getExternalCAServiceTypes().iterator();
                     while (iter.hasNext()) {
-                        int type = (iter.next()).intValue();
+                        int type = iter.next().intValue();
                         try {
                             ca.initExternalService(type, ca);
                             ArrayList<Certificate> extcacertificate = new ArrayList<Certificate>();
@@ -1368,7 +1366,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAData cadata = null;
         try {
         	cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-            //cadata = this.cadatahome.findByPrimaryKey(Integer.valueOf(caid));
             CA ca = cadata.getCA();
 
             if (ca.getStatus() == SecConst.CA_OFFLINE) {
@@ -1523,15 +1520,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
             throw new AuthorizationDeniedException(msg);
         }
-
         // Get CA info.
         CAData cadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-
         String issuerdn = cadata.getSubjectDN();
-
         try {
             CA ca = cadata.getCA();
-
             // Revoke CA certificate
             certificateStoreSession.revokeCertificate(admin, ca.getCACertificate(), ca.getCRLPublishers(), reason, cadata.getSubjectDN());
             // Revoke all certificates generated by CA
@@ -1539,20 +1532,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 certificateStoreSession.revokeAllCertByCA(admin, issuerdn, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
                 crlCreateSession.run(admin, ca);
             }
-
             ca.setRevocationReason(reason);
             ca.setRevocationDate(new Date());
             if (ca.getStatus() != SecConst.CA_EXTERNAL) {
                 ca.setStatus(SecConst.CA_REVOKED);
             }
             cadata.setCA(ca);
-
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorrevoke", cadata.getName());
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CAREVOKED, msg, e);
             throw new EJBException(e);
         }
-
         String msg = intres.getLocalizedMessage("caadmin.revokedca", cadata.getName(), Integer.valueOf(reason));
         logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAREVOKED, msg);
     }
@@ -1568,7 +1558,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // load keystore
             java.security.KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
             keystore.load(new java.io.ByteArrayInputStream(p12file), keystorepass.toCharArray());
-            // Extract signarture keys
+            // Extract signature keys
             if (privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias)) {
                 throw new Exception("Alias \"" + privateSignatureKeyAlias + "\" not found.");
             }
@@ -1620,30 +1610,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
                 }
             }
-
             CAData caData = CAData.findByNameOrThrow(entityManager, caname);
             CA thisCa = caData.getCA();
-
             CATokenContainer thisCAToken = thisCa.getCAToken();
             int tokentype = thisCAToken.getCATokenType();
             if (tokentype != CATokenConstants.CATOKENTYPE_P12 && thisCAToken.getCATokenInfo() instanceof SoftCATokenInfo) {
                 throw new Exception("Cannot export anything but a soft token.");
             }
-
             // Create a new CAToken with the same properties but OFFLINE and
             // without keystore
             SoftCATokenInfo thisCATokenInfo = (SoftCATokenInfo) thisCAToken.getCATokenInfo();
             thisCATokenInfo.setCATokenStatus(ICAToken.STATUS_OFFLINE);
             CATokenContainer emptyToken = new CATokenContainerImpl(thisCATokenInfo, caData.getCaId());
             thisCa.setCAToken(emptyToken);
-
             // Save to database
             caData.setCA(thisCa);
-
             // Log
             String msg = intres.getLocalizedMessage("caadmin.removedcakeystore", Integer.valueOf(thisCa.getCAId()));
             logSession.log(admin, thisCa.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
-
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("caadmin.errorremovecakeystore", caname, "PKCS12", e.getMessage());
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CACREATED, msg, e);
@@ -1962,7 +1946,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
             }
             // Fetch keys
-            // This is a way of verifying the passowrd. If activate fails, we
+            // This is a way of verifying the password. If activate fails, we
             // will get an exception and the export will not proceed
             thisCAToken.activate(keystorepass);
 
@@ -2282,7 +2266,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 // CA fingerprint, figure out the value if this is not a root CA
                 String cafp = fingerprint;
-                // Calculate the certtype
+                // Calculate the certificate type
                 boolean isSelfSigned = CertTools.isSelfSigned(cert);
                 int type = SecConst.CERTTYPE_ENDENTITY;
                 if (CertTools.isCA(cert)) {
