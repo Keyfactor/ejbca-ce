@@ -20,6 +20,7 @@ import java.security.KeyPairGenerator;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,8 +40,8 @@ import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
+import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -51,8 +52,10 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -522,6 +525,15 @@ public class CreateCRLSessionTest extends CaTestCase {
         crlCreateSession.createDeltaCRLs(admin);
         final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
         assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
+        // Try a similar thing when we specify which CA IDs to generate CRLs for
+        final Collection<Integer> caids = new ArrayList<Integer>();
+        caids.add(Integer.valueOf(caid));
+        crlCreateSession.createCRLs(admin, caids, 2);
+        final X509CRL x509crlAfter2 = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        assertTrue("Did not generate a newer CRL.", x509crlAfter2.getThisUpdate().after(x509crlAfter.getThisUpdate()));
+        crlCreateSession.createDeltaCRLs(admin, caids, 2);
+        final X509CRL x509deltaCrlAfter2 = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
+        assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter2.getThisUpdate().after(x509deltaCrlAfter.getThisUpdate()));
         log.trace("<test09CrlGenerateForAll()");
     }
     
@@ -534,6 +546,20 @@ public class CreateCRLSessionTest extends CaTestCase {
     	assertNull("crlSession.getLastCRLInfo returned Delta CRLInfo for nonexsting CA", crlSession.getLastCRLInfo(admin, "CN=notexsting", true));
     	assertNull("crlSession.getCRLInfo returned CRLInfo for nonexsting CRL fingerprint", crlSession.getCRLInfo(admin, "tooshortfp"));
     	log.trace("<test10CrlSessionErrorHandling()");
+    }
+
+    /** Test error handling during CRL creation. */
+    public void test11CrlCreateSessionErrorHandling() throws CADoesntExistsException {
+    	log.trace(">test11CrlCreateSessionErrorHandling()");
+    	CA ca = caSession.getCA(admin, getTestCAId());
+    	ca.setStatus(SecConst.CA_OFFLINE);
+    	try {
+			crlCreateSession.createCRL(admin, ca, null, 0);
+			assertTrue("Trying to generate a CRL for CA with status CA_OFFLINE did not throw the CATokenOfflineException.", false);
+		} catch (CATokenOfflineException e) {
+			// Expected
+		}
+    	log.trace("<test11CrlCreateSessionErrorHandling()");
     }
 
     public void test99CleanUp() throws Exception {
