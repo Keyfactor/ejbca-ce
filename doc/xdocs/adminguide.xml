@@ -1044,6 +1044,10 @@ Sample code can be taken from:
 <li>The WS-API CLI: modules/ejbca-ws-cli/src/org/ejbca/core/protocol/ws/client/*.java</li>
 <li>A fully working RA Admin sample program written in Java and using the web services API; this may be downloaded from <a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA">the WebServiceRA project on SourceForge</a>.  
 For more information, see the <a href="howto.html#Creating and Running a custom RA Administrator application using EJBCA Web Services and Java">Web Services section of the howto file</a>.
+A short movie demonstrating the program may be downloaded from 
+<a href="http://sourceforge.net/projects/ejbca/files/WebServiceRA/WebServiceRA_Demo.m4v">SourceForge</a>
+or
+<a href="http://www.youtube.com/watch?v=QRpPMze7BBE">YouTube</a>.
 </li>
 </ul>
 </p>
