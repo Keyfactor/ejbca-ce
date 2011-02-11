@@ -20,6 +20,4 @@ import javax.ejb.Local;
  */
 @Local
 public interface CrlSessionLocal extends CrlSession {
-
-
 }
