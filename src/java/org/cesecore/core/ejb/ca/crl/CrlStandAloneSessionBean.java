@@ -54,21 +54,25 @@ public class CrlStandAloneSessionBean extends CrlSessionBeanBase implements CrlS
 	// Methods overriding implementations in CrlSessionBeanBase, needed because of the following bug in JBoss 6.0.0.
 	// https://issues.jboss.org/browse/JBMDR-73
 	//
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
 		return super.getLastCRL(admin, issuerdn, deltaCRL);
 	}
 
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
 		return super.getLastCRLInfo(admin, issuerdn, deltaCRL);
 	}
 
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
 		return super.getCRLInfo(admin, fingerprint);
 	}
 
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	@Override
 	public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
 		return super.getLastCRLNumber(admin, issuerdn, deltaCRL);

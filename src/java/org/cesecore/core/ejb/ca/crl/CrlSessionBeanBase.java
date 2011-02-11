@@ -17,8 +17,6 @@ import java.security.cert.X509CRL;
 import java.util.Date;
 
 import javax.ejb.EJBException;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
@@ -39,25 +37,18 @@ abstract class CrlSessionBeanBase {
 
 	/** Internal localization of logs and errors */
 	protected static final InternalResources intres = InternalResources.getInstance();
-	/**
-	 * @return the Entity manager.
-	 */
+
+	/** @return the Entity manager. */
 	abstract EntityManager getEntityManager();
+
 	/**
 	 * Logging with log session if available
 	 * @see org.cesecore.core.ejb.log.LogSessionLocal#log(Admin, Certificate, int, Date, String, Certificate, int, String)
 	 */
 	abstract void log(Admin admin, int hashCode, int moduleCa, Date date, String string, Certificate cert, int eventInfoGetlastcrl, String msg);
-	/**
-	 * Retrieves the latest CRL issued by this CA.
-	 *
-	 * @param admin Administrator performing the operation
-	 * @param issuerdn the CRL issuers DN (CAs subject DN)
-	 * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
-	 * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	public byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
+
+	/** @see CrlSession#getLastCRL(Admin, String, boolean) */
+	protected byte[] getLastCRL(Admin admin, String issuerdn, boolean deltaCRL) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getLastCRL(" + issuerdn + ", "+deltaCRL+")");
 		}
@@ -87,16 +78,8 @@ abstract class CrlSessionBeanBase {
 		return null;
 	}
 
-	/**
-	 * Retrieves the information about the lastest CRL issued by this CA. Retreives less information than getLastCRL, i.e. not the actual CRL data.
-	 *
-	 * @param admin Administrator performing the operation
-	 * @param issuerdn the CRL issuers DN (CAs subject DN)
-	 * @param deltaCRL true to get the latest deltaCRL, false to get the latestcomplete CRL
-	 * @return CRLInfo of last CRL by CA or null if no CRL exists.
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	public CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
+	/** @see CrlSession#getLastCRLInfo(Admin, String, boolean) */
+	protected CRLInfo getLastCRLInfo(Admin admin, String issuerdn, boolean deltaCRL) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getLastCRLInfo(" + issuerdn + ", "+deltaCRL+")");
 		}
@@ -132,15 +115,8 @@ abstract class CrlSessionBeanBase {
 		}
 	}
 
-	/**
-	 * Retrieves the information about the specified CRL. Retreives less information than getLastCRL, i.e. not the actual CRL data.
-	 *
-	 * @param admin Administrator performing the operation
-	 * @param fingerprint fingerprint of the CRL
-	 * @return CRLInfo of CRL or null if no CRL exists.
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	public CRLInfo getCRLInfo(Admin admin, String fingerprint) {
+	/** @see CrlSession#getCRLInfo(Admin, String) */
+	protected CRLInfo getCRLInfo(Admin admin, String fingerprint) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCRLInfo(" + fingerprint+")");
 		}
@@ -167,15 +143,8 @@ abstract class CrlSessionBeanBase {
 		}
 	}
 
-	/**
-	 * Retrieves the highest CRLNumber issued by the CA.
-	 *
-	 * @param admin    Administrator performing the operation
-	 * @param issuerdn the subjectDN of a CA certificate
-	 * @param deltaCRL true to get the latest deltaCRL, false to get the latest complete CRL
-	 */
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	public int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
+	/** @see CrlSession#getLastCRLNumber(Admin, String, boolean) */
+	protected int getLastCRLNumber(Admin admin, String issuerdn, boolean deltaCRL) {
 		if (log.isTraceEnabled()) {
 			log.trace(">getLastCRLNumber(" + issuerdn + ", "+deltaCRL+")");
 		}
