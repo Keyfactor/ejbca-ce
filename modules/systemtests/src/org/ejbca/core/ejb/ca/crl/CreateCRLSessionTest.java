@@ -89,8 +89,8 @@ public class CreateCRLSessionTest extends CaTestCase {
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    private CrlSessionRemote createCrlSession = InterfaceCache.getCrlSession();
-    private CrlCreateSessionRemote crlStoreSession = InterfaceCache.getCrlStoreSession();
+    private CrlSessionRemote crlSession = InterfaceCache.getCrlSession();
+    private CrlCreateSessionRemote crlCreateSession = InterfaceCache.getCrlStoreSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -125,7 +125,7 @@ public class CreateCRLSessionTest extends CaTestCase {
      */
     public void test01CreateNewCRL() throws Exception {
         log.trace(">test01CreateNewCRL()");
-        crlStoreSession.run(admin, ca);
+        crlCreateSession.run(admin, ca);
         log.trace("<test01CreateNewCRL()");
     }
 
@@ -138,17 +138,17 @@ public class CreateCRLSessionTest extends CaTestCase {
     public void test02LastCRL() throws Exception {
         log.trace(">test02LastCRL()");
         // Get number of last CRL
-        int number = createCrlSession.getLastCRLNumber(admin, ca.getSubjectDN(), false);
+        int number = crlSession.getLastCRLNumber(admin, ca.getSubjectDN(), false);
         log.debug("Last CRLNumber = " + number);
-        byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        byte[] crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         BigInteger num = CrlExtensions.getCrlNumber(x509crl);
         // Create a new CRL again to see that the number increases
-        crlStoreSession.run(admin, ca);
-        int number1 = createCrlSession.getLastCRLNumber(admin, ca.getSubjectDN(), false);
+        crlCreateSession.run(admin, ca);
+        int number1 = crlSession.getLastCRLNumber(admin, ca.getSubjectDN(), false);
         assertEquals(number + 1, number1);
-        byte[] crl1 = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        byte[] crl1 = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         X509CRL x509crl1 = CertTools.getCRLfromByteArray(crl1);
         BigInteger num1 = CrlExtensions.getCrlNumber(x509crl1);
         assertEquals(num.intValue() + 1, num1.intValue());
@@ -167,7 +167,7 @@ public class CreateCRLSessionTest extends CaTestCase {
         // Get number of last CRL
         Collection<RevokedCertInfo> revfp = certificateStoreSession.listRevokedCertInfo(admin, ca.getSubjectDN(), -1);
         log.debug("Number of revoked certificates=" + revfp.size());
-        byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        byte[] crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
 
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -219,9 +219,9 @@ public class CreateCRLSessionTest extends CaTestCase {
         log.debug("Cert=" + cert.toString());
 
         // Create a new CRL again...
-        crlStoreSession.run(admin, ca);
+        crlCreateSession.run(admin, ca);
         // Check that our newly signed certificate is not present in a new CRL
-        byte[] crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        byte[] crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set<? extends X509CRLEntry> revset = x509crl.getRevokedCertificates();
@@ -235,9 +235,9 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, userDN);
         // Create a new CRL again...
-        crlStoreSession.run(admin, ca);
+        crlCreateSession.run(admin, ca);
         // Check that our newly signed certificate IS present in a new CRL
-        crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -256,10 +256,10 @@ public class CreateCRLSessionTest extends CaTestCase {
         // Unrevoke the certificate that we just revoked
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, userDN);
         // Create a new CRL again...
-        crlStoreSession.run(admin, ca);
+        crlCreateSession.run(admin, ca);
         // Check that our newly signed certificate IS NOT present in the new
         // CRL.
-        crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -278,9 +278,9 @@ public class CreateCRLSessionTest extends CaTestCase {
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, userDN);
         assertTrue("Failed to revoke certificate!", certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
         // Create a new CRL again...
-        crlStoreSession.run(admin, ca);
+        crlCreateSession.run(admin, ca);
         // Check that our newly signed certificate IS present in a new CRL
-        crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -298,12 +298,12 @@ public class CreateCRLSessionTest extends CaTestCase {
         certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED, userDN);
         assertTrue("Was able to re-activate permanently revoked certificate!", certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert)));
         // Create a new CRL again...
-        crlStoreSession.run(admin, ca);
+        crlCreateSession.run(admin, ca);
         // Check that our newly signed certificate is present in the new CRL,
         // because the revocation reason
         // was not CERTIFICATE_HOLD, we can only un-revoke certificates that are
         // on hold.
-        crl = createCrlSession.getLastCRL(admin, ca.getSubjectDN(), false);
+        crl = crlSession.getLastCRL(admin, ca.getSubjectDN(), false);
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
@@ -395,7 +395,7 @@ public class CreateCRLSessionTest extends CaTestCase {
             caAdminSession.editCA(admin, cainfo);
             ca = caSession.getCA(admin, caid);
             // Create new CRL's
-            crlStoreSession.run(admin, ca);
+            crlCreateSession.run(admin, ca);
             // Verify that status is not archived
             CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
             assertFalse("Non Expired Revoked Certificate was archived", certinfo.getStatus() == SecConst.CERT_ARCHIVED);
@@ -437,8 +437,8 @@ public class CreateCRLSessionTest extends CaTestCase {
         cainfo.setDefaultCRLDistPoint(cdpURL);
         caAdminSession.editCA(admin, cainfo);
         ca = caSession.getCA(admin, caid);
-        crlStoreSession.run(admin, ca);
-        x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        crlCreateSession.run(admin, ca);
+        x509crl = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         cdpDER = x509crl.getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
@@ -454,8 +454,8 @@ public class CreateCRLSessionTest extends CaTestCase {
         cainfo.setDefaultCRLDistPoint("");
         caAdminSession.editCA(admin, cainfo);
         ca = caSession.getCA(admin, caid);
-        crlStoreSession.run(admin, ca);
-        x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        crlCreateSession.run(admin, ca);
+        x509crl = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         assertNull("CRL has distribution points", x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
 
         log.trace("<test06CRLDistPointOnCRL()");
@@ -481,8 +481,8 @@ public class CreateCRLSessionTest extends CaTestCase {
         cainfo.setCADefinedFreshestCRL(freshestCdpURL);
         caAdminSession.editCA(admin, cainfo);
         ca = caSession.getCA(admin, caid);
-        crlStoreSession.run(admin, ca);
-        x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        crlCreateSession.run(admin, ca);
+        x509crl = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         cFreshestDpDER = x509crl.getExtensionValue(X509Extensions.FreshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
@@ -501,7 +501,7 @@ public class CreateCRLSessionTest extends CaTestCase {
 
     public void test08TestCRLStore() throws Exception {
         log.trace(">test08TestCRLStore()");
-    	final String result = ValidationAuthorityTst.testCRLStore(ca, this.createCrlSession);
+    	final String result = ValidationAuthorityTst.testCRLStore(ca, this.crlSession);
     	assertNull(result, result);
         log.trace("<test08TestCRLStore()");
     }
@@ -514,15 +514,26 @@ public class CreateCRLSessionTest extends CaTestCase {
         caAdminSession.editCA(admin, cainfo);
         ca = caSession.getCA(admin, caid);
         Thread.sleep(1000);
-        final X509CRL x509crl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
-        crlStoreSession.createCRLs(admin);
-        final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        final X509CRL x509crl = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
+        crlCreateSession.createCRLs(admin);
+        final X509CRL x509crlAfter = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
         assertTrue("Did not generate a newer CRL.", x509crlAfter.getThisUpdate().after(x509crl.getThisUpdate()));
-        final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
-        crlStoreSession.createDeltaCRLs(admin);
-        final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(createCrlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
+        final X509CRL x509deltaCrl = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
+        crlCreateSession.createDeltaCRLs(admin);
+        final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
         assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
         log.trace("<test09CrlGenerateForAll()");
+    }
+    
+    /** Test error handling when we request info that does not exist. */
+    public void test10CrlSessionErrorHandling() {
+    	log.trace(">test10CrlSessionErrorHandling()");
+    	assertNull("crlSession.getLastCRL returned a CRL for nonexsting CA", crlSession.getLastCRL(admin, "CN=notexsting", false));
+    	assertNull("crlSession.getLastCRL returned a DeltaCRL for nonexsting CA", crlSession.getLastCRL(admin, "CN=notexsting", true));
+    	assertNull("crlSession.getLastCRLInfo returned CRLInfo for nonexsting CA", crlSession.getLastCRLInfo(admin, "CN=notexsting", false));
+    	assertNull("crlSession.getLastCRLInfo returned Delta CRLInfo for nonexsting CA", crlSession.getLastCRLInfo(admin, "CN=notexsting", true));
+    	assertNull("crlSession.getCRLInfo returned CRLInfo for nonexsting CRL fingerprint", crlSession.getCRLInfo(admin, "tooshortfp"));
+    	log.trace("<test10CrlSessionErrorHandling()");
     }
 
     public void test99CleanUp() throws Exception {
