@@ -155,7 +155,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             cadatanew.getCaId();
             throw new CAExistsException(" CA name " + newname + " already exists.");
         } else {
-
             // new CA doesn't exits, it's ok to rename old one.
             cadata.setName(newname);
             // Invalidate CA cache to refresh information
@@ -163,7 +162,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.renamedca", oldname, newname);
             logSession.log(admin, caid, LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CAEDITED, msg);
         }
-
     }
 
     /**
@@ -354,7 +352,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     private boolean authorizedToCA(Admin admin, int caid) {
         if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
-            return true; // Skip database seach since this is always ok
+            return true; // Skip database search since this is always ok
         }
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
