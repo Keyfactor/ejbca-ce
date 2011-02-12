@@ -19,7 +19,7 @@ import java.security.interfaces.RSAPublicKey;
  * @author lars
  * @version $Id$
  */
-interface CardKeys {
+public interface CardKeys {
 
 	/**
 	 * @param publicKey
