@@ -2995,9 +2995,6 @@ testKey test
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
 slot=5
 </source>
-<note>The slot5p11.cfg is needed because the ProtectServer has some strange default attributes. If you do not specify an attributes file the private key will
-not be 'sensitive' and will be possible to export in clear text by any user of the HSM. You can see the attributes of the keys by running the test command:
-</note>
 <source>
 ./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
 ...
@@ -3010,20 +3007,38 @@ Decryptions per second: 260
 </source>
 <p>the attributes are listed as "token object, sensitive, extractable", and here is important that is says 'sensitive' (extractable only means that the key can be backed up securely using SafeNet tools).
 </p>
-<note>
-The above means that if you have more than one CA using the same slot it is very important that BOTH CA token properties configurations contains the attributesFile. 
-This is because the attributes are applied when the provider is installed during startup. If one configuration does not have the attributesFile it can not be applied later on by the other configuration. 
-</note>
 </subsubsection>
 <subsubsection name="Test and list keys on slot 5">
 <source>
 $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
 </source>
 </subsubsection>
+<subsubsection name="Backup and restore">
+<p>
+When you have tested that all keys are working you should back them up. Read about how this is done in the ProtectServer documentation.
+Then clear the slot that you has just backed up:
+</p>
+<source>
+ctkmu -s &lt;slot nr&gt; t
+</source>
+<p>
+Then restore the backup according to the ProtectServer documentation and run the clientToolBox test as above. Now when you now that the keys of the slot could be restored from the backup medium you should set the attributes of them so that they could not be extracted from the HSM by any means. Unfortunate this could not be done with the ctkmu CLI tool since the private key got no label. Use the GUI 'kmu' instead. For each key do:
+</p>
+<ol>
+<li>Select the token and login to it.</li>
+<li>Double click on the private key that you want to protect.</li>
+<li>Uncheck the 'Exportable' box and press OK</li>
+<li>Verify that the 'Exportable' and the 'Extractable' boxes are unchecked and can't be changed</li>
+<li>Verify that the 'Private' and the 'Sensitive' boxes are checked and can't be changed</li>
+</ol>
+<p>
+Now it should be impossible to do any backup of the key. If you got a key ceremony protocol it could be a good idea to note that keys was made "unexportable". Also note that the 'Exportable' attribute has to be unchecked each time the backup is restored.
+</p>
+</subsubsection>
 <note>
 The emulator has a bug. Each key of same length that are generated seems to be the same. This means that a slot may only have one key. If a second key is generated for a slot the certificate object for the first key is deleted before writing the certificate object for the new key. This is done since the Sun p11 wrapper provider does not allow two keys that are equal to be present in a keystore.
 </note>
-<subsubsection name="Generating keys using SafeNet tools">
+<subsubsection name="Generating keys using ProtectServer tools">
 <p>
 You can also generate keys, and the needed self signed certificate, using the SafeNet tools delivered with the HSM. This is for example suitable when you want
 to generate ECC keys, since there is a bug in the JDK which prevents this without patching the JDK.
