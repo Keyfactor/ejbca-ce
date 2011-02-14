@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ca.crl;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -34,12 +35,14 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
@@ -526,14 +529,15 @@ public class CreateCRLSessionTest extends CaTestCase {
         final X509CRL x509deltaCrlAfter = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
         assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter.getThisUpdate().after(x509deltaCrl.getThisUpdate()));
         // Try a similar thing when we specify which CA IDs to generate CRLs for
+        // Compare CRL numbers instead of Dates, since these CRLs might have been generated the same second as the last ones
         final Collection<Integer> caids = new ArrayList<Integer>();
         caids.add(Integer.valueOf(caid));
         crlCreateSession.createCRLs(admin, caids, 2);
         final X509CRL x509crlAfter2 = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), false));
-        assertTrue("Did not generate a newer CRL.", x509crlAfter2.getThisUpdate().after(x509crlAfter.getThisUpdate()));
+        assertTrue("Did not generate a newer CRL.", getCrlNumber(x509crlAfter2) > getCrlNumber(x509crlAfter));
         crlCreateSession.createDeltaCRLs(admin, caids, 2);
         final X509CRL x509deltaCrlAfter2 = CertTools.getCRLfromByteArray(crlSession.getLastCRL(admin, cainfo.getSubjectDN(), true));
-        assertTrue("Did not generate a newer Delta CRL.", x509deltaCrlAfter2.getThisUpdate().after(x509deltaCrlAfter.getThisUpdate()));
+        assertTrue("Did not generate a newer Delta CRL.", getCrlNumber(x509deltaCrlAfter2) > getCrlNumber(x509deltaCrlAfter));
         log.trace("<test09CrlGenerateForAll()");
     }
     
@@ -589,4 +593,10 @@ public class CreateCRLSessionTest extends CaTestCase {
 
         return rsaKeys;
     } // genKeys
+
+    private long getCrlNumber(X509CRL x509Crl) throws IOException {
+    	final long crlNumber = DERInteger.getInstance(X509ExtensionUtil.fromExtensionValue(x509Crl.getExtensionValue(X509Extensions.CRLNumber.getId()))).getValue().longValue();
+    	log.debug("Extracted CRL number: " + crlNumber);
+    	return crlNumber;
+    }
 }
