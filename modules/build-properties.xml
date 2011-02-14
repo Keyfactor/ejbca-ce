@@ -201,6 +201,8 @@
 		<fileset dir="${appserver.home}">
 			<!-- JBoss 5.1.0 -->
 			<include name="common/lib/servlet-api.jar"/>
+			<!-- JBoss 6.0.0 -->
+			<include name="common/lib/jboss-servlet-api_3.0_spec.jar"/>
 			<!-- Glassfish 2.1.1 -->
 			<include name="lib/javaee.jar"/>
 			<!-- WebLogic 10.3.3 -->
