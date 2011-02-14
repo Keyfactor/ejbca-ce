@@ -124,5 +124,29 @@ public class RequestMessageTest extends TestCase {
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 
+		 dn = new X509Name("1.2.840.113549.1.9.3=AttrValue1 AttrValue2+CN=Test");
+		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+
+		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 username = msg.getUsername();
+		 assertEquals("Test", username);
+
+		 dn = new X509Name("1.2.840.113549.1.9.3=AttrValue1 AttrValue2+CN=Test+O=abc");
+		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+
+		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 username = msg.getUsername();
+		 assertEquals("Test", username);
+
+		 dn = new X509Name("1.2.840.113549.1.9.3=AttrValue1\\+\\= AttrValue2+CN=Test+O=abc");	// very strange, but should still be valid 
+		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+
+		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 username = msg.getUsername();
+		 assertEquals("Test", username);
+
 	 }
  }
