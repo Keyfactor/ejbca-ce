@@ -1736,7 +1736,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             // fails
             cert = cert2;
         }
-
+        // Test if the last available CA chain matches the one we got for this user
+        final List<Certificate> caChain = ejbcaraws.getLastCAChain(CA1);
+        assertEquals("CA chain was not of expected length", 1, caChain.size());
+        final String userChainCaFingerprint = CertTools.getFingerprintAsString(cacert);
+        final String caChainCaFingerprint = CertTools.getFingerprintAsString(CertificateHelper.getCertificate(caChain.get(caChain.size()-1).getCertificateData()));
+        assertEquals("Same CA certificate in user certificate chain and CA certificate chain", caChainCaFingerprint, userChainCaFingerprint);
+        // Test that and empty chain is returned for non-existing users
         String randomuser = genRandomUserName();
         List<Certificate> foundnocerts = ejbcaraws.getLastCertChain(randomuser);
         assertTrue(foundnocerts != null);

@@ -2663,7 +2663,7 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	/**
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getLastCAChain(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, String, String)
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getLastCAChain(java.lang.String)
 	 */
 	public List<Certificate> getLastCAChain(String caname)
 			throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
