@@ -101,10 +101,10 @@ public class CustomLogCommand extends EJBCAWSRABaseCommand implements IAdminComm
 			if (!StringUtils.equalsIgnoreCase(certfile, "null")) {
 				try {
 					FileInputStream in = new FileInputStream(certfile);
-					Collection certs = CertTools.getCertsFromPEM(in);
-					Iterator iter = certs.iterator();
+					Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+					Iterator<Certificate> iter = certs.iterator();
 					if (iter.hasNext()) {
-						incert = (Certificate)iter.next();
+						incert = iter.next();
 					}
 				} catch (IOException e) {
 					// It was perhaps not a PEM chain...see if it was a single binary CVC certificate
