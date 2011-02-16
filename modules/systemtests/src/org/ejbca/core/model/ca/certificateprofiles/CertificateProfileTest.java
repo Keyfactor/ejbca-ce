@@ -491,4 +491,32 @@ public class CertificateProfileTest extends TestCase {
         log.trace("<test08FieldIds()");
     }
 
+    /** Test if we can detect that a certificate profile references to CA IDs and Publisher IDs. */
+    public void test14CertificateProfileReferenceDetection() throws Exception {
+        log.trace(">test14CertificateProfileReferenceDetection()");
+        final String NAME = "CertificateProfileReferenceDetection";
+        final List<Integer> fakePublisherIds = new ArrayList<Integer>();
+        fakePublisherIds.add(Integer.valueOf(1337));
+        final List<Integer> fakeCaIds = new ArrayList<Integer>();
+        fakeCaIds.add(Integer.valueOf(1338));
+        try {
+        	try {
+        		CertificateProfile profile = new CertificateProfile();
+        		profile.setPublisherList(fakePublisherIds);
+        		profile.setAvailableCAs(fakeCaIds);
+        		certificateProfileSession.addCertificateProfile(admin, NAME, profile);
+        	} catch (CertificateProfileExistsException pee) {
+        		log.warn("Failed to add Certificate Profile " + NAME + ". Assuming this is caused from a previous failed test..");
+        	}
+        	assertTrue("Unable to detect that Publisher Id was present in Certificate Profile.", certificateProfileSession.existsPublisherInCertificateProfiles(admin, fakePublisherIds.get(0).intValue()));
+        	assertFalse("Unable to detect that Publisher Id was present in Certificate Profile.", certificateProfileSession.existsPublisherInCertificateProfiles(admin, 7331));
+        	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", certificateProfileSession.existsCAInCertificateProfiles(admin, fakeCaIds.get(0).intValue()));
+        	assertFalse("Unable to detect that CA Id was present in Certificate Profile.", certificateProfileSession.existsCAInCertificateProfiles(admin, 8331));
+        } finally {
+        	certificateProfileSession.removeCertificateProfile(admin, NAME);
+        }
+        log.trace("<test14CertificateProfileReferenceDetection()");
+    }
+
+
 }
