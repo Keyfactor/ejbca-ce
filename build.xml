@@ -22,7 +22,7 @@
 	<!-- include the standard properties and paths -->
     <import file="propertyDefaults.xml"/>
 
-	<import file="bin/${appserver.type}.xml" />
+	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
 	
@@ -41,7 +41,7 @@
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="testforgnujava, ejbca.ear" description="Builds EJBCA"/>
+    <target name="build" depends="fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -57,7 +57,7 @@
 	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
 	  SSL and the super administrator.
 	  -->
-    <target name="install" depends="ejbca-ejb-cli" description="Install EJBCA application (only once)">
+    <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
 	
@@ -352,7 +352,7 @@
     <!-- =================================================================== -->
     <!-- Build VA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="va-ear" depends="display-properties, vahealthcheck.war, create-log4config-bundle">
+    <target name="va-ear" depends="fail-unless-appserver-detected, display-properties, vahealthcheck.war, create-log4config-bundle">
 		<property name="eardd.src" value="${tmp}/va-ear" />
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/va-ear/META-INF/application.xml" flatten="true" failonerror="true"/>

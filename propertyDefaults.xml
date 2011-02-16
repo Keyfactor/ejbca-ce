@@ -85,7 +85,13 @@
 	<!-- Not yet tested:
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
-	<fail message="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA, JBoss 6.0.0, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Normally you should not have to configure this.)" unless="appserver.type"/>
+	<condition property="appserver.type.detected" value="true" else="false">
+		<isset property="appserver.type"/>
+	</condition>
+	<property name="appserver.type.detected.errormessage"
+		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, JBoss 5.1.0.GA, JBoss 6.0.0, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
+	<echounlesstrue message="${appserver.type.detected.errormessage}"
+		unless-true="appserver.type.detected"/>
 	<echounlesstrue message="appserver.type: ${appserver.type}" unless-true="runoncesetup.hasrun"/>
 
 	<property name="runoncesetup.hasrun" value="true"/>
@@ -258,4 +264,8 @@ xkms.serviceport                = ${xkms.serviceport}
       </echo>
     </target>
 
+	<target name="fail-unless-appserver-detected">
+		<fail message="${appserver.type.detected.errormessage}" unless="appserver.type"/>
+	</target>
+	
 </project>
