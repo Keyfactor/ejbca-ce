@@ -77,6 +77,8 @@ Needed to build and run are:</p>
 JBoss 5.x has a bug causing issues with the BC JCE provider when the Sun JVM is used. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
 Remember this when it's time for upgrades! Tracked by JBoss as JBAS-7882.
 <br/>
+JBoss 5.x has a bug causing issues with the Web Service and XKMS protocols. To work around this, you can copy the files JBOSS_HOME/common/lib/jbossws-native-*.jar to JBOSS_HOME/lib/endorsed or use JBoss 5.x-jdk6.
+<br/>
 JBoss 5.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions. Tracked by JBoss as JBPAPP-3766.
 </note>
 <note>
