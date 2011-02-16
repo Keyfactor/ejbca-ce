@@ -159,11 +159,13 @@
 		
     </target>
 
-    <target name="gen-depgraph" description="Generate EJB dependecy graph using dot">
+    <target name="gen-depgraph" depends="ejbca.ear" description="Generate EJB dependecy graph using external 'dot' application">
+    	<condition property="isjboss" value="isset"><equals arg1="jboss" arg2="${appserver.type}"/></condition>
+    	<fail unless="isjboss" message="This target only works for JBoss AS."/>
     	<property name="gen-depgraph.dir" value="${ejbca.home}/tmp/gen-dep"/>
     	<mkdir dir="${gen-depgraph.dir}"/>
     	<path id="gen-dep.classpath">
-    		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar lib/javaee.jar"/> <!-- for javax.ejb.Stateless, Local and EJB-->
+    		<fileset dir="${appserver.home}" includes="client/jboss-javaee.jar client/ejb3-persistence.jar"/> <!-- for javax.ejb.Stateless, Local and EJB-->
     	</path>
     	<javac srcdir="${ejbca.home}/src/java" destdir="${gen-depgraph.dir}" classpathref="gen-dep.classpath" debug="on" includeantruntime="false"
     		includes="org/ejbca/util/EjbDependencyGraphTool.java"/>
@@ -174,6 +176,7 @@
     	<java classname="org.ejbca.util.EjbDependencyGraphTool" classpathref="gen-dep.classpath.run">
     		<arg line="${ejbca.home}/dist/ejbca.ear ${gen-depgraph.dir}/ejbca_${app.version.number}.dot"/>
     	</java>
+    	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.dot was written."/>
     	<echo message="file://${gen-depgraph.dir}/ejbca_${app.version.number}.dot was written."/>
     	<exec executable="dot">
     		<arg line="-Tpng -o ${gen-depgraph.dir}/ejbca_${app.version.number}.png ${gen-depgraph.dir}/ejbca_${app.version.number}.dot"/>
