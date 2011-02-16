@@ -18,6 +18,7 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -318,4 +319,64 @@ public class EndEntityProfileTest extends TestCase {
         log.trace("<test10CardnumberRequired()");
     }
 
+    /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
+    public void test11EndEntityProfileReferenceDetection() throws Exception {
+        log.trace(">test11EndEntityProfileReferenceDetection()");
+        final String NAME = "EndEntityProfileReferenceDetection";
+        try {
+        	try {
+        		EndEntityProfile profile = new EndEntityProfile();
+        		profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, ""+1337);
+        		profile.setValue(EndEntityProfile.AVAILCAS, 0, ""+1338);
+        		endEntityProfileSession.addEndEntityProfile(admin, NAME, profile);
+        	} catch (EndEntityProfileExistsException pee) {
+        		log.warn("Failed to add Certificate Profile " + NAME + ". Assuming this is caused from a previous failed test..");
+        	}
+        	assertTrue("Unable to detect that Certificate Profile Id was present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(admin, 1337));
+        	assertFalse("Unable to detect that Certificate Profile Id was not present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(admin, 7331));
+        	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(admin, 1338));
+        	assertFalse("Unable to detect that CA Id was not present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(admin, 8331));
+        } finally {
+        	endEntityProfileSession.removeEndEntityProfile(admin, NAME);
+        }
+        log.trace("<test11EndEntityProfileReferenceDetection()");
+    }
+
+    /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
+    public void test12OperationsOnEmptyProfile() throws Exception {
+        log.trace(">test12OperationsOnEmptyProfile()");
+    	final EndEntityProfile profile = new EndEntityProfile();
+        try {
+        	endEntityProfileSession.addEndEntityProfile(admin, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, profile);
+        	fail("Was able to add profile named " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        } catch (EndEntityProfileExistsException pee) {
+        	// Expected
+        }
+        try {
+        	final int eepId = endEntityProfileSession.getEndEntityProfileId(admin, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	endEntityProfileSession.addEndEntityProfile(admin, eepId, "somerandomname", profile);
+        	fail("Was able to add profile with EEP Id " + eepId);
+        } catch (EndEntityProfileExistsException pee) {
+        	// Expected
+        }
+        try {
+        	endEntityProfileSession.cloneEndEntityProfile(admin, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	fail("Clone to " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
+        } catch (EndEntityProfileExistsException pee) {
+        	// Expected
+        }
+        try {
+        	endEntityProfileSession.renameEndEntityProfile(admin, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	fail("Rename to " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
+        } catch (EndEntityProfileExistsException pee) {
+        	// Expected
+        }
+        try {
+        	endEntityProfileSession.renameEndEntityProfile(admin, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, "ignored"	);
+        	fail("Rename from " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
+        } catch (EndEntityProfileExistsException pee) {
+        	// Expected
+        }
+        log.trace("<test12OperationsOnEmptyProfile()");
+    }
 }
