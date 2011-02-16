@@ -47,6 +47,40 @@
 	<li>All commits are monitored in irc-channel, fisheye, release diffs and using a QA review process.</li>
     </ul>
   </section>
+  
+  <section name="Contributor security policy">
+  <p>
+  EJBCA is a security project, under Common Criteria evaluation. As such a few security policies are needed.
+  In order for any contributor to get source code repository commit access the contributor must agree on some security policies.
+  Contributors with no commit access are not bothered by this policy.
+  </p>
+  <subsection name="Password usage">
+  <p>Passwords used need to comply with the following requirements:
+  </p>
+  <ul>
+	  <li>Have 8 or more characters.</li>
+	  <li>Include letters, numbers and special characters.</li>
+  </ul>
+  </subsection>
+  <subsection name="Workstation protection">
+  <p>The user is responsible for protecting the development workstation according to best practices and best effort. 
+  This includes, but is not limited to, firewalls, virus and malware protection. 
+  </p>
+  </subsection>
+  <subsection name="User responsibilities">
+  <p>This policy applies to all users who are given physical and/or logical access to servers.
+  </p>
+  <p>Once a server account has been assigned, the user is then responsible for ensuring the adherence to all policies and guidelines. 
+	Account information must not be shared, distributed or exchanged with anyone other than the person to whom the information was assigned. This includes, but is not limited to, usernames, user IDs, passwords, IP addresses, network diagrams or any other information which may jeopardize the security of the servers. 
+	The user is responsible for informing the management within 24 hours if:
+  </p> 
+  <ul>
+	  <li>His account information has been compromised.</li>
+	  <li>His computer has been infected by a virus, or other malware.</li>  
+  </ul>
+  </subsection>
+  </section>
+  
 </body>
 </document>
 
