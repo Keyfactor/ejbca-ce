@@ -310,20 +310,20 @@ public class CADataHandler implements Serializable {
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
  	Collection<Integer> publishers = cainfo.getCRLPublishers();
  	// Publish ExtendedCAServices certificates as well
-	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+	Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
 	while(iter.hasNext()){
-		ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
+		ExtendedCAServiceInfo next = iter.next();	
 		// Only publish certificates for active services
 		if (next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			// The OCSP certificate is the same as the CA signing certificate
 			if(next instanceof XKMSCAServiceInfo){
-				List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
+				List<Certificate> xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 				if (xkmscert != null) {
 					caadminsession.publishCACertificate(administrator, xkmscert, publishers, cainfo.getSubjectDN());
 				}
 			}
 			if(next instanceof CmsCAServiceInfo){
-				List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
+				List<Certificate> cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
 				if (cmscert != null) {
 					caadminsession.publishCACertificate(administrator, cmscert, publishers, cainfo.getSubjectDN());
 				}
