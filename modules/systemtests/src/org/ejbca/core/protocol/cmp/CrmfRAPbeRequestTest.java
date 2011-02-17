@@ -80,8 +80,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java 9435 2010-07-14 15:18:39Z mikekushner
- *          $
+ * @version $Id: CrmfRAPbeRequestTest.java 9435 2010-07-14 15:18:39Z mikekushner$
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 
@@ -299,9 +298,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         assertNotNull(resp);
         assertTrue(resp.length > 0);
         checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, 1); // We
-        // expect
-        // a
-        // FailInfo.BAD_MESSAGE_CHECK
+        // expect a FailInfo.BAD_MESSAGE_CHECK
     }
 
     public void test04RevocationApprovals() throws Exception {
