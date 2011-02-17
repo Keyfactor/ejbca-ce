@@ -57,7 +57,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			if (initAuth) {
 				String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
 				Integer caid = Integer.valueOf(subjectdn.hashCode());
-				getLogger().info("Initializing authorization module for caid: "+caid);
+				getLogger().info("Initializing authorization module for caid: "+caid+", superadmincn='"+superAdminCN+"'");
 				initAuthorizationModule(caid.intValue(), superAdminCN);
 			}
 			ejb.getCAAdminSession().importCACertificate(getAdmin(), caName, certs);

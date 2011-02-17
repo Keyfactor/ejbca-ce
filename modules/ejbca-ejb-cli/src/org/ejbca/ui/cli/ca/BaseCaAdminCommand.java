@@ -157,7 +157,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     }
 
     protected void initAuthorizationModule(int caid, String superAdminCN) throws AdminGroupExistsException {
-        getLogger().info("Initalizing Temporary Authorization Module.");
+        getLogger().info("Initalizing Temporary Authorization Module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
         ejb.getAdminGroupSession().init(getAdmin(), caid, superAdminCN);     
     } // initAuthorizationModule
 }
