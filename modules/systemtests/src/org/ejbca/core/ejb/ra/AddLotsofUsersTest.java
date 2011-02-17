@@ -13,10 +13,15 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserAdminConstants;
+import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
 
@@ -89,5 +94,12 @@ public class AddLotsofUsersTest extends CaTestCase {
         }
         log.debug("Created 2000 users!");
         log.trace("<test01Create2000Users()");
+    }
+    
+    public void test02FindAllBatchUsersByStatusWithLimit() {
+        log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
+    	List<UserDataVO> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(UserDataConstants.STATUS_NEW);
+    	assertEquals("Did not returned the maximum hardcoded limit in query.", UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
+        log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }
 }
