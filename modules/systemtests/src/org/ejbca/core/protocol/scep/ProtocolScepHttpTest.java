@@ -121,7 +121,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     private int caid = getTestCAId();
     private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-    private X509Certificate cacert;
+    private static X509Certificate cacert;
     private static final KeyPair key1;
     private static final KeyPair key2;
     private String caname = getTestCAName();
@@ -154,12 +154,10 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     public ProtocolScepHttpTest(String name) throws Exception {
         super(name);
-        createTestCA();
-        cacert = (X509Certificate) getTestCACert();
-        
+        log.trace(">ProtocolScepHttpTest");
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
-        
+        log.trace("<ProtocolScepHttpTest");
     }
 
     public static TestSuite suite() {
@@ -173,7 +171,11 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
     public void tearDown() throws Exception {
         super.tearDown();
+    }
 
+    public void test00Setup() throws Exception {
+        createTestCA();
+        cacert = (X509Certificate) getTestCACert();
     }
 
     public void test01Access() throws Exception {
@@ -377,6 +379,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         log.debug("deleted user: " + userName1);
         userAdminSession.deleteUser(admin, userName2);
         log.debug("deleted user: " + userName2);
+        removeTestCA();
     }
 
     //
