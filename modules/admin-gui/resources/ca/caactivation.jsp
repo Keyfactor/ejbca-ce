@@ -13,7 +13,6 @@
  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_ACTIVATECA); 
  EjbcaJSFHelper helpbean = EjbcaJSFHelper.getBean();
  helpbean.setEjbcaWebBean(ejbcawebbean);
- helpbean.authorizedToApprovalPages();
 %>
 <html>
 <head>
