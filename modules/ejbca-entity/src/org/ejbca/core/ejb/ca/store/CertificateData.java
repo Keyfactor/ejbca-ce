@@ -700,7 +700,7 @@ public class CertificateData implements Serializable {
 
 	public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
 		// TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
-		final Query query = entityManager.createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username NOT NULL");
+		final Query query = entityManager.createQuery("SELECT DISTINCT a.username FROM CertificateData a WHERE a.expireDate>=:minExpireTime AND a.expireDate<:maxExpireTime AND (a.status=:status1 OR a.status=:status2) AND a.username IS NOT NULL");
 		query.setParameter("minExpireTime", minExpireTime);
 		query.setParameter("maxExpireTime", maxExpireTime);
 		query.setParameter("status1", SecConst.CERT_ACTIVE);
