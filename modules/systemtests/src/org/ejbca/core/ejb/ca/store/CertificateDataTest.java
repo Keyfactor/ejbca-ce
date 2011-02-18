@@ -261,12 +261,18 @@ public class CertificateDataTest extends TestCase {
         Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(new Admin(Admin.TYPE_INTERNALUSER), findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
+        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(new Admin(Admin.TYPE_INTERNALUSER), findDate);
+        log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
+        assertTrue("No certs should have expired before this date", usernames.size() == 0);
         findDateSecs = data.getExpireDate().getTime() + 10000;
         findDate = new Date(findDateSecs);
         log.info("2. Looking for cert with expireDate=" + findDate);
         certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(new Admin(Admin.TYPE_INTERNALUSER), findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("Some certs should have expired before this date", certs.size() != 0);
+        usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(new Admin(Admin.TYPE_INTERNALUSER), findDate);
+        log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
+        assertTrue("Some certs should have expired before this date", usernames.size() != 0);
 
         Iterator<Certificate> iter = certs.iterator();
 
