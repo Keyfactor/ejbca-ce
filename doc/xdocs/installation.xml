@@ -513,16 +513,16 @@ asadmin create-jdbc-resource --connectionpoolid EjbcaPool jdbc/EjbcaDS
 <subsubsection name="Deploy and setup">
 <p>
 <ol>
-<li>Build and deploy EJBCA with<br/>
+<li>If your appserver does not requires a password for deployment (asadmin deploy) you can build and deploy EJBCA with<br/>
 <pre>
 ant clean
 ant bootstrap
 </pre>
-or
+or otherwise with an additional step.
 <pre>
 ant clean
 ant
-asadmin deploy --precompilejsp EJBCA_HOME/dist/ejbca.ear
+asadmin deploy --precompilejsp $EJBCA_HOME/dist/ejbca.ear
 </pre>
 You can check that everything was ok in APPSRV_HOME/domains/domain1/logs/server.log.</li><br/>
 <li>Install EJBCA
