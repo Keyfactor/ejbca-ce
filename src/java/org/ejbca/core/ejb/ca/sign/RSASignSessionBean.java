@@ -427,7 +427,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	}
 
     @Override
-    public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException {
+    public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CATokenOfflineException {
     	log.trace(">createRequestFailedResponse(IRequestMessage)");
         IResponseMessage ret = null;            
         CA ca = getCAFromRequest(admin, req);
@@ -464,9 +464,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-            log.error(msg, ctoe);
+            log.warn(msg, ctoe);
             logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
-            throw new CADoesntExistsException(msg);
+            throw ctoe;
         }
         log.trace("<createRequestFailedResponse(IRequestMessage)");
         return ret;

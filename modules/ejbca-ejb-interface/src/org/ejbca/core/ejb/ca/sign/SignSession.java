@@ -26,6 +26,7 @@ import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -229,7 +230,7 @@ public interface SignSession {
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
     public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req, Class responseClass) throws AuthLoginException,
-            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException;
+            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CATokenOfflineException;
 
     /**
      * Method that just decrypts and verifies a request and should be used in those cases
