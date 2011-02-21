@@ -50,6 +50,16 @@
         </layout>           
      </appender>
 
+    <!-- Buffer events and log them asynchronously -->
+    <appender name="ASYNC" class="org.apache.log4j.AsyncAppender">
+        <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+        <appender-ref ref="FILE"/>
+        <!--
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="SMTP"/>
+        -->
+    </appender>
+
 	<category name="org.ejbca.core.protocol.ocsp.TransactionLogger" additivity="false">
 		<priority value="DEBUG"/>
 		<appender-ref ref="TransactionLogger"/>
@@ -59,6 +69,14 @@
 		<priority value="DEBUG"/>
 		<appender-ref ref="AuditLogger"/>
 	</category>
+	
+	<category name="org.ejbca">
+        <priority value="DEBUG"/>
+    </category>
+
+    <category name="org.cesecore">
+        <priority value="DEBUG"/>
+    </category>
 	
 	<!-- Limit some debug output, even when debug for EJBCA is enabled -->
 	<category name="org.apache.commons">
