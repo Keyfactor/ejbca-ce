@@ -187,6 +187,7 @@
        	<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
        	<include name="org/ejbca/util/PrinterManager.java"/>
        	<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>
+       	<include name="org/ejbca/util/cert/CrlExtensions.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
        	<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->

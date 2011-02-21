@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.ca;
 
 import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
 import org.ejbca.util.CryptoProviderTools;
+import org.ejbca.util.cert.CrlExtensions;
 
 /**
  * Re-publishes the certificates of all users belonging to a particular CA.
@@ -73,8 +75,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Iterator<Certificate> caiter = cachain.iterator();
             if (caiter.hasNext()) {
                 final X509Certificate cacert = (X509Certificate) caiter.next();
-                final int crlNumber = ejb.getCrlSession().getLastCRLNumber(getAdmin(), cainfo.getSubjectDN(), false);
                 final byte[] crlbytes = ejb.getCrlSession().getLastCRL(getAdmin(), cainfo.getSubjectDN(), false);
+                // Get the CRLnumber
+                X509CRL crl = CertTools.getCRLfromByteArray(crlbytes);
+                int crlNumber = CrlExtensions.getCrlNumber(crl).intValue();
                 final Collection<Integer> capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if (capublishers != null) {
