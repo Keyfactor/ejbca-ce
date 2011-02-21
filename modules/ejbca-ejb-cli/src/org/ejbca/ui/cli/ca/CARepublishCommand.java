@@ -91,7 +91,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     getLogger().info("Certificate published for " + caname);
                     if ( crlbytes!=null && crlbytes.length>0 && crlNumber>0 ) {
                         ejb.getPublisherSession().storeCRL(getAdmin(), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
-                        getLogger().info("CRL published for " + caname);
+                        getLogger().info("CRL with number "+crlNumber+" published for " + caname);
                     } else {
                         getLogger().info("CRL not published, no CRL createed for CA?");
                     }
