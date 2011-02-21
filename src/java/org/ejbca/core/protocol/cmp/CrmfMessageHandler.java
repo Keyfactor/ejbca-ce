@@ -322,9 +322,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// If we have a custom certificate serial number in the request, we will pass it on to the UserData object
 					ei = new ExtendedInformation();
 					ei.setCertificateSerialNumber(customCertSerno);
-				}
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Custom certificate serial number: "+customCertSerno.toString(16));					
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("Custom certificate serial number: "+customCertSerno.toString(16));					
+					}
 				}
 			}
 			final UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
