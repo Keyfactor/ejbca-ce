@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ocsp.standalonesession;
 
 /**
  * Holds information about a provider.
- * Used to be able to reload a provider when a HSM has stoped working.
+ * Used to be able to reload a provider when a HSM has stopped working.
  * For other sub classes but {@link P11ProviderHandler} nothing is done at reload when {@link #reload()} is called.
  * 
  * @author primelars

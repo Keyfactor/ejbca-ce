@@ -119,7 +119,7 @@ class P11ProviderHandler implements ProviderHandler {
      */
     public synchronized void reload() {
         if ( this.data.doNotStorePasswordsInMemory ) {
-            m_log.info("Not possible to recover a lost HSM with no passowrd.");
+            m_log.info("Not possible to recover a lost HSM with no password.");
             return;
         }
         if ( !this.data.isNotReloadingP11Keys ) {
