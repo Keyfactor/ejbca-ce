@@ -287,17 +287,19 @@ public class CertificateView implements Serializable {
       }
       return  returnval;
     }
-     
-     
 
-    public boolean isRevoked(){
-      return revokedinfo != null  && revokedinfo.isRevoked();     
+    public boolean isRevokedAndOnHold(){
+    	return revokedinfo != null && revokedinfo.isRevokedAndOnHold();     
     }
 
-    public String[] getRevocationReasons(){
-      String[] returnval = null;
+    public boolean isRevoked(){
+      return revokedinfo != null && revokedinfo.isRevoked();     
+    }
+
+    public String getRevocationReason(){
+      String returnval = null;
       if(revokedinfo != null) {
-        returnval = revokedinfo.getRevocationReasons();
+        returnval = revokedinfo.getRevocationReason();
       }
       return returnval;
     }

@@ -20,7 +20,6 @@ package org.ejbca.ui.web;
 
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Date;
 
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
@@ -72,21 +71,18 @@ public class RevokedInfoView implements Serializable {
         return this.revokedcertinfo.revocationDate;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public String[] getRevocationReasons() {
-        String[] dummy = { "" };
-        ArrayList<String> reasons = new ArrayList<String>();
-        int reason = this.revokedcertinfo.revocationReason;
-
+    /** @return the text key for the revocation reason if any, null otherwise */
+    public String getRevocationReason() {
+        String ret = null;
+        final int reason = this.revokedcertinfo.revocationReason;
         if ((reason >= 0) && (reason < SecConst.HIGN_REASON_BOUNDRARY)) {
-            // Add this reason.
-            reasons.add(SecConst.reasontexts[reason]);
+            ret = SecConst.reasontexts[reason];
         }
-        return (String[]) reasons.toArray(dummy);
+        return ret;
+    }
+
+    public boolean isRevokedAndOnHold(){
+    	return this.revokedcertinfo.revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
     }
 
     public boolean isRevoked(){

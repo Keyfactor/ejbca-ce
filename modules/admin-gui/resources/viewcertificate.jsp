@@ -157,8 +157,7 @@
 		certificatedata = rabean.getCertificate(currentindex);
 
 		if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) 
-			&& ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && certificatedata.isRevoked()
-			&& "CERTIFICATEHOLD".equals(certificatedata.getRevocationReasons()[0])){
+			&& ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && certificatedata.isRevokedAndOnHold()){
 				//-- call to unrevoke method
 				try {
 					rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername());
@@ -576,11 +575,9 @@ function confirmrepublish(){
                     		+ ejbcawebbean.getText("CRL_ENTRY_REVOCATIONDATE") + " "
                     		+ ejbcawebbean.printDate(certificatedata.getRevocationDate()) + "<br/>"
                     		+ ejbcawebbean.getText("REVOCATIONREASONS") + " ");
-                    String[] reasons = certificatedata.getRevocationReasons();
-                    for(int i = 0; i < reasons.length; i++){
-                      out.write(ejbcawebbean.getText(reasons[i]));
-                      if(i+1 < reasons.length)
-                        out.write(", ");
+                    final String reason = certificatedata.getRevocationReason();
+                    if (reason != null) {
+                    	out.write(ejbcawebbean.getText(reason));
                     }
                   } else {
                     out.write(ejbcawebbean.getText("NO"));
@@ -620,7 +617,7 @@ function confirmrepublish(){
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevocation()'>
 <% 
-			  }else if ( certificatedata.isRevoked() && "CERTIFICATEHOLD".equals(certificatedata.getRevocationReasons()[0]) ){
+			  }else if ( certificatedata.isRevokedAndOnHold() ){
 				//-- Certificate can be unrevoked
 %>
 				<input type="submit" name="<%=BUTTON_UNREVOKE %>" value="<%= ejbcawebbean.getText("UNREVOKE") %>"
