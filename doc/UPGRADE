@@ -32,8 +32,8 @@ upgrade to the real release.
 From EJBCA 3.11.x to EJBCA 4.0.x
 --------------------------------
 Support for ProtectedLog that was deprecated in EJBCA 3.10.0 has been dropped. If you use this feature,
-export the logs before upgrading. If you don't have any data in these tables, the indexes and tables can
-be dropped.
+export the logs before upgrading. When the data from these tables are securely stored elsewhere or if
+you never used this feature, these tables and indexes can be dropped.
 
 Support for table protection (configured in proptecion.properties) that was deprecated in EJBCA 3.11
 has now been dropped. If you don't have any data in these tables, the indexes and tables can be dropped.
