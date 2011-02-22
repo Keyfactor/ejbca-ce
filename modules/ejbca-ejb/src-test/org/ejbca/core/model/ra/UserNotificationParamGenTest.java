@@ -28,7 +28,7 @@ public class UserNotificationParamGenTest extends TestCase {
         
         String msg = paramGen.interpolate("${USERNAME} ${user.USERNAME} ${PASSWORD} ${user.PASSWORD} ${CN} ${user.CN} ${C}" +
         						" ${approvalAdmin.CN} ${approvalAdmin.C} ${approvalAdmin.O}" +
-        						" ${user.ee.email} ${user.san.email} ${requestAdmin.ee.email} ${requestAdmin.CN} ${requestAdmin.san.email}");
+        						" ${user.EE.EMAIL} ${user.SAN.EMAIL} ${requestAdmin.EE.EMAIL} ${requestAdmin.CN} ${requestAdmin.SAN.EMAIL}");
         assertFalse("Interpolating message failed", (msg==null || msg.length()==0));
         assertEquals("foo foo foo123 foo123 foo foo SE approvaluser SE Org fooee@foo.se fooalt@foo.se adminee@foo.se Test Admin adminalt@foo.se", msg);
 		

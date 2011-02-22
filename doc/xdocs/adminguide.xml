@@ -1520,13 +1520,13 @@ Variables used with userdata:
 <li>
   ${user.E}                       = The user's email address from Subject DN
 </li>
-<li>${user.ee.email}				= Ther user's email address from the End Entity data</li>
-<li>${user.san.email}			  	= The user's email address from Subject Alternative Name, RFC822Name field</li>
+<li>${user.EE.EMAIL}				= Ther user's email address from the End Entity data</li>
+<li>${user.SAN.EMAIL}			  	= The user's email address from Subject Alternative Name, RFC822Name field</li>
 <li>${user.TIMECREATED}             = The time the user was created</li>
 <li>${user.TIMEMODIFIED}            = The time the user was modified</li>
 <li>${requestAdmin.CN}				= The common name of the requesting administrator</li>
-<li>${requestAdmin.ee.email}		= The email address of the administrator adding the end entity according to the administrator's End Entity data</li>
-<li>${requestAdmin.san.email}		= The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field</li>
+<li>${requestAdmin.EE.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's End Entity data</li>
+<li>${requestAdmin.SAN.EMAIL}		= The email address of the administrator adding the end entity according to the administrator's Subject Alternative Name, RFC822Name field</li>
 <li>${approvalAdmin.XX} variables from below can be used to get the administrator who adds an end entity.</li>
 </ul>
 </p><p>

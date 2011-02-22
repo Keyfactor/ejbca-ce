@@ -104,18 +104,16 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 	
 	protected void populateWithEmailAddresses(UserDataVO userdata, UserDataVO admin) {
 		if(userdata != null) {
-			paramPut("user.ee.email", userdata.getEmail());
-
-			DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
-			paramPut("user.san.email", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
+			paramPut("user.EE.EMAIL", userdata.getEmail());
+			final DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+			paramPut("user.SAN.EMAIL", sanfields.getField(DNFieldExtractor.RFC822NAME, 0));
 		}
 		if(admin != null) {
-			paramPut("requestAdmin.ee.email", admin.getEmail());
-			
-			DNFieldExtractor fields = new DNFieldExtractor(admin.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
-			paramPut("requestAdmin.CN", fields.getField(DNFieldExtractor.CN, 0));
-			fields = new DNFieldExtractor(admin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
-			paramPut("requestAdmin.san.email", fields.getField(DNFieldExtractor.RFC822NAME, 0));
+			paramPut("requestAdmin.EE.EMAIL", admin.getEmail());
+			final DNFieldExtractor sdnFields = new DNFieldExtractor(admin.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
+			paramPut("requestAdmin.CN", sdnFields.getField(DNFieldExtractor.CN, 0));
+			final DNFieldExtractor sanFields = new DNFieldExtractor(admin.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+			paramPut("requestAdmin.SAN.EMAIL", sanFields.getField(DNFieldExtractor.RFC822NAME, 0));
 		}
 	}
 }
