@@ -54,11 +54,11 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
  */
 public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	
-	EjbBridgeSessionLocal ejbLocalBridgeSession = null;
-	static Context initialContext = null;
-	static ReentrantLock initialContextLock = new ReentrantLock(true);
+	private static Context initialContext = null;
+	private static ReentrantLock initialContextLock = new ReentrantLock(true);
+	private static boolean useEjb31GlobalJndiName = false;
 	
-	Context getInitialContext() throws NamingException {
+	private Context getInitialContext() throws NamingException {
 		try {
 			initialContextLock.lock();
 			if (initialContext == null) {
@@ -71,15 +71,29 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	}
 
 	/**
-	 * Requires a "ejb-local-ref" definition in web.xml and ejb-jar.xml from all accessing components.
+	 * Requires a "ejb-local-ref" definition in web.xml and ejb-jar.xml from all accessing components
+	 * or an application server that support global JNDI names (introduced in EJB 3.1).
 	 * @return a reference to the bridge SSB
 	 */
-	EjbBridgeSessionLocal getEjbLocal() {
+	private EjbBridgeSessionLocal getEjbLocal() {
+		EjbBridgeSessionLocal ret = null;
 		try {
-			return (EjbBridgeSessionLocal) getInitialContext().lookup("java:comp/env/EjbBridgeSession");
+			if (!useEjb31GlobalJndiName) {
+				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:comp/env/EjbBridgeSession");
+			}
 		} catch (NamingException e) {
-			throw new RuntimeException("A ejb-local-ref declaration in ejb-jar.xml or web.xml is missing.", e);
+			// Let's try to use the EJB 3.1 syntax for a lookup. For example, JBoss 6.0.0.FINAL supports this from our CMP TCP threads, but ignores the ejb-ref from web.xml..
+			// java:global[/<app-name>]/<module-name>/<bean-name>[!<fully-qualified-interface-name>]
+			useEjb31GlobalJndiName = true;	// So let's not try what we now know is a failing method ever again..
 		}
+		try {
+			if (useEjb31GlobalJndiName) {
+				ret = (EjbBridgeSessionLocal) getInitialContext().lookup("java:global/ejbca/ejbca-ejb/EjbBridgeSessionBean!org.ejbca.core.ejb.EjbBridgeSessionLocal");
+			}
+		} catch (NamingException e) {
+			throw new RuntimeException("Cannot lookup EjbBridgeSessionLocal.", e);
+		}
+		return ret;
 	}
 
 	@Override public AdminEntitySessionLocal getAdminEntitySession() { return getEjbLocal().getAdminEntitySession(); }
