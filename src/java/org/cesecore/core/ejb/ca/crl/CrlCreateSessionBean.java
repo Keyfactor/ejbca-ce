@@ -19,9 +19,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -62,7 +65,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-    
+    @Resource
+    private SessionContext sessionContext;
     @EJB
     private LogSessionLocal logSession;
     @EJB
@@ -73,6 +77,12 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     private CrlSessionLocal crlSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    private CrlCreateSessionLocal crlCreateSession;	// Used to run methods using different transaction attributes
+
+    @PostConstruct
+    public void postConstruct() {
+    	crlCreateSession = sessionContext.getBusinessObject(CrlCreateSessionLocal.class);
+    }
 
     @Override
     public byte[] createCRL(Admin admin, CA ca, Collection<RevokedCertInfo> certs, int basecrlnumber) throws CATokenOfflineException {
@@ -165,7 +175,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                 int caid = ((Integer) iter.next()).intValue();
                 log.debug("createCRLs for caid: " + caid);
                 CA ca = caSession.getCA(admin, caid);
-                if (runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
+                if (crlCreateSession.runNewTransactionConditioned(admin, ca, addtocrloverlaptime)) {
                     createdcrls++;
                 }
             }
@@ -201,7 +211,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                 int caid = iter.next().intValue();
                 log.debug("createDeltaCRLs for caid: " + caid);
                 CA ca = caSession.getCA(admin, caid);
-                if (runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
+                if (crlCreateSession.runDeltaCRLnewTransactionConditioned(admin, ca, crloverlaptime)) {
                     createddeltacrls++;
                 }
             }
