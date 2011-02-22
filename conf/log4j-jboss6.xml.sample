@@ -13,7 +13,6 @@
 
 	<appender name="FILE" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="../log/ejbca.log" />
-		<param name="Threshold" value="DEBUG"/>
         <param name="Append" value="true" />
         <param name="MaxFileSize" value="10240KB" />
         <!--
