@@ -150,19 +150,25 @@
     	<property name="reports.dir" location="${reports.base.dir}/dbschema"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
-		<junit printsummary="yes" haltonfailure="no">
+		<junit printsummary="yes" haltonfailure="no" fork="false" failureproperty="databaseschemarest.failed">
 			<classpath>
         		<path refid="test.classpath"/>
 				<pathelement path="${clover.jar}"/>
+				<pathelement location="${build-test.dir}"/>
 			</classpath>
 			<formatter type="xml" />
+			<test name="org.ejbca.core.ejb.DatabaseSchemaTest" todir="${reports.dir}"/>
+			<!-- batchtest seems to be unable to accept memory arguments..
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build-test.dir}">
 					<include name="org/ejbca/core/ejb/DatabaseSchemaTest.class" />
 				</fileset>
 			</batchtest>
+			-->
 		</junit>
 		<antcall target="createreport"/>
+    	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
+    	<echounlesstrue unless-true="databaseschemarest.ok" message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
 
     <target name="compile-test" depends="with.clover, ejbca-util, build">
