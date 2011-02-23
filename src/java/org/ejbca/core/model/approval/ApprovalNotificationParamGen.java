@@ -13,7 +13,6 @@
 
 package org.ejbca.core.model.approval;
 
-import java.text.DateFormat;
 import java.util.Date;
 
 import org.ejbca.util.NotificationParamGen;
@@ -57,7 +56,7 @@ public class ApprovalNotificationParamGen extends NotificationParamGen {
 			Integer numberOfApprovalLeft, String approvalRequestURL, String approveComment, String requestAdminUsername, String requestAdminDN,
 			String approvalAdminUsername, String approvalAdminDN) {
 		if (approvalRequestDate != null) {
-			String requestDate = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(approvalRequestDate);
+			String requestDate = fastDateFormat(approvalRequestDate);
 			paramPut("approvalRequest.DATE", requestDate);	      
 		} else {
 			paramPut("approvalRequest.DATE", "");	

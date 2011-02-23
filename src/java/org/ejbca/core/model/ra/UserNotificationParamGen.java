@@ -14,7 +14,6 @@
 package org.ejbca.core.model.ra;
 
 import java.security.cert.Certificate;
-import java.text.DateFormat;
 
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
 import org.ejbca.util.CertTools;
@@ -61,8 +60,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 	protected void populateWithExpiringCert(Certificate expiringCert) {
 		if(expiringCert != null){
 			paramPut("expiringCert.CERTSERIAL",CertTools.getSerialNumberAsString(expiringCert));
-			String dateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(CertTools.getNotAfter(expiringCert));
-			paramPut("expiringCert.EXPIREDATE",dateString);
+			paramPut("expiringCert.EXPIREDATE", fastDateFormat(CertTools.getNotAfter(expiringCert)));
 			paramPut("expiringCert.CERTSUBJECTDN",CertTools.getSubjectDN(expiringCert));
 			paramPut("expiringCert.CERTISSUERDN",CertTools.getIssuerDN(expiringCert));          
 		}
@@ -90,12 +88,12 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 
 			String time = "(time not available)";
 			if (userData.getTimeCreated() != null) {
-				time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(userData.getTimeCreated());
+				time = fastDateFormat(userData.getTimeCreated());
 			}
 			paramPut("user.TIMECREATED", time);
 			time = "(time not available)";
 			if (userData.getTimeModified() != null) {
-				time = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(userData.getTimeModified());
+				time = fastDateFormat(userData.getTimeModified());
 			}
 			paramPut("user.TIMEMODIFIED", time);
 			
