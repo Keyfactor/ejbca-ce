@@ -13,11 +13,10 @@
 package org.ejbca.core.model.ca.caadmin;
 
 import java.security.cert.Certificate;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Locale;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
@@ -35,6 +34,7 @@ public class CertificateValidity {
     private static final Logger log = Logger.getLogger(CertificateValidity.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
+	private static final String[] datePatterns = {"yyyy-MM-dd HH:mm"};
 
     private Date lastDate;
     private Date firstDate;
@@ -73,17 +73,17 @@ public class CertificateValidity {
         // Extract requested start and endtime from end endtity profile / user data
         ExtendedInformation ei = subject.getExtendedinformation();
         if ( ei != null ) {
-            String eiStartTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-	        String eiEndTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+            final String eiStartTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+            final String eiEndTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
         	if ( eiStartTime != null ) {
         		if ( eiStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-        			String[] startTimeArray = eiStartTime.split(":");
+        			final String[] startTimeArray = eiStartTime.split(":");
         			long relative = (Long.parseLong(startTimeArray[0])*24*60 + Long.parseLong(startTimeArray[1])*60 +
         					Long.parseLong(startTimeArray[2])) * 60 * 1000;
         			startTimeDate = new Date(now.getTime() + relative);
         		} else {
         			try {
-        				startTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiStartTime);
+        				startTimeDate = DateUtils.parseDate(eiStartTime, datePatterns);
         			} catch (ParseException e) {
         				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiStartTime));
         			}
@@ -94,13 +94,13 @@ public class CertificateValidity {
 	        }
 	        if ( eiEndTime != null ) {
         		if ( eiEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-        			String[] endTimeArray = eiEndTime.split(":");
+        			final String[] endTimeArray = eiEndTime.split(":");
         			long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
         					Long.parseLong(endTimeArray[2])) * 60 * 1000;
         			endTimeDate = new Date(now.getTime() + relative);
         		} else {
         			try {
-        				endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiEndTime);
+        				endTimeDate = DateUtils.parseDate(eiEndTime, datePatterns);
         			} catch (ParseException e) {
         				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiEndTime));
         			}
