@@ -25,6 +25,7 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.bouncycastle-provonly.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
