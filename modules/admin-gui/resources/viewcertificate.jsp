@@ -573,7 +573,7 @@ function confirmrepublish(){
          <td ><%  if(certificatedata.isRevoked()){
                     out.write(ejbcawebbean.getText("YES") + "<br/>"
                     		+ ejbcawebbean.getText("CRL_ENTRY_REVOCATIONDATE") + " "
-                    		+ ejbcawebbean.printDate(certificatedata.getRevocationDate()) + "<br/>"
+                    		+ ejbcawebbean.printDateTime(certificatedata.getRevocationDate()) + "<br/>"
                     		+ ejbcawebbean.getText("REVOCATIONREASONS") + " ");
                     final String reason = certificatedata.getRevocationReason();
                     if (reason != null) {
