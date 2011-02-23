@@ -12,11 +12,12 @@
  *************************************************************************/
 package org.ejbca.util;
 
-import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.time.FastDateFormat;
 
 /**
  * Base class generating parameter data for email notifications. Derived classes can add additional parameters.
@@ -39,8 +40,7 @@ public class NotificationParamGen {
   
   protected NotificationParamGen() {
 	  paramPut("NL", System.getProperty("line.separator"));
-      String date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
-      paramPut("DATE", date);
+      paramPut("DATE", fastDateFormat(new Date()));
   }
 
   /**
@@ -114,4 +114,7 @@ public class NotificationParamGen {
       return sb.toString();
   }
   
+  protected String fastDateFormat(Date date) {
+	  return FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(date);
+  }
 }
