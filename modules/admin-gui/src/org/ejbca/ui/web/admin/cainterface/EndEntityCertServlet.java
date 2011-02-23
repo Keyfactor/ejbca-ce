@@ -31,7 +31,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
-import org.ejbca.util.HTMLTools;
 
 
 /**

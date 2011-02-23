@@ -14,8 +14,6 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.util.Collection;
 
-import javax.ejb.EJBException;
-
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -40,7 +38,7 @@ public interface HardTokenBatchJobSession {
      * @param admin the administrator performing the actions
      *
      * @return A Collection of users to generate or NULL if there are no users i queue.
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public Collection<UserDataVO> getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException;
 
@@ -50,7 +48,7 @@ public interface HardTokenBatchJobSession {
      * @param admin the administrator performing the actions
      * @param index index in queue of user to retrieve. (First position is 1 according to old JDBC implementation.)
      * @return The next token to generate or NULL if the given user doesn't exist in queue.
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException;
 
@@ -60,7 +58,7 @@ public interface HardTokenBatchJobSession {
      * @param admin the administrator performing the actions
      *
      * @return the number of users to generate.
-     * @throws EJBException if a communication or other error occurs.
+     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
     public int getNumberOfHardTokensToGenerate(org.ejbca.core.model.log.Admin admin, java.lang.String alias);
 
