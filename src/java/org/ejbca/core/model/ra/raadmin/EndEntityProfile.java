@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.ra.raadmin;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,7 +63,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 12;
+    public static final float LATEST_VERSION = 13;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -1510,6 +1512,43 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             	setModifyable(MAXFAILEDLOGINS, 0, true);
             	setValue(MAXFAILEDLOGINS, 0, Integer.toString(ExtendedInformation.DEFAULT_MAXLOGINATTEMPTS));
             }
+            /* In EJBCA 4.0.0 we changed the date format to ISO 8601.
+             * In the Admin GUI the example was:
+             *     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale())
+             * but the only absolute format that could have worked is the same enforced by the
+             * doesUserFullfillEndEntityProfile check and this is what need to upgrade from:
+             *     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
+             */
+        	if (getVersion() < 13) {
+        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+        		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
+        		try {
+        			final String oldStartTime = getValue(STARTTIME, 0);
+        			if ( oldStartTime != null && oldStartTime.length()>0 && !oldStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        				// We use an absolute time format, so we need to upgrade
+            			final String newStartTime = newDateFormat.format(oldDateFormat.parse(oldStartTime));
+    					setValue(STARTTIME, 0, newStartTime);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Upgraded " + STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
+    					}
+        			}
+				} catch (ParseException e) {
+					log.error("Unable to upgrade " + STARTTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
+				}
+        		try {
+        			final String oldEndTime = getValue(ENDTIME, 0);
+        			if ( oldEndTime != null && oldEndTime.length()>0 && !oldEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        				// We use an absolute time format, so we need to upgrade
+            			final String newEndTime = newDateFormat.format(oldDateFormat.parse(oldEndTime));
+    					setValue(ENDTIME, 0, newEndTime);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
+    					}
+        			}
+				} catch (ParseException e) {
+					log.error("Unable to upgrade " + ENDTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
+				}
+        	}
 
             data.put(VERSION, new Float(LATEST_VERSION));
         }

@@ -14,9 +14,13 @@
 package org.ejbca.core.model.ra;
 
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.model.InternalResources;
@@ -46,7 +50,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      */
     private static final long serialVersionUID = 3981761824188420320L;
     
-    private static final float LATEST_VERSION = 2;
+    private static final float LATEST_VERSION = 3;
 
     /** Different types of implementations of extended information, can be used to have different implementing classes of extended information */
     static final int TYPE_BASIC = 0;
@@ -264,7 +268,6 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     }
 
     /** Implementation of UpgradableDataHashMap function upgrade. */
-
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
@@ -280,7 +283,37 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
             if(data.get(REMAININGLOGINATTEMPTS) == null) {
             	setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
             }
-
+            // In EJBCA 4.0.0 we changed the date format to ISO 8601
+        	if (getVersion() < 3) {
+        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+        		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
+        		try {
+        			final String oldCustomStartTime = getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+        			if ( oldCustomStartTime != null && oldCustomStartTime.length()>0 && !oldCustomStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        				// We use an absolute time format, so we need to upgrade
+            			final String newCustomStartTime = newDateFormat.format(oldDateFormat.parse(oldCustomStartTime));
+    					setCustomData(ExtendedInformation.CUSTOM_STARTTIME, newCustomStartTime);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Upgraded " + ExtendedInformation.CUSTOM_STARTTIME + " from \"" + oldCustomStartTime + "\" to \"" + newCustomStartTime + "\" in ExtendedInformation.");
+    					}
+        			}
+				} catch (ParseException e) {
+					log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_STARTTIME + " in extended user information.", e);
+				}
+        		try {
+        			final String oldCustomEndTime = getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+        			if ( oldCustomEndTime != null && oldCustomEndTime.length()>0 && !oldCustomEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        				// We use an absolute time format, so we need to upgrade
+            			final String newCustomEndTime = newDateFormat.format(oldDateFormat.parse(oldCustomEndTime));
+    					setCustomData(ExtendedInformation.CUSTOM_ENDTIME, newCustomEndTime);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Upgraded " + ExtendedInformation.CUSTOM_ENDTIME + " from \"" + oldCustomEndTime + "\" to \"" + newCustomEndTime + "\" in ExtendedInformation.");
+    					}
+        			}
+				} catch (ParseException e) {
+					log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_ENDTIME + " in extended user information.", e);
+				}
+        	}
     		data.put(VERSION, new Float(LATEST_VERSION));
     	}
     }
