@@ -38,7 +38,7 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
             }
             String username = args[1];
             String password = args[2];
-            getLogger().info("Setting clear text password " + password + " for user " + username);
+            getLogger().info("Setting clear text password for user " + username);
 
             try {
                 ejb.getUserAdminSession().setClearTextPassword(getAdmin(), username, password);
