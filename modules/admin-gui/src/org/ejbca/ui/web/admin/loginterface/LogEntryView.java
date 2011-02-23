@@ -13,11 +13,12 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
-import java.text.DateFormat;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -30,7 +31,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * @author  TomSelleck
  * @version $Id$
  */
-public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
+public class LogEntryView implements Serializable, Cloneable, Comparable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -92,10 +93,9 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
       return logentrydata;   
     }
        
-    /* Sets the values according to the values in the LogEntry object.*/ 
+    /** Sets the values according to the values in the LogEntry object.*/ 
     public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, Map<Integer,String> caidtonamemap) {
-        
-       logentrydata[TIME] = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(logentry.getTime());
+       logentrydata[TIME] = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(logentry.getTime());
        this.time = logentry.getTime();
       
        logentrydata[ADMINTYPE] = Integer.toString(logentry.getAdminType());

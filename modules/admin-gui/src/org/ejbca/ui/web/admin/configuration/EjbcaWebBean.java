@@ -586,10 +586,6 @@ public class EjbcaWebBean implements Serializable {
             //log.debug("String after javascriptEscape: "+str);
         }
         return str;
-      }
-
-    public String printDate(Date date){
-     return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
     }
 
     public String printDateTime(Date date){
@@ -702,7 +698,7 @@ public class EjbcaWebBean implements Serializable {
      * @return the locale of the Admin GUI
      */
     public Locale getLocale() {
-    	Locale[] locales = DateFormat.getAvailableLocales();
+    	Locale[] locales = DateFormat.getAvailableLocales();	// TODO: Why not use Locale.getAvailableLocales()? Difference?
     	Locale returnValue = null;
         String prefered = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()].toLowerCase();
         String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()].toLowerCase();
