@@ -101,7 +101,7 @@ appserver.home         : ${appserver.home}
     </target>
 
     <target name="ejbca:initCA" >
-       <echo message="Initializing CA with '${ca.name}' '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn '${superadmin.cn}'..." />
+       <echo message="Initializing CA with '${ca.name}' '${ca.dn}' ${ca.tokentype} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn '${superadmin.cn}'..." />
         <ejbca:cli arg='ca init "${ca.name}" "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties} -superadmincn "${superadmin.cn}"'/>
      </target>
 
