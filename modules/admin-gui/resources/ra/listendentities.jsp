@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.UserView, org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
                  org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.UserDataConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.util.dn.DNFieldExtractor,
-                 javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*, java.text.DateFormat" %>
+                 javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />

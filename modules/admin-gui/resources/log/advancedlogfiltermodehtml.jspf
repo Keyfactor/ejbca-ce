@@ -863,16 +863,10 @@ function checkfields(){
          <% } %> 
       </select>&nbsp;
       <select name='<%= SELECT_TIME_ROW4  %>'>  
-          <% Calendar time = Calendar.getInstance();
-             DateFormat dateformat = DateFormat.getTimeInstance(DateFormat.SHORT);%>
-
-         <% for(int i=0; i <  24; i++) { %> 
-         <option <% if(oldtimerow4 != null)
-                      if(oldtimerow4.equals(Integer.toString(i))) 
-                        out.print(" selected ");
-                      %> value='<%= i %>'> 
-          <% time.set(0,0,0,i,0); %>
-             <c:out value="<%= dateformat.format(time.getTime()) %>" />
+         <% for (int i=0; i<24; i++) {
+              final String thisHour = Integer.toString(i/10) + Integer.toString(i%10); %> 
+         <option <% if (thisHour.equals(oldtimerow4)) { out.print(" selected "); } %> value='<%= thisHour %>'> 
+             <c:out value="<%= thisHour %>" />
          </option> 
          <% } %> 
       </select>
@@ -934,22 +928,14 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_TIME_ROW5  %>'>  
-          <% time = Calendar.getInstance();
-             dateformat = DateFormat.getTimeInstance(DateFormat.SHORT);%>
-         <%  tempval =0;
-             if(oldtimerow5 != null){
-               tempval = Integer.parseInt(oldtimerow5);  
-             }else{ 
-                tempval = hour;
-             } 
-
-           for(int i=0; i <  24; i++) { %> 
-         <option  <%   if(tempval == i) 
-                        out.print(" selected ");
-                      %> value='<%= i %>'> 
-          <% time.set(0,0,0,i,0); %>
-             <c:out value="<%= dateformat.format(time.getTime()) %>" />
+      <select name='<%= SELECT_TIME_ROW5 %>'>  
+         <% if (oldtimerow5 == null) {
+           	  oldtimerow5 = Integer.valueOf(hour).toString();	// Default to using the current hour
+            }
+            for (int i=0; i<24; i++) {
+              final String thisHour = Integer.toString(i/10) + Integer.toString(i%10); %> 
+         <option <% if (thisHour.equals(oldtimerow5)) { out.print(" selected "); } %> value='<%= thisHour %>'> 
+             <c:out value="<%= thisHour %>" />
          </option> 
          <% } %> 
       </select>
