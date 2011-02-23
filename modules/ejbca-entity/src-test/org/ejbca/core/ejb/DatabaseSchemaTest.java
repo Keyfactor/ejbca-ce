@@ -77,12 +77,29 @@ public class DatabaseSchemaTest extends TestCase {
 	private static final Integer BOGUS_INTEGER = Integer.valueOf(BOGUS_INT);
 	private static EntityManagerFactory entityManagerFactory;
 	private static EntityManager entityManager;
+	
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+		LOG.trace(">setup");
+		if (entityManagerFactory == null) {
+			entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
+		}
+		entityManager = entityManagerFactory.createEntityManager();
+		LOG.trace("<setup");
+	}
+	
+	@Override
+	public void tearDown() throws Exception {
+		super.tearDown();
+		LOG.trace(">tearDown");
+		entityManager.close();
+		LOG.trace("<tearDown");
+	}
 
 	public void test000Setup() throws Exception {
 		LOG.trace(">test000Setup");
 		logMemStats();
-		entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
-		entityManager = entityManagerFactory.createEntityManager();
 		LOG.debug("Allocating memory..");
 		VARCHAR_80B = getClob(80);
 		VARCHAR_250B = getClob(250);
@@ -518,7 +535,6 @@ public class DatabaseSchemaTest extends TestCase {
 	
 	public void testZZZCleanUp() throws Exception {
 		LOG.trace(">testZZZCleanUp");
-		entityManager.close();
 		entityManagerFactory.close();
 		logMemStats();
 		LOG.trace("<testZZZCleanUp");
