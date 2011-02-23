@@ -17,7 +17,6 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
@@ -222,7 +221,7 @@ public interface UserAdminSession {
      *             with ErrorCode "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS" if the
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
-     * @throws EJBException if the user does not exist
+     * @throws javax.ejb.EJBException if the user does not exist
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromWebService)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,

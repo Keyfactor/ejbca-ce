@@ -18,7 +18,6 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;

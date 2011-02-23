@@ -15,8 +15,6 @@ package org.cesecore.core.ejb.ca.crl;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
-import javax.ejb.EJBException;
-
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
@@ -51,7 +49,7 @@ public interface CrlCreateSession {
      * 
      * @param admin administrator performing the task
      * @return the number of crls created.
-     * @throws EJBException if communication or system error occurs
+     * @throws javax.ejb.EJBException if communication or system error occurs
      */
     public int createCRLs(Admin admin);
     
@@ -75,7 +73,7 @@ public interface CrlCreateSession {
      *            used CRL overlap time will be (crloverlaptime +
      *            addtocrloverlaptime)
      * @return the number of CRLs created.
-     * @throws EJBException if communication or system error occurs
+     * @throws javax.ejb.EJBException if communication or system error occurs
      */
     public int createCRLs(Admin admin, Collection<Integer> caids, long addtocrloverlaptime);
     
@@ -89,7 +87,7 @@ public interface CrlCreateSession {
      * 
      * @param admin administrator performing the task
      * @return the number of delta CRLs created.
-     * @throws EJBException if communication or system error occurs
+     * @throws javax.ejb.EJBException if communication or system error occurs
      */
     public int createDeltaCRLs(Admin admin);
 
@@ -104,7 +102,7 @@ public interface CrlCreateSession {
      *            A new delta CRL is created if the current one expires within
      *            the crloverlaptime given in milliseconds
      * @return the number of delta CRLs created.
-     * @throws EJBException if communication or system error occurs
+     * @throws javax.ejb.EJBException if communication or system error occurs
      */
     public int createDeltaCRLs(Admin admin, Collection<Integer> caids, long crloverlaptime);
     
