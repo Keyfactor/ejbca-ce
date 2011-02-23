@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +26,7 @@ import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -71,19 +71,21 @@ public class ApprovalDataVOView implements Serializable {
     public ApprovalDataVOView() { }
 
     public String getRequestDate() {
-        final DateFormat dateformat = DateFormat.getDateTimeInstance();
-        if (!initialized) {
-            return dateformat.format(new Date());
+        if (initialized) {
+            return fastDateFormat(data.getRequestDate());
         }
-        return dateformat.format(data.getRequestDate());
+        return fastDateFormat(new Date());
     }
 
     public String getExpireDate() {
-        final DateFormat dateformat = DateFormat.getDateTimeInstance();
-        if (!initialized) {
-            return dateformat.format(new Date());
+        if (initialized) {
+            return fastDateFormat(data.getExpireDate());
         }
-        return dateformat.format(data.getExpireDate());
+        return fastDateFormat(new Date());
+    }
+    
+    private String fastDateFormat(final Date date) {
+    	return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(date);
     }
 
     public String getCaName() {

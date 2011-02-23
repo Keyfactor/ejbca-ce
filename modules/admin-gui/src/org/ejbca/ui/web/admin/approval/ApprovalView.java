@@ -15,10 +15,10 @@ package org.ejbca.ui.web.admin.approval;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
-import java.text.DateFormat;
 
 import javax.ejb.EJBException;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -37,15 +37,13 @@ public class ApprovalView {
 	public ApprovalView(Approval approval){
 		this.approval=approval; 
 	}
-	
 
 	public Approval getApproval() {
 		return approval;
 	}
 	
 	public String getApprovalDate(){
-		DateFormat dateformat = DateFormat.getDateTimeInstance();	
-		return dateformat.format(approval.getApprovalDate());
+		return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(approval.getApprovalDate());
 	}
 	
 	public String getApprovalAdmin(){
