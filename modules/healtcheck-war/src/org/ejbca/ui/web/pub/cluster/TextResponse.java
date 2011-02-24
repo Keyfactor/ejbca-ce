@@ -20,6 +20,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Class that responds with a text string of status is OK else it responds the error message (optional).
@@ -40,15 +41,17 @@ public class TextResponse implements IHealthResponse {
 
     private String okMessage = null;
     /* Parameter saying if a errorcode 500 should be sent in case of error. */
-    private final boolean sendServerError = true;
+    private boolean sendServerError = true;
     private String customErrorMessage = null;
 
     public void init(ServletConfig config) {
-        okMessage = config.getInitParameter("OKMessage");
+        okMessage = EjbcaConfiguration.getOkMessage();
         if (okMessage == null) {
             okMessage = OK_MESSAGE;
         }
-        customErrorMessage = config.getInitParameter("CustomErrorMessage");
+        sendServerError = EjbcaConfiguration.getSendServerError();
+        
+        customErrorMessage = EjbcaConfiguration.getCustomErrorMessage();
     }
 
     public void respond(String status, HttpServletResponse resp) {
