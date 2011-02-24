@@ -13,12 +13,11 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletResponse;
 
 
 /**
- * Inteface used to generate apporiate responses to different LoadBalancers HTTP requests.
+ * Interface used to generate appropriate responses to different LoadBalancers HTTP requests.
  * 
  * @author Philip Vendil
  * @version $Id$
@@ -26,18 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 public interface IHealthResponse {
 	
 	/**
-	 * Method used to initialize the health checker responder with parameters set
-	 * in the web.xml file.
-	 * 
-	 *
-	 */
-	public void init(ServletConfig config);
-	
-	/**
 	 * Method in charge of creating a response to the loadbalancer that this node in the
 	 * cluster shouldn't be used.
 	 * 
-	 * @param status, if status is null then everything is OK, othervise failure with a errormessage
+	 * @param status, if status is null then everything is OK, otherwise failure with an error message
 	 * that might be used in the reply.
 	 * @param resp the HttpServletResponse.
 	 */
