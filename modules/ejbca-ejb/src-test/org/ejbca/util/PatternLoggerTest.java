@@ -42,8 +42,7 @@ public class PatternLoggerTest extends TestCase {
 	/** Helper method that replaces all ${VARx} where x={0..10} with "contentx" and asserts that the result is the expected using regexp. */
 	private void testPatternLoggerInternal(String pattern, String dateFormat, String timeZone, String expected) throws Exception {
 		log.trace(">testPatternLoggerInternal");
-		final String logOrder = "${VAR1};\"${VAR2}\";${" + IPatternLogger.LOG_TIME + "};${" + IPatternLogger.LOG_ID + "};${VAR3}";
-		final IPatternLogger patternLogger = new PatternLogger(Pattern.compile("\\$\\{(.+?)\\}").matcher(logOrder), logOrder, log, dateFormat, timeZone);
+		final IPatternLogger patternLogger = new PatternLogger(Pattern.compile("\\$\\{(.+?)\\}").matcher(pattern), pattern, log, dateFormat, timeZone);
 		for (int i=0;i<10;i++) {
 			patternLogger.paramPut("VAR"+i, "content"+i);
 		}
