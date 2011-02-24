@@ -15,8 +15,6 @@ package org.ejbca.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,23 +22,24 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 
 /**
  * This class can be extended to create highly configurable log classes.
- * Values that are to be logged are stored in a Hashmap and the output is configured using a Java.util.regex.Matcher and a sortString.
+ * Values that are to be logged are stored in a HashMap and the output is configured using a Java.util.regex.Matcher and a sortString.
  * The extending classes also need to supply a Logger and a String specifying how to log Dates.
  * 
  * Use paramPut(String key, String value) to add values,
- * Use writeln() to logg all the stored values and then use flush() to store them to file.
+ * Use writeln() to log all the stored values and then use flush() to store them to file.
  * 
  * @author thamwickenberg
  * @version $Id$
  */
 public class PatternLogger implements IPatternLogger {
 
-	final private Map valuepairs = new HashMap();
+	final private Map<String,String> valuepairs = new HashMap<String,String>();
     final private StringWriter sw = new StringWriter();
     final private PrintWriter pw = new PrintWriter(this.sw);
 	final private Matcher m;
@@ -65,9 +64,11 @@ public class PatternLogger implements IPatternLogger {
 		this.logDateFormat = logDateFormat;
 		this.timeZone =timeZone;
         this.startTime = new Date();
-        final DateFormat dateformat = new SimpleDateFormat(this.logDateFormat); 
-        if (this.timeZone != null) {
-            dateformat.setTimeZone(TimeZone.getTimeZone(this.timeZone));
+        final FastDateFormat dateformat;
+        if (this.timeZone == null) {
+        	dateformat = FastDateFormat.getInstance(this.logDateFormat);
+        } else {
+        	dateformat = FastDateFormat.getInstance(this.logDateFormat, TimeZone.getTimeZone(this.timeZone));
         }
         paramPut(LOG_TIME, dateformat.format(new Date()));
         this.paramPut(REPLY_TIME,REPLY_TIME);
@@ -84,7 +85,7 @@ public class PatternLogger implements IPatternLogger {
 		while (this.m.find()) {
 			// when the pattern is ${identifier}, group 0 is 'identifier'
 			final String key = this.m.group(1);
-			final String value = (String)this.valuepairs.get(key);
+			final String value = this.valuepairs.get(key);
 
 			// if the pattern does exists, replace it by its value
 			// otherwise keep the pattern ( it is group(0) )
