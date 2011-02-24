@@ -18,6 +18,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -25,6 +27,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -38,6 +41,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
+import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
@@ -315,12 +320,42 @@ public class EjbcaWSHelper {
 		boolean useEI = false;
 
 		if(userdata.getStartTime() != null) {
-		    ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, userdata.getStartTime());
-		    useEI = true;
+			String customStartTime = userdata.getStartTime();
+			try {
+				if ( customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") && !customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")) {
+					// We use the old absolute time format, so we need to upgrade and log deprecation info
+					final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+					final String newCustomStartTime = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(oldDateFormat.parse(customStartTime));
+					log.info("WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm should be used for absolute time and any fetched UserDataVOWS will use this format.");
+					if (log.isDebugEnabled()) {
+						log.debug(" Changed startTime \"" + customStartTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+					}
+					customStartTime = newCustomStartTime;
+				}
+				ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, customStartTime);
+				useEI = true;
+			} catch (ParseException e) {
+				log.info("WS client supplied invalid startDate in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+			}
 		}
         if(userdata.getEndTime() != null) {
-            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, userdata.getEndTime());
-            useEI = true;
+			String customEndTime = userdata.getEndTime();
+			try {
+				if ( customEndTime.length()>0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") && !customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")) {
+					// We use the old absolute time format, so we need to upgrade and log deprecation info
+					final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+					final String newCustomStartTime = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(oldDateFormat.parse(customEndTime));
+					log.info("WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm should be used for absolute time and any fetched UserDataVOWS will use this format.");
+					if (log.isDebugEnabled()) {
+						log.debug(" Changed endTime \"" + customEndTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+					}
+					customEndTime = newCustomStartTime;
+				}
+	            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, customEndTime);
+	            useEI = true;
+			} catch (ParseException e) {
+				log.info("WS client supplied invalid startDate in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+			}
         }
         if ( userdata.getCertificateSerialNumber()!=null) {
             ei.setCertificateSerialNumber(userdata.getCertificateSerialNumber());

@@ -18,17 +18,23 @@ import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.namespace.QName;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -42,12 +48,14 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
@@ -86,6 +94,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -458,6 +467,46 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace("<test35CleanUpCACertRequest()");
     }
 
+    /** In EJBCA 4.0.0 we changed the date format to ISO 8601. This verifies the that we still accept old requests, but returns UserDataVOWS objects using the new DateFormat */
+    public void test36EjbcaWsHelperTimeFormatConversion() throws CADoesntExistsException, ClassCastException, EjbcaException {
+    	log.trace(">test36EjbcaWsHelperTimeFormatConversion()");
+    	final EjbcaWSHelper ejbcaWsHelper = new EjbcaWSHelper(null, null, caAdminSessionRemote, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSessionRemote, userAdminSession);
+    	final Date now = new Date(); 
+    	final String oldTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(now);
+    	final String newTimeFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(now);
+    	final String relativeTimeFormat = "0123:12:31";
+    	log.debug("oldTimeFormat=" + oldTimeFormat);
+    	log.debug("newTimeFormat=" + newTimeFormat);
+    	// Convert from UserDataVOWS with US Locale DateFormat to UserDataVO
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
+    	userDataVoWs.setStartTime(oldTimeFormat);
+    	userDataVoWs.setEndTime(oldTimeFormat);
+    	final UserDataVO userDataVo1 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormat, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+    	assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormat, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+    	// Convert from UserDataVOWS with standard DateFormat to UserDataVO
+    	userDataVoWs.setStartTime(newTimeFormat);
+    	userDataVoWs.setEndTime(newTimeFormat);
+    	final UserDataVO userDataVo2 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormat, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormat, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+    	// Convert from UserDataVOWS with relative date format to UserDataVO
+    	userDataVoWs.setStartTime(relativeTimeFormat);
+    	userDataVoWs.setEndTime(relativeTimeFormat);
+    	final UserDataVO userDataVo3 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
+    	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+    	// Convert from UserDataVO with standard DateFormat to UserDataVOWS
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = ejbcaWsHelper.convertUserDataVO(intAdmin, userDataVo1);
+    	assertEquals("CUSTOM_STARTTIME in new format was not correctly handled (VO to VOWS).", newTimeFormat, userDataVoWs1.getStartTime());
+    	assertEquals("CUSTOM_ENDTIME in new format was not correctly handled (VO to VOWS).", newTimeFormat, userDataVoWs1.getEndTime());
+    	// Convert from UserDataVO with relative date format to UserDataVOWS
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = ejbcaWsHelper.convertUserDataVO(intAdmin, userDataVo3);
+    	assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
+    	assertEquals("CUSTOM_ENDTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getEndTime());
+        log.trace("<test36EjbcaWsHelperTimeFormatConversion()");
+    }
+    
     /**
      * Simulate a simple SQL injection by sending the illegal char "'".
      * 
