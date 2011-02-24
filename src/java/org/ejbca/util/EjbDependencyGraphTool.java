@@ -69,7 +69,7 @@ public class EjbDependencyGraphTool {
 			}
 		}
 		log("Loading potentially interesting classes..");
-		final ClassLoader loader = new URLClassLoader(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());
+		final ClassLoader loader = new URLClassLoader(jarUrls.toArray(new URL[0]), this.getClass().getClassLoader());	// NOPMD this is a stand-alone tools, not a part of a JEE application
 		List<BeanInfo> ejbs = new ArrayList<BeanInfo>();
 		for (String className : interestingClasses) {
 			Class<?> c = loader.loadClass(className);
