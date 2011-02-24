@@ -63,8 +63,6 @@ public abstract class AbstractHealthServlet extends HttpServlet {
         }
         initializeServlet();
         getHealthCheck().init();
-        getHealthResponse().init(config);
-
     }
 
     public abstract IHealthCheck getHealthCheck();
@@ -99,8 +97,7 @@ public abstract class AbstractHealthServlet extends HttpServlet {
                 remoteIP = "unknown";
             }
             try {
-                response
-                        .sendError(HttpServletResponse.SC_UNAUTHORIZED, "ERROR : Healthcheck request recieved from an non authorized IP: " + remoteIP);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "ERROR : Healthcheck request recieved from an non authorized IP: " + remoteIP);
             } catch (IOException e) {
                 log.error("Problems generating unauthorized http response.", e);
             }
@@ -131,8 +128,6 @@ public abstract class AbstractHealthServlet extends HttpServlet {
 			log.trace("<doPost()");
 		}
     }
-
-    // doPost
 
     /**
      * Handles HTTP GET

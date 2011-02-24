@@ -221,7 +221,7 @@ public final class EjbcaConfiguration {
      * @return true if an error code 500 should be sent in case of error.
      */
     public static boolean getSendServerError() {
-     return ConfigurationHolder.getExpandedString("healthcheck.sendservererror", "true").equals("true");
+     return TRUE.equalsIgnoreCase(ConfigurationHolder.getExpandedString("healthcheck.sendservererror", TRUE));
     }
     
     /**
