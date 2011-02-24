@@ -39,7 +39,7 @@ public class UpgradeableDataHashMapTest extends TestCase {
 	}
 	
 	/** Separate thread for test that might hang. */
-	class DecoderThread implements Runnable {
+	class DecoderThread implements Runnable {	// NOPMD this is a stand-alone test, not a part of a JEE application
 		final String decodeXML;
 
 		DecoderThread(String decodeXML) {
@@ -47,7 +47,7 @@ public class UpgradeableDataHashMapTest extends TestCase {
 		}
 		
 		protected boolean execute() {
-			Thread t = new Thread(this);
+			Thread t = new Thread(this);	// NOPMD this is a stand-alone test, not a part of a JEE application
 			t.start();
 			try {
 				t.join(4000);	//Wait 5 seconds for thread to complete

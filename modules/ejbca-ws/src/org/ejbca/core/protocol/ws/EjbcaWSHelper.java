@@ -41,7 +41,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -561,7 +560,7 @@ public class EjbcaWSHelper {
 	 * Method that converts profilenames etc to corresponding Id's
 	 * @param admin
 	 * @param usermatch a usermatch containing names of profiles
-	 * @return a query containg id's of profiles.
+	 * @return a query containing id's of profiles.
 	 * @throws NumberFormatException
 	 */
 	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException {
@@ -591,9 +590,8 @@ public class EjbcaWSHelper {
 	}
 	
 	/**
-	 * Help metod returning a subset of certificates containing only valid certificates
-	 * expiredate and revokation status is checked.
-	 * @throws CreateException 
+	 * Help method returning a subset of certificates containing only valid certificates
+	 * expiredate and revocation status is checked.
 	 * @throws ClassCastException 
 	 */
 	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) {
