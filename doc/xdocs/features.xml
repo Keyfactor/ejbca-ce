@@ -19,7 +19,7 @@
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
 <li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-2.</li>
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by EU EAC ePassports).</li> 
-<li>Standalone or integrated in any J2EE application.</li>
+<li>Standalone or integrated in any JEE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
 <li>Administration GUI available in several languages - Chinese, English, French, German, Italian, Portuguese, Spanish and Swedish.</li>
@@ -60,15 +60,15 @@
 <li>Possibility for autoenrollment (albeit not using windows standard autoenroll).</li>
 <li>Component- and plug-in based architecture  for publishing certificates and CRLs to different sources.</li>
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
-<li>Advanced log signing of PKI audit logs.</li>
+<li>Log signing of PKI audit logs.</li>
 <li>API for an external RA, restricting in-bound traffic to CA.</li>
 <li>Optional approval mechanism so several admins are required to perform an action, a.k.a. dual-authentication.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Possible to integrate into large java applications for optimal integration into business process.</li>
 <li>Deploys easily in a clustered, high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
-<li>Supports multiple application servers: JBoss, Weblogic, Glassfish, Websphere</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS-SQL, Derby, Sybase, Informix.</li>
+<li>Supports multiple application servers: JBoss, Glassfish and to some extent WebLogic</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Oracle, DB2, Ingres, MS SQL Server, Derby, Sybase, Informix.</li>
 <li>Simple stand-alone <a href="userguide.html#EJBCA%20Batch%20Enrollment%20GUI">batch enrollment GUI</a> for CSRs (webservice RA).</li>
 <li>Unique possibility to configure either as fully audited CA or as high speed <a href="adminguide.html#Throw%20away%20CA">certificate factory</a>, with the same level of management features.</li>
 </ul>    

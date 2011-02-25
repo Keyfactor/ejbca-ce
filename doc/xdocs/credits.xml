@@ -17,15 +17,14 @@ This product includes software developed by The Apache Software Foundation
 (<a href="http://www.apache.org/">http://www.apache.org/</a>).
 <ul>
 <li><a href="http://ant.apache.org/">Ant</a></li>
-<li><a href="http://jakarta.apache.org/commons/collections/">commons-collections</a></li>
-<li><a href="http://jakarta.apache.org/commons/fileupload/">commons-fileupload</a></li>
-<li><a href="http://jakarta.apache.org/commons/lang/">commons-lang</a></li>
-<li><a href="http://jakarta.apache.org/tomcat/">Tomcat and Jasper</a></li>
-<li><a href="http://xml.apache.org/xerces-j/">Xerces</a></li>
+<li><a href="http://commons.apache.org/collections/">commons-collections</a></li>
+<li><a href="http://commons.apache.org/fileupload/">commons-fileupload</a></li>
+<li><a href="http://commons.apache.org/lang/">commons-lang</a></li>
+<li><a href="http://tomcat.apache.org/">Tomcat</a></li>
+<li><a href="http://xerces.apache.org/xerces-j/">Xerces</a></li>
 <li><a href="http://logging.apache.org/log4j/">log4j</a></li>
-<li><a href="http://xml.apache.org/batik/">Batik</a></li>
-<li><a href="http://myfaces.apache.org/">MyFaces</a></li>
-<li><a href="http://xml.apache.org/security/index.html">XML Digital Signatures/XML Encryption</a></li>
+<li><a href="http://xmlgraphics.apache.org/batik/">Batik</a></li>
+<li><a href="http://santuario.apache.org/">XML Digital Signatures/XML Encryption</a></li>
 <li>...</li>
 </ul>
 </p>
@@ -41,13 +40,12 @@ Other softwares include:
 <li><a href="http://httpunit.sourceforge.net/">HttpUnit</a></li>
 <li><a href="http://www.quickserver.org/">Quickserver</a></li>
 <li><a href="http://sourceforge.net/projects/novosec-bc-ext/">Novosec BouncyCastle CMP extension</a></li>
-<li><a href="https://jax-ws.dev.java.net/">JAXWS Web Service API</a></li>
 <li><a href="http://www.gnu.org/software/libidn/">Java GNU IDN Library - Libidn</a></li>
 <li><a href="http://trustedjava.sourceforge.net/index.php?item=xkms/readme">OpenTC Project, SASLprep patch the libidn library</a></li>
 </ul>
 </p>
 <p>
-EJBCA is developed in <a href="http://java.sun.com/">Java</a>.
+EJBCA is developed in <a href="http://www.oracle.com/technetwork/java/">Java</a>.
 </p>
 
 </section>
