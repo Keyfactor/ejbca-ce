@@ -181,7 +181,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     	if (log.isTraceEnabled()) {
         	log.trace(">existsEndEntityProfileInRules("+profileid+")");    		
     	}
-        String whereClause = "accessRule  LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "%'";
+    	final String whereClause = "accessRule = '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "' OR accessRule LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "/%'";
         long count = AccessRulesData.findCountByCustomQuery(entityManager, whereClause);
     	if (log.isTraceEnabled()) {
         	log.trace("<existsEndEntityProfileInRules("+profileid+"): "+count);
@@ -239,7 +239,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     	if (log.isTraceEnabled()) {
             log.trace(">existsCAInAccessRules("+caid+")");    		
     	}
-        String whereClause = "accessRule LIKE '" + AccessRulesConstants.CABASE + "/" + caid + "%'";
+    	String whereClause = "accessRule = '" + AccessRulesConstants.CABASE + "/" + caid + "' OR accessRule LIKE '" + AccessRulesConstants.CABASE + "/" + caid + "/%'";
         long count = AccessRulesData.findCountByCustomQuery(entityManager, whereClause);
     	if (log.isTraceEnabled()) {
             log.trace("<existsCAInAccessRules("+caid+"): "+count);
