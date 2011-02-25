@@ -100,7 +100,7 @@ public class LogTest extends CaTestCase {
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
-        	result = logSession.query(logDeviceName, query, "", "caid=" + Integer.toString(getTestCAId()), 500);
+        	result = logSession.query(logDeviceName, query, "", "caId=" + Integer.toString(getTestCAId()), 500);
         	Iterator<LogEntry> iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {
@@ -180,7 +180,7 @@ public class LogTest extends CaTestCase {
         	}
         	Query query = new Query(Query.TYPE_LOGQUERY);
         	query.add(LogMatch.MATCH_WITH_COMMENT, BasicMatch.MATCH_TYPE_EQUALS, "Test of rollback resistance of log-system.");
-        	result = logSession.query(logDeviceName, query, "", "caid=" + 0, 500);
+        	result = logSession.query(logDeviceName, query, "", "caId=" + 0, 500);
         	Iterator<LogEntry> iter = result.iterator();
         	boolean found = false;
         	while (iter.hasNext()) {
