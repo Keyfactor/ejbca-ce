@@ -89,14 +89,14 @@ public class LogAuthorization implements Serializable {
 
             if (authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
                 // Superadmin authorized to all
-                caidstring = " cAId = " + LogConstants.INTERNALCAID;
+                caidstring = " caId = " + LogConstants.INTERNALCAID;
             }
 
             for (Integer caId : caSession.getAvailableCAs(administrator)) {
                 if (caidstring.equals("")) {
-                    caidstring = " cAId = " + caId;
+                    caidstring = " caId = " + caId;
                 } else {
-                    caidstring = caidstring + " OR cAId = " + caId;
+                    caidstring = caidstring + " OR caId = " + caId;
                 }
             }
         }
