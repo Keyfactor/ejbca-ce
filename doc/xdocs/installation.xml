@@ -12,16 +12,25 @@ Based on JEE5 technology it constitutes a robust, high
 performance and component based CA. Both flexible and platform independent,
 EJBCA can be used standalone or integrated in any JEE5 application.
 </p><p>
-The EJBCA Homepage can be found at http://ejbca.org/.
+The EJBCA Homepage can be found at <a href="http://www.ejbca.org/">http://www.ejbca.org</a>.
 Information about contacting the EJBCA team, contributing to
 EJBCA, etc can be found through the Homepage.
 </p><p>
-More documentation can also be found on the homepage and on the wiki site http://wiki.ejbca.org/.
+More documentation can also be found on the homepage and on the wiki site <a href="http://wiki.ejbca.org/">http://wiki.ejbca.org/</a>.
 </p><p>
 EJBCA is completely written in Java and should as such run on any
 platform where a JEE server runs. Development and testing is
 performed on Linux and Windows platforms.
 </p></section>
+
+<section name="Definitions and conventions">
+<p>
+In this document we use X_HOME to indicate the file system directory location of application X.
+For example EJBCA_HOME is the home directory of the unzipped EJBCA distribution.
+APPSRV_HOME is used interchangeably with for example JBOSS_HOME and is the home directory of the
+application server.
+</p>
+</section>
 
 <section name="Security">
 <p>
@@ -45,53 +54,34 @@ Security is CRITICAL for a CA.
 
 <section name="Upgrade">
 <p>
-See doc/RELEASE_NOTES and UPGRADE for information about upgrading from an 
+See EJBCA_HOME/doc/RELEASE_NOTES and UPGRADE for information about upgrading from an 
 earlier version of EJBCA.
 </p></section>
 
 <section name="Quick start guide">
-<p>If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu quick start</a> guide below.</p>
+<p>
+If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu quick start</a> guide below.
+This guide describes how to install on the most well supported application server JBoss AS. EJBCA can however also run on Glassfish and Weblogic, but your
+mileage may vary. 
+</p>
 <subsection name="Prerequisites">
 <note>
 EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
 For this to work you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
-The policy files can be found at the same place as the JDK download at java.sun.com. The text
+The policy files can be found at the same place as the JDK download at
+<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle</a>. The text
 "Using exportable cryptography" is shown on the first page in the Admin GUI if you fail to
-install this package. Further information on this can be found in the Sun documentation on
+install this package. Further information on this can be found in the Oracle documentation on
 the JCE.
-</note>
-<note>
-The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish and Weblogic. 
-If you want to deploy on these application servers, read the section for your application server below. You mileage may vary on
-other appservers than JBoss, which is the most well supported.
 </note>
 <p>
 Needed to build and run are:</p>
 <ul>
-<li>JDK 1.6.x (support for 1.5.x was dropped in EJBCA 4.0).</li>
-<li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">http://www.oracle.com/technetwork/java/javase/downloads/index.html</a>)</li>
-<li>JBOSS >=5.1.x (support for JBoss 4.2.x was dropped in EJBCA 4.0).</li>
-<li>Ant >= 1.7.1 to build (<a href="http://ant.apache.org/">http://ant.apache.org/</a>)</li>
+<li>JDK 1.6 (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle JDK download</a>)</li>
+<li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download for Oracle's JDK</a>, not required for OpenJDK)</li>
+<li>JBoss Application Server 5.1.x or later for JDK6 (<a href="http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip/download">download</a>)</li>
+<li>Apache Ant 1.7.1 or later to build (<a href="http://ant.apache.org/">download</a>)</li>
 </ul>
-<note>
-JBoss 5.x has a bug causing issues with the BC JCE provider when the Sun JVM is used. To work around this you can copy the files EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
-Remember this when it's time for upgrades! Tracked by JBoss as JBAS-7882.
-<br/>
-JBoss 5.x has a bug causing issues with the Web Service and XKMS protocols. To work around this, you can copy the files JBOSS_HOME/common/lib/jbossws-native-*.jar to JBOSS_HOME/lib/endorsed or use JBoss 5.x-jdk6.
-<br/>
-JBoss 5.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample for configuration instructions. Tracked by JBoss as JBPAPP-3766.
-</note>
-<note>
-JBoss 6.0.0 does not work with Oracle JDK, because JBoss still have not fixed <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>.
-<br/>OpenJDK works just fine though, such as the OpenJDK distributed with RedHat, Ubuntu, Debian etc.
-</note>
-<p>
-Set the environment variable APPSRV_HOME to the directory where
-the appservers root is
- (/jboss-version). This is done so the compile process will find JEE jar files, and the deploy script will
- know where files are to be copied on JBoss. On JBoss they are by default copied to the
- directory $APPSRV_HOME/server/default/deploy.
- </p>
  <p>
  Windows/Unix: 
  When we describe command line commands below we use
@@ -99,21 +89,25 @@ the appservers root is
  The same command files are available for windows as cmd-files,
  e.g. 'ejbca.cmd.'
 </p>
-<p>If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory. (EJBCA 3.5 and newer.)</p>
+<p>If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory.</p>
 </subsection>
 
 <subsection name="Configure">
-<note>
-If you are only testing EJBCA at this stage and is not setting up a production environment, you can skip this step.
-There are default configuration options, that should work in a test environment, for everything.
-</note>
 
 <subsubsection name="Configuration files">
-<p>The configuration of EJBCA that can not be configured in the admin GUI is located in properties files in the <i>conf</i> directory.
+<p>The configuration of EJBCA that can not be configured in the Admin GUI is located in properties files in the <i>conf</i> directory.
 All properties are documented in sample files and to configure an option you copy the sample file, for example copy <i>conf/ejbca.properties.sample</i> to <i>conf/ejbca.properties</i>
 and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/install.properties</i> and <i>conf/ejbca.properties</i>.
 Most options, except those in install.properties can be changed after installation.
 </p> 
+<p>
+You must configure 'appserver.home' in ejbca.properties to point to your application server directory. You find examples of how
+to do this in ejbca.properties.sample.<br/> This makes libraries from the application server available to EJBCA during the build.
+</p> 
+<p>
+If you are only testing EJBCA at this stage and is not setting up a production environment, you can skip the rest of this step.
+There are default configuration options, that should work in a test environment, for everything.
+</p>
 </subsubsection>
 
 <subsubsection name="EJBCA configuration">
@@ -148,10 +142,19 @@ For production use you should use a real database instead of the embedded one.</
 
 <subsubsection name="JBoss settings">
 <p>
+If you are using Oracle's JDK and JBoss 5.1.x or JBoss 6.0.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
+Remember this when it's time for upgrades! This is a bug tracked by JBoss as <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
+OpenJDK works just fine though, such as the OpenJDK distributed with RedHat, Ubuntu, Debian etc.
+</p> 
+<p>
+JBoss 5.1.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample
+for configuration instructions. Tracked by JBoss as <a href="https://issues.jboss.org/browse/JBPAPP-3766">JBPAPP-3766</a>.
+</p> 
+<p>
 On JBoss 5.1.x, edit (not needed on JBoss 6.0.x)
 </p> 
 <source>
- APPSRVR_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
+ APPSRV_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
 </source>
 <p> 
 and comment out the line:
@@ -213,19 +216,19 @@ in the distribution.
 
 <subsection name="Install">
 <p>
-Note that the installation must be done with a user with privileges to write to APPSRV_HOME and subdirs. 
+Note that the installation must be done with a user with privileges to write to APPSRV_HOME and sub directories. 
 </p><p>
-1) Set the environment variable APPSRV_HOME to where your JBoss is installed,
+1) Set the property 'appserver.home' in conf/ejbca.properties to where your JBoss is installed,
 examples:
 </p> 
 <source>
-APPSRV_HOME=/opt/jboss-5.1.0
+appserver.home=/opt/jboss-5.1.0
 </source>
 <source>
-APPSRV_HOME=/opt/jboss-6.0.0.Final
+appserver.home=/opt/jboss-6.0.0.Final
 </source>
-<p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.6.0_21/bin.
-<br/>Due to Java's memory handling you may need to assign more memory to ant in order to build the system without OutOfMemory errors. 
+<p>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.6.0_24/bin.
+<br/>Due to Java's memory handling you may need to assign more memory to Ant in order to build the system without OutOfMemory errors. 
 You can do that by setting an environment variable:
 </p>
 <source>
@@ -237,7 +240,8 @@ ANT_OPTS=-Xmx512m
 <source>
 ant bootstrap
 </source>
-<p>it will compile, jar, war, ear everything and deploy it to JBoss. You will be prompted to enter the value for database.password if it has not already been defined in database.properties. 
+<p>it will compile and build EJBCA and deploy it to JBoss. You will be prompted to enter the value for database.password if it has
+not already been defined in database.properties. 
 </p><p>
 3) Open a console (terminal) and start JBoss.
 You can start JBoss with the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
@@ -279,8 +283,8 @@ This is the super administrators certificate used to access the admin GUI.
 Other administrators with specific privileges can be created later on.
 The default password for superadmin.p12 is ejbca, and is configured in web.properties.
 </p><p>
-8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
-or http://localhost:8080/ejbca for the public pages.
+8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the Admin GUI, 
+or http://localhost:8080/ejbca for the public web pages.
 </p><p>
 If you create other CAs that you want to add as acceptable CAs in the SSL server configuration, 
 or if you renew the CA certificate, you can install any CA certificate in the SSL server configuration afterwards 
@@ -325,58 +329,45 @@ We also assume installation is made in a user account with username "user". In y
 <li>Install Ubuntu 10.10 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).</li>
 <li>Open a new terminal "ejbca".</li>
 <li>Copy jboss-5.1.0.GA-jdk6.zip and ejbca_4_0_0.zip to machine user account.</li>
-<li>Install needed software from Ubuntu repositories.
-<br/>
-<code>sudo apt-get install openjdk-6-jdk ant ant-optional unzip
-</code>
+<li>Install needed software from Ubuntu repositories.<br/>
+<source>
+sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp
+</source>
 </li>
-<li>Install software not in Ubuntu repositories.
-<br/>
-<code>
-unzip jboss-5.1.0.GA-jdk6.zip
-<br/>unzip ejbca_4_0_0.zip
-</code>
+<li>Install software not in Ubuntu repositories.<br/>
+<source>
+unzip jboss-5.1.0.GA-jdk6.zip<br/>
+unzip ejbca_4_0_0.zip
+</source>
 </li>
-<li>Set APPSRV_HOME environment variable so EJBCA can find the application server (JBoss).
-<br/>
-<code>
-vim .bashrc
-</code>
-<br/>In the end of the file add:
-<br/>
-<code>
-export APPSRV_HOME=/home/user/jboss-5.1.0.GA
-</code>
+<li>Configure EJBCA so it can find the application server (JBoss).<br/>
+<source>
+echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_4_0_0/conf/ejbca.properties
+</source>
 </li>
-<li>Log out and in again, terminal "ejbca".</li>
-<li>Build and deploy EJBCA to JBoss.
-<br/>
-<code>
-cd ejbca_4_0_0
-<br/>ant bootstrap
-</code>
+<li>Build and deploy EJBCA to JBoss.<br/>
+<source>
+cd ejbca_4_0_0<br/>
+ant bootstrap
+</source>
 </li>
-<li>Open new terminal "jboss" and start JBoss.
-<br/>
-<code>
-cd jboss-5.1.0.GA/bin
-<br/>./run.sh
-</code>
+<li>Open new terminal "jboss" and start JBoss.<br/>
+<source>
+jboss-5.1.0.GA/bin/run.sh
+</source>
 </li>
-<li>Go back to terminal "ejbca" and run install to create initial administrator CA.
-<br/>
-<code>
-ant install
-<br/>(choose all default values)
-<br/>ant deploy
-</code>
-</li>    
-<li>Go back to terminal "jboss" and restart JBoss.
-<br/>
-<code>
-ctrl-c
-<br/>./run.sh
-</code>
+<li>Go back to terminal "ejbca" and run install to create initial administrator CA.<br/>
+<source>
+ant install<br/>
+(choose all default values)<br/>
+ant deploy
+</source>
+</li>
+<li>Go back to terminal "jboss" and restart JBoss.<br/>
+<source>
+ctrl-c<br/>
+jboss-5.1.0.GA/bin/run.sh
+</source>
 </li>
 <li>Import /home/user/ejbca_4_0_0/p12/superadmin.p12 in web browser.</li>
 <li>Go to http://localhost:8443/ejbca</li>
@@ -404,7 +395,7 @@ EJBCA should run on any on any JEE5 compliant application server in theory. In r
 On JBoss 5.1.x (not on JBoss 6.0.x) the WSDL location gets incorrectly generated by default. To fix this (see JBoss settings during install) edit: 
 </p> 
 <source>
- APPSRVR_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
+ APPSRV_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
 </source>
 <p> 
 and comment out the line:
@@ -436,9 +427,6 @@ You can luckily turn of schema validation. Here is RedHat's <a href="http://docs
 Currently EJBCA has been tested with Glassfish v2.1.1.
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
-<note>
-Hot redeployment on Glassfish 2.1.1 does not work due to conflicting version of the Xerces library (<a href="https://jira.primekey.se/browse/ECA-1887">ECA-1887</a>). 
-</note>
 
 <subsubsection name="Derby">
 <p>
@@ -625,10 +613,7 @@ WebLogic Server 10 is JEE5 certified. EJBCA has been tested with Oracle WebLogic
 Oracle JDK 6 and Oracle Database 10.2.0.1-1.0 XE on Ubuntu Server 10.10 i686.
 </p>
 <p>
-The following does not work:
-<ul>
-<li>Email notifications are still untested and the old instructions are kept for reference.</li>
-</ul>
+Email notifications are still untested and the old instructions are kept for reference.
 </p>
 
 <subsubsection name="Configure EJBCA">

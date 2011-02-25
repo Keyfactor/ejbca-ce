@@ -16,8 +16,10 @@ EJBCA implements the CA part of a PKI according to standards such as X.509 and I
 <section name="Terminology">
 <table>
 <tr><td>EJBCA</td><td>Enterprise Java Beans Certificate Authority</td></tr>
+<tr><td>PKI</td><td>Public Key Infrastructure</td></tr>
 <tr><td>CA</td><td>Certificate Authority</td></tr>
 <tr><td>RA</td><td>Registration Authority</td></tr>
+<tr><td>VA</td><td>Validation Authority</td></tr>
 <tr><td>DN</td><td>Distinguished Name</td></tr>
 <tr><td>HSM</td><td>Hardware Security Module</td></tr>
 <tr><td>CRL</td><td>Certificate Revocation List</td></tr>
@@ -30,12 +32,12 @@ EJBCA implements the CA part of a PKI according to standards such as X.509 and I
 <section name="General concepts">
 <subsection name="Certification Authority (CA)">
 <p>
-A CA issues certificates to, and vouches for the authenticity of entities. The level of trust you can assign to a CA is individual, per CA, and depends on the CAs policy and practices statement.
+A CA issues certificates to, and vouches for the authenticity of entities. The level of trust you can assign to a CA is individual, per CA, and depends on the CAs Policy (CP) and CA Practices Statement (CPS).
 </p>
 </subsection>
 <subsection name="RootCA">
 <p>
-A RootCA has a self-signed certificate and is also called Trusted Root. Verification of other certificates in the PKI ends with the RootCAs self-signed certificate. Since the RootCAs certificate is self-signed it must somehow be configured as a trusted root with all clients in the PKI.</p>
+A RootCA has a self-signed certificate and is also called Trusted Root. Verification of other certificates in the PKI ends with the RootCAs self-signed certificate. Since the RootCAs certificate is self-signed it must somehow be configured as a trusted root for all clients in the PKI.</p>
 </subsection>
 <subsection name="SubCA">
 <p>
@@ -44,6 +46,10 @@ A subordinate CA, or SubCA for short, is a CA whose certificate is signed by ano
 <subsection name="Registration Authority (RA)">
 <p>
 An RA is an administrative function that registers entities in the PKI. The RA is trusted to identify and authenticate entities according to the CAs policy. There can be one or more RAs connected to each CA in the PKI.</p>
+</subsection>
+<subsection name="Validation Authority (VA)">
+<p>
+A VA is responsible for providing information on whether certificates are valid or not. There can be one or more VAs connected to each CA in the PKI.</p>
 </subsection>
 <subsection name="End-entity">
 <p>
@@ -54,7 +60,11 @@ An end-entity is a user, such as an e-mail client, a web server, a web browser o
 <section name="EJBCA specific concepts">
 <subsection name="Certificate Profile">
 <p>
-A certificate profile determines non user specific content and behavior of certificates. The largest part is extensions and here you decide if a specific extension is present and wether it is critical or not. Some extensions are populated with a value, where it is the same value for all certificates such as CRLDistributionPoint. For other extensions only the presence is determined, where the value is user- or cert-specific such as SubjectAlternativeName. Here is also determined if these certificates will be published and with which publisher.
+A certificate profile determines non user specific content and behavior of certificates. The largest part is extensions
+and here you decide if a specific extension is present and whether it is critical or not. Some extensions are populated
+with a value, where it is the same value for all certificates such as CRLDistributionPoint. For other extensions only
+the presence is determined, where the value is user- or cert-specific such as SubjectAlternativeName. Here is also
+determined if these certificates will be published and with which publisher.
 </p>
 </subsection>
 <subsection name="End Entity Profile">
@@ -62,7 +72,7 @@ A certificate profile determines non user specific content and behavior of certi
 End Entity Profiles determine what data can or must be present for users connected with this profile. Some values can also be pre-determined such as the organization, o in the dn.
 It contains all information, that is specific to each individual end entity, for issuance of certificates.
 <br/>
-When adding a user in the pki, the user must be connected with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
+When adding a user in the PKI, the user must be connected with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
 </p>
 </subsection>
 <subsection name="CA Token">
@@ -83,7 +93,9 @@ A publisher stores issued certificates to a central location. EJBCA have impleme
 </subsection>
 <subsection name="External RA">
 <p>
-In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA periodically fetch and process information from external trusted data sources. For this reason there is an add-on pack to EJBCA called extra, which is short for <a href="externalra.html">External RA API</a>.
+In some cases, for security reasons, is it preferable to deny all in-bound traffic to the CA and instead let the CA
+periodically fetch and process information from external trusted data sources. For this reason there is an add-on
+module provided with the EJBCA distribution called 'externalra', which is short for <a href="externalra.html">External RA API</a>.
 </p>
 </subsection>
 
