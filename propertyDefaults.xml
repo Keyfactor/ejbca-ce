@@ -105,13 +105,6 @@
 		</or>
 	</condition>
 
-	<condition property="exclude-xml-apis-ext">
-		<or>
-			<matches pattern="jboss6" string="${appserver.subtype}"/>
-			<!-- ... -->
-		</or>
-	</condition>
-	
 	<condition property="exclude-xerces">
 		<or>
 			<matches pattern="jboss6" string="${appserver.subtype}"/>
