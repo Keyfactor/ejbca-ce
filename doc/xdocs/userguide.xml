@@ -29,10 +29,10 @@ There are additional documentation and administrative tutorial movies at <a href
 </subsection>
 <subsection name="Administrating EJBCA">
 <p>
-You can administer EJBCA using a web browser and the admin-GUI, this is the easiest way. 
-The admin-GUI requires SSL with authentication using client certificate, i.e. strong authentication.
+You can administer EJBCA using a web browser and the Admin GUI, this is the easiest way. 
+The Admin GUI requires SSL with authentication using client certificate, i.e. strong authentication.
 </p><p>
-You can also use the command line interface (cli) which is called by 'bin/ejbca.sh'. 
+You can also use the command line interface (CLI) which is called by 'bin/ejbca.sh'. 
 If you call ejbca.sh you get a list of available commands, and you can get help for all commands by calling
 them without arguments, i.e:
 </p>
@@ -49,7 +49,7 @@ Finally you can also use the <a href="#EJBCA client toolbox">EJBCA client toolbo
 
 <section name="Admin GUI overview page">
 <p>
-The first page of the admin GUI can display status information for the publish 
+The first page of the Admin GUI can display status information for the publish 
 queue and the CA. Which of those that should be displayed can be configured in 
 My Preferences.
 </p>
@@ -76,8 +76,8 @@ CRL status show a red error is a CRL or delta CRL has expired without a new one 
 <p>
 After installation, which creates a default admin CA
 you can create more CAs.
-<br/>Creating CAs can be made using the Admin-GUI or the command line interface (cli). The recommended way is using the Admin-GUI, since it gives more control of all
-parameters.
+<br/>Creating CAs can be made using the Admin GUI or the command line interface (CLI). The recommended way is using
+the Admin GUI, since it gives more control of all parameters.
 </p>
 <p>
 Your CAs can be either root CAs, subordinate CAs to another CA in EJBCA 
@@ -106,8 +106,8 @@ and published (if any Publishers are configured), and the initial CRL is created
 and stored/published.
 </p>
 </subsubsection>
-<subsubsection name="Using Admin-GUI">
-<p>Creating CAs in the Admin-GUI is done by selecting 'Edit Certificate Authorities' in the menu, entering a new CA name in the text field and clicking 'Create'.
+<subsubsection name="Using Admin GUI">
+<p>Creating CAs in the Admin GUI is done by selecting 'Edit Certificate Authorities' in the menu, entering a new CA name in the text field and clicking 'Create'.
 </p>
 </subsubsection>
 </subsection>
@@ -128,8 +128,8 @@ According to the BSI specifications the sequence must be 5 bytes long. The initi
 in the sequence field. The sequence MAY start with an iso 3166-2 countrycode.
 </p>
 <p>
-When renewing keys for HSMs using the Admin-GUI, the new signing key label will be the old label with the 
-new key sequence in the end. When renewing keys for HSMs using the Admin-GUI the key sequence is 
+When renewing keys for HSMs using the Admin GUI, the new signing key label will be the old label with the 
+new key sequence in the end. When renewing keys for HSMs using the Admin GUI the key sequence is 
 automatically increased.
 </p>
 <p>
@@ -206,7 +206,7 @@ The certificate request history is enabled by default, but you may turn it of to
 <p>
 The impact of loosing CertReqHistoryData and that you can not see the exact values of the UserDataVO that was in effect when the certificate was issued. 
 This is mostly interesting if you use a subset of the user DN in the certificate (see certificate profile), and in this case it can also affect publishing and re-publishing of certificates.
-If you are not using a subset of user DN in the certificates using this feature should be safe, but still needs thorough testing in your environment.
+If you are not using a subset of user DN in the certificates disabling this feature should be safe, but still needs thorough testing in your environment.
 If unsure leave enabled.
 </p>
 </subsubsection>
@@ -271,7 +271,7 @@ After the certificate has been issued the user status is set to 'Generated' and 
 CMP can be configured in RA mode to use one shared secret for each CA to authenticate messages from the RA.
 If "cmp.ra.authenticationsecret" in cmp.properties is set, this field will be ignored.
 </p>
-<p>An empty value in this field will deny all RA mode CMP requests (if cmp.ra.authenticationsecret is not set).</p>
+<p>An empty value in this field will deny all RA mode CMP requests (unless cmp.ra.authenticationsecret is configured).</p>
 </subsubsection>
 
 </subsection> 
@@ -281,7 +281,7 @@ If "cmp.ra.authenticationsecret" in cmp.properties is set, this field will be ig
 Some CA hierarchies have the requirement of being signed by an external Certificate Authorities and sometimes other external CA:s need to be signed by your CA.
 </p>
 <p>
-When creating a CA that is signed by an external CA, you actually create a PKCS10 certificate request
+When creating a CA that is signed by an external CA, you create a PKCS10 certificate request
 that is sent to the external CA. When the external CA returns your CAs certificate, this is processed and
 the CA becomes activated.
 </p>
@@ -289,20 +289,24 @@ the CA becomes activated.
 In order to have your CA signed by an external CA you have to go through the following steps.
 <ol>
 <li>Go the the 'Edit Certificate Authorities' page in the Administration GUI.</li>
-<li>Create a new CA in the same way as internal CA:s. But when selecting signing CA, select 'External CA' instead. Now will the 'Certificate Profile', 'Validity', 'Subject Alternative Name' and 'Policy Id' 
-fields become gray and not editable. Fill in the Description and CRL Specific data and click on the 'Make Certificate Request' 
+<li>Create a new CA in the same way as internal CA:s. But when selecting signing CA, select 'External CA' instead.
+The fields 'Certificate Profile', 'Validity', 'Subject Alternative Name' and 'Policy Id' 
+will become gray and are no longer editable. Fill in the Description and CRL Specific data and click on the 'Make Certificate Request' 
 button in the bottom of the page.</li>
 <li>At the next page called 'Make Certificate Request' you can upload the external CA certificate chain that you want to sign your CA certificate with, or you can wait until later by checking 'No CA chain file available'.  
-This file should be in PEM encoding. If there is more than one top CA certificate then should all their certificates be appended into one single file. 
+This file should be in PEM encoding. If there is more than one top CA certificate then all their certificates should be appended into one single file. 
 It should be in plain PEM format without blank lines before or after. An example is below.</li>
-<li>Next, after clicking 'Make Certificate Request' and if everything went successful, should the generated PKCS10 certificate request be displayed that you can copy and paste to the signing CA. There is also the option to download the PEM file if that approach is preferred.</li>
-<li>Now should the signing external CA sign the certificate request and return a certificate. Meanwhile will the newly created CA have a status of 'Waiting for Certificate Response' and will not appear anywhere in the system except in the 'Edit CA' page until it's activated.</li>
+<li>After successfully clicking 'Make Certificate Request' the generated PKCS10 certificate request will be displayed.
+You can copy and paste it to the signing CA or download the PEM file if that approach is preferred.</li>
+<li>The external CA should sign the certificate request and return a certificate. Meanwhile, the newly created CA will
+have the status 'Waiting for Certificate Response' and will not appear anywhere in the system except in the 'Edit CA' page.</li>
 <li>When the Certificate Response has arrived, it is time to activate the new CA. You mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response' (you can leave the password field blank). Then upload the received certificate and click again on 'Receive Certificate Response'.</li>
-<li>Now if the received certificate creates a valid certificate chain with the previously uploaded top CA certificates will the status of the CA be set to 'Active'.</li>
-<li>If you did no upload a certificate chain when the request was created, you can do so now by uploading the complete PEM formatted chain now. The CAs own certificate should be first in the file, followed by the issuing CAs certificate(s). 
+<li>If the received certificate forms a valid certificate chain with the previously uploaded top CA certificates, the status of the CA will be set to 'Active'.</li>
+<li>If you did no upload a certificate chain when the request was created, you can do so now by uploading the complete
+PEM formatted chain. The CA's own certificate should be first in the file, followed by the issuing CAs certificate(s). 
 When uploading a chain, the certificates must be converted to PEM format if it isn't already so. This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
-&gt;openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</li> 
-<li>Observe if you want to activate OCSP functionality for this new CA you have to edit it once again and mark the OCSP functionality as active.</li>
+<code>openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</code></li> 
+<li>If you want to activate OCSP functionality for this new CA you have to edit it once again and mark the OCSP functionality as active.</li>
 <li>The new externally signed CA is ready to use.</li>
 </ol>
 </p>
@@ -348,7 +352,7 @@ Dw3PqQiroMNx2+gzC/f/wTXsF92aujyG+IZx1FIcNg/MoHXBWG7T8YrjnQ==
 -----END CERTIFICATE-----
 </source>
 <p>
-You can treat an internal CA, i.e. a CA residing on the same EJBCA instance as another CA, as an external CA. 
+You can treat an internal CA (a CA residing on the same EJBCA instance as another CA) as an external CA. 
 From the SubCA this works just like the normal case, but on the RootCA you must choose the exact same CA Name as
 the already existing internal CA when you choose to "Process Certificate Request".  
 <br/>
@@ -399,7 +403,7 @@ When you renew keys in an active SubCA you can choose:
 </ol>
 If you choose to not activate the new keys immediately you must give the CA Token password when receiving the response from the External CA.
 </p>
-<p>Not that how PKCS#11 works with sessions, once logged in to the session you are logged in and it does not matter which password you use in the GUI. Don't be surprised that it works with any password when using PKCS#11 CA tokens.</p>
+<p>Note how PKCS#11 sessions works, once logged in to the session you are logged in and it does not matter which password you use in the GUI. Don't be surprised that it works with any password when using PKCS#11 CA tokens.</p>
 </subsection>
 <subsection name="Requesting a cross or bridge certificate">
 <p>
@@ -440,7 +444,7 @@ You can convert a PEM-style Root CA key to a PKCS12 file that can be imported in
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
 </source>
 <p>
-You can import the CA with the Admin GUI or the cli. See the section 'Export and import CAs'.
+You can import the CA with the Admin GUI or the CLI. See the section 'Export and import CAs'.
 <br/>
 After importing CAs you can also import users and certificates. See the section 'Import users'. 
 </p></subsection>
@@ -477,7 +481,7 @@ The field 'notAfter' in the issued certificate will have the value 'now + validi
 It can also, if noted in the field, be entered in terms of years, months and days. For instance '10y 9mo 8d' is translated to 
 10 years, 9 months and 8 days from now.
 Instead of the validity period an absolute end date could specify the end of the validity period. This date should be given in
-the default locale for the jvm.
+the default locale for your Java installation.
 </p><p>
 The check box 'Allow Validity Override' will make it possible to request a specific notAfter date. This is currently possible when using CMP (the CRMF request format), or when using the API to issue certificates.
 </p><p>
@@ -520,7 +524,7 @@ This option should only be used when you know that the request comes from a very
 normally an RA through CMP or webservice.
 </p>
 <p>
-Currently (EJBCA 3.9) this only works for extensions in CRMF (CMP) requests.
+Currently this only works for extensions in CRMF (CMP) requests.
 </p>
 </subsubsection>
 <subsubsection name="Allow subject DN override">
@@ -540,7 +544,7 @@ normally an RA through CMP or webservice.
 The generated certificate serial number could be overridden if "Allow certificate serial number override" is enabled in the used certificate profile.
 </p>
 <p>
-If the admin web GUI should be used for creating entities you must also add "Custom certificate serial number" to the used end entity profile.
+If the Admin GUI should be used for creating entities you must also add "Custom certificate serial number" to the used end entity profile.
 </p><p>
 With web services you use the 'setCertificateSerialNumber' for your 'UserDataVOWS' user.
 </p>
@@ -564,7 +568,7 @@ JAVA_OPT="-DmaxCertSN=16" $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh E
 Note: this extension is only applicable for immediate CA certificates
 and it sets how deep the succeeding certificate hierarchy may be.
 If it is set to 0 this CA certificate is the last CA in a chain and only end entity certificates may follow.
-<br/>From RFC5280 (4.2.1.9):</p>
+<br/>From <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC5280</a> (4.2.1.9):</p>
 <source>
 The pathLenConstraint field is meaningful only if the cA boolean is asserted and the key usage extension, if present, asserts the
 keyCertSign bit (Section 4.2.1.3). In this case, it gives the maximum number of non-self-issued intermediate certificates that may
@@ -639,7 +643,7 @@ You could then put them together as:
 
 <subsubsection name="CRL Issuer">
 <p>
-According to RFC3280 a CRL issuer is:
+According to <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC3280</a> a CRL issuer is:
 </p>
 <source>
 An optional system to which a CA delegates the publication of certificate revocation lists;
@@ -659,8 +663,10 @@ The freshest CRL extension identifies how delta CRL information is obtained. The
 
 <subsubsection name="OCSP Service Locator">
 <p>
-This extension is used when revocation information for the certificate containing this extension is available using the Online Certificate Status Protocol (OCSP) [RFC2560].
-The URI field is the location of the OCSP responder, using the conventions defined in RFC2560, usually a plain URL such as http://ocsp.company.com/.
+This extension is used when revocation information for the certificate containing this extension is available using the
+Online Certificate Status Protocol (OCSP) [<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC2560</a>].
+The URI field is the location of the OCSP responder, using the conventions defined in
+<a href="http://www.ietf.org/rfc/rfc2560.txt">RFC2560</a>, usually a plain URL such as http://ocsp.company.com/.
 The default URL for the internal OCSP responder in EJBCA is http://hostname:8080/ejbca/publicweb/status/ocsp. 
 </p>
 </subsubsection>
@@ -670,7 +676,7 @@ The default URL for the internal OCSP responder in EJBCA is http://hostname:8080
 In a certificate the order of the CN components can be put in different order depending on wich standard you abide to.
 <br/>
 <ul>
-<li>Ldap DN order (rfc 2253): CN=Common Name, O=Organization, C=Country</li>
+<li>Ldap DN order (<a href="http://www.ietf.org/rfc/rfc2253.txt">RFC2253</a>): CN=Common Name, O=Organization, C=Country</li>
 <li>X.500 DN order: C=Country, O=Organization, CN=Common name</li>
 </ul>
 In theory the order of the DN should not matter, because comparisons between DNs should be done on the RDN level. 
@@ -689,8 +695,8 @@ This means that if both are true the DN will have Ldap DN order, but if any one 
 </subsubsection>
 <subsubsection name="Extended Key Usage">
 <p>
-The meaning of Extended key usage is defined in RFC5280. Normally the values specified in the fixed certificate profiles
-are good for the usage the fixed profile is for. 
+The meaning of Extended key usage is defined in <a href="http://www.ietf.org/rfc/rfc5280.txt">RFC5280</a>.
+Normally the values specified in the fixed certificate profiles are good for the usage the fixed profile is for. 
 </p>
 <p>
 You can define your own extended key usages very simple. Edit the file EJBCA_HOME/conf/extendedkeyusage.properties and add your custom 
@@ -785,9 +791,9 @@ org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile: Subject DN f
 <p>This is because EJBCA can not keep track of which fields you mean to set, if it is one of the required or non-required. To help EJBCA determine this you can specify the non-required OU fields with empty values, "CN=Foo,OU=Bar1,OU=,OU=,OU=,OU=Bar2".
 </p>
 <p>There is one particular subject DN field that deserves extra informations, <strong>postalAddress</strong>. 
-<br/>PostalAddress is not encoded simply as a string as one might think, but is an <a href="http://www.alvestrand.no/objectid/2.5.4.16.html">asn.1 sequence</a>. 
-If you only enter the value as a string it will be encoded as a simple UTF8String, which is invalid. You need to enter is as a hex encoded asn.1 DirectoryString.
-This is done by hex encoding the asn.1 object and prepending it with #, i.e. #30...</p>
+<br/>PostalAddress is not encoded simply as a string as one might think, but is an <a href="http://www.alvestrand.no/objectid/2.5.4.16.html">ASN.1 sequence</a>. 
+If you only enter the value as a string it will be encoded as a simple UTF8String, which is invalid. You need to enter is as a hex encoded ASN.1 DirectoryString.
+This is done by hex encoding the ASN.1 object and prepending it with #, i.e. #30...</p>
 </subsubsection>
 <subsubsection name="Subject Alternative Names">
 <p>Subject alternative names (altNames) are extra naming items that are not fit to have in the Distinguished Name, such as email, dns, ip address etc.
@@ -867,9 +873,9 @@ the specified number can be changed for a particular end entity at the creation 
 <section name="End Entities">
 <subsection name="Creating Users">
 <p>
-Users are added in the admin-GUI, 'Add End Entity' or with the cli
+Users are added in the Admin GUI, 'Add End Entity' or with the CLI
 'bin/ejbca.sh ra adduser'.
-The users DN is normally entered in the cli as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyName".
+The users DN is normally entered in the CLI as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyName".
 If a ',' is needed in the DN the comma must be escaped using '\,'.
 </p></subsection>
 
@@ -914,7 +920,7 @@ status is set to
 GENERATED after a certificate has been issued. To issue a new
 certificate, the
 status must be reset to NEW, which can be done through
-the admin-GUI or the cli.
+the Admin GUI or the CLI.
 </p><p>
 During batch generation of certificates, users with status NEW
 or FAILED are
@@ -935,7 +941,7 @@ You certificate profile should have:<br/>
 - KeyUsage: <i>Digital signature, Key encipherment</i><br/>
 - Extended key usage: <i>Server Authentication</i><br/>
 </li>
-<li>Create a user with the admin-GUI or 'bin/ejbca.sh ra'. 
+<li>Create a user with the Admin GUI or 'bin/ejbca.sh ra'. 
 <br/>The Distinguished name (DN) of the server should have the
 the servers full hostname (host.domain.com) in the CommonName (CN) field.
 <br/>Example DN for webserver: "C=SE,O=AnaTom,CN=
@@ -984,7 +990,7 @@ subordinate CA to another Root CA, the CA cert file may need to contain the whol
 chain). Exactly how your server wants the files is server dependent.
 </p>
 <p>
-For your convenience, here is the standard text (RFC2818) how browsers validate the name(s) in the certificate.
+For your convenience, here is the standard text (<a href="http://www.ietf.org/rfc/rfc2818.txt">RFC2818</a>) how browsers validate the name(s) in the certificate.
 </p>
 <source>
 If a subjectAltName extension of type dNSName is present, that MUST
@@ -1054,9 +1060,8 @@ By leveraging this feature you can for example use a national ID for administrat
 <p>
 To use a certificate issued by an external CA as Administrator:
 <ol>
-<li>Add the CA-certificate to p12/truststore.jks with "keytool -import
--trustcacerts -file externalca.pem -keystore p12/truststore.jks -storepass
-changeit -alias externalca"</li>
+<li>Add the CA-certificate to p12/truststore.jks with
+<code>keytool -import -trustcacerts -file externalca.pem -keystore p12/truststore.jks -storepass changeit -alias externalca</code></li>
 <li>Redeploy EJBCA (ant deploy) and restart the application server to make sure the new
 truststore is in use</li>
 <li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
@@ -1077,13 +1082,14 @@ bin/ejbca.sh ca importcacert AdminCA adminca.pem -initauthorization
 </source>
 <p>
 This command imports the certificate of the external Administration CA and initializes the authorization system of EJBCA. 
-You need to configure SSL and the truststore of the application server yourself, of you have a p12/tomcat.jks and p12/truststore.jks this can be done for you on JBoss by 'ant deploy'.   
+You need to configure SSL and the truststore of the application server yourself, or if you have a p12/tomcat.jks and
+p12/truststore.jks this can be done for you on JBoss by 'ant deploy'.   
 </p><p>
 The initial administrator that is set up has DN 'CN=SuperAdmin', but you can change this using the -superadmincn (run 'bin/ejbca.sh ca importcacert' for documentation).
 Also check the 'bin/ejbca.sh admins' command for information how to configure other admins.
 </p>
 <p>
-After this command is run, and SSL configured correctly, you can log in to EJBCA and create your CAs in the admin GUI. No initial CA is created for you.
+After this command is run, and SSL configured correctly, you can log in to EJBCA and create your CAs in the Admin GUI. No initial CA is created for you.
 </p>
 </subsubsection>
 <subsubsection name="Events Log">
@@ -1105,7 +1111,7 @@ the acting administrator. "admindata" is a string containing the administrator's
 </subsection>
 <subsection name="Renewing Superadmin">
 <p>
-Renewing the superadmin certificate is done in the same way as for any client certificate. You can use both the GUI or the CLI to renew the superadmin.
+Renewing the superadmin certificate is done in the same way as for any client certificate. You can use either the Admin GUI or the CLI to renew the superadmin.
 The superadmin certificate is normally issued as a PKCS#12 keystore (if not issued as a browser certificate for smart card enrollment). 
 </p>
 <p>Using the admin GUI:</p>
@@ -1172,7 +1178,7 @@ The current predefined administrator roles that exists in EJBCA are:
 
 <subsection name="Creating a Certificate Profile For the Administrator">
 <p>This section will show you how to create a new Certificate Profile for administrators. 
-The administrators certificates will be issued by a CA called AdminCAv1
+The administrators certificates will be issued by a CA called AdminCA1
 </p>
 <p>
 <ul>
@@ -1205,8 +1211,8 @@ The profile will be connected to the Certificate Profile created above.</p>
 <li>Under the "Subject DN Fields" add a few DN fields that you want in the admin DN, for example O, UID and C.</li>
 <li>Under "Default Certificate Profile", choose "AdministratorEndEntityCertificateProfile"</li>
 <li>Under "Available Certificate Profiles", choose "AdministratorEndEntityCertificateProfile"</li>
-<li>Under "Default CA", choose "AdminCAv1"</li>
-<li>Under "Available CAs", choose "AdminCAv1"</li>
+<li>Under "Default CA", choose "AdminCA1"</li>
+<li>Under "Available CAs", choose "AdminCA1"</li>
 <li>Press "Save"</li>
 </ul>
 Issue the following new end entity based on the new end entity profile.
@@ -1222,7 +1228,7 @@ The RAadmin shall have access to add/list/edit end entites. To create a new admi
 <li>Choose a name for your new administrator group, "RAAdministratorGroup".</li>
 <li>When the group is created, press "Access Rules".</li>
 <li>Choose the administrator groups role, "RA Administrator".</li>
-<li>Under "Authorized CAs", choose which CAs the administrator group should have access to. Choose "AdminCAv1".</li>
+<li>Under "Authorized CAs", choose which CAs the administrator group should have access to. Choose "AdminCA1".</li>
 <li>Under "Edit End Entity Profiles" Select "AdministratorEndEntityProfile".</li>
 <li>Press "Save".</li>
 </ul> 
@@ -1234,7 +1240,7 @@ The RAadmin shall have access to add/list/edit end entites. To create a new admi
 <li>Choose "Search/Edit End Entities" and select your newly created end entity, choose "View Certificates".</li>
 <li>Copy the value of "Certificate Serial Number", e.g. "5F003A0113F507F9".</li>
 <li>Go to "Edit Administrator Privileges", press "Administrators" under "RAAdministratorGroup".</li>
-<li>Choose the CA that the administrator belongs to, "AdminCAv1".</li>
+<li>Choose the CA that the administrator belongs to, "AdminCA1".</li>
 <li>Paste the text from "Certificate Serial Number" in the "Match value".</li>
 <li>Press "Add"</li> 
 </ul>
@@ -1243,9 +1249,10 @@ The RAadmin shall have access to add/list/edit end entites. To create a new admi
 <subsection name="Test the new administrator">
 <p>
 Try to log in with the new administrators to see the difference between that and the superadmin.
-</p>
-<p>
 You should also try the different roles and privileges to see the differences between them all.
+</p><p>
+Note that the authorization privileges are cached and there will be a delay before a rule change is
+used.
 </p>
 </subsection>
 </section>
@@ -1396,10 +1403,10 @@ HSM as well. How this backup and restore is done depends on the HSM you are usin
 </subsection>
 <subsection name="SSL certificate expire">
 <p>
-The SSL certificate used for SSL in JBoss (SSL is used for the admin-GUI) is stored in APPSRV_HOME/server/default/conf/keystore.jks.
+The SSL certificate used for SSL in JBoss is stored in APPSRV_HOME/server/default/conf/keystore.jks.
 The default validity time for the SSL certificate is two years. When this expire, you must generate a new one. 
 </p><p>
-You can do this through the admin-GUI by:
+You can do this through the Admin GUI by:
 <ol>
 <li>Go to 'List/Edit End Entities' and search for user 'tomcat'.</li>
 <li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your conf/web.properties and 'Status' to 'New'.</li>
