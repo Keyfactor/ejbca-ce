@@ -49,7 +49,7 @@ The algorithm is:
 <li>If status is CERT_ARCHIVED and reason is REMOVEFROMCRL or NOT_REVOKED the certificate is NOT revoked.</li>
 <li>If status is neither CERT_REVOKED or CERT_ARCHIVED the certificate is NOT revoked.</li>
 </ul>
-<p>The archive cutoff extension as defined in RFC2560 is not used.</p>
+<p>The archive cutoff extension as defined in <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> is not used.</p>
 </section>
 
 <section name="Multiple responder and CA certificates">
@@ -58,8 +58,8 @@ The OCSP responder can have many responder certificates, each issued by one CA. 
 There is no built in limitation on the number of CAs that can be handled.
 </p>
 <p>
-There can exist multiple CA certificates with the same DN. The OCSP standard includes IssuerNameHash and IssuerKeyHash in the, meaning that
-the OCSP protocol, and the responder, can handle key rollover on the CA without issues. 
+There can exist multiple CA certificates with the same DN. The OCSP standard includes IssuerNameHash and IssuerKeyHash in the request, meaning that
+the OCSP protocol, and the responder, can handle key roll-over on the CA without issues. 
 </p>
 </section>
 
@@ -112,16 +112,17 @@ To use your custom OCSP extension you have to define a few properties in conf/oc
 
 <section name="Using HTTP GET and RFC5019">
 <p>
-For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses. 
+For HTTP get requests according to <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC5019</a> we can set HTTP headers in the response to allow caching proxies to cache responses. 
 By default these properties are set not to allow caching, which is the default behavior. To enable caching in http proxies you can tune a few properties in conf/ocsp.properties.
 <ul>
 <li>ocsp.untilNextUpdate - number of seconds a response will be valid. This sets the nextUpdate field in the OCSP response.</li>
-<li>ocsp.maxAge - how long a response will be cached, in seconds. Should be less than untilNextUpdate. This adds RFC5019 cache headers.</li>
+<li>ocsp.maxAge - how long a response will be cached, in seconds. Should be less than untilNextUpdate. This adds
+<a href="http://www.ietf.org/rfc/rfc5019.txt">RFC5019</a> cache headers.</li>
 </ul> 
 </p>
 <p>
 You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
-This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
+This only works when you have published the certificate information using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
 You can find the certificateProfileId in the admin GUI.
 <ul>
 <li>ocsp.&lt;certificateProfileId>.untilNextUpdate - number of seconds a response will be valid for certificates issued with the specified certificate profile.</li>

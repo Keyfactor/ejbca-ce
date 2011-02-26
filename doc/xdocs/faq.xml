@@ -43,7 +43,7 @@
       </question>
       <answer>
       <p>
-      Yes some through GUI and others through custom extensions, see admin guide, certificate profiles and src/java/certextensions.properties for details. many MS extended key usages are supported and all common (all we know at least) windows functions using certificates works with EJBCA certificates.      
+      Yes some through the Admin GUI and others through custom extensions, see Admin Guide, certificate profiles and src/java/certextensions.properties for details. many MS extended key usages are supported and all common (all we know at least) windows functions using certificates works with EJBCA certificates.      
       </p>
       </answer>    
     </faq>
@@ -58,7 +58,7 @@
       /usr/local/ejbca_3_6_b1/compile.xmli:239: Java heap space
       </p>
       <p>
-      This error is because the default maximum allowed memory allocation for java is too low.
+      This error is because the default maximum allowed memory allocation for Java is too low.
       <br/>Do this in unixes:
       </p>
       <source>
@@ -234,7 +234,7 @@ fi
 		EJBCA does not trust the DN parts the user enters when he creates the
 		PKCS10 request.
 		The only way to match the certificate with what you enter in the
-		pkcs10 is to enter the same thing in the end entity in ejbca.
+		pkcs10 is to enter the same thing in the end entity in EJBCA.
 		</p><p>
 		PKCS#10 is the standard format for sending the public key (self signed
 		to provide proof-of-possession) to a CA.
@@ -245,7 +245,7 @@ fi
       <question>Where is the log file stored for tracking errors and debug information?</question>
       <answer>
         <p>
-        JBOSS_HOME/server/default/log/server.log.
+        JBOSS_HOME/server/default/log/server.log or where you configured conf/log4j-<i>appserver</i>.xml to store them.
         </p>
       </answer>
     </faq>
@@ -253,7 +253,7 @@ fi
       <question>How do I configure log level in JBoss?</question>
       <answer>
         <p>
-        JBOSS_HOME/server/default/conf/lo4j.xml. It is a good idea to limit the log level to not include debug logs. You can do this by changing the root category towards the end of log4j.xml:
+        jboss-5.1.0.GA/server/default/conf/jboss-log4j.xml. It is a good idea to limit the log level to not include debug logs. You can do this by changing the root category towards the end of jboss-log4j.xml:
         </p>
 <source>
 &lt;root&gt;
@@ -285,46 +285,34 @@ you can get nice logging with only the things you are interested in logged to th
       <question>I want to add my own static pages under http://hostname:8080/ejbca/ ?</question>
       <answer>
         <p>
-        Put your files (static html is easy) under publicweb/publicweb, do a full build and re-deploy.
+        Put your files (static HTML is easy) under modules/publicweb-gui/resources/, do a full build and re-deploy.
         </p>
       </answer>
     </faq>
     
     <faq id="errorEstablish">
-      <question>I get an error message when accessing the admin-GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?</question>
+      <question>I get an error message when accessing the Admin GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?</question>
       <answer>
         <p>
         <b>1)</b> Make sure you have imported to correct superadmin.p12 in your browser.
         </p><p>
-        <b>2)</b> You may have to delete and import the ca certificate in your java trust-store:
+        <b>2)</b> You may have to delete and import the CA certificate in your applicatioon server trust-store:
         </p>
 <source>
-sudo ant javatruststore
+ant javatruststore
 </source>
 <p>
 You can also import another CA than the initial AdminCA (My CA in the example) with the command:
 </p>
 <source>
-sudo ant -Dca.name="My CA" javatruststore
-</source>
-<p>
-Or you can run the commands manually. You don't have to do this if you use the convenience command 'ant javatruststore'.
-</p>
-<source>
-bin/ejbca.sh ca getrootcert caname rootca.der -der
-</source>
-<source>
-keytool -alias EJBCA-CA -delete -trustcacerts -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
-</source>
-<source>
-keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+ant -Dca.name="My CA" javatruststore
 </source>
 	<p>
 	Make sure you restart JBoss after making changes to the java trust store.
 	</p>
 	<p>
-	<b>3)</b> Perhaps the JBoss/Tomcat configuration was not done automatically because you are running another configuration than 'default'
-	in JBoss. the file '$JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml' holds the Tomcat configuration.
+	Perhaps the JBoss/Tomcat configuration was not done automatically because you are running another configuration than 'default'
+	in JBoss. the file 'jboss-5.1.0.GA/server/<i>default</i>/deploy/jbossweb.sar/server.xml' holds the Tomcat configuration.
 	The configuration should be like the following, where 'serverpwd' is the 'httpsserver.password' as configured in web.properties.
 	</p>
 <source>
@@ -337,19 +325,18 @@ keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_H
     keystorePass="serverpwd" sslProtocol = "TLS" /&gt;
 </source>
 	<p>
-	Also the file '$EJBCA_HOME/p12/tomcat.jks' must be copied to '$JBOSS_HOME/server/default/conf/keystore/keystore.jks', where 'default' should
+	Also the file '$EJBCA_HOME/p12/tomcat.jks' must be copied to '$JBOSS_HOME/server/<i>default</i>/conf/keystore/keystore.jks', where 'default' should
 	be replaced with the JBoss configuration you are using.
 	</p>
       </answer>
     </faq>
     <faq id="blankPage">
-      <question>I get a blank page on the admiweb after start?</question>
+      <question>I get a blank page on the Admin GUI after start?</question>
       <answer>
         <p>
 		Either you entered a hostname (in httpsserver.hostname in web.properties) that does not resolve to the 
 		machine where EJBCA is running during setup, or you changed the port that JBoss listens to.
-		Make sure the hostname resolves to the machine ejbca is running on.
-		If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.
+		Make sure the hostname resolves to the machine EJBCA is running on.
         </p>
       </answer>
     </faq>
@@ -366,13 +353,8 @@ password than 7 characters. Anything longer gives an error?</question>
         </p>
         <p>
         Java 1.6.0<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6.0
-        <br/><a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>
-        </p>
-        <p>
-        Java 1.5.0<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 5.0
-        <br/><a href="http://java.sun.com/j2se/1.5.0/download.jsp">http://java.sun.com/j2se/1.5.0/download.jsp</a>
+        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6.0<br/>
+        <a href="http://www.oracle.com/technetwork/java/javase/downloads/">http://www.oracle.com/technetwork/java/javase/downloads/</a>
         </p>
       </answer>
     </faq>
@@ -382,8 +364,8 @@ password than 7 characters. Anything longer gives an error?</question>
         <p>
 		Perhaps JBOSS_HOME/server/default/conf/keystore/tomcat.jks must be executable. All scripts in 
 EJBCA_HOME/bin directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
-installation of ejbca as a user with enough privileges to write in JBOSS_HOME, and to 
-JAVA_HOME/jre/lib/security/cacerts. Preferably the same user as is used to run the JBoss server.
+installation of ejbca as a user with enough privileges to write in JBOSS_HOME.
+Preferably the same user as is used to run the JBoss server.
         </p>
       </answer>
     </faq>
@@ -402,19 +384,15 @@ CREATE UNIQUE INDEX PK_GLOBALCONFIGURATIONDATA ON GLOBALCONFIGURATIONDATA(CONFIG
 Just for fun you can also delete all lines beginning with: INSERT GLOBALCONFIGURATIONDATA...
 </p><p>
 Alternative 2:
-Download HsqlDb fom http://hsqldb.sourceforge.net/. Unpack and in the 'bin'-subdirectory run 'runUtil DatabaseManager'.
-In the window that opens connect to 'HSQL Engine Database In-Memory', select URL 'jdbc:hsqldb:$jboss.home\server\default\db\hypersonic\default'
-where the path-to-jboss is for example 'C:\jboss\jboss-3.0.6_tomcat-4.1.18'.
-Now you can enter you SQL-commands, for example 'drop table globalconfigurationdata'
-and press 'Execute'. Unforturnately you must now go into the file
-JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version to the correct old one, edit
- the lines with 'version' to read 1.6 (for JBoss 3.0) instead of whatever is there.
+Go to <a href="http://localhost:8080/jmx-console/">http://localhost:8080/jmx-console/</a>.
+Click "database=localDB,service=Hypersonic" and then startDatabaseManager: "Invoke".
+This will fire up a rudimentary database interface. Only works on the same machine though.
  </p>
  </answer>
  </faq>
     <faq id="errorClsid">
       <question>When enrolling for certificates with IE, the enrollment controll (clsid) is incorrect.</question>
-	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'src/publicweb/publicweb/anrol/apply/apply_exp.jspf' for more information.</p></answer>
+	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'modules/publicweb-gui/resources/enrol/apply/apply_exp.jspf' for more information.</p></answer>
 	</faq>
     <faq id="errorOCV">
       <question>I get the error "Object Class Violation : (65)" when publishing certificates in LDAP</question>
@@ -422,11 +400,11 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
 	</faq>
     <faq id="errorUserStatus">
       <question>Why do I get the exception/error: Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: foo; nested exception is: javax.ejb.EJBException:null</question>
-	  <answer><p>When using the LocalAuthenticationSession (default) all users have a STATUS. The status lifecycle
+	  <answer><p>When using the AuthenticationSession (default) all users have a STATUS. The status lifecycle
 	  begins with NEW and ends with REVOKED. Only when the status is NEW, FAILED or INPROCESS is it possible
 	  to issue a certificate to a user. After a certificate has been issued, the status is set to GENERATED. This works like a
 	one-time-password scheme. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
-	This can be done with the admin-GUI or:
+	This can be done with the Admin GUI or:
 	<source>
 	bin/ejbca.sh ra setuserstatus username status
 	</source>
@@ -435,9 +413,9 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
 	</answer>
 	</faq>
     <faq id="manipulateKeystore">
-      <question>How do I manipulate EJBCA-keystores using Suns 'keytool'?</question>
-	  <answer><p>EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards.
-	  Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
+      <question>How do I manipulate EJBCA-keystores using Oracle's 'keytool'?</question>
+	  <answer><p>EJBCA supports the PKCS12 format for the keystore because it is a standard, and we like standards.
+	  Normally keytool (e.g. Oracle's) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
 	  Put the BouncyCastle provider 'bcprov-jkd16-145.jar' in 'jre/lib/ext', the default classpath for extensions in java.
 	  Now it should be possible to run:
 	  </p>
@@ -536,7 +514,7 @@ not just for CAs.
   </faq>
   
   <faq id="glassfishFail1">
-  <question>Galssfish issue no. 1: ant install fails with some weird errors.</question>
+  <question>Glassfish issue no. 1: ant install fails with some weird errors.</question>
   <answer>
   <p>
   This issue affects Glassfishv2 Enterprise Edition (open source admin console is slightly different and doesn't have this features).
