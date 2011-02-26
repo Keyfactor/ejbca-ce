@@ -29,7 +29,7 @@
     information. This can be a replica of the CertificateData table in EJBCA. In normal operation the EJBCA CA pushes status changes to the external OCSP
     database when certificates are issued and revoked in EJBCA.
     </p>
-    <p>The external OCSP responder is not limited to usage in combination with EJCBA though. The external OCSP database can simply be updated by other tools, for example 
+    <p>The external OCSP responder is not limited to usage in combination with EJBCA though. The external OCSP database can simply be updated by other tools, for example 
     being fed with CRLs from other CAs.
     </p> 
   </section>
@@ -37,20 +37,20 @@
   <section name="Features">
     <p>
     <ul>
-    <li>Implements RFC 2560 and RFC 5019.</li>
+    <li>Implements <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> and <a href="http://www.ietf.org/rfc/rfc5019.txt">RFC 5019</a>.</li>
     <li>Independent of CA software used (various degrees of integration is possible and may be required).</li>
     <li>One responder can respond for any number of CAs.</li>
     <li>Status information stored in SQL database.</li>
     <li>Not depending on CRLs. Status information can be updated in real-time.</li>
     <li>Plug-in mechanism for custom OCSP extensions.</li>
     <li>Highly configurable audit and transaction logging. Suitable for invoicing.</li> 
-    <li>Supports PKCS#11 HSMs.</li>
+    <li>Supports PKCS#11 HSMs and soft keys.</li>
     <li>Built in health check used by load balancers and for monitoring.</li>
     <li>Configurable for requiring signed requests, authorized signers, etc.</li>
     <li>Linear scalability for performance and high availability by adding multiple nodes.</li>
     <li>High performance, >500 request per second on a single server.</li>
     <li>On-line renewal of OCSP responder keys and certificates.</li>
-    <li>OCSP client in java (Client ToolBox).</li>
+    <li>OCSP client in Java (Client ToolBox).</li>
     </ul>
     </p>
   </section>

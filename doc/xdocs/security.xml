@@ -20,7 +20,7 @@ suitable for your policy, application and environment.
 <p>To have a functional EJBCA installation there are only two ports that need to be open to the outside:
 <ul>
 <li>8080 - the public HTTP port of you application server, used for clients to access the public web for enrollment.</li>
-<li>8443 - the SSL protected HTTPS port used to access the admin GUI of EJBCA. This port requires client certificate for access.</li>
+<li>8443 - the SSL protected HTTPS port used to access the Admin GUI of EJBCA. This port requires client certificate for access.</li>
 </ul>
 Additional ports that you may need to open are SSH, outgoing SMTP, outgoing LDAP, etc. Which additional ports that need to be opened depends on your specific setup and which 
 services you use. You do not need outgoing SMTP if you don't use email notification, for example.
@@ -55,46 +55,7 @@ follow the instructions for installing EJBCA, this will set up HTTPS
 for the admin-GUI automatically.
  </p><p>
 This will set up an SSL port open for the public at 8442 and an SSL port
-which require client certificate to access the administration GUI at 8443.
-</p>
-</section>
-
-<section name="Java truststore">
-<p>
-Acceptable CA certificates for clients are stored (by java) in $JAVA_HOME/jre/lib/security/cacerts. 
-There are however many others present as shipped by Java, which means that anyone with a certificate issued 
-by one of those CAs normally can access port 8443 on you JBoss server. They can not access the admin-GUI however,
-since EJBCA checks authorization. 
-
-When EJBCA deploys, it generates a custom truststore that is used by JBoss. 
-So the certificates available in $JAVA_HOME/jre/lib/security/cacerts are NOT trusted.
-
-If using another application server than JBoss, check the trust keystore contents of you application server so 
-you don't trust too many issuers. 
-</p>
-<p>
-You can create a new Java trust store with the command:
-</p>
-<source>
-ant javatruststore
-</source>
-<p>
-The trust store will be stored as p12/truststore.jks
-</p>
-<p>
-Manual steps to creating a java trust store:
-</p>
-<source>
-keytool -import -alias AdminCA1 -trustcacerts -file root.der -keystore /home/jboss/java/cacerts
-</source>
-<p>
-Where root.der is the root certificate from EJBCA that you saved, for instance with the command:
-</p>
-<source>
-bin/ejbca.sh ca getrootcert AdminCA1 root.der -der
-</source>
-<p>
-AdminCA1 is the name of your CA that you are using for server and administrator certificates in EJBCA.
+which require client certificate to access the Admin GUI at 8443.
 </p>
 </section>
 
@@ -209,7 +170,7 @@ keystore files at 'ant install'. If either of these passwords are not predefined
 prompted for during bootstrap, install, and deploy. </p><p>
 If you let 'ant' prompt for these passwords you must set them (encrypted, if possible)
 in the application server configuration. The file for the application server is copied to the application
-server at 'ant deploy' (in jboss 4.2.3 the file is called $JBOSS_HOME/server/default/deploy/jboss-web.deployer/server.xml)
+server at 'ant deploy' (e.g. jboss-5.1.0.GA/server/default/deploy/jbossweb.sar/server.xml)
 You must then manually substitute the strings 'changeThisToThePassword' in the configuration file with clear
 text or possible encrypted (application server specific) passwords.
 </p>

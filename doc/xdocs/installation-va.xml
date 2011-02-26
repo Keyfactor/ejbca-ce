@@ -19,7 +19,7 @@ you must set up this datasource manually. It should be a datasource that is not 
 (a <i>no-tx-datasource</i> in JBoss), and it should have autocommit (should be default in JBoss).
 </p><p>
 When EJBCA has been started you have to add a new publisher. As a superadministrator you add this publisher
-on the "Edit Publishers" page in the admin GUI. Use publisher type "Validation Authority Publisher". 
+on the "Edit Publishers" page in the Admin GUI. Use publisher type "Validation Authority Publisher". 
 </p>
 <p>
 Validation Authority Settings :
@@ -39,11 +39,9 @@ have a reference to this publisher. To configure this you must be a superadminis
 All CAs that should have their certificates and CRLs published to the VA  should
 have a reference to this publisher. To configure this you must be a superadministrator.
 </p><p>
-When all settings above have been done then all created certificates issued with a certificate
-profile that has the ValidationAuthorityPublisher as publisher should be published in the responder
-database as well as in the EJBCA database. 
-When a certificate is revoked it will be revoked in
-the responder database as well.
+When all settings above have been done, every issued or revoked certificate with a certificate
+profile that uses the ValidationAuthorityPublisher should be published in the responder
+database as well as in the EJBCA database.
 If the publishing is not working it is important to notice this and synchronize the databases again, 
 see <a href="#Error%20handling">Error handling</a> below.
   </p>
@@ -59,17 +57,17 @@ Note that the standalone VA uses the configuration options database.* and not th
 </note>
 <p>
 Please read description of the configuration properties in conf/ocsp.properties.sample, conf/database.properties.sample, conf/crlstore.properties.sample, conf/certstore.properties.sample and perhaps 
-conf/web.properties.sample (if ssl or different ports should be configured).
+conf/web.properties.sample (if SSL or different ports should be configured).
 </p><p>
 For the certificate and CRL store service the sample file should be enough to understand how to set it up. For the OCSP responder service there is separate <a href="installation-ocsp.html">setup instructions</a> for the Standalone OCSP installation.
 
 </p><p>
-The responder is then built and deployed with:
+The validation authority is built and deployed with:
 </p><source>
 ant va-deploy
 </source>
 <p>
-on the VA.
+on the VA server.
 </p>
 
 <subsubsection name="Responder database">
@@ -90,7 +88,8 @@ If there is an error publishing to the VA database, the VA/OCSP Responder will b
 It is very important to re-synchronize the databases in that case.
 </p>
 <p>
-In case of failure to publish to the VA database the following error message will appear in the server.log:
+In case of failure to publish to the VA database the following error message will appear in the server log on the EJBCA
+server:
 </p>
 <source>
 Validation Authority ERROR, publishing is not working
