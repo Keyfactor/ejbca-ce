@@ -55,7 +55,7 @@ as the CA itself.
 <p>
 Soft token CAs can be exported and backed up. CAs with the keys on a HSM can naturally not be exported through EJBCA. Use the HSMs methods to back up such keys.
 </p><p>
-Soft token CAs can be imported using both the CLI and admin-GUI, while HSM CAs can only be imported using the CLI.  
+Soft token CAs can be imported using both the CLI and Admin GUI, while HSM CAs can only be imported using the CLI.  
 </p>
 <subsubsection name="Using command line interface">
 <p>
@@ -88,7 +88,7 @@ to get usage instructions how to import HSM CAs.
 </p>
 </subsubsection>
 <subsubsection name="Using admin-GUI">
-<p>To be able to export and import the CA's keys using the admin-GUI, you have to have superadministrator access.
+<p>To be able to export and import the CA's keys using the Admin GUI, you have to have superadministrator access.
 Make sure that .p12 files are not automatically saved to an unsuitable place by your browser.
 before you do an export.
 </p>
@@ -193,8 +193,11 @@ You have to give several parameters to the command. Running the command without 
 <section name="CRL generation">
 <p>
 A new CA should always issue an (empty) CRL. This is done when the ca is created
-and can also be done by running 'ca.sh/cmd createcrl <i>caname</i>'.
+and can also be done by running:
 </p>
+<source>
+bin/ejbca.sh ca createcrl &lt;CA name&gt;
+</source>
 <p>See also the User Guide for details how to configure CRL periods, CRL Distribution Points and CRL Issuers.</p>
 <p>
 There are at least two ways to have EJBCA to periodically create updated CRLs.
@@ -202,9 +205,8 @@ There are at least two ways to have EJBCA to periodically create updated CRLs.
 
 <subsection name="CRL Update service worker">
 <p>
-From EJBCA 3.4 there is a timed service framework in EJBCA. In the Admin-GUI you can go to 
-'Edit Services' and add a new service. Edit the service and select the 'CRL Updater' worker and the interval you want to use.
-Don't forget to set the service to 'Active'.
+In the Admin GUI you can go to 'Edit Services' and add a new service. Edit the service and select the 'CRL Updater'
+worker and the interval you want to use. Don't forget to set the service to 'Active'.
 <br/>
 Now this service will run with the interval you have configured and generate CRLs according to the settings for each CA.
 </p>
@@ -220,12 +222,12 @@ If you want to force CRL generation for a CA, use 'bin/ejbca.sh ca createcrl <i>
 Example crontab entry:
 </p>
 <source>
-PATH=$PATH:/usr/java/jdk1.6.0_01/bin
+PATH=$PATH:/usr/java/jdk1.6.0_24/bin
 @daily cd /home/ejbca;/home/ejbca/bin/ejbca.sh ca createcrl;
 </source>
 <p>
-where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java' can be found.
-'/home/ejbca' is where ejbca is installed and 'ca.sh' located.
+where '/usr/java/jdk1.6.0_24/bin' is the path to where 'java' can be found.
+'/home/ejbca' is where ejbca is installed.
 </p><p>
 Sample crontab to be installed with 'crontab -e':
 </p>
@@ -251,7 +253,7 @@ Command line interface and CRL Update service will generate delta CRLs if 'Delta
 <p>
 Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK download. Further information on this can be found in 
-the Sun documentation on the JCE.
+the Oracle documentation on the JCE.
 </p><p>
 There are some compatibility issues with SCEP, one being if the CA certificate should be returned in a SCEP enrollment
 response or not. The CA certificate is optional but some, Cisco VPN client, seems to require it while others, Juniper, 
@@ -270,7 +272,7 @@ http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe
 </source>
 <subsection name="Level of SCEP support">
 <p>
-EJBCA implements features from (at least) draft 11 of the SCEP spec. This means that we implement the following SCEP messages:
+EJBCA implements features from (at least) draft 11 of the SCEP specification. This means that we implement the following SCEP messages:
 <ul>
 <li>PKCSReq</li>
 <li>GetCRL</li>
@@ -397,8 +399,6 @@ has been approved in the CA and the certificate has been generated.
 </p></subsubsection>
 <subsubsection name="Cryptlib">
 <p>
-Cryptlib is working as of EJBCA 3.1.3.
-</p><p>
 When using <a href="http://www.cs.auckland.ac.nz/~pgut001/cryptlib/">Cryptlib</a>, the CA certificate must have 
 KeyUsage 'Key Encipherment' in addition to the usual key usage flags. This is reasonable, since SCEP requires the CA
 to actually encrypt data (which generally is a bad thing, since a special encryption certificate should be used for that).
@@ -497,7 +497,7 @@ Cisco PIX is working as of EJBCA 3.1.3.
 <ul>
 <li>You must configure JBoss to use port 80 to enroll with PIX, this is done in 
 APPSRV_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version). You must run as root to use port 80.</li>
-<li>EJBCA supports the 'ca' mode of enrollment for pix, not 'ra'. For 'ra' and polling enrollment you can use the External RA module (extra).</li>
+<li>EJBCA supports the 'ca' mode of enrollment for pix, not 'ra'. For 'ra' and polling enrollment you can use the External RA API SCEP module.</li>
 <li>The certificate profile used by the SCEP CA must include the key usages KeyEncipherment and DataEncipherment, otherwise PIX will 
 not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs. Create a new certificate profile before 
 creating the Scep CA, you can use ROOTCA as template for the new certificate profile.</li>
@@ -586,7 +586,7 @@ CA Certificate
 </subsection>
 </section>
 
-<section name="CMP (EJBCA >=3.4)">
+<section name="CMP">
 <p>
 CMP (RFC4210) is a very complex protocol, which EJBCA does implement some parts of.
 <br/> 
@@ -600,7 +600,7 @@ The following CMP messages are supported:
 Certificate requests use the CRMF (RFC4211).
 </p>
 <p>
-From EJBCA 3.5, CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
+CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
 password used to protect the CMP messages (PBE protection).
 </p>
 <subsection name="Configuration">
@@ -761,7 +761,7 @@ The proxy in turn connects to EJBCA gets the answer and forwards it back to the 
 </p><p> 
 The proxy is a stand alone module that runs on another mahing than the CA itself.
 </p><p>
-See '${EJBCA_HOME}/modules/cmpProxy/resources/README' for information how to build and use the proxy.
+See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build and use the proxy.
 </p>
 </subsection>
 
@@ -777,32 +777,22 @@ This is done by sending a request for the status of a specific certificate to an
 The responder may or may not be the same as the CA. The OCSP responder sends a signed reply, 
 containing the requested status information back to the client. 
 The client uses this status information to determine whether the certificate is valid for use or revoked.
-</p>
-<p>
-It is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
+</p><p>
+The OCSP servlet receives OCSP request by http(s) and send back a status response signed by the CA.
+</p><p>
+The OCSP service receives requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
 servlet can process requests for certificates signed by a CA running in EJBCA, as long as the CAs OCSP 
 service has not been deactivated. 
-</p><p>
-The OCSP servlet receives OCSP request by http(s) and send back a status response signed by the CA, or 
-with a dedicated responder certificate.
 </p><p>
 For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Signature' in the certificate profile used to create the CA.
 This KeyUsage must be included if the CA is to sign OCSP-responses.
 The default certificate profiles for CAs includes the key usage 'Digital Signature'.
 </p><p>
-There are a two parameters affecting the OCSP service that can be configured in conf/ejbca.properties:
-<ul>
-<li>'useCASigningCert' - If set to true (default) the OCSP responses will be signed directly by the CAs certificate instead 
-of the CAs OCSP responder. If set to false, the CAs special OCSP responder certificate is used to sign the
-OCSP responses. The OCSP responder certificate is signed directly by the CA.</li>
-<li>'defaultResponderID' - Specifies the subject of a CA which will 
-generate responses when no real CA can be found from the request. This is used to generate 'unknown' 
-responses when a request is received for a certificate that is not signed by any CA on this server.
-Set this to the same DN as your initial Admin CA for example.</li>
-</ul>
-</p><p>
-These values should be set during deployment of EJBCA. After the values have been edited, they are installed 
-with the 'ant deploy' command.
+You can configure the CA which will generate responses when no real CA can be found from the request by setting
+'ocsp.defaultresponder' in conf/ocsp.properties. This is used to generate 'unknown' responses when a request is
+received for a certificate that is not signed by any CA on this server. Set this to the same DN as your initial Admin
+CA for example. This value should be set during deployment of EJBCA. After the values have been edited, they are
+installed with the 'ant deploy' command.
 </p><p>
 Example to generate an OCSP request using OpenSSL (works with both internal and external OCSP responders):
 </p>
@@ -839,7 +829,7 @@ able to answer OCSP request. You can set up firewalls so that only outgoing traf
 nothing to the CA.
 </p><p>
 Separated OCSP responders is also good when you don't require high-performance clustering for the CA, but you do need
-high-performance for the OCSP responders. This should be a usual setup, if the CA only issues certificates once every year
+high-performance for the OCSP responders. This is a common setup, if the CA only issues certificates once every year
 for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
 </p>
 <p>
@@ -849,7 +839,7 @@ See the <a href="installation-ocsp.html">OCSP Installation document</a> for info
 
 <subsection name="Simple OCSP client">
 <p>
-To try out and test your OCSP installation you can use the EJBCA client toolbox, (see below). The toolbox has replaced the old ocsp client which has been removed. You can also use the API directly from your 
+To try out and test your OCSP installation you can use the EJBCA client toolbox, (see below). You can also use the API directly from your 
 java program.
 </p>
 </subsection>
@@ -859,10 +849,10 @@ java program.
 A good example of using OCSP is to check digitally signed PDF documents using Adobe Reader.
 </p>
 <p>
-To be able to verify certificates in Adobe Reader, you must first add the CA-certificate as trusted in Adobe Reader. 
+To be able to verify certificates in Adobe Reader, you must first add the CA certificate as trusted in Adobe Reader. 
 You can do that in the menu Document->Trusted Identities. Choose Certificates in the drop-down list and click 'Add contacts',
 now you can browse to the CA-certificate that you have downloaded in DER format (for example by choosing download to IE on the public EJBCA pages).
-The CA-certificate must have been saved with a name ending with '.cer'.
+The CA certificate must have been saved with a name ending with '.cer'.
 After adding the new contact, you have to click 'Edit trust' and check at least 'Signatures and as trusted root' and 'Certified documents'.
 This works the same using both internal and external OCSP responders.
 </p>
@@ -875,62 +865,59 @@ You can configure this in the certificate profile used to issue certificates.
 </section>
 <section name="EJBCA Web Service Interface">
 <p>
-New to EJBCA 3.4 is a JAX-WS 2.0 Web Service Interface used to access the basic
-functions remotely over client authentication HTTPS. 
-</p><p>
-The functionality currently available through the Web Service Interface are documented in the
+EJBCA 3.4 introduced the JAX-WS 2.0 Web Service Interface used to access the basic functions remotely over client
+authenticated HTTPS. The functionality currently available through the Web Service Interface are documented in the
 <a href="ws/index.html" target="_blank">EJBCA Web Service API Reference</a>.
-</p>
-<p>
-There is also a cli tool that can be used for remote scripting. See following section for more information.
-Note: All these calls are not available through the CLI.
-</p>
-<p>
+</p><p>
+There is also a CLI that can be used for scripting WS calls remotely. See following section for more information.
+Note: All web service calls are not available through the CLI.
+</p><p>
 If you are running on JBoss 5.x, make sure that you configured JBoss WS correctly as described in the <a href="installation.html#Configure">installation</a> document.
 </p>
 
 <subsection name="Web Services authentication">
 <p>
-the Web Services interface requries client certificate authentication from administrators, in the same way as the admin GUI does.
+The Web Services interface requries client certificate authentication from administrators, in the same way as the admin GUI does.
 If you have a client certificate the works on the admin GUI you should also be able to use it for the web service interface. 
-</p>
-<p>
-Configuration for the Web Services CLI requires a JKS keystore. You can easily generate a JKS for an administrator using the admin GUI (you can even create a JKS for superadmin).
-Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator admin group.
-</p>
-<source>
-ejbca ra adduser &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
-ejbca ra setclearpwd &lt;1> &lt;2>
-ejbca batch
-ejbca admins addadmin "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
-</source>
-</subsection>
-
-<subsection name="Configuring Web Services CLI">
-<p>
-There exists one propertyfile in conf/jaxws.properties.sample that is used to
-configure the behaviour of the WS service. To configure it copy it and name
-it jaxws.properties.
-</p>
-<p>
-See the sample file for details of how to configure the Web Service interface.
 </p>
 </subsection>
 
 <subsection name="Configuring Web Services behavior">
 <p>
+The sample property file conf/jaxws.properties.sample contains more information on how to configure the behaviour of
+the EJBCA WS. Copy this to conf/jaxws.properties, edit and redeploy.
+</p><p>
     If the end entity profile informations must be used to define default values when you create a user, the flag "Allow 
     merge DN Webservices" must be checked in the end entity profile.
 </p>
 <p>
-    If multiple instances of a component exist, the merge is done from end to begin, and the remaining values of this component type will be placed at the end. 
-    For example, if you want to merge :
-    <code>dn=cn=foo,..., dc=dc1, ..., dc=dc2, ...</code>
-    with
-    <code>dn=..., dc=mdc1, ..., dc=mdc2, ..., dc=mdc3, ...</code>
-    the result will be :
-    <code>dn=cn=foo, ..., dc=mdc1, ..., dc=mdc2, ..., dc=mdc3, ...</code>
+    If multiple instances of a component exist, the merge is done from end to begining, and the remaining values of this component type will be placed at the end. 
+    For example, if you want to merge:
 </p>
+    <source>dn=cn=foo,..., dc=dc1, ..., dc=dc2, ...</source>
+    <p>with</p>
+    <source>dn=..., dc=mdc1, ..., dc=mdc2, ..., dc=mdc3, ...</source>
+    <p>the result will be:</p>
+    <source>dn=cn=foo, ..., dc=mdc1, ..., dc=mdc2, ..., dc=mdc3, ...</source>
+
+</subsection>
+
+<subsection name="Configuring Web Services CLI">
+<p>
+Edit dist/ejbca-ws-cli/ejbcawsracli.properties before running the EJBCA WS CLI. This files contains descriptions of
+what can be configured. Please note that this directory is recreated each time you build EJBCA, so copy it to a
+separate location if you intend to rebuild or redeploy EJBCA and keep the configuration.
+</p><p>
+Configuration for the Web Services CLI requires a P12 or JKS keystore. You can easily try the WS CLI using the
+superadmin.p12 keystore generated during the installation or generate a new JKS using the Admin GUI.
+Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator admin group.
+</p>
+<source>
+bin/ejbca.sh ra adduser &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
+bin/ejbca.sh ra setclearpwd &lt;1> &lt;2>
+bin/ejbca.sh batch &lt;1>
+bin/ejbca.sh admins addadmin "Temporary Super Administrator Group" AdminCA WITHCOMMONNAME EQUALCASEINS &lt;1>
+</source>
 </subsection>
 
 <subsection name="Using the Web Services CLI">
@@ -953,6 +940,7 @@ ejbcaClientToolBox.sh EjbcaWsRaCli pkcs12req testuser2 foo123 2048 NONE tmp
 ejbcaClientToolBox.sh EjbcaWsRaCli revokeuser testuser2 SUPERSEDED false
 </p>
 </subsection>
+
 <subsection name="Using the Web Service API for Integration">
 <p>
 You can use the Web Service interface to integrate EJBCA from other applications.
@@ -1222,7 +1210,7 @@ But different tags are used:
 <li>ADMIN_ISSUER_DN : Issuer DN of the client certificate in the call</li>
 </ul>
 <p>
-The configuration is done in ./conf/jaxws.properties.
+The configuration is done in conf/jaxws.properties.
 </p><p>
 In jboss-log4j.xml 'org.ejbca.core.protocol.ws.logger.TransactionLogger' should be used as category name for the appender.
 </p>
@@ -1235,7 +1223,7 @@ From EJBCA 3.4 the XKMS protocol is supported as a service as a complement to th
 </p><p>
 It's disabled in the standard installation (from EJBCA 3.10) and have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
 </p>
-<note>The XKMS client that comes with EJBCA does not work properly with signed responses.</note>
+<note>The XKMS client that comes with EJBCA 4+ does not work properly with signed responses.</note>
 </subsection>
 <subsection name="How to configure the XKMS Service">
 <p>
@@ -1259,13 +1247,13 @@ The following settings exists:
 </ul>
 <p>
 Important, if signing of responses is needed, must the XKMS CA service for the configured CA be activated in the
-'Edit CA' page. The XKMS Signer have it's own certificate for each CA just as the OCSP service and is created during the installation or upgrade of a CA.
+'Edit CA' page. The XKMS Signer have it's own certificate for each CA that is created during the installation or upgrade of a CA.
 </p>
 </subsection>
 <subsection name="Implementation Specific Notes">
 <subsubsection name="What is implemented">
 <p>
-Currently are the methods locate, validate, register, reissue, revoke and recover). The Compond request isn't implemented.
+Currently are the methods locate, validate, register, reissue, revoke and recover implemented. The Compond request isn't implemented.
 </p><p>
 The XKMS Service only supports synchronized calls, not asynchronized or two-phase requests.
 </p><p>
@@ -1336,7 +1324,7 @@ All queries find their data using beginwith (except PKIX) of the identifier.
 
 <subsection name="Using the XKMS client">
 <p>
-When building EJBCA, a XKMS CLI tool is also generated. The tool is placed
+When building EJBCA with XKMS enabled, a XKMS CLI tool is also generated. The tool is placed
 in the directory dist/ejbca-xkms-cli and consists of the all the necessary files needed to run the cli.
 </p><p>
 To use the client do the following, copy the directory with all included files to
@@ -1366,7 +1354,7 @@ Information on how to use the External RA API is available <a href="externalra.h
 
 <section name="Key recovery">
 <p>
-Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the admin-GUI:
+Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the Admin GUI:
 <ol>
 <li>Set 'Enable Key Recovery' in 'System Configuration'.</li>
 <li>Create a new End Entity Profile and set to use 'Key Recoverable'.</li>
@@ -1397,7 +1385,7 @@ bin/ejbca.sh ra setclearpwd $username $userpass
 # and finally reissue the certificate.
 </p>
 <source>
-bin/ejbca.sh batch
+bin/ejbca.sh batch $username
 </source>
 <p>
 The same can be accomplished using a browser:
@@ -1410,11 +1398,11 @@ The same can be accomplished using a browser:
 </p>
 <subsection name="Technical details">
 <p>
-What the operation "bin/ejbca.sh ra keyrecovernewest", or "recover key" in the admin GUI, or keyRecoverNewest in the WS API actually does is 
+What the operation "bin/ejbca.sh ra keyrecovernewest", or "recover key" in the Admin GUI, or keyRecoverNewest in the WS API actually does is 
 that it <strong>marks</strong> the user/certificate for key recovery. This means that the next time you make a call to generate a keystore (p12/jks/pem) 
 for the user the CA will get the private key, held encrypted in the recovery database, and the existing user certificate or a new certificate, and 
 create a keystore for the user with this old key pair. 
-The actual recovery would then happen when you make a call to i.e. pkcs12Req in the WS API, or if keystore type is P12, JKS or PEM in the admin GUI. 
+The actual recovery would then happen when you make a call to i.e. pkcs12Req in the WS API, or if keystore type is P12, JKS or PEM in the Admin GUI. 
 </p>
 </subsection>
 </section>
@@ -1650,8 +1638,7 @@ Create 3 email notifications:
 
 <section name="Printing of User Data">
 <p>
-From EJBCA 3.4 it is possible to have userdata printed on a printer
-whenever an end entity is added or edited. The functionality is
+User data can be sent to a printer whenever an end entity is added or edited. The functionality is
 practically the same as for notifications.
 </p><p>
 This is configured in the end entity profiles by selecting a printer,
@@ -1661,7 +1648,7 @@ that can be used for testing.
 </p><p>
 For more information how to write EJBCA SVG templates see: http://wiki.ejbca.org/ (Administration->hardtokenprofiles). 
 </p><p>
-One good SVG client can be downloaded from inkscape.org 
+A good SVG client can be downloaded from inkscape.org 
 </p><p>
 In order to renew the list of available printers you must restart
 the http session since the list is cached for performance reasons.
@@ -1730,7 +1717,7 @@ In the system there are basically two different classes of requests. One is requ
 end entity, and that is executed directly after the last required administrator has approved the action. This type is 
 called 'Executable Action Request'. The other type are requests to get hold of some information, like hard token 
 PUK codes or archived keys. This kind of request is approved when the last administrator gives his consent and is valid 
-for a defined period of time (in conf/ejbca.properties). In this case is the requesting administrator supposed to poll the 
+for a defined period of time (in conf/ejbca.properties). In this case the requesting administrator is supposed to poll the 
 approval request if it has been approved or not. These requests are called 'Non-Executable Action Requests'. 
 </p><p>
 <i>Explanation of approval status</i>
@@ -1776,29 +1763,22 @@ Remember to configure mail-server settings in the mail.properties file.
 
 <section name="Framework for External User Data Sources">
 <p>
-In EJBCA 3.3 there exists a basic framework of custom user data sources 
-for importing user data from existing databases. 
+A basic framework for importing user data from existing databases exists. The intention of this
+framework is to be able to import user the user data from an LDAP and AD, but currently no such
+implementations exist or any way to use such implementation from the Admin GUI. The rest of this
+section is intended for EJBCA developers.
 </p>
-<p>These instructions is intended for EJBCA developers.</p>
-<p>Currently there exists a standalone framework for implementing 
-custom user data sources in the same way as for custom publishers. Later 
-on will ready made LDAP and AD userdatasources be implemented to be used 
-out of the box. 
-</p>
-<p>A custom userdatasource have two extra fields of data</p>
-<p>The first one is a set of CA ids that the userdatasource is applicable to. 
-It can have a constant BaseUserDataSource.ANY_CA.
-</p>
-<p>The second is a set of fields instructing the RA interface GUI which fields that 
+<p>A custom userdatasource have two extra fields of data:</p>
+<ul>
+<li>The first one is a set of CA ids that the userdatasource is applicable to. 
+It can have a constant BaseUserDataSource.ANY_CA.</li>
+<li>The second is a set of fields instructing the RA interface GUI which fields that 
 should be modifyable by the RA and which that should be fixed. Important, there 
 is not connection between the user data source, isModifyable data and the end entity profile 
 isModifyable data. The userdata source is only an instruction to the RA gui then when the 
 userdata is added will it be matched against the end entity profile, and it's the data 
-in the end entity profile that really counts. 
-</p>
-<p>Tip. The RA gui should read non-modifyable data twice since the RA could 
-change the postdata even if the form have a field as disabled. 
-</p>
+in the end entity profile that really counts.</li>
+</ul>
 <p>
 To implement a custom user data source do the following: 
 <ol>
@@ -1807,14 +1787,13 @@ org.ejbca.core.model.ra.userdatasource.ICustomUserDataSource containing the meth
 init(), fetch() and testConnection(), see org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource 
 for an simple example implementation. 
 </li>
-<li>Create a jar file containing the class and deploy it to the application server.</li>
+<li>Create a JAR file containing the class and deploy it to the application server.</li>
 <li>Make the user data source available to EJBCA by adding a userdata source, choose 'Custom user data source' 
 as type and enter it's classpath and properties (using the same semantics as a regular java property file). 
 </li>
 <li>
 Now it is possible to fetch userdata from the userdata source from custom implemented webpages using the 
-UserDataSourceSession session bean calling the method 
-java.util.Collection IUserDataSourceSessionLocal.fetch(Admin admin, Collection userdatasourceids, String searchstring) method. 
+UserDataSourceSessionBean.fetch(Admin admin, Collection&lt;Integer&gt; userdatasourceids, String searchstring) method. 
 </li>
 </ol>
 </p>
@@ -1850,7 +1829,7 @@ The worker is the class that will be executed when the service runs. Each worker
 <subsubsection name="Intervals">
 <p><i>Periodical Interval</i></p>
 <p>
-Defines in days/hours/minutes/seconds of how often the worker will be run.
+Defines in days/hours/minutes/seconds of how often the worker will be run. <b><i>A worker should never be configured to run more often than the time a single invocation takes.</i></b>
 </p>
 </subsubsection>
 <subsubsection name="Actions">
@@ -1874,17 +1853,9 @@ isn't specified by the worker.
 </subsubsection>
 </subsection>
 
-<subsection name="Currently Available Services">
-
-<p><b>CRL Update Service</b></p>
+<subsection name="Implementation details">
 <p>
-The CRL Updater have the same functionality as the current JBoss Service and will in 
-the future replace the old variant. I checks if any of the CA:s need a new CRL 
-and updates it if necessary. The worker have no settings and only supports the 
-periodical interval and no action.
-</p>
-<p>
-The CRL update worker should never run simultaneously on two nodes, or simultaneously on one node.
+A service worker should never run simultaneously on two nodes, or simultaneously on one node.
 To avoid running more than one instance on a single node there is a semaphore that inhibits more than one 
 instance of the worker to run in a single JVM. If a worker starts and another worker is already running
 the worker is rescheduled to run on the next planned interval, and immediately terminated.
@@ -1895,8 +1866,14 @@ the service is already running on another node and not start running.
 </p><p>
 In practice what this leads to is that a service will always run on a single node, the same node every time.  
 </p>
-<p><b>Certificate Expiration Check Service</b></p>
-<p>
+</subsection>
+
+<subsection name="Currently Available Services">
+<p><b>CRL Update Service</b></p><p>
+The CRL Updater checks if any of the configured CAs need a new CRL and updates it if necessary. The worker have no
+additional settings and only supports the periodical interval and no action.
+</p>
+<p><b>Certificate Expiration Check Service</b></p><p>
 A worker that checks if a CA have certificates about to expire and sends an email 
 notification the the end user and/or administrator. 
 The worker have the following settings:
@@ -1918,8 +1895,8 @@ send the notification.
 <i>Notification Subject to End User</i> - The e-mail subject.
 </li>
 <li>
-<i>End User Message</i> - Message body of the notification. Here can the substitution 
-variables be used defined in the 'Email Notifications' section.
+<i>End User Message</i> - Message body of the notification. Substitution 
+variables can be used here as defined in the 'Email Notifications' section.
 </li>
 <li>
 <i>Send notification to Administrator</i> - Check this if a notification should be sent 
@@ -1930,8 +1907,8 @@ configured in the Mail Action component.
 <i>Notification Subject to Administrator</i> - The e-mail subject.
 </li>
 <li>
-<i>Administrator Message</i> - Message body of the notification. Here can the 
-substitution variables be used defined in the 'Email Notifications' section.
+<i>Administrator Message</i> - Message body of the notification. Substitution 
+variables can be used here as defined in the 'Email Notifications' section.
 </li>
 </ul>
 </p>
@@ -2017,18 +1994,18 @@ A Custom Interval must implement the org.ejbca.core.model.services.IInterval
 interface. But a simpler way is to inherit the BaseInterval class. You then have to 
 implement one method 'public long getTimeToExecution();' which should return the 
 time in seconds until the next time the service is run. Or it should return 
-DONT_EXECUTE it the service should stop running.
+DONT_EXECUTE if the service should stop running.
 </p><p>
 See org.ejbca.core.model.services.intervals.DummyInterval for an example implementation.
 </p>
 </subsection>
 <subsection name="CustomAction">
 <p>
-A Custom Interval must implement the org.ejbca.core.model.services.IAction interface. 
-But a simpler way is to inherit the BaseAction class. Then should only one method be 
-implemented 'performAction(ActionInfo actionInfo)' that should perform the action 
-according to the defined properties and the ActionInfo (all optional). If something 
-goes wrong during the processing of the action should a ActionException be thrown.
+A Custom Action must implement the org.ejbca.core.model.services.IAction interface. 
+</p><p>
+A simpler way is to inherit the BaseAction class. Then only the method 'performAction(ActionInfo actionInfo)' needs to
+be implemented. The methods should perform the action according to the defined properties and the ActionInfo (all
+optional). If something goes wrong during the processing of the action should a ActionException be thrown.
 </p><p>
 See org.ejbca.core.model.services.actions.DummyAction for an example implementation.
 </p>
@@ -2070,7 +2047,7 @@ There are four additional key properties that can (optionally) be used when rene
 </p><p>
 Supported and tested HSMs are described below, with sample configurations and HSM specific documentation.
 </p><p>
-Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Older jce implementations will gradually be deprecated and removed. 
+Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. Older JCE implementations will gradually be deprecated and removed. 
 </p>
 <p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
@@ -2082,15 +2059,14 @@ If this property is not specified then the CA has to be manually activated after
 <br/>
 Manual activation is done in the admin-GUI under 'Basic Functions->View Information', or using the cli 'bin/ejbca.sh ca activateca'.
 </p><p>
-The 'pin' property can use a clear text password or an encrypted one.
-<br/>(encrypted is only available in EJBCA >= 3.5):
+The 'pin' property can use a clear text password or an encrypted (obfuscated) one.
 </p>
 <source>
 pin foo123
 pin 6bc841b2745e2c95e042a68b4777b34c
 </source>
 <p>
-These two properties contains the same password. The encrypted pin value can be obtained with the command 'bin/ejbca.sh encryptpwd':
+These two properties contains the same password. The obfuscated pin value can be obtained with the command 'bin/ejbca.sh encryptpwd':
 </p>
 <source>
 $ bin/ejbca.sh encryptpwd foo123
@@ -2102,11 +2078,10 @@ Encrypting pwd...
 6bc841b2745e2c95e042a68b4777b34c
 </source>
 <p>
-NOTE: This encryption is not high security encryption, it is only meant to protect the password for accidental viewing. 
-The encryption uses a build in encryption key in EJBCA.
-With an encrypted pin you can for example bring up the 'Edit CAs' page in the admin-GUI without everyone around immediately seeing your password.
-<br/>
-If an attacker gets hold of the encrypted value it is easy to decrypt using the source code of EJBCA.
+NOTE: This obfuscated is not high security encryption, it is only meant to protect the password for accidental viewing. 
+The obfuscated algortihm uses a built in encryption key in EJBCA. With an encrypted pin you can for example bring up
+the 'Edit CAs' page in the Admin GUI without everyone around immediately seeing your password. If an attacker gets hold
+of the obfuscated value it is easy to decrypt using the source code of EJBCA.
 </p>
 </subsection>
 
@@ -2125,7 +2100,7 @@ A PKCS#11 wrapper has been used to implement support for tokens with PKCS#11 lib
 tested with Utimaco CryptoServer and nCipher nShield/netHSM and SafeNet ProtectServer and SafeNet Luna and AEP Keyper and ARX CoSign and Bull TrustWay.
 </p>
 <p>
-Besides the keys previously described the property field of the administration GUI should contain the following properties:
+Besides the keys previously described the property field of the Administration GUI should contain the following properties:
 <ul>
 <li>slot                - the slot of the CA.</li>
 <li>slotListIndex	- the index number in the slot list for the slot of the CA</li>
@@ -2141,8 +2116,7 @@ But only one of 'slot' or 'slotListIndex' should exist.
 If keyspec is not given EJBCA tries to generate a key with the same specification as the current cert signing key.</li>
 </ul>
 </p><p>
-Attributes file is in the format specified in the "JavaTM PKCS#11 Reference Guide".
-See http://java.sun.com/javase/6/docs/technotes/guides/security/p11guide.html and the examples further down in this file.
+Attributes file is in the format specified in the <a href="http://download.oracle.com/javase/6/docs/technotes/guides/security/p11guide.html">JavaTM PKCS#11 Reference Guide</a> and the examples further down in this file.
 </p><p>
 Before there was no default used when no 'attributesFile' existed and HSM specific defaults was used instead. For most HSM these defaults was not usable and the file was needed. Often only the values needed to be changed from the HSM default was specified. But now there is a built in defaults used when the file is missing. These defaults works for most HSM and looks like this:
 </p>
@@ -2171,24 +2145,24 @@ If you are using an attributesFile and have more than one CA using the same slot
 This is because the attributes are applied when the provider is installed during startup. If one configuration does not have the attributesFile it can not be applied later on by the other configuration. 
 </note>
 <p>
-The tool "$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool" is used administrate and generate keys. Use it without parameters to get all valid options.
+The tool "EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool" is used administrate and generate keys. Use it without parameters to get all valid options.
 Keys may be generated in two ways. Examples:
 </p>
 <source>
-$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
+dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.so 2048 defaultKey 1
 </source>
 <source>
-$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
+dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate hsmp11.conf 2048 defaultKey
 </source>
 <p>
 The first example is using built in default and are then using specified slot and PKCS#11 library.
 The second is using a configuration file.
-The contents of the file is specified in the PKCS#11 wrapper documentation from Sun.
+The contents of the file is specified in the PKCS#11 wrapper documentation from Oracle.
 Often it is enough to use the default but with some HSM it necessary to define some PKCS#11
 attributes for the generated key.
 </p>
-<p>Below is an example how the hsmp11.conf could look like. Before this was a recommendation for SafeNet ProtectServer but now since the code has
-good built in defaults no configuration file is needed.</p>
+<p>Below is an example how the hsmp11.conf could look like. Before this was a recommendation for SafeNet ProtectServer,
+but now the code has good built in defaults so no configuration file is needed.</p>
 <source>
 name=SafeNet
 library=/opt/PTK/lib/libcryptoki.so
@@ -2210,7 +2184,7 @@ All keys to be used has to be generated before the application server is started
 
 <subsubsection name="Generated HSM objects">
 <p>
-EJBCA (the java PKCS#11 provider) needs three object on the HSM, which are all generated by the generate commands above:
+EJBCA needs (via the Java PKCS#11 provider) three object on the HSM, which are all generated by the generate commands above:
 <ul>
 <li>A private key</li>
 <li>A public key</li>
@@ -2285,13 +2259,13 @@ Here follows an example on how to initialize a slot and generate keys to be used
 <source>
 ./p11tool Slot=1 InitToken=officer1
 ./p11tool Slot=1 Label=CVCA LoginSO=officer1 InitPin=user1
-$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 4096 signKey 1
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 4096 signKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry signKey.
-$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 defaultKey 1
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 2048 defaultKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry defaultKey.
-$EJBCA/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 512 testKey 1
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./libcs2_pkcs11.so 512 testKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry testKey.
 </source>
@@ -2564,7 +2538,7 @@ jboss@donny:~/work/test/keygen$
 To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. Preload is now used to start jboss:
 </p>
 <source>
-jboss@donny:~/work/test/ca$ ~nfast/bin/preload -c ejbca $JBOSS_HOME/bin/run.sh
+jboss@donny:~/work/test/ca$ ~nfast/bin/preload -c ejbca $APPSRV_HOME/bin/run.sh
 </source>
 <strong>Step 5. Create a new CA in the web GUI of EJBCA</strong>
 <p>
@@ -2781,7 +2755,7 @@ If preload is used fail-over to the other HSM if one of the HSMs is broken is no
 </note><p>
 Example of starting jboss:
 </p><source>
-ejbca@subcallb:/usr/local/ejbca> CKNFAST_LOADSHARING=1 ../jboss/bin/run.sh
+ejbca@host:/usr/local/ejbca> CKNFAST_LOADSHARING=1 ../jboss/bin/run.sh
 </source><p>
 When activating a CA you need a smart card from the OCS of the corresponding slot inserted in both HSMs. The OCS got to be 1/n since preload can not be used.
 </p>
@@ -3148,7 +3122,7 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
   PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
   You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
   </p>
-  <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2013">ECA-2013</a>.</p>
+  <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2013">ECA-2013</a>.</p>
   <p>The patch should work on all HSMs that have support for SHA224WithECDSA. It has been tested on SafeNet Luna SA and Utimaco CryptoServer.
   </p><p>With the patch applied you can create CAs using HSMs with the SHA224WithECDSA algorithm.
   </p>
@@ -3160,7 +3134,7 @@ You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certifi
   PrimeKey has made a patch which is waiting for approval in the OpenJDK 7. 
   You can get a compiled patch together with an installation script for Debian-based operating systems from <a href="http://www.primekey.se/">PrimeKey</a>. 
   </p>
-  <p>This issue is registered in the EJBCA Jira as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
+  <p>This issue is registered in the EJBCA issue tracker as <a href="http://jira.primekey.se/browse/ECA-2014">ECA-2014</a>.</p>
   <p>The patch should work on all HSMs that have support for SHA56WithRSAandMGF1.
   </p><p>With the patch applied you can create CAs using HSMs with the SHA256WithRSAandMGF1 (and SHA384 and SHA512) algorithm.
   </p>
@@ -3367,7 +3341,7 @@ implemented by default in EJBCA are LDAP directories and Active Directory
 (which is a special case of LDAP directory).
 </p><p>
 The Publisher architecture is modular and it's possible to implement custom
-publishers that can also be easily integrated and set up in the admin-GUI.
+publishers that can also be easily integrated and set up in the Admin GUI.
 </p><p>
 First we will start with describing the built-in publishers.
 </p>
@@ -3375,7 +3349,7 @@ First we will start with describing the built-in publishers.
 <p>
 A good book to understand LDAP naming is "Understanding and Deploying LDAP
 Directory Services". The recommended method of choosing a naming suffix is
-the one described in RFC2247 that maps a DNS domain to a DN. If my DNS
+the one described in <a href="http://www.ietf.org/rfc/rfc2247.txt">RFC2247</a> that maps a DNS domain to a DN. If my DNS
 domain is bigcorp.com it will map to the DN "dc=bigcorp,dc=com". The top
 node in my LDAP directory will then be "dc=bigcorp,dc=com".
 </p><p>
@@ -3701,7 +3675,7 @@ description: Parent Object for all High Certificates
 A Publisher is a session bean that implements the IPublishSession interface
 and is used to store certificates and CRLs for entities.
 EJBCA have support for endless number of publishers simply by defining
-publishers in the admin-GUI. The user of EJBCA can implement own publishers, but EJBCA
+publishers in the Admin GUI. The user of EJBCA can implement own publishers, but EJBCA
 already comes with a publisher for LDAP.
 </p><p>
 EJBCA uses a notion of base DN to publish to different LDAP structures. The
@@ -3713,7 +3687,7 @@ DN used in the certificate can be different from the LDAP structure.
 To configure the publisher for LDAP:
 </p>
 <ol>
-<li>Choose 'Edit Publishers' in the admin-GUI.</li>
+<li>Choose 'Edit Publishers' in the Admin GUI.</li>
 <li>Add a new publisher with a name you define yourself. Edit the publisher and
 fill in all the necessary fields.</li>
 </ol>
@@ -3847,7 +3821,7 @@ you can either:
 <li>Use different publishers for ou=foo and ou=bar and issue certificates for the different OUs with different certificate profiles.</li>
 </ol>
 </p>
-<strong>LDAP Search Publisher (from EJBCA v3.2)</strong>
+<strong>LDAP Search Publisher</strong>
 <p>
 The LDAP Search Publisher works by searching the LDAP for existing entries using a user defined search filter. 
 If no entries exist in the LDAP when searching for an entry, one is created just like in the regular LDAP Publisher.
@@ -3937,7 +3911,7 @@ The "LDAP Publisher" and the "LDAP Search Publisher" tries the DN of the entity 
 <p>
 Apart from the DN in the entry a number of attributes are also stored, some
 are required by schema, some are optional. EJBCA find attributes in the certificate, if it is an
-OU (organizational unit) in the certificate EJBCA uses that to populate the OU attribute in the ldap
+OU (organizational unit) in the certificate EJBCA uses that to populate the OU attribute in the LDAP
 entry.
 </p><p>
 When updating an entry that already exists EJBCA uses replace on the
@@ -4115,7 +4089,7 @@ publishing has been done, status will merely be changed from PENDING to SUCCESS.
 <p>
 To customize EJBCA admin GUI for your languages special characters you will probably have to 
 change the default page encoding in 'web.contentencoding' (in conf/web.properties file) 
-to for example UTF-8 instead of the default ISO-8859-1.
+to for example ISO-8859-1 instead of the default UTF-8.
 </p><p>
 Displaying, receiving, decoding and storing different char sets is rather complicated and the 
 architecture is multilayered. There are the web browser, application server, database and 
@@ -4140,32 +4114,21 @@ src/adminweb/ejbcajslib.js
 <br></br>
 And change all methods 'checkfield*()' to always return true directly.
 </p><p>
-If you can't get you national characters to work with the admin GUI, you can try using the cli instead
+If you can't get you national characters to work with the Admin GUI, you can try using the CLI instead
 (bin/ejbca.sh ra adduser ...). That usually works.
-</p><p>
-EJBCA have for example been tested on Windows/JBoss 4.2.0/MySQL and Linux/JBoss4.2.0/HSQL with 
-the default configuration using Swedish national characters, 
-and it works nicely both with the cli and admin-GUI.
 </p>
 <p>
-To make everything work perfect you MAY have to also configure JBoss to encode URIs according to your settings,
-this is done with the 'URIEncoding' directory in APPSRV_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml:
+To make everything work perfect you MAY have to also configure the encoding of URIs according to your settings in
+the application server. This is done automatically for JBoss using the 'web.contentencoding' in conf/web.properties.
 </p>
-<source>
-&lt;Connector port="8443" address="${jboss.bind.address}"
-         maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
-         scheme="https" secure="true" clientAuth="true"
-         keystoreFile="${jboss.server.home.dir}/../../bin/tomcat.jks"
-         keystorePass="t0mcat." sslProtocol = "TLS" URIEncoding="UTF-8"/&gt;
-</source>
 
 <subsection name="Adding a new language to the admin GUI">
 <p>
 Java uses unicode internally, so the things that needs to be taken care of are:
 <ol>
 <li>Make sure your system locale is set correctly, so Java will recognize input of your nations language. 
-If Java does not automatically recognize your locale you might need to specify it as options to java during
-startup (i.e. in JBoss and cmd line commands such as ca.sh and ra.sh).
+If Java does not automatically recognize your locale you might need to specify it as options to Java during
+startup (i.e. in JBoss and cmd line commands such as ejbca.sh).
 java -Duser.language=2-char-language-code -Duser.region=2-char-country-code
 example for Swedish: java -Duser.language=sv -Duser.region=SE
 </li>
@@ -4173,17 +4136,16 @@ example for Swedish: java -Duser.language=sv -Duser.region=SE
 This is database and JDBC-driver dependent.</li>
 </ol>
 </p><p>
-The admin GUI is meant to support multiple languages through language files
-in src/adminweb/languages.
-In order to add a language you should do the following:
+The Admin GUI is meant to support multiple languages through language files
+in src/adminweb/languages. In order to add a language you should do the following:
 <ol>
 <li>Rename the languagefile you have created to
 language.<i>languagecode</i>.properties. In case of chinese it should be 'zh', and place 
-it in the src/adminweb/languages directory.
+it in the modules/admin-gui/resources/languages/ directory.
 </li>
 <li>Edit conf/web.properties (create with conf/web.properties.sample as template if you don't have one).
 Change 'web.availablelanguages' and add your language code to the value. i.e:
-&lt;env-entry-value>EN,FR,IT&lt;/env-entry-value>
+<source>web.availablelanguages=DE,EN,ES,FR,IT,PT,PT_BR,SE,ZH</source>
 </li>
 <li>You may have to change the default page encoding in 'web.contentencoding' to for example ISO-8859-1
 instead of the default UTF-8.
@@ -4193,7 +4155,7 @@ Restart JBoss and your browser after this.
 </li>
 </ol>
 </p><p>
-Now it should be possible to select EN, FR and IT in the system configuration as default language 
+Now it should be possible to select ZH in the system configuration as default language 
 and in the administrator preferences page. 
 The language will be changed next time the administrator logs in.
 </p></subsection>
@@ -4215,17 +4177,17 @@ This is a global setting that cannot be overridden by administrators own setting
 
 <section name="Custom DN and altName oids">
 <p>
-EJBCA supports custom (your own) oids in DN components.
+EJBCA supports custom (your own) OIDs in DN components.
 </p><p>
 In order to add such a DN you can simply call the DN for example: CN=MyCommonName,1.1.1.1=MyCustomOid,C=SE
 <br/>
-Where 1.1.1.1 is your custom oid.
+Where 1.1.1.1 is your custom OID.
 </p>
 <p>
 Custom OIDs are always encoded as UTF8String in the DN.
 </p>
 <p>
-To get support for custom OIDs in the Admin-GUI you must edit the file src/java/profilemappings.properties and add your new
+To get support for custom OIDs in the Admin GUI you must edit the file src/java/profilemappings.properties and add your new
 OID in the end. Just follow the example in the file, and you will get the possibility to add you oid in the End Entity Profile, 
 and following that also when adding new users.
 If you edit profilemappings.properties, you should also add an entry in src/adminweb/languages/languagefile.XX.properties (where XX is you language).
@@ -4240,14 +4202,14 @@ There is a file called dncomponents.properties.sample in the distribution as a s
 You custom oid must be placed in the right place in that file, and all components from the sample file should be included, or you will get 
 strange behaviour.
 <br/>
-Using the dncomponents.properties file is only needed if you need to control the asn1 ordering of DN elements.
+Using the dncomponents.properties file is only needed if you need to control the ASN.1 ordering of DN elements.
 <br/>
 After updating dncomponents.properties you need to run 'ant clean' before re-deploying EJBCA.
 </p>
 <p>
 A word of caution:
-<br/>If you use custom oids, they better not become standard ones later on, because if the underlying asn.1 library in EJBCA starts to 
-know the oids as standard ones, things will be renamed in the database and you will have to do a database migration.
+<br/>If you use custom OIDs, they better not become standard ones later on, because if the underlying ASN.1 library in EJBCA starts to 
+know the OIDs as standard ones, things will be renamed in the database and you will have to do a database migration.
 Also you must keep track of dncomponents.properties when upgrading EJBCA.
 </p><p>
 Stick to the standard is my advice!
@@ -4260,9 +4222,9 @@ Check RELEASE_NOTES for important changes!
 <subsection name="altNames">
 <p>
 Adding custom OIDs in altNames works the same way as for DN.
-When a custom oid is used the altName string in the database will be for example "rfc822Name=foo@bar.com, 1.1.1.1=foobar".
+When a custom OID is used the altName string in the database will be for example "rfc822Name=foo@bar.com, 1.1.1.1=foobar".
 <br/>
-A Custom oid is always added as OtherName using a simple UTF8String. See rfc3280 for definition of the OtherName altName.
+A Custom OID is always added as OtherName using a simple UTF8String. See <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC3280</a> for definition of the OtherName altName.
 <br/>
 The OtherName consists of:
 <ul>
@@ -4391,15 +4353,14 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 The are three different logging devices available for official events
 (creation of certificate etc) from EJBCA 3.6. These devices should not be
 confused with the info/debug output that is sent to Log4J directly. You can
-find more information on how to configure Log4J in
-$EJBCA_HOME/doc/howto/log4j.txt.
+find more information on how to configure Log4J in doc/howto/log4j.txt.
 </p>
 <p>
-What log devices to use, can be configured in $EJBCA_HOME/conf/log.properties.
+What log devices to use, can be configured in conf/log.properties.
 </p>
 <p>
 It is recommended to only allow new log-posts to the database-tables. More
-information on this can be found in $EJBCA_HOME/doc/howto/HOWTO-database.txt.
+information on this can be found in doc/howto/HOWTO-database.txt.
 </p>
 <subsection name="Log4JLogDevice">
 <p>
@@ -4428,7 +4389,7 @@ You can copy the .sample files to respective .properties files and configures. M
 
 <subsection name="Command line interface">
 <p>
-EJBCA have command line interfaces (cli) to both the CA and RA, and some other operations.
+EJBCA have command line interfaces (CLI) to both the CA and RA, and some other operations.
 </p>
 <p>
 The best documentation for the cli can be found by running it.
@@ -4436,6 +4397,7 @@ The best documentation for the cli can be found by running it.
 bin/ejbca.sh
 bin/ejbca.sh ca
 bin/ejbca.sh ra
+...
 </source>
 this will give a list of all available cli commands. To find out which options are available for a specific command, simply run 
 the command with no options:
@@ -4458,15 +4420,6 @@ Ex: bin/ejbca.sh setup initializehardtokenissuing AdminCA1
 </source>
 <p>
 This is a utility function to quickly and easily issue an initial administration smart card using PrimeCard.
-</p><p>
-If you want to change the baseurl of the admin-web after installation use the command:
-</p>
-<source>
-bin/ejbca.sh setup setbaseurl computername applicationpath
-Ex: bin/ejbca.sh setup setbaseurl localhost ejbca
-</source>
-<p>
-You should never have to do this in version >= 3.2.
 </p><p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
 conf/web.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
@@ -4575,14 +4528,14 @@ files if needed.</li>
 <li>ant will not be able to detect if your changes are incompatible with newer
 versions of EJBCA. Always use 'diff' on the different versions to see if any file
 you override is affected.</li>
-<li>committing new features or improvements, that many would benefit from, is greatly
+<li>contributed new features or improvements that many would benefit from is greatly
 appreciated by the community and makes your maintenance easier</li>
 </ul>
 </p>
 </subsection>
 <subsection name="Adding your own public web-pages">
 <p>
-The public web-pages are written in JSP and can be found under src/publicweb/publicweb.
+The public web-pages are written in JSP and can be found under modules/publicweb-gui/resources/.
 Modify the pages (directly or by using a separate tree), rebuild and redeploy. The
 changes should show on http://<i>ejbcahost</i>:8080/ejbca.
 </p>
@@ -4613,13 +4566,13 @@ send back a certificate. The entity- and certificate profiles used are sent as p
 To set up the demo servlet:
 </p>
 <ol>
-<li>Find out the CA id of the CA you want to use for signing of the demo certificates. Use the admin-GUI or 'ejbca.sh ca listcas' to find the integer value that is the CA id.</li>
-<li>Configure the CA id in rc/java/org/ejbca/ui/web/pub/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
+<li>Find out the CA id of the CA you want to use for signing of the demo certificates. Use the Admin GUI or 'bin/ejbca.sh ca listcas' to find the integer value that is the CA id.</li>
+<li>Configure the CA id in src/java/org/ejbca/ui/web/pub/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
 <li>Edit src/publicweb/publicweb/WEB-INF/web.xml and uncomment the two sections for the demo servlet.</li>
 <li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
 <li>Deploy with 'ant deploy'.</li>
 <li>Create an end entity profile and a certificate profile that should be used for the demo certificates.</li>
-<li>Create a demo apply page containing something similar to the sample form below for Firefox. There are some sample scripts under src/publicweb/publicweb.</li>
+<li>Create a demo apply page containing something similar to the sample form below for Firefox. There are some sample scripts under modules/publicweb-gui/resources/.</li>
 </ol>
 <source>
 &lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/democertreq" method="post">
@@ -4649,136 +4602,26 @@ a full dn for the 'user' parameter. Use your imagination!
 
 <section name="Samples">
 <p>
-A collection of samples are in the directory
-src/java/se/anatom/ejbca/samples.
+A collection of samples are available in the directory src/java/org/ejbca/samples/ and doc/samples/. You can also look for classes with "Dummy" in the name.
 </p></section>
 
 <section name="Troubleshooting">
 <p>
-Add Debug output from the console administration commands by
-replacing:
+<ul>
+<li>Check the documentation. Double-check so everything really is configured the way it should and that you did not skip any step that didn't seem important.</li>
+<li>Enable DEBUG logging according to the Log4J configuration described above and check the log file.</li>
+<li>Don't get intimidated by long stack-traces. Try to look for the message text and additional clues on lines starting with "Casued by:"</li>
+<li>Try to reproduce this in a test environment with full DEBUG logging.</li>
+<li>Find out under what circumstances this occurs: seemingly spontanious or as a response to a certain set of actions or input</li>
+<li>Search for a solution. Perhaps someone else has had this problem and discussed it somewhere?</li>
+<li>Use support forums or mailing list to get help (provide full context, environment, the relevant logs, steps taken and what you are trying to accomplish)</li>
+<li>File a bug report in the issue tracker</li>
+</ul>
+Also note that you can get professional support from <a href="http://www.primekey.se/Services/Support/">PrimeKey</a>.
 </p>
-<source>
-    log4j.rootCategory=INFO, Console
-</source>
-<p>
-in the file 'log4j.properties' with:
-</p>
-<source>
-    log4j.rootCategory=DEBUG, Console
-</source>
 </section>
 
-<section name="Extra info about the admin-GUI">
-<p>
-If you had problems using the install script this small part describes briefly 
-what the setup of the adminweb does. It's explained using out-of-the-head commands so don't expect it to work
-by copying and pasting these commands, it just something to look at.
-</p><p>
-
-0. Set the baseurl of the server with the command 'setup.sh/cmd setbaseurl <i>computername</i> <i>applicationpath</i>'
-Set the BASEURL to reflect your
-hostname, to be able to use the adminpages from external
-machines, this must be
-a real hostname or ip-address.
-Run 'ant deploy' to install the changes.
-</p><p>
-
-1. Tomcat: Copy src/appserver/jboss/tomcat55/server.xml (or similar depending on your JBoss version) 
-to <br></br>$APPSRV_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml.
-</p><p>
-Edit the file so 'keyStorePass' is the
-same as the password you specify below for 'tomcat'.
-</p><p>
-2. Edit parameters in conf/web.properties.
-</p><p>
-3. Create a tomcat server keystore with the 'ejbca.sh batch' tool
-(this can also be done with Suns 'keytool' by creating a keystore and then
-generating a certificate request that is processed by EJBCA, and last import
-the returned certificate and the CA-certificate into the keystore).
-</p><p>
-Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<i>your-host-name</i>".
-</p>
-<source>
-bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=PrimeKey,CN=your-host-name" null caname null 1 JKS SERVER
-</source>
-<p>
-Set a clear text password for the tomcat:
-</p>
-<source>
-bin/ejbca.sh ra setclearpwd tomcat foo123
-</source>
-<p>
-Generate a JKS-keystore for tomcat:
-</p>
-<source>
-bin/ejbca.sh batch tomcat
-</source>
-<p>
-4. Name the generated keystore 'tomcat.jks' and put in
-$APPSRV_HOME/server/default/conf/keystore.
-</p><p>
-5. Download the CA certificate in PEM-format from
-http://localhost:8080/ejbca/retrieve/ca_certs.jsp (call
-it ejbca-ca.pem).
-</p><p>
-6. Add the EJBCA CA certificate to the EJBCA Java trust-keystore in p12/truststore.jks
-</p>
-<source>
-keytool -import -trustcacerts -file ejbca-ca.pem -keystore p12/truststore.jks -storepass changeit
-</source>
-<p>
-Deploy the new truststore with 'ant deploy'.
-<br/>The command 'ant javatruststore' does the above automatically.
-<br/>After this you must restart JBoss.
-</p>
-<p>
-7. Create a user for EJBCA admin with CN=SuperAdmin and the
-RAADMIN bit (temporarily CN=SuperAdmin gives admin rights).
-</p>
-<source>
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 USERGENERATED
-</source>
-<p>
-Alternative:
-Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
-and the RAADMIN bit (temporarily CN=SuperAdmin gives adminrights).
-</p>
-<source>
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 P12
-bin/ejbca.sh ra setclearpwd raadmin foo123
-bin/ejbca.sh batch
-</source>
-<p>
-8. Fetch the certificate using your browser a
-http://localhost:8080/ejbca/
-</p><p>
-Alternative:
-Install the generated PKCS12 (p12/superadmin.p12) file in the
-browser.
-In Firefox this is done by Edit->Preferences->Privacy&amp;Security->
-Certificates->Manage Certificates->Import
-In IE it is done by double-clicking on the .p12 file.
-</p><p>
-9. Start JBoss.
-</p><p>
-10. Go to https://<i>hostname</i>:8443/ejbca
-</p><p>
-Reference: to generate a JKS with keytool
-</p>
-<source>
-keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
-keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
-bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null caname null 1 USERGENERATED SERVER
-(go to EJBCA public web and get a 'Server certificate' by pasting the request into the web form and save as tomcat.pem)
-bin/ejbca.sh ca getrootcert ca.der -der
-keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
-keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
-
-keytool -import -trustcacerts -file ca.der -keystore p12/truststore.jks -storepass changeit
-ant deploy
-</source>
-<subsection name="Character limitations">
+<section name="Character limitations">
 <p>
 Since the Admin GUI still uses some JSP and EJBCA at some occasions uses string concatenation
 to build SQL querys, we have to ban some characters to avoid XSS-attacks and SQL-injections:
@@ -4789,9 +4632,10 @@ to build SQL querys, we have to ban some characters to avoid XSS-attacks and SQL
 <p>
 (\n is newline, \r is carriage return, \\ is backslash, \0 is null)
 </p><p>
-These characters will be replaced by /. ',' can be escaped ,'\,'. 
+These characters will be replaced by /. ',' can be escaped ,'\,'.
+The current JavaScrips used in Admin GUI might also limit you ability to use any UTF-8 character. 
 </p>
-</subsection>
+<p>org.ejbca.util.StringTools contains the full list of characters banned for different purposes.</p>
 </section>
 
 <section name="Code signing">
@@ -4870,7 +4714,7 @@ configuration items that can maximize performance of EJBCA to issue more than 10
 </ul>
 </subsection>
 <subsection name="Clear All Caches">
-<p>This butten is located under <i>System Configuration</i> and is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
+<p>This button is located under <i>System Configuration</i> and is used to clear the global configuration cache, end entity profile cache, certificate profile cache, log configuration cache, authorization cache and CA cache on all the 
 nodes in this cluster. In order for this to work, the operation system should be configured to map the names of the nodes to their IP addresses (i.e. DNS or hosts file). The configuration should be done on all 
 the nodes in the cluster. See also <a href="#Maximizing%20performance">maximizing performance</a> for information about caching.
 <br/>Pressing this button sends a http request to the ClearCacheServlet on all the nodes in the "Nodes in Cluster" list. Only other nodes that are in the "Nodes in Cluster" list are allowed to call the ClearCacheServlet. Authorization is based on caller's IP address.
@@ -4894,6 +4738,8 @@ When setup you can connect to any of the EJBCA application nodes, and use load b
 </p>
 <p>A note of caution. Setting up and managing a fully HA database can be very difficult and/or expensive. You may consider different variants of HA databases, such as replication with manual or automatic failover. 
 The possibilities are virtually unlimited, only your requirements and imagination can decide what type of configuration works best for you.
+</p><p>
+The upgrade EJBCA without downtime, you can use the 'app.version.effective' property in conf/ejbca.properties.
 </p>
 </section>
 
