@@ -367,6 +367,10 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             customQuery += caAuthorizationString;
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
+        	// Since RAAuthroization returns endEntityProfile matching strings with a different case than used by
+        	// ApprovalData we need to transform it here. This is required for database with case-sensitive
+        	// column names (MS SQL Server with this config)!
+        	endEntityProfileAuthorizationString = endEntityProfileAuthorizationString.replaceAll("endEntityProfileId", "endentityprofileid");
             if (caAuthorizationString.equals("") && query == null) {
                 customQuery += endEntityProfileAuthorizationString;
             } else {
