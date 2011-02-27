@@ -159,7 +159,7 @@
   Revocation of an IS prohibits further issuance of certificates to that IS using the WS API.
   </p>
   <p>
-  There is a simple command line client for testing which is under dist/ejbcawscli/cvcwscli.sh. This can be used to make requests and to parse, print and verify requests and certificates.
+  There is a simple command line client for testing which is under dist/ejbca-ws-cli/cvcwscli.sh. This can be used to make requests and to parse, print and verify requests and certificates.
   </p>
   </section>
 
