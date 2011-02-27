@@ -215,7 +215,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @Override
     public Set<String> findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
         if (log.isTraceEnabled()) {
-            log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+            log.trace(">findUsernamesByIssuerDNAndSubjectDN(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
         final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
@@ -227,7 +227,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
             return getSet(CertificateData.findBySubjectDNAndIssuerDN(entityManager, transformedSubjectDN, transformedIssuerDN));
         } finally {
             if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+                log.trace("<findUsernamesByIssuerDNAndSubjectDN(), issuer='" + issuerDN + "'");
             }
         }
     }
@@ -235,7 +235,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @Override
     public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte subjectKeyId[]) {
         if (log.isTraceEnabled()) {
-            log.trace(">findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+            log.trace(">findUsernamesByIssuerDNAndSubjectKeyId(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
         final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
@@ -247,7 +247,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         	return getSet(CertificateData.findByIssuerDNAndSubjectKeyId(entityManager, transformedIssuerDN, sSubjectKeyId));
         } finally {
             if (log.isTraceEnabled()) {
-                log.trace("<findCertificatesBySubjectAndIssuer(), issuer='" + issuerDN + "'");
+                log.trace("<findUsernamesByIssuerDNAndSubjectKeyId(), issuer='" + issuerDN + "'");
             }
         }
     }
@@ -255,7 +255,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @Override
     public Collection<Certificate> findCertificatesBySubject(Admin admin, String subjectDN) {
     	if (log.isTraceEnabled()) {
-        	log.trace(">findCertificatesBySubjectAndIssuer(), dn='" + subjectDN + "'");
+        	log.trace(">findCertificatesBySubject(), dn='" + subjectDN + "'");
     	}
         // First make a DN in our well-known format
         String dn = StringTools.strip(subjectDN);
@@ -276,7 +276,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @Override
     public Collection<Certificate> findCertificatesByExpireTimeWithLimit(Admin admin, Date expireTime) {
     	if (log.isTraceEnabled()) {
-        	log.trace(">findCertificatesByExpireTime(), time=" + expireTime);
+        	log.trace(">findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
     	}
         // First make expiretime in well know format
         log.debug("Looking for certs that expire before: " + expireTime);
@@ -290,7 +290,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         	ret.add(iter.next().getCertificate());
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<findCertificatesByExpireTime(), time=" + expireTime);
+        	log.trace("<findCertificatesByExpireTimeWithLimit(), time=" + expireTime);
         }
         return ret;
     }
@@ -310,7 +310,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
 
     @Override
     public Collection<Certificate> findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection<BigInteger> sernos) {
-    	log.trace(">findCertificateByIssuerAndSernos()");
+    	log.trace(">findCertificatesByIssuerAndSernos()");
         List<Certificate> ret = null;
         if (null == admin) {
             throw new IllegalArgumentException();	// TODO: Either check authorization properly or skip the Admin parameter.. this is just wrong..
@@ -324,7 +324,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
             }
             ret = CertificateData.findCertificatesByIssuerDnAndSerialNumbers(entityManager, dn, sernos);
         }
-        log.trace("<findCertificateByIssuerAndSernos()");
+        log.trace("<findCertificatesByIssuerAndSernos()");
         return ret;
     }
 
@@ -371,7 +371,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @Override
     public Collection<Certificate> findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {
     	if (log.isTraceEnabled()) {
-        	log.trace(">findCertificatesByUsername(),  username=" + username);
+        	log.trace(">findCertificatesByUsernameAndStatus(),  username=" + username);
     	}
         ArrayList<Certificate> ret = new ArrayList<Certificate>();
         // Strip dangerous chars
@@ -383,7 +383,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         	ret.add(iter.next().getCertificate());
         }
     	if (log.isTraceEnabled()) {
-            log.trace("<findCertificatesByUsername(), username=" + username);
+            log.trace("<findCertificatesByUsernameAndStatus(), username=" + username);
     	}
         return ret;
     }
