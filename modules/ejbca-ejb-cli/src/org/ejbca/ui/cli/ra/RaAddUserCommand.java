@@ -242,7 +242,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             if (!error) {
                 getLogger().info("Trying to add user:");
                 getLogger().info("Username: " + username);
-                getLogger().info("Password (hashed only): " + password);
+                getLogger().info("Password: <password hidden>");
                 getLogger().info("DN: " + dn);
                 getLogger().info("CA Name: " + caname);
                 getLogger().info("SubjectAltName: " + subjectaltname);
