@@ -35,6 +35,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -504,6 +505,24 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = ejbcaWsHelper.convertUserDataVO(intAdmin, userDataVo3);
     	assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
     	assertEquals("CUSTOM_ENDTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getEndTime());
+    	// Try some invalid start time date format
+    	userDataVoWs.setStartTime("12:32 2011-02-28");	// Invalid
+    	userDataVoWs.setEndTime("2011-02-28 12:32");	// Valid
+    	try {
+        	ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+        	fail("Conversion of illegal time format did not generate exception.");
+    	} catch (EjbcaException e) {
+    		assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
+    	}
+    	// Try some invalid end time date format
+    	userDataVoWs.setStartTime("2011-02-28 12:32");	// Valid
+    	userDataVoWs.setEndTime("12:32 2011-02-28");	// Invalid
+    	try {
+        	ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+        	fail("Conversion of illegal time format did not generate exception.");
+    	} catch (EjbcaException e) {
+    		assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
+    	}
         log.trace("<test36EjbcaWsHelperTimeFormatConversion()");
     }
     

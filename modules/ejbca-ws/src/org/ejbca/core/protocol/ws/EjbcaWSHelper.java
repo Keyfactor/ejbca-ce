@@ -334,7 +334,8 @@ public class EjbcaWSHelper {
 				ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, customStartTime);
 				useEI = true;
 			} catch (ParseException e) {
-				log.info("WS client supplied invalid startDate in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+				log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+				throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime.");
 			}
 		}
         if(userdata.getEndTime() != null) {
@@ -353,7 +354,8 @@ public class EjbcaWSHelper {
 	            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, customEndTime);
 	            useEI = true;
 			} catch (ParseException e) {
-				log.info("WS client supplied invalid startDate in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+				log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+				throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
 			}
         }
         if ( userdata.getCertificateSerialNumber()!=null) {
