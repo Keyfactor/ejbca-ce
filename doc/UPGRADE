@@ -31,6 +31,9 @@ upgrade to the real release.
 
 From EJBCA 3.11.x to EJBCA 4.0.x
 --------------------------------
+If you installed fresh on or upgraded to EJBCA 3.11.0 or EJBCA 3.11.1 on MySQL, start by reading
+the next section before continuing.
+
 Support for ProtectedLog that was deprecated in EJBCA 3.10.0 has been dropped. If you use this feature,
 export the logs before upgrading. When the data from these tables are securely stored elsewhere or if
 you never used this feature, these tables and indexes can be dropped.
@@ -84,8 +87,8 @@ Note: Some deprecated methods have been removed in 4.0. For example in the publi
 to create custom publishers you need to update your code to match the new interfaces. To make it easy there is only
 new parameters that are not needed to use.
 
-From EJBCA 3.11.0 to EJBCA 3.11.x
---------------------------------
+From EJBCA 3.11.0 or 3.11.1 to EJBCA 3.11.x
+-------------------------------------------
 Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade.
 
 Normally upgrades within a major release are plug-in upgrades.
@@ -103,9 +106,9 @@ The database mapping for KeyRecoveryData.certSN on _MySQL_ in 3.11.0 was wrong a
 by running:
     ALTER TABLE KeyRecoveryData MODIFY certSN varchar(80) binary NOT NULL DEFAULT '';
 
-The database mapping for UserData.cardNumber in the table create script on _MySQL_ in 3.11.0 was
-wrong and can be corrected by running:
-    ALTER TABLE UserData MODIFY cardNumber varchar(250) binary NOT NULL DEFAULT '';
+The database mapping for UserData.cardNumber in the table create script on _MySQL_ in 3.11.0 and
+UPGRADE notes in 3.11.1 was wrong and can be corrected by running:
+        ALTER TABLE UserData MODIFY cardNumber varchar(250) binary NULL DEFAULT NULL;
 
 The database mapping for ServiceData.nextRunTimeStamp and runTimeStamp was inconsistent on _Sybase_
 in 3.11.0 and can be corrected by running:
