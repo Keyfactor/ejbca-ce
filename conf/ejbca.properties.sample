@@ -132,16 +132,6 @@
 # Default : empty 
 #approval.excludedClasses=
 
-# ------------ Log4j logging configuration ---------------------
-# 
-# Enable this by setting it to a log4j.xml configuration file configuring the logging for EJBCA.
-# Not needed for JBoss, that configures log4j itself. Glassfish and Weblogic does not use log4j, so here we need to configure this.
-# Possible values: false (don't explicitly configure log4j), basic (use basic configurator putting everything on the console) 
-#                  or a path to a log4j.properties (or xml) configuration file.
-# Default: false
-#logging.log4j.config=basic
-#logging.log4j.config=/home/ejbca/conf/log4j.properties
-
 # ----------------- cluster configuration ----------------
 # The configuration. Use "all" when clustering, 
 # or for example "production" when deploying on JBoss EAP.
