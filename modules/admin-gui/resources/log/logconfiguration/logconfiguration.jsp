@@ -213,30 +213,6 @@
     </tr>
    </table>
    <table id="logconfiguration" width="100%" border="0" cellspacing="3" cellpadding="3"> 
-    <tr > 
-      <td colspan="4" width="100%" valign="top" halign="left"> 
-      	<span><%= ejbcawebbean.getText("LOGCONFIGURATIONINFO") %></span>
-      </td>
-<!--
-      <td width="1%" class="checkbox" valign="top"> 
-        <input type="checkbox" name="<%=CHECKBOX_USELOGTODB %>" value="<%=CHECKBOX_VALUE %>" 
-                                                                                          <% if(logconfiguration.useLogDB())
-                                                                                                out.write(" CHECKED "); %>>
-      </td>
-      <td width="49%" class="field" valign="top"> 
-        <h3><%= ejbcawebbean.getText("USELOGDB") %></h3> 
-      
-      </td>
-      <td width="1%" class="checkbox" valign="top"> 
-        <input type="checkbox" name="<%=CHECKBOX_USEEXTERNALLOG %>" value="<%=CHECKBOX_VALUE %>" 
-                                                                                          <% if(logconfiguration.useExternalLogDevices())
-                                                                                                out.write(" CHECKED "); %>>
-      </td>
-      <td width="49%" class="field" valign="top"> 
-        <h3><%= ejbcawebbean.getText("USEEXTERNALLOGDEVICES") %></h3>  
-      </td>
--->
-    </tr>
     <tr> 
       <td width="1%" class="checkbox" valign="top" id="InfoRow1"> 
           &nbsp;
