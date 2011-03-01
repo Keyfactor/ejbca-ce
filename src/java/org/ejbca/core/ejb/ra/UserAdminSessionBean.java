@@ -1147,7 +1147,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(), null), };
 
     @Override
-    // TODO: If we failed to find the user during revocation, we should not try to delete it
     public void revokeAndDeleteUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException,
             WaitingForApprovalException, RemoveException, NotFoundException {
         UserData data = UserData.findByUsername(entityManager, username);
