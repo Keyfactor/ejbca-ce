@@ -64,7 +64,7 @@
 	<target name="overwritegenerated">
 		<!-- Verify that the generated class is a true subset of the handwritten class -->
 	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" 
-	  		  classpath="${mod.ejbca-ejb.lib}"
+	  		  classpath="${mod.ejbca-util.lib}"
 	  		  failonerror="yes"
 	  		  fork="true">
 	  	    <arg value="${mod.ejbca-ws.path}/src/org/ejbca/core/protocol/ws/objects/${class}.java"/>

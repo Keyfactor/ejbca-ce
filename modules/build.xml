@@ -143,8 +143,8 @@
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-ws-generate" depends="ejbca-common-web" description="Generate the EJBCA Web Services server and client source code files (used by developers of new WS API calls)">
-		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate" inheritall="false"><property name="external-deps-satfisfied" value="isset"/></ant>
+	<target name="ejbca-ws-generate" depends="ejbca-common-web" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="generate-wsdl" inheritall="false"><property name="external-deps-satfisfied" value="isset"/></ant>
 		<ant antfile="${mod.ejbca-ws-cli.path}/build.xml" target="generate" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
