@@ -235,6 +235,15 @@ The usage of PKCS11 CA tokens is well documented in the Admin Guide.
  
 For upgrade instructions, please see UPGRADE. 
 
+EJBCA 3.9.10
+-----------
+This is a maintenance release with one backported fix from 4.0.
+
+Changes:
+- better handling of X.500 DN order with multiple attributes (e.g. DC, OU)
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 3.9.9
 -----------
 This is a maintenance release with one new feature and a few backported fixes from 3.10.
