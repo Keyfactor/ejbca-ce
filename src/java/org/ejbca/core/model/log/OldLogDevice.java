@@ -87,24 +87,15 @@ public class OldLogDevice implements ILogDevice, Serializable {
 			comment += ", Exception: " + exception.getMessage();
 		}
 		boolean successfulLog = false;
-    	int tries = 0;
-    	do {
-    		try {
-    			oldLogSession.log(admin, caid, module, time, username, certificate, event, comment, exception);
-    			successfulLog = true;
-    		} catch (Throwable e) {
-    			tries++;
-    			if(tries == 3){
-        			// We are losing a db audit entry in this case.
-    				String msg = intres.getLocalizedMessage("log.errormissingentry");            	
-    				log.error(msg,e);
-    			}else{
-    				String msg = intres.getLocalizedMessage("log.warningduplicatekey");            	
-    				log.warn(msg);
-    			}
-    			
-    		}
-    	} while (!successfulLog && tries < 3);
+		try {
+			successfulLog = oldLogSession.log(admin, caid, module, time, username, certificate, event, comment, exception);
+		} catch (Throwable e) {
+			log.debug("", e);
+		}
+		if (!successfulLog) {
+			// We are losing a db audit entry in this case.
+			log.error(intres.getLocalizedMessage("log.errormissingentry"));
+		}
     }
 
 	/**

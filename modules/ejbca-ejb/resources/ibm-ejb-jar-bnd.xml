@@ -16,6 +16,7 @@
     <session name="AuthorizationTreeUpdateDataSessionBean"><interface class="org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionRemote" binding-name="ejbca/AuthorizationTreeUpdateDataSessionRemote"/></session>  
     <session name="PublisherSessionBean"><interface class="org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote" binding-name="ejbca/PublisherSessionRemote"/></session>  
     <session name="AdminEntitySessionBean"><interface class="org.cesecore.core.ejb.authorization.AdminEntitySessionRemote" binding-name="ejbca/AdminEntitySessionRemote"/></session>  
+    <session name="LogConfigurationSessionBean"><interface class="org.cesecore.core.ejb.log.LogConfigurationSessionRemote" binding-name="ejbca/LogConfigurationSessionRemote"/></session>  
     <session name="LogSessionBean"><interface class="org.cesecore.core.ejb.log.LogSessionRemote" binding-name="ejbca/LogSessionRemote"/></session>  
     <session name="UpgradeSessionBean"><interface class="org.ejbca.core.ejb.upgrade.UpgradeSessionRemote" binding-name="ejbca/UpgradeSessionRemote"/></session>  
     <session name="ConfigurationSessionBean"><interface class="org.ejbca.core.ejb.config.ConfigurationSessionRemote" binding-name="ejbca/ConfigurationSessionRemote"/></session>  

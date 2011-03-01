@@ -24,6 +24,7 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.log.LogConfigurationSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -114,6 +115,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public HardTokenSessionLocal getHardTokenSession() { return getEjbLocal().getHardTokenSession(); }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return getEjbLocal().getKeyRecoverySession(); }
 	@Override public LogSessionLocal getLogSession() { return getEjbLocal().getLogSession(); }
+	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return getEjbLocal().getLogConfigurationSession(); }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return getEjbLocal().getUserAdminSession(); }
 	@Override public RaAdminSessionLocal getRaAdminSession() { return getEjbLocal().getRaAdminSession(); }
 	@Override public OldLogSessionLocal getOldLogSession() { return getEjbLocal().getOldLogSession(); }

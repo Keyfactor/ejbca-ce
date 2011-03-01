@@ -18,6 +18,7 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.log.LogConfigurationSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -124,6 +125,10 @@ public class InterfaceCache {
 
 	public static UserDataSourceSessionRemote getUserDataSourceSession() {
 		return getEjb().getUserDataSourceSession();
+	}
+
+	public static LogConfigurationSessionRemote getLogConfigurationSession() {
+		return getEjb().getLogConfigurationSession();
 	}
 
 	public static LogSessionRemote getLogSession() {

@@ -33,14 +33,10 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
@@ -50,7 +46,6 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.log.OldLogDevice;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.ObjectCache;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -68,21 +63,13 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 	/** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
     
-    /** Cache for log configuration data with default cache time of 5 seconds.
-     * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
-     * changes to configuration is visible almost immediately.
-     */
-    private static final ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
-
-    @PersistenceContext(unitName="ejbca")
-    private EntityManager entityManager;
-
     @Resource
     private SessionContext sessionContext;
 
     @EJB
     private OldLogSessionLocal oldLogSession;	// Injected into OldLogDevice (if used).
-    private LogSessionLocal logSession;	// Reference to an instance of this SSB to be able to get the right transaction attributes.
+    @EJB
+    private LogConfigurationSessionLocal logConfigurationSession;
 
     /** Collection of available log devices, i.e Log4j etc */
     private List<ILogDevice> logdevices;
@@ -90,7 +77,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     @PostConstruct
     public void ejbCreate() {
         try {
-        	logSession = sessionContext.getBusinessObject(LogSessionLocal.class);
             // Setup Connection to signing devices.
             logdevices = new ArrayList<ILogDevice>();
             // Load logging properties dynamically as internal resource
@@ -173,11 +159,11 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
      * Internal implementation for logging. Does not allow Exceptions to propagate outside the logging functionality.
      */
     private void doLog(final Admin admin, final int caid, final int module, final Date time, final String username, final Certificate certificate, final int event, final String comment, final Exception ex) {
+    	final LogConfiguration config = logConfigurationSession.loadLogConfiguration(caid);
     	final Iterator<ILogDevice> i = logdevices.iterator();
     	while (i.hasNext()) {
     		final ILogDevice dev = i.next();
     		try {
-    	    	final LogConfiguration config = loadLogConfiguration(caid);
     	    	if (!dev.getAllowConfigurableEvents() || config.logEvent(event)) {
     	    		dev.log(admin, caid, module, time, username, certificate, event, comment, ex);
     	    	}
@@ -185,8 +171,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
             	LOG.error(INTRES.getLocalizedMessage("log.error.logdropped",admin.getAdminType()+" "+admin.getAdminData()+" "
             			+caid+" "+" "+module+" "+" "+time+" "+username+" "+(certificate==null?"null":CertTools.getSerialNumberAsString(certificate)+" "
                			+CertTools.getIssuerDN(certificate))+" "+event+" "+comment+" "+ex));
-            	final String msg = INTRES.getLocalizedMessage("log.errormissingentry");
-    			LOG.error(msg, e);
+    			LOG.error(INTRES.getLocalizedMessage("log.errormissingentry"), e);
     		}
         }
     }
@@ -225,81 +210,18 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
 		return result;
     }
 
-    @Override
-    public LogConfiguration loadLogConfiguration(final int caid) {
-        // Check if log configuration exists, else create one.
-        LogConfiguration ret = null; 
-        final Object o = logConfCache.get(Integer.valueOf(caid));
-    	if (o == null) {
-    		final LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
-    		if (logconfigdata == null) {
-    			if (LOG.isDebugEnabled()) {
-    				LOG.debug("Can't find log configuration during load (caid="+caid+"), trying to create new.");
-    			}
-    			try {
-    				ret = new LogConfiguration();
-    				logSession.saveNewLogConfiguration(caid, ret);	// Need invocation through interface to start transaction
-    			} catch (Exception f) {
-    				final String msg = INTRES.getLocalizedMessage("log.errorcreateconf", Integer.valueOf(caid));            	
-    				LOG.error(msg, f);
-    				throw new EJBException(f);
-    			}
-    		} else {
-    			ret = logconfigdata.loadLogConfiguration();
-    		}
-    		if (ret != null) {
-    			logConfCache.put(Integer.valueOf(caid), ret);
-    		}
-    	} else {
-    		ret = (LogConfiguration)o;
-    	}
-        return ret;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public void saveNewLogConfiguration(final int caid, final LogConfiguration logConfiguration) {
-		entityManager.persist(new LogConfigurationData(caid, logConfiguration));
-        // Update cache
-		logConfCache.put(Integer.valueOf(caid), logConfiguration);
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void saveLogConfiguration(final Admin admin, final int caid, final LogConfiguration logconfiguration) {
-    	internalSaveLogConfigurationNoFlushCache(admin, caid, logconfiguration);
-        // Update cache
-		logConfCache.put(Integer.valueOf(caid), logconfiguration);    	
-    }
-
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    @Override
-    public void internalSaveLogConfigurationNoFlushCache(final Admin admin, final int caid, final LogConfiguration logconfiguration) {
         try {
+        	logConfigurationSession.saveLogConfiguration(caid, logconfiguration, true);
         	log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_INFO_EDITLOGCONFIGURATION, "");
-        	final LogConfigurationData lcd = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
-        	if (lcd == null) {
-        		final String msg = INTRES.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
-        		LOG.info(msg);
-        		entityManager.persist(new LogConfigurationData(caid, logconfiguration));
-        	} else { 
-        		lcd.saveLogConfiguration(logconfiguration);
-        	}
         } catch (Exception e) {
             log(admin, caid, LogConstants.MODULE_LOG, new Date(), null, null, LogConstants.EVENT_ERROR_EDITLOGCONFIGURATION, "");
             throw new EJBException(e);
         }
     }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public void flushConfigurationCache() {
-    	logConfCache.emptyCache();
-    	if (LOG.isDebugEnabled()) {
-    		LOG.debug("Flushed log configuration cache.");
-    	}
-    }
-
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
 	public void testRollback(final long rollbackTestTime) {

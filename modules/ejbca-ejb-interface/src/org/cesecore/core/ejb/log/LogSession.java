@@ -92,24 +92,6 @@ public interface LogSession {
     Collection<LogEntry> query(String deviceName, Query query, String viewlogprivileges, String capriviledges, int maxResults)
             throws IllegalQueryException;
 
-    /**
-     * Loads the log configuration from the database.
-     * @return the LogConfiguration
-     */
-    LogConfiguration loadLogConfiguration(int caid);
-
-    /**
-     * Saves the log configuration to the database.
-     * @param logconfiguration the LogConfiguration to save.
-     */
-    void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration);
-
-    /**
-     * Do NOT use, use saveLogConfiguration instead. Used internally for testing
-     * only. Updates configuration without flushing caches.
-     */
-    void internalSaveLogConfigurationNoFlushCache(Admin admin, int caid, LogConfiguration logconfiguration);
-
-    /** Clear and reload log profile caches. */
-    void flushConfigurationCache();
+    /** Save LogConfiguration with audit trail. */
+	void saveLogConfiguration(Admin admin, int caid, LogConfiguration logconfiguration);
 }

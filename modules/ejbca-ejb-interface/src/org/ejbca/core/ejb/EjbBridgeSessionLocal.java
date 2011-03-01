@@ -20,6 +20,7 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.log.LogConfigurationSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -71,4 +72,5 @@ public interface EjbBridgeSessionLocal {
 	SignSessionLocal getSignSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	UserAdminSessionLocal getUserAdminSession();
+	LogConfigurationSessionLocal getLogConfigurationSession();
 }

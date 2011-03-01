@@ -17,6 +17,7 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.core.ejb.log.LogConfigurationSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
@@ -67,6 +68,7 @@ public class EjbRemoteHelper {
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
+    private LogConfigurationSessionRemote logConfigurationSession = null;
     private LogSessionRemote logSession = null;
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
@@ -202,6 +204,13 @@ public class EjbRemoteHelper {
             userDataSourceSession = JndiHelper.getRemoteSession(UserDataSourceSessionRemote.class);
         }
         return userDataSourceSession;
+    }
+
+    public LogConfigurationSessionRemote getLogConfigurationSession() {
+		if (logConfigurationSession == null) {
+            logConfigurationSession = JndiHelper.getRemoteSession(LogConfigurationSessionRemote.class);
+        }
+        return logConfigurationSession;
     }
 
     public LogSessionRemote getLogSession() {

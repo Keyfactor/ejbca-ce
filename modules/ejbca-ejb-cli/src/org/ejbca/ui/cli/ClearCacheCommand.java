@@ -74,7 +74,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (logconf) {
 				getLogger().info("Flushing log configuration cache.");
 				// Flush log configuration
-				ejb.getLogSession().flushConfigurationCache();
+				ejb.getLogConfigurationSession().flushConfigurationCache();
 			}
 			if (cacache) {
 				getLogger().info("Flushing CA cache.");
