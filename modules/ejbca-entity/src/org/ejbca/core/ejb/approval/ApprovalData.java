@@ -266,21 +266,21 @@ s	 */
 	
 	/** @return return the query results as a List. */
 	public static List<ApprovalData> findByApprovalId(final EntityManager entityManager, final int approvalid) {
-		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalId=:approvalId");
+		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId");
 		query.setParameter("approvalId", approvalid);
 		return query.getResultList();
 	}
 	
 	/** @return return the query results as a List. */
 	public static List<ApprovalData> findByApprovalIdNonExpired(final EntityManager entityManager, final int approvalid) {
-		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalId=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
+		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
 		query.setParameter("approvalId", approvalid);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<Integer>. */
 	public static List<Integer> findByApprovalIdsByStatus(final EntityManager entityManager, final int status) {
-		final Query query = entityManager.createQuery("SELECT a.approvalId FROM ApprovalData a WHERE a.status=:status");
+		final Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
 		query.setParameter("status", status);
 		return query.getResultList();
 	}
