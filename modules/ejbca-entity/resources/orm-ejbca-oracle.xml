@@ -26,18 +26,18 @@
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="approvalid"><column name="approvalid" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="approvaltype"><column name="approvaltype" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="endentityprofileid"><column name="endentityprofileid" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="caid"><column name="caid" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="reqadmincertissuerdn"><column name="reqadmincertissuerdn" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="reqadmincertsn"><column name="reqadmincertsn" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic name="approvalid"><column name="approvalId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic name="approvaltype"><column name="approvalType" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic name="endentityprofileid"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic name="caid"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic name="reqadmincertissuerdn"><column name="reqAdminCertIssuerDn" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic name="reqadmincertsn"><column name="reqAdminCertSn" column-definition="VARCHAR2(255 byte)"/></basic>
             <basic name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="approvaldata"><column name="approvaldata" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="requestdata"><column name="requestdata" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="requestdate"><column name="requestdate" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="expiredate"><column name="expiredate" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="remainingapprovals"><column name="remainingapprovals" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic name="approvaldata"><column name="approvalData" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic name="requestdata"><column name="requestData" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic name="requestdate"><column name="requestDate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic name="expiredate"><column name="expireDate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic name="remainingapprovals"><column name="remainingApprovals" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>

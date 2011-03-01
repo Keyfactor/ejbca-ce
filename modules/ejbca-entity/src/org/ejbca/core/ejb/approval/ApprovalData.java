@@ -41,18 +41,18 @@ public class ApprovalData implements Serializable {
 	private static final Logger log = Logger.getLogger(ApprovalData.class);
 
 	private int id;
-	private int approvalid;
-	private int approvaltype;
-	private int endentityprofileid;
-	private int caid;
-	private String reqadmincertissuerdn;
-	private String reqadmincertsn;
+	private int approvalId;
+	private int approvalType;
+	private int endEntityProfileId;
+	private int cAId;
+	private String reqAdminCertIssuerDn;
+	private String reqAdminCertSn;
 	private int status;
-	private String approvaldata;
-	private String requestdata;
-	private long requestdate;
-	private long expiredate;
-	private int remainingapprovals;	
+	private String approvalData;
+	private String requestData;
+	private long requestDate;
+	private long expireDate;
+	private int remainingApprovals;	
 	private int rowVersion = 0;
 	private String rowProtection;
 
@@ -84,68 +84,68 @@ public class ApprovalData implements Serializable {
 	 * result in the same approvalid if the admin tries to request the same action twice.
 	 */
 	//@Column
-	public int getApprovalid() { return approvalid; }
+	public int getApprovalid() { return approvalId; }
 	/**
 	 * Constructed from action data as actiontype, admin, username etc. It should
 	 * result in the same approvalid if the admin tries to request the same action twice.
 	 */
-	public void setApprovalid(int approvalid) { this.approvalid = approvalid; } 
+	public void setApprovalid(int approvalId) { this.approvalId = approvalId; } 
 
 	/**   
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
 	 * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
 	 */
 	//@Column
-	public int getApprovaltype() { return approvaltype; }
+	public int getApprovaltype() { return approvalType; }
 	/**
 	 * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
 	 * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
 	 */
-	public void setApprovaltype(int approvaltype) { this.approvaltype = approvaltype; }
+	public void setApprovaltype(int approvalType) { this.approvalType = approvalType; }
 
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
 	 */
 	//@Column
-	public int getEndentityprofileid() { return endentityprofileid; }
+	public int getEndentityprofileid() { return endEntityProfileId; }
 	/**
 	 * For RA specific approval requests should the related end entity profile id be specified
 	 * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
 s	 */
-	public void setEndentityprofileid(int endentityprofileid) { this.endentityprofileid = endentityprofileid; }
+	public void setEndentityprofileid(int endEntityProfileId) { this.endEntityProfileId = endEntityProfileId; }
 
 	/**
 	 * For CA specific approval requests should the related ca id be specified
 	 * for non ca request should this field be set to ApprovalDataVO.ANY_CA
 	 */
 	//@Column
-	public int getCaid() { return caid; }
+	public int getCaid() { return cAId; }
 	/**
 	 * For CA specific approval requests should the related ca id be specified
 	 * for non ca request should this field be set to ApprovalDataVO.ANY_CA    
 	 */
-	public void setCaid(int caid) { this.caid = caid; }
+	public void setCaid(int cAId) { this.cAId = cAId; }
 
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
 	 */
 	//@Column
-	public String getReqadmincertissuerdn() { return reqadmincertissuerdn; }
+	public String getReqadmincertissuerdn() { return reqAdminCertIssuerDn; }
 	/**
 	 * The issuerdn of the administrator certificate that generated the request.
 	 */
-	public void setReqadmincertissuerdn(String reqadmincertissuerdn) { this.reqadmincertissuerdn = reqadmincertissuerdn; }
+	public void setReqadmincertissuerdn(String reqAdminCertIssuerDn) { this.reqAdminCertIssuerDn = reqAdminCertIssuerDn; }
 
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
 	 */
 	//@Column
-	public String getReqadmincertsn() { return reqadmincertsn; }
+	public String getReqadmincertsn() { return reqAdminCertSn; }
 	/**
 	 * The serialnumber of the administrator certificate that generated the request. String in Hex.
 	 */
-	public void setReqadmincertsn(String reqadmincertsn) { this.reqadmincertsn = reqadmincertsn; }
+	public void setReqadmincertsn(String reqAdminCertSn) { this.reqAdminCertSn = reqAdminCertSn; }
 
 	/**
 	 * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
@@ -163,55 +163,55 @@ s	 */
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
 	//@Column @Lob
-	public String getApprovaldata() { return approvaldata; }
+	public String getApprovaldata() { return approvalData; }
 
 	/**
 	 * Stringrepresentation of data of approvals made by one or more administrators
 	 */
-	public void setApprovaldata(String approvaldata) { this.approvaldata = approvaldata; }
+	public void setApprovaldata(String approvalData) { this.approvalData = approvalData; }
 
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
 	//@Column @Lob
-	public String getRequestdata() { return requestdata; }
+	public String getRequestdata() { return requestData; }
 
 	/**
 	 * Data containing information about the request displayed for the approval administrator.
 	 */
-	public void setRequestdata(String requestdata) { this.requestdata = requestdata; }            
+	public void setRequestdata(String requestData) { this.requestData = requestData; }            
 
 	/**
 	 * Date the request for approval were added
 	 */
 	//@Column
-	public long getRequestdate() { return requestdate; }
+	public long getRequestdate() { return requestDate; }
 	/**
 	 * Date the request for approval were added
 	 */
-	public void setRequestdate(long requestdate) { this.requestdate = requestdate; }
+	public void setRequestdate(long requestDate) { this.requestDate = requestDate; }
 
 	/**
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
 	//@Column
-	public long getExpiredate() { return expiredate; }
+	public long getExpiredate() { return expireDate; }
 	/**
 	 * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
 	 * means that the request/approval never expires
 	 */
-	public void setExpiredate(long expiredate) { this.expiredate = expiredate; }
+	public void setExpiredate(long expireDate) { this.expireDate = expireDate; }
 
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action
 	 */
 	//@Column
-	public int getRemainingapprovals() { return remainingapprovals; }
+	public int getRemainingapprovals() { return remainingApprovals; }
 	/**
 	 * Indicates the number of approvals that remains in order to execute the action  
 	 */
-	public void setRemainingapprovals(int remainingapprovals) { this.remainingapprovals = remainingapprovals; }
+	public void setRemainingapprovals(int remainingApprovals) { this.remainingApprovals = remainingApprovals; }
 
 	//@Version @Column
 	public int getRowVersion() { return rowVersion; }
@@ -266,21 +266,21 @@ s	 */
 	
 	/** @return return the query results as a List. */
 	public static List<ApprovalData> findByApprovalId(final EntityManager entityManager, final int approvalid) {
-		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid");
-		query.setParameter("approvalid", approvalid);
+		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalId=:approvalId");
+		query.setParameter("approvalId", approvalid);
 		return query.getResultList();
 	}
 	
 	/** @return return the query results as a List. */
 	public static List<ApprovalData> findByApprovalIdNonExpired(final EntityManager entityManager, final int approvalid) {
-		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalid AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
-		query.setParameter("approvalid", approvalid);
+		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalId=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
+		query.setParameter("approvalId", approvalid);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<Integer>. */
 	public static List<Integer> findByApprovalIdsByStatus(final EntityManager entityManager, final int status) {
-		final Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
+		final Query query = entityManager.createQuery("SELECT a.approvalId FROM ApprovalData a WHERE a.status=:status");
 		query.setParameter("status", status);
 		return query.getResultList();
 	}
