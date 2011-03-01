@@ -45,9 +45,9 @@ public class ApprovalMatch extends BasicMatch {
     
 
 
-    // Private Constants.
-    static final String[] MATCH_WITH_SQLNAMES = {"id","approvalid", "approvaltype", "endentityprofileid", "caid"
-                                                         , "reqadmincertissuerdn", "reqadmincertsn", "status", "remainingapprovals"}; // Represents the column names in approvals table.
+    // Private Constants. These refer to column names in the database and are used for native SQL querying.
+    static final String[] MATCH_WITH_SQLNAMES = {"id","approvalId", "approvalType", "endEntityProfileId", "cAId"
+                                                         , "reqAdminCertIssuerDn", "reqAdminCertSn", "status", "remainingApprovals"}; // Represents the column names in approvals table.
    
     
     // Public methods.
