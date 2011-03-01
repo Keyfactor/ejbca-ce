@@ -211,6 +211,8 @@
        	<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
     	<!-- Dependencies from VA WAR and Appserver Extensions -->
        	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java"/>
+		<!-- Tool used to tidy up JavaDoc and make generated WS client classes usable. -->
+        <include name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files"><map from="${src.dir}/" to=""/></pathconvert>
 
@@ -294,8 +296,6 @@
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
     	<exclude name="org/ejbca/util/PluginTool.java" />
         <exclude name="org/ejbca/util/PerformanceTest.java" />
-		<!-- Tool used to tidy up JavaDoc. -->
-        <exclude name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
 		<!-- Tool used to tidy generate EJB depenency graph -->
         <exclude name="org/ejbca/util/EjbDependencyGraphTool.java"/>
 	</fileset>

@@ -720,7 +720,7 @@
     	<ant dir="modules" target="ejbca-ws"/>
     </target>
 
-    <target name="ejbca-ws-generate">
+    <target name="ejbca-ws-generate" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
     	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
 
