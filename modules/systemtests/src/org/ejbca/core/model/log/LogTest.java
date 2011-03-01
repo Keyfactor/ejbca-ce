@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.log.LogConfigurationSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -41,6 +42,7 @@ public class LogTest extends CaTestCase {
 
     private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
+    private LogConfigurationSessionRemote logConfigurationSession = InterfaceCache.getLogConfigurationSession();
     private LogSessionRemote logSession = InterfaceCache.getLogSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     
@@ -74,7 +76,7 @@ public class LogTest extends CaTestCase {
 
         logSession.saveLogConfiguration(admin, getTestCAId(), logconf);
 
-        LogConfiguration logconf2 = logSession.loadLogConfiguration(getTestCAId());
+        LogConfiguration logconf2 = logConfigurationSession.loadLogConfiguration(getTestCAId());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", !logconf2.getLogEvent(LogConstants.EVENT_INFO_DATABASE).booleanValue());
         assertTrue("Couldn't retrieve correct log confirguration data from database.", logconf2.getLogEvent(LogConstants.EVENT_ERROR_DATABASE).booleanValue());
 
@@ -125,39 +127,42 @@ public class LogTest extends CaTestCase {
     }
 
     /**
-     * Test of the cache of certificate profiles. This test depends on the default cache time of 5 second being used.
-     * If you changed this config, eeprofiles.cachetime, this test may fail. 
+     * Test of the cache of LogConfiguration. This test depends on the default cache time of 5 second being used.
+     * If you changed this config, logconfiguration.cachetime, this test may fail. 
      */
     public void test03LogConfigurationCache() throws Exception {
+    	log.trace(">test03LogConfigurationCache()");
     	// First a check that we have the correct configuration, i.e. default
     	long cachetime = EjbcaConfiguration.getCacheLogConfigurationTime();
     	assertEquals(5000, cachetime);
 
-    	// Add a profile
-    	LogConfiguration config = logSession.loadLogConfiguration(getTestCAId());
+    	// Load LogConfiguration
+    	LogConfiguration config = logConfigurationSession.loadLogConfiguration(getTestCAId());
     	assertNotNull(config);
-    	assertTrue(config.useExternalLogDevices()); // default value
-    	
+    	assertTrue("Needs a fresh LogConfiguration for this test to work.", config.useExternalLogDevices()); // default value
         // Flush caches to reset cache timeout
-    	logSession.flushConfigurationCache();
+    	logConfigurationSession.flushConfigurationCache();
+    	// Save our object to update the cache we just flushed (a load would also work here..)
+    	logConfigurationSession.saveLogConfiguration(getTestCAId(), config, true);
     	// Change config, not flushing cache
     	config.setUseExternalLogDevices(false);
-    	logSession.internalSaveLogConfigurationNoFlushCache(admin, getTestCAId(), config);
+    	logConfigurationSession.saveLogConfiguration(getTestCAId(), config, false);
     	// read config again, value should not be changed because it is cached
-    	config = logSession.loadLogConfiguration(getTestCAId());
-    	assertTrue(config.useExternalLogDevices()); 
+    	config = logConfigurationSession.loadLogConfiguration(getTestCAId());
+    	assertTrue("LogConfiguration cache was updated immediately.", config.useExternalLogDevices()); 
     	
     	// Wait 6 seconds and try again, now the cache should have been updated
     	Thread.sleep(6000);
-    	config = logSession.loadLogConfiguration(getTestCAId());
-    	assertFalse(config.useExternalLogDevices()); 
+    	config = logConfigurationSession.loadLogConfiguration(getTestCAId());
+    	assertFalse("LogConfiguration cache did not expire as expected.", config.useExternalLogDevices()); 
 
         // Changing using the regular method however should immediately flush the cache
     	config.setUseExternalLogDevices(true);
     	logSession.saveLogConfiguration(admin, getTestCAId(), config);
-    	config = logSession.loadLogConfiguration(getTestCAId());
-    	assertTrue(config.useExternalLogDevices()); 
-    } // test03LogConfigurationCache
+    	config = logConfigurationSession.loadLogConfiguration(getTestCAId());
+    	assertTrue("LogConfiguration cache was not updated immediately.", config.useExternalLogDevices()); 
+    	log.trace("<test03LogConfigurationCache()");
+    }
     
     /**
      * Test that log entries for OldLogDevice are persisted even if a the main transaction rolls back.

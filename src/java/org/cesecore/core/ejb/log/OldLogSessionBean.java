@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -28,10 +29,8 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.ejb.log.LogEntryData;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.CertTools;
@@ -51,20 +50,40 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
+    @EJB
+    private LogConfigurationSessionLocal logConfigurationSession;
+
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
-	public void log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
+	public boolean log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 		String uid = null;
 		if (certificate != null) {
 			uid = CertTools.getSerialNumberAsString(certificate) + "," + CertTools.getIssuerDN(certificate);        		
 		}
-		
 		String admindata = admin.getAdminData();
 		if((event == LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN) && StringUtils.contains(comment, "external CA")){
 			admindata += " : SubjectDN : \"" + CertTools.getSubjectDN(admin.getAdminInformation().getX509Certificate()) + "\"";
 		}
-		Integer id = getAndIncrementRowCount();
-		entityManager.persist(new LogEntryData(id, admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment));
+		int id = -1;
+		final int RETRIES = 16;	// Very low chance of starvation
+		for (int i=0; i<RETRIES && id==-1; i++) {
+			try {
+				id = logConfigurationSession.getAndIncrementRowCount();
+			} catch (RuntimeException e) {
+				if (log.isDebugEnabled()) {
+					log.debug("Unable to get next sequential log entry row number: ", e);
+				}
+			}
+		}
+		if (id == -1) {
+			if (log.isDebugEnabled()) {
+				log.debug("Failed to allocate next sequential log entry row number after " + RETRIES + " tries.");
+			}
+			return false;
+		} else {
+			entityManager.persist(new LogEntryData(id, admin.getAdminType(), admindata, caid, module, time, username, uid, event, comment));
+			return true;
+		}
 	}
 
     @Override
@@ -81,13 +100,4 @@ public class OldLogSessionBean implements OldLogSessionLocal, OldLogSessionRemot
 		}
 		return returnval;
 	}
-
-    private Integer getAndIncrementRowCount() {
-    	LogConfigurationData logConfigurationData = LogConfigurationData.findByPK(entityManager, Integer.valueOf(0));
-    	if (logConfigurationData == null) {
-    		logConfigurationData = new LogConfigurationData(0, new LogConfiguration());
-    		entityManager.persist(logConfigurationData);
-    	}
-        return logConfigurationData.getAndIncrementRowCount();
-    }
 }

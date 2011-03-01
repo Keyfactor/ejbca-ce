@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.web.admin.loginterface;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cesecore.core.ejb.log.LogConfigurationSessionLocal;
 import org.cesecore.core.ejb.log.LogSession;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
@@ -46,13 +48,14 @@ import org.ejbca.util.query.Query;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class LogInterfaceBean implements java.io.Serializable {
+public class LogInterfaceBean implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	public static final int MAXIMUM_QUERY_ROWCOUNT = WebConfiguration.getLogMaxQueryRowCount();
     // Private fields.
     private CertificateStoreSession certificatesession;
     private LogSession logSession;
+    private LogConfigurationSessionLocal logConfigurationSession;
     private LogEntriesView                 logentriesview;
     private Admin                          admin;
     private SubjectDNProxy                 dnproxy;  
@@ -86,6 +89,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     		admin = ejbcawebbean.getAdminObject();
     		EjbLocalHelper ejb = new EjbLocalHelper();
     		logSession = ejb.getLogSession(); 
+    		logConfigurationSession = ejb.getLogConfigurationSession(); 
     		certificatesession = ejb.getCertificateStoreSession();
     		this.informationmemory = ejbcawebbean.getInformationMemory();
     		initializeEventNameTables(ejbcawebbean);
@@ -179,7 +183,7 @@ public class LogInterfaceBean implements java.io.Serializable {
      * @return the logconfiguration
      */
     public LogConfiguration loadLogConfiguration(int caid) {
-    	return logSession.loadLogConfiguration(caid);   
+    	return logConfigurationSession.loadLogConfiguration(caid);   
     }    
         
     /**

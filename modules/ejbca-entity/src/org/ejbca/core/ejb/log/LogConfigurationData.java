@@ -18,12 +18,14 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
+import org.ejbca.util.ValueExtractor;
 
 /**
  * Representation of the log configuration data.
@@ -105,13 +107,6 @@ public class LogConfigurationData implements Serializable {
 		setLogConfiguration(logConfiguration);
 	}
 
-	@Transient
-	public Integer getAndIncrementRowCount() {
-		int returnval = getLogEntryRowNumber();
-		setLogEntryRowNumber(returnval + 1);
-		return Integer.valueOf(returnval);
-	}
-
     //
     // Search functions. 
     //
@@ -124,5 +119,27 @@ public class LogConfigurationData implements Serializable {
 	/** @return return the query results as a List. */
 	public static List<LogConfigurationData> findAll(final EntityManager entityManager) {
 		return entityManager.createQuery("SELECT a FROM LogConfigurationData a").getResultList();
+	}
+
+	/** @return the current current logEntryRowNumber or -1 if no LogConfigurationData with id 0 exists. */
+	public static int findCurrentLogEntryRowNumber(final EntityManager entityManager) {
+		List logEntryRowNumbers = entityManager.createQuery("SELECT a.logEntryRowNumber FROM LogConfigurationData a WHERE a.id=0").getResultList();
+		if (logEntryRowNumbers.size() == 0) {
+			return -1;
+		}
+		return ValueExtractor.extractIntValue(logEntryRowNumbers.get(0));
+	}
+	
+	/** @return the allocated logEntryRowNumber or -1 if the operation failed. */
+	public static int incrementLogEntryRowNumber(final EntityManager entityManager, int currentLogEntryRowNumber) {
+		Query query = entityManager.createQuery("UPDATE LogConfigurationData a SET a.logEntryRowNumber=:logEntryRowNumberNew"
+				+ " WHERE a.id=0 AND a.logEntryRowNumber=:logEntryRowNumberOld");
+		query.setParameter("logEntryRowNumberOld", currentLogEntryRowNumber);
+		query.setParameter("logEntryRowNumberNew", currentLogEntryRowNumber + 1);
+		if (query.executeUpdate() == 1) {
+			return currentLogEntryRowNumber + 1;
+		} else {
+			return -1;
+		}
 	}
 }

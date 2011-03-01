@@ -13,21 +13,12 @@
 
 package org.cesecore.core.ejb.log;
 
-import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.Date;
-
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
+import javax.ejb.Remote;
 
 /**
+ * @see org.cesecore.core.ejb.log.LogConfigurationSession
  * @version $Id$
  */
-public interface OldLogSession {
-
-	public boolean log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
-	
-	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException ;
+@Remote
+public interface LogConfigurationSessionRemote extends LogConfigurationSession {
 }

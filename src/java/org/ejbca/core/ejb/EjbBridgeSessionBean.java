@@ -23,6 +23,7 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.core.ejb.log.LogConfigurationSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.cesecore.core.ejb.log.OldLogSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -78,6 +79,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB HardTokenSessionLocal hardTokenSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
 	@EJB LogSessionLocal logSession;
+	@EJB LogConfigurationSessionLocal logConfigurationSession;
 	@EJB OldLogSessionLocal oldLogSession;
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
@@ -113,4 +115,5 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
+	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return logConfigurationSession; }
 }
