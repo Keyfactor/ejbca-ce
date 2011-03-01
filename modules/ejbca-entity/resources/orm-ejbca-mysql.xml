@@ -28,18 +28,18 @@
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
-            <basic name="approvalid"><column name="approvalid" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="approvaltype"><column name="approvaltype" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="endentityprofileid"><column name="endentityprofileid" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="caid"><column name="caid" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="reqadmincertissuerdn"><column name="reqadmincertissuerdn" column-definition="VARCHAR(250) BINARY"/></basic>
-            <basic name="reqadmincertsn"><column name="reqadmincertsn" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic name="approvalid"><column name="approvalId" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="approvaltype"><column name="approvalType" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="endentityprofileid"><column name="endEntityProfileId" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="caid"><column name="cAId" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="reqadmincertissuerdn"><column name="reqAdminCertIssuerDn" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic name="reqadmincertsn"><column name="reqAdminCertSn" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic name="status"><column name="status" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="approvaldata"><column name="approvaldata" column-definition="LONGTEXT" nullable="false"/><lob/></basic>
-            <basic name="requestdata"><column name="requestdata" column-definition="LONGTEXT" nullable="false"/><lob/></basic>
-            <basic name="requestdate"><column name="requestdate" column-definition="BIGINT(20)" nullable="false"/></basic>
-            <basic name="expiredate"><column name="expiredate" column-definition="BIGINT(20)" nullable="false"/></basic>
-            <basic name="remainingapprovals"><column name="remainingapprovals" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="approvaldata"><column name="approvalData" column-definition="LONGTEXT" nullable="false"/><lob/></basic>
+            <basic name="requestdata"><column name="requestData" column-definition="LONGTEXT" nullable="false"/><lob/></basic>
+            <basic name="requestdate"><column name="requestDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic name="expiredate"><column name="expireDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic name="remainingapprovals"><column name="remainingApprovals" column-definition="INT(11)" nullable="false"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>
