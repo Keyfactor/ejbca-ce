@@ -427,6 +427,11 @@ Bug
     * [ECA-1584] - PublisherQueue process service does not work in PostgreSQL
     * [ECA-1590] - Hash of a CA certificates can not be used to get "CA" if the subject DN of the certificate is not the same as the subject DN of the CA data.
 
+3.9.10, 2010-03-01
+---
+Bug
+    * [ECA-1699] - X.500 DN order with multiple attributes (e.g. DC, OU)
+
 3.9.9, 2010-11-02
 ---
 New Feature
