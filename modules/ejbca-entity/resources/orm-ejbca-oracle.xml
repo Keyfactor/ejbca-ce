@@ -261,7 +261,7 @@
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
             <basic name="adminType"><column name="adminType" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic name="adminData"><column name="adminData" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="caId"><column name="caId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic name="module"><column name="module" column-definition="NUMBER(10)" nullable="false"/></basic>
             <basic name="time"><column name="time" column-definition="NUMBER(19)" nullable="false"/></basic>
             <basic name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
