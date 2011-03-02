@@ -44,6 +44,7 @@ import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
 import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
@@ -504,7 +505,8 @@ public class CreateCRLSessionTest extends CaTestCase {
 
     public void test08TestCRLStore() throws Exception {
         log.trace(">test08TestCRLStore()");
-    	final String result = ValidationAuthorityTst.testCRLStore(ca, this.crlSession);
+        final String HTTP_PORT = InterfaceCache.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+    	final String result = ValidationAuthorityTst.testCRLStore(ca, this.crlSession, HTTP_PORT);
     	assertNull(result, result);
         log.trace("<test08TestCRLStore()");
     }

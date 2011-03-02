@@ -36,10 +36,10 @@ import org.ejbca.ui.web.protocol.RFC4387URL;
 class ValidationAuthorityTst {
 	private final static Logger log = Logger.getLogger(ValidationAuthorityTst.class);
 	private final static Admin admin =  new Admin(Admin.TYPE_INTERNALUSER);
-	static String testCRLStore(CA ca, CrlSessionRemote createCrlSession) throws Exception {
+	static String testCRLStore(CA ca, CrlSessionRemote createCrlSession, String port) throws Exception {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  
-		final String sURI = "http://localhost:8080/crls/search.cgi?reloadcache=true";
+		final String sURI = "http://localhost:" + port + "/crls/search.cgi?reloadcache=true";
 		log.debug("Reload cache URL: '"+sURI+"'.");
 		final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
 		connection.connect();
