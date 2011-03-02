@@ -151,7 +151,7 @@ public class LogEntryData implements Serializable {
 	/** @return a List<LogEntryData> from a custom SQL query. */
 	public static List<LogEntryData> findByCustomQueryAndPrivileges(EntityManager entityManager, String queryString, String caPriviledges, String viewLogPrivileges, int maxResults) {
 		// Hibernate on DB2 wont allow us to "SELECT *" in combination with setMaxResults  
-		String sql = "SELECT id, adminType, adminData, caId, module, time, username, certificateSNR, event, logComment, rowVersion, rowProtection FROM LogEntryData WHERE ( " + queryString + ") AND (" + caPriviledges + ")";
+		String sql = "SELECT id, adminType, adminData, cAId, module, time, username, certificateSNR, event, logComment, rowVersion, rowProtection FROM LogEntryData WHERE ( " + queryString + ") AND (" + caPriviledges + ")";
 		if (StringUtils.isNotEmpty(viewLogPrivileges)) {
 			sql += " AND (" + viewLogPrivileges + ")";
 		}

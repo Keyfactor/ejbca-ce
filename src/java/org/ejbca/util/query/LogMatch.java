@@ -45,7 +45,7 @@ public class LogMatch extends BasicMatch {
 
     // Private Constants.
     static final String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
-                                                         , "certificateSNR", "logComment", "event", "module", "caid"}; // Represents the column names in ra userdata table.
+                                                         , "certificateSNR", "logComment", "event", "module", "cAId"}; // Represents the column names in ra userdata table.
    
     
     // Public methods.
