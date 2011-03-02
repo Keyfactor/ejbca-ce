@@ -451,7 +451,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                         }
                 	}
                     if (worker != null) {
-                    	serviceSession.executeServiceInTransaction(worker, serviceName);
+                   		serviceSession.executeServiceInNoTransaction(worker, serviceName);
                     } else {
                     	Object o = timerInfo;
                     	if (serviceName != null) {
@@ -535,10 +535,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
         return worker;
     }
-    
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public void executeServiceInTransaction(IWorker worker, String serviceName) {
+    public void executeServiceInNoTransaction(IWorker worker, String serviceName) {
         try {
 			// Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since we have circular dependencies! 
         	Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();

@@ -53,8 +53,8 @@ public interface ServiceSessionLocal extends ServiceSession {
      */
 	public IWorker getWorkerIfItShouldRun(Integer timerInfo, long nextTimeout);
 
-	/** Executes a the service in a separate transaction. */
-	public void executeServiceInTransaction(IWorker worker, String serviceName);
+	/** Executes a the service in a separate in no transaction. */
+	public void executeServiceInNoTransaction(IWorker worker, String serviceName);
 	
     /** Cancels a timer with the given Id. */
 	public void cancelTimer(Integer id);
