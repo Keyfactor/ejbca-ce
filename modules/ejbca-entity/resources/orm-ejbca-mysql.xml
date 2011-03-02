@@ -263,7 +263,7 @@
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
             <basic name="adminType"><column name="adminType" column-definition="INT(11)" nullable="false"/></basic>
             <basic name="adminData"><column name="adminData" column-definition="VARCHAR(250) BINARY"/></basic>
-            <basic name="caId"><column name="caId" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="INT(11)" nullable="false"/></basic>
             <basic name="module"><column name="module" column-definition="INT(11)" nullable="false"/></basic>
             <basic name="time"><column name="time" column-definition="BIGINT(20)" nullable="false"/></basic>
             <basic name="username"><column name="username" column-definition="VARCHAR(250) BINARY"/></basic>

@@ -228,7 +228,7 @@ CREATE TABLE LogEntryData (
     id NUMBER(10) NOT NULL,
     adminData VARCHAR2(255 byte),
     adminType NUMBER(10) NOT NULL,
-    caId NUMBER(10) NOT NULL,
+    cAId NUMBER(10) NOT NULL,
     certificateSNR VARCHAR2(255 byte),
     event NUMBER(10) NOT NULL,
     logComment VARCHAR2(255 byte),

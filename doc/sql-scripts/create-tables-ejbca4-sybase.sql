@@ -228,7 +228,7 @@ CREATE TABLE LogEntryData (
     id INTEGER NOT NULL,
     adminData VARCHAR(255) null,
     adminType INTEGER NOT NULL,
-    caId INTEGER NOT NULL,
+    cAId INTEGER NOT NULL,
     certificateSNR VARCHAR(255) null,
     event INTEGER NOT NULL,
     logComment VARCHAR(255) null,

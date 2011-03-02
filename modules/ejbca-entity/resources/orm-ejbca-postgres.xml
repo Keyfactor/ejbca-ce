@@ -273,7 +273,7 @@
             <id name="id"><column name="id" column-definition="INT4"/></id>
             <basic name="adminType"><column name="adminType" column-definition="INT4" nullable="false"/></basic>
             <basic name="adminData"><column name="adminData" column-definition="TEXT"/></basic>
-            <basic name="caId"><column name="caId" column-definition="INT4" nullable="false"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="INT4" nullable="false"/></basic>
             <basic name="module"><column name="module" column-definition="INT4" nullable="false"/></basic>
             <basic name="time"><column name="time" column-definition="INT8" nullable="false"/></basic>
             <basic name="username"><column name="username" column-definition="TEXT"/></basic>
