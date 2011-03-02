@@ -2,6 +2,11 @@
 -- If using UTF-8 character enoding in MySQL index length is limited to 1000 bytes, and UTF-8 characters take up 3 bytes.
 -- Some index rown needs to be changed because of this like:
 -- For MySQL NDB 'using hash' should be added to all unique indexes.
+
+-- To enable custom certificate serialNumbers in EJBCA we insert test data to see if certificatedata_idx1 is enabled.
+-- We need to remove these rows before proceeding or the index creation will fail.
+delete from CertificateData where fingerprint='caba75f68c833c3c2d33f3f5052b7d5a76e80383';
+delete from CertificateData where fingerprint='05a219d835622653192c30eeeee8f01f918b30fb';
  
 -- Selecting log entries when viewing logs:
 create index logentry_idx1 on LogEntryData (time);
