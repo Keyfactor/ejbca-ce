@@ -37,7 +37,7 @@
 #database.url=jdbc:ingres://127.0.0.1:21071/ejbca
 
 # JDBC driver classname.
-# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
+# The JEE server needs to be configured with the appropriate JDBC driver for the selected database
 # Default: org.hsqldb.jdbcDriver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
