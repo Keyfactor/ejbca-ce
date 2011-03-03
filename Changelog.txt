@@ -1,39 +1,43 @@
-4.0alpha1, 2010-12-23
+4.0.0, 2011-03-03
 ---
-** Bug
-    * [ECA-1327] - Creating CA from CLI using a certificate profile not derivative of ROOTCA or SUBCA causes a NullPointerException.
-    * [ECA-1397] - postalAddress DN component is has wrong encoding
-    * [ECA-1515] - ejbca.sh ca listexpired return revoked certificates
-    * [ECA-1615] - Forgetting to define key encryption key in hard token results in NullPointerException on certificate creation with CSR
-    * [ECA-1624] - Test test06RequestCounter in UserDataTest system test apparently does not clean up after itself
-    * [ECA-1647] - ServiceTimerSession does not loop through the correct timers in case of exception
-    * [ECA-1673] - OCSP Service Locator URI fills in default value even if we want to have it empty
-    * [ECA-1686] - CertificateStoreSessionBean.findCertificatesByXX inconsistent behavior when user does not exist
-    * [ECA-1689] - Possible NullpointerException in admin GUI if ee profile is removed in database
-    * [ECA-1695] - EjbcaWS.getAvailableCertificateProfiles and getAvailableCAsInProfile throws NullPointerException if profile does not exist
-    * [ECA-1697] - Possible NPE when merging WS DN
-    * [ECA-1699] - X.500 DN order with multiple attributes (e.g. DC, OU)
-    * [ECA-1753] - externalra-gui does not work with jBoss 5.1.0.GA.
-    * [ECA-1799] - notSerializableException running userquerywith remote EJBs
-    * [ECA-1806] - Get timers working again in EJBCA4
-    * [ECA-1829] - XKMSKISSTest fails due to inproper matching och SubjectDNs
-    * [ECA-1841] - Error adding end entity with several required and non required OUs
-    * [ECA-1861] - Batch generation does not work when there are lots of new users with empty passwords in database
-    * [ECA-1864] - CATokenOfflineException is converted to CADoesntExistsException
-    * [ECA-1887] - Redeployment on Glassfish 2.1.1 does not work
-    * [ECA-1919] - EndEntityProfileSessionBean.findFreeEndEntityProfileId may fail and loop
-    * [ECA-1951] - Can't add admin groups when logged in as SuperAdmin
-    * [ECA-1956] - EJBCA doesn't handle well SCEP request with multivalue relative distinguishable name with a space in it
-    * [ECA-1973] - Certificate archiving does not work when creating CRLs using WS (4.0 dev regression only)
+
+** New Feature
+    * [ECA-200] - Serialized database object not compatible between different app servers
+    * [ECA-1286] - Additional notification template tag requestAdmin.CN
+    * [ECA-1348] - Update user's SubjectDN from EJB CLI
+    * [ECA-1516] - Possibility to revoke a certificate with the ejbca.sh tools (using the serial number)
+    * [ECA-1522] - EJBCA CLI command to list lastUpdate and nextUpdate for each CA's last CRL
+    * [ECA-1595] - Add Adobe PDF Signature extended key usage
+    * [ECA-1700] - Add customLog WS CLI command
+    * [ECA-1867] - Perform ampersand escaping for XML-based database sources
+    * [ECA-1875] - New JUnit test for parsing Glassfish's JEE standard validation
+    * [ECA-1905] - Function in public web to dump/inspect contents of certificates/CSRs
+    * [ECA-2000] - Add SPOC PKI, CSN369791, extended key usages
+    * [ECA-2013] - Support SHA224WithECDSA on PKCS11 HSMs
+    * [ECA-2014] - Support signing with SHA256WithRSAandMGF1 on PKCS11 HSMs
+    * [ECA-2021] - WS Call for retrieving CA path
+    * [ECA-2022] - Add Web Service RA standalone application
+    * [ECA-2072] - Handle database with case sensitive column names
 
 ** Improvement
+    * [ECA-687] - WebService API does not work on Weblogic
+    * [ECA-735] - Additional default 'chain' link on the public CRL/CA page
+    * [ECA-852] - Improve handling of error in WS-API for unknown errors like underlying SQLExceptions.
+    * [ECA-899] - Specify min password length in Bits - regardless of method used to express them
+    * [ECA-964] - Change all "revokation" to "revocation" and "revoce" to "revoke" throughout the sourcecode
     * [ECA-1064] - Simplify configuration depending on appserver.type
     * [ECA-1099] - PMD Warnings
+    * [ECA-1378] - Don't display Log4jLogDevice in View log function in admin-GUI 
+    * [ECA-1511] - Make EJBCA JBoss 6.0 compliant
     * [ECA-1528] - Remove CRL number from Publisher.storeCRL method
     * [ECA-1586] - Possible to prompt for passwords during install and don't display on screen
     * [ECA-1601] - GeneralPurposeCustomPublisher should have parameter for deltaCRL
     * [ECA-1623] - Refactor unit tests to comply to JUnit3 standard
+    * [ECA-1648] - Date format of the setStartTime and setEndTime WS functions
+    * [ECA-1656] - Adapt ProtocolOcspHttpTest to Windows
+    * [ECA-1667] - E-mail template: use an e-mail address from SAN or entity account
     * [ECA-1750] - The Elimination of TestTools
+    * [ECA-1755] - Replace usage of SimpleDateFormat with commons.lang FastDateFormat
     * [ECA-1786] - Get all tests up and running post EJB3-conversion
     * [ECA-1833] - Log devices that use the database should be responsible for creating new transactions
     * [ECA-1839] - Remove JNDI lookup for local interfaces and replace with proper injection wherever possible.
@@ -42,24 +46,28 @@
     * [ECA-1849] - Refactor HealthCheck component to allow for injection of local interfaces. 
     * [ECA-1852] - Change Log4J property file bundled with EJBCA on non-JBoss application servers to XML format
     * [ECA-1863] - Make org.cesecore.core.ejb.ca.store.CertificateProfileSessionBean from CertificateStoreSessionBean
-    * [ECA-1868] - Extract EndEntityProfileSession from RaAdminSession in preparation for cesecore.
+    * [ECA-1868] - Extract EndEntityProfileSession from RaAdminSession in preparation for CESeCore.
     * [ECA-1878] - Improve speed of HttpMethodsTest
     * [ECA-1880] - Run unit JUnit tests in parallel
     * [ECA-1886] - Add new authorization check to internal getCA method
-    * [ECA-1888] - move some bean methods to correct session bean
+    * [ECA-1888] - Move detection of referenced publishers and CAs to CertificateProfileSessionBean
     * [ECA-1890] - AuthorizationSessionBean tosses AuthorizationDeniedException for unexceptional conditions.
     * [ECA-1896] - Remove unused methods in CreateCRLSession
     * [ECA-1899] - Support for RSA CAs with SHA384 and SHA512 in admin GUI
     * [ECA-1900] - Replace Class.forName(SomeClass.class.getName()) with SomeClass.class
+    * [ECA-1929] - Convert CertificateDataUtil to abstract base class for CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
     * [ECA-1943] - Only merge ejbca-custom once per build
     * [ECA-1970] - Simplify query for batch users
-
-** New Feature
-    * [ECA-200] - Serialized database object not compatible between different app servers
-    * [ECA-1516] - Possibility to revoke a certificate with the ejbca.sh tools (using the serial number)
-    * [ECA-1700] - Add customLog WS CLI command
-    * [ECA-1875] - New JUnit test for parsing Glassfish's JEE standard validation
-    * [ECA-1905] - Function in public web to dump/inspect contents of certificates/CSRs
+    * [ECA-1989] - Mildly confusing message during default install "Generating for all FAILED."
+    * [ECA-1991] - Change references to ejb-interface_ejb3 to just ejb-interface
+    * [ECA-1993] - Migrate EJBCA from junit3 to junit4
+    * [ECA-2011] - Improve build scripts
+    * [ECA-2016] - Improvement of CA Administrators access rules
+    * [ECA-2019] - Update generated documentation
+    * [ECA-2030] - Use atomic update of LogConfigurationData.logEntryRowNumber
+    * [ECA-2033] - Use @Override on all EJB methods
+    * [ECA-2064] - Ugly exception in cli trying to set pwd for non existing used
+    * [ECA-2088] - Remove CertificateData created during test for index certificatedata_idx1
 
 ** Task
     * [ECA-1319] - Upgrade apache beanutils to > 1.8
@@ -84,7 +92,8 @@
     * [ECA-1894] - With caching EJBCA should recover from a database failure
     * [ECA-1903] - Remove myfaces jars
     * [ECA-1904] - Extract CRUD operations from CreateCrlSession into a new bean
-    * [ECA-1907] - Excract a CRUD session bean for CAs from CaAdminSessionBean
+    * [ECA-1907] - Extract some CRUD operations for CAs from CaAdminSessionBean to new SSB
+    * [ECA-1913] - Message keys refactoring
     * [ECA-1920] - Move configuration of inistial administration CA to install.properties
     * [ECA-1922] - Remove TableProtect mechanism
     * [ECA-1926] - Move Log4J JBoss appenders to separate module
@@ -92,9 +101,77 @@
     * [ECA-1928] - Upgrade commons-lang to latest version (2.5)
     * [ECA-1940] - Upgrade commons-logging to latest version (1.1.1)
     * [ECA-1942] - Upgrade log4j to latest version (1.2.16)
+    * [ECA-1944] - Merge ECA-1853 and ECA-1931 to trunk
+    * [ECA-1971] - HTML/CSS compliance and code cleaning
+    * [ECA-1974] - Document current state of Test EJBCA 4 on WebLogic AS 10.3.4
     * [ECA-1977] - Remove deprecated methods from BasePublisher and update ICustomPublisher to match.
-    * [ECA-1984] - remove deprecated methods from CertificateProfile
+    * [ECA-1984] - Remove deprecated methods from CertificateProfile
     * [ECA-1986] - Remove deprecated certtools.dnorderreverse
+    * [ECA-1987] - Document current state of EJBCA 4 on WebSphere AS 7
+    * [ECA-1992] - Remove unused env entries from CMP WAR's web.xml
+    * [ECA-2036] - Test for CVE-2010-4476
+
+** Bug
+    * [ECA-579] - Log queries for administrator data are incorrect
+    * [ECA-1151] - startTime/endTime format in end entity profile incoherence
+    * [ECA-1212] - Edit administrator groups does not work on Weblogic 9/10
+    * [ECA-1327] - Creating CA from CLI using a certificate profile not derivative of ROOTCA or SUBCA causes a NullPointerException.
+    * [ECA-1352] - The CA DN is not the CA displayed in CA certificate view
+    * [ECA-1397] - postalAddress DN component is has wrong encoding
+    * [ECA-1515] - ejbca.sh ca listexpired return revoked certificates
+    * [ECA-1591] - External OCSP tests in TestPublisher fails on Postgres
+    * [ECA-1604] - Trying to create a CVCA with incomplete SubjectDN results in NullPointerException
+    * [ECA-1615] - Forgetting to define key encryption key in hard token results in NullPointerException on certificate creation with CSR
+    * [ECA-1624] - Test test06RequestCounter in UserDataTest system test apparently does not clean up after itself
+    * [ECA-1647] - ServiceTimerSession does not loop through the correct timers in case of exception
+    * [ECA-1650] - JUnit tests cannot handle EndOfLine characters on Windows
+    * [ECA-1673] - OCSP Service Locator URI fills in default value even if we want to have it empty
+    * [ECA-1686] - CertificateStoreSessionBean.findCertificatesByXX inconsistent behavior when user does not exist
+    * [ECA-1689] - Possible NullpointerException in admin GUI if ee profile is removed in database
+    * [ECA-1695] - EjbcaWS.getAvailableCertificateProfiles and getAvailableCAsInProfile throws NullPointerException if profile does not exist
+    * [ECA-1697] - Possible NPE when merging WS DN
+    * [ECA-1699] - X.500 DN order with multiple attributes (e.g. DC, OU)
+    * [ECA-1753] - externalra-gui does not work with jBoss 5.1.0.GA.
+    * [ECA-1767] - Subject DN field with only the space character leads to Exception
+    * [ECA-1799] - notSerializableException running userquerywith remote EJBs
+    * [ECA-1806] - Get timers working again in EJBCA4
+    * [ECA-1809] - Services based on EJB Timer service does not work on Weblogic Server 10.0
+    * [ECA-1829] - XKMSKISSTest fails due to inproper matching och SubjectDNs
+    * [ECA-1841] - Error adding end entity with several required and non required OUs
+    * [ECA-1861] - Batch generation does not work when there are lots of new users with empty passwords in database
+    * [ECA-1864] - CATokenOfflineException is converted to CADoesntExistsException
+    * [ECA-1887] - Redeployment on Glassfish 2.1.1 does not work
+    * [ECA-1919] - EndEntityProfileSessionBean.findFreeEndEntityProfileId may fail and loop
+    * [ECA-1951] - Can't add admin groups when logged in as SuperAdmin
+    * [ECA-1956] - EJBCA doesn't handle well SCEP request with multivalue relative distinguishable name with a space in it
+    * [ECA-1973] - Certificate archiving does not work when creating CRLs using WS (4.0 dev regression only)
+    * [ECA-1980] - Unable to delete end entity profile
+    * [ECA-1981] - End Entity History: Administrator is not listed right (NullPointerException)
+    * [ECA-1982] - External OCSP responder does not work with ECC algorithm
+    * [ECA-1988] - WARs depend on classes from ejbca-ejb.jar and not only EAR bundled libs
+    * [ECA-1994] - Arrays.asList does not like an empty array of Integer
+    * [ECA-1995] - NullPointerException creating request if cachain is null
+    * [ECA-1996] - NPE in approvals page when logged in as RA Admin without End Entity Profiles access rights
+    * [ECA-1999] - SECURITY: Replace simple password hasing with BCrypt salted password hasing
+    * [ECA-2002] - CRLs must be published when they are created
+    * [ECA-2004] - The Edit CA form is submitted even when an error in the input is detected
+    * [ECA-2005] - Catch NoResultException for javax.persistence.Query.getSingleResult
+    * [ECA-2007] - Always check for null before trying to remove something with entityManager
+    * [ECA-2008] - Date in certificate profile decreased by one if different daylight savings time
+    * [ECA-2010] - Wrong menu displaying according to Admin access rules
+    * [ECA-2024] - External CAs are set to expired, and treated as normal CAs giving exceptions in log
+    * [ECA-2025] - Download of certificates via ejbca/adminweb/ca/endentitycert does not work
+    * [ECA-2028] - Build script error for WS
+    * [ECA-2031] - WebdistHttpTest use case sensitive check for HTTP header
+    * [ECA-2045] - CAActivation page requires wrong permission to view
+    * [ECA-2055] - Reactivation is no longer possible in Admin GUI when viewing certificate
+    * [ECA-2057] - CertificateData.findUsernamesByExpireTimeWithLimit's query is missing IS keyword.
+    * [ECA-2059] - Random hickups with services
+    * [ECA-2060] - CARepublishCommand has might publish CRL with wrong CRLNumber
+    * [ECA-2061] - CaRepublishCommand throws exception publishing server certificates
+    * [ECA-2062] - CRLs are not always created in a new transaction
+    * [ECA-2071] - AccessRuleData matching for CAs and EndEntityProfiles
+    * [ECA-2089] - ExternaRAServiceWorker cannot access external database in container managed transaction
 
 3.11.1, 2010-12-23
 ---
