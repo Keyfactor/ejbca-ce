@@ -46,16 +46,16 @@ class ValidationAuthorityTst {
 		log.debug("reloadcache returned code: "+connection.getResponseCode());
 		// Now on to the actual tests, with fresh caches
 		String problems = new String();
-		problems += testCRLStore( RFC4387URL.sKIDHash, false, ca, createCrlSession );
-		problems += testCRLStore( RFC4387URL.iHash, false, ca, createCrlSession );
-		problems += testCRLStore( RFC4387URL.sKIDHash, true, ca, createCrlSession );
-		problems += testCRLStore( RFC4387URL.iHash, true, ca, createCrlSession );
+		problems += testCRLStore( RFC4387URL.sKIDHash, false, ca, createCrlSession, port);
+		problems += testCRLStore( RFC4387URL.iHash, false, ca, createCrlSession, port);
+		problems += testCRLStore( RFC4387URL.sKIDHash, true, ca, createCrlSession, port);
+		problems += testCRLStore( RFC4387URL.iHash, true, ca, createCrlSession, port);
 		if ( !problems.isEmpty() ) {
 			return problems; // some tests has failed
 		}
 		return null; // everything OK
 	}
-	private static String testCRLStore( RFC4387URL urlType, boolean isDelta, CA ca, CrlSessionRemote createCrlSession ) throws Exception {
+	private static String testCRLStore( RFC4387URL urlType, boolean isDelta, CA ca, CrlSessionRemote createCrlSession, String port) throws Exception {
 		final X509Certificate caCert = (X509Certificate)ca.getCACertificate();
 		final HashID id;
 		switch( urlType ) {
@@ -68,7 +68,7 @@ class ValidationAuthorityTst {
 		default:
 			throw new Error("this should never happen");
 		}
-		final String sURI = urlType.appendQueryToURL("http://localhost:8080/crls/search.cgi", id, isDelta);
+		final String sURI = urlType.appendQueryToURL("http://localhost:" + port + "/crls/search.cgi", id, isDelta);
 		log.debug("URL: '"+sURI+"'.");
 		final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
 		connection.connect();
