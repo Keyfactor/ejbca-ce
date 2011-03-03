@@ -162,7 +162,7 @@
               #set ($current = $root.getChild("properties").getChild("title").getText() )
                 <li>
               #if ( $current.trim().equals( $name ) )
-                <span class="sel">> $name</span>
+                <span class="sel"> $name</span>
               #else
                 #projectanchor($name $item.getAttributeValue("href"))
               #end
