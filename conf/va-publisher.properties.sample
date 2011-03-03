@@ -21,7 +21,7 @@
 #ocsp-database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
 
 # JDBC driver classname.
-# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
+# The JEE server needs to be configured with the appropriate JDBC driver for the selected database
 #ocsp-database.driver=com.mysql.jdbc.Driver
 #ocsp-database.driver=org.postgresql.Driver
 #ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
