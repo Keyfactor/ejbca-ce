@@ -55,6 +55,10 @@
                 <item name="Blog"      href="http://blog.ejbca.org/"/>
             </menu>
 
+            <menu name="Older releases">
+                <item name="Older releases"     href="http://ejbca.org/older_releases/"/>
+            </menu>
+
             <menu name="Contributing">
                 <item name="Contribute to EJBCA"     href="/contributions.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
