@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -33,6 +34,10 @@ import javax.persistence.PersistenceException;
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.security.utils.Base64;
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -40,8 +45,10 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
+import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests http servlet for certificate request
@@ -331,27 +338,21 @@ public class CertRequestHttpTest extends CaTestCase {
         log.trace("<test04RequestWrongStatus()");
     }
 
-    private static String iep10 = "MIICnTCCAgYCAQAwGzEZMBcGA1UEAxMQNkFFSzM0N2Z3OHZXRTQyNDCBnzANBgkq"
-            + "hkiG9w0BAQEFAAOBjQAwgYkCgYEAukW70HN9bt5x2AiSZm7y8GXQuyp1jN2OIvqU" 
-            + "sr0dzLIOFt1H8GPJkL80wx3tLDj3xJfWJdww3TqExsxMSP+qScoYKIOeNBb/2OMW"
-            + "p/k3DThCOewPebmt+M08AClq5WofXTG+YxyJgXWbMTNfXKIUyR0Ju4Spmg6Y4eJm" 
-            + "GXTG7ZUCAwEAAaCCAUAwGgYKKwYBBAGCNw0CAzEMFgo1LjAuMjE5NS4yMCAGCisG"
-            + "AQQBgjcCAQ4xEjAQMA4GA1UdDwEB/wQEAwIE8DCB/wYKKwYBBAGCNw0CAjGB8DCB" 
-            + "7QIBAR5cAE0AaQBjAHIAbwBzAG8AZgB0ACAARQBuAGgAYQBuAGMAZQBkACAAQwBy"
-            + "AHkAcAB0AG8AZwByAGEAcABoAGkAYwAgAFAAcgBvAHYAaQBkAGUAcgAgAHYAMQAu" 
-            + "ADADgYkAjuYPzZPpbLgCWYnXoNeX2gS6nuI4osrWHlQQKcS67VJclhELlnT3hBb9"
-            + "Blr7I0BsJ/lguZvZFTZnC1bMeNULRg17bhExTg+nUovzPcJhMvG7G3DR17PrJ7V+" 
-            + "egHAsQV4dQC2hOGGhOnv88JhP9Pwpso3t2tqJROa5ZNRRSJSkw8AAAAAAAAAADAN"
-            + "BgkqhkiG9w0BAQQFAAOBgQCL5k4bJt265j63qB/9GoQb1XFOPSar1BDFi+veCPA2" 
-            + "GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe"
-            + "o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2" 
-            + "fw==";
-
     public void test05RequestIE() throws Exception {
         // find a CA (TestCA?) create a user
         // Send certificate request for a server generated PKCS12
         setupUser(SecConst.TOKEN_SOFT_BROWSERGEN);
 
+        // Create a PKCS10 request
+        KeyPair rsakeys = KeyTools.genKeys("512", "RSA");
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+        String p10 = new String(Base64.encode(bOut.toByteArray()));
+        //System.out.println(p10);
+        
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceReq);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -363,7 +364,7 @@ public class CertRequestHttpTest extends CaTestCase {
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
         StringBuffer buf = new StringBuffer();
-        buf.append("user=reqtest&password=foo123&pkcs10=").append(URLEncoder.encode(iep10, "UTF-8"));
+        buf.append("user=reqtest&password=foo123&pkcs10=").append(URLEncoder.encode(p10, "UTF-8"));
         os.write( buf.toString().getBytes("UTF-8"));
         os.close();
         assertEquals("Response code", 200, con.getResponseCode());
@@ -383,7 +384,7 @@ public class CertRequestHttpTest extends CaTestCase {
 
         String resp = new String(respBytes);
         // This is a string with VB script and all
-        System.out.println(resp);
+        //System.out.println(resp);
         assertTrue("Response does not contain 'cert ='", resp.contains("cert ="));
     }
 
