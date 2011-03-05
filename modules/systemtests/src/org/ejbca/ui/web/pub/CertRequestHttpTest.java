@@ -383,8 +383,8 @@ public class CertRequestHttpTest extends CaTestCase {
 
         String resp = new String(respBytes);
         // This is a string with VB script and all
-        assertTrue(resp.contains("cert ="));
-//        System.out.println(new String(respBytes));
+        System.out.println(respBytes);
+        assertTrue("Response does not contain 'cert ='", resp.contains("cert ="));
     }
 
     /**
