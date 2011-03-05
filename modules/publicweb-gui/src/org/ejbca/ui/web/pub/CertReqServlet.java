@@ -111,7 +111,7 @@ public class CertReqServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        new RequestInstance(getServletContext(), authenticationSession, caAdminSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
+    	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, caAdminSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
         		raAdminSession, signSession, userAdminSession).doPost(request, response);
     }
 

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.ObjectNotFoundException;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -68,6 +69,7 @@ public class RequestInstance {
     private static final InternalResources intres = InternalResources.getInstance();
 	
 	private ServletContext servletContext;
+	private ServletConfig servletConfig;
 	private AuthenticationSessionLocal authenticationSession;
 	private CAAdminSessionLocal caAdminSession;
     private CertificateProfileSessionLocal certificateProfileSession;
@@ -77,10 +79,11 @@ public class RequestInstance {
 	private SignSessionLocal signSession;
 	private UserAdminSessionLocal userAdminSession;
 	
-	protected RequestInstance(ServletContext servletContext, AuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, AuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession) {
 		this.servletContext = servletContext;
+		this.servletConfig = servletConfig;
 		this.authenticationSession = authenticationSession;
 		this.caAdminSession = caAdminSession;
 		this.certificateProfileSession = certificateProfileSession;
@@ -219,7 +222,7 @@ public class RequestInstance {
 						log.debug("Received iidPkcs10 request: "+new String(reqBytes));
 						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
 						response.setContentType("text/html");
-						RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), servletContext, servletContext.getInitParameter("responseIidTemplate"),classid);
+						RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseIidTemplate"),classid);
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}
@@ -233,7 +236,7 @@ public class RequestInstance {
 						log.debug("Received IE request: "+new String(reqBytes));
 						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
 						debug.ieCertFix(b64cert);
-						RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), servletContext, servletContext.getInitParameter("responseTemplate"),classid);
+						RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseTemplate"),classid);
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}

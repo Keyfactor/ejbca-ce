@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.security.KeyStore;
@@ -92,7 +93,7 @@ public class CertRequestHttpTest extends CaTestCase {
 
         // find a CA (TestCA?) create a user
         // Send certificate request for a server generated PKCS12
-        setupUser();
+        setupUser(SecConst.TOKEN_SOFT_P12);
 
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceReq);
@@ -215,7 +216,7 @@ public class CertRequestHttpTest extends CaTestCase {
     public void test03RequestWrongPwd() throws Exception {
         log.trace(">test03RequestWrongPwd()");
 
-        setupUser();
+        setupUser(SecConst.TOKEN_SOFT_P12);
 
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceReq);
@@ -276,7 +277,7 @@ public class CertRequestHttpTest extends CaTestCase {
     public void test04RequestWrongStatus() throws Exception {
         log.trace(">test04RequestWrongStatus()");
 
-        setupUser();
+        setupUser(SecConst.TOKEN_SOFT_P12);
         setupUserStatus(UserDataConstants.STATUS_GENERATED);
 
         // POST the OCSP request
@@ -330,6 +331,62 @@ public class CertRequestHttpTest extends CaTestCase {
         log.trace("<test04RequestWrongStatus()");
     }
 
+    private static String iep10 = "MIICnTCCAgYCAQAwGzEZMBcGA1UEAxMQNkFFSzM0N2Z3OHZXRTQyNDCBnzANBgkq"
+            + "hkiG9w0BAQEFAAOBjQAwgYkCgYEAukW70HN9bt5x2AiSZm7y8GXQuyp1jN2OIvqU" 
+            + "sr0dzLIOFt1H8GPJkL80wx3tLDj3xJfWJdww3TqExsxMSP+qScoYKIOeNBb/2OMW"
+            + "p/k3DThCOewPebmt+M08AClq5WofXTG+YxyJgXWbMTNfXKIUyR0Ju4Spmg6Y4eJm" 
+            + "GXTG7ZUCAwEAAaCCAUAwGgYKKwYBBAGCNw0CAzEMFgo1LjAuMjE5NS4yMCAGCisG"
+            + "AQQBgjcCAQ4xEjAQMA4GA1UdDwEB/wQEAwIE8DCB/wYKKwYBBAGCNw0CAjGB8DCB" 
+            + "7QIBAR5cAE0AaQBjAHIAbwBzAG8AZgB0ACAARQBuAGgAYQBuAGMAZQBkACAAQwBy"
+            + "AHkAcAB0AG8AZwByAGEAcABoAGkAYwAgAFAAcgBvAHYAaQBkAGUAcgAgAHYAMQAu" 
+            + "ADADgYkAjuYPzZPpbLgCWYnXoNeX2gS6nuI4osrWHlQQKcS67VJclhELlnT3hBb9"
+            + "Blr7I0BsJ/lguZvZFTZnC1bMeNULRg17bhExTg+nUovzPcJhMvG7G3DR17PrJ7V+" 
+            + "egHAsQV4dQC2hOGGhOnv88JhP9Pwpso3t2tqJROa5ZNRRSJSkw8AAAAAAAAAADAN"
+            + "BgkqhkiG9w0BAQQFAAOBgQCL5k4bJt265j63qB/9GoQb1XFOPSar1BDFi+veCPA2" 
+            + "GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe"
+            + "o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2" 
+            + "fw==";
+
+    public void test05RequestIE() throws Exception {
+        // find a CA (TestCA?) create a user
+        // Send certificate request for a server generated PKCS12
+        setupUser(SecConst.TOKEN_SOFT_BROWSERGEN);
+
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceReq);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+
+        // POST it
+        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        OutputStream os = con.getOutputStream();
+        StringBuffer buf = new StringBuffer();
+        buf.append("user=reqtest&password=foo123&pkcs10=").append(URLEncoder.encode(iep10, "UTF-8"));
+        os.write( buf.toString().getBytes("UTF-8"));
+        os.close();
+        assertEquals("Response code", 200, con.getResponseCode());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and PKCS7 responses are small
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        assertTrue(respBytes.length > 0);
+
+        String resp = new String(respBytes);
+        // This is a string with VB script and all
+        assertTrue(resp.contains("cert ="));
+//        System.out.println(new String(respBytes));
+    }
+
     /**
      * removes test user
      * 
@@ -347,12 +404,12 @@ public class CertRequestHttpTest extends CaTestCase {
     // Private helper methods
     //
 
-    private void setupUser() throws Exception {
+    private void setupUser(int tokentype) throws Exception {
         // Make user that we know...
         boolean userExists = false;
         try {
             userAdminSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, tokentype, 0, caid);
             log.debug("created user: reqtest, foo123, C=SE, O=PrimeKey, CN=ReqTest");
         } catch (EJBException ejbException) {
         	// On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used. 
@@ -375,7 +432,7 @@ public class CertRequestHttpTest extends CaTestCase {
         if (userExists) {
             log.debug("User reqtest already exists.");
             userAdminSession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, UserDataConstants.STATUS_NEW, caid);
+                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, tokentype, 0, UserDataConstants.STATUS_NEW, caid);
             log.debug("Reset status to NEW");
         }
     }
