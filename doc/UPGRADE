@@ -23,6 +23,20 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 4.0.x to EJBCA 4.0.x
+-------------------------------
+See release notes for details between certain versions. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation (if not using ejbca-custom).
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
+See Admin Guide
+
+Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
+
 EJBCA 4.0alpha1 NOTE
 --------------------
 There is no guarantee that there will be an upgrade path between the alpha release and EJBCA 4.0.0.

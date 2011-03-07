@@ -1,6 +1,10 @@
+4.0.1, 2011-03-08
+---
+Bug
+    * [ECA-2090] - Can not browser enroll with IE
+
 4.0.0, 2011-03-03
 ---
-
 ** New Feature
     * [ECA-200] - Serialized database object not compatible between different app servers
     * [ECA-1286] - Additional notification template tag requestAdmin.CN

@@ -1,3 +1,14 @@
+EJBCA 4.0.1
+-----------
+This is a maintenance release – only one issue is resolved.
+
+Changes:
+- Fixed failure to perform web browser enrollment with Internet Explorer.
+
+Read the full changelog for details.
+
+For upgrade instructions, please see UPGRADE. 
+
 EJBCA 4.0.0
 -----------
 EJBCA 4 uses Java Enterprise Edition (JEE) 5 instead of J2EE. This release is a major improvement
