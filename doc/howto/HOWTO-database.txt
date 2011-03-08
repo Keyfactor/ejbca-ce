@@ -206,6 +206,18 @@ You can either use Microsofts JDBC driver or the open source JDBC driver from ht
 This driver is not tested by us (yet), but it has received very good reviews as beeing much better than Microsofts
 driver, so I suggest you take it for a spin.
 
+In Sql Server Configuration Manager under SQL Server Network Configuration make sure that the TCP/IP is
+enabled and that everything else is disabled. When configuring the TCP/IP protocol (the properties view), make sure that:
+
+1. All IP addresses are activated.
+2. The IP Address 127.0.0.1 is active and enabled.
+3. TCP Dynamic Ports is empty
+4. TCP Port is set to 1433
+
+Under SQL Native Client Configuration, make sure that TCP/IP is enabled and
+that everything else is disabled. When configuring the TCP/IP (the properties
+view), make sure that 'Default Port' is set to 1433
+
 
 DB2 specifics
 ----------------
