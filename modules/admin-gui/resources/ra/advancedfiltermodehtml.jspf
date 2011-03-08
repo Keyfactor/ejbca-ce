@@ -2,7 +2,7 @@
    TreeMap certificateprofileids = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    TreeMap caids = ejbcawebbean.getInformationMemory().getCANames();
  
-   String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"};
+   String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"}; //Do not change the order of the connectors is this array. In the SQL Query: AND=0, OR=1, ANDNOT=2, ORNOT=3. These values are defined in org.ejbca.util.query.Query, so unless you change these values in the Query class, do not change the order of the connectors in this array
    String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN","MONTHJUL","MONTHAUG","MONTHSEP"
                                   ,"MONTHOCT","MONTHNOV","MONTHDEC"};
    int[] matchwithfields        = {UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_WITH_CA, UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER, 
