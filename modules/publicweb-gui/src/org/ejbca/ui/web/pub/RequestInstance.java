@@ -90,7 +90,6 @@ public class RequestInstance {
 		this.certificateProfileSession = certificateProfileSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.keyRecoverySession = keyRecoverySession;
-		this.globalConfigurationSession = globalConfigurationSession;
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
 		this.globalConfigurationSession = globalConfigurationSession;
