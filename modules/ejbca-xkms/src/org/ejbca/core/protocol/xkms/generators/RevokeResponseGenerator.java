@@ -23,6 +23,7 @@ import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
@@ -55,10 +56,10 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
     
     public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc,
     		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
-    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, RaAdminSession raAdminSessionLocal,
+    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
         super(remoteIP, req, requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
-				keyRecoverySession, raAdminSessionLocal, signSession, userAdminSession, crlSession);
+				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
         this.userAdminSession = userAdminSession;
     }
 	

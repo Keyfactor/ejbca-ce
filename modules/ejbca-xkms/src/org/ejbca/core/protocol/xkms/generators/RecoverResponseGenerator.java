@@ -21,9 +21,9 @@ import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.KeyBindingAbstractType;
@@ -46,10 +46,10 @@ public class RecoverResponseGenerator extends KRSSResponseGenerator {
 
 	public RecoverResponseGenerator(String remoteIP, RecoverRequestType req, Document requestDoc,
     		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
-    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, RaAdminSession raAdminSessionLocal,
+    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
 		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
-				keyRecoverySession, raAdminSessionLocal, signSession, userAdminSession, crlSession);
+				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 	}
 	
 	/**
