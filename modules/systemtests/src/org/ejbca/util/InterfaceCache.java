@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
@@ -169,5 +170,9 @@ public class InterfaceCache {
 
 	public static ServiceDataSessionRemote getServiceDataSessionRemote() {
 		return getEjb().getServiceDataSession();
+	}
+	
+	public static GlobalConfigurationSessionRemote getGlobalConfigurationSession() {
+		return getEjb().getGlobalConfigurationSession();
 	}
 }

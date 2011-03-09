@@ -33,9 +33,9 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -101,7 +101,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -220,14 +220,14 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID1);
-            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", raAdminSession.getCachedGlobalConfiguration(admin1));
+            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", globalConfigurationSession.getCachedGlobalConfiguration(admin1));
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
         }
 
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID2);
-            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", raAdminSession.getCachedGlobalConfiguration(admin1));
+            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration(admin1));
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
             // OK

@@ -32,6 +32,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
@@ -73,6 +74,7 @@ public class EjbRemoteHelper {
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
     private RaAdminSessionRemote raAdminSession = null;
+    private GlobalConfigurationSessionRemote globalConfigurationSession;
     private ServiceDataSessionRemote serviceDataSession = null;
     private ServiceSessionRemote serviceSession = null;
     private SignSessionRemote signSession = null;
@@ -141,6 +143,13 @@ public class EjbRemoteHelper {
             raAdminSession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
         }
         return raAdminSession;
+    }
+    
+    public GlobalConfigurationSessionRemote getGlobalConfigurationSession() {
+    	if (globalConfigurationSession == null) {
+    		globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        }
+        return globalConfigurationSession;
     }
 
     public CertificateStoreSessionRemote getCertStoreSession() {

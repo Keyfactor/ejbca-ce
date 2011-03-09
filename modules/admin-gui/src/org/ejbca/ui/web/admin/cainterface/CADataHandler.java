@@ -37,8 +37,8 @@ import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -80,7 +80,7 @@ public class CADataHandler implements Serializable {
     private AuthorizationSession authorizationsession;
     private InformationMemory info;
     private UserAdminSession adminsession;
-    private RaAdminSession raadminsession; 
+    private GlobalConfigurationSession globalconfigurationsession; 
     private CertificateStoreSession certificatesession;  
     private CertificateProfileSession certificateProfileSession;
     private CrlCreateSession crlCreateSession;
@@ -92,7 +92,7 @@ public class CADataHandler implements Serializable {
                          CAAdminSession caadminsession, CaSession caSession,
                          EndEntityProfileSession endEntityProfileSession,
                          UserAdminSession adminsession, 
-                         RaAdminSession raadminsession, 
+                         GlobalConfigurationSession globalconfigurationsession, 
                          CertificateStoreSession certificatesession,
                          CertificateProfileSession certificateProfileSession, CrlCreateSession crlCreateSession,
                          AuthorizationSession authorizationsession,
@@ -105,7 +105,7 @@ public class CADataHandler implements Serializable {
        this.certificatesession = certificatesession;
        this.certificateProfileSession = certificateProfileSession;
        this.endEntityProfileSession = endEntityProfileSession;
-       this.raadminsession = raadminsession;
+       this.globalconfigurationsession = globalconfigurationsession;
        this.crlCreateSession = crlCreateSession;
        this.administrator = administrator;          
        this.info = ejbcawebbean.getInformationMemory();       
@@ -371,7 +371,7 @@ public class CADataHandler implements Serializable {
 	 }
  
  public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException, ApprovalException, WaitingForApprovalException {
-   caadminsession.activateCAToken(administrator,caid,authorizationcode, raadminsession.getCachedGlobalConfiguration(administrator));	
+   caadminsession.activateCAToken(administrator,caid,authorizationcode, globalconfigurationsession.getCachedGlobalConfiguration(administrator));	
  }
  
  public void deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException{

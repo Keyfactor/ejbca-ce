@@ -54,7 +54,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (globalconf) {
 				getLogger().info("Flushing global configuration cache.");
 				// Flush GlobalConfiguration
-				ejb.getRAAdminSession().flushGlobalConfigurationCache();    			
+				ejb.getGlobalConfigurationSession().flushGlobalConfigurationCache();    			
 			}
 			if (eeprofile) {
 				getLogger().info("Flushing end entity profile cache.");

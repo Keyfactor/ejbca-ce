@@ -36,6 +36,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -79,6 +80,8 @@ public class AutoEnrollServlet extends HttpServlet {
 	private UserAdminSessionLocal userAdminSession;
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
+	@EJB
+	private GlobalConfigurationSessionLocal globalConfigurationSession;
 	
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -96,7 +99,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.trace(">doPost");
 		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-		GlobalConfiguration globalConfiguration = raAdminSession.getCachedGlobalConfiguration(internalAdmin);
+		GlobalConfiguration globalConfiguration = globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin);
 		// Make sure we allow use of this Servlet
 		if ( !globalConfiguration.getAutoEnrollUse() ) {
 			log.info("Unauthorized access attempt from " + request.getRemoteAddr());

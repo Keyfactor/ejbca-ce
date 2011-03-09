@@ -118,7 +118,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	final Approval approval = new Approval(comment);
     	try {		   
     		final Admin admin = EjbcaJSFHelper.getBean().getAdmin();
-    		ejb.getApprovalExecutionSession().approve(admin, approveRequestData.getApprovalId(), approval, ejb.getRaAdminSession().getCachedGlobalConfiguration(admin));
+    		ejb.getApprovalExecutionSession().approve(admin, approveRequestData.getApprovalId(), approval, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(admin));
     		updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
     	} catch (ApprovalRequestExpiredException e) {
     		addErrorMessage("APPROVALREQUESTEXPIRED");
@@ -140,7 +140,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	final Approval approval = new Approval(comment);
     	try {
     		final Admin admin = EjbcaJSFHelper.getBean().getAdmin();
-    		ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval, ejb.getRaAdminSession().getCachedGlobalConfiguration(admin));
+    		ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(admin));
     		updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
     	} catch (ApprovalRequestExpiredException e) {
     		addErrorMessage("APPROVALREQUESTEXPIRED");
@@ -164,7 +164,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	query.add(ApprovalMatch.MATCH_WITH_UNIQUEID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(id));
     	List<ApprovalDataVO> result;
     	try {
-    		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getRaAdminSession(),
+    		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getGlobalConfigurationSession(),
     				ejb.getAuthorizationSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession());
     		result = ejb.getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
     		if (result.size() > 0) {

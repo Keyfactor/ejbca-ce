@@ -33,8 +33,8 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -89,7 +89,7 @@ public class ApprovalSessionTest extends CaTestCase {
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = InterfaceCache.getApprovalExecutionSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
@@ -153,7 +153,7 @@ public class ApprovalSessionTest extends CaTestCase {
             admin2 = new Admin(admincert2, adminusername2, null);
             reqadmin = new Admin(reqadmincert, reqadminusername, null);
 
-            gc = raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID));
+            gc = globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID));
         }
     }
 

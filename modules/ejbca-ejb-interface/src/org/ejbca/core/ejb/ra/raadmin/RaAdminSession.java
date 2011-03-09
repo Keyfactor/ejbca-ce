@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /** Session bean to handle RA administration, which means admin preferences, global configuration and such.
  * 
@@ -54,32 +53,5 @@ public interface RaAdminSession {
 
     /** Function that saves the default admin preference. */
     void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference);
-
-    /**
-     * Flushes the cached GlobalConfiguration value and reads the current one
-     * from persistence.
-     * 
-     * @return a fresh GlobalConfiguration from persistence, or null of no such
-     *         configuration exists.
-     */
-    GlobalConfiguration flushCache();
-    
-    /**
-     * Retrieves the cached GlobalConfiguration. This cache is updated from
-     * persistence either by the time specified by
-     * {@link #MIN_TIME_BETWEEN_GLOBCONF_UPDATES} or when {@link #flushCache()}
-     * is executed. This method should be used in all cases where a quick
-     * response isn't necessary, otherwise use {@link #flushCache()}.
-     * 
-     * @return the cached GlobalConfiguration value.
-     */
-    GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
-
-    /** Saves the GlobalConfiguration. */
-    void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf);
-
-    /** Clear and load global configuration cache. */
-    void flushGlobalConfigurationCache();
-
 
 }

@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -112,6 +113,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private RaAdminSessionLocal raAdminSession;
     @EJB
     private LogSessionLocal logSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     private static final String ENCRYPTEDDATA = "ENCRYPTEDDATA";
     public static final int NO_ISSUER = 0;
@@ -633,7 +636,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (data == null) {
             try {
                 entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
-                        tokentype, bcdn, setHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                        tokentype, bcdn, setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                                 hardtokendata)));
                 if (certificates != null) {
                     Iterator<Certificate> i = certificates.iterator();
@@ -675,7 +678,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 throw new FinderException();
             }
             htd.setTokenType(tokentype);
-            htd.setData(setHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(), hardtokendata));
+            htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(), hardtokendata));
             htd.setModifyTime(new java.util.Date());
             caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
@@ -765,7 +768,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
             if (htd != null) {
                 returnval = new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                        .getSignificantIssuerDN(), getHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                        .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                         includePUK, htd.getData()), copyof, copies);
                 String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);
                 logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,
@@ -811,7 +814,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 }
             }
             returnval.add(new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                    .getSignificantIssuerDN(), getHardToken(admin, raAdminSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                    .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                     includePUK, htd.getData()), copyof, copies));
             String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());
             logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,

@@ -728,6 +728,7 @@
 			<copy todir="${src-temp.dir}/hardtoken">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/hardtoken/*.java"/>
+					<include name="org/ejbca/core/ejb/config/*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/hardtoken/*.java"/>

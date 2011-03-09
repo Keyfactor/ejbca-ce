@@ -34,6 +34,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -73,4 +74,5 @@ public interface EjbBridgeSessionLocal {
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	UserAdminSessionLocal getUserAdminSession();
 	LogConfigurationSessionLocal getLogConfigurationSession();
+	GlobalConfigurationSessionLocal getGlobalConfigurationSession();
 }

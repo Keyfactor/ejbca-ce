@@ -19,7 +19,7 @@ import javax.naming.NamingException;
 
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -32,15 +32,15 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  */
 public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
     private static InitialContext initialContext;	// Expensive to create
-	private RaAdminSessionLocal raadminsession;
+	private GlobalConfigurationSessionLocal globalconfigurationsession;
     private AuthorizationSessionLocal authorizationsession;
     private Admin administrator;
 
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler(Admin administrator, RaAdminSessionLocal raadminsession, AuthorizationSessionLocal authorizationsession){
-        this.raadminsession = raadminsession;
+    public GlobalConfigurationDataHandler(Admin administrator, GlobalConfigurationSessionLocal globalconfigurationsession, AuthorizationSessionLocal authorizationsession){
+        this.globalconfigurationsession = globalconfigurationsession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;
     }
@@ -48,7 +48,7 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     public GlobalConfiguration loadGlobalConfiguration() throws NamingException{
         GlobalConfiguration ret = null;
         // TODO: These should be dropped or moved to property files!!
-        ret = raadminsession.getCachedGlobalConfiguration(administrator);
+        ret = globalconfigurationsession.getCachedGlobalConfiguration(administrator);
         if (initialContext == null) {
             initialContext = new InitialContext();
         }
@@ -62,7 +62,7 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
     public void saveGlobalConfiguration(GlobalConfiguration gc) {
         if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
-            raadminsession.saveGlobalConfiguration(administrator,  gc);
+            globalconfigurationsession.saveGlobalConfiguration(administrator,  gc);
         }
     }
 }

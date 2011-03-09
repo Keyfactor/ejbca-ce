@@ -57,7 +57,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            GlobalConfiguration globalconfiguration = ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin());
+            GlobalConfiguration globalconfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;

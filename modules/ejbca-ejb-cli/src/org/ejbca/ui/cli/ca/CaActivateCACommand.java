@@ -71,7 +71,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) {
                 try {
-                    ejb.getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin()));
+                    ejb.getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin()));
                     getLogger().info("CA token activated.");
 
                 } catch (CATokenAuthenticationFailedException e) {

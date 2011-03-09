@@ -28,6 +28,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -81,6 +82,8 @@ public class CertReqServlet extends HttpServlet {
 	private SignSessionLocal signSession;
 	@EJB
 	private UserAdminSessionLocal userAdminSession;
+	@EJB
+	private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     /**
      * Servlet init
@@ -112,7 +115,7 @@ public class CertReqServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, caAdminSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
-        		raAdminSession, signSession, userAdminSession).doPost(request, response);
+        		raAdminSession, signSession, userAdminSession, globalConfigurationSession).doPost(request, response);
     }
 
     /**

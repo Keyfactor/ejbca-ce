@@ -36,6 +36,7 @@ import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
@@ -73,6 +74,7 @@ public class InformationMemory implements Serializable {
     private PublisherSession publishersession;
     private UserDataSourceSession userdatasourcesession = null;
     private CertificateProfileSession certificateProfileSession;
+    private GlobalConfigurationSession globalConfigurationSession;
     
     // Memory variables.
     LogAuthorization logauthorization = null;
@@ -107,6 +109,7 @@ public class InformationMemory implements Serializable {
                              PublisherSession publishersession,
                              UserDataSourceSession userdatasourcesession, 
                              CertificateProfileSession certificateProfileSession,
+                             GlobalConfigurationSession globalConfigurationSession,
                              GlobalConfiguration globalconfiguration){
       this.adminGroupSession = adminGroupSession;
         this.caadminsession = caadminsession;                           
@@ -118,7 +121,7 @@ public class InformationMemory implements Serializable {
       this.globalconfiguration = globalconfiguration;
       this.certificateProfileSession = certificateProfileSession;
       this.caSession = caSession;
-      this.raauthorization = new RAAuthorization(administrator, raadminsession, authorizationsession, caSession, endEntityProfileSession);
+      this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, caSession, endEntityProfileSession);
       this.caauthorization = new CAAuthorization(administrator, caadminsession, caSession, authorizationsession, certificateProfileSession);
       this.logauthorization = new LogAuthorization(administrator, authorizationsession, caSession);
       this.hardtokenauthorization = new HardTokenAuthorization(administrator, adminGroupSession, hardtokensession, authorizationsession, caSession);
