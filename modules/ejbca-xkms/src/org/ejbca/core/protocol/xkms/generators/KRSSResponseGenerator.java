@@ -57,9 +57,9 @@ import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -107,13 +107,13 @@ public class KRSSResponseGenerator extends
 	 private CertificateStoreSession certificateStoreSession;
 	 private EndEntityProfileSession endEntityProfileSession;
 	 private KeyRecoverySession keyRecoverySession;
-	 private RaAdminSession raAdminSessionLocal;
+	 private GlobalConfigurationSession globalConfigurationSession;
 	 private SignSession signSession;
 	 private UserAdminSession userAdminSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
     		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
-    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, RaAdminSession raAdminSessionLocal,
+    		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
         super(remoteIP, req, caadminsession, certificateStoreSession, crlSession);
         this.requestDoc = requestDoc;
@@ -122,7 +122,7 @@ public class KRSSResponseGenerator extends
         this.certificateStoreSession = certificateStoreSession;
         this.endEntityProfileSession = endEntityProfileSession;
         this.keyRecoverySession = keyRecoverySession;
-        this.raAdminSessionLocal = raAdminSessionLocal;
+        this.globalConfigurationSession = globalConfigurationSession;
         this.signSession = signSession;
         this.userAdminSession = userAdminSession;
     }
@@ -203,7 +203,7 @@ public class KRSSResponseGenerator extends
 		if((!recover && userDataVO.getStatus() == UserDataConstants.STATUS_NEW) || (recover && userDataVO.getStatus() == UserDataConstants.STATUS_KEYRECOVERY)){
 				
 			try{		
-				boolean usekeyrecovery = !reissue && (raAdminSessionLocal.getCachedGlobalConfiguration(pubAdmin)).getEnableKeyRecovery();
+				boolean usekeyrecovery = !reissue && (globalConfigurationSession.getCachedGlobalConfiguration(pubAdmin)).getEnableKeyRecovery();
 
 				boolean savekeys = userDataVO.getKeyRecoverable() && usekeyrecovery &&  (userDataVO.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
 				boolean loadkeys = (userDataVO.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
