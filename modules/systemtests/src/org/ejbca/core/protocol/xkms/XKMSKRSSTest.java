@@ -41,9 +41,9 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -145,7 +145,7 @@ public class XKMSKRSSTest extends TestCase {
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     static {
@@ -185,7 +185,7 @@ public class XKMSKRSSTest extends TestCase {
     }
 
     public XKMSKRSSTest() {
-        orgGlobalConfig = raAdminSession.getCachedGlobalConfiguration(administrator);
+        orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         orgCaInfo = caAdminSession.getCAInfo(administrator, "AdminCA1");
     }
     
@@ -198,9 +198,9 @@ public class XKMSKRSSTest extends TestCase {
         caInfo.setDoEnforceUniqueDistinguishedName(true);
         caAdminSession.editCA(administrator, caInfo);
 
-        final GlobalConfiguration newGlobalConfig = raAdminSession.getCachedGlobalConfiguration(administrator);
+        final GlobalConfiguration newGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         newGlobalConfig.setEnableKeyRecovery(true);
-        raAdminSession.saveGlobalConfiguration(administrator, newGlobalConfig);
+        globalConfigurationSession.saveGlobalConfiguration(administrator, newGlobalConfig);
 
         // Setup with two new Certificate profiles.
         final EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
@@ -1143,7 +1143,7 @@ public class XKMSKRSSTest extends TestCase {
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename1);
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);
 
-        raAdminSession.saveGlobalConfiguration(administrator, orgGlobalConfig);
+        globalConfigurationSession.saveGlobalConfiguration(administrator, orgGlobalConfig);
         caAdminSession.editCA(administrator, orgCaInfo);
     }
 
@@ -1182,7 +1182,7 @@ public class XKMSKRSSTest extends TestCase {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
