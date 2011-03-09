@@ -36,7 +36,7 @@ import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.catoken.CATokenManager;
@@ -66,7 +66,7 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private LogSessionLocal logSession;
     @EJB
-    private RaAdminSessionLocal raAdminSession;
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private ServiceSessionLocal serviceSession;
     @EJB
@@ -201,14 +201,14 @@ public class StartServicesServlet extends HttpServlet {
         	
         	// Add this node's hostname to list of nodes
             log.trace(">init checking if this node is in the list of nodes");
-            final GlobalConfiguration config = raAdminSession.getCachedGlobalConfiguration(admin);
+            final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(admin);
             final Set<String> nodes = config.getNodesInCluster();
             final String hostname = getHostName();
             if (hostname != null && !nodes.contains(hostname)) {
             	log.debug("Adding this node the list of nodes");
             	nodes.add(hostname);
             	config.setNodesInCluster(nodes);
-            	raAdminSession.saveGlobalConfiguration(admin, config);
+            	globalConfigurationSession.saveGlobalConfiguration(admin, config);
             }
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);

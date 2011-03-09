@@ -53,9 +53,9 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -106,7 +106,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
-    private RaAdminSessionLocal raAdminSession;
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
@@ -316,7 +316,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		byte[] ret = null;
 		try {
 			// Get key recovery info
-			boolean usekeyrecovery = raAdminSession.getCachedGlobalConfiguration(admin).getEnableKeyRecovery();
+			boolean usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration(admin).getEnableKeyRecovery();
 			if (log.isDebugEnabled()) {
 				log.debug("usekeyrecovery: "+usekeyrecovery);
 			}

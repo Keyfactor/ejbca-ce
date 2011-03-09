@@ -46,7 +46,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				}
 				getLogger().info("Available Admin groups: " + availableGroups);
 				getLogger().info("Available access rules:");
-				GlobalConfiguration globalConfiguration = ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin());
+				GlobalConfiguration globalConfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
 				for (String current : (Collection<String>) ejb.getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()),
 						globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
 						ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin()), ejb.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true))) {
@@ -66,7 +66,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 return;
             }
 			String accessRule = getOriginalAccessRule(args[2]);
-			GlobalConfiguration globalConfiguration = ejb.getRAAdminSession().getCachedGlobalConfiguration(getAdmin());
+			GlobalConfiguration globalConfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
 			if (!((Collection<String>) ejb.getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()),
 					globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
 					ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin()), ejb.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {

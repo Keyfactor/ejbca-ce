@@ -21,9 +21,9 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -60,7 +60,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     private AuthenticationSessionRemote authenticationSessionRemote = InterfaceCache.getAuthenticationSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -170,10 +170,10 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
-        GlobalConfiguration config = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         boolean orgkeyrecconfig = config.getEnableKeyRecovery();
         config.setEnableKeyRecovery(true);
-        raAdminSession.saveGlobalConfiguration(admin, config);
+        globalConfigurationSession.saveGlobalConfiguration(admin, config);
 
         // create certificate for user
         // Set status to NEW
@@ -201,7 +201,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         keyRecoverySession.removeAllKeyRecoveryData(admin, username1);
 
         config.setEnableKeyRecovery(orgkeyrecconfig);
-        raAdminSession.saveGlobalConfiguration(admin, config);
+        globalConfigurationSession.saveGlobalConfiguration(admin, config);
         log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
 

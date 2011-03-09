@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.ra.raadmin;
+package org.ejbca.core.ejb.config;
 
 import junit.framework.TestCase;
 
@@ -26,9 +26,9 @@ import org.ejbca.util.InterfaceCache;
  * 
  * @version $Id$
  */
-public class RaAdminSessionBeanTest extends TestCase {
+public class GlobalConfigurationSessionBeanTest extends TestCase {
 
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
 
     private Admin administrator;
     private GlobalConfiguration original = null;
@@ -39,7 +39,7 @@ public class RaAdminSessionBeanTest extends TestCase {
      * @param name
      *            name
      */
-    public RaAdminSessionBeanTest(String name) {
+    public GlobalConfigurationSessionBeanTest(String name) {
         super(name);
     }
 
@@ -49,13 +49,13 @@ public class RaAdminSessionBeanTest extends TestCase {
         // First save the original
         // FIXME: Do this in @BeforeClass in JUnit4
         if (original == null) {
-            original = this.raAdminSession.getCachedGlobalConfiguration(administrator);
+            original = this.globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         }
     }
 
     public void tearDown() throws Exception {
-        raAdminSession.saveGlobalConfiguration(administrator, original);
-        raAdminSession.flushCache();
+    	globalConfigurationSession.saveGlobalConfiguration(administrator, original);
+    	globalConfigurationSession.flushCache();
         administrator = null;
     }
 
@@ -68,17 +68,17 @@ public class RaAdminSessionBeanTest extends TestCase {
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
 
         // Read a value to reset the timer
-        raAdminSession.getCachedGlobalConfiguration(administrator);
+    	globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         setInitialValue();
         
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
-        raAdminSession.saveGlobalConfiguration(administrator, newValue);
+        globalConfigurationSession.saveGlobalConfiguration(administrator, newValue);
 
-        GlobalConfiguration cachedValue = raAdminSession.getCachedGlobalConfiguration(administrator);
+        GlobalConfiguration cachedValue = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
 
-        cachedValue = raAdminSession.getCachedGlobalConfiguration(administrator);
+        cachedValue = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         assertEquals("The GlobalConfigfuration cache was not automatically updated.", "BAR", cachedValue.getEjbcaTitle());
 
     }
@@ -91,7 +91,7 @@ public class RaAdminSessionBeanTest extends TestCase {
         
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
-        raAdminSession.saveGlobalConfiguration(administrator, initial);
+        globalConfigurationSession.saveGlobalConfiguration(administrator, initial);
     }
 
 }

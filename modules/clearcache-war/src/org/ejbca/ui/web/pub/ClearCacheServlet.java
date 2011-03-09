@@ -33,7 +33,7 @@ import org.cesecore.core.ejb.log.LogConfigurationSessionLocal;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -51,7 +51,7 @@ public class ClearCacheServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(ClearCacheServlet.class);
 	
 	@EJB
-	private RaAdminSessionLocal raadminsession;
+	private GlobalConfigurationSessionLocal globalconfigurationsession;
 	@EJB
 	private EndEntityProfileSessionLocal endentitysession;
 	@EJB
@@ -85,7 +85,7 @@ public class ClearCacheServlet extends HttpServlet {
         		}
         		res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "The remote host "+req.getRemoteHost()+" is unknown");
         	} else {       
-        		raadminsession.flushGlobalConfigurationCache();
+        		globalconfigurationsession.flushGlobalConfigurationCache();
         		if(log.isDebugEnabled()){
         			log.debug("Global Configuration cache cleared");
         		}
@@ -131,7 +131,7 @@ public class ClearCacheServlet extends HttpServlet {
 			log.trace(">acceptedHost: "+remotehost);
 		}    	
 		boolean ret = false;
-		GlobalConfiguration gc = raadminsession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
+		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
 		String nodename = null;

@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -52,7 +52,7 @@ public class UserDataTest extends CaTestCase {
     private static boolean gcEELimitations;
     
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
     /**
@@ -73,10 +73,10 @@ public class UserDataTest extends CaTestCase {
         // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for 
     	// the request counter tests to pass, we check if we are allowed to set this value or not
     	// The value is reset to whatever it was from the beginning in the last "clean up" test.
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
-        raAdminSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
     }
     
     public void test01CreateNewUser() throws Exception {
@@ -596,9 +596,9 @@ public class UserDataTest extends CaTestCase {
         log.trace(">test99CleanUp()");
 
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
-        raAdminSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
 
         // Delete test users we created
         try {        	

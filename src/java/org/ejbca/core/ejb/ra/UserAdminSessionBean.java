@@ -52,8 +52,8 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -121,7 +121,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
-    private RaAdminSessionLocal raAdminSession;
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -144,7 +144,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration(Admin admin) {
-        return raAdminSession.getCachedGlobalConfiguration(admin);
+        return globalConfigurationSession.getCachedGlobalConfiguration(admin);
     }
 
     private boolean authorizedToCA(Admin admin, int caid) {
@@ -1724,7 +1724,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
 
         if (caauthorizationstring == null || endentityprofilestring == null) {
-            raauthorization = new RAAuthorization(admin, raAdminSession, authorizationSession, caSession, endEntityProfileSession);
+            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
                 endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
@@ -1967,7 +1967,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     public boolean prepareForKeyRecovery(Admin admin, String username, int endEntityProfileId, Certificate certificate) throws AuthorizationDeniedException,
             ApprovalException, WaitingForApprovalException {
         boolean ret;
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         if (certificate == null) {
             ret = keyRecoverySession.markNewestAsRecoverable(admin, username, endEntityProfileId, gc);
         } else {

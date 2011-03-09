@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ra.raadmin;
+package org.ejbca.core.ejb.config;
 
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;

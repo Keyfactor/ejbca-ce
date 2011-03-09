@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -88,6 +89,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB UserAdminSessionLocal userAdminSession;
+	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
 
 	@Override public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }
 	@Override public AdminGroupSessionLocal getAdminGroupSession() { return adminGroupSession; }
@@ -116,4 +118,5 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
 	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return logConfigurationSession; }
+	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
 }

@@ -23,7 +23,7 @@ import java.util.TreeMap;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -45,14 +45,14 @@ public class RAAuthorization implements Serializable {
 	private TreeMap<String, Integer> authviewprofilenames = null;
     private Admin admin;
     private AuthorizationSession authorizationsession;
-    private RaAdminSession raadminsession;
+    private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(Admin admin, RaAdminSession raadminsession, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+    public RAAuthorization(Admin admin, GlobalConfigurationSession globalConfigurationSession, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
-    	this.raadminsession = raadminsession;
+    	this.globalConfigurationSession = globalConfigurationSession;
     	this.authorizationsession = authorizationsession;
     	this.caSession = caSession;
     	this.endEntityProfileSession = endEntityProfileSession;
@@ -102,7 +102,7 @@ public class RAAuthorization implements Serializable {
         }
 
     	String endentityauth = null;
-        GlobalConfiguration globalconfiguration = raadminsession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){
         	endentityauth = getEndEntityProfileAuthorizationString(true);
         	if(authorizedToApproveCAActions && authorizedToApproveRAActions){

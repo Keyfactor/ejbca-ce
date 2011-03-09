@@ -19,7 +19,7 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -50,7 +50,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     
     public CAKeystoreExportRemoveRestoreTest(String name) {
         super(name);
@@ -441,7 +441,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
         assertEquals("offline token", ICAToken.STATUS_OFFLINE, info.getCATokenInfo().getCATokenStatus());
 
         // Should not be possible to activate
-        caAdminSession.activateCAToken(admin, cainfo.getCAId(), capassword, raAdminSession.getCachedGlobalConfiguration(admin));
+        caAdminSession.activateCAToken(admin, cainfo.getCAId(), capassword, globalConfigurationSession.getCachedGlobalConfiguration(admin));
         info = caAdminSession.getCAInfo(admin, caname);
         assertEquals("offline token", ICAToken.STATUS_OFFLINE, info.getCATokenInfo().getCATokenStatus());
 

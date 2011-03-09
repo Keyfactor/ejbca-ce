@@ -38,6 +38,7 @@ import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -75,13 +76,13 @@ public class RequestInstance {
     private CertificateProfileSessionLocal certificateProfileSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
 	private KeyRecoverySessionLocal keyRecoverySession;
-	private RaAdminSessionLocal raAdminSession;            
 	private SignSessionLocal signSession;
 	private UserAdminSessionLocal userAdminSession;
+	private GlobalConfigurationSession globalConfigurationSession;
 	
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, AuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
-			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession) {
+			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;
 		this.servletConfig = servletConfig;
 		this.authenticationSession = authenticationSession;
@@ -92,6 +93,7 @@ public class RequestInstance {
 		this.raAdminSession = raAdminSession;
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
+		this.globalConfigurationSession = globalConfigurationSession;
 	}
 
 	void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -142,7 +144,7 @@ public class RequestInstance {
 			// Check user
 			int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-			usekeyrecovery = (raAdminSession.getCachedGlobalConfiguration(administrator)).getEnableKeyRecovery();
+			usekeyrecovery = (globalConfigurationSession.getCachedGlobalConfiguration(administrator)).getEnableKeyRecovery();
 
 			UserDataVO data = userAdminSession.findUser(administrator, username);
 

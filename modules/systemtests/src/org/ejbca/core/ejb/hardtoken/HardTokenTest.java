@@ -20,7 +20,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
@@ -54,7 +54,7 @@ public class HardTokenTest extends CaTestCase {
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
 
     /**
      * Creates a new TestHardToken object.
@@ -84,10 +84,10 @@ public class HardTokenTest extends CaTestCase {
     public void test01AddHardToken() throws Exception {
         log.trace(">test01AddHardToken()");
 
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
-        raAdminSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
 
@@ -164,9 +164,9 @@ public class HardTokenTest extends CaTestCase {
     public void test04EncryptHardToken() throws Exception {
         log.trace(">test04EncryptHardToken()");
 
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(getTestCAId());
-        raAdminSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
         boolean ret = false;
 
         // Make sure the old data can be read
@@ -202,9 +202,9 @@ public class HardTokenTest extends CaTestCase {
      */
 
     public void test05removeHardTokens()  {
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
-        raAdminSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
     
         try {
             hardTokenSessionRemote.removeHardToken(admin, "1234");

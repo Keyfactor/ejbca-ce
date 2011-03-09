@@ -39,9 +39,9 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -82,7 +82,7 @@ public class CAInterfaceBean implements Serializable {
     private CrlCreateSession crlCreateSession;
     private AuthorizationSession authorizationsession;
     private UserAdminSession adminsession;
-    private RaAdminSession raadminsession;
+    private GlobalConfigurationSession globalconfigurationsession;
     private SignSession signsession;
     private HardTokenSession hardtokensession;
     private PublisherSession publishersession;
@@ -115,7 +115,7 @@ public class CAInterfaceBean implements Serializable {
           caadminsession = ejb.getCaAdminSession();
           authorizationsession = ejb.getAuthorizationSession();
           adminsession = ejb.getUserAdminSession();
-          raadminsession = ejb.getRaAdminSession();               
+          globalconfigurationsession = ejb.getGlobalConfigurationSession();               
           signsession = ejb.getSignSession();
           hardtokensession = ejb.getHardTokenSession();               
           publishersession = ejb.getPublisherSession();               
@@ -126,7 +126,7 @@ public class CAInterfaceBean implements Serializable {
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
-            cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, raadminsession,
+            cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, globalconfigurationsession,
                     certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();

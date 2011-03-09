@@ -31,7 +31,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
@@ -68,7 +68,7 @@ public abstract class CaTestCase extends TestCase {
     private CAAdminSessionRemote caAdminSessionRemote = null;
     private CaSessionRemote caSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
-    private RaAdminSessionRemote raAdminSession = null;
+    private GlobalConfigurationSessionRemote globalConfigurationSession = null;
 
     public CaTestCase() {
         super();
@@ -93,7 +93,7 @@ public abstract class CaTestCase extends TestCase {
         caAdminSessionRemote = InterfaceCache.getCAAdminSession();
         caSession = InterfaceCache.getCaSession();
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-        raAdminSession = InterfaceCache.getRAAdminSession();
+        globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     }
 
     public void setUp() throws Exception {
@@ -379,7 +379,7 @@ public abstract class CaTestCase extends TestCase {
                 ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID, "(endEntityProfileId="
                         + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.");
-                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
                 approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                 assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

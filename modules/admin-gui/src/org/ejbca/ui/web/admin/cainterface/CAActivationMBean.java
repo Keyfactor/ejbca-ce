@@ -27,8 +27,8 @@ import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -66,7 +66,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private EndEntityProfileSession endEntityProfileSession;
 	private AuthorizationSession authorizationsession;
 	private UserAdminSession adminsession;
-	private RaAdminSession raadminsession;
+	private GlobalConfigurationSession globalconfigurationsession;
 	private CrlCreateSession crlCreateSession;
 	private InformationMemory                  informationmemory;
 	public static final String MAKEOFFLINE = "makeoffline";
@@ -91,14 +91,14 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			caSession = ejb.getCaSession();
 			authorizationsession = ejb.getAuthorizationSession();
 			adminsession = ejb.getUserAdminSession();
-			raadminsession = ejb.getRaAdminSession();             
+			globalconfigurationsession = ejb.getGlobalConfigurationSession();
 			certificateProfileSession = ejb.getCertificateProfileSession();
 			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			crlCreateSession = ejb.getCrlCreateSession();
 			this.informationmemory = webBean.getInformationMemory();
 
 			new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);
-			cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, raadminsession, certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, webBean);
+			cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, globalconfigurationsession, certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){

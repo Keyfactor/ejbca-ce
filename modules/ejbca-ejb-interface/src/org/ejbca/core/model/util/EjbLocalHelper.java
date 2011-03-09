@@ -39,6 +39,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -124,4 +125,5 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
 	@Override public ServiceSessionLocal getServiceSession() { return getEjbLocal().getServiceSession(); }
 	@Override public SignSessionLocal getSignSession() { return getEjbLocal().getSignSession(); }
+	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return getEjbLocal().getGlobalConfigurationSession(); }
 }

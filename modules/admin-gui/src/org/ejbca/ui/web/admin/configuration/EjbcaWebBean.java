@@ -46,6 +46,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -108,6 +109,7 @@ public class EjbcaWebBean implements Serializable {
     private final RaAdminSessionLocal raAdminSession = ejb.getRaAdminSession();
     private final UserAdminSessionLocal userAdminSession = ejb.getUserAdminSession();  
     private final UserDataSourceSessionLocal userDataSourceSession = ejb.getUserDataSourceSession();
+    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejb.getGlobalConfigurationSession();
 
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
@@ -140,11 +142,11 @@ public class EjbcaWebBean implements Serializable {
     		administrator = userAdminSession.getAdmin(certificates[0]);    		
     	} // else we have already defined an administrator, for example in initialize_errorpage
 
-    	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, raAdminSession, authorizationSession);        
+    	globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, globalConfigurationSession, authorizationSession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
     	if (informationmemory == null) {
     		informationmemory = new InformationMemory(administrator, caAdminSession, caSession, raAdminSession, adminGroupSession, authorizationSession, endEntityProfileSession, hardTokenSession,
-    				publisherSession, userDataSourceSession, certificateProfileSession, globalconfiguration);
+    				publisherSession, userDataSourceSession, certificateProfileSession, globalConfigurationSession, globalconfiguration);
     	}
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, adminEntitySession, adminGroupSession, authorizationSession, caSession);
     	
