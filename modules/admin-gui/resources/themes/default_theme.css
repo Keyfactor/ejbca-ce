@@ -366,6 +366,9 @@ table.search tr td select.year {
 table.search tr td select.time {
 	text-align: center;
 }
+table.results {
+	min-width: 1100px;
+}
 
 /* Page: Home */
 h3#welcome {

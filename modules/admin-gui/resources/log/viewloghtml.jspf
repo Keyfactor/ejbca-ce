@@ -41,7 +41,7 @@ function viewcert(row){
 
 <body>
 
-<h1><c:out value="<%= ejbcawebbean.getText(\"VIEWLOG\") %>" /><%= ejbcawebbean.getHelpReference("/userguide.html#View%20Log%20options") %></h1>
+<h1><c:out value="<%= ejbcawebbean.getText(\"VIEWLOG\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#View%20Log%20options") %></h1>
 
   <form name="changefiltermode" method="post" action="<%=THIS_FILENAME %>">
     <div align="right">
@@ -153,6 +153,7 @@ function viewcert(row){
       <%	}	%>
      </select>  
 
+    &nbsp;
     <input type="submit" name="<%=BUTTON_VIEWLAST %>" value='<c:out value="<%= ejbcawebbean.getText(\"VIEW\") %>"/>'>
   </p>
      <% }
@@ -173,6 +174,7 @@ function viewcert(row){
   <% } %>
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <input type="submit" name="<%=BUTTON_EXPORTCSV %>" value='<c:out value="<%= ejbcawebbean.getText(\"EXPORTCSV\") %>"/>'>
     <c:out value="<%= ejbcawebbean.getText(\"EXPORTSIGNWITHCA\") %>" />
       <select name="<%=SELECT_SIGNCSVCA %>" >
@@ -197,6 +199,8 @@ function viewcert(row){
       </select>  
   </p>
   <br />
+
+
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
@@ -214,7 +218,11 @@ function viewcert(row){
       </td>
     </tr>
   </table>
-  <table width="1100" border="0" cellspacing="1" cellpadding="0">
+
+
+  <!-- ----- Results ----- -->
+
+  <table class="results" width="100%" border="0" cellspacing="1" cellpadding="0">
   <tr> 
     <td width="9%"><% if(sortby.equals(SORTBY_TIME_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_TIME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"TIME\") %>" />
@@ -259,7 +267,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="5%">
+    <td width="8%">
                    <% if(sortby.equals(SORTBY_MODULE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_MODULE_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"MODULE\") %>" />
                    <% }else{
@@ -270,7 +278,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="9%"><% if(sortby.equals(SORTBY_EVENT_ACC)){ %>
+    <td width="10%"><% if(sortby.equals(SORTBY_EVENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_EVENT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"EVENT\") %>" />
                    <% }else{ 
                          if(sortby.equals(SORTBY_EVENT_DEC)){ %>
@@ -280,17 +288,17 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="7%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>" />
+    <td width="12%"><% if(sortby.equals(SORTBY_USERNAME_ACC)){ %>
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>" />
                    <% }else{
                          if(sortby.equals(SORTBY_USERNAME_DEC)){ %>
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>" />
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("uparrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>" />
                    <%    }else{ %> 
-                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>" />
+                          <input type="image" src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0" name="<%=SORTBY_USERNAME_ACC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"USERNAME_ABBR\") %>" />
                    <%    }
                        } %>
     </td>
-    <td width="18%"><% if(sortby.equals(SORTBY_CERTIFICATE_ACC)){ %>
+    <td width="10%"><% if(sortby.equals(SORTBY_CERTIFICATE_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_CERTIFICATE_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"CERTIFICATE\") %>" />    
                    <% }else{
                          if(sortby.equals(SORTBY_CERTIFICATE_DEC)){ %>
@@ -300,7 +308,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="25%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
+    <td width="24%"><% if(sortby.equals(SORTBY_COMMENT_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_COMMENT_DEC %>" value="submit" ><c:out value="<%= ejbcawebbean.getText(\"COMMENT\") %>" />
                    <% }else{
                          if(sortby.equals(SORTBY_COMMENT_DEC)){ %>

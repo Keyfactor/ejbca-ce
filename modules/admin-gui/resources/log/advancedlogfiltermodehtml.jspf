@@ -245,7 +245,10 @@ function checkfields(){
 
  -->
 </script>
-<table width="100%" border="0" cellspacing="1" cellpadding="0">
+<table class="search" width="100%" border="0" cellspacing="1" cellpadding="0">
+
+  <!-- ---------- ROW 0 ---------- -->
+
   <tr> 
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">&nbsp;</td>
@@ -261,6 +264,10 @@ function checkfields(){
       </select> 
     </td>
   </tr>
+
+
+  <!-- ---------- ROW 1 ---------- -->
+
   <tr> 
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">&nbsp;
@@ -427,13 +434,16 @@ function checkfields(){
                 || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN)) || oldmatchwithrow1.equals(Integer.toString(LogMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow1 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="40" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW1 %>" size="20" maxlength="255" value='' >
         <% } %>
     </td>
   </tr>
+
+
+  <!-- ---------- ROW 2 ---------- -->
 
   <tr> 
     <td width="2%">&nbsp;</td>
@@ -612,13 +622,16 @@ function checkfields(){
            if(  oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow2) == LogMatch.MATCH_WITH_MODULE || oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN)) || oldmatchwithrow2.equals(Integer.toString(LogMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow2 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow2 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="40" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW2 %>" size="20" maxlength="255" value='' >
         <% } %>
     </td>
   </tr>
+
+
+  <!-- ---------- ROW 3 ---------- -->
 
   <tr> 
     <td width="2%">&nbsp;</td>
@@ -797,13 +810,16 @@ function checkfields(){
            if(  oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_EVENT)) || Integer.parseInt(oldmatchwithrow3) == LogMatch.MATCH_WITH_MODULE || oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_SPECIALADMIN)) || oldmatchwithrow3.equals(Integer.toString(LogMatch.MATCH_WITH_CA))){ %>
        <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>"  size="1" maxlength="255" value='' disabled >    
            <% }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='<c:out value="<%=oldmatchvaluerow3 %>"/>' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="20" maxlength="255" value='<c:out value="<%=oldmatchvaluerow3 %>"/>' >
            <% }
            }else{ %>
-              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="40" maxlength="255" value='' >
+              <input type="text" name="<%=TEXTFIELD_MATCHVALUE_ROW3 %>" size="20" maxlength="255" value='' >
         <% } %>
     </td>
   </tr>
+
+
+  <!-- ---------- ROW 4 ---------- -->
 
   <tr> 
     <td width="2%">&nbsp;</td>
@@ -831,9 +847,12 @@ function checkfields(){
               value='<c:out value="<%= Integer.toString(TimeMatch.MATCH_WITH_TIMECREATED) %>"/>'><c:out value="<%= ejbcawebbean.getText(\"TIME\") %>" />
          </option>       
       </select>  
+
+      <!-- ----- Row 4 : Search after ----- -->
+
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORAFTER\") %>" />&nbsp;
-      <select name='<%= SELECT_DAY_ROW4  %>'>  
-         <% for(int i=0; i <  31; i++) { %> 
+      <select name='<%= SELECT_DAY_ROW4  %>' class="day">  
+         <% for(int i=1; i <  32; i++) { %> 
          <option <% if(olddayrow4 != null)
                       if(olddayrow4.equals(Integer.toString(i))) 
                         out.print(" selected ");
@@ -842,7 +861,7 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_MONTH_ROW4  %>'>  
+      <select name='<%= SELECT_MONTH_ROW4  %>' class="month">  
          <% for(int i=0; i < monthreferences.length; i++) { %> 
          <option <% if(oldmonthrow4 != null)
                       if(oldmonthrow4.equals(Integer.toString(i))) 
@@ -852,7 +871,7 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_YEAR_ROW4  %>'>  
+      <select name='<%= SELECT_YEAR_ROW4  %>' class="year">  
          <% for(int i=2000; i <  2020; i++) { %> 
          <option <% if(oldyearrow4 != null)
                       if(oldyearrow4.equals(Integer.toString(i))) 
@@ -862,7 +881,7 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_TIME_ROW4  %>'>  
+      <select name='<%= SELECT_TIME_ROW4  %>' class="time">  
          <% for (int i=0; i<24; i++) {
               final String thisHour = Integer.toString(i/10) + Integer.toString(i%10); %> 
          <option <% if (thisHour.equals(oldtimerow4)) { out.print(" selected "); } %> value='<%= thisHour %>'> 
@@ -870,26 +889,23 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>
-    </td>
-  </tr>
+      <br/>
 
-  <tr> 
-    <td width="2%">&nbsp;</td>
-    <td width="5%" align="left">
-     &nbsp;
-    </td>
-    <td width="93%" align="left"> 
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &nbsp;&nbsp;&nbsp;&nbsp; 
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+      <!-- ----- Row 4 : Search before ----- -->
+
       &nbsp;<c:out value="<%= ejbcawebbean.getText(\"ONORBEFORE\") %>" />&nbsp;
-      <select name='<%= SELECT_DAY_ROW5  %>'> 
+      <select name='<%= SELECT_DAY_ROW5  %>' class="day"> 
          <%  tempval =0;
              if(olddayrow5 != null){
                tempval = Integer.parseInt(olddayrow5);  
              }else{ 
                 tempval = dayofmonth;
              }  
-            for(int i=0; i <  31; i++) { %> 
+            for(int i=1; i <  32; i++) { %> 
          <option  <%   if(tempval == i) 
                         out.print(" selected ");
                       %> value='<%= i %>'> 
@@ -897,7 +913,7 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_MONTH_ROW5  %>'>  
+      <select name='<%= SELECT_MONTH_ROW5  %>' class="month">  
          <%  tempval =0;
              if(oldmonthrow5 != null){
                tempval = Integer.parseInt(oldmonthrow5);  
@@ -913,7 +929,7 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_YEAR_ROW5  %>'>  
+      <select name='<%= SELECT_YEAR_ROW5  %>' class="year">  
          <%  tempval =0;
              if(oldyearrow5 != null){
                tempval = Integer.parseInt(oldyearrow5);  
@@ -928,7 +944,7 @@ function checkfields(){
          </option> 
          <% } %> 
       </select>&nbsp;
-      <select name='<%= SELECT_TIME_ROW5 %>'>  
+      <select name='<%= SELECT_TIME_ROW5 %>' class="time">  
          <% if (oldtimerow5 == null) {
            	  oldtimerow5 = Integer.valueOf(hour).toString();	// Default to using the current hour
             }
@@ -941,9 +957,16 @@ function checkfields(){
       </select>
     </td>
   </tr>
+
+
+  <!-- ---------- Submit ---------- -->
+
+  <tr>
     <td width="2%">&nbsp;</td>
     <td width="5%" align="left">
     </td>
     <td width="93%" align="left"> <input type="submit" name="<%=BUTTON_ADVANCEDLIST %>" onclick='return checkfields()' value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>'>
     </td>        
+  </tr>
+
 </table>
