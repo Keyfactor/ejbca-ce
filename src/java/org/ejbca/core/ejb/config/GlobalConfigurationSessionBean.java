@@ -22,8 +22,10 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
@@ -54,6 +56,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
 
     @EJB
     private LogSessionLocal logSession;
+    
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
 
    
     @Override
@@ -92,7 +97,13 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
                     result = new GlobalConfiguration();
-                    saveGlobalConfiguration(admin, result);
+                    try {
+                    	saveGlobalConfiguration(admin, result);
+                    } catch (AuthorizationDeniedException ex) {
+                    	if (log.isDebugEnabled()) {
+                    		log.debug("Could not store initial GlobalConfiguration: " + ex.getMessage());
+                    	}
+                    }
                 }
             }
             return result;
@@ -104,9 +115,14 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) {
+    public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
+        }
+        
+        // Check administrator authorized to edit system configuration
+        if (!authorizationSession.isAuthorizedNoLog(admin, "/system_functionality/edit_systemconfiguration")) {
+        	throw new AuthorizationDeniedException("Administrator not authorized to edit system configuration.");
         }
         
         String pk = "0";

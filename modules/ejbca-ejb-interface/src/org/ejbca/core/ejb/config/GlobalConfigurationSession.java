@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
-/** Session bean to handle RA administration, which means admin preferences, global configuration and such.
+/** 
+ * Session bean to handle global configuration and such.
  * 
- * @version $Id: RaAdminSession.java 11337 2011-02-10 22:37:15Z jeklund $
+ * @version $Id$
  */
 public interface GlobalConfigurationSession {
 
@@ -41,8 +43,12 @@ public interface GlobalConfigurationSession {
      */
     GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
 
-    /** Saves the GlobalConfiguration. */
-    void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf);
+    /** 
+     * Saves the GlobalConfiguration. 
+     * 
+     * @throws AuthorizationDeniedException in case administrator is not authorized to edit system configuration
+     * */
+    void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) throws AuthorizationDeniedException;
 
     /** Clear and load global configuration cache. */
     void flushGlobalConfigurationCache();

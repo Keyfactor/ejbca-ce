@@ -13,10 +13,29 @@
 
 package org.ejbca.core.ejb.config;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRule;
+import org.ejbca.core.model.authorization.AdminEntity;
+import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -26,9 +45,19 @@ import org.ejbca.util.InterfaceCache;
  * 
  * @version $Id$
  */
-public class GlobalConfigurationSessionBeanTest extends TestCase {
+public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
-    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+	private static final Logger LOG = Logger.getLogger(GlobalConfigurationSessionBeanTest.class);
+	
+    private static final String NONSYSTEMCONFIG_ADMIN = "CN=Admin_Without_Edit_SystemConfig_Right";
+    private static final String NONSYSTEMCONFIG_ADMINGROUP = "Non_system_config_Admin_Group";
+    
+	private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
+    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
+    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
     private Admin administrator;
     private GlobalConfiguration original = null;
@@ -44,7 +73,8 @@ public class GlobalConfigurationSessionBeanTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-        administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        createTestCA();
+    	administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
         // First save the original
         // FIXME: Do this in @BeforeClass in JUnit4
@@ -57,6 +87,7 @@ public class GlobalConfigurationSessionBeanTest extends TestCase {
     	globalConfigurationSession.saveGlobalConfiguration(administrator, original);
     	globalConfigurationSession.flushCache();
         administrator = null;
+        removeTestCA();
     }
 
     /**
@@ -82,12 +113,102 @@ public class GlobalConfigurationSessionBeanTest extends TestCase {
         assertEquals("The GlobalConfigfuration cache was not automatically updated.", "BAR", cachedValue.getEjbcaTitle());
 
     }
+    
+    public void testSaveGlobalConfigurationAuth() throws Exception {
+    	try {
+    	
+    		final GlobalConfiguration globalConfig = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
+    	
+    		// First test that we can save with an privileged user
+    		try {
+    			globalConfigurationSession.saveGlobalConfiguration(administrator, globalConfig);
+    		} catch (Exception ex) {
+    			LOG.error("Error in test", ex);
+    			fail("Could not store configuration:" + ex.getMessage());
+    		}
+    		
+    		Admin nonSystemConfigAdmin = setupAdminWithoutEditSystemConfigRights();
+    		
+    		// Now the real test: make sure we don't have access without edit_systemconfiguration privilege
+    		try {
+    			globalConfigurationSession.saveGlobalConfiguration(nonSystemConfigAdmin, globalConfig);
+    			fail("Authorization should have been denied!");
+    		} catch (Exception ignored) {}
+    		
+    	} finally {
+    		adminGroupSession.removeAdminGroup(administrator, NONSYSTEMCONFIG_ADMINGROUP);
+    		removeTestCA();
+    	}
+    }
   
-    /**
+    private Admin setupAdminWithoutEditSystemConfigRights() throws Exception {
+    	int caid = getTestCAId(getTestCAName());
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        // Initialize with a new CA
+        adminGroupSession.init(admin, caid, NONSYSTEMCONFIG_ADMIN);
+
+        adminGroupSession.addAdminGroup(admin, NONSYSTEMCONFIG_ADMINGROUP);
+        
+        // Retrieve access rules and check that they were added
+        AdminGroup ag = adminGroupSession.getAdminGroup(admin, NONSYSTEMCONFIG_ADMINGROUP);
+        assertNotNull("get admingroup", ag);
+
+        // Add some new strange access rules
+        ArrayList<AccessRule> accessrules = new ArrayList<AccessRule>();
+        accessrules.add(new AccessRule("/administrator", AccessRule.RULE_ACCEPT, false));
+        adminGroupSession.addAccessRules(admin, NONSYSTEMCONFIG_ADMINGROUP, accessrules);
+
+        // Retrieve the access rules and check that they were added
+        ag = adminGroupSession.getAdminGroup(admin, NONSYSTEMCONFIG_ADMINGROUP);
+        assertNotNull(ag);
+        Collection<AccessRule> rules = ag.getAccessRules();
+        assertEquals(1, rules.size()); // We have added one rule
+        Iterator<AccessRule> iter = rules.iterator();
+        boolean found = false;
+        while (iter.hasNext()) {
+            AccessRule rule = iter.next();
+            if (rule.getAccessRule().equals("/administrator")) {
+                found = true;
+            }
+        }
+        assertTrue(found);
+        
+        // Create end entity
+        String adminusername = genRandomUserName();
+        Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
+
+        UserDataVO userdata = new UserDataVO(adminusername, "CN=" + adminusername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        userdata.setPassword("foo123");
+
+        userAdminSession.addUser(intadmin, userdata, true);
+
+        File tmpfile = File.createTempFile("ejbca", "p12");
+        BatchMakeP12 makep12 = new BatchMakeP12();
+        makep12.setMainStoreDir(tmpfile.getParent());
+        makep12.createAllNew();
+        tmpfile.delete();
+
+        List<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
+        adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername, caid));
+        adminEntitySession.addAdminEntities(intadmin, NONSYSTEMCONFIG_ADMINGROUP, adminEntities);
+        authorizationSession.forceRuleUpdate(intadmin);
+
+        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername).iterator().next();
+        admin = new Admin(admincert, adminusername, null);
+
+        assertFalse("Could not setup right authorization rule for test",
+                authorizationSession.isAuthorized(admin, "/system_functionality/edit_systemconfiguration"));
+        
+        return admin;
+	}
+    
+
+	/**
      * Set a preliminary value and allows the cache to set it.
      * @throws InterruptedException
      */
-    private void setInitialValue() throws InterruptedException {
+    private void setInitialValue() throws InterruptedException, AuthorizationDeniedException {
         
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");

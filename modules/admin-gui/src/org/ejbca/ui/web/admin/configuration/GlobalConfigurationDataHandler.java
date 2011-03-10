@@ -20,6 +20,7 @@ import javax.naming.NamingException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -60,7 +61,7 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
         return ret;
     }
     
-    public void saveGlobalConfiguration(GlobalConfiguration gc) {
+    public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
         if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
             globalconfigurationsession.saveGlobalConfiguration(administrator,  gc);
         }
