@@ -37,10 +37,10 @@ your application in production.
 </p><p>
 Check out: <a href="http://community.jboss.org/wiki/SecureJBoss">SecureJBoss</a>
 </p>
-<p>You should at least disable the public admin console by removing jmx-console.war, management/console-mgr.sar and 
-jbossweb-tomcat55.sar/ROOT.war from deploy.
+<p>You should at least disable the public admin console by removing jmx-console directory, management directory and 
+jboss-web.deployer/ROOT.war from deploy.
 </p>
-<p>Alternatively protect it with a password set in
+<p>Alternatively protect it with a password (not recommended) set in
 jboss/server/default/deploy/management/console-mgr.sar/web-console.war/WEB-INF/classes/web-console-users.properties
 </p>
 <p>You should also make sure all sensitive files can only be read by the JBoss user. These files are for example the server.xml 
