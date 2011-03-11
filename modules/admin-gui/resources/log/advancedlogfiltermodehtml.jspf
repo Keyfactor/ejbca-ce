@@ -185,7 +185,7 @@ function changematchfields(row){
          // if admin certificate, use 'begin with' and textfield.
             menumatchvalue.disabled = true;
             textmatchvalue.disabled = false;
-            textmatchvalue.size = 40;
+            textmatchvalue.size = 20;
 
             var numoftypes = matchtype.length;
             for( i=numoftypes-1; i >= 0; i-- ){
@@ -215,7 +215,7 @@ function changematchfields(row){
           }     
           menumatchvalue.disabled = true;
           textmatchvalue.disabled = false;
-          textmatchvalue.size=40;
+          textmatchvalue.size = 20;
   }
 } //end function
 
@@ -893,7 +893,7 @@ function checkfields(){
 
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;
 
       <!-- ----- Row 4 : Search before ----- -->
 
