@@ -379,6 +379,11 @@ table.results {
 table.results thead tr td {
 	white-space: nowrap;
 }
+table.results tbody tr:hover,
+table.results tbody tr:focus,
+table.results tbody tr:active {
+	background-color: #FFB !important;
+}
 select.number {
 	text-align: right;
 }
