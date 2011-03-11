@@ -376,6 +376,12 @@ table.search tr td select.time {
 table.results {
 	min-width: 1100px;
 }
+table.results thead tr td {
+	white-space: nowrap;
+}
+select.number {
+	text-align: right;
+}
 
 /* Page: Home */
 h3#welcome {
