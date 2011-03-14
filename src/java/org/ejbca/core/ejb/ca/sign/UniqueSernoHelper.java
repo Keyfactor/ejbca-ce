@@ -13,7 +13,9 @@
 package org.ejbca.core.ejb.ca.sign;
 
 import java.io.ByteArrayInputStream;
+import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -40,16 +42,17 @@ public final class UniqueSernoHelper {
 
 	static private Boolean isUniqueCertificateSerialNumberIndex = null;
 
-	/** returns true if there is a database index for unique certificate serial number / issuer DN.
-	 * @return true if index exists
+	/**
+	 * Will test if there is a unique index/constraint for (certificate serial number,issuer DN) first time it is run.
+	 * @return returns true if there is a database index for unique certificate serial number / issuer DN.
 	 */
-	protected static final boolean isUniqueCertificateSerialNumberIndex() {
+	protected static final boolean isUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) {
+		testUniqueCertificateSerialNumberIndex(certificateStoreSession);
 		return isUniqueCertificateSerialNumberIndex!=null && isUniqueCertificateSerialNumberIndex.booleanValue();
 	}
 	
-	/** sets variables (but only once) that can be checked with isUniqueCertificateSerialNumberIndex(). This method must be called first (at least once)
-	 */
-	protected static final void testUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) throws Exception {
+	/** sets variables (but only once) that can be checked with isUniqueCertificateSerialNumberIndex(). This method must be called first (at least once) */
+	private static final void testUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) {
 		if (isUniqueCertificateSerialNumberIndex == null) {
 			final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
 			// Loading two dummy certificates. These certificates has same serial number and issuer.
@@ -92,15 +95,16 @@ public final class UniqueSernoHelper {
 					final CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
 					cert1 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded1));
 					cert2 = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certEncoded2));
-				} catch( Exception e ) {
-					throw new Exception( "Not possible to generate predefined dummy certificate. Should never happen", e );
+				} catch( CertificateException e ) {
+					throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
+				} catch (NoSuchProviderException e) {
+					throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
 				}
 			}
 			final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 			final Certificate c1 = certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert1));
 			final Certificate c2 = certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert2));
 			if ( (c1 != null) && (c2 != null) ) {
-				log.info( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
 				// already proved that not checking index for serial number.
 				isUniqueCertificateSerialNumberIndex = Boolean.valueOf(false);
 			}
@@ -108,9 +112,10 @@ public final class UniqueSernoHelper {
 				try {
 				    certificateStoreSession.storeCertificate(admin, cert1, userName, "abcdef0123456789", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
 				} catch (Throwable e) {
-					throw new Exception("It should always be possible to store initial dummy certificate.", e);
+					throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
 				}
 			}
+			isUniqueCertificateSerialNumberIndex = Boolean.valueOf(false);			
 			if (c2 == null) { // storing a second certificate with same issuer 
 				try { 
 					certificateStoreSession.storeCertificate(admin, cert2, userName, "fedcba9876543210", SecConst.CERT_INACTIVE, 0, 0, "", new Date().getTime());
@@ -120,11 +125,11 @@ public final class UniqueSernoHelper {
 					isUniqueCertificateSerialNumberIndex = Boolean.valueOf(true);
 				}
 			}
-			log.info( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
-			// It was possible to store a second certificate with same serial number. Unique number not working.
-			isUniqueCertificateSerialNumberIndex = Boolean.valueOf(false);			
-		} // if (isUniqueCertificateSerialNumberIndex != null) {
-		// else do nothing, we only want to do this once
+			if (!isUniqueCertificateSerialNumberIndex.booleanValue()) {
+				// It was possible to store a second certificate with same serial number. Unique number not working.
+				log.info( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
+			}
+		}
 	}
 
 }
