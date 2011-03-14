@@ -30,9 +30,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -95,6 +97,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     private static final Logger log = Logger.getLogger(RSASignSessionBean.class);
     
+    @Resource
+    private SessionContext sessionContext;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -111,6 +115,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     private CrlSessionLocal crlSession;
     @EJB
     private LogSessionLocal logSession;
+    private SignSessionLocal signSession;
 
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -130,7 +135,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // used by X509CA
             SernoGenerator.instance().setAlgorithm(EjbcaConfiguration.getRNGAlgorithm());
             SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());
-            UniqueSernoHelper.testUniqueCertificateSerialNumberIndex(certificateStoreSession);
+            signSession = sessionContext.getBusinessObject(SignSessionLocal.class);
         } catch (Exception e) {
             log.debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
@@ -140,9 +145,11 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	}
     }
 
+	// We want each storage of a certificate to run in a new transactions, so we can catch errors as they happen..
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	@Override
     public boolean isUniqueCertificateSerialNumberIndex() {
-    	return UniqueSernoHelper.isUniqueCertificateSerialNumberIndex();
+    	return UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSession);
     }
 
 	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -836,7 +843,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 			}
 			final int maxRetrys;
 			if ( useCustomSN ) {
-				if (ca.isUseCertificateStorage() && !isUniqueCertificateSerialNumberIndex()) {
+				if (ca.isUseCertificateStorage() && !signSession.isUniqueCertificateSerialNumberIndex()) {
 					final String msg = intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex");
 					log.error(msg);
 					throw new NoUniqueCertSerialNumberIndexException(new EjbcaException(msg));
