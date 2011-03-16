@@ -22,8 +22,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.JBossUnmarshaller;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * Entity Bean representing admin web interface global configuration.

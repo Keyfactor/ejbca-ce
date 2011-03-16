@@ -42,7 +42,7 @@ import org.ejbca.util.NonEjbTestTools;
 public class CertificateRequestSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CertificateRequestSessionTest.class);
-    private final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private final Random random = new Random();
 
     private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();

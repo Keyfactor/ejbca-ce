@@ -79,7 +79,7 @@ import org.ejbca.util.keystore.KeyTools;
 public class CertificateRequestThrowAwayTest extends CaTestCase {
 
 	private static final Logger LOG = Logger.getLogger(CertificateRequestThrowAwayTest.class);
-	private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 	private static final Random random= new SecureRandom();
 
 	private static final String TESTCA_NAME = "ThrowAwayTestCA";

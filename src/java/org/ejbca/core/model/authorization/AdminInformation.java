@@ -19,7 +19,9 @@
 
 package org.ejbca.core.model.authorization;
 
+import java.security.SecureRandom;
 import java.security.cert.Certificate;
+import java.util.Random;
 
 /**
  * A class used to send user information to the authorization tree. It can contain types of information, a X509Certificate or a
@@ -30,16 +32,21 @@ import java.security.cert.Certificate;
 public class AdminInformation implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
+	
+	// Special in JVM random token to authenticate specialuser. 
+	// The token will work _if_ we are running within the same jvm as the service we call (i.e. EJBCA/JBoss server)
+	protected static final byte[] randomToken = createRandomToken();
+	
 	// Public Methods
-    /** Creates a new instance of AdminInformation */
+     /** Creates a new instance of AdminInformation */
     public AdminInformation(Certificate certificate){
       this.certificate=certificate;
       this.specialuser=0;      
     }
     
-    public AdminInformation(int specialuser) {
+    public AdminInformation(int specialuser, byte[] authToken) {
       this.specialuser=specialuser;
-	  
+      localAuthToken = authToken;
     }
     
     private AdminInformation() { 
@@ -51,6 +58,14 @@ public class AdminInformation implements java.io.Serializable {
     	adminInformation.adminGroupId = adminGroupId;
     	return adminInformation;
     }
+    
+	public static final byte[] createRandomToken() {
+    	byte[] token = new byte[32];
+        Random randomSource;
+        randomSource = new SecureRandom();
+        randomSource.nextBytes(token);
+    	return token;
+	}
 
     public boolean isSpecialUser() {
       return this.specialuser!=0;
@@ -72,9 +87,18 @@ public class AdminInformation implements java.io.Serializable {
       return this.adminGroupId;	
     }
 
+	public byte[] getLocalAuthToken() {
+		return localAuthToken;
+	}
+
+	public static final byte[] getRandomToken() {
+		return randomToken;
+	}
+
     // Private fields
     private Certificate certificate;
     private int specialuser = 0;
     private Integer adminGroupId = null;
+    private byte[] localAuthToken;
     
 }

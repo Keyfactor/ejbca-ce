@@ -13,7 +13,7 @@
 package org.ejbca.core.ejb.config;
 
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 
 /**
  * Class Holding cache variable for global configuration. Needed because EJB spec does not allow volatile, non-final 

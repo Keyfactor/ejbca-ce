@@ -42,9 +42,9 @@ public class Authorizer implements Serializable {
     private AuthorizationProxy authorizationProxy;
 
     /** Creates new EjbcaAthorization */
-    public Authorizer(Collection<AdminGroup> admingroups, LogSessionLocal logsession, int module) {
+    public Authorizer(Collection<AdminGroup> admingroups, boolean cliEnabled, LogSessionLocal logsession, int module) {
         accesstree = new AccessTree();
-        authorizationProxy = new AuthorizationProxy(accesstree);
+        authorizationProxy = new AuthorizationProxy(accesstree, cliEnabled);
         buildAccessTree(admingroups);
         this.logSession = logsession;
         this.module=module;

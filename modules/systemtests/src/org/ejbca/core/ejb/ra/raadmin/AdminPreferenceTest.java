@@ -59,7 +59,7 @@ public class AdminPreferenceTest extends CaTestCase {
      */
     public void test01AddAdminPreference() throws Exception {
         log.trace(">test01AddAdminPreference()");
-        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
@@ -78,7 +78,7 @@ public class AdminPreferenceTest extends CaTestCase {
      */
     public void test02ModifyAdminPreference() throws Exception {
         log.trace(">test02ModifyAdminPreference()");
-        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         AdminPreference pref = this.raAdminSession.getAdminPreference(administrator, user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));

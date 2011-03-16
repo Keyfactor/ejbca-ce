@@ -64,7 +64,7 @@ import org.ejbca.util.query.UserMatch;
 public class UserAdminSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserAdminSessionTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private int caid = getTestCAId();
 
     private static String username;

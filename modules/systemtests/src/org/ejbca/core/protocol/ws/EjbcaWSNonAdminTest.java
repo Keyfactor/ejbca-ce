@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
@@ -52,7 +53,6 @@ import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -77,7 +77,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static GlobalConfiguration gc = null;
 
     private List<AdminEntity> adminEntities;
-    private Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
+    private Admin intadmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private Admin reqadmin;
 
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
@@ -270,7 +270,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         } finally {
             // Clean up hard token.
-            hardTokenSessionRemote.removeHardToken(new Admin(Admin.TYPE_INTERNALUSER), serialNumber);
+            hardTokenSessionRemote.removeHardToken(new Admin(Admin.TYPE_CACOMMANDLINE_USER), serialNumber);
 
             removeApprovalAdmins();
         }

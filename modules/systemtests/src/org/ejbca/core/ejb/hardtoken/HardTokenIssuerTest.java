@@ -32,7 +32,7 @@ public class HardTokenIssuerTest extends TestCase {
     
     private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
 
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     /**
      * Creates a new TestHardTokenIssuer object.

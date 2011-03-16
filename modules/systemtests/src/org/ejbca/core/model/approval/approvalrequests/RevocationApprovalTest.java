@@ -53,7 +53,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private static String requestingAdminUsername = null;
     private static String adminUsername = null;
 
-    private static final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin internalAdmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private static Admin reuestingAdmin = null;
     private static Admin approvingAdmin = null;
     private static ArrayList<AdminEntity> adminentities;

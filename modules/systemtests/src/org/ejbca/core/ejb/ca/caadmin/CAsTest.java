@@ -82,7 +82,7 @@ public class CAsTest extends CaTestCase {
     private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
     private static final Logger log = Logger.getLogger(CAsTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private static Collection<Certificate> rootcacertchain = null;
 

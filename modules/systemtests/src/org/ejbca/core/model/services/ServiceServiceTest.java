@@ -45,7 +45,7 @@ import org.ejbca.util.InterfaceCache;
 public class ServiceServiceTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ServiceServiceTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     
     private static final String NOT_THIS_HOST1 = "notthishost.nodomain";
     private static final String NOT_THIS_HOST2 = "notthishost2.nodomain";

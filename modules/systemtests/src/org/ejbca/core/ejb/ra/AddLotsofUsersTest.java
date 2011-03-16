@@ -68,7 +68,7 @@ public class AddLotsofUsersTest extends CaTestCase {
      */
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
-        final Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         final String baseUsername = "lotsausers" + System.currentTimeMillis() + "-";
         for (int i = 0; i < 2000; i++) {
             String username = genUserName(baseUsername);

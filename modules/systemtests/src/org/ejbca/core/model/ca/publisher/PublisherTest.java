@@ -90,7 +90,7 @@ public class PublisherTest extends TestCase {
     
     private static final Logger log = Logger.getLogger(PublisherTest.class);
 
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
@@ -246,7 +246,7 @@ public class PublisherTest extends TestCase {
         ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
 
-        boolean ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        boolean ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
         log.trace("<test07StoreCertToDummyr()");
     }
@@ -294,10 +294,10 @@ public class PublisherTest extends TestCase {
         ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSP")));
 
-        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        publisherSession.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
+        publisherSession.revokeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
 	    log.trace("<test14ExternalOCSPPublisherCustom()");
     }
     
@@ -328,7 +328,7 @@ public class PublisherTest extends TestCase {
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSP2")));
         
         long date = new Date().getTime();
-        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
+        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
         CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
@@ -337,7 +337,7 @@ public class PublisherTest extends TestCase {
         assertEquals(date, info.getUpdateTime().getTime());
 
         date = date + 12345;
-        publisherSession.revokeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
+        publisherSession.revokeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
 
         info = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
         assertEquals(12345, info.getCertificateProfileId());
@@ -345,8 +345,8 @@ public class PublisherTest extends TestCase {
         assertEquals(date, info.getUpdateTime().getTime());
 
         // Test storing and updating CRLs as well
-        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", 1, null);
-        publisherSession.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), publishers, testcrl, "test05", 1, null);
+        publisherSession.storeCRL(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, testcrl, "test05", 1, null);
+        publisherSession.storeCRL(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, testcrl, "test05", 1, null);
         
         log.trace("<test15ExternalOCSPPublisher()");
     }

@@ -47,7 +47,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 public class CmpRaThrowAwayTest extends CmpTestCase {
 
 	private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationTest.class);
-    private static final Admin ADMIN = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin ADMIN = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private static final Random RND = new SecureRandom();
 
     private static final String TESTCA_NAME = "CmpRaThrowAwayTestCA";

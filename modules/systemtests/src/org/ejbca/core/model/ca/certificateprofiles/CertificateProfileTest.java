@@ -40,7 +40,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
 public class CertificateProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(CertificateProfileTest.class);
 
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();

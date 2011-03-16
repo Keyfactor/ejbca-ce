@@ -113,7 +113,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
         Certificate cert;
-        Admin adm = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin adm = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         m_certs = new HashSet<Certificate>();
         m_certfps = new HashSet<String>();
         cert = CertTools.getCertfromByteArray(testrootcert);
@@ -148,7 +148,7 @@ public class CertificateRetrivalTest extends TestCase {
             log.error("Error: ", e);
             assertTrue("Error seting up tests: " + e.getMessage(), false);
         }
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
+        admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         log.trace("<setUp()");
     }
 

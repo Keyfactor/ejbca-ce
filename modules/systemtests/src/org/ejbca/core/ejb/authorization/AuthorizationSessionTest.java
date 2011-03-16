@@ -86,7 +86,7 @@ public class AuthorizationSessionTest extends CaTestCase {
      */
     public void testInitialize() throws Exception {
         int caid = "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         // Initialize with a new CA
         adminGroupSession.init(admin, caid, DEFAULT_SUPERADMIN_CN);
 
@@ -142,13 +142,13 @@ public class AuthorizationSessionTest extends CaTestCase {
 
     public void testExistMethods() throws Exception {
         int caid = "CN=TEST Authorization,O=PrimeKey,C=SE".hashCode();
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         authorizationSession.existsCAInRules(admin, caid);
 
     }
 
     public void testIsAuthorizedInternalUserRegularApproveIdentity() {
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         assertTrue("Could not authorize internal user with AccessRulesConstants.REGULAR_APPROVEENDENTITY",
                 authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY));
 
@@ -157,7 +157,7 @@ public class AuthorizationSessionTest extends CaTestCase {
     public void testIsAuthorizedCertUserRegularApproveIdentity() throws Exception {
 
         String adminusername = genRandomUserName();
-        Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin intadmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
         int caid = getTestCAId();
 
@@ -193,7 +193,7 @@ public class AuthorizationSessionTest extends CaTestCase {
      * @throws AuthorizationDeniedException
      */
     public void testIsAuthorizedWithSuperAdminFromX509Certificate() throws AuthorizationDeniedException {
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         Admin superadmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, SUPER_ADMIN).iterator().next(),
                 SUPER_ADMIN, null);
         assertTrue("Authorization for superadmin user failed. This probably means that your SuperAdmin user isn't feeling very well.",
@@ -214,7 +214,7 @@ public class AuthorizationSessionTest extends CaTestCase {
 
         createTestCA(testCaName);
 
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         Admin anAdmin = new Admin(getTestCACert(testCaName), testAdminName, null);
 
         List<AccessRule> accessrules = new ArrayList<AccessRule>();

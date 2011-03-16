@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
@@ -35,7 +36,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
@@ -48,7 +48,7 @@ import org.ejbca.util.keystore.KeyTools;
  */
 public class AuthenticationSessionTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AuthenticationSessionTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private int caid = getTestCAId();
 
     private static final int MAXFAILEDLOGINS = 4;

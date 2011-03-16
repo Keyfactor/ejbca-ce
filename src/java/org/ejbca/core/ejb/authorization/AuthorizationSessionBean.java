@@ -31,7 +31,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -59,6 +61,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     private AuthorizationTreeUpdateDataSessionLocal authorizationTreeUpdateDataSession;
     @EJB
     private LogSessionLocal logSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     /** Cache for authorization data */
     private static final AuthorizationCache authCache = new AuthorizationCache();
@@ -80,7 +84,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     private Authorizer getAuthorizer() {
         if (authCache.getAuthorizer() == null) {
-            authCache.setAuthorizer(new Authorizer(getAdminGroups(), logSession, LogConstants.MODULE_AUTHORIZATION));
+        	final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
+            authCache.setAuthorizer(new Authorizer(getAdminGroups(), config.getEnableCommandLineInterface(), logSession, LogConstants.MODULE_AUTHORIZATION));
         }
         return authCache.getAuthorizer();
     }
@@ -204,6 +209,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
 
     @Override
     public void flushAuthorizationRuleCache()  {
+    	authCache.setAuthorizer(null);
     	if (log.isTraceEnabled()) {
     		log.trace(">flushAuthorizationRuleCache()");
     	}

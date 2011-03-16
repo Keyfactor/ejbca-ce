@@ -149,7 +149,7 @@ public abstract class CaTestCase extends TestCase {
 	 */
 	public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection certificateChain) {
         log.trace(">createTestCA");
-        final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     	try {
 			 this.adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 		} catch (AdminGroupExistsException e) {
@@ -272,7 +272,7 @@ public abstract class CaTestCase extends TestCase {
      */
     public Certificate getTestCACert(String caName) {
         Certificate cacert = null;
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, getTestCAId(caName));
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -315,7 +315,7 @@ public abstract class CaTestCase extends TestCase {
      */
     public boolean removeTestCA(String caName) {
         // Search for requested CA
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         try {
             final CAInfo caInfo = this.caAdminSessionRemote.getCAInfo(admin, caName);
             if (caInfo == null) {

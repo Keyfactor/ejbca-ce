@@ -64,7 +64,7 @@ public class LoggingStressTest extends TestCase {
     		this.runTime = runTime;
     	}
     	
-    	Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    	Admin internalAdmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     	public void run() {
             try {
             	int i = 0;

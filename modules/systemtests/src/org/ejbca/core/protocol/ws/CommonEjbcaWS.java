@@ -38,6 +38,7 @@ import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -71,7 +72,6 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.CVCRequestMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
@@ -131,7 +131,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected EjbcaWS ejbcaraws;
 
-    protected final static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    protected final static Admin intAdmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     protected final String hostname;
     protected final String httpsPort;
 
@@ -571,7 +571,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void enforcementOfUniquePublicKeys() throws Exception {
 
-        final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
         final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
         final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
@@ -618,7 +618,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void enforcementOfUniqueSubjectDN() throws Exception {
     	log.trace(">enforcementOfUniqueSubjectDN");
-        final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
         final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
         final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
@@ -2008,7 +2008,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void checkQueueLength() throws Exception {
 
         final String PUBLISHER_NAME = "myPublisher";
-        final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         try {
             assertEquals(-4, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             final CustomPublisherContainer publisher = new CustomPublisherContainer();

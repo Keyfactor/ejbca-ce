@@ -19,9 +19,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**

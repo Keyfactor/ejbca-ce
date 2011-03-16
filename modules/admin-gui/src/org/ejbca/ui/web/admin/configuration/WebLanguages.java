@@ -20,8 +20,8 @@ import java.io.InputStream;
 import javax.servlet.ServletContext;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
 /**

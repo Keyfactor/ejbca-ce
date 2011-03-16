@@ -63,6 +63,7 @@ import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
@@ -121,7 +122,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -2340,9 +2340,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     private boolean authorizedToCA(Admin admin, int caid) {
-        if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
-            return true; // Skip database search since this is always ok
-        }
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
 
