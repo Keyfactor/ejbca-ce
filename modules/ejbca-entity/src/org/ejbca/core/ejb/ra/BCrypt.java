@@ -55,7 +55,11 @@ import java.security.SecureRandom;
  * <p>
  * The amount of work increases exponentially (2**log_rounds), so 
  * each increment is twice as much work. The default log_rounds is
- * 10, and the valid range is 4 to 31.
+ * 10, and the valid range is 1 to 31.
+ * 
+ * The original source from DM only allowed rounds in the interval 4-31. The
+ * ability to lower security further is a modification by Johan Eklund and is
+ * in no way a reflection on the opinion of DM.
  *
  * @author Damien Miller
  * @version 0.3
@@ -621,7 +625,8 @@ public class BCrypt {
 		final int clen = cdata.length;
 		byte ret[];
 
-		if (log_rounds < 4 || log_rounds > 31) {
+		// Original code modified to allow a minimum of 1 round, instead of the original 4
+		if (log_rounds < 1 || log_rounds > 31) {
 			throw new IllegalArgumentException ("Bad number of rounds");
 		}
 		rounds = 1 << log_rounds;

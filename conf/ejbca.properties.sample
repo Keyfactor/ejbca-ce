@@ -227,3 +227,8 @@
 # Default: ${app.version.number}
 #app.version.effective=3.11.x
 
+# To better protect from off-line brute force attacks of passwords on a compromised database, the
+# computationally expensive BCrypt algorithm can be used. Using a higher log-rounds value will
+# increase computational cost by log2. 1-31 can be used as BCrypt strength. 0 means simple SHA1.
+# Default=1
+#ejbca.passwordlogrounds=1

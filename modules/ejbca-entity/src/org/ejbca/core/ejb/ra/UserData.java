@@ -29,6 +29,7 @@ import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -334,7 +335,12 @@ public class UserData implements Serializable {
         if (password == null) {
             return null;
         }
-        return BCrypt.hashpw(password, BCrypt.gensalt());
+        final int rounds = EjbcaConfiguration.getPasswordLogRounds();
+        if (rounds > 0 && EjbcaConfiguration.getEffectiveApplicationVersion() > 311) {
+            return BCrypt.hashpw(password, BCrypt.gensalt(rounds));
+        } else {
+        	return makeOldPasswordHash(password);
+        }
     }
 
     /**

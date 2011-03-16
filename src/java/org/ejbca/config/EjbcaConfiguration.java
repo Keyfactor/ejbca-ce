@@ -375,4 +375,20 @@ public final class EjbcaConfiguration {
         }
         return 400;
     }
+
+    /**
+     * Parameter to specify if how many rounds the BCrypt algorithm should process passwords stored in the database.
+     * 0 means use the old way instead of BCrypt.
+     */
+    public static int getPasswordLogRounds() {
+    	final String PROPERTY_NAME = "ejbca.passwordlogrounds";
+        int time = 1; // cache 30 seconds is the default
+        try {
+            time = Integer.valueOf(ConfigurationHolder.getString(PROPERTY_NAME, "1"));
+        } catch (NumberFormatException e) {
+            log.error("Invalid value in " + PROPERTY_NAME + ", must be decimal number: " + e.getMessage());
+        }
+        return time;
+    }
+
 }
