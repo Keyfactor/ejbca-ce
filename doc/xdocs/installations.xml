@@ -198,6 +198,17 @@
     </ul>
 	</p>
 	</subsection>
+	
+	<subsection name="Virginia Tech Certification Authority">
+	<p>
+	<ul>
+	<li>Organization: Virginia Tech (http://www.vt.edu/)</li>
+	<li>Location: USA</li>
+	<li>Trade of Industry: University</li>
+	<li>Solution: Globally trusted PKI, chained to GlobalSign. <a href="http://www.pki.vt.edu/">http://www.pki.vt.edu/</a></li>
+	</ul>
+	</p>
+	</subsection>
   </section>
 
 </body>
