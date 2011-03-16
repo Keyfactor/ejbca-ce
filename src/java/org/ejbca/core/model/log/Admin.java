@@ -44,7 +44,7 @@ public class Admin implements Serializable {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -9221031402622809524L;
+    private static final long serialVersionUID = -2L;
     
     /** Default CA Id for non-certificate administrators */
     public static final int INTERNALCAID = 0;
@@ -76,7 +76,9 @@ public class Admin implements Serializable {
     protected Certificate certificate;
     protected String username = null;
     protected String email = null;
-
+    
+    protected byte[] authToken = AdminInformation.getRandomToken();
+	
     // Public Constructors
     public Admin(Certificate certificate, String username, String email) {
         this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumberAsString(certificate) + " : DN : \"" + CertTools.getIssuerDN(certificate)+"\"");
@@ -117,7 +119,7 @@ public class Admin implements Serializable {
         if (type == TYPE_CLIENTCERT_USER) {
             ret = new AdminInformation(certificate);
         } else {
-        	ret = new AdminInformation(ADMINTYPETOADMINENTITY[type]);
+        	ret = new AdminInformation(ADMINTYPETOADMINENTITY[type], authToken);
         }
         return ret;
     }

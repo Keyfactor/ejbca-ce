@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="org.ejbca.config.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,org.ejbca.ui.web.admin.loginterface.LogEntriesView,
              org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.Admin, java.util.Iterator, java.util.Collection" %>
 <html>

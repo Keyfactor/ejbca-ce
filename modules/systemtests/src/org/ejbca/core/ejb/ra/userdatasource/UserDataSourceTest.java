@@ -36,7 +36,7 @@ import org.ejbca.util.InterfaceCache;
 public class UserDataSourceTest extends TestCase {
         
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     
     private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
     

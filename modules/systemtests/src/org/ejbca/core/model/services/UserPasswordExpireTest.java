@@ -36,7 +36,7 @@ import org.ejbca.util.InterfaceCache;
 public class UserPasswordExpireTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserPasswordExpireTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private int caid = getTestCAId();
 
     private static final String USERNAME = "UserPasswordExpireTestUser";

@@ -50,7 +50,7 @@ import org.ejbca.util.keystore.KeyTools;
 public class DeltaCRLTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(DeltaCRLTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private static int caid;
     private static CA ca;
     private static KeyPair keys;

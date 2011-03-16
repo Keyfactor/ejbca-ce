@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -49,7 +50,6 @@ import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -65,7 +65,7 @@ import org.ejbca.util.query.Query;
 public class ApprovalSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
-    private static final Admin intadmin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin intadmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private static String reqadminusername = null;
     private static String adminusername1 = null;

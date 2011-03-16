@@ -27,7 +27,7 @@ import org.ejbca.util.InterfaceCache;
  */
 public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();

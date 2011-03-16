@@ -82,7 +82,7 @@ import org.ejbca.util.keystore.KeyTools;
 public class CreateCRLSessionTest extends CaTestCase {
 
     private final static Logger log = Logger.getLogger(CreateCRLSessionTest.class);
-    private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private final static Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private static int caid;
     private static CA ca;

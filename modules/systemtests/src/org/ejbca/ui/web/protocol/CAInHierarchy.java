@@ -36,7 +36,7 @@ import org.ejbca.core.protocol.certificatestore.HashID;
  * @version $Id$
  */
 class CAInHierarchy {
-	private final static Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	private final static Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 	final String name;
 	final Set<CAInHierarchy> subs;
 	final CaTestCase testCase;

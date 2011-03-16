@@ -322,3 +322,17 @@ function checkuseautoenroll(){
         
       </td>
     </tr>
+
+    <tr id="Row0">
+      <td width="49%" valign="top">
+        <h3><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIACCESS\") %>"/>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Enable%20Command%20Line%20Interface%20Access") %>
+        </h3>
+        <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIACCESSHELPER\") %>"/></p>
+      </td>
+      <td width="51%" valign="top">
+        <input type="checkbox" name="<%=CHECKBOX_ENABLECOMMANDLINEINTERFACE%>" value="<%=CHECKBOX_VALUE %>"
+                                                                                          <% if(gc.getEnableCommandLineInterface())
+                                                                                                out.write(" CHECKED "); %>>
+      </td>
+    </tr>

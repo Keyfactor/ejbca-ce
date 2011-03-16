@@ -19,6 +19,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -28,7 +29,6 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.dn.DnComponents;
@@ -40,7 +40,7 @@ import org.ejbca.util.dn.DnComponents;
 public class UserDataTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserDataTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private int caid = getTestCAId();
 
     private static String username;
@@ -175,16 +175,16 @@ public class UserDataTest extends CaTestCase {
     public void test05ListNewUser() throws Exception {
         log.trace(">test05ListNewUser()");
 
-        Collection<UserDataVO> coll = userAdminSession.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
+        Collection<UserDataVO> coll = userAdminSession.findAllUsersByStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), UserDataConstants.STATUS_NEW);
         Iterator<UserDataVO> iter = coll.iterator();
         while (iter.hasNext()) {
 
             UserDataVO data = iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
-            userAdminSession.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
+            userAdminSession.setUserStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
         }
 
-        Collection<UserDataVO> coll1 = userAdminSession.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
+        Collection<UserDataVO> coll1 = userAdminSession.findAllUsersByStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), UserDataConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.trace("<test05ListNewUser()");
     }

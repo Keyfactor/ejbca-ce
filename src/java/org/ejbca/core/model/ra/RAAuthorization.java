@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -28,7 +29,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.

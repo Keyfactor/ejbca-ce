@@ -16,6 +16,8 @@ package org.ejbca.core.model.authorization;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.log4j.Logger;
 import org.ejbca.util.CertTools;
 
 
@@ -27,18 +29,24 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  */
 public class AuthorizationProxy implements Serializable {
-    private static final long serialVersionUID = 1L;
+	private static final Logger log = Logger.getLogger(AuthorizationProxy.class);
+	
+	private static final long serialVersionUID = 1L;
+	
     // Private fields.
     private HashMap<Integer, Boolean> authstore;
     private HashMap<Integer, Boolean> groupstore;
     private AccessTree accesstree;
+    
+    private boolean cliEnabled;
 
     
     /** Creates a new instance of AuthorizationProxy. */
-    public AuthorizationProxy(AccessTree accesstree) {
-       authstore = new HashMap<Integer, Boolean>();
-       groupstore = new HashMap<Integer, Boolean>();
+    public AuthorizationProxy(final AccessTree accesstree, final boolean cliEnabled) {
+       authstore = new HashMap();
+       groupstore = new HashMap();
        this.accesstree = accesstree;
+       this.cliEnabled = cliEnabled;
     }
 
 
@@ -53,6 +61,26 @@ public class AuthorizationProxy implements Serializable {
       
       if (admin.isSpecialUser()) {
         adm = admin.getSpecialUser();
+        if (log.isDebugEnabled()) {
+        	log.debug("Is special user: "+adm);
+    	}
+        // If we are special admin, verify local auth token to make
+        // sure that special admin can only be used inside this jvm
+        if (!ArrayUtils.isEquals(admin.getLocalAuthToken(), AdminInformation.randomToken)) {
+        	if ((adm == AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN) ||
+        			(adm == AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN) ||
+        			(adm == AdminEntity.SPECIALADMIN_RAADMIN)) {
+            	log.info("Failed internal admin check, but this is a command line client so allow it anyhow.");        
+            	if (!cliEnabled) {
+            		// CLI access disabled
+            		log.info("Command line client access is disabled");
+            		return false;
+            	}
+        	} else {
+        		log.info("Failed internal admin check, and it's not a command line client");
+        		return false;
+        	}
+        }
       } else {
         adm = CertTools.getSerialNumber(admin.getX509Certificate()).hashCode();
       }

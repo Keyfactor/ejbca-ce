@@ -62,7 +62,7 @@ public class PublisherQueueTest extends TestCase {
             + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
     private static final Logger log = Logger.getLogger(PublisherQueueTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
@@ -173,7 +173,7 @@ public class PublisherQueueTest extends TestCase {
         ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
-        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertFalse("Storing certificate to external ocsp publisher should fail.", ret);
         
         // Now this certificate fingerprint should be in the queue
@@ -216,7 +216,7 @@ public class PublisherQueueTest extends TestCase {
         ArrayList<Integer> publishers = new ArrayList<Integer>();
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
-        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to external ocsp publisher should succeed.", ret);
         
         // Now this certificate fingerprint should NOT be in the queue
@@ -261,7 +261,7 @@ public class PublisherQueueTest extends TestCase {
         publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
         
         // storeCertificate should return false as we have not published to all publishers but instead only pushed to the queue
-        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        ret = publisherSession.storeCertificate(new Admin(Admin.TYPE_CACOMMANDLINE_USER), publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertFalse("Storing certificate to all external ocsp publisher should return false.", ret);
         
         // Now this certificate fingerprint should be in the queue

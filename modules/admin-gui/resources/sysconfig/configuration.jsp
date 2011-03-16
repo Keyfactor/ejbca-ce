@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+<%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
                 org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AccessRulesConstants, org.ejbca.core.model.InternalResources, 
                 java.util.Set, java.util.Arrays "%>
@@ -48,6 +48,7 @@
   static final String CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS = "checkboxapprovaluseemailnotifications";
   static final String CHECKBOX_AUTOENROLL_SSLCONNECTION      = "checkboxautoenrollsslconnection";
   static final String CHECKBOX_AUTOENROLL_USE                = "checkboxautoenrolluse";
+  static final String CHECKBOX_ENABLECOMMANDLINEINTERFACE	 = "checkboxenablecommandlineinterface";
 
 // Lists used in defaultuserprefereces.jsp
   static final String LIST_PREFEREDLANGUAGE                  = "listpreferedlanguage";
@@ -142,6 +143,12 @@
        }
        else{
          gc.setIssueHardwareTokens(false);
+       }
+
+       if(request.getParameter(CHECKBOX_ENABLECOMMANDLINEINTERFACE) != null){
+         gc.setEnableCommandLineInterface(request.getParameter(CHECKBOX_ENABLECOMMANDLINEINTERFACE).equals(CHECKBOX_VALUE));
+       } else {
+       	 gc.setEnableCommandLineInterface(false);
        }
 
        if(request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS) != null && request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS).equals(CHECKBOX_VALUE)){

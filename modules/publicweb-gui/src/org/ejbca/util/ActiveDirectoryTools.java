@@ -15,7 +15,7 @@ package org.ejbca.util;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 
 import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;

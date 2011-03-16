@@ -112,7 +112,7 @@ public class AutoEnrollServletTest extends TestCase {
 		"k/yUS9D7wZQ+vMw1zbz/mnAX3F38eMmurUKMayRNmORXvJwq" +
 		"-----END NEW CERTIFICATE REQUEST-----";
 
-	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
 	public AutoEnrollServletTest(String name) {
 		super(name);

@@ -27,7 +27,7 @@ import org.ejbca.util.InterfaceCache;
  */
 public class RenewCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(RenewCATest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     

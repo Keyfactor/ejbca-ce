@@ -39,7 +39,7 @@ public class HardTokenProfileTest extends TestCase {
 
     private static int SVGFILESIZE = 512 * 1024; // 1/2 Mega char
 
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     public HardTokenProfileTest(String name) {
         super(name);

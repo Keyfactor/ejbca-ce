@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -25,7 +26,6 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 

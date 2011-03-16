@@ -35,7 +35,7 @@ import org.ejbca.ui.web.protocol.RFC4387URL;
  */
 class ValidationAuthorityTst {
 	private final static Logger log = Logger.getLogger(ValidationAuthorityTst.class);
-	private final static Admin admin =  new Admin(Admin.TYPE_INTERNALUSER);
+	private final static Admin admin =  new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 	static String testCRLStore(CA ca, CrlSessionRemote createCrlSession, String port) throws Exception {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  

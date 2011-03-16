@@ -18,6 +18,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -25,7 +26,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.OCSPData;

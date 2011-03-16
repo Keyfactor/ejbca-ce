@@ -37,6 +37,6 @@ public class ApprovedActionAdmin extends Admin {
 	}
 
 	public AdminInformation getAdminInformation() {		
-		return  new AdminInformation(AdminEntity.SPECIALADMIN_INTERNALUSER);
+		return new AdminInformation(AdminEntity.SPECIALADMIN_INTERNALUSER, authToken);
 	}
 }

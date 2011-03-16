@@ -23,6 +23,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -44,7 +45,6 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * Handles execution of approved tasks. Separated from ApprovealSessionBean to avoid

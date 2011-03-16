@@ -76,7 +76,7 @@ public class CaInitCommandTest extends TestCase {
     }
 
     public void setUp() throws Exception {
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
+        admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         caInitCommand = new CaInitCommand();
         if (caAdminSession.getCAInfo(admin, CA_NAME) != null) {
             caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());

@@ -35,7 +35,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class EndEntityProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     

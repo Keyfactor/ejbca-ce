@@ -11,13 +11,11 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.core.model.ra.raadmin;
+package org.ejbca.config;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.ejbca.config.InternalConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
@@ -78,6 +76,9 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final  String  AUTOENROLL_DEFAULT_CONNECTIONPWD = "foo123";
     private static final  boolean  AUTOENROLL_DEFAULT_SSLCONNECTION = false;
     private static final  boolean  AUTOENROLL_DEFAULT_USE = false;
+    
+    /** Default value for Enable Command Line Interface. */
+    private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
     
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
@@ -420,16 +421,16 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
    		   return (ret == null ? AUTOENROLL_DEFAULT_USE : ret);
        }
        
-       public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
-       public Set<String> getNodesInCluster() {
-	       final Set<String> ret; 
-    	   final Object o = data.get(NODESINCLUSTER);
-    	   if (o instanceof Set<?>) {
-    		   ret = (Set) o;
-    	   } else {
-    		   ret = NODESINCLUSTER_DEFAULT;
+       public void setNodesInCluster(final Set/*String*/ nodes) { data.put(NODESINCLUSTER, nodes); }
+       public Set/*String*/ getNodesInCluster() {
+    	   Set ret = (Set) data.get(NODESINCLUSTER);
+    	   return (ret == null ? NODESINCLUSTER_DEFAULT : ret);
     	   }
-    	   return ret;
+
+       public void setEnableCommandLineInterface(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACE, Boolean.valueOf(enable)); }
+       public boolean getEnableCommandLineInterface() {
+    	   final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACE);
+    	   return (ret == null ? DEFAULTENABLECOMMANDLINEINTERFACE : ret);
        }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
@@ -483,6 +484,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
     
     private static final   String NODESINCLUSTER               = "nodesincluster";
+    
+    private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
 
     // Configuration for Auto Enrollment
     private static final   String AUTOENROLL_USE = "autoenroll.use";

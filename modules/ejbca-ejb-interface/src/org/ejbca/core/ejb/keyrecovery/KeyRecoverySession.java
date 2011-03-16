@@ -16,11 +16,11 @@ import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * @version $Id$

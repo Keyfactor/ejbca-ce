@@ -22,12 +22,11 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * This bean handled global configurations.
@@ -92,13 +91,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
                     result = new GlobalConfiguration();
-                    try {
-                    	saveGlobalConfiguration(admin, result);
-                    } catch (AuthorizationDeniedException ex) {
-                    	if (log.isDebugEnabled()) {
-                    		log.debug("Could not store initial GlobalConfiguration: " + ex.getMessage());
-                    	}
-                    }
+                	saveGlobalConfiguration(admin, result);
                 }
             }
             return result;
@@ -110,7 +103,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) throws AuthorizationDeniedException {
+    public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }

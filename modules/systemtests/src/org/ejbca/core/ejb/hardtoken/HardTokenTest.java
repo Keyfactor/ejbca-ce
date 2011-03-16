@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
@@ -28,7 +29,6 @@ import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
@@ -41,7 +41,7 @@ import org.ejbca.util.InterfaceCache;
  */
 public class HardTokenTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(HardTokenTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     private static int orgEncryptCAId;
 

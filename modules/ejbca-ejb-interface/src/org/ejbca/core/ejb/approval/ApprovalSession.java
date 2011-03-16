@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.approval;
 import java.util.Collection;
 import java.util.List;
 
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -23,7 +24,6 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.query.IllegalQueryException;
 
 /** Session bean to manage approval requests, i.e. add and find.
