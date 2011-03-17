@@ -23,8 +23,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
@@ -553,7 +555,15 @@ public class CertificateData implements Serializable {
 		query.setParameter("issuerDN", issuerDN);
 		return query.getResultList();
 	}
-	
+
+	/** @return return the query results as a Set. */
+	public static Set<String> findUsernamesBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
+		final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
+		query.setParameter("subjectDN", subjectDN);
+		query.setParameter("issuerDN", issuerDN);
+		return new HashSet<String>(query.getResultList());
+	}
+
 	/** @return return the query results as a List. */
 	public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
 		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN");
@@ -591,13 +601,12 @@ public class CertificateData implements Serializable {
 		return query.getResultList();
 	}
 
-	/** @return return the query results as a List. */
-	// TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
-	public static List<CertificateData> findByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
-		final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
+	/** @return return the query results as a Set. */
+	public static Set<String> findUsernamesByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
+		final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("subjectKeyId", subjectKeyId);
-		return query.getResultList();
+		return new HashSet<String>(query.getResultList());
 	}
 
 	/** @return return the query results as a List<String>. */

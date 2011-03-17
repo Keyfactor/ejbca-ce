@@ -21,7 +21,6 @@ import java.security.spec.ECParameterSpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -201,17 +200,6 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         return ret;
     }
 
-    private Set<String> getSet(Collection<CertificateData> coll) {
-        final Set<String> ret = new HashSet<String>();
-        if (coll != null) {
-            Iterator<CertificateData> iter = coll.iterator();
-            while (iter.hasNext()) {
-                ret.add(iter.next().getUsername());
-            }
-        }
-        return ret;
-    }
-
     @Override
     public Set<String> findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
         if (log.isTraceEnabled()) {
@@ -224,7 +212,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and subject DN(transformed) '"+transformedSubjectDN+"'.");
         }
         try {
-            return getSet(CertificateData.findBySubjectDNAndIssuerDN(entityManager, transformedSubjectDN, transformedIssuerDN));
+            return CertificateData.findUsernamesBySubjectDNAndIssuerDN(entityManager, transformedSubjectDN, transformedIssuerDN);
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<findUsernamesByIssuerDNAndSubjectDN(), issuer='" + issuerDN + "'");
@@ -244,7 +232,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"+sSubjectKeyId+"'.");
         }
         try {
-        	return getSet(CertificateData.findByIssuerDNAndSubjectKeyId(entityManager, transformedIssuerDN, sSubjectKeyId));
+        	return CertificateData.findUsernamesByIssuerDNAndSubjectKeyId(entityManager, transformedIssuerDN, sSubjectKeyId);
         } finally {
             if (log.isTraceEnabled()) {
                 log.trace("<findUsernamesByIssuerDNAndSubjectKeyId(), issuer='" + issuerDN + "'");
