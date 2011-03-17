@@ -116,9 +116,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void configureGlobalConfiguration() throws Exception {
-        GlobalConfiguration config = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
-        config.setIssueHardwareTokens(true);
-        this.ejb.getGlobalConfigurationSession().saveGlobalConfiguration(getAdmin(), config);
+    	ejb.getGlobalConfigurationSession().setSettingIssueHardwareTokens(getAdmin(), true);
     }
 
     /**

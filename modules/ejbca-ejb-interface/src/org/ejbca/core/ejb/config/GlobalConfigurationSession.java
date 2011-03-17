@@ -42,9 +42,6 @@ public interface GlobalConfigurationSession {
      */
     GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
 
-    /** Saves the GlobalConfiguration. */
-    void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf);
-
     /** Clear and load global configuration cache. */
     void flushGlobalConfigurationCache();
 

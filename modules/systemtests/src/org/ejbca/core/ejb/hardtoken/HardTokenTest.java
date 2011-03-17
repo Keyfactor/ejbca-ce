@@ -88,7 +88,7 @@ public class HardTokenTest extends CaTestCase {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
-        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
 
@@ -167,7 +167,7 @@ public class HardTokenTest extends CaTestCase {
 
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(getTestCAId());
-        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
         boolean ret = false;
 
         // Make sure the old data can be read
@@ -205,7 +205,7 @@ public class HardTokenTest extends CaTestCase {
     public void test05removeHardTokens() throws AuthorizationDeniedException {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
-        globalConfigurationSession.saveGlobalConfiguration(admin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
     
         try {
             hardTokenSessionRemote.removeHardToken(admin, "1234");

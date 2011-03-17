@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.config;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -22,6 +23,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalResources;
@@ -103,6 +105,21 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
+    public void saveGlobalConfigurationRemote(final Admin admin, final GlobalConfiguration globconf) {
+    	if (log.isTraceEnabled()) {
+            log.trace(">saveGlobalConfigurationRemote()");
+        }
+    	if (EjbcaConfiguration.getIsInProductionMode()) {
+    		throw new EJBException("Configuration can not be altered in production mode.");
+    	} else {
+    		saveGlobalConfiguration(admin, globconf);
+    	}
+    	if (log.isTraceEnabled()) {
+            log.trace("<saveGlobalConfigurationRemote()");
+        }
+    }
+    
+    @Override
     public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
@@ -147,6 +164,13 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     	if (log.isTraceEnabled()) {
     		log.trace("<flushGlobalConfigurationCache()");
     	}
+    }
+
+    @Override
+    public void setSettingIssueHardwareTokens(Admin admin, boolean value) {
+    	final GlobalConfiguration config = flushCache();
+    	config.setIssueHardwareTokens(value);
+    	saveGlobalConfiguration(admin, config);
     }
 
 }

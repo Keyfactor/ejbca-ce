@@ -55,7 +55,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     }
 
     public void tearDown() throws Exception {
-    	globalConfigurationSession.saveGlobalConfiguration(administrator, original);
+    	globalConfigurationSession.saveGlobalConfigurationRemote(administrator, original);
     	globalConfigurationSession.flushCache();
         administrator = null;
         removeTestCA();
@@ -76,7 +76,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
-        globalConfigurationSession.saveGlobalConfiguration(administrator, newValue);
+        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, newValue);
 
         GlobalConfiguration cachedValue = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
 
@@ -93,7 +93,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
-        globalConfigurationSession.saveGlobalConfiguration(administrator, initial);
+        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, initial);
     }
 
 }
