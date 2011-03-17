@@ -1803,19 +1803,35 @@ public class CAsTest extends CaTestCase {
         log.trace("<test17InvalidEditCaActions()");
     }
     
-    /** Get CA Info using an unprivileged admin. This will fail, and I'm not sure it shouldn't.. */
+    /** Get CA Info using an unprivileged admin and then trying by pretending to be privileged. */
     public void test18PublicWebCaInfoFetch() throws Exception {
         log.trace(">test18PublicWebCaInfoFetch()");
-        // Try to get CAInfo as an unprivileged user
+        // Try to get CAInfo as an unprivileged user using remote EJB
         try {
             caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "TEST");
-        } catch (CADoesntExistsException e) {
-        	assertTrue("Was not able to get CA info as public web user.", false);
+            fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
+        } catch (CADoesntExistsException ignored) {
+        	// OK
         }
         try {
             caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "CN=TEST".hashCode());
-        } catch (CADoesntExistsException e) {
-        	assertTrue("Was not able to get CA info as public web user.", false);
+            fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
+        } catch (CADoesntExistsException ignored) {
+        	// OK
+        }
+        // Try to get CAInfo pretending to be an privileged user using remote EJB
+        try {
+            CAInfo info = caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_INTERNALUSER), "TEST");
+            System.out.println("info: " + info);
+            fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
+        } catch (CADoesntExistsException ignored) {
+        	// OK
+        }
+        try {
+            caAdminSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_INTERNALUSER), "CN=TEST".hashCode());
+            fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
+        } catch (CADoesntExistsException ignored) {
+        	// OK
         }
         log.trace("<test18PublicWebCaInfoFetch()");
     }
