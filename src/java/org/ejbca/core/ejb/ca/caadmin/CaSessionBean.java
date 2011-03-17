@@ -351,9 +351,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     private boolean authorizedToCA(Admin admin, int caid) {
-        if (admin.getAdminType() == Admin.TYPE_INTERNALUSER) {
-            return true; // Skip database search since this is always ok
-        }
         return authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
     }
 }
