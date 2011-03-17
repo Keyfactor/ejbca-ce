@@ -14,10 +14,16 @@ package org.ejbca.core.ejb.config;
 
 import javax.ejb.Local;
 
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.log.Admin;
+
 /**
  * Local interface for RaAdminSession.
  */
 @Local
 public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSession {
 
+    /** Saves the GlobalConfiguration. */
+    void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf);
+    
 }

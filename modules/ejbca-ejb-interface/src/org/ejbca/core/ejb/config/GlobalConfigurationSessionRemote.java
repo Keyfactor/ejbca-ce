@@ -14,10 +14,27 @@ package org.ejbca.core.ejb.config;
 
 import javax.ejb.Remote;
 
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.log.Admin;
+
 /**
  * Remote interface for RaAdminSession.
  */
 @Remote
 public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSession {
 
+    /** 
+     * Saves the GlobalConfiguration but not when in production mode. 
+     */
+    void saveGlobalConfigurationRemote(Admin admin, GlobalConfiguration globconf);
+
+    /**
+     * Sets the value for the setting IssueHardwareTokens. This is used by the 
+     * CLI command initializehardtokenissuing and therefor needs remote 
+     * access.
+     * @param admin The administrator.
+     * @param value The value to set.
+     */
+    void setSettingIssueHardwareTokens(Admin admin, boolean value);
+	
 }

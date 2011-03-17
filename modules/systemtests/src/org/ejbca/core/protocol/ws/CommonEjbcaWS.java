@@ -1116,7 +1116,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(intAdmin);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        globalConfigurationSession.saveGlobalConfiguration(intAdmin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
         if (certificateProfileSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         }
@@ -1190,7 +1190,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        globalConfigurationSession.saveGlobalConfiguration(intAdmin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
 
     }
 
@@ -1371,7 +1371,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         boolean krenabled = gc.getEnableKeyRecovery();
         if (krenabled == true) {
             gc.setEnableKeyRecovery(false);
-            globalConfigurationSession.saveGlobalConfiguration(intAdmin, gc);
+            globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
         }
 
         boolean trows = false;
@@ -1387,7 +1387,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // Set key recovery enabled
         gc.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveGlobalConfiguration(intAdmin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
 
         trows = false;
         try {

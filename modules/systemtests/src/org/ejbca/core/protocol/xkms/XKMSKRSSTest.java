@@ -200,7 +200,7 @@ public class XKMSKRSSTest extends TestCase {
 
         final GlobalConfiguration newGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         newGlobalConfig.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveGlobalConfiguration(administrator, newGlobalConfig);
+        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, newGlobalConfig);
 
         // Setup with two new Certificate profiles.
         final EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
@@ -1143,7 +1143,7 @@ public class XKMSKRSSTest extends TestCase {
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename1);
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);
 
-        globalConfigurationSession.saveGlobalConfiguration(administrator, orgGlobalConfig);
+        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, orgGlobalConfig);
         caAdminSession.editCA(administrator, orgCaInfo);
     }
 

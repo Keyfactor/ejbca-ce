@@ -173,7 +173,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         boolean orgkeyrecconfig = config.getEnableKeyRecovery();
         config.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveGlobalConfiguration(admin, config);
+        globalConfigurationSession.saveGlobalConfigurationRemote(admin, config);
 
         // create certificate for user
         // Set status to NEW
@@ -201,7 +201,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         keyRecoverySession.removeAllKeyRecoveryData(admin, username1);
 
         config.setEnableKeyRecovery(orgkeyrecconfig);
-        globalConfigurationSession.saveGlobalConfiguration(admin, config);
+        globalConfigurationSession.saveGlobalConfigurationRemote(admin, config);
         log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
 

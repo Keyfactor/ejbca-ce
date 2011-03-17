@@ -656,7 +656,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(intAdmin);
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        raAdminSession.saveGlobalConfiguration(intAdmin, gc);
+        raAdminSession.saveGlobalConfigurationRemote(intAdmin, gc);
         if (certificateProfileSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         }
@@ -711,7 +711,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertTrue(responses.size() == 2);
         certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        raAdminSession.saveGlobalConfiguration(intAdmin, gc);
+        raAdminSession.saveGlobalConfigurationRemote(intAdmin, gc);
     } // createHardToken
 
     /**
