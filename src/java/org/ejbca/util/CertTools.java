@@ -2745,31 +2745,16 @@ public class CertTools {
         X509Name orderedName = new X509Name(newOrdering, newValues, converter);
         return orderedName;
     } // getOrderedX509Name
-    
-    
-    /**
-     * Obtain the values for a DN field from X509Name, or null in case
-     * of the field does not exist.
-     * 
-     * @param name
-     * @param id
-     * @return
-     */
-    private static Vector<Object> getX509NameFields( X509Name name, DERObjectIdentifier id ){
+
+    /** Obtain the values for a DN field from X509Name, or null in case of the field does not exist. */
+    private static Vector<Object> getX509NameFields(final X509Name name, final DERObjectIdentifier id) {
     	@SuppressWarnings("unchecked")
-    	Vector oids = name.getOIDs();
-    	@SuppressWarnings("unchecked")
-    	Vector values = name.getValues();
-    	Vector<Object> vRet = null;
-    	for ( int i=0; i<oids.size(); i++ ){
-    		if ( id.equals(oids.elementAt(i)) ){
-    			if ( vRet == null ){ vRet = new Vector<Object>(); }
-    			vRet.add(values.get(i));
-    		}
+    	final Vector<Object> vRet = name.getValues(id);
+    	if (vRet.isEmpty()) {
+    		return null;
     	}
     	return vRet;
-    } // getX509NameFields
-    
+    }
     
     /**
      * Obtain the directory string for the directoryName generation
