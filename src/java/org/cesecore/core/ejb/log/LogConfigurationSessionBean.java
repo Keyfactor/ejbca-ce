@@ -47,23 +47,20 @@ public class LogConfigurationSessionBean implements LogConfigurationSessionLocal
      * 5 seconds is enough to not limit performance in high performance environments, but low enough so that 
      * changes to configuration is visible almost immediately.
      */
-    private static final ObjectCache logConfCache = new ObjectCache(EjbcaConfiguration.getCacheLogConfigurationTime());
+    private static final ObjectCache<Integer,LogConfiguration> logConfCache = new ObjectCache<Integer,LogConfiguration>(EjbcaConfiguration.getCacheLogConfigurationTime());
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public LogConfiguration loadLogConfiguration(final int caid) {
-        LogConfiguration ret = null; 
         // Try loading log configuration from cache
-        final Object o = logConfCache.get(Integer.valueOf(caid));
-    	if (o == null) {
+        LogConfiguration ret = logConfCache.get(Integer.valueOf(caid)); 
+    	if (ret == null) {
             // Try loading log configuration from database
     		final LogConfigurationData logconfigdata = LogConfigurationData.findByPK(entityManager, Integer.valueOf(caid));
     		if (logconfigdata != null) {
     			ret = logconfigdata.loadLogConfiguration();
     			logConfCache.put(Integer.valueOf(caid), ret);
     		}
-    	} else {
-    		ret = (LogConfiguration)o;
     	}
 		if (ret == null) {
 			// Use the default object if nothing is configured

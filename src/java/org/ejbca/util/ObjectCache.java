@@ -21,12 +21,12 @@ import java.util.Map;
  * 
  * @version $Id$
  */
-public class ObjectCache {
+public class ObjectCache<K,V> {
 
 	/** The objects */
-	private final Map<Object, Object> objects;
+	private final Map<K,V> objects;
 	/** map holding expire times for the object, so we know when we should not cache them any more */
-	private final Map<Object, Long> expire;
+	private final Map<K, Long> expire;
 
 	/** expiration time in milliseconds*/
 	private long expireTime;
@@ -43,8 +43,8 @@ public class ObjectCache {
 	 * @param expireTime expiration time in milliseconds
 	 */
 	public ObjectCache(final long expireTime) {
-		this.objects = Collections.synchronizedMap(new HashMap<Object, Object>());
-		this.expire = Collections.synchronizedMap(new HashMap<Object, Long>());
+		this.objects = Collections.synchronizedMap(new HashMap<K,V>());
+		this.expire = Collections.synchronizedMap(new HashMap<K,Long>());
 		this.expireTime = expireTime;
 	}
 
@@ -59,7 +59,7 @@ public class ObjectCache {
 	 * @param key the key for the object in the cache
 	 * @param o the cached object
 	 */
-	public void put(final Object key, final Object o) {
+	public void put(final K key, final V o) {
 		this.objects.put(key, o);
 		this.expire.put(key, Long.valueOf(System.currentTimeMillis() + expireTime));
 	}
@@ -70,9 +70,9 @@ public class ObjectCache {
 	 * @param key the key for the object in the cache
 	 * @return the cached object
 	 */
-	public Object get(final Object key) {
-		final Long expiresAt = (Long)this.expire.get(key);
-		Object ret = null;
+	public V get(final K key) {
+		final Long expiresAt = this.expire.get(key);
+		V ret = null;
 		if (expiresAt != null) {
 			if (System.currentTimeMillis() < expiresAt) {
 				return this.objects.get(key);
