@@ -4407,6 +4407,27 @@ bin/ejbca.sh ra adduser
 This will give documentation about available options. 
 To access the usage information for some commands, that does not take parameters, the option '-?' can normally be provided.
 </p>
+
+<subsubsection name="Disable command line interface">
+<p>
+It is possible to disable the command line interface to prevent someone from running the operations that require authorization.
+</p>
+<p>
+The setting is located in the admin web under System Functions &gt; System Configuration and the checkbox 
+"Enable Command Line Interface Access". By unchecking it operations requiring authorization can not be performed from the command 
+line interface.
+</p>
+<p>
+<p>
+<b>Warning:</b> Disabling this makes it impossible to use the CLI for any operation that requires administrator rights including 
+renewing the Super Administrator certificate! Please, make sure to renew the administrator certificates using the Admin Web 
+before they expire!
+</p>
+<b>Note:</b> After changing this property you need to click the Clear All Caches button or run the CLI command:</p>
+<source>
+bin/ejbca.sh clearcache -all
+</source>
+</subsubsection>
 </subsection>
 
 <subsection name="Other Configuration">
