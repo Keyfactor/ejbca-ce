@@ -22,7 +22,7 @@ import junit.framework.TestCase;
  */
 public class ObjectCacheTest extends TestCase {
 	public void testObjectCache() throws Exception {
-		ObjectCache cache = new ObjectCache(200);
+		ObjectCache<Object,Object> cache = new ObjectCache<Object,Object>(200);
 		cache.put("foo", "bar");
 		cache.put("foo1", "bar1");
 		cache.put("foo2", "bar2");
