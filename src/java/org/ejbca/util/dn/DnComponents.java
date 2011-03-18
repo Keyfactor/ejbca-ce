@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -159,12 +160,15 @@ public class DnComponents {
     private static HashMap<Integer, String> altNameIdToExtractorFieldMap = new HashMap<Integer, String>();
     private static HashMap<Integer, String> dirAttrIdToExtractorFieldMap = new HashMap<Integer, String>();
     private static ArrayList<String> dnProfileFields = new ArrayList<String>();
+    private static final TreeSet<String> dnProfileFieldsHashSet = new TreeSet<String>();
     private static ArrayList<String> dnLanguageTexts = new ArrayList<String>();
     private static ArrayList<Integer> dnDnIds = new ArrayList<Integer>();
     private static ArrayList<String> altNameFields = new ArrayList<String>();
+    private static final TreeSet<String> altNameFieldsHashSet = new TreeSet<String>();
     private static ArrayList<String> altNameLanguageTexts = new ArrayList<String>();
     private static ArrayList<Integer> altNameDnIds = new ArrayList<Integer>();
     private static ArrayList<String> dirAttrFields = new ArrayList<String>();
+    private static final TreeSet<String> dirAttrFieldsHashSet = new TreeSet<String>();
     private static ArrayList<String> dirAttrLanguageTexts = new ArrayList<String>();
     private static ArrayList<Integer> dirAttrDnIds = new ArrayList<Integer>();
     private static ArrayList<String> dnExtractorFields = new ArrayList<String>();
@@ -178,11 +182,14 @@ public class DnComponents {
     }
     
     public static DERObjectIdentifier getOid(String o) {
-        return (DERObjectIdentifier) oids.get(o.toLowerCase());
-    } // getOid
+        return oids.get(o);
+    }
 
     public static ArrayList<String> getDnProfileFields() {
     	return dnProfileFields;
+    }
+    public static boolean isDnProfileField(String field) {
+    	return dnProfileFieldsHashSet.contains(field);
     }
     public static ArrayList<String> getDnLanguageTexts() {
     	return dnLanguageTexts;
@@ -190,11 +197,17 @@ public class DnComponents {
     public static ArrayList<String> getAltNameFields() {
     	return altNameFields;
     }
+    public static boolean isAltNameField(String field) {
+    	return altNameFieldsHashSet.contains(field);
+    }
     public static ArrayList<String> getAltNameLanguageTexts() {
     	return altNameLanguageTexts;
     }
     public static ArrayList<String> getDirAttrFields() {
     	return dirAttrFields;
+    }
+    public static boolean isDirAttrField(String field) {
+    	return dirAttrFieldsHashSet.contains(field);
     }
     // Used by DNFieldExtractor and EntityProfile, don't USE
     public static ArrayList<Integer> getDirAttrDnIds() {
@@ -375,6 +388,7 @@ public class DnComponents {
                             profileIdLanguageMap.put(profileid, langstr);
                             if (type.equals("DN")) {
                             	dnProfileFields.add(profilename);
+                            	dnProfileFieldsHashSet.add(profilename);
                             	dnLanguageTexts.add(langstr);
                             	dnDnIds.add(dnid);
                             	dnExtractorFields.add(dnname+"=");
@@ -382,6 +396,7 @@ public class DnComponents {
                             }
                             if (type.equals("ALTNAME")) {
                             	altNameFields.add(dnname);
+                            	altNameFieldsHashSet.add(dnname);
                             	altNameLanguageTexts.add(langstr);
                             	altNameDnIds.add(dnid);
                             	altNameExtractorFields.add(dnname+"=");
@@ -389,6 +404,7 @@ public class DnComponents {
                             }
                             if (type.equals("DIRATTR")) {
                             	dirAttrFields.add(dnname);
+                            	dirAttrFieldsHashSet.add(dnname);
                             	dirAttrLanguageTexts.add(langstr);
                             	dirAttrDnIds.add(dnid);
                             	dirAttrExtractorFields.add(dnname+"=");
@@ -445,7 +461,7 @@ public class DnComponents {
                 	if (!line.startsWith("#")) { // # is a comment line
                 		splits = StringUtils.split(line, '=');
                 		if ( (splits != null) && (splits.length > 1) ) {
-                			String name = splits[0]; 
+                			String name = splits[0].toLowerCase(); 
                 			DERObjectIdentifier oid = new DERObjectIdentifier(splits[1]);
                 			map.put(name, oid);
                 		}
