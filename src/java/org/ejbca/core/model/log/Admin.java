@@ -44,7 +44,7 @@ public class Admin implements Serializable {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -2L;
+    private static final long serialVersionUID = -9221031402622809524L;
     
     /** Default CA Id for non-certificate administrators */
     public static final int INTERNALCAID = 0;
