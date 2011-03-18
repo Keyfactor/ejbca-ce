@@ -326,7 +326,7 @@ function checkuseautoenroll(){
     <tr id="Row0">
       <td width="49%" valign="top">
         <h3><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIACCESS\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Enable%20Command%20Line%20Interface%20Access") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Disable%20command%20line%20interface") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIACCESSHELPER\") %>"/></p>
       </td>
