@@ -70,7 +70,7 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     public ServiceData findByName(String name) {
         final Query query = entityManager.createQuery("SELECT a FROM ServiceData a WHERE a.name=:name");
         query.setParameter("name", name);
-        return (ServiceData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+        return (ServiceData) QueryResultWrapper.getSingleResult(query);
     }
 
     @Override
@@ -81,9 +81,9 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public String findNameById(Integer id) {
-        Query query = entityManager.createQuery("SELECT a.name FROM ServiceData a WHERE a.id=:id");
+        final Query query = entityManager.createQuery("SELECT a.name FROM ServiceData a WHERE a.id=:id");
         query.setParameter("id", id);
-        return (String) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+        return (String) QueryResultWrapper.getSingleResult(query);
     }
     
     @Override

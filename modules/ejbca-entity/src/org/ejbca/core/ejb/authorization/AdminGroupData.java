@@ -332,7 +332,7 @@ public class AdminGroupData implements Serializable {
 	public static AdminGroupData findByGroupName(final EntityManager entityManager, final String adminGroupName) {
 		final Query query = entityManager.createQuery("SELECT a FROM AdminGroupData a WHERE adminGroupName=:adminGroupName");
 		query.setParameter("adminGroupName", adminGroupName);
-		return (AdminGroupData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (AdminGroupData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/** @return return the query results as a List. */

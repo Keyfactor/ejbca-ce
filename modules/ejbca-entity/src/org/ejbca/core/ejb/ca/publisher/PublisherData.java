@@ -136,7 +136,7 @@ public class PublisherData implements Serializable {
 	public static PublisherData findByName(EntityManager entityManager, String name) {
 		final Query query = entityManager.createQuery("SELECT a FROM PublisherData a WHERE a.name=:name");
 		query.setParameter("name", name);
-		return (PublisherData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (PublisherData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/** @return return the query results as a List. */

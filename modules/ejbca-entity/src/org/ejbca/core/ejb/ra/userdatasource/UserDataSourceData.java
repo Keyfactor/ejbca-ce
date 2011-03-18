@@ -140,7 +140,7 @@ public class UserDataSourceData implements Serializable {
     public static UserDataSourceData findByName(EntityManager entityManager, String name) {
 		final Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a WHERE a.name=:name");
 		query.setParameter("name", name);
-		return (UserDataSourceData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (UserDataSourceData) QueryResultWrapper.getSingleResult(query);
     }
     
 	/** @return return the query results as a List. */

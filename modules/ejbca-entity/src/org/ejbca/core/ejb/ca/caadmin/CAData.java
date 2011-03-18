@@ -279,7 +279,7 @@ public class CAData implements Serializable {
 	public static CAData findByName(final EntityManager entityManager, final String name) {
 		final Query query = entityManager.createQuery("SELECT a FROM CAData a WHERE a.name=:name");
 		query.setParameter("name", name);
-		return (CAData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (CAData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/**
