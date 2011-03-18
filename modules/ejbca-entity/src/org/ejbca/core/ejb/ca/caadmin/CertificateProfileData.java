@@ -160,7 +160,7 @@ public class CertificateProfileData implements Serializable {
 	public static CertificateProfileData findByProfileName(final EntityManager entityManager, final String certificateProfileName) {
 		final Query query = entityManager.createQuery("SELECT a FROM CertificateProfileData a WHERE a.certificateProfileName=:certificateProfileName");
 		query.setParameter("certificateProfileName", certificateProfileName);
-		return (CertificateProfileData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (CertificateProfileData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/** @return return the query results as a List. */

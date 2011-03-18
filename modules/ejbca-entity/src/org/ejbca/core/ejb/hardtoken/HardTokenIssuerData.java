@@ -124,7 +124,7 @@ public class HardTokenIssuerData implements Serializable {
 	public static HardTokenIssuerData findByAlias(EntityManager entityManager, String alias) {
 		final Query query = entityManager.createQuery("SELECT a FROM HardTokenIssuerData a WHERE a.alias=:alias");
 		query.setParameter("alias", alias);
-		return (HardTokenIssuerData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (HardTokenIssuerData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/** @return return the query results as a List. */

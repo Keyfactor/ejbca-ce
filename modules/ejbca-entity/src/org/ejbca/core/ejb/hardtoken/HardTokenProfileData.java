@@ -130,7 +130,7 @@ public class HardTokenProfileData implements Serializable {
     public static HardTokenProfileData findByName(EntityManager entityManager, String name) {
 		final Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a WHERE a.name=:name");
 		query.setParameter("name", name);
-		return (HardTokenProfileData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (HardTokenProfileData) QueryResultWrapper.getSingleResult(query);
     }
     
 	/** @return return the query results as a List. */

@@ -196,7 +196,7 @@ public class CRLData implements Serializable {
 		final Query query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.crlNumber=:crlNumber");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("crlNumber", crlNumber);
-		return (CRLData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (CRLData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/**
@@ -207,11 +207,11 @@ public class CRLData implements Serializable {
 		if (deltaCRL) {
 			final Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0");
 			query.setParameter("issuerDN", issuerDN);
-			ret = (Integer) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+			ret = (Integer) QueryResultWrapper.getSingleResult(query);
 		} else {
 			final Query query = entityManager.createQuery("SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1");
 			query.setParameter("issuerDN", issuerDN);
-			ret = (Integer) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+			ret = (Integer) QueryResultWrapper.getSingleResult(query);
 		}
     	return ret;
 	}

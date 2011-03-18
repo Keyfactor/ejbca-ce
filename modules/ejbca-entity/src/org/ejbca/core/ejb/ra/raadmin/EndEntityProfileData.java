@@ -147,7 +147,7 @@ public class EndEntityProfileData implements Serializable {
 	public static EndEntityProfileData findByProfileName(EntityManager entityManager, String profileName) {
 		Query query = entityManager.createQuery("SELECT a FROM EndEntityProfileData a WHERE a.profileName=:profileName");
 		query.setParameter("profileName", profileName);
-		return (EndEntityProfileData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (EndEntityProfileData) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/** @return return the query results as a List. */

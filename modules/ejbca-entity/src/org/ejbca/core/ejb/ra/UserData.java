@@ -425,7 +425,7 @@ public class UserData implements Serializable {
 		final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
 		query.setParameter("subjectDN", subjectDN);
 		query.setParameter("caId", caId);
-		return (UserData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (UserData) QueryResultWrapper.getSingleResult(query);
     }    
 
 	/**
@@ -435,7 +435,7 @@ public class UserData implements Serializable {
     public static UserData findBySubjectDN(EntityManager entityManager, String subjectDN) {
 		final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN");
 		query.setParameter("subjectDN", subjectDN);
-		return (UserData) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (UserData) QueryResultWrapper.getSingleResult(query);
     }
 
 	/** @return return the query results as a List. */
@@ -499,7 +499,7 @@ public class UserData implements Serializable {
 	public static String findSubjectEmailByUsername(EntityManager entityManager, String username) {
     	final Query query = entityManager.createQuery("SELECT a.subjectEmail FROM UserData a WHERE a.username=:username");
     	query.setParameter("username", username);
-		return (String) QueryResultWrapper.getResultAndSwallowNoResultException(query);
+		return (String) QueryResultWrapper.getSingleResult(query);
 	}
 
 	/** @return return a List<UserData> matching the custom query. */
