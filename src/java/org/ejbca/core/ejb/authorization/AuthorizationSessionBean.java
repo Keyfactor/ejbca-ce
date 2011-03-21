@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -26,11 +25,10 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionLocal;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -67,21 +65,8 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     /** Cache for authorization data */
     private static final AuthorizationCache authCache = new AuthorizationCache();
     
-    private String[] customaccessrules = null;
+    private static final String[] customaccessrules = EjbcaConfiguration.getCustomAvailableAccessRules();
     
-    /** Default create for SessionBean without any creation Arguments. */
-    @PostConstruct
-    public void ejbCreate() {
-    	if (log.isTraceEnabled()) {
-            log.trace(">ejbCreate()");    		
-    	}
-        String customrules = ConfigurationHolder.getString("ejbca.customavailableaccessaules", "");
-        customaccessrules = StringUtils.split(customrules, ';');
-    	if (log.isTraceEnabled()) {
-    		log.trace("<ejbCreate()");
-    	}
-    }
-
     private Authorizer getAuthorizer() {
         if (authCache.getAuthorizer() == null) {
         	final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));

@@ -13,6 +13,7 @@
 
 package org.ejbca.config;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -363,6 +364,11 @@ public final class EjbcaConfiguration {
             log.error("Invalid value in logconfiguration.cachetime, must be decimal number (milliseconds to cache configuration): " + e.getMessage());
         }
         return time;
+    }
+    
+    /** Custom Available Access Rules. */
+    public static String[] getCustomAvailableAccessRules() {
+    	return StringUtils.split(ConfigurationHolder.getString("ejbca.customavailableaccessrules", ""), ';');
     }
 
     /**

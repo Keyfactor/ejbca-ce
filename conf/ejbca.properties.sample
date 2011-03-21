@@ -220,7 +220,7 @@
 # Custom Available Access Rules. Use ';' to separate multiple accessrules
 # Available values are the Access Rules strings in Advanced mode of 'Access Rules' in 'Edit Administrator Privileges'
 # Default: ""
-#ejbca.customavailableaccessrules=''
+#ejbca.customavailableaccessrules=
 
 # When upgrading a 100% up-time cluster, all nodes should be deployed with the affective version
 # of the oldest still running EJBCA version.
