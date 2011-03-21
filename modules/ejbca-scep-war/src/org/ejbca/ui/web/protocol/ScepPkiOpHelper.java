@@ -42,10 +42,14 @@ public class ScepPkiOpHelper {
      * @param signsession signsession used to request certificates
      */
     public ScepPkiOpHelper(Admin admin, SignSessionLocal signsession) {
-        log.trace(">ScepPkiOpHelper");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">ScepPkiOpHelper");
+    	}
         this.admin = admin;
         this.signsession = signsession;
-        log.trace("<ScepPkiOpHelper");
+    	if (log.isTraceEnabled()) {
+    		log.trace("<ScepPkiOpHelper");
+    	}
     }
 
     /**
