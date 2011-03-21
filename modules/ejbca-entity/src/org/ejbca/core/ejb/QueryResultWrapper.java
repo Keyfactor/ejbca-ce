@@ -46,4 +46,15 @@ public abstract class QueryResultWrapper {
 			throw new NonUniqueResultException();
 		}
 	}
+
+	/** @return the first result of the query or null */
+	public static Object getLastResult(final Query query) {
+		final List<Object> resultList = query.getResultList();
+		switch (resultList.size()) {
+		case 0:
+			return null;
+		default:
+			return resultList.get(resultList.size()-1);
+		}
+	}
 }

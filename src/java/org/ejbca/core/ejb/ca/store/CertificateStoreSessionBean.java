@@ -334,17 +334,11 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     }
 
     @Override
-    public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
+    public String findUsernameByCertSerno(final Admin admin, final BigInteger serno, final String issuerdn) {
     	if (log.isTraceEnabled()) {
     		log.trace(">findUsernameByCertSerno(), serno: " + serno.toString(16) + ", issuerdn: " + issuerdn);    		
     	}
-        String dn = CertTools.stringToBCDNString(issuerdn);
-        Collection<CertificateData> coll = CertificateData.findByIssuerDNSerialNumber(entityManager, dn, serno.toString());
-        String ret = null;
-        Iterator<CertificateData> iter = coll.iterator();
-        while (iter.hasNext()) {
-        	ret = iter.next().getUsername();
-        }
+    	final String ret = CertificateData.findLastUsernameByIssuerDNSerialNumber(entityManager, CertTools.stringToBCDNString(issuerdn), serno.toString());
         if (log.isTraceEnabled()) {
         	log.trace("<findUsernameByCertSerno(), ret=" + ret);
         }

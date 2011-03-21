@@ -38,6 +38,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -584,6 +585,15 @@ public class CertificateData implements Serializable {
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
+	}
+
+	/** @return the last found username or null if none was found */
+	public static String findLastUsernameByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
+		final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+		query.setParameter("issuerDN", issuerDN);
+		query.setParameter("serialNumber", serialNumber);
+		// Since no ordering is done this seems a bit strange, but this is what it was like in previous versions..
+		return (String) QueryResultWrapper.getLastResult(query);
 	}
 
 	/** @return return the query results as a List. */

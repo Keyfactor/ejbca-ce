@@ -623,25 +623,24 @@ public class EjbcaWSHelper {
 	 * @param validate set to true to perform validation of each certificate
 	 * @return a List of valid and authorized certificates
 	 */
-	protected List<Certificate> returnAuthorizedCertificates(Admin admin, Collection<java.security.cert.Certificate> certs, boolean validate) {
-		List<Certificate> retval = new ArrayList<Certificate>();
-		Iterator<java.security.cert.Certificate> iter = certs.iterator();
-		Map<Integer, Boolean> authorizationCache = new HashMap<Integer, Boolean>(); 
-		while(iter.hasNext()){
-			java.security.cert.Certificate next = iter.next();
+	protected List<Certificate> returnAuthorizedCertificates(final Admin admin, final Collection<java.security.cert.Certificate> certs, final boolean validate) {
+		final List<Certificate> retval = new ArrayList<Certificate>();
+		final Map<Integer, Boolean> authorizationCache = new HashMap<Integer, Boolean>();
+		final Date now = new Date();
+		for (final java.security.cert.Certificate next : certs) {
 			try {
 				if (validate) {
 					// Check validity
-					CertTools.checkValidity(next, new Date());
+					CertTools.checkValidity(next, now);
 				}
 				// Check authorization
-				int caid = CertTools.getIssuerDN(next).hashCode();
+				final int caid = CertTools.getIssuerDN(next).hashCode();
 				Boolean authorized = authorizationCache.get(caid);
 				if (authorized == null) {
 					authorized = authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
 					authorizationCache.put(caid, authorized);
 				}
-				if (authorized) {
+				if (authorized.booleanValue()) {
 					retval.add(new Certificate((java.security.cert.Certificate) next));
 				}
 			} catch (CertificateExpiredException e) {		// Drop invalid cert
