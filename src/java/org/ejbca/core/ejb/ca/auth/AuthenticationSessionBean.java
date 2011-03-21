@@ -65,63 +65,52 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
     private static final InternalResources intres = InternalResources.getInstance();
     
     @Override
-    public UserDataVO authenticateUser(Admin admin, String username, String password)
+    public UserDataVO authenticateUser(final Admin admin, final String username, final String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
         try {
             // Find the user with username username, or throw FinderException
-            UserData data = UserData.findByUsername(entityManager, username);
+            final UserData data = UserData.findByUsername(entityManager, username);
             if (data == null) {
             	throw new ObjectNotFoundException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
-           	userAdminSession.decRemainingLoginAttempts(admin, data.getUsername());
-			
-           	int status = data.getStatus();
+           	userAdminSession.decRemainingLoginAttempts(admin, username);
+           	final int status = data.getStatus();
             if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
-            		log.debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
+            		log.debug("Trying to authenticate user: username="+username+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
-                
-                UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
-                		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
-                		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
-                ret.setPassword(data.getClearPassword());   
-                ret.setCardNumber(data.getCardNumber());
-                
-                if (data.comparePassword(password) == false)
-                {
-                	String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+                if (!data.comparePassword(password)) {
+                	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
+                	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
                 	throw new AuthLoginException(msg);
                 }
-                
                 // Resets the remaining login attempts as this was a successful login
-                userAdminSession.resetRemainingLoginAttempts(admin, data.getUsername());
-            	
-                String msg = intres.getLocalizedMessage("authentication.authok", username);            	
-                logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+                userAdminSession.resetRemainingLoginAttempts(admin, username);
+            	// Log formal message that authentication was successful
+                final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
+                logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}
-                return ret;
+                return data.toUserDataVO();
             }
-        	String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);            	
-        	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+        	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);            	
+        	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
             throw new AuthStatusException(msg);
         } catch (ObjectNotFoundException oe) {
-        	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
-        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION,msg);
+        	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
         } catch (AuthLoginException le) {
             throw le;
         } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("error.unknown");            	
-            log.error(msg, e);
+            log.error(intres.getLocalizedMessage("error.unknown"), e);
             throw new EJBException(e);
         }
     }

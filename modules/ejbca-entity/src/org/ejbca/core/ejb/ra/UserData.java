@@ -302,7 +302,7 @@ public class UserData implements Serializable {
     /**
      * Verifies password by verifying against passwordhash
      */
-    public boolean comparePassword(String password) throws NoSuchAlgorithmException {
+    public boolean comparePassword(final String password) throws NoSuchAlgorithmException {
     	if (log.isTraceEnabled()) {
     		log.trace(">comparePassword()");
     	}
@@ -385,7 +385,7 @@ public class UserData implements Serializable {
      * Non-searchable information about a user. 
      */
     public UserDataVO toUserDataVO() {
-        UserDataVO data = new UserDataVO();
+        final UserDataVO data = new UserDataVO();
         data.setUsername(getUsername());
         data.setCAId(getCaId());
         data.setCertificateProfileId(getCertificateProfileId());

@@ -169,6 +169,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final int ISREQUIRED = 2;
     private static final int MODIFYABLE = 3;
 
+    // Private Constants.
+    private static final int FIELDBOUNDRARY  = 10000;
+    private static final int NUMBERBOUNDRARY = 100;
+    
+    // Pre-calculated constants
+    private static final int FIELDBOUNDRARY_VALUE  = FIELDBOUNDRARY * VALUE;
+    private static final int FIELDBOUNDRARY_USE  = FIELDBOUNDRARY * USE;
+    private static final int FIELDBOUNDRARY_ISREQUIRED  = FIELDBOUNDRARY * ISREQUIRED;
+    private static final int FIELDBOUNDRARY_MODIFYABLE  = FIELDBOUNDRARY * MODIFYABLE;
+
     public static final String SPLITCHAR       = ";";
 
     public static final String TRUE  = "true";
@@ -178,9 +188,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static final int FIELDTYPE = 0;
     public static final int NUMBER    = 1;
 
-    // Private Constants.
-    private static final int FIELDBOUNDRARY  = 10000;
-    private static final int NUMBERBOUNDRARY = 100;
 
     /** Number array keeps track of how many fields there are of a specific type, for example 2 OranizationUnits, 0 TelephoneNumber */
     private static final String NUMBERARRAY               = "NUMBERARRAY";
@@ -412,10 +419,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     			fieldorder.remove(Integer.valueOf(value));
     		}
     		// Remove last element of the type from hashmap
-    		data.remove(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
-    		data.remove(Integer.valueOf((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
-    		data.remove(Integer.valueOf((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
-    		data.remove(Integer.valueOf((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*(size-1)) + parameter));
+    		data.remove(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*(size-1)) + parameter));
     		decrementFieldnumber(parameter);
     	}
     }
@@ -449,9 +456,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setValue(final int parameter, final int number, final String value) {
     	if (value !=null) {
-    		data.put(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), value.trim());
+    		data.put(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter), value.trim());
     	} else {
-    		data.put(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), "");
+    		data.put(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter), "");
     	}
     }
 
@@ -460,7 +467,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void setUse(final int parameter, final int number, final boolean use){
-    	data.put(Integer.valueOf((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
+    	data.put(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
     }
 
     public void setUse(final String parameter, final int number, final boolean use){
@@ -468,7 +475,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void setRequired(final int parameter, final int number, final boolean isrequired) {
-    	data.put(Integer.valueOf((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
+    	data.put(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
     }
 
     public void setRequired(final String parameter, final int number, final boolean isrequired) {
@@ -476,7 +483,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public void setModifyable(final int parameter, final int number, final boolean changeable) {
-    	data.put(Integer.valueOf((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
+    	data.put(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
     }
 
     public void setModifyable(final String parameter, final int number, final boolean changeable) {
@@ -484,7 +491,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public String getValue(final int parameter, final int number) {
-    	return getValueDefaultEmpty(Integer.valueOf((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultEmpty(Integer.valueOf(FIELDBOUNDRARY_VALUE + (NUMBERBOUNDRARY*number) + parameter));
     }
 
     public String getValue(final String parameter, final int number) {
@@ -492,7 +499,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public boolean getUse(final int parameter, final int number){
-    	return getValueDefaultFalse(Integer.valueOf((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_USE + (NUMBERBOUNDRARY*number) + parameter));
     }
 
     public boolean getUse(final String parameter, final int number){
@@ -500,7 +507,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public boolean isRequired(final int parameter, final int number) {
-    	return getValueDefaultFalse(Integer.valueOf((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + (NUMBERBOUNDRARY*number) + parameter));
     }
 
     public boolean isRequired(final String parameter, final int number) {
@@ -508,7 +515,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public boolean isModifyable(final int parameter, final int number) {
-    	return getValueDefaultFalse(Integer.valueOf((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+    	return getValueDefaultFalse(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + (NUMBERBOUNDRARY*number) + parameter));
     }
 
     public boolean isModifyable(final String parameter, final int number) {
