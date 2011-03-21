@@ -90,6 +90,9 @@ Needed to build and run are:</p>
  e.g. 'ejbca.cmd.'
 </p>
 <p>If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory.</p>
+<note>
+There is a bug in JBoss causing issues when using Oracle JDK. See this <a href="faq.html#jboss600">FAQ entry</a> for more information.
+</note>
 </subsection>
 
 <subsection name="Configure">
@@ -142,16 +145,17 @@ For production use you should use a real database instead of the embedded one.</
 
 <subsubsection name="JBoss settings">
 <p>
-If you are using Oracle's JDK and JBoss 5.1.x or JBoss 6.0.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
+If you are using Oracle's JDK and JBoss 5.1.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
 Remember this when it's time for upgrades! This is a bug tracked by JBoss as <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
 OpenJDK works just fine though, such as the OpenJDK distributed with RedHat, Ubuntu, Debian etc.
-</p> 
+<br/> 
+The workaround described above does not work on JBoss 6.0.0, see the JBAS issue for more information.</p>
 <p>
 JBoss 5.1.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample
 for configuration instructions. Tracked by JBoss as <a href="https://issues.jboss.org/browse/JBPAPP-3766">JBPAPP-3766</a>.
 </p> 
 <p>
-On JBoss 5.1.x and JBoss EAP 5.1, edit (not needed on JBoss 6.0.x)
+There is also an issue with WebServices on JBoss 5.1.x and JBoss EAP 5.1, edit (not needed on JBoss 6.0.x)
 </p> 
 <source>
  APPSRV_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
