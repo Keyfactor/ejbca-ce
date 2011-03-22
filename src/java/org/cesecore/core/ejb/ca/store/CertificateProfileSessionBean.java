@@ -129,7 +129,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(profilename)) {
             final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", profilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
                     msg);
             throw new CertificateProfileExistsException(msg);
         }
@@ -140,11 +140,11 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                     entityManager.persist(new CertificateProfileData(Integer.valueOf(profileid), profilename, profile));
                     flushProfileCache();
                     final String msg = INTRES.getLocalizedMessage("store.addedcertprofile", profilename);
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null,
                             LogConstants.EVENT_INFO_CERTPROFILE, msg);
                 } catch (Exception e) {
                     final String msg = INTRES.getLocalizedMessage("store.errorcreatecertprofile", profilename);
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
+                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null,
                             LogConstants.EVENT_ERROR_CERTPROFILE, msg);
                 }
             } else {
@@ -174,11 +174,11 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, profilename);
         if (pdl == null) {
             final String msg = INTRES.getLocalizedMessage("store.erroreditprofile", profilename);              
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         } else {
         	pdl.setCertificateProfile(profile);
         	final String msg = INTRES.getLocalizedMessage("store.editedprofile", profilename);                 
-        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
         }
     }
 
@@ -325,7 +325,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         CertificateProfile profile = null;
         if (isCertificateProfileNameFixed(newprofilename)) {
             final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", newprofilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
                     msg);
             throw new CertificateProfileExistsException(msg);
         }
@@ -341,10 +341,10 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                 entityManager.persist(new CertificateProfileData(findFreeCertificateProfileId(), newprofilename, profile));
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("store.addedprofilewithtempl", newprofilename, orgprofilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
             } else {
                 final String msg = INTRES.getLocalizedMessage("store.erroraddprofilewithtempl", newprofilename, orgprofilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null,
                         LogConstants.EVENT_ERROR_CERTPROFILE, msg);
                 throw new CertificateProfileExistsException();
             }
@@ -387,13 +387,13 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(newprofilename)) {
             final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", newprofilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
                     msg);
             throw new CertificateProfileExistsException(msg);
         }
         if (isCertificateProfileNameFixed(oldprofilename)) {
             final String msg = INTRES.getLocalizedMessage("store.errorcertprofilefixed", oldprofilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE,
                     msg);
             throw new CertificateProfileExistsException(msg);
         }
@@ -401,17 +401,17 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, oldprofilename);
             if (pdl == null) {
                 final String msg = INTRES.getLocalizedMessage("store.errorrenameprofile", oldprofilename, newprofilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null,
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null,
                         LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             } else {
                 pdl.setCertificateProfileName(newprofilename);
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("store.renamedprofile", oldprofilename, newprofilename);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
+                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);
             }
         } else {
             final String msg = INTRES.getLocalizedMessage("store.errorcertprofileexists", newprofilename);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException();
         }
     }
@@ -450,12 +450,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
                 	entityManager.remove(pdl);
                 	flushProfileCache();
                 	final String msg = INTRES.getLocalizedMessage("store.removedprofile", profilename);                
-                	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);                	
+                	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);                	
                 }
         } catch (Exception e) {
             LOG.error("Error was caught when trying to remove certificate profile " + profilename, e);
         	final String msg = INTRES.getLocalizedMessage("store.errorremoveprofile", profilename);                    
-        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
+        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_ERROR_CERTPROFILE, msg);
         }
     }
 
