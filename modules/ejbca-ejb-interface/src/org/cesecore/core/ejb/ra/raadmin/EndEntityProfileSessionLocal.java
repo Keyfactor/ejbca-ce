@@ -20,4 +20,6 @@ import javax.ejb.Local;
 @Local
 public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {
 
+	void addCacheTimer(boolean initial);
+
 }
