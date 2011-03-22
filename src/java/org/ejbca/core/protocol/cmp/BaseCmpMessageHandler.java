@@ -138,6 +138,10 @@ public class BaseCmpMessageHandler {
 			ret = info.getCAId();																	
 		} else {
 			final CAInfo info = caAdminSession.getCAInfo(admin, caName);
+			if (info == null) {
+				LOG.info("No CA found matching caName: "+caName);
+				throw new NotFoundException("CA with name '"+caName+"' not found");
+			}
 			ret = info.getCAId();					
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using fixed caName when adding users in RA mode: "+caName+"("+ret+")");
