@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.persistence.EntityManager;
 
@@ -83,32 +84,41 @@ public final class CertificateProfileCache {
     	nameIdMapCacheTemplate.put(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
     	nameIdMapCacheTemplate.put(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
     }
+    
+    private static final ReentrantLock fairLock = new ReentrantLock(true);
 
 	public void updateProfileCache(final EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
-    	@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
         final HashMap<Integer, String> idNameCache = (HashMap<Integer, String>) idNameMapCacheTemplate.clone();
-    	@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
         final HashMap<String, Integer> nameIdCache = (HashMap<String, Integer>) nameIdMapCacheTemplate.clone();
         final HashMap<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
         try {
-        	final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        	if (LOG.isDebugEnabled()) {
-        		LOG.debug("Found " + result.size() + " certificate profiles.");
+        	fairLock.lock();	// Queue up update requests and run them sequentially (better then when older db reads overwrite our cache..)
+        	try {
+        		final List<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        		if (LOG.isDebugEnabled()) {
+        			LOG.debug("Found " + result.size() + " certificate profiles.");
+        		}
+        		for (final CertificateProfileData current : result) {
+        			final Integer id = Integer.valueOf(current.getId());
+        			final String certificateProfileName = current.getCertificateProfileName();
+        			idNameCache.put(id, certificateProfileName);
+        			nameIdCache.put(certificateProfileName, id);
+        			profCache.put(id, current.getCertificateProfile());
+        		}
+        	} catch (Exception e) {
+        		LOG.error("Error reading certificate profiles: ", e);
         	}
-        	for (final CertificateProfileData current : result) {
-        		idNameCache.put(current.getId(), current.getCertificateProfileName());
-        		nameIdCache.put(current.getCertificateProfileName(), current.getId());
-        		profCache.put(current.getId(), current.getCertificateProfile());
-        	}
-        } catch (Exception e) {
-        	LOG.error("Error reading certificate profiles: ", e);
+        	idNameMapCache = idNameCache;
+        	nameIdMapCache = nameIdCache;
+        	profileCache = profCache;
+        } finally {
+        	fairLock.unlock();
         }
-        idNameMapCache = idNameCache;
-        nameIdMapCache = nameIdCache;
-        profileCache = profCache;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }

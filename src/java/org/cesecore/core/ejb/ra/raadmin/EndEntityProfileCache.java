@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.cesecore.core.ejb.ra.raadmin;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.persistence.EntityManager;
 
@@ -54,7 +55,9 @@ public final class EndEntityProfileCache {
     /** Cache of end entity profiles, with Id as keys */
     private volatile Map<Integer, EndEntityProfile> profileCache = null;
 
-	public void updateProfileCache(final EntityManager entityManager) {
+    private static final ReentrantLock fairLock = new ReentrantLock(true);
+
+    public void updateProfileCache(final EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
@@ -64,21 +67,28 @@ public final class EndEntityProfileCache {
         idNameCache.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
         nameIdCache.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         try {
-        	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        	if (LOG.isDebugEnabled()) {
-        		LOG.debug("Found " + result.size() + " end entity profiles.");
+        	fairLock.lock();	// Queue up update requests and run them sequentially (better then when older db reads overwrite our cache..)
+        	try {
+        		final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+        		if (LOG.isDebugEnabled()) {
+        			LOG.debug("Found " + result.size() + " end entity profiles.");
+        		}
+        		for (final EndEntityProfileData next : result) {
+        			final Integer id = Integer.valueOf(next.getId());
+        			final String profileName = next.getProfileName();
+        			idNameCache.put(id, profileName);
+        			nameIdCache.put(profileName, id);
+        			profCache.put(id, next.getProfile());
+        		}
+        	} catch (Exception e) {
+        		LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
         	}
-        	for (final EndEntityProfileData next : result) {
-        		idNameCache.put(next.getId(), next.getProfileName());
-        		nameIdCache.put(next.getProfileName(), next.getId());
-        		profCache.put(next.getId(), next.getProfile());
-        	}
-        } catch (Exception e) {
-        	LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
+        	idNameMapCache = idNameCache;
+        	nameIdMapCache = nameIdCache;
+        	profileCache = profCache;
+        } finally {
+        	fairLock.unlock();
         }
-        idNameMapCache = idNameCache;
-        nameIdMapCache = nameIdCache;
-        profileCache = profCache;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }
