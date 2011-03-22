@@ -19,15 +19,14 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-
 
 /**
  * Class managing a cache of CAs. It is not really a cache, just an object registry.
  * 
  * @version $Id$
- * 
  */
 public class CACacheManager {
 
@@ -35,20 +34,17 @@ public class CACacheManager {
     private static final transient Logger log = Logger.getLogger(CACacheManager.class);
 
     /** Registry of CAs, kept so CAs are cached and don't have to be read from memory every time */
-    private Hashtable caRegistry = new Hashtable();
+    private Hashtable<Integer,CA> caRegistry = new Hashtable<Integer,CA>();
     /** Mapping of CAId and CAName */
-    private Map caNameToCaId = new HashMap();
+    private Map<String,Integer> caNameToCaId = new HashMap<String,Integer>();
 
     /** Implementing the Singleton pattern */
     private static CACacheManager instance = null;
 
-    /** Don't allow external creation of this class, implementing the Singleton pattern. 
-     */
+    /** Don't allow external creation of this class, implementing the Singleton pattern. */
     private CACacheManager() {}
     
-    /** Get the instance of this singleton
-     * 
-     */
+    /** Get the instance of this singleton */
     public synchronized static CACacheManager instance() {
         if (instance == null) {
             instance = new CACacheManager();
@@ -62,8 +58,8 @@ public class CACacheManager {
      * @param caid the id of the CA whose CA object you want to fetch.
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
-    public CA getCA(int caid) {
-        CA ret = (CA)caRegistry.get(Integer.valueOf(caid));
+    public CA getCA(final int caid) {
+        CA ret = caRegistry.get(Integer.valueOf(caid));
         if (ret != null) {
         	ret.setCAId(caid);
         }
@@ -80,10 +76,14 @@ public class CACacheManager {
      * @param caSubjectDN
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
-    public CA getAndUpdateCA(int caid, int caStatus, long caExpireTime, String caName, String caSubjectDN) {
-        CA ret = (CA)caRegistry.get(Integer.valueOf(caid));
+    public CA getAndUpdateCA(final int caid, final int caStatus, final long caExpireTime, final String caName, final String caSubjectDN) {
+        final CA ret = caRegistry.get(Integer.valueOf(caid));
         if (ret != null) {
-           	populateCAObject(caStatus, caExpireTime, caName, caSubjectDN, ret);
+    		// We mainly cache the xml data, some of the other values may change slightly at will...
+    		ret.setStatus(caStatus);
+    		ret.setExpireTime(new Date(caExpireTime));
+    		ret.setName(caName);
+    		ret.setSubjectDN(caSubjectDN);
         	ret.setCAId(caid);
         }
         return ret;
@@ -94,12 +94,11 @@ public class CACacheManager {
      * @param caName the name of the CA whose CA object you want to fetch.
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
-    public CA getCA(String caName) {
-    	Object o = this.caNameToCaId.get(caName);
+    public CA getCA(final String caName) {
+    	final Integer caId = this.caNameToCaId.get(caName);
     	CA ret = null;
-    	if (o != null) {
-    		final Integer caid = (Integer)o;
-            ret = getCA(caid);
+    	if (caId != null) {
+            ret = getCA(caId);
     	}
         return ret;    		
     }
@@ -112,50 +111,41 @@ public class CACacheManager {
      * @param caSubjectDN
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
-    public CA getAndUpdateCA(String caName, int caStatus, long caExpireTime, String caSubjectDN) {
-    	Object o = this.caNameToCaId.get(caName);
+    public CA getAndUpdateCA(final String caName, final int caStatus, final long caExpireTime, final String caSubjectDN) {
+    	final Integer caid = this.caNameToCaId.get(caName);
     	CA ret = null;
-    	if (o != null) {
-    		final Integer caid = (Integer)o;
+    	if (caid != null) {
             ret = getAndUpdateCA(caid, caStatus, caExpireTime, caName, caSubjectDN);
     	}
         return ret;    		
     }
 
-	private void populateCAObject(int caStatus, long caExpireTime, String caName, String caSubjectDN, CA ret) {
-		// We mainly cache the xml data, some of the other values may change slightly at will...
-		ret.setStatus(caStatus);
-		ret.setExpireTime(new Date(caExpireTime));
-		ret.setName(caName);
-		ret.setSubjectDN(caSubjectDN);
-	}
-    
     /** Adds a CA to the registry. If a CA already exists for the given CAid, 
      * the old one is removed and replaced with the new. If the CA passed is null, an existing CA is removed.
      * 
      * @param caid the id of the CA you want to fetch.
      * @param ca the CA to be added
      */
-    public synchronized void addCA(int caid, CA ca) {
+    public synchronized void addCA(final int caid, final CA ca) {
     	removeCA(caid);
         if (ca != null) {
             caRegistry.put(Integer.valueOf(caid), ca);
             this.caNameToCaId.put(ca.getName(), Integer.valueOf(caid));
-            log.debug("Added CA to registry: "+caid);
+            if (log.isDebugEnabled()) {
+                log.debug("Added CA to registry: "+caid);
+            }
         }
     }    
     
-    /** Removes a CA from the cache to force an update the next time the CA is read
-     * 
-     */
-    public synchronized void removeCA(int caid) {
+    /** Removes a CA from the cache to force an update the next time the CA is read */
+    public synchronized void removeCA(final int caid) {
         if (caRegistry.containsKey(Integer.valueOf(caid))) {
             caRegistry.remove(Integer.valueOf(caid));
             // Remove all possible mappings from caname to this id, we may have changed CAName
             if (this.caNameToCaId.containsValue(Integer.valueOf(caid))) {
-            	Set entrySet = this.caNameToCaId.entrySet();
-            	for (Iterator iterator = entrySet.iterator(); iterator.hasNext();) {
-            		Map.Entry e = (Map.Entry) iterator.next();
+            	final Set<Entry<String, Integer>> entrySet = this.caNameToCaId.entrySet();
+            	for (Iterator<Entry<String, Integer>> iterator = entrySet.iterator(); iterator.hasNext();) {
+            		final Entry<String, Integer> e = iterator.next();
             		if (e.getValue().equals(caid)) {
             			iterator.remove();
             		}
@@ -166,7 +156,7 @@ public class CACacheManager {
     }
     
     public synchronized void removeAll() {
-		caRegistry = new Hashtable();
-		caNameToCaId = new HashMap();
+		caRegistry = new Hashtable<Integer,CA>();
+		caNameToCaId = new HashMap<String,Integer>();
 	}
 }
