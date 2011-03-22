@@ -23,9 +23,11 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
@@ -53,9 +55,12 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 
     private int userNo = 0;
     private KeyPair keys;
+
+    final Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
 
     /**
      * Creates a new TestAddLotsofUsers object.
@@ -68,6 +73,9 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
 
     public void setUp() throws Exception {
         createTestCA();
+        final CAInfo cainfo = caAdminSession.getCAInfo(administrator, getTestCAName());
+        cainfo.setDoEnforceUniquePublicKeys(false);
+        caAdminSession.editCA(administrator, cainfo);
     }
 
     public void tearDown() throws Exception {
@@ -88,7 +96,6 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
      */
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
-        final Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         final String baseUsername = "lotsacertsperuser-" + System.currentTimeMillis() + "-";
         final int NUMBER_OF_USERS = 10;
         final int CERTS_OF_EACH_KIND = 50;
@@ -167,7 +174,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                storeSession.setArchivedStatus(administrator, CertTools.getFingerprintAsString(certificate));
+                storeSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(certificate));
             }
             endEntityProfileSession.removeEndEntityProfile(administrator, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(administrator, certificateProfileName);
