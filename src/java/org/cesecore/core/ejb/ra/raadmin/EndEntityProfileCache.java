@@ -14,7 +14,6 @@ package org.cesecore.core.ejb.ra.raadmin;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -27,22 +26,13 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
- * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final 
- * fields in session beans.
- * This is a trivial cache, too trivial, it needs manual handling of setting the cache variable, this class does not keep track on if
- * the cache variable is null or not, or when the cache must be updated. The using class must ensure that it does not try to use a null value 
- * (by calling updateProfileCache before any cache is used), and that the cache is updated when 
- * the method "needsUpdate" returns true. caller must make sure updateProfileCache is called at least once.
+ * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
+ * in session beans.
  * 
- * An example of this is by using internal methods in the calling class like:
- * <pre>
- *  private Map<Integer, CertificateProfile> getProfileCacheInternal() {
- *   	if (profileCache.needsUpdate()) {
- *   		updateProfileCache(entityManager);
- *   	}
- *       return profileCache.getProfileCache();
- *   }
- * </pre>
+ * This cache is designed for continuous background updates and will respond with the latest
+ * object in the cache. This means that you will not get a performance hit when when the
+ * cache is out of date, but you might get a object that is slightly older than the cache timeout.
+ * 
  * @version $Id$
  */
 public final class EndEntityProfileCache {
@@ -51,13 +41,12 @@ public final class EndEntityProfileCache {
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
 
-
-    /**
+    /*
      * Cache of profiles, with Id as keys. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
-    /**  */
+
     /** Cache of mappings between profileId and profileName */
     private volatile HashMap<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
@@ -65,14 +54,7 @@ public final class EndEntityProfileCache {
     /** Cache of end entity profiles, with Id as keys */
     private volatile Map<Integer, EndEntityProfile> profileCache = null;
 
-    /** help variable used to control that cache update isn't performed to often. */
-    private volatile long lastupdatetime = -1;  
-
-	public EndEntityProfileCache() {
-		// Do nothing
-	}
-
-	public void updateProfileCache(EntityManager entityManager) {
+	public void updateProfileCache(final EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
@@ -82,49 +64,50 @@ public final class EndEntityProfileCache {
         idNameCache.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
         nameIdCache.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         try {
-            final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found " + result.size() + " end entity profiles.");
-            }
-            final Iterator<EndEntityProfileData> i = result.iterator();
-            while (i.hasNext()) {
-                final EndEntityProfileData next = i.next();
-                // debug("Added "+next.getId()+ ", "+next.getProfileName());
-                idNameCache.put(next.getId(), next.getProfileName());
-                nameIdCache.put(next.getProfileName(), next.getId());
-                profCache.put(next.getId(), next.getProfile());
-            }
+        	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+        	if (LOG.isDebugEnabled()) {
+        		LOG.debug("Found " + result.size() + " end entity profiles.");
+        	}
+        	for (final EndEntityProfileData next : result) {
+        		idNameCache.put(next.getId(), next.getProfileName());
+        		nameIdCache.put(next.getProfileName(), next.getId());
+        		profCache.put(next.getId(), next.getProfile());
+        	}
         } catch (Exception e) {
-            final String msg = INTRES.getLocalizedMessage("ra.errorreadprofiles");
-            LOG.error(msg, e);
+        	LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
         }
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
-        lastupdatetime = System.currentTimeMillis();
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }
 	}
 
-	public boolean needsUpdate() {
-        if ((nameIdMapCache == null) || (idNameMapCache == null) || (profileCache == null)
-                || (lastupdatetime + EjbcaConfiguration.getCacheEndEntityProfileTime() < System.currentTimeMillis())) {
-            return true;
-        }
-        return false;
-	}
-
-	public Map<Integer, EndEntityProfile> getProfileCache() {
+	/** @return the latest object from the cache or a current database representation if no caching is used. */
+	public Map<Integer, EndEntityProfile> getProfileCache(final EntityManager entityManager) {
+		if (EjbcaConfiguration.getCacheEndEntityProfileTime() == 0) {
+			// Always update if no caching is used
+			updateProfileCache(entityManager);
+		}
 		return profileCache;
 	}
 
-	public HashMap<Integer, String> getIdNameMapCache() {
+	/** @return the latest object from the cache or a current database representation if no caching is used. */
+	public HashMap<Integer, String> getIdNameMapCache(final EntityManager entityManager) {
+		if (EjbcaConfiguration.getCacheEndEntityProfileTime() == 0) {
+			// Always update if no caching is used
+			updateProfileCache(entityManager);
+		}
 		return idNameMapCache;
 	}
 
-	public Map<String, Integer> getNameIdMapCache() {
+	/** @return the latest object from the cache or a current database representation if no caching is used. */
+	public Map<String, Integer> getNameIdMapCache(final EntityManager entityManager) {
+		if (EjbcaConfiguration.getCacheEndEntityProfileTime() == 0) {
+			// Always update if no caching is used
+			updateProfileCache(entityManager);
+		}
 		return nameIdMapCache;
 	}
-	
 }

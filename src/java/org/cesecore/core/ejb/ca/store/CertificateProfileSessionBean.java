@@ -19,10 +19,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
@@ -30,6 +37,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
@@ -68,11 +76,52 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
+    @Resource
+    private SessionContext sessionContext;
+    private TimerService timerService;	// When the sessionContext is injected, the timerService should be looked up.
 
     @EJB
     private AuthorizationSessionLocal authSession;
     @EJB
     private LogSessionLocal logSession;
+    private CertificateProfileSessionLocal certificateProfileSession;
+    
+    private static final String CACHE_TIMER_ID = "certificateProfileCacheTimer";
+    
+    @PostConstruct
+    public void postConstruct() {
+    	certificateProfileSession = sessionContext.getBusinessObject(CertificateProfileSessionLocal.class);
+    	timerService = sessionContext.getTimerService();
+    }
+    
+    @Override
+    public void addCacheTimer(final boolean initial) {
+    	cancelOldTimer();
+    	if (EjbcaConfiguration.getCacheCertificateProfileTime() > 0) {
+    		if (initial) {
+        		timerService.createTimer(0, CACHE_TIMER_ID);
+    		} else {
+        		timerService.createTimer(EjbcaConfiguration.getCacheCertificateProfileTime(), CACHE_TIMER_ID);
+    		}
+    	}
+    }
+    
+    private void cancelOldTimer() {
+    	for (Object o : timerService.getTimers()) {
+    		final Timer t = (Timer) o;
+    		if (CACHE_TIMER_ID.equals(t.getInfo())) {
+    			t.cancel();
+    			break;
+    		}
+    	}
+    }
+    
+    @Timeout
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    public void timeoutHandler(Timer timer) {
+    	certificateProfileSession.flushProfileCache();
+    	certificateProfileSession.addCacheTimer(false);
+    }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
@@ -170,32 +219,27 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
             returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
-        final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        final Iterator<CertificateProfileData> i = result.iterator();
-        while (i.hasNext()) {
-                final CertificateProfileData next = i.next();
-                final CertificateProfile profile = next.getCertificateProfile();
-                // Check if all profiles available CAs exists in authorizedcaids.
-                if (certprofiletype == 0 || certprofiletype == profile.getType()
-                                || (profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
-                                                certprofiletype == SecConst.CERTTYPE_HARDTOKEN)) {
-                        final Iterator<Integer> availablecas = profile.getAvailableCAs().iterator();
-                        boolean allexists = true;
-                        while (availablecas.hasNext()) {
-                                final Integer nextcaid = availablecas.next();
-                                if (nextcaid.intValue() == CertificateProfile.ANYCA) {
-                                        allexists = true;
-                                        break;
-                                }
-                                if (!authorizedcaids.contains(nextcaid)) {
-                                        allexists = false;
-                                        break;
-                                }
-                        }
-                        if (allexists) {
-                                returnval.add(next.getId());
-                        }
-                }
+        final Map<Integer, CertificateProfile> profileCache = getProfileCacheInternal();
+        for (Entry<Integer,CertificateProfile> cpEntry : profileCache.entrySet()) {
+        	final CertificateProfile profile = cpEntry.getValue();
+        	// Check if all profiles available CAs exists in authorizedcaids.
+        	if (certprofiletype == 0 || certprofiletype == profile.getType() || (profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
+        					certprofiletype == SecConst.CERTTYPE_HARDTOKEN)) {
+        		boolean allexists = true;
+        		for (final Integer nextcaid : profile.getAvailableCAs()) {
+        			if (nextcaid.intValue() == CertificateProfile.ANYCA) {
+        				allexists = true;
+        				break;
+        			}
+        			if (!authorizedcaids.contains(nextcaid)) {
+        				allexists = false;
+        				break;
+        			}
+        		}
+        		if (allexists) {
+        			returnval.add(cpEntry.getKey());
+        		}
+        	}
         }
         return returnval;
     }
@@ -417,65 +461,53 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @Override
     public boolean existsCAInCertificateProfiles(final Admin admin, final int caid) {
-        boolean exists = false;
-        final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        final Iterator<CertificateProfileData> i = result.iterator();
-        while (i.hasNext() && !exists) {
-                final CertificateProfileData cd = i.next();
-                final CertificateProfile certProfile = cd.getCertificateProfile(); 
-                if (certProfile.getType() == CertificateProfile.TYPE_ENDENTITY) {
-                        final Iterator<Integer> availablecas = certProfile.getAvailableCAs().iterator();
-                        while (availablecas.hasNext()) {
-                                if (availablecas.next().intValue() == caid ) {
-                                        exists = true;
-                                        if (LOG.isDebugEnabled()) {
-                                        	LOG.debug("CA exists in certificate profile "+cd.getCertificateProfileName());
-                                        }
-                                        break;
-                                }
-                        }
-                }
-        }
-        return exists;
+    	boolean exists = false;
+    	final Map<Integer, CertificateProfile> profileCache = getProfileCacheInternal();
+    	for (Entry<Integer,CertificateProfile> cpEntry : profileCache.entrySet()) {
+    		final CertificateProfile certProfile = cpEntry.getValue(); 
+    		if (certProfile.getType() == CertificateProfile.TYPE_ENDENTITY) {
+    			for (Integer availableCaId : certProfile.getAvailableCAs()) {
+    				if (availableCaId.intValue() == caid) {
+    					exists = true;
+    					if (LOG.isDebugEnabled()) {
+    						LOG.debug("CA exists in certificate profile " + cpEntry.getKey().toString());
+    					}
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return exists;
     }
 
     @Override
     public boolean existsPublisherInCertificateProfiles(final Admin admin, final int publisherid) {
-        boolean exists = false;
-        final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        final Iterator<CertificateProfileData> i = result.iterator();
-        while (i.hasNext() && !exists) {
-                final Iterator<Integer> available = i.next().getCertificateProfile().getPublisherList().iterator();
-                while (available.hasNext()) {
-                        if (available.next().intValue() == publisherid) {
-                                exists = true;
-                                break;
-                        }
-                }
-        }
-        return exists;
+    	boolean exists = false;
+    	final Map<Integer, CertificateProfile> profileCache = getProfileCacheInternal();
+    	for (Entry<Integer,CertificateProfile> cpEntry : profileCache.entrySet()) {
+    		for (Integer availablePublisherId : cpEntry.getValue().getPublisherList()) {
+    			if (availablePublisherId.intValue() == publisherid) {
+    				exists = true;
+                    if (LOG.isDebugEnabled()) {
+                    	LOG.debug("Publisher exists in certificate profile " + cpEntry.getKey().toString());
+                    }
+                    break;
+    			}
+    		}
+    	}
+    	return exists;
     }
-
     
     private Map<Integer, CertificateProfile> getProfileCacheInternal() {
-    	if (profileCache.needsUpdate()) {
-    		flushProfileCache();
-    	}
-        return profileCache.getProfileCache();
+        return profileCache.getProfileCache(entityManager);
     }
 
     private Map<Integer, String> getCertificateProfileIdNameMapInternal() {
-    	if (profileCache.needsUpdate()) {
-    		flushProfileCache();
-    	}
-        return profileCache.getIdNameMapCache();
+        return profileCache.getIdNameMapCache(entityManager);
     }
 
     private Map<String, Integer> getCertificateProfileNameIdMapInternal() {
-    	if (profileCache.needsUpdate()) {
-    		flushProfileCache();
-    	}
-    	return profileCache.getNameIdMapCache();
+    	return profileCache.getNameIdMapCache(entityManager);
     }
 
     private boolean isCertificateProfileNameFixed(final String profilename) {

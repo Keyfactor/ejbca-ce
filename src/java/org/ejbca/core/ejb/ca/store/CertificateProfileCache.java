@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -35,113 +34,110 @@ import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.ServerCertificateProfile;
 
 /**
- * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final 
- * fields in session beans.
- * This is a trivial cache, too trivial, it needs manual handling of setting the cache variable, this class does not keep track on if
- * the cache variable is null or not, or when the cache must be updated. The using class must ensure that it does not try to use a null value 
- * (by calling updateProfileCache before any cache is used), and that the cache is updated when 
- * the method "needsUpdate" returns true. caller must make sure updateProfileCache is called at least once.
+ * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
+ * in session beans.
  * 
- * An example of this is by using internal methods in the calling class like:
- * <pre>
- *  private Map<Integer, CertificateProfile> getProfileCacheInternal() {
- *   	if (profileCache.needsUpdate()) {
- *   		updateProfileCache(entityManager);
- *   	}
- *       return profileCache.getProfileCache();
- *   }
- * </pre>
+ * This cache is designed for continuous background updates and will respond with the latest
+ * object in the cache. This means that you will not get a performance hit when when the
+ * cache is out of date, but you might get a object that is slightly older than the cache timeout.
+ * 
  * @version $Id$
  */
 public final class CertificateProfileCache {
 
     private static final Logger LOG = Logger.getLogger(CertificateProfileCache.class);
 
-    /**
+    /*
      * Cache of profiles, with Id as keys. This cache may be
      * unsynchronized between multiple instances of EJBCA, but is common to all
      * threads in the same VM. Set volatile to make it thread friendly.
      */
-    private transient volatile Map<Integer, CertificateProfile> profileCache = null;
+
     /** Cache of mappings between profileId and profileName */
     private transient volatile Map<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
     private transient volatile Map<String, Integer> nameIdMapCache = null;
+    /** Cache of certificate profiles, with Id as keys */
+    private transient volatile Map<Integer, CertificateProfile> profileCache = null;
 
-    /** help variable used to control that cache update isn't performed to often. */
-    private transient volatile long lastupdatetime = -1;  
+    /* Create template maps with all static constants */
+    private static final HashMap<Integer, String> idNameMapCacheTemplate = new HashMap<Integer, String>();
+    private static final HashMap<String, Integer> nameIdMapCacheTemplate = new HashMap<String, Integer>();
+    static {
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_ENDUSER), EndUserCertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_SUBCA), CACertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_ROOTCA), RootCACertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_OCSPSIGNER), OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_SERVER), ServerCertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH), HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC), HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC), HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME);
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN), HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME);
+    	nameIdMapCacheTemplate.put(EndUserCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_ENDUSER));
+    	nameIdMapCacheTemplate.put(CACertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_SUBCA));
+    	nameIdMapCacheTemplate.put(RootCACertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_ROOTCA));
+    	nameIdMapCacheTemplate.put(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
+    	nameIdMapCacheTemplate.put(ServerCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_SERVER));
+    	nameIdMapCacheTemplate.put(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
+    	nameIdMapCacheTemplate.put(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+    	nameIdMapCacheTemplate.put(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
+    	nameIdMapCacheTemplate.put(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
+    }
 
 	public void updateProfileCache(final EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
-        final HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
-        final HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
+    	@SuppressWarnings("unchecked")
+        final HashMap<Integer, String> idNameCache = (HashMap<Integer, String>) idNameMapCacheTemplate.clone();
+    	@SuppressWarnings("unchecked")
+        final HashMap<String, Integer> nameIdCache = (HashMap<String, Integer>) nameIdMapCacheTemplate.clone();
         final HashMap<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
-
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_ENDUSER), EndUserCertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_SUBCA), CACertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_ROOTCA), RootCACertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_OCSPSIGNER), OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_SERVER), ServerCertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH), HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC), HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC), HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME);
-        idNameCache.put(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN), HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME);
-
-        nameIdCache.put(EndUserCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_ENDUSER));
-        nameIdCache.put(CACertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_SUBCA));
-        nameIdCache.put(RootCACertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_ROOTCA));
-        nameIdCache.put(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
-        nameIdCache.put(ServerCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_SERVER));
-        nameIdCache.put(HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH));
-        nameIdCache.put(HardTokenAuthEncCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-        nameIdCache.put(HardTokenEncCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
-        nameIdCache.put(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
-
         try {
-            final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found " + result.size() + " certificate profiles.");
-            }
-            final Iterator<CertificateProfileData> i = result.iterator();
-            while (i.hasNext()) {
-                final CertificateProfileData next = i.next();
-                idNameCache.put(next.getId(), next.getCertificateProfileName());
-                nameIdCache.put(next.getCertificateProfileName(), next.getId());
-                profCache.put(next.getId(), next.getCertificateProfile());
-            }
+        	final Collection<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        	if (LOG.isDebugEnabled()) {
+        		LOG.debug("Found " + result.size() + " certificate profiles.");
+        	}
+        	for (final CertificateProfileData current : result) {
+        		idNameCache.put(current.getId(), current.getCertificateProfileName());
+        		nameIdCache.put(current.getCertificateProfileName(), current.getId());
+        		profCache.put(current.getId(), current.getCertificateProfile());
+        	}
         } catch (Exception e) {
-            LOG.error("Error reading certificate profiles: ", e);
+        	LOG.error("Error reading certificate profiles: ", e);
         }
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
-        lastupdatetime = System.currentTimeMillis();
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }
 	}
 
-	public boolean needsUpdate() {
-		boolean ret = false;
-        if ((nameIdMapCache == null) || (idNameMapCache == null) || (profileCache == null)
-                || (lastupdatetime + EjbcaConfiguration.getCacheCertificateProfileTime() < System.currentTimeMillis())) {
-            ret = true;
-        }
-        return ret;
-	}
-
-	public Map<Integer, CertificateProfile> getProfileCache() {
+	/** @return the latest object from the cache or a current database representation if no caching is used. */
+	public Map<Integer, CertificateProfile> getProfileCache(final EntityManager entityManager) {
+		if (EjbcaConfiguration.getCacheCertificateProfileTime() == 0) {
+			// Always update if no caching is used
+			updateProfileCache(entityManager);
+		}
 		return profileCache;
 	}
 
-	public Map<Integer, String> getIdNameMapCache() {
+	/** @return the latest object from the cache or a current database representation if no caching is used. */
+	public Map<Integer, String> getIdNameMapCache(final EntityManager entityManager) {
+		if (EjbcaConfiguration.getCacheCertificateProfileTime() == 0) {
+			// Always update if no caching is used
+			updateProfileCache(entityManager);
+		}
 		return idNameMapCache;
 	}
 
-	public Map<String, Integer> getNameIdMapCache() {
+	/** @return the latest object from the cache or a current database representation if no caching is used. */
+	public Map<String, Integer> getNameIdMapCache(final EntityManager entityManager) {
+		if (EjbcaConfiguration.getCacheCertificateProfileTime() == 0) {
+			// Always update if no caching is used
+			updateProfileCache(entityManager);
+		}
 		return nameIdMapCache;
 	}
-	
 }

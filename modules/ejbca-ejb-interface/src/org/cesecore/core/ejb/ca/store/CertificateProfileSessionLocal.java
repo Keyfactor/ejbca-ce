@@ -20,4 +20,6 @@ import javax.ejb.Local;
 @Local
 public interface CertificateProfileSessionLocal extends CertificateProfileSession {
 
+	void addCacheTimer(boolean initial);
+
 }
