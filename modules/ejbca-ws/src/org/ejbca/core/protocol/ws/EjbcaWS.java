@@ -936,7 +936,9 @@ public class EjbcaWS implements IEjbcaWS {
 				// parts copied from request helper.
 				byte[] reqBytes = req.getBytes();
 				if (reqBytes != null) {
-					log.debug("Received NS request: "+new String(reqBytes));
+					if (log.isDebugEnabled()) {
+						log.debug("Received NS request: "+new String(reqBytes));
+					}
 					byte[] buffer = Base64.decode(reqBytes);
 					if (buffer == null) {
 						return null;
@@ -948,10 +950,14 @@ public class EjbcaWS implements IEjbcaWS {
 					// Verify POPO, we don't care about the challenge, it's not important.
 					nscr.setChallenge("challenge");
 					if (nscr.verify("challenge") == false) {
-						log.debug("SPKAC POPO verification Failed");
+						if (log.isDebugEnabled()) {
+							log.debug("SPKAC POPO verification Failed");
+						}
 						throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
 					}
-					log.debug("POPO verification successful");
+					if (log.isDebugEnabled()) {
+						log.debug("POPO verification successful");
+					}
 					PublicKey pubKey = nscr.getPublicKey();
 					imsg = new SimpleRequestMessage(pubKey, username, password);
 				}		
@@ -986,10 +992,14 @@ public class EjbcaWS implements IEjbcaWS {
 				reqmsg.setPassword(password);
 				// Popo is really actually verified by the CA (in RSASignSessionBean) as well
 				if (reqmsg.verify() == false) {
-					log.debug("CVC POPO verification Failed");
+					if (log.isDebugEnabled()) {
+						log.debug("CVC POPO verification Failed");
+					}
 					throw new SignRequestSignatureException("Invalid inner signature in CVCRequest, popo-verification failed.");
 				} else {
-					log.debug("POPO verification successful");					
+					if (log.isDebugEnabled()) {
+						log.debug("POPO verification successful");
+					}
 				}
 				imsg = reqmsg;
 			}
