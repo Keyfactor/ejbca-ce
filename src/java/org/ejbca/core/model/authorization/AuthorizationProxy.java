@@ -70,7 +70,6 @@ public class AuthorizationProxy implements Serializable {
         	if ((adm == AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN) ||
         			(adm == AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN) ||
         			(adm == AdminEntity.SPECIALADMIN_RAADMIN)) {
-            	log.info("Failed internal admin check, but this is a command line client so allow it anyhow.");        
             	if (!cliEnabled) {
             		// CLI access disabled
             		log.info("Command line client access is disabled");
