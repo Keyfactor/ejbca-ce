@@ -128,7 +128,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	}
         try {
             // Install BouncyCastle provider
-        	CryptoProviderTools.installBCProvider();
+        	CryptoProviderTools.installBCProviderIfNotAvailable();
 
             // Set up the serial number generator for Certificate Serial numbers
             // The serial number generator is a Singleton, so it can be initialized here and 

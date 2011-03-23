@@ -203,25 +203,30 @@ public class SernoGenerator implements ISernoGenerator {
 	 * 
 	 * @see ISernoGenerator#setAlgorithm(String)
 	 */
-	public void setAlgorithm(String algo) throws NoSuchAlgorithmException {
-		this.algorithm = algo;
-		// We must re-init after choosing a new algorithm
-		init();
+	public void setAlgorithm(final String algo) throws NoSuchAlgorithmException {
+		// Since re-initialization is expensive, we only do it if we changed the algo
+		if (this.algorithm == null || !this.algorithm.equals(algo)) {
+			this.algorithm = algo;
+			// We must re-init after choosing a new algorithm
+			init();
+		}
 	}
 
 	/**
 	 * @see ISernoGenerator#setSernoOctetSize(int)
 	 */
-	public void setSernoOctetSize(int noOctets) {
-		if (noOctets == 4) {
-			lowest = new BigInteger("00800000", 16);
-			highest = new BigInteger("7FFFFFFF", 16);
+	public void setSernoOctetSize(final int noOctets) {
+		if (this.noOctets != noOctets) {
+			if (noOctets == 4) {
+				lowest = new BigInteger("00800000", 16);
+				highest = new BigInteger("7FFFFFFF", 16);
+			}
+			if ((noOctets != 4) && (noOctets != 8) && (noOctets != 0)) {
+				throw new IllegalArgumentException(
+						"SernoOctetSize must be 4 or 8 for this generator.");
+			}
+			this.noOctets = noOctets;
 		}
-		if ((noOctets != 4) && (noOctets != 8) && (noOctets != 0)) {
-			throw new IllegalArgumentException(
-					"SernoOctetSize must be 4 or 8 for this generator.");
-		}
-		this.noOctets = noOctets;
 	}
 
 }
