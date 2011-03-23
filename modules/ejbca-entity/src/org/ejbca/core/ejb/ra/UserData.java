@@ -538,4 +538,12 @@ public class UserData implements Serializable {
     	query.setParameter("tokenType", hardTokenProfileId);
     	return ((Long)query.getSingleResult()).longValue();	// Always returns a result
 	}
+
+	/** @return a list of subjectDNs that contain SN=serialnumber* for a CA and excludes a username. */
+	public static List<String> findSubjectDNsByCaIdAndNotUsername(final EntityManager entityManager, final int caId, final String username, final String serialnumber) {
+		final Query query = entityManager.createQuery("SELECT a.subjectDN FROM UserData a WHERE a.caId=:caId AND a.username!=:username AND a.subjectDN LIKE '%SN=" + serialnumber + "%'");
+		query.setParameter("caId", caId);
+    	query.setParameter("username", username);
+		return query.getResultList();
+	}
 }
