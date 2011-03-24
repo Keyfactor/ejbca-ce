@@ -230,6 +230,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	init(emptyprofile);
     }
 
+    /** Creates a new instance of EndEntity Profile used during cloning */
+    private EndEntityProfile(final int unused) {
+    }
+
     private void init(final boolean emptyprofile){
         if (log.isDebugEnabled()) {
         	log.debug("The highest number in dataConstants is: " + dataConstantsMaxValue);
@@ -1289,13 +1293,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	}
 
     public Object clone() throws CloneNotSupportedException {
-    	final EndEntityProfile clone = new EndEntityProfile();
+    	final EndEntityProfile clone = new EndEntityProfile(0);
     	// We need to make a deep copy of the hashmap here
-    	final HashMap clonedata = (HashMap) clone.saveData();
-    	for (final Object key : data.keySet()) {
-    		clonedata.put(key,data.get(key));
+    	clone.data = new HashMap<Object,Object>(data.size());
+    	for (final Entry<Object,Object> entry : data.entrySet()) {
+    		Object value = entry.getValue();
+    		if (value instanceof ArrayList<?>) {
+    			// We need to make a clone of this object, but the stored Integers can still be referenced
+    			value = ((ArrayList<?>)value).clone();
+    		}
+    		clone.data.put(entry.getKey(), value);
     	}
-    	clone.loadData(clonedata);
     	return clone;
     }
 
