@@ -635,7 +635,7 @@ body.popup {
 .popup#viewhistory h4 {
 	text-align: left;
 }
-.popup#viewhistory table tr td:first-child {
+.popup#viewhistory table tbody tr td:first-child {
 	white-space: normal;
 }
 
