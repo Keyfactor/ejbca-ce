@@ -235,4 +235,9 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
+
+	@Override
+	public CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno) {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
 }

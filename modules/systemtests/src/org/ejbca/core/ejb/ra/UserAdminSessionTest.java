@@ -349,33 +349,33 @@ public class UserAdminSessionTest extends CaTestCase {
         CertificateStatus status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
         // Revoke the certificate, put on hold        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Unrevoke the certificate        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.NOT_REVOKED);
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.NOT_REVOKED);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
         // Revoke again certificate        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Unrevoke the certificate, but with different code        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
         // Revoke again certificate permanently        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
 
         // Unrevoke the certificate, should not work
         try {
-        	userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        	userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
             assertTrue(false); // should not reach this
         } catch (AlreadyRevokedException e) {}
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));

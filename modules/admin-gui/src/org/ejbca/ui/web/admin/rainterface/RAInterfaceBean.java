@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -74,7 +75,7 @@ import org.ejbca.util.query.Query;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class RAInterfaceBean implements java.io.Serializable {
+public class RAInterfaceBean implements Serializable {
     
 	private static final long serialVersionUID = 1L;
 	private static Logger log = Logger.getLogger(RAInterfaceBean.class);
@@ -232,15 +233,13 @@ public class RAInterfaceBean implements java.io.Serializable {
     	if (log.isTraceEnabled()) {
         	log.trace(">revokeCert(): "+username+", "+reason);    		
     	}
-    	boolean success = true;
+    	boolean success = false;
     	try {
-    		userAdminSession.revokeCert(administrator, serno, issuerdn, username, reason);
-    	} catch( AuthorizationDeniedException e) {
-    		success = false;
+    		userAdminSession.revokeCert(administrator, serno, issuerdn, reason);
+    		success = true;
+    	} catch (AuthorizationDeniedException e) {
     	} catch (FinderException e) {
-    		success = false;
     	} catch (AlreadyRevokedException e) {
-    		success = false;
 		}
     	if (log.isTraceEnabled()) {
     		log.trace("<revokeCert(): " + success);
@@ -590,7 +589,7 @@ public class RAInterfaceBean implements java.io.Serializable {
        while ( i.hasNext() ) {
     	   Certificate cert = i.next();
            try {
-        	   userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), username, reason);
+        	   userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), reason);
         	// Ignore errors if some were successful 
            } catch (ApprovalException e) {
         	   lastAppException = e;

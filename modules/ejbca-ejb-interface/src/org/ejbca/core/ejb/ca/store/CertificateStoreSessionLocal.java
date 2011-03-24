@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
+import java.math.BigInteger;
+
 import javax.ejb.Local;
+
+import org.ejbca.core.model.ca.store.CertificateInfo;
 
 /**
  * Local interface for CertificateStoreSession.
@@ -20,4 +24,6 @@ import javax.ejb.Local;
  */
 @Local
 public interface CertificateStoreSessionLocal extends CertificateStoreSession {
+
+	CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno);
 }

@@ -94,7 +94,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 					userAdminSession.revokeAndDeleteUser(getRequestAdmin(), username, reason);
 					break;
 				case ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE:
-					userAdminSession.revokeCert(getRequestAdmin(), certificateSerialNumber, issuerDN, username, reason);
+					userAdminSession.revokeCert(getRequestAdmin(), certificateSerialNumber, issuerDN, reason);
 					break;
 				default:
 					log.error("Unknown approval type " + approvalType);
