@@ -113,7 +113,13 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   </subsection>
   
   </section>
-  
+  <section name="EJBCA and Apple iOS">
+  <p>
+You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
+<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto if you need this type of support. It works according to the same principals as the examples below.
+</p>
+  </section>
+    
   <section name="EJBCA and Cisco IOS">
   <p>This howto is contributed by Bruno Bonfils.</p>
   <p>
