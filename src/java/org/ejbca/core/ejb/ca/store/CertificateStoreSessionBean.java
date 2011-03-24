@@ -297,6 +297,11 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     }
 
     @Override
+    public CertificateInfo findFirstCertificateInfo(final String issuerDN, final BigInteger serno) {
+    	return CertificateData.findFirstCertificateInfo(entityManager, issuerDN, serno.toString());
+    }
+
+    @Override
     public Collection<Certificate> findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection<BigInteger> sernos) {
     	log.trace(">findCertificatesByIssuerAndSernos()");
         List<Certificate> ret = null;

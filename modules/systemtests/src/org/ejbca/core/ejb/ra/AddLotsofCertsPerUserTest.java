@@ -138,7 +138,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 userAdminSession.setClearTextPassword(administrator, username, password);
                 userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
-                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
+                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
 
@@ -164,7 +164,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 userAdminSession.setClearTextPassword(administrator, username, password);
                 userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
-                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
+                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
             // Create some expired and archived
@@ -172,7 +172,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 userAdminSession.setClearTextPassword(administrator, username, password);
                 userAdminSession.setUserStatus(administrator, username, UserDataConstants.STATUS_NEW);
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
-                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate), username,
+                userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 storeSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(certificate));
             }

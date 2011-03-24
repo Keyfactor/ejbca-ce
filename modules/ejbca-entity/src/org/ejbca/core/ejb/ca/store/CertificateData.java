@@ -66,6 +66,12 @@ import org.ejbca.util.keystore.KeyTools;
 		@ColumnResult(name="revocationReason"), @ColumnResult(name="username"), @ColumnResult(name="tag"), @ColumnResult(name="certificateProfileId"),
 		@ColumnResult(name="updateTime")
 	}),
+	@SqlResultSetMapping(name="CertificateInfoSubset2", columns={
+			@ColumnResult(name="fingerprint"), @ColumnResult(name="subjectDN"), @ColumnResult(name="cAFingerprint"), @ColumnResult(name="status"),
+			@ColumnResult(name="type"), @ColumnResult(name="expireDate"), @ColumnResult(name="revocationDate"),
+			@ColumnResult(name="revocationReason"), @ColumnResult(name="username"), @ColumnResult(name="tag"), @ColumnResult(name="certificateProfileId"),
+			@ColumnResult(name="updateTime")
+		}),
 	@SqlResultSetMapping(name="FingerprintUsernameSubset", columns={
 			@ColumnResult(name="fingerprint"), @ColumnResult(name="username")
 	})
@@ -585,6 +591,41 @@ public class CertificateData implements Serializable {
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
 		return query.getResultList();
+	}
+
+	/** @return return the query results as a List. */
+	public static CertificateInfo findFirstCertificateInfo(EntityManager entityManager, String issuerDN, String serialNumber) {
+		CertificateInfo ret = null;
+		final Query query = entityManager.createNativeQuery(
+				"SELECT a.fingerprint, a.subjectDN, a.cAFingerprint, a.status, a.type, a.serialNumber, a.expireDate, a.revocationDate, a.revocationReason, "
+				+ "a.username, a.tag, a.certificateProfileId, a.updateTime FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", "CertificateInfoSubset2");
+		query.setParameter("issuerDN", issuerDN);
+		query.setParameter("serialNumber", serialNumber);
+		query.setMaxResults(1);
+		final List<Object[]> resultList = (List<Object[]>) query.getResultList();
+		if (!resultList.isEmpty()) {
+			Object[] fields = resultList.get(0);
+			// The order of the results are defined by the SqlResultSetMapping annotation
+			String fingerprint = (String) fields[0];
+			String subjectDN = (String) fields[1];
+			String cafp = (String) fields[2];
+			int status = ValueExtractor.extractIntValue(fields[3]);
+			int type = ValueExtractor.extractIntValue(fields[4]);
+			long expireDate = ValueExtractor.extractLongValue(fields[5]);
+			long revocationDate = ValueExtractor.extractLongValue(fields[6]);
+			int revocationReason = ValueExtractor.extractIntValue(fields[7]);
+			String username = (String) fields[8];
+			String tag = (String) fields[9];
+			int cProfId = ValueExtractor.extractIntValue(fields[10]);
+			long updateTime;
+			if (fields[11]==null) {
+				updateTime = 0;	// Might be null in an upgraded installation
+			} else {
+				updateTime = ValueExtractor.extractLongValue(fields[11]);
+			}
+	        ret = new CertificateInfo(fingerprint, cafp, serialNumber, issuerDN, subjectDN, status, type, expireDate, revocationDate, revocationReason, username, tag, cProfId, updateTime);				
+		}
+		return ret;
 	}
 
 	/** @return the last found username or null if none was found */

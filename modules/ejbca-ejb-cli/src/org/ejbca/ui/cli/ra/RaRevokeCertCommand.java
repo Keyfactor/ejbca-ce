@@ -59,16 +59,10 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
                     getLogger().info("Found certificate:");
                     getLogger().info("Subject DN=" + CertTools.getSubjectDN(cert));
                     // We need the user this cert is connected with
-        			String username = ejb.getCertStoreSession().findUsernameByCertSerno(getAdmin(), serno, issuerDN);
-        			if (username != null) {
-                        getLogger().info("Found user for certificate: "+username);
-                    } else {
-                        getLogger().info("No username found for certificate with issuerDN '"+issuerDN+"' and serialNumber "+certserno);                    	
-                    }
         			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
         			// that was permanently revoked
         			try {
-            			ejb.getUserAdminSession().revokeCert(getAdmin(), serno, issuerDN, username, reason);
+            			ejb.getUserAdminSession().revokeCert(getAdmin(), serno, issuerDN, reason);
                         getLogger().info( (reason == 8 ? "Unrevoked":"Revoked") + " certificate with issuerDN '"+issuerDN+"' and serialNumber "+certserno+". Revocation reason="+reason);        				
                     } catch (AlreadyRevokedException e) {
                     	if (reason == 8) {

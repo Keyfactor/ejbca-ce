@@ -242,15 +242,14 @@ public class RevocationApprovalTest extends CaTestCase {
             createUser(internalAdmin, username, approvalCAID);
             X509Certificate usercert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, username).iterator().next();
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username,
-                        RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
                 assertTrue(ERRORNONEXISTINGAPPROVALREPORTED, false);
             } catch (WaitingForApprovalException e) {
             }
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username,
+                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
                         RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
@@ -261,16 +260,14 @@ public class RevocationApprovalTest extends CaTestCase {
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
             // Unrevoke
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username,
-                        RevokedCertInfo.NOT_REVOKED);
+                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
                 assertTrue(ERRORNONEXISTINGAPPROVALREPORTED, false);
             } catch (WaitingForApprovalException e) {
             }
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), username,
-                        RevokedCertInfo.NOT_REVOKED);
+                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
             } catch (WaitingForApprovalException e) {

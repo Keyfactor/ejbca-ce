@@ -1174,10 +1174,9 @@ public class EjbcaWS implements IEjbcaWS {
 			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
 			}
 			final BigInteger serno = new BigInteger(certificateSN, 16);
-			final String username = certificateStoreSession.findUsernameByCertSerno(admin, serno, issuerDN);
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
-			userAdminSession.revokeCert(admin,serno, issuerDN, username,  reason);
+			userAdminSession.revokeCert(admin, serno, issuerDN, reason);
 		} catch (AuthorizationDeniedException e) {
 			throw e;
 		} catch (FinderException e) {
@@ -1313,13 +1312,8 @@ public class EjbcaWS implements IEjbcaWS {
             logAdminName(admin,logger);
 			Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin,hardTokenSN);
 			Iterator<java.security.cert.Certificate> iter = certs.iterator();
-			String username = null;
 			while(iter.hasNext()){
 				X509Certificate next = (X509Certificate) iter.next();
-				if(username == null){
-					username = certificateStoreSession.findUsernameByCertSerno(admin,CertTools.getSerialNumber(next),CertTools.getIssuerDN(next));
-				}
-				
 				// check that admin is authorized to CA
 				int caid = CertTools.getIssuerDN(next).hashCode();
 				caAdminSession.verifyExistenceOfCA(caid);
@@ -1329,7 +1323,7 @@ public class EjbcaWS implements IEjbcaWS {
 				try {
 					// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 					// that was permanently revoked
-					userAdminSession.revokeCert(admin,CertTools.getSerialNumber(next),CertTools.getIssuerDN(next),username,reason);
+					userAdminSession.revokeCert(admin,CertTools.getSerialNumber(next),CertTools.getIssuerDN(next),reason);
 					success = true;
 				} catch (WaitingForApprovalException e) {
 					lastWaitingForApprovalException = e;
@@ -1615,10 +1609,11 @@ public class EjbcaWS implements IEjbcaWS {
 					while(iter.hasNext()){
 						java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
 						try {
-							userAdminSession.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), currentHardToken.getUsername(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+							userAdminSession.revokeCert(admin, CertTools.getSerialNumber(nextCert), CertTools.getIssuerDN(nextCert), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
 						} catch (AlreadyRevokedException e) {
 							// Ignore previously revoked certificates
 						} catch (FinderException e) {
+							log.info("TMPDEBUG: currentHardToken.getUsername()=" + currentHardToken.getUsername() + " e.message=" + e.getMessage());
                             throw EjbcaWSHelper.getEjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.",
                                                     logger, ErrorCode.USER_NOT_FOUND, null);
 						} 
@@ -1647,7 +1642,7 @@ public class EjbcaWS implements IEjbcaWS {
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
 									try{
 										if(WebServiceConfiguration.getSuspendAllCertificates() || next.getExtendedKeyUsage() == null || !next.getExtendedKeyUsage().contains(KeyPurposeId.id_kp_smartcardlogon.getId())){
-											userAdminSession.revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), userDataWS.getUsername(),  RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+											userAdminSession.revokeCert(admin,next.getSerialNumber(), CertTools.getIssuerDN(next), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
 										}
 									}catch(CertificateParsingException e){
 										log.error(e);

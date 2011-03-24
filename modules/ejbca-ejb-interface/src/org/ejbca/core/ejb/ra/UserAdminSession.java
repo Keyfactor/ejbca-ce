@@ -347,13 +347,12 @@ public interface UserAdminSession {
      * 
      * @param admin the administrator performing the action
      * @param certserno the serno of certificate to revoke.
-     * @param username the username to revoke.
      * @param reason the reason of revocation, one of the RevokedCertInfo.XX
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
      *            certificate on hold.
      * @throws AlreadyRevokedException if the certificate was already revoked
      */
-    public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,
+    public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, int reason) throws AuthorizationDeniedException,
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
@@ -385,10 +384,10 @@ public interface UserAdminSession {
     public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException;
 
     /**
-     * Finds a user by its Email.
-     * @return UserDataVO or null if the user is not found.
+     * Finds a users by subject email.
+     * @return List of all matching UserDataVO, never null
      */
-    public Collection<UserDataVO> findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException;
+    public List<UserDataVO> findUserByEmail(Admin admin, String email) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if user with specified users certificate exists in

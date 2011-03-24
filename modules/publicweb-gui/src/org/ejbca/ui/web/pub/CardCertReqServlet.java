@@ -218,8 +218,7 @@ public class CardCertReqServlet extends HttpServlet {
                 		for (int i=0; i<notRevokedCerts.length; i++) {
                 			try {
                 				userAdminSession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
-                						notRevokedCerts[i].getIssuerDN().toString(), username,
-                						RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+                						notRevokedCerts[i].getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                 			} catch (WaitingForApprovalException e) {
                 				log.info("A request for approval to revoke " + username + "'s old certificate "+
                 						notRevokedCerts[i].getSerialNumber().toString(16)+" was added.");

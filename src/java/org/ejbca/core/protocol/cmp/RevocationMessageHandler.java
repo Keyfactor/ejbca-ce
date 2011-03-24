@@ -181,8 +181,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 						String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 						LOG.info(iMsg);
 						try {
-							String username = certificateStoreSession.findUsernameByCertSerno(admin, serno.getValue(), issuer.toString());
-							userAdminSession.revokeCert(admin, serno.getValue(), issuer.toString(), username, reason);
+							userAdminSession.revokeCert(admin, serno.getValue(), issuer.toString(), reason);
 							status = ResponseStatus.SUCCESS;
 						} catch (AuthorizationDeniedException e) {
 							failInfo = FailInfo.NOT_AUTHORIZED;
