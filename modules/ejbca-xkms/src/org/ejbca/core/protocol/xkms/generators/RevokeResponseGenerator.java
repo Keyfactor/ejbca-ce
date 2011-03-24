@@ -26,7 +26,6 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -89,7 +88,7 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
 							String revokeCode = getRevocationCode(req);
 							if(XKMSConfig.isRevocationAllowed()){
 							  if(revokeCode != null ){
-								X509Certificate newCert = revoke(userData,revokeCode, revocationCodeId, cert);
+								X509Certificate newCert = revoke(revokeCode, revocationCodeId, cert);
 								if(newCert != null && req.getRespondWith().size() > 0){
 									KeyBindingAbstractType keyBinding = getResponseValues(req.getRevokeKeyBinding(), newCert, true, false);
 									result.getKeyBinding().add((KeyBindingType) keyBinding);
@@ -135,14 +134,14 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
 		return retval;
 	}
 
-	private X509Certificate revoke(UserDataVO userData, String password, String revocationCode,  X509Certificate cert) {
+	private X509Certificate revoke(String password, String revocationCode,  X509Certificate cert) {
 		X509Certificate retval = null;
 		// Check the password
 				
 		if(revocationCode.equals(password)){				
 			// revoke cert
 			try {								
-			    userAdminSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			    userAdminSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 				retval = cert;
 			} catch (WaitingForApprovalException e) {
 				// The request has been sent for approval. -> Only part of the information requested could be provided.
