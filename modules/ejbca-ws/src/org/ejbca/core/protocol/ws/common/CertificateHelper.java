@@ -47,6 +47,7 @@ public class CertificateHelper {
     public static final int CERT_REQ_TYPE_PKCS10	= SecConst.CERT_REQ_TYPE_PKCS10;
     public static final int CERT_REQ_TYPE_CRMF		= SecConst.CERT_REQ_TYPE_CRMF;
     public static final int CERT_REQ_TYPE_SPKAC     = SecConst.CERT_REQ_TYPE_SPKAC;
+    public static final int CERT_REQ_TYPE_PUBLICKEY = SecConst.CERT_REQ_TYPE_PUBLICKEY;
 
 	
 	/**

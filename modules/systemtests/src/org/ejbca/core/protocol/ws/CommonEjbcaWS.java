@@ -149,6 +149,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             + "DQEBBQUAA4GBAJEhlvfoWNIAOSvFnLpg59vOj5jG0Urfv4w+hQmtCdK7MD0nyGKU" + "cP5CWCau0vK9/gikPoA49n0PK81SPQt9w2i/A81OJ3eSLIxTqi8MJS1+/VuEmvRf"
             + "XvedU84iIqnjDq92dTs6v01oRyPCdcjX8fpHuLk1VA96hgYai3l/D8lg";
 
+	private static final String PUBLICKEY = "-----BEGIN PUBLIC KEY-----\n"
+		  + "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDC/kSfVJ/hyq96xwRRwVdO0ltD\n"
+		  + "glRyKhVhA0OyI/4ux4a0NIxD4OVstfQmoyt/X7olMG29mZGpinQC6wuaaL0JJ9To\n"
+		  + "ejr41IwvDrkLKQKdY+mAJ8zUUWFWYqbcurTXrYJCYeG/ETAJZLfD4EKMNCd/lC/r\n"
+		  + "G4yg9pzLOMjNr2tQ4wIDAQAB\n"
+		  + "-----END PUBLIC KEY-----";
+    
     private static final String BADCANAME = "BadCaName";
 
     private static final String CA1_WSTESTUSER1 = "CA1_WSTESTUSER1";
@@ -567,6 +574,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNull("CRMF request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
         errorCode = certreqInternal(userData1, SPCAK, CertificateHelper.CERT_REQ_TYPE_SPKAC);
         assertNull("SPKAC request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
+        errorCode = certreqInternal(userData1, PUBLICKEY, CertificateHelper.CERT_REQ_TYPE_PUBLICKEY);
+		assertNull("PUBLICKEY request resulted in error code: " + (errorCode==null?"":errorCode.getInternalErrorCode()), errorCode);
     }
 
     protected void enforcementOfUniquePublicKeys() throws Exception {
