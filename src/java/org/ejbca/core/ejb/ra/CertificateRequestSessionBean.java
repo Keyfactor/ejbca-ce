@@ -44,6 +44,8 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -77,6 +79,7 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.SimpleRequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 import org.ejbca.util.RequestMessageUtils;
 
 import com.novosec.pkix.asn1.crmf.CertRequest;
@@ -176,6 +179,15 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 				//PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
 				//CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
 				//imsg = reqmsg;
+			} else if (reqType == SecConst.CERT_REQ_TYPE_PUBLICKEY) {
+				final byte[] request = FileTools.getBytesFromPEM(req.getBytes(), CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+				final ASN1InputStream in = new ASN1InputStream(request);
+				final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
+				final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithmId();
+				final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
+				final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getObjectId().getId(), "BC");
+				final PublicKey pubKey = keyFact.generatePublic(xKeySpec);
+				imsg = new SimpleRequestMessage(pubKey, username, password);
 			}
 			if (imsg != null) {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, userdata);

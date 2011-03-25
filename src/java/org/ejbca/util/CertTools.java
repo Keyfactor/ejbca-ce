@@ -214,6 +214,8 @@ public class CertTools {
 	public static final String END_KEYTOOL_CERTIFICATE_REQUEST  = "-----END NEW CERTIFICATE REQUEST-----";
 	public static final String BEGIN_CERTIFICATE                = "-----BEGIN CERTIFICATE-----";
 	public static final String END_CERTIFICATE                    = "-----END CERTIFICATE-----";
+	public static final String BEGIN_PUBLIC_KEY                   = "-----BEGIN PUBLIC KEY-----";
+	public static final String END_PUBLIC_KEY                     = "-----END PUBLIC KEY-----";
     
     /**
      * inhibits creation of new CertTools
