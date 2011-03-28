@@ -1,12 +1,6 @@
 <project name="cli" default="ejbca:install" basedir="." xmlns:ejbca="ejbca">
 
-    <property name="ejbca.home" location=".."/>
-    <property environment="env"/>
-
-	<!-- read in the installation configuration settings from conf directory -->
-    <property file="${ejbca.home}/conf/install.properties"/>
-
-    <property name="lib.dir" location="${ejbca.home}/lib"/>
+	<fail unless="ejbca.home" message="This ant script cannot be run stand-alone.."/>
 
 <!--
     This is a transcript of the install.sh content to avoid platform specific problems
