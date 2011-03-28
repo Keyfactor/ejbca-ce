@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
  * 
  * @version $Id$
  */
-public class LanguageProperties extends java.util.Properties {  
+public class LanguageProperties extends Properties {  
     private static Logger log = Logger.getLogger(LanguageProperties.class);
     
 	private static final String keyValueSeparators = "=: \t\r\n\f";  
@@ -147,7 +148,7 @@ public class LanguageProperties extends java.util.Properties {
 	private String loadConvert (String theString) {  
 		char aChar;  
 		int len = theString.length();   
-		StringBuffer outBuffer = new StringBuffer(len);  
+		StringBuilder outBuffer = new StringBuilder(len);
 		for(int x=0; x<len; ) {  
 			aChar = theString.charAt(x++);    
 			if (aChar == '\\') {     

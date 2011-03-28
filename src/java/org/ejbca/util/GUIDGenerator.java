@@ -35,8 +35,7 @@ public class GUIDGenerator {
 	    *
 	    * Usage: Add an id field (type java.lang.String) to your EJB, and add setId(XXXUtil.generateGUID(this)); to the ejbCreate method.
 	    */
-	   public static final String generateGUID(Object o) {
-	       StringBuffer tmpBuffer = new StringBuffer(16);
+	   public static final String generateGUID(final Object o) {
 	       if (hexServerIP == null) {
 	           java.net.InetAddress localInetAddress = null;
 	           try {
@@ -51,18 +50,14 @@ public class GUIDGenerator {
 	           byte serverIP[] = localInetAddress.getAddress();
 	           hexServerIP = hexFormat(getInt(serverIP), 8);
 	       }
-
-	       String hashcode = hexFormat(System.identityHashCode(o), 8);
-	       tmpBuffer.append(hexServerIP);
-	       tmpBuffer.append(hashcode);
-
-	       long timeNow      = System.currentTimeMillis();
-	       int timeLow       = (int)timeNow & 0xFFFFFFFF;
-	       int node          = seeder.nextInt();
-
-	       StringBuffer guid = new StringBuffer(32);
+	       final String hashcode = hexFormat(System.identityHashCode(o), 8);
+	       final long timeNow      = System.currentTimeMillis();
+	       final int timeLow       = (int)timeNow & 0xFFFFFFFF;
+	       final int node          = seeder.nextInt();
+	       final StringBuilder guid = new StringBuilder(32);
 	       guid.append(hexFormat(timeLow, 8));
-	       guid.append(tmpBuffer.toString());
+	       guid.append(hexServerIP);
+	       guid.append(hashcode);
 	       guid.append(hexFormat(node, 8));
 	       return guid.toString();
 	   }
@@ -79,12 +74,12 @@ public class GUIDGenerator {
 	   }
 
 	   private static String hexFormat(int i, int j) {
-	       String s = Integer.toHexString(i);
+	       final String s = Integer.toHexString(i);
 	       return padHex(s, j) + s;
 	   }
 
 	   private static String padHex(String s, int i) {
-	       StringBuffer tmpBuffer = new StringBuffer();
+		   final StringBuilder tmpBuffer = new StringBuilder();
 	       if (s.length() < i) {
 	           for (int j = 0; j < i - s.length(); j++) {
 	               tmpBuffer.append('0');

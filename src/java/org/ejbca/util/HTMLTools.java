@@ -126,12 +126,12 @@ public class HTMLTools {
         {"yuml", Integer.valueOf(255)},     // ÿ - lowercase y, umlaut
         {"euro", Integer.valueOf(8364)},    // Euro symbol
     };
-    static Map e2i = new HashMap();
-    static Map i2e = new HashMap();
+    static Map<String,Integer> e2i = new HashMap<String,Integer>();
+    static Map<Integer,String> i2e = new HashMap<Integer,String>();
     static {
         for (int i=0; i<entities.length; ++i) {
-            e2i.put(entities[i][0], entities[i][1]);
-            i2e.put(entities[i][1], entities[i][0]);
+            e2i.put((String)entities[i][0], (Integer)entities[i][1]);
+            i2e.put((Integer)entities[i][1], (String)entities[i][0]);
         }
     }
 
@@ -141,16 +141,15 @@ public class HTMLTools {
      * Update: supports nearly all HTML entities, including funky accents. See the source code for more detail.
      * @see #htmlunescape(String)
      **/
-    public static String htmlescape(String s1)
-    {
+    public static String htmlescape(String s1) {
     	if (s1 == null) {
     		return null;
     	}
-        StringBuffer buf = new StringBuffer();
+    	final StringBuilder buf = new StringBuilder();
         int i;
         for (i=0; i<s1.length(); ++i) {
             char ch = s1.charAt(i);
-            String entity = (String)i2e.get( Integer.valueOf(ch) );
+            String entity = i2e.get( Integer.valueOf(ch) );
             if (entity == null) {
                 if ((ch) > 128) {
                     buf.append("&#" + ((int)ch) + ";");
@@ -181,7 +180,7 @@ public class HTMLTools {
     	if (s1 == null) {
     		return null;
     	}
-        StringBuffer buf = new StringBuffer();
+    	final StringBuilder buf = new StringBuilder();
         int i;
         for (i=0; i<s1.length(); ++i) {
             char ch = s1.charAt(i);
@@ -197,7 +196,7 @@ public class HTMLTools {
                     iso = Integer.valueOf(entity.substring(1));
                 }
                 else {
-                    iso = (Integer)e2i.get(entity);
+                    iso = e2i.get(entity);
                 }
                 if (iso == null) {
                     buf.append("&" + entity + ";");

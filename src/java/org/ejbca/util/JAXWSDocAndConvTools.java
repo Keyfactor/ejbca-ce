@@ -67,7 +67,7 @@ public class JAXWSDocAndConvTools {
 		Vector<String> argument_names = new Vector<String> ();
 		Vector<String> exceptions = new Vector<String> ();
 		String signature (){
-			StringBuffer sig = new StringBuffer ();
+			final StringBuilder sig = new StringBuilder();
 			sig.append(method_name).append(':').append(return_type);
 			for (String decl : declarators){
 				sig.append('/').append(decl);
@@ -87,7 +87,7 @@ public class JAXWSDocAndConvTools {
 	}
 	int c_index;
 	int c_start;
-	StringBuffer lines;
+	StringBuilder lines;
 	boolean ws_gen;
 	Token curr;
 	
@@ -298,7 +298,7 @@ public class JAXWSDocAndConvTools {
     }
     
     String getTypeDeclaration (Token start) throws Exception{
-    	StringBuffer type_decl = new StringBuffer ();
+    	final StringBuilder type_decl = new StringBuilder();
     	type_decl.append(start.getText());
     	Token nxt = scan ();
     	if (nxt.getType() == Types.LEFTBRACK){
@@ -440,7 +440,7 @@ public class JAXWSDocAndConvTools {
     CompilationUnit parse (String file_name) throws Exception{
 		System.out.println ("File to parse: " + file_name);
 		CompilationUnit compilation = new CompilationUnit ();
-		lines = new StringBuffer();
+		lines = new StringBuilder();
 		BufferedReader in = new BufferedReader (new FileReader (file_name));
 		String line;
 		while ((line = in.readLine()) != null){
@@ -509,7 +509,7 @@ public class JAXWSDocAndConvTools {
 			System.out.println ();
 		}
 */
-		StringBuffer ofile = new StringBuffer ();
+		final StringBuilder ofile = new StringBuilder();
 		ofile.append(gen_directory).append("/");
 		for (int i = 0; i < client.package_name.length (); i++){
 			if (client.package_name.charAt(i) == '.'){

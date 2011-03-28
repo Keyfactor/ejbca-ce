@@ -179,7 +179,7 @@ public final class QCStatementExtension extends CertTools {
 	            if (gns == null) {
 	                return null;
 	            }
-	            final StringBuffer strBuf = new StringBuffer(); 
+	            final StringBuilder strBuf = new StringBuilder(); 
 	            for (int i = 0; i < gns.length; i++) {
 	            	final GeneralName gn = gns[i];
 	                if (strBuf.length() != 0) {

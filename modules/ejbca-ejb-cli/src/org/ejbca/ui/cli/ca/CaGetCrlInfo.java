@@ -38,7 +38,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin());
         	for (Integer caId : caIds) {
         		final CA ca = ejb.getCaSession().getCA(getAdmin(), caId);
-        		StringBuffer sb = new StringBuffer();
+        		final StringBuilder sb = new StringBuilder();
         		sb.append("\"").append(ca.getName()).append("\" \"").append(ca.getSubjectDN()).append("\"");
         		final CRLInfo crlInfo = ejb.getCrlSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), false);
         		if (crlInfo != null) {

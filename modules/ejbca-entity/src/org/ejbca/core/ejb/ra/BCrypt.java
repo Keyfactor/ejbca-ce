@@ -390,7 +390,7 @@ public class BCrypt {
 	private static String encodeBase64(final byte d[], final int len)
 		throws IllegalArgumentException {
 		int off = 0;
-		final StringBuffer rs = new StringBuffer();
+		final StringBuilder rs = new StringBuilder();
 		int c1, c2;
 
 		if (len <= 0 || len > d.length) {
@@ -444,7 +444,7 @@ public class BCrypt {
 	 */
 	private static byte[] decodeBase64(final String s, final int maxolen)
 		throws IllegalArgumentException {
-		final StringBuffer rs = new StringBuffer();
+		final StringBuilder rs = new StringBuilder();
 		int off = 0;
 		final int slen = s.length();
 		int olen = 0;
@@ -669,8 +669,6 @@ public class BCrypt {
 		byte passwordb[], saltb[], hashed[];
 		char minor = (char)0;
 		int rounds, off = 0;
-		final StringBuffer rs = new StringBuffer();
-
 		if (salt.charAt(0) != '$' || salt.charAt(1) != '2') {
 			throw new IllegalArgumentException ("Invalid salt version");
 		}
@@ -702,7 +700,7 @@ public class BCrypt {
 		B = new BCrypt();
 		hashed = B.cryptRaw(passwordb, saltb, rounds);
 
-		rs.append("$2");
+		final StringBuilder rs = new StringBuilder("$2");
 		if (minor >= 'a') {
 			rs.append(minor);
 		}
@@ -727,12 +725,9 @@ public class BCrypt {
 	 * @return	an encoded salt value
 	 */
 	public static String gensalt(final int log_rounds, final SecureRandom random) {
-		final StringBuffer rs = new StringBuffer();
+		final StringBuilder rs = new StringBuilder("$2a$");
 		final byte rnd[] = new byte[BCRYPT_SALT_LEN];
-
 		random.nextBytes(rnd);
-
-		rs.append("$2a$");
 		if (log_rounds < 10) {
 			rs.append('0');
 		}

@@ -91,7 +91,7 @@ public final class StringTools {
         if (str == null) {
             return null;
         }
-    	final StringBuffer buf = new StringBuffer(str);
+    	final StringBuilder buf = new StringBuilder(str);
 		for (int i = 0; i< stripChars.length; i++) {
 			int index = 0;
 			int end = buf.length();
@@ -327,33 +327,24 @@ public final class StringTools {
      * @param s string to obfuscate
      * @return an obfuscated string
      */
-    public static String obfuscate(final String s)
-    {
-        final StringBuffer buf = new StringBuffer();
+    public static String obfuscate(final String s) {
+        final StringBuilder buf = new StringBuilder("OBF:");
         final byte[] b = s.getBytes();
-        
-        synchronized(buf)
-        {
-            buf.append("OBF:");
-            for (int i=0;i<b.length;i++)
-               {
-                final byte b1 = b[i];
-                final byte b2 = b[s.length()-(i+1)];
-                final int i1= b1+b2+127;
-                final int i2= b1-b2+127;
-                final int i0=i1*256+i2;
-                final String x = Integer.toString(i0,36);
-
-                switch(x.length())
-                {
-                case 1:buf.append('0'); break;
-                case 2:buf.append('0'); break;
-                case 3:buf.append('0'); break;
-                default:buf.append(x); break;
-                }
-            }
-            return buf.toString();
+        for (int i=0; i<b.length; i++) {
+        	final byte b1 = b[i];
+        	final byte b2 = b[s.length()-(i+1)];
+        	final int i1= b1+b2+127;
+        	final int i2= b1-b2+127;
+        	final int i0=i1*256+i2;
+        	final String x = Integer.toString(i0,36);
+        	switch (x.length()) {
+        	case 1:
+        	case 2:
+        	case 3:buf.append('0'); break;
+        	default:buf.append(x); break;
+        	}
         }
+        return buf.toString();
     }
     
     /** Retrieves the clear text from a string obfuscated with the obfuscate methods
@@ -478,7 +469,7 @@ public final class StringTools {
             // Here we will strip any sequence number at the end of the key label and add the new sequence there
             // We will only count decimal (0-9) to ensure that we will not accidentally update the first to 
             // characters to the provided country code
-            final StringBuffer buf = new StringBuffer();
+            final StringBuilder buf = new StringBuilder();
             for (int i = oldSequence.length()-1; i >= 0; i--) {
                 final char c = oldSequence.charAt(i);     
                 if (CharUtils.isAsciiNumeric(c)) {

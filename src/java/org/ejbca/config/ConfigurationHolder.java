@@ -186,7 +186,7 @@ public final class ConfigurationHolder {
 	public static String getString(final String property, final String defaultValue) {
 		// Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
 		final String ret;
-		final StringBuffer str = new StringBuffer();
+		final StringBuilder str = new StringBuilder();
 		final String rets[] = instance().getStringArray(property);
 		for (int i=0; i<rets.length; i++) {
 			if (i != 0) {
