@@ -120,12 +120,9 @@ public class CertificatePolicy implements Serializable, Cloneable {
         return new CertificatePolicy(this.policyID, this.qualifierId, this.qualifier);
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
+    /** @see java.lang.Object#toString() */
     public String toString() {
-        final StringBuffer strBuffer = new StringBuffer(100);
-
+        final StringBuilder strBuffer = new StringBuilder(100);
         strBuffer.append("CertificatePolicy(policyID=");
         strBuffer.append(this.policyID);
         strBuffer.append(", qualifierId=");
@@ -133,7 +130,6 @@ public class CertificatePolicy implements Serializable, Cloneable {
         strBuffer.append(", qualifier=");
         strBuffer.append(this.qualifier);
         strBuffer.append(')');
-
         return strBuffer.toString();
     }
 

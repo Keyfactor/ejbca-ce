@@ -771,16 +771,13 @@ public class CertificateData implements Serializable {
 
 	public static List<Certificate> findCertificatesByIssuerDnAndSerialNumbers(EntityManager entityManager, String issuerDN, Collection<BigInteger> serialNumbers) {
         final List<Certificate> certificateList = new ArrayList<Certificate>();
-        final StringBuffer sb = new StringBuffer();
-        final Iterator<BigInteger> iter = serialNumbers.iterator();
-        while (iter.hasNext()) {
+        final StringBuilder sb = new StringBuilder();
+        for (final BigInteger serno : serialNumbers) {
         	sb.append(", '");
-        	// Make sure this is really a BigInteger passed in as (untrusted param)
-        	BigInteger serno = iter.next();
         	sb.append(serno.toString());
         	sb.append("'");
         }
-        // to save the repeating if-statement in the above closure not to add ', ' as the first characters in the StringBuffer we remove the two chars here :)
+        // to save the repeating if-statement in the above closure not to add ', ' as the first characters in the StringBuilder we remove the two chars here :)
         sb.delete(0, ", ".length());
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.

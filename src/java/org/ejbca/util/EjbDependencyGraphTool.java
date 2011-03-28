@@ -119,7 +119,7 @@ public class EjbDependencyGraphTool {
 			}
 		}
 		// Create .dot-file
-		StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append("digraph \""+args[0].substring(args[0].lastIndexOf("/")+1)+"\" {\n");
 		sb.append("graph [rankdir=\"BT\",nslimit=\"5.0\",mclimit=\"5.0\"];\n");
 		sb.append("node [fontsize=\"12\",fontname=\"Helvetica-Bold\",shape=box];\n");

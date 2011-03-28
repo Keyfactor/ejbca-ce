@@ -363,8 +363,8 @@ public class CertRequestHttpTest extends CaTestCase {
         // POST it
         con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         OutputStream os = con.getOutputStream();
-        StringBuffer buf = new StringBuffer();
-        buf.append("user=reqtest&password=foo123&pkcs10=").append(URLEncoder.encode(p10, "UTF-8"));
+        final StringBuilder buf = new StringBuilder("user=reqtest&password=foo123&pkcs10=");
+        buf.append(URLEncoder.encode(p10, "UTF-8"));
         os.write( buf.toString().getBytes("UTF-8"));
         os.close();
         assertEquals("Response code", 200, con.getResponseCode());

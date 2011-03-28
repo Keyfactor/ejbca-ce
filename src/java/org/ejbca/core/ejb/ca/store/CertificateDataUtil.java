@@ -106,7 +106,7 @@ public abstract class CertificateDataUtil {
                 || type > SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY + SecConst.CERTTYPE_ROOTCA) {
             throw new IllegalArgumentException();
         }
-        StringBuffer ctypes = new StringBuffer();
+        final StringBuilder ctypes = new StringBuilder();
         if ((type & SecConst.CERTTYPE_SUBCA) > 0) {
             ctypes.append(SecConst.CERTTYPE_SUBCA);
         }

@@ -74,8 +74,7 @@ public class SqlExecutor {
     	if (log.isTraceEnabled()) {
             log.trace("> runCommand: " + command);
     	}
-        StringBuffer tmp = new StringBuffer(command);
-        int res = executeCommand(tmp);
+        int res = executeCommand(command);
         log.debug(++commands + " commands executed with " + errors + " errors");
         commands = 0;
         errors = 0;
@@ -104,7 +103,7 @@ public class SqlExecutor {
         Timestamp start = new Timestamp(System.currentTimeMillis());
         try {
             String temp;
-            StringBuffer strBuf = new StringBuffer();
+            final StringBuilder strBuf = new StringBuilder();
             commands = 0;
             List<String> list = new LinkedList<String>();
             while ((temp = br.readLine()) != null) {
@@ -125,9 +124,9 @@ public class SqlExecutor {
                         // end of command, remove the ';' and execute
                         char ch = ' ';
                         strBuf.setCharAt(strBuf.length() - 1, ch);
-                        executeCommand(strBuf);
+                        executeCommand(strBuf.toString());
                         commands++;
-                        strBuf = new StringBuffer();
+                        strBuf.setLength(0);
                     } else {
                         // continue to read the command
                         strBuf.append(" ");
@@ -149,22 +148,21 @@ public class SqlExecutor {
     /** Executes an sql update. 
      * SQL INSERT, UPDATE or DELETE statement; or an SQL statement that returns nothing, such as a DDL statement. 
      * 
-     * @param command StringBuffer holding the SQL.
+     * @param command String holding the SQL.
      * @return number of rows updates (returned by executeUpdate)
      * @throws SQLException
      */
-    private int executeCommand(StringBuffer command) throws SQLException {
+    private int executeCommand(String sql) throws SQLException {
     	if (log.isTraceEnabled()) {
-            log.trace("> executeCommand: " + command);
+            log.trace("> executeCommand: " + sql);
     	}
         Statement stmt = null;
         int res = 0;
         try {
             stmt = con.createStatement();
-            String sql = command.toString();
             res = stmt.executeUpdate(sql);
         } catch (SQLException exception) {
-            log.error("Exception: " + exception.getMessage() + ", sql: "+ command.toString());
+            log.error("Exception: " + exception.getMessage() + ", sql: "+ sql);
             if (!this.continueOnSqlError) {
                 throw exception;
             }

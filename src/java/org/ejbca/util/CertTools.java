@@ -307,8 +307,8 @@ public class CertTools {
     } // stringToBcX509Name
     
     // Remove extra '+' character escaping
-    private static String getUnescapedPlus(String value) {
-    	StringBuffer buf = new StringBuffer(value);
+    private static String getUnescapedPlus(final String value) {
+    	final StringBuilder buf = new StringBuilder(value);
     	int index = 0;
     	int end = buf.length();
     	while (index < end) {
@@ -335,7 +335,7 @@ public class CertTools {
         if (dn == null) {
             return;
         }
-    	StringBuffer buf = new StringBuffer(dn);
+        final StringBuilder buf = new StringBuilder(dn);
 		int index = 0;
 		int end = buf.length();
 		while (index < end) {
@@ -462,8 +462,8 @@ public class CertTools {
         String ret = null;
         if (dn != null) {
             String o;
-            BasicX509NameTokenizer xt = new BasicX509NameTokenizer(dn);
-            StringBuffer buf = new StringBuffer();
+            final BasicX509NameTokenizer xt = new BasicX509NameTokenizer(dn);
+            final StringBuilder buf = new StringBuilder();
             boolean first = true;
             while (xt.hasMoreTokens()) {
                 o = xt.nextToken();
@@ -797,7 +797,7 @@ public class CertTools {
 				} else {
 			        // check if input is hexadecimal
 					log.info("getSerialNumber: Sequence is not a numeric string, trying to extract numerical sequence part.");
-					StringBuffer buf = new StringBuffer();
+					final StringBuilder buf = new StringBuilder();
 					for (int i = 0; i < sernoString.length(); i++) {
 						char c = sernoString.charAt(i);
 						if (CharUtils.isAsciiNumeric(c)) {
@@ -2575,78 +2575,53 @@ public class CertTools {
      * java.util.StringTokenizer. Taken from BouncyCastle, but does NOT
      * use or consider escaped characters. Used for reversing DNs without unescaping.
      */
-    private static class BasicX509NameTokenizer
-    {
-        private String          oid;
-        private int             index;
-        private StringBuffer    buf = new StringBuffer();
+    private static class BasicX509NameTokenizer {
+        final private String oid;
+        private int index = -1;
+        /* Since this class isn't thread safe anyway, we can use the slightly faster StringBuilder instead of StringBuffer */
+        final private StringBuilder buf = new StringBuilder();
 
-        public BasicX509NameTokenizer(
-            String oid)
-        {
+        public BasicX509NameTokenizer(final String oid) {
             this.oid = oid;
-            this.index = -1;
         }
 
-        public boolean hasMoreTokens()
-        {
+        public boolean hasMoreTokens() {
             return (index != oid.length());
         }
 
-        public String nextToken()
-        {
-            if (index == oid.length())
-            {
+        public String nextToken() {
+            if (index == oid.length()) {
                 return null;
             }
-
-            int     end = index + 1;
+            int end = index + 1;
             boolean quoted = false;
             boolean escaped = false;
-
             buf.setLength(0);
-
-            while (end != oid.length())
-            {
-                char    c = oid.charAt(end);
-                
-                if (c == '"')
-                {
-                    if (!escaped)
-                    {
+            while (end != oid.length()) {
+                char c = oid.charAt(end);
+                if (c == '"') {
+                    if (!escaped) {
                         buf.append(c);
                         quoted ^= true;	// Faster than "quoted = !quoted;"
-                    }
-                    else
-                    {
+                    } else {
                         buf.append(c);
                     }
                     escaped = false;
-                }
-                else
-                { 
-                    if (escaped || quoted)
-                    {
+                } else { 
+                    if (escaped || quoted) {
                         buf.append(c);
                         escaped = false;
-                    }
-                    else if (c == '\\')
-                    {
+                    } else if (c == '\\') {
                         buf.append(c);
                         escaped = true;
-                    }
-                    else if ( (c == ',') && (!escaped) )
-                    {
+                    } else if ( (c == ',') && (!escaped) ) {
                         break;
-                    }
-                    else
-                    {
+                    } else {
                         buf.append(c);
                     }
                 }
                 end++;
             }
-
             index = end;
             return buf.toString().trim();
         }

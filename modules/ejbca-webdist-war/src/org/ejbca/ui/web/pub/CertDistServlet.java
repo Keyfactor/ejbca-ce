@@ -427,7 +427,7 @@ public class CertDistServlet extends HttpServlet {
 				byte[] outbytes = new byte[0];
 				// Encode and send back
 				if ((format == null) || StringUtils.equalsIgnoreCase(format, "pem")) {
-					final StringBuffer out = new StringBuffer();
+					final StringBuilder out = new StringBuilder();
 					for (int i = 0; i < chain.length; i++) {
 						out.append("-----BEGIN CERTIFICATE-----\n");
 						out.append(new String(Base64.encode(chain[i].getEncoded())));

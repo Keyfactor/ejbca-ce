@@ -169,13 +169,9 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     	data.put(NOTIFICATIONEVENTS, events);
     }
 
-    
-    /**
-     * @see java.lang.Object#toString()
-     */
+    /** @see java.lang.Object#toString() */
     public String toString() {
-        StringBuffer strBuffer = new StringBuffer("UserNotification(");
-
+    	final StringBuilder strBuffer = new StringBuilder("UserNotification(");
         strBuffer.append("sender=");
         strBuffer.append(this.getNotificationSender());
         strBuffer.append(", rcpt=");
@@ -187,7 +183,6 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
         strBuffer.append(", events=");
         strBuffer.append(this.getNotificationEvents());
         strBuffer.append(")");
-
         return strBuffer.toString();
     }
 

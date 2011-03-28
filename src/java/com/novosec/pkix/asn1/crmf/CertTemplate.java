@@ -258,7 +258,7 @@ public class CertTemplate implements DEREncodable
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer(this.getClass().getName());
+    	StringBuilder sb = new StringBuilder(this.getClass().getName());
         sb.append(" (");
 
         if( this.getVersion() != null ) {
