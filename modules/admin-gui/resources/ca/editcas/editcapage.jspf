@@ -1048,7 +1048,7 @@ function checkallfields(){
 
    <tr  id="Row<%=row++%2%>"> 
      <td width="50%" align="right"> 
-       <%= ejbcawebbean.getText("CRL_CA_CRLPUBLISHERS") %> <br />&nbsp;
+       <%= ejbcawebbean.getText("PUBLISHERS") %> <br />&nbsp;
      </td>
      <td width="50%"> 
        <select name="<%=SELECT_AVAILABLECRLPUBLISHERS%>" size="5" multiple >
