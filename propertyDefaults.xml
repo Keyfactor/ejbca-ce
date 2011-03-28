@@ -46,6 +46,7 @@
 
 	<!-- Load property files -->
     <property file="${ejbca.home}/conf/ejbca.properties" />
+    <property file="${ejbca.home}/conf/install.properties"/>
     <property file="${ejbca.home}/conf/protection.properties" />
     <property file="${ejbca.home}/conf/database.properties" />
     <property file="${ejbca.home}/conf/mail.properties" />
