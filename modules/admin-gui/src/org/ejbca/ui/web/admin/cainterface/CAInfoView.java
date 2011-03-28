@@ -72,7 +72,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
     */
    public static String[] X509CA_CAINFODATATEXTS = {"CANAME","CERT_SUBJECTDN","EXT_PKIX_SUBJECTALTNAME","CATYPE","",
                                                     "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
-                                                    "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD", "CRL_CA_CRLPUBLISHERS", "", "OCSPSERVICE"};
+                                                    "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD", "PUBLISHERS", "", "OCSPSERVICE"};
 
    public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATYPE","",
        "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
