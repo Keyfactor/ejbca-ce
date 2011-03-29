@@ -100,9 +100,6 @@ public final class CertificateProfileCache {
         	fairLock.lock();	// Queue up update requests and run them sequentially (better then when older db reads overwrite our cache..)
         	try {
         		final List<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        		if (LOG.isDebugEnabled()) {
-        			LOG.debug("Found " + result.size() + " certificate profiles.");
-        		}
         		for (final CertificateProfileData current : result) {
         			final Integer id = Integer.valueOf(current.getId());
         			final String certificateProfileName = current.getCertificateProfileName();
