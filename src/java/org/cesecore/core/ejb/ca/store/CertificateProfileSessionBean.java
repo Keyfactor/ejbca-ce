@@ -37,7 +37,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
@@ -95,14 +94,10 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
     
     @Override
-    public void addCacheTimer(final boolean initial) {
+    public void addCacheTimer() {
     	cancelOldTimer();
-    	if (EjbcaConfiguration.getCacheCertificateProfileTime() > 0) {
-    		if (initial) {
-        		timerService.createTimer(0, CACHE_TIMER_ID);
-    		} else {
-        		timerService.createTimer(EjbcaConfiguration.getCacheCertificateProfileTime(), CACHE_TIMER_ID);
-    		}
+    	if (profileCache.isCacheEnabled()) {
+    		timerService.createTimer(profileCache.getTimeToNextUpdate(), CACHE_TIMER_ID);
     	}
     }
     
@@ -119,8 +114,8 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @Timeout
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
-    	certificateProfileSession.flushProfileCache();
-    	certificateProfileSession.addCacheTimer(false);
+    	certificateProfileSession.flushProfileCacheIfNeeded();
+    	certificateProfileSession.addCacheTimer();
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -187,9 +182,20 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        profileCache.updateProfileCache(entityManager);
+        profileCache.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
+        }
+    }
+
+    @Override
+    public void flushProfileCacheIfNeeded() {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">flushProfileCacheIfNeeded");
+        }
+        profileCache.updateProfileCache(entityManager, false);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Flushed profile cache if needed");
         }
     }
 
@@ -216,8 +222,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC));
             returnval.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
         }
-        final Map<Integer, CertificateProfile> profileCache = getProfileCacheInternal();
-        for (Entry<Integer,CertificateProfile> cpEntry : profileCache.entrySet()) {
+        for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
         	final CertificateProfile profile = cpEntry.getValue();
         	// Check if all profiles available CAs exists in authorizedcaids.
         	if (certprofiletype == 0 || certprofiletype == profile.getType() || (profile.getType() == SecConst.CERTTYPE_ENDENTITY &&
@@ -281,7 +286,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             }
         } else {
     		// We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-        	CertificateProfile cprofile = getProfileCacheInternal().get(Integer.valueOf(id));
+        	final CertificateProfile cprofile = profileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
     		try {
     			if (cprofile != null) {
     				returnval = (CertificateProfile)cprofile.clone();
@@ -299,7 +304,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @Override
     public CertificateProfile getCertificateProfile(final Admin admin, final String profilename) {
-        final Integer id = getCertificateProfileNameIdMapInternal().get(profilename);
+        final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename);
         if (id == null) {
             return null;
         } else {
@@ -312,7 +317,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getCertificateProfileIdToNameMap");
         }
-        return getCertificateProfileIdNameMapInternal();
+        return profileCache.getIdNameMapCache(entityManager);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -356,7 +361,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
             LOG.trace(">getCertificateProfileId: " + certificateprofilename);
         }
         int returnval = 0;
-        final Integer id = getCertificateProfileNameIdMapInternal().get(certificateprofilename);
+        final Integer id = profileCache.getNameIdMapCache(entityManager).get(certificateprofilename);
         if (id != null) {
             returnval = id.intValue();
         }
@@ -371,7 +376,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getCertificateProfileName: " + id);
         }
-        final String returnval = getCertificateProfileIdNameMapInternal().get(Integer.valueOf(id));
+        final String returnval = profileCache.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getCertificateProfileName: " + id + "): " + returnval);
         }
@@ -438,17 +443,17 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     @Override
     public void removeCertificateProfile(final Admin admin, final String profilename) {
         try {
-                final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, profilename);
-                if (pdl == null) {
-                	if (LOG.isDebugEnabled()) {
-                    	LOG.debug("Trying to remove a certificate profile that does not exist: "+profilename);                		
-                	}
-                } else {
-                	entityManager.remove(pdl);
-                	flushProfileCache();
-                	final String msg = INTRES.getLocalizedMessage("store.removedprofile", profilename);                
-                	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);                	
-                }
+        	final CertificateProfileData pdl = CertificateProfileData.findByProfileName(entityManager, profilename);
+        	if (pdl == null) {
+        		if (LOG.isDebugEnabled()) {
+        			LOG.debug("Trying to remove a certificate profile that does not exist: "+profilename);                		
+        		}
+        	} else {
+        		entityManager.remove(pdl);
+        		flushProfileCache();
+        		final String msg = INTRES.getLocalizedMessage("store.removedprofile", profilename);                
+        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(), null, null, LogConstants.EVENT_INFO_CERTPROFILE, msg);                	
+        	}
         } catch (Exception e) {
             LOG.error("Error was caught when trying to remove certificate profile " + profilename, e);
         	final String msg = INTRES.getLocalizedMessage("store.errorremoveprofile", profilename);                    
@@ -458,53 +463,35 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @Override
     public boolean existsCAInCertificateProfiles(final Admin admin, final int caid) {
-    	boolean exists = false;
-    	final Map<Integer, CertificateProfile> profileCache = getProfileCacheInternal();
-    	for (Entry<Integer,CertificateProfile> cpEntry : profileCache.entrySet()) {
+    	for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
     		final CertificateProfile certProfile = cpEntry.getValue(); 
     		if (certProfile.getType() == CertificateProfile.TYPE_ENDENTITY) {
     			for (Integer availableCaId : certProfile.getAvailableCAs()) {
     				if (availableCaId.intValue() == caid) {
-    					exists = true;
     					if (LOG.isDebugEnabled()) {
     						LOG.debug("CA exists in certificate profile " + cpEntry.getKey().toString());
     					}
-    					break;
+    					return true;
     				}
     			}
     		}
     	}
-    	return exists;
+    	return false;
     }
 
     @Override
     public boolean existsPublisherInCertificateProfiles(final Admin admin, final int publisherid) {
-    	boolean exists = false;
-    	final Map<Integer, CertificateProfile> profileCache = getProfileCacheInternal();
-    	for (Entry<Integer,CertificateProfile> cpEntry : profileCache.entrySet()) {
+    	for (final Entry<Integer,CertificateProfile> cpEntry : profileCache.getProfileCache(entityManager).entrySet()) {
     		for (Integer availablePublisherId : cpEntry.getValue().getPublisherList()) {
     			if (availablePublisherId.intValue() == publisherid) {
-    				exists = true;
                     if (LOG.isDebugEnabled()) {
                     	LOG.debug("Publisher exists in certificate profile " + cpEntry.getKey().toString());
                     }
-                    break;
+                    return true;
     			}
     		}
     	}
-    	return exists;
-    }
-    
-    private Map<Integer, CertificateProfile> getProfileCacheInternal() {
-        return profileCache.getProfileCache(entityManager);
-    }
-
-    private Map<Integer, String> getCertificateProfileIdNameMapInternal() {
-        return profileCache.getIdNameMapCache(entityManager);
-    }
-
-    private Map<String, Integer> getCertificateProfileNameIdMapInternal() {
-    	return profileCache.getNameIdMapCache(entityManager);
+    	return false;
     }
 
     private boolean isCertificateProfileNameFixed(final String profilename) {

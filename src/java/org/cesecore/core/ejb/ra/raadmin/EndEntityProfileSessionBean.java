@@ -15,11 +15,11 @@ package org.cesecore.core.ejb.ra.raadmin;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -89,14 +89,10 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
     
     @Override
-    public void addCacheTimer(final boolean initial) {
+    public void addCacheTimer() {
     	cancelOldTimer();
-    	if (EjbcaConfiguration.getCacheCertificateProfileTime() > 0) {
-    		if (initial) {
-        		timerService.createTimer(0, CACHE_TIMER_ID);
-    		} else {
-        		timerService.createTimer(EjbcaConfiguration.getCacheCertificateProfileTime(), CACHE_TIMER_ID);
-    		}
+    	if (profileCache.isCacheEnabled()) {
+    		timerService.createTimer(profileCache.getTimeToNextUpdate(), CACHE_TIMER_ID);
     	}
     }
 
@@ -113,8 +109,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Timeout
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
-    	endEntityProfileSession.flushProfileCache();
-    	endEntityProfileSession.addCacheTimer(false);
+    	endEntityProfileSession.flushProfileCacheIfNeeded();
+    	endEntityProfileSession.addCacheTimer();
     }
     
     @Override
@@ -259,9 +255,20 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">flushProfileCache");
         }
-        profileCache.updateProfileCache(entityManager);
+        profileCache.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache");
+        }
+    }
+
+    @Override
+    public void flushProfileCacheIfNeeded() {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">flushProfileCacheIfNeeded");
+        }
+        profileCache.updateProfileCache(entityManager, false);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Flushed profile cache if needed");
         }
     }
 
@@ -275,7 +282,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
             returnval = new EndEntityProfile(true);
         } else {
-        	final Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
+        	final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename);
         	if (id != null) {
         		returnval = getEndEntityProfile(admin, id);
         	}
@@ -291,44 +298,33 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public Collection<Integer> getAuthorizedEndEntityProfileIds(final Admin admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
-   
+		// If this is the special value ALLCAs we are authorized
+    	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
         if (authSession.isAuthorizedNoLog(admin, "/super_administrator")) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
-
         try {
-        	final Iterator<EndEntityProfileData> i = EndEntityProfileData.findAll(entityManager).iterator();
-            while (i.hasNext()) {
-            	final EndEntityProfileData next = i.next();
-                // Check if all profiles available CAs exists in
-                // authorizedcaids.
-            	final String value = next.getProfile().getValue(EndEntityProfile.AVAILCAS, 0);
-                // debug("AvailCAs: "+value);
-                if (value != null) {
-                	final String[] availablecas = value.split(EndEntityProfile.SPLITCHAR);
-                    // debug("No of available CAs: "+availablecas.length);
-                    boolean allexists = true;
-                    for (int j = 0; j < availablecas.length; j++) {
-                        // debug("Available CA["+j+"]: "+availablecas[j]);
-                    	final Integer caid = Integer.valueOf(availablecas[j]);
-                        // If this is the special value ALLCAs we are authorized
-                        if ((caid.intValue() != SecConst.ALLCAS) && (!authorizedcaids.contains(caid))) {
-                            allexists = false;
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("Profile " + next.getId() + " not authorized");
-                            }
-                            break;
-                        }
-                    }
-                    if (allexists) {
-                        // debug("Adding "+next.getId());
-                        returnval.add(next.getId());
-                    }
-                }
-            }
+        	for (final Entry<Integer, EndEntityProfile> entry : profileCache.getProfileCache(entityManager).entrySet()) {
+        		// Check if all profiles available CAs exists in authorizedcaids.
+        		final String availableCasString = entry.getValue().getValue(EndEntityProfile.AVAILCAS, 0);
+        		if (availableCasString != null) {
+        			boolean authorizedToProfile = true;
+        			for (final String caidString : availableCasString.split(EndEntityProfile.SPLITCHAR)) {
+        				if (!authorizedcaids.contains(Integer.parseInt(caidString))) {
+        					authorizedToProfile = false;
+        					if (LOG.isDebugEnabled()) {
+        						LOG.debug("Profile " + entry.getKey().toString() + " not authorized");
+        					}
+        					break;
+        				}
+        			}
+        			if (authorizedToProfile) {
+        				returnval.add(entry.getKey());
+        			}
+        		}
+        	}
         } catch (Exception e) {
-        	final String msg = INTRES.getLocalizedMessage("ra.errorgetids");
-            LOG.error(msg, e);
+            LOG.error(INTRES.getLocalizedMessage("ra.errorgetids"), e);
         }
         return returnval;
     }
@@ -344,7 +340,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             returnval = new EndEntityProfile(true);
         } else {
     		// We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-        	EndEntityProfile eep = getProfileCacheInternal().get(Integer.valueOf(id));
+        	final EndEntityProfile eep = profileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
     		try {
     			if (eep != null) {
     				returnval = (EndEntityProfile)eep.clone();
@@ -367,10 +363,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
         }
         int returnval = 0;
-        if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
-            return SecConst.EMPTY_ENDENTITYPROFILE;
-        }
-        final Integer id = (Integer) getEndEntityProfileNameIdMapInternal().get(profilename);
+        final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename.trim());
         if (id != null) {
             returnval = id.intValue();
         }
@@ -386,11 +379,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfilename(" + id + ")");
         }
-        String returnval = null;
-        if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
-            return EMPTY_ENDENTITYPROFILENAME;
-        }
-        returnval = (String) getEndEntityProfileIdNameMapInternal().get(Integer.valueOf(id));
+        final String returnval = profileCache.getIdNameMapCache(entityManager).get(Integer.valueOf(id));
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfilename(" + id + "): " + returnval);
         }
@@ -399,11 +388,11 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer, String> getEndEntityProfileIdToNameMap(final Admin admin) {
+    public Map<Integer, String> getEndEntityProfileIdToNameMap(final Admin admin) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getEndEntityProfileIdToNameMap");
         }
-        return getEndEntityProfileIdNameMapInternal();
+        return profileCache.getIdNameMapCache(entityManager);
     }
 
     @Override
@@ -485,18 +474,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                     LogConstants.EVENT_ERROR_ENDENTITYPROFILE, msg);
             throw new EndEntityProfileExistsException();
         }
-    }
-
-    private HashMap<Integer, String> getEndEntityProfileIdNameMapInternal() {
-        return profileCache.getIdNameMapCache(entityManager);
-    }
-
-    private Map<String, Integer> getEndEntityProfileNameIdMapInternal() {
-    	return profileCache.getNameIdMapCache(entityManager);
-    }
-
-    private Map<Integer, EndEntityProfile> getProfileCacheInternal() {
-        return profileCache.getProfileCache(entityManager);
     }
 
     private boolean isFreeEndEntityProfileId(final int id) {

@@ -5,7 +5,6 @@
   
   TreeMap casigners = info.getCANames();
 
-  Map certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
   Map publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   Collection availablecatokens = CATokenManager.instance().getAvailableCATokens();
@@ -763,7 +762,7 @@ function checkallfields(){
       <td width="50%"> 
            <% if(editca){
                 if(cainfo.getCertificateProfileId() != 0)
-                  out.write((String) certprofileidtonamemap.get(Integer.valueOf(cainfo.getCertificateProfileId())));
+                  out.write(info.getCertificateProfileName(cainfo.getCertificateProfileId()));
                 else
                   out.write(ejbcawebbean.getText("NOTUSED"));
               }else{%>

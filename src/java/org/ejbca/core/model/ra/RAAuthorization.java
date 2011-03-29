@@ -16,8 +16,8 @@ package org.ejbca.core.model.ra;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -149,16 +149,14 @@ public class RAAuthorization implements Serializable {
     
     
     public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(){
-      if(authprofilenames==null){
-        authprofilenames = new TreeMap<String, Integer>();  
-        Iterator<Integer> iter = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin).iterator();      
-        HashMap<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
-        while(iter.hasNext()){
-          Integer id = iter.next();
-          authprofilenames.put(idtonamemap.get(id),id);
-        }
-      }
-      return authprofilenames;  
+    	if (authprofilenames==null){
+    		authprofilenames = new TreeMap<String, Integer>();
+    		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
+    		for (final Integer id : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin)) {
+    			authprofilenames.put(idtonamemap.get(id), id);
+    		}
+    	}
+    	return authprofilenames;  
     }
     
 	public TreeMap<String, Integer> getCreateAuthorizedEndEntityProfileNames() {
@@ -185,16 +183,14 @@ public class RAAuthorization implements Serializable {
     
     
 	public TreeMap<String, Integer> authEndEntityProfileNames(String rights) {
-	  TreeMap<String, Integer> returnval = new TreeMap<String, Integer>();	
-	  HashMap<Integer, String> profilemap = this.endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
-	  Iterator<Integer> iter = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin).iterator();
-	  while(iter.hasNext()){
-		Integer next = iter.next();  
-		if(this.endEntityAuthorization(admin, next.intValue(), rights)) { 
-		  returnval.put(profilemap.get(next), next);  
+		final TreeMap<String, Integer> returnval = new TreeMap<String, Integer>();
+		final Map<Integer, String> profilemap = this.endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
+		for (final Integer next : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin)) {
+			if (this.endEntityAuthorization(admin, next.intValue(), rights)) {
+				returnval.put(profilemap.get(next), next);
+			}
 		}
-	  }
-	  return returnval;
+		return returnval;
 	}     
     
     /**

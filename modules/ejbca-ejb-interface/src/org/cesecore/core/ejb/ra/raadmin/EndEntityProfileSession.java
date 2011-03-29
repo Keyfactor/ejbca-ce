@@ -13,7 +13,7 @@
 package org.cesecore.core.ejb.ra.raadmin;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -79,7 +79,7 @@ public interface EndEntityProfileSession {
     Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin);
 
     /** @return mapping of profile id (Integer) to profile name (String). */
-    HashMap<Integer, String> getEndEntityProfileIdToNameMap(Admin admin);
+    Map<Integer, String> getEndEntityProfileIdToNameMap(Admin admin);
 
     /** Clear and reload end entity profile caches. */
     void flushProfileCache();

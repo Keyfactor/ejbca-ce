@@ -74,7 +74,6 @@ public class InformationMemory implements Serializable {
     private PublisherSession publishersession;
     private UserDataSourceSession userdatasourcesession = null;
     private CertificateProfileSession certificateProfileSession;
-    private GlobalConfigurationSession globalConfigurationSession;
     
     // Memory variables.
     LogAuthorization logauthorization = null;
@@ -82,9 +81,7 @@ public class InformationMemory implements Serializable {
     CAAuthorization caauthorization = null;
     HardTokenAuthorization hardtokenauthorization = null;
     
-    Map<Integer, String> endentityprofileidtonamemap = null;
     Map<Integer, String>  caidtonamemap = null;
-    Map<Integer, String> certificateprofileidtonamemap = null;    
     Map<Integer, HashMap<Integer, List>> endentityavailablecas = null;
     Map<Integer,String> publisheridtonamemap = null;
 
@@ -126,31 +123,11 @@ public class InformationMemory implements Serializable {
       this.logauthorization = new LogAuthorization(administrator, authorizationsession, caSession);
       this.hardtokenauthorization = new HardTokenAuthorization(administrator, adminGroupSession, hardtokensession, authorizationsession, caSession);
     }
-    
-    
-    /**
-     * Returns a Map of end entity profile id (Integer) -> end entity profile name (String).
-     */
-    public Map<Integer, String> getEndEntityProfileIdToNameMap(){
-      if(endentityprofileidtonamemap == null){
-        endentityprofileidtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(administrator);  
-      }
-      
-      return endentityprofileidtonamemap;
+
+    public String getCertificateProfileName(int id){
+    	return this.certificateProfileSession.getCertificateProfileName(administrator, id);
     }
     
-
-    /**
-     * Returns a Map of certificate profile id (Integer) -> certificate name (String).
-     */
-    public Map<Integer, String> getCertificateProfileIdToNameMap(){
-      if(certificateprofileidtonamemap == null){
-        certificateprofileidtonamemap = this.certificateProfileSession.getCertificateProfileIdToNameMap(administrator); 
-      }
-      
-      return certificateprofileidtonamemap;
-    }    
-
     /**
      * Returns a Map of CA id (Integer) -> CA name (String).
      */
@@ -514,7 +491,6 @@ public class InformationMemory implements Serializable {
      * Method that should be called every time a end entity profile has been edited
      */
     public void endEntityProfilesEdited(){
-      endentityprofileidtonamemap = null;   
       endentityprofilenameproxy = null;
       endentityavailablecas = null;
 	  authorizedaccessrules = null;
@@ -525,7 +501,6 @@ public class InformationMemory implements Serializable {
      * Method that should be called every time a certificate profile has been edited
      */
     public void certificateProfilesEdited(){
-      certificateprofileidtonamemap = null;
       certificateprofilenameproxy = null;
       endentityavailablecas = null;
       raauthorization.clear();

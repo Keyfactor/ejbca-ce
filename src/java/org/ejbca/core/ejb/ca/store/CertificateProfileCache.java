@@ -61,6 +61,8 @@ public final class CertificateProfileCache {
     /** Cache of certificate profiles, with Id as keys */
     private transient volatile Map<Integer, CertificateProfile> profileCache = null;
 
+    private volatile long lastUpdate = 0;
+
     /* Create template maps with all static constants */
     private static final HashMap<Integer, String> idNameMapCacheTemplate = new HashMap<Integer, String>();
     private static final HashMap<String, Integer> nameIdMapCacheTemplate = new HashMap<String, Integer>();
@@ -87,17 +89,49 @@ public final class CertificateProfileCache {
     
     private static final ReentrantLock fairLock = new ReentrantLock(true);
 
-	public void updateProfileCache(final EntityManager entityManager) {
+    /** @return true if caching is enabled */
+    public boolean isCacheEnabled() {
+    	return EjbcaConfiguration.getCacheCertificateProfileTime() != 0;
+    }
+
+    /** @return the number of milliseconds left until the cache should be updated again. */
+    public long getTimeToNextUpdate() {
+        try {
+        	fairLock.lock();
+        	final long timeSinceLastUpdate = System.currentTimeMillis()-lastUpdate;
+        	final long cacheCertificateProfileTime = EjbcaConfiguration.getCacheCertificateProfileTime();
+        	if (timeSinceLastUpdate >= cacheCertificateProfileTime) {
+        		return 0;
+        	} else {
+        		return cacheCertificateProfileTime - timeSinceLastUpdate;
+        	}
+        } finally {
+        	fairLock.unlock();
+        }
+    }
+
+    /**
+     * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
+     * @param entityManager is required for reading the profiles from the database if we need to update the cache
+     * @param force if true, this will force an update even if the cache is not yet invalid
+     */
+	public void updateProfileCache(final EntityManager entityManager, final boolean force) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
-        @SuppressWarnings("unchecked")
-        final HashMap<Integer, String> idNameCache = (HashMap<Integer, String>) idNameMapCacheTemplate.clone();
-        @SuppressWarnings("unchecked")
-        final HashMap<String, Integer> nameIdCache = (HashMap<String, Integer>) nameIdMapCacheTemplate.clone();
-        final HashMap<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
         try {
-        	fairLock.lock();	// Queue up update requests and run them sequentially (better then when older db reads overwrite our cache..)
+        	fairLock.lock();
+        	final long cacheCertificateProfileTime = EjbcaConfiguration.getCacheCertificateProfileTime();
+        	final long now = System.currentTimeMillis();
+        	if (!force && isCacheEnabled() && lastUpdate+cacheCertificateProfileTime > now) {
+        		return;	// We don't need to update cache
+        	}
+        	lastUpdate = now;
+        	@SuppressWarnings("unchecked")
+        	final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
+        	@SuppressWarnings("unchecked")
+        	final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
+        	final Map<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
         	try {
         		final List<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
         		for (final CertificateProfileData current : result) {
@@ -123,28 +157,19 @@ public final class CertificateProfileCache {
 
 	/** @return the latest object from the cache or a current database representation if no caching is used. */
 	public Map<Integer, CertificateProfile> getProfileCache(final EntityManager entityManager) {
-		if (EjbcaConfiguration.getCacheCertificateProfileTime() == 0) {
-			// Always update if no caching is used
-			updateProfileCache(entityManager);
-		}
+		updateProfileCache(entityManager, false);
 		return profileCache;
 	}
 
 	/** @return the latest object from the cache or a current database representation if no caching is used. */
 	public Map<Integer, String> getIdNameMapCache(final EntityManager entityManager) {
-		if (EjbcaConfiguration.getCacheCertificateProfileTime() == 0) {
-			// Always update if no caching is used
-			updateProfileCache(entityManager);
-		}
+		updateProfileCache(entityManager, false);
 		return idNameMapCache;
 	}
 
 	/** @return the latest object from the cache or a current database representation if no caching is used. */
 	public Map<String, Integer> getNameIdMapCache(final EntityManager entityManager) {
-		if (EjbcaConfiguration.getCacheCertificateProfileTime() == 0) {
-			// Always update if no caching is used
-			updateProfileCache(entityManager);
-		}
+		updateProfileCache(entityManager, false);
 		return nameIdMapCache;
 	}
 }
