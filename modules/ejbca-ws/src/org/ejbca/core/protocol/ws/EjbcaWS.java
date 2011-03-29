@@ -40,6 +40,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import javax.annotation.Resource;
@@ -2251,8 +2252,8 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin);
-			HashMap<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);			
-			for (Integer id : ids) {
+			final Map<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);			
+			for (final Integer id : ids) {
 				ret.put(idtonamemap.get(id), id);
 			}
         } catch (RuntimeException e) {	// EJBException, ...

@@ -49,25 +49,67 @@ public final class EndEntityProfileCache {
      */
 
     /** Cache of mappings between profileId and profileName */
-    private volatile HashMap<Integer, String> idNameMapCache = null;
+    private volatile Map<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
     private volatile Map<String, Integer> nameIdMapCache = null;
     /** Cache of end entity profiles, with Id as keys */
     private volatile Map<Integer, EndEntityProfile> profileCache = null;
+    
+    private volatile long lastUpdate = 0;
+
+    /* Create template maps with all static constants */
+    private static final HashMap<Integer,String> idNameMapCacheTemplate = new HashMap<Integer,String>();
+    private static final HashMap<String,Integer> nameIdMapCacheTemplate = new HashMap<String,Integer>();
+    static {
+    	idNameMapCacheTemplate.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
+    	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
+    }
 
     private static final ReentrantLock fairLock = new ReentrantLock(true);
 
-    public void updateProfileCache(final EntityManager entityManager) {
+    /** @return true if caching is enabled */
+    public boolean isCacheEnabled() {
+    	return EjbcaConfiguration.getCacheEndEntityProfileTime() != 0;
+    }
+
+    /** @return the number of milliseconds left until the cache should be updated again. */
+    public long getTimeToNextUpdate() {
+        try {
+        	fairLock.lock();
+        	final long timeSinceLastUpdate = System.currentTimeMillis()-lastUpdate;
+        	final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
+        	if (timeSinceLastUpdate >= cacheEndEntityProfileTime) {
+        		return 0;
+        	} else {
+        		return cacheEndEntityProfileTime - timeSinceLastUpdate;
+        	}
+        } finally {
+        	fairLock.unlock();
+        }
+    }
+    
+    /**
+     * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
+     * @param entityManager is required for reading the profiles from the database if we need to update the cache
+     * @param force if true, this will force an update even if the cache is not yet invalid
+     */
+    public void updateProfileCache(final EntityManager entityManager, final boolean force) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
-        final HashMap<Integer, String> idNameCache = new HashMap<Integer, String>();
-        final HashMap<String, Integer> nameIdCache = new HashMap<String, Integer>();
-        final HashMap<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
-        idNameCache.put(Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE), EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME);
-        nameIdCache.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
         try {
-        	fairLock.lock();	// Queue up update requests and run them sequentially (better then when older db reads overwrite our cache..)
+        	fairLock.lock();
+        	final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
+        	final long now = System.currentTimeMillis();
+        	if (!force && isCacheEnabled() && lastUpdate+cacheEndEntityProfileTime > now) {
+        		return;	// We don't need to update cache
+        	}
+        	lastUpdate = now;
+            @SuppressWarnings("unchecked")
+        	final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
+            @SuppressWarnings("unchecked")
+        	final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
+        	final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
         	try {
         		final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
         		for (final EndEntityProfileData next : result) {
@@ -93,28 +135,19 @@ public final class EndEntityProfileCache {
 
 	/** @return the latest object from the cache or a current database representation if no caching is used. */
 	public Map<Integer, EndEntityProfile> getProfileCache(final EntityManager entityManager) {
-		if (EjbcaConfiguration.getCacheEndEntityProfileTime() == 0) {
-			// Always update if no caching is used
-			updateProfileCache(entityManager);
-		}
+		updateProfileCache(entityManager, false);
 		return profileCache;
 	}
 
 	/** @return the latest object from the cache or a current database representation if no caching is used. */
-	public HashMap<Integer, String> getIdNameMapCache(final EntityManager entityManager) {
-		if (EjbcaConfiguration.getCacheEndEntityProfileTime() == 0) {
-			// Always update if no caching is used
-			updateProfileCache(entityManager);
-		}
+	public Map<Integer, String> getIdNameMapCache(final EntityManager entityManager) {
+		updateProfileCache(entityManager, false);
 		return idNameMapCache;
 	}
 
 	/** @return the latest object from the cache or a current database representation if no caching is used. */
 	public Map<String, Integer> getNameIdMapCache(final EntityManager entityManager) {
-		if (EjbcaConfiguration.getCacheEndEntityProfileTime() == 0) {
-			// Always update if no caching is used
-			updateProfileCache(entityManager);
-		}
+		updateProfileCache(entityManager, false);
 		return nameIdMapCache;
 	}
 }

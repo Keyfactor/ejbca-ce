@@ -85,7 +85,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap(getAdmin());
 
                 Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin());
-                HashMap<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());
+                Map<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());
 
                 if (usehardtokens) {
                     getLogger().info(

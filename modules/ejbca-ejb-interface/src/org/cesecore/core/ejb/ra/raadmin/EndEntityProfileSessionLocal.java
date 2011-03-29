@@ -20,6 +20,9 @@ import javax.ejb.Local;
 @Local
 public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {
 
-	void addCacheTimer(boolean initial);
+	/** Add the next Timer timeout when the profile cache should be updated. */
+	void addCacheTimer();
 
+	/** Called from the timer service to update the profile cache if needed. */
+	void flushProfileCacheIfNeeded();
 }
