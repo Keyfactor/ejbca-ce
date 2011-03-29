@@ -191,9 +191,6 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
         }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("<flushProfileCache");
-        }
     }
 
     @Override

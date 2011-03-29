@@ -70,9 +70,6 @@ public final class EndEntityProfileCache {
         	fairLock.lock();	// Queue up update requests and run them sequentially (better then when older db reads overwrite our cache..)
         	try {
         		final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        		if (LOG.isDebugEnabled()) {
-        			LOG.debug("Found " + result.size() + " end entity profiles.");
-        		}
         		for (final EndEntityProfileData next : result) {
         			final Integer id = Integer.valueOf(next.getId());
         			final String profileName = next.getProfileName();

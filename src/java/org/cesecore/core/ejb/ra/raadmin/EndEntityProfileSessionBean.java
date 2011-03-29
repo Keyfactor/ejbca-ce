@@ -263,9 +263,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache");
         }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("<flushProfileCache");
-        }
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
