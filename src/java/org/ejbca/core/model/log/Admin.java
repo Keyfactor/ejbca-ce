@@ -79,7 +79,8 @@ public class Admin implements Serializable {
     protected String username = null;
     protected String email = null;
     
-    protected byte[] authToken = AdminInformation.getRandomToken();
+    /** transient authToken should _not_ be serialized. **/
+    protected transient byte[] authToken = AdminInformation.getRandomToken();
     
     // We want to cache the AdminInformation, but we crete it on the fly after deserialization..
     protected transient AdminInformation adminInformation = null;
@@ -162,6 +163,19 @@ public class Admin implements Serializable {
      */
     public String getUsername() {
     	return username;
+    }
+    
+
+    /**
+     * Manually sets the authToken. This should only be done in special cases 
+     * such as when restoring an Approval from the database.
+     * Note: Setting this to AdminInformation.getRandomToken() means that 
+     * this object is treated as it were created internal in EJBCA. Do not do
+     * that unless trusting the object!
+     * @param authToken Value of the authtoken.
+     */
+    public void setAuthToken(final byte[] authToken) {
+    	this.authToken = authToken;
     }
 
     /** Instead of creating a new Admin(TYPE_INTERNALUSER), this can be used to use a shared instance of the object. */

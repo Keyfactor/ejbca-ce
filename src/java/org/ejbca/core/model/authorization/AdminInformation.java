@@ -99,6 +99,8 @@ public class AdminInformation implements java.io.Serializable {
     private Certificate certificate;
     private int specialuser = 0;
     private Integer adminGroupId = null;
-    private byte[] localAuthToken;
+    
+    /** transient as authToken should _not_ be serialized. **/
+    private transient byte[] localAuthToken;
     
 }
