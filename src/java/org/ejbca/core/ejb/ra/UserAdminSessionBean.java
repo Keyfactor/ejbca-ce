@@ -639,16 +639,26 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection", null) };
 
     @Override
-    public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+    public void resetRemainingLoginAttempts(Admin admin, UserData data1) throws AuthorizationDeniedException, FinderException {
         if (log.isTraceEnabled()) {
-            log.trace(">resetRamainingLoginAttempts(" + username + ")");
+            log.trace(">resetRemainingLoginAttempts");
+        }
+        if (data1 != null) {
+            assertAuthorizedToCA(admin, data1.getCaId(), data1.getUsername(), LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+            resetRemainingLoginAttemptsInternal(admin, data1);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<resetRamainingLoginAttempts");
+        }
+    }
+
+    /** Assumes authorization has already been checked.. */
+    private void resetRemainingLoginAttemptsInternal(Admin admin, UserData data1) {
+        if (log.isTraceEnabled()) {
+            log.trace(">resetRemainingLoginAttemptsInternal");
         }
         int resetValue = -1;
-        int caid = LogConstants.INTERNALCAID;
-        UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
-            caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
             ExtendedInformation ei = data1.getExtendedInformation();
             // Only do this is we have extended information available
             if (ei != null) {
@@ -658,17 +668,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     data1.setExtendedInformation(ei);
                     final Date timeModified = new Date();
                     data1.setTimeModified(timeModified.getTime());
-                    String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
-                    logSession.log(admin, caid, LogConstants.MODULE_RA, timeModified, username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+                    final String username = data1.getUsername();
+                    final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
+                    logSession.log(admin, data1.getCaId(), LogConstants.MODULE_RA, timeModified, username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
                 }
             }
-        } else {
-            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
-            logSession.log(admin, caid, LogConstants.MODULE_RA, new Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            throw new FinderException(msg);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<resetRamainingLoginAttempts(" + username + "): " + resetValue);
+            log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue);
         }
     }
 
@@ -695,7 +702,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             			data1.setTimeModified(timeModified.getTime());
             			String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
             			logSession.log(admin, caid, LogConstants.MODULE_RA, timeModified, username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            			resetRemainingLoginAttempts(admin, username);
+            			resetRemainingLoginAttemptsInternal(admin, data1);
             		}
             	} else if (counter != -1) {
             		if (log.isDebugEnabled()) {
@@ -812,7 +819,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // This admin can be the public web user, which may not be allowed to
         // change status,
         // this is a bit ugly, but what can a man do...
-        Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin statusadmin = Admin.getInternalAdmin();
         try {
             cleanUserCertDataSN(statusadmin, data.getUsername());
         } catch (FinderException e) {
@@ -920,7 +927,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // re-set the allowed request counter to the default values
             resetRequestCounter(admin, data1, false);
             // Reset remaining login counter
-            resetRemainingLoginAttempts(admin, username);
+            resetRemainingLoginAttemptsInternal(admin, data1);
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Status not changing from something else to new, not resetting requestCounter.");
@@ -1256,7 +1263,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Admin getAdmin(Certificate certificate) {
-        String adminUsername = certificateStoreSession.findUsernameByCertSerno(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getSerialNumber(certificate),
+        String adminUsername = certificateStoreSession.findUsernameByCertSerno(Admin.getInternalAdmin(), CertTools.getSerialNumber(certificate),
                 CertTools.getIssuerDN(certificate));
         String adminEmail = null;
         if (adminUsername != null) {

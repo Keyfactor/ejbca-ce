@@ -476,7 +476,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                         // so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
                         if ( data.getExpireDate().before(check) ) {
                                 // Certificate has expired, set status to archived in the database
-                                certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getCertificateFingerprint());
+                                certificateStoreSession.setArchivedStatus(Admin.getInternalAdmin(), data.getCertificateFingerprint());
                         } else {
                                 Date revDate = data.getRevocationDate();
                                 if (revDate == null) {

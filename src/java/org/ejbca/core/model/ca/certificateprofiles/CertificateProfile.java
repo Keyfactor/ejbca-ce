@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -231,6 +232,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String POLICY_NOTICE_UNOTICE_TEXT 	 = "policynoticeunoticetext";
 
     // Public Methods
+    
+    /** Creates a new instance of the Profile used during cloning */
+    private CertificateProfile(final int unused) {
+    }
+
 
     /**
      * Creates a new instance of CertificateProfile
@@ -1191,19 +1197,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 		return approvalSettings.contains(Integer.valueOf(action));
 	}
 
-    @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
-      CertificateProfile clone = new CertificateProfile();
-      HashMap clonedata = (HashMap) clone.saveData();
-
-      Iterator i = (data.keySet()).iterator();
-      while(i.hasNext()){
-        Object key = i.next();
-        clonedata.put(key, data.get(key));
-      }
-
-      clone.loadData(clonedata);
-      return clone;
+    	final CertificateProfile clone = new CertificateProfile(0);
+    	// We need to make a deep copy of the hashmap here
+    	clone.data = new HashMap<Object,Object>(data.size());
+    	for (final Entry<Object,Object> entry : data.entrySet()) {
+    		Object value = entry.getValue();
+    		if (value instanceof ArrayList<?>) {
+    			// We need to make a clone of this object, but the stored immutables can still be referenced
+    			value = ((ArrayList<?>)value).clone();
+    		}
+    		clone.data.put(entry.getKey(), value);
+    	}
+    	return clone;
     }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */

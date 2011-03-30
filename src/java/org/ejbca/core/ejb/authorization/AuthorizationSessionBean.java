@@ -69,7 +69,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
     
     private Authorizer getAuthorizer() {
         if (authCache.getAuthorizer() == null) {
-        	final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
+        	final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(Admin.getInternalAdmin());
             authCache.setAuthorizer(new Authorizer(getAdminGroups(), config.getEnableCommandLineInterface(), logSession, LogConstants.MODULE_AUTHORIZATION));
         }
         return authCache.getAuthorizer();

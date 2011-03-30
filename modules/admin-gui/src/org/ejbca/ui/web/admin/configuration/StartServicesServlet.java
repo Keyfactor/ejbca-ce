@@ -172,7 +172,7 @@ public class StartServicesServlet extends HttpServlet {
         }
 
         // Make a log row that EJBCA is starting
-        Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin internalAdmin = Admin.getInternalAdmin();
         logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
         		LogConstants.EVENT_INFO_STARTING, iMsg);
 

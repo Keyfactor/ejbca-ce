@@ -92,7 +92,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     
     public void test00SetupAccessRights() throws Exception {
         super.setupAccessRights();
-        gc = globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID));
+        gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
+        assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 
     private void setUpNonAdmin() throws Exception {
@@ -270,7 +271,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         } finally {
             // Clean up hard token.
-            hardTokenSessionRemote.removeHardToken(new Admin(Admin.TYPE_CACOMMANDLINE_USER), serialNumber);
+            hardTokenSessionRemote.removeHardToken(intadmin, serialNumber);
 
             removeApprovalAdmins();
         }

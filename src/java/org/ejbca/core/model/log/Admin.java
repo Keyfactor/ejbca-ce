@@ -71,6 +71,8 @@ public class Admin implements Serializable {
                                                          AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
                                                          AdminEntity.SPECIALADMIN_INTERNALUSER};
 
+    private static Admin internalAdmin = null;
+    
     protected int type = -1;
     protected String data;
     protected Certificate certificate;
@@ -78,7 +80,10 @@ public class Admin implements Serializable {
     protected String email = null;
     
     protected byte[] authToken = AdminInformation.getRandomToken();
-	
+    
+    // We want to cache the AdminInformation, but we crete it on the fly after deserialization..
+    protected transient AdminInformation adminInformation = null;
+
     // Public Constructors
     public Admin(Certificate certificate, String username, String email) {
         this(TYPE_CLIENTCERT_USER, CertTools.getSerialNumberAsString(certificate) + " : DN : \"" + CertTools.getIssuerDN(certificate)+"\"");
@@ -115,13 +120,14 @@ public class Admin implements Serializable {
 
     // Method that takes the internal data and returns a AdminInformation object required by the Authorization module.
     public AdminInformation getAdminInformation() {
-    	AdminInformation ret = null;
-        if (type == TYPE_CLIENTCERT_USER) {
-            ret = new AdminInformation(certificate);
-        } else {
-        	ret = new AdminInformation(ADMINTYPETOADMINENTITY[type], authToken);
-        }
-        return ret;
+    	if (adminInformation==null) {
+            if (type == TYPE_CLIENTCERT_USER) {
+            	adminInformation = new AdminInformation(certificate);
+            } else {
+            	adminInformation = new AdminInformation(ADMINTYPETOADMINENTITY[type], authToken);
+            }
+    	}
+        return adminInformation;
     }
 
     /**
@@ -156,5 +162,13 @@ public class Admin implements Serializable {
      */
     public String getUsername() {
     	return username;
+    }
+
+    /** Instead of creating a new Admin(TYPE_INTERNALUSER), this can be used to use a shared instance of the object. */
+    public static Admin getInternalAdmin() {
+    	if (internalAdmin == null) {
+    		internalAdmin = new Admin(TYPE_INTERNALUSER);
+    	}
+    	return internalAdmin;
     }
 }

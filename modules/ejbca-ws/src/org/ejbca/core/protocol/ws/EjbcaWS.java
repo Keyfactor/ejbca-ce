@@ -1472,7 +1472,7 @@ public class EjbcaWS implements IEjbcaWS {
 		throws CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
 		final ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();
 
-		final Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+		final Admin intAdmin = Admin.getInternalAdmin();
 		final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSession, userAdminSession);
 		Admin admin = ejbhelper.getAdmin(true);
 		int endEntityProfileId = 0;
@@ -1882,7 +1882,7 @@ public class EjbcaWS implements IEjbcaWS {
 			if(WebServiceConfiguration.getApprovalForHardTokenData()){
 				// Check Approvals
 				// Exists an GenTokenCertificates
-					Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+					Admin intAdmin = Admin.getInternalAdmin();
 					UserDataVO userData = userAdminSession.findUser(intAdmin, hardTokenData.getUsername());
 					if (userData == null) {
 						String msg = intres.getLocalizedMessage("ra.errorentitynotexist", hardTokenData.getUsername());            	

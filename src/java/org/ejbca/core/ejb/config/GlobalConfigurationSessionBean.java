@@ -157,7 +157,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     		log.trace(">flushGlobalConfigurationCache()");
     	}
     	globalconfigurationCache.clearCache();
-    	getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER, "internal"));
+    	getCachedGlobalConfiguration(Admin.getInternalAdmin());
     	if (log.isDebugEnabled()) {
     		log.debug("Flushed global configuration cache.");
     	}

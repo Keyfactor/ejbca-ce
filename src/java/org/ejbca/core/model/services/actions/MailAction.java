@@ -40,7 +40,7 @@ public class MailAction extends BaseAction {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 	
-	private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	private static final Admin admin = Admin.getInternalAdmin();
 	
 	public static final String PROP_SENDERADDRESS   = "action.mail.senderAddress";
 	public static final String PROP_RECIEVERADDRESS = "action.mail.recieverAddress";

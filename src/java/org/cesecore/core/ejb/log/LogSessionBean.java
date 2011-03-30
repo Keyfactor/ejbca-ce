@@ -225,7 +225,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
 	public void testRollback(final long rollbackTestTime) {
-    	final Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    	final Admin internalAdmin = Admin.getInternalAdmin();
 		log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_CUSTOM, new Date(rollbackTestTime), null, null,
 				LogConstants.EVENT_INFO_UNKNOWN, "Test of rollback resistance of log-system.", null);
 		throw new EJBException("Test of rollback resistance of log-system.");

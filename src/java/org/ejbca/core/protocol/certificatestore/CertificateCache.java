@@ -78,7 +78,7 @@ class CertificateCache implements ICertificateCache {
 	private long m_certValidTo = 0;
 
 	/** Admin for calling session beans in EJBCA */
-	final private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	final private Admin admin = Admin.getInternalAdmin();
 
 	/** We need an object to synchronize around when rebuilding and reading the cache. When rebuilding the cache no thread
 	 * can be allowed to read the cache, since the cache will be in an inconsistent state. In the normal case we want to use
