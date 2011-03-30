@@ -89,7 +89,7 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
                 	throw new AuthLoginException(msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
-                userAdminSession.resetRemainingLoginAttempts(admin, username);
+                userAdminSession.resetRemainingLoginAttempts(admin, data);
             	// Log formal message that authentication was successful
                 final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
@@ -122,7 +122,7 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
 		}
 		// This admin can be the public web user, which may not be allowed to change status,
 		// this is a bit ugly, but what can a man do...
-		Admin statusadmin = new Admin(Admin.TYPE_INTERNALUSER);
+		Admin statusadmin = Admin.getInternalAdmin();
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter

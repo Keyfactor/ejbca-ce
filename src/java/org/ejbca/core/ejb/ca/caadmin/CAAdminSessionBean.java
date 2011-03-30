@@ -2347,7 +2347,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public String healthCheck() {
         String returnval = "";
-        final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        final Admin admin = Admin.getInternalAdmin();
         boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         log.debug("CaTokenSignTest: " + caTokenSignTest);
         Iterator<Integer> iter = caSession.getAvailableCAs().iterator();

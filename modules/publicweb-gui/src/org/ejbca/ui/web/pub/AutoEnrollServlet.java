@@ -98,7 +98,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.trace(">doPost");
-		Admin internalAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+		Admin internalAdmin = Admin.getInternalAdmin();
 		GlobalConfiguration globalConfiguration = globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin);
 		// Make sure we allow use of this Servlet
 		if ( !globalConfiguration.getAutoEnrollUse() ) {

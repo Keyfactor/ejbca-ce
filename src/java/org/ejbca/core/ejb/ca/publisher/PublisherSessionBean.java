@@ -477,7 +477,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public String testAllConnections() {
         log.trace(">testAllPublishers");
         String returnval = "";
-        Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+        Admin admin = Admin.getInternalAdmin();
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	PublisherData pdl = i.next();

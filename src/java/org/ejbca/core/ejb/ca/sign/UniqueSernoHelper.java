@@ -101,7 +101,7 @@ public final class UniqueSernoHelper {
 					throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
 				}
 			}
-			final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+			final Admin admin = Admin.getInternalAdmin();
 			final Certificate c1 = certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert1));
 			final Certificate c2 = certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert2));
 			if ( (c1 != null) && (c2 != null) ) {

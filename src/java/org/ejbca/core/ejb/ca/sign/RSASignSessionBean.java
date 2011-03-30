@@ -193,7 +193,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
     	}
-        CA ca = caSession.getCA(new Admin(Admin.TYPE_INTERNALUSER), caId);
+        CA ca = caSession.getCA(Admin.getInternalAdmin(), caId);
         byte[] returnval = ca.createPKCS7(cert, includeChain);
     	if (log.isTraceEnabled()) {
     		log.trace("<createPKCS7()");

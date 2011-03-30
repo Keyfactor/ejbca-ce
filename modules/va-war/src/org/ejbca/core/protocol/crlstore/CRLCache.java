@@ -59,7 +59,7 @@ class CRLCache implements ICRLCache {
 	final private Lock rebuildlock = new ReentrantLock();
 
 	/** Admin for calling session beans in EJBCA */
-	final private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
+	final private Admin admin = Admin.getInternalAdmin();
 	/**
 	 * @param crlSession DB connections
 	 * @param certStore references to needed CA certificates.

@@ -122,7 +122,7 @@ public class XKMSProvider implements Provider<Source> {
 	
 	private static final InternalResources intres = InternalResources.getInstance();
 	
-	protected Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	protected Admin intAdmin = Admin.getInternalAdmin();
 	
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
 	

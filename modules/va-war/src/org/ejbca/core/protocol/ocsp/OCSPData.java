@@ -34,7 +34,7 @@ public class OCSPData {
 
     private static final Logger m_log = Logger.getLogger(OCSPData.class);
 
-    public final Admin m_adm = new Admin(Admin.TYPE_INTERNALUSER);
+    public final Admin m_adm = Admin.getInternalAdmin();
 
     /** Cache time counter, set and used by loadPrivateKeys (external responder) */
     public long mKeysValidTo = 0;

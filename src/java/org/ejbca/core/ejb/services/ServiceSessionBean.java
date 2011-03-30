@@ -137,7 +137,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private PublisherSessionLocal publisherSession;
     
-    private Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);	// The administrator that the services should be run as.
+    private Admin intAdmin = Admin.getInternalAdmin();	// The administrator that the services should be run as.
 
     @PostConstruct
     public void ejbCreate() {

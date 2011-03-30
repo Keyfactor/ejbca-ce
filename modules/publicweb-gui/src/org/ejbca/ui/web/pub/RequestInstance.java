@@ -172,7 +172,7 @@ public class RequestInstance {
 							data.setCertificateProfileId(id);
 							// This admin can be the public web user, which may not be allowed to change status,
 							// this is a bit ugly, but what can a man do...
-							Admin tempadmin = new Admin(Admin.TYPE_INTERNALUSER);
+							Admin tempadmin = Admin.getInternalAdmin();
 							userAdminSession.changeUser(tempadmin, data, clearpwd);            		            			
 						} else {
 							String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(administrator, certificateProfileId);

@@ -131,7 +131,7 @@ public class ClearCacheServlet extends HttpServlet {
 			log.trace(">acceptedHost: "+remotehost);
 		}    	
 		boolean ret = false;
-		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration(new Admin(Admin.TYPE_INTERNALUSER));
+		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration(Admin.getInternalAdmin());
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
 		String nodename = null;
