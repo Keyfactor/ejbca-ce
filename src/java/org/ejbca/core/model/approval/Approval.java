@@ -19,6 +19,7 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.Date;
 
+import org.ejbca.core.model.authorization.AdminInformation;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -154,6 +155,11 @@ public class Approval implements Comparable<Approval>, Externalizable {
 			//this.username = (String) in.readObject(); This information is now available through the Admin object
 		} else if (version == 2) {
 			this.admin = (Admin) in.readObject();
+			if (this.admin != null) {
+				// We trust this admin as if it were created internal to EJBCA and 
+				// fill in the auth token
+				this.admin.setAuthToken(AdminInformation.getRandomToken());
+			}
 			this.approved = in.readBoolean();
 			this.approvalDate = (Date) in.readObject();
 			this.comment = (String) in.readObject();
