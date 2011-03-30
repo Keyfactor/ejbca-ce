@@ -246,7 +246,7 @@ public interface UserAdminSession {
      * @throws AuthorizationDeniedException if administrator isn't authorized to edit user
      * @throws FinderException if the entity does not exist
      */
-    public void resetRemainingLoginAttempts(Admin admin, UserData userData) throws AuthorizationDeniedException, FinderException;
+    public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException;
 
     /**
      * Decrements the remaining failed login attempts counter. If the counter

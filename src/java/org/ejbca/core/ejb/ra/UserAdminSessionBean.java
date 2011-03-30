@@ -639,17 +639,25 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection", null) };
 
     @Override
-    public void resetRemainingLoginAttempts(Admin admin, UserData data1) throws AuthorizationDeniedException, FinderException {
-        if (log.isTraceEnabled()) {
-            log.trace(">resetRemainingLoginAttempts");
-        }
-        if (data1 != null) {
-            assertAuthorizedToCA(admin, data1.getCaId(), data1.getUsername(), LogConstants.EVENT_INFO_CHANGEDENDENTITY);
-            resetRemainingLoginAttemptsInternal(admin, data1);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<resetRamainingLoginAttempts");
-        }
+    public void resetRemainingLoginAttempts(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">resetRamainingLoginAttempts(" + username + ")");
+    	}
+    	int resetValue = -1;
+    	int caid = LogConstants.INTERNALCAID;
+    	final UserData data1 = UserData.findByUsername(entityManager, username);
+    	if (data1 != null) {
+    		caid = data1.getCaId();
+    		assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+    		resetRemainingLoginAttemptsInternal(admin, data1);
+    	} else {
+    		String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
+    		logSession.log(admin, caid, LogConstants.MODULE_RA, new Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+    		throw new FinderException(msg);
+    	}
+    	if (log.isTraceEnabled()) {
+    		log.trace("<resetRamainingLoginAttempts(" + username + "): " + resetValue);
+    	}
     }
 
     /** Assumes authorization has already been checked.. */

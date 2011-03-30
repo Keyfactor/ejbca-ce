@@ -89,7 +89,7 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
                 	throw new AuthLoginException(msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
-                userAdminSession.resetRemainingLoginAttempts(admin, data);
+                userAdminSession.resetRemainingLoginAttempts(admin, username);
             	// Log formal message that authentication was successful
                 final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
