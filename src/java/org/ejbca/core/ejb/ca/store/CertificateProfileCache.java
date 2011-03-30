@@ -87,7 +87,7 @@ public final class CertificateProfileCache {
     	nameIdMapCacheTemplate.put(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
     }
     
-    private static final ReentrantLock fairLock = new ReentrantLock(true);
+    private static final ReentrantLock fairLock = new ReentrantLock(false);
 
     /** @return true if caching is enabled */
     public boolean isCacheEnabled() {

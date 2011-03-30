@@ -65,7 +65,7 @@ public final class EndEntityProfileCache {
     	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
     }
 
-    private static final ReentrantLock fairLock = new ReentrantLock(true);
+    private static final ReentrantLock fairLock = new ReentrantLock(false);
 
     /** @return true if caching is enabled */
     public boolean isCacheEnabled() {
