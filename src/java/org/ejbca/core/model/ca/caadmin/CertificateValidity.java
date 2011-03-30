@@ -46,7 +46,13 @@ public class CertificateValidity {
         	log.debug("Using default value for ca.toolateexpiredate.");
             tooLateExpireDate = new Date(Long.MAX_VALUE);
         } else {
+        	//First, try to parse the date in the SHORT date and MEDIUM time format. If this fails (= returns null), then try to parse it as hexadecimal.
             tooLateExpireDate = ValidityDate.getDateFromString(sDate);
+            if(tooLateExpireDate == null) {
+            	try {
+            		tooLateExpireDate = new Date(Long.parseLong(sDate, 16)*1000);
+            	} catch (NumberFormatException e) {}
+            }
         	log.debug("tooLateExpireData is set to: "+tooLateExpireDate);
         }
     }
