@@ -28,6 +28,8 @@
   viewendentityhelper.initialize(ejbcawebbean,rabean,cabean);
   
   viewendentityhelper.parseRequest(request);
+  
+  viewendentityhelper.row = 0;
 
 %>
 <head>
@@ -76,6 +78,22 @@
       </tr>
 
 
+    <!-- ---------- Index -------------------- -->
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td width="<%=ViewEndEntityHelper.columnwidth%>" style="text-align:right;">
+          <% if(viewendentityhelper.currentuserindex > 0 ){ %>
+           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %>" tabindex="1">
+          <% } %>	 
+	 </td>
+	 <td style="text-align:left;">
+          <% if((viewendentityhelper.currentuserindex+1) < viewendentityhelper.userdatas.length){ %>
+           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_NEXT %>" value="<%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="2">
+          <% } %>
+       </td>
+       </tr> 
+
+
     <!-- ---------- Main -------------------- -->
 
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
@@ -89,9 +107,9 @@
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){ %>
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("USEINBATCH_ABBR") %></td>
-	<td><input type="checkbox" name="<%= ViewEndEntityHelper.CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= ViewEndEntityHelper.CHECKBOX_VALUE %>" disabled="true"
-            <% if(viewendentityhelper.userdata.getClearTextPassword())
-                   out.write("CHECKED");%>>
+	<td><% if(viewendentityhelper.userdata.getClearTextPassword())
+                out.write(ejbcawebbean.getText("YES"));
+           else out.write(ejbcawebbean.getText("NO"));%>
         </td>
       </tr>
       <% } %>
@@ -234,6 +252,11 @@
 
     <!-- ---------- Other certificate data -------------------- -->
 
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr> 
+
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
 	 <td>
@@ -310,7 +333,7 @@
 	 <td>&nbsp;</td>
        </tr>
 
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
 	 <td>
          </td>
@@ -322,10 +345,9 @@
       <td  align="right" width="<%=viewendentityhelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("KEYRECOVERABLE") %> 
       </td>
-      <td> 
-        <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_KEYRECOVERABLE%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="13"
-                <%if(viewendentityhelper.userdata.getKeyRecoverable())
-                   out.write("CHECKED");%> disabled="true"> 
+      <td><% if(viewendentityhelper.userdata.getKeyRecoverable())
+                  out.write(ejbcawebbean.getText("YES"));
+             else out.write(ejbcawebbean.getText("NO"));%>
       </td>
     </tr>
       <% } %>
@@ -360,10 +382,9 @@
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
       </td>
-      <td > 
-        <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_SENDNOTIFICATION%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="12"
-                <%if(viewendentityhelper.userdata.getSendNotification())
-                   out.write("CHECKED");%> disabled="true"> 
+      <td><% if(viewendentityhelper.userdata.getSendNotification())
+                  out.write(ejbcawebbean.getText("YES"));
+             else out.write(ejbcawebbean.getText("NO"));%>
       </td>
     </tr>
       <% } %>
@@ -373,10 +394,9 @@
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("PRINTUSERDATA") %>
       </td>
-      <td > 
-        <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_PRINT%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="12"
-                <%if(viewendentityhelper.userdata.getPrintUserData())
-                   out.write("CHECKED");%> disabled="true"> 
+      <td><% if(viewendentityhelper.userdata.getPrintUserData())
+                  out.write(ejbcawebbean.getText("YES"));
+             else out.write(ejbcawebbean.getText("NO"));%>
       </td>
     </tr>
       <% } %>
@@ -415,20 +435,14 @@
      <% } %> 
 
 
-      <!-- ---------- Actions ---------- -->
+    <!-- ---------- Actions -------------------- -->
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td width="<%=ViewEndEntityHelper.columnwidth%>">
-          <% if(viewendentityhelper.currentuserindex > 0 ){ %>
-           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %>" tabindex="1">&nbsp;&nbsp;&nbsp;
-          <% } %>	 
 	 </td>
 	 <td>
-             <input type="reset" name="<%= ViewEndEntityHelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="20"
+             <input type="reset" name="<%= ViewEndEntityHelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="3"
                     onClick='self.close()'>
-                     <% if((viewendentityhelper.currentuserindex+1) < viewendentityhelper.userdatas.length){ %>
-          &nbsp;&nbsp;&nbsp;<input type="submit" name="<%= ViewEndEntityHelper.BUTTON_NEXT %>" value="<%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="3">
-          <% } %>
        </td>
        </tr> 
 
