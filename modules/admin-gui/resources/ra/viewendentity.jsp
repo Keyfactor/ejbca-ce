@@ -39,7 +39,9 @@
 </head>
 
 <body class="popup" id="viewendentity">
+
   <h2><%= ejbcawebbean.getText("VIEWENDENTITY2") %></h2>
+
   <%if(viewendentityhelper.nouserparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
   <% }else{
@@ -57,16 +59,25 @@
        <%}else{ %>
                <div align="center"><h4><%=ejbcawebbean.getText("HISTORICALUSERDATA") %></h4></div> 
        <% } %>
-   
+
+
   <form name="pageuser" action="<%= THIS_FILENAME %>" method="post">
-       <input type="hidden" name='<%= ViewEndEntityHelper.ACTION %>' value='<%= ViewEndEntityHelper.ACTION_PAGE%>'>
+     <input type="hidden" name='<%= ViewEndEntityHelper.ACTION %>' value='<%= ViewEndEntityHelper.ACTION_PAGE%>'>
      <input type="hidden" name='<%= ViewEndEntityHelper.USER_PARAMETER %>' value='<%= java.net.URLEncoder.encode(viewendentityhelper.username,"UTF-8")%>'>
-     <table border="0" cellpadding="0" cellspacing="2" width="400">
-      <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("USERNAME") %></td>
-	<td><% if(viewendentityhelper.userdata.getUsername() != null) out.write(viewendentityhelper.userdata.getUsername()); %>
-        </td>
+
+     <table border="0" cellpadding="0" cellspacing="2" width="100%">
+
+    <!-- ---------- Title -------------------- -->
+
+      <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td>
+	<td><strong><% if(viewendentityhelper.userdata.getUsername() != null) out.write(viewendentityhelper.userdata.getUsername()); %>
+        </strong></td>
       </tr>
+
+
+    <!-- ---------- Main -------------------- -->
+
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("ENDENTITYPROFILE") %></td>
 	<td><% if(viewendentityhelper.userdata.getEndEntityProfileId() != 0)
@@ -74,24 +85,39 @@
                  else out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));%>
         </td>
       </tr>
+
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){ %>
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("USEINBATCH") %></td>
+	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("USEINBATCH_ABBR") %></td>
 	<td><input type="checkbox" name="<%= ViewEndEntityHelper.CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= ViewEndEntityHelper.CHECKBOX_VALUE %>" disabled="true"
             <% if(viewendentityhelper.userdata.getClearTextPassword())
                    out.write("CHECKED");%>>
         </td>
       </tr>
       <% } %>
+
+      <% if(viewendentityhelper.profile.getUse(EndEntityProfile.EMAIL,0)){ %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EMAIL") %></td>
+	 <td><% if(viewendentityhelper.userdata.getEmail() != null) out.write(viewendentityhelper.userdata.getEmail()); %>
+         </td>
+       </tr>
+       <% } %>
+
+
+    <!-- ---------- Subject DN -------------------- -->
+
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td>&nbsp;</td>
       <td>&nbsp;</td>
       </tr> 
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></td>
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
 	 <td>
          </td>
        </tr>
+
       <% int subjectfieldsize = viewendentityhelper.profile.getSubjectDNFieldOrderLength();
          for(int i = 0; i < subjectfieldsize; i++){
         	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectDNFieldsInOrder(i);
@@ -102,16 +128,16 @@
 	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
          </td>
        </tr>
-       <% } 
-          subjectfieldsize = viewendentityhelper.profile.getSubjectAltNameFieldOrderLength();
+       <% } %>
+
+
+    <!-- ---------- Other subject attributes -------------------- -->
+
+       <% subjectfieldsize = viewendentityhelper.profile.getSubjectAltNameFieldOrderLength();
           if(subjectfieldsize > 0){
        %> 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-         <td>&nbsp;</td>
-         <td>&nbsp;</td>
-       </tr>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME") %></strong></td>
 	 <td>
          </td>
        </tr>
@@ -128,16 +154,13 @@
          </td>
        </tr>
        <%   }
-          }
-          subjectfieldsize = viewendentityhelper.profile.getSubjectDirAttrFieldOrderLength();
+          } %>
+
+       <%   subjectfieldsize = viewendentityhelper.profile.getSubjectDirAttrFieldOrderLength();
           if(subjectfieldsize > 0){
        %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-         <td>&nbsp;</td>
-         <td>&nbsp;</td>
-       </tr>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTDIRATTRS") %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTDIRATTRS") %></strong></td>
 	 <td>
          </td>
        </tr>
@@ -153,19 +176,21 @@
          </td>
        </tr>
        <% } %>  
-          
-          
+
+
+    <!-- ---------- Main certificate data -------------------- -->
+
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
-      <% if(viewendentityhelper.profile.getUse(EndEntityProfile.EMAIL,0)){ %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EMAIL") %></td>
-	 <td><% if(viewendentityhelper.userdata.getEmail() != null) out.write(viewendentityhelper.userdata.getEmail()); %>
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("MAINCERTIFICATEDATA") %></strong></td>
+	 <td>
          </td>
        </tr>
-       <% } %>
+
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATEPROFILE") %></td>
 	 <td><% if(viewendentityhelper.userdata.getCertificateProfileId() != 0)
@@ -173,7 +198,138 @@
                 else out.write(ejbcawebbean.getText("NOCERTIFICATEPROFILEDEFINED")); %>
          </td>
        </tr>
-       
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CA") %></td>
+	 <td><%= viewendentityhelper.userdata.getCAName()  %>
+         </td>
+       </tr>
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TOKEN") %></td>
+         <td>   
+            <% for(int i=0; i < viewendentityhelper.tokentexts.length;i++){
+                if(viewendentityhelper.tokenids[i] == viewendentityhelper.userdata.getTokenType())
+                   if( viewendentityhelper.tokenids[i] > SecConst.TOKEN_SOFT)
+                     out.write(viewendentityhelper.tokentexts[i]);
+                   else
+                     out.write(ejbcawebbean.getText(viewendentityhelper.tokentexts[i]));
+              } %>
+         </td> 
+       </tr>
+
+       <% if(globalconfiguration.getIssueHardwareTokens()){ %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENISSUER") %></td>
+         <td>   
+            <% if(viewendentityhelper.userdata.getHardTokenIssuerId() == SecConst.NO_HARDTOKENISSUER)
+                 out.write(ejbcawebbean.getText("NONE"));
+               else
+                 out.write(tokenbean.getHardTokenIssuerAlias(viewendentityhelper.userdata.getHardTokenIssuerId()));
+            %>
+         </td> 
+       </tr>
+       <% } %>
+
+
+    <!-- ---------- Other certificate data -------------------- -->
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
+	 <td>
+         </td>
+       </tr>
+
+	<%{
+		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
+		final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
+		final String certSerialNr = oldNr!=null ? oldNr.toString(16) : null;
+		if ( certSerialNr!=null ) { %>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
+			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER") %></td>
+			<td><%= certSerialNr %></td>
+			</tr> 
+	<%	} }%>
+
+	<%
+		String startTime = null;
+		String endTime = null;
+		if ( viewendentityhelper.profile.getUse(EndEntityProfile.STARTTIME, 0) || viewendentityhelper.profile.getUse(EndEntityProfile.ENDTIME, 0) ) {
+			ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
+			if ( ei != null ) {
+				startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+				endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+			} 
+		} %>
+	<% if ( startTime != null ) { %>
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
+		<td>
+		<%	if ( !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>		
+				<% String[] dp = {"yyyy-MM-dd HH:mm"};
+					ejbcawebbean.printDateTime(DateUtils.parseDate(startTime, dp)); %>
+		<%	} else { %>
+				<%= startTime %>
+		<%	} %>
+		</td>
+    </tr> 
+	<%	} %>
+	<% if ( endTime != null ) { %>
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFEND") %></td>
+		<td>
+		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
+				<%  String[] dp = {"yyyy-MM-dd HH:mm"};
+					ejbcawebbean.printDateTime(DateUtils.parseDate(endTime, dp)); %>
+		<%	} else { %>
+				<%= endTime %>
+		<%	} %>
+		</td>
+    </tr> 
+	<%	} %>
+
+      <% if(viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CARDNUMBER") %></td>
+	 <td><% if(viewendentityhelper.userdata.getCardNumber() != null) out.write(viewendentityhelper.userdata.getCardNumber()); %>
+         </td>
+       </tr>
+      <% } %>
+
+
+    <!-- ---------- Other data -------------------- -->
+
+       <%
+       if ( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
+    	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
+    	  || viewendentityhelper.profile.getUsePrinting()
+    	  ) {
+        %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
+       </tr>
+
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
+	 <td>
+         </td>
+       </tr>
+      <% } %>
+
+      <% if(viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
+    <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
+      <td  align="right" width="<%=viewendentityhelper.columnwidth%>"> 
+        <%= ejbcawebbean.getText("KEYRECOVERABLE") %> 
+      </td>
+      <td> 
+        <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_KEYRECOVERABLE%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="13"
+                <%if(viewendentityhelper.userdata.getKeyRecoverable())
+                   out.write("CHECKED");%> disabled="true"> 
+      </td>
+    </tr>
+      <% } %>
+
         <% int revstatus = RevokedCertInfo.NOT_REVOKED;
            ExtendedInformation revei = viewendentityhelper.userdata.getExtendedInformation();
 		   if ( revei != null ) {
@@ -198,66 +354,8 @@
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AACOMPROMISE")  %><%}%>
          </td>
        </tr>
-       
-       
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CA") %></td>
-	 <td><%= viewendentityhelper.userdata.getCAName()  %>
-         </td>
-       </tr>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TOKEN") %></td>
-         <td>   
-            <% for(int i=0; i < viewendentityhelper.tokentexts.length;i++){
-                if(viewendentityhelper.tokenids[i] == viewendentityhelper.userdata.getTokenType())
-                   if( viewendentityhelper.tokenids[i] > SecConst.TOKEN_SOFT)
-                     out.write(viewendentityhelper.tokentexts[i]);
-                   else
-                     out.write(ejbcawebbean.getText(viewendentityhelper.tokentexts[i]));
-              } %>
-         </td> 
-       </tr>
-       <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENISSUER") %></td>
-         <td>   
-            <% if(viewendentityhelper.userdata.getHardTokenIssuerId() == SecConst.NO_HARDTOKENISSUER)
-                 out.write(ejbcawebbean.getText("NONE"));
-               else
-                 out.write(tokenbean.getHardTokenIssuerAlias(viewendentityhelper.userdata.getHardTokenIssuerId()));
-            %>
-         </td> 
-       </tr>
-       <% } 
-       if( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
-    	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) || viewendentityhelper.profile.getUsePrinting() ){
-        %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("OTHERDATA") %></td>
-	 <td>
-         </td>
-       </tr>
-      <% } if(viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
-    <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
-      <td  align="right" width="<%=viewendentityhelper.columnwidth%>"> 
-        <%= ejbcawebbean.getText("KEYRECOVERABLE") %> 
-      </td>
-      <td> 
-        <input type="checkbox" name="<%=ViewEndEntityHelper.CHECKBOX_KEYRECOVERABLE%>" value="<%=ViewEndEntityHelper.CHECKBOX_VALUE %>" tabindex="13"
-                <%if(viewendentityhelper.userdata.getKeyRecoverable())
-                   out.write("CHECKED");%> disabled="true"> 
-      </td>
-    </tr>
-      <%} if(viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CARDNUMBER") %></td>
-	 <td><% if(viewendentityhelper.userdata.getCardNumber() != null) out.write(viewendentityhelper.userdata.getCardNumber()); %>
-	 <td><% if(viewendentityhelper.userdata.getEmail() != null) out.write(viewendentityhelper.userdata.getEmail()); %>
 
-         </td>
-       </tr>
-
-      <% } if(viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
+      <% if(viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
@@ -268,7 +366,9 @@
                    out.write("CHECKED");%> disabled="true"> 
       </td>
     </tr>
-      <% } if(viewendentityhelper.profile.getUsePrinting()){ %>
+      <% } %>
+
+      <% if(viewendentityhelper.profile.getUsePrinting()){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("PRINTUSERDATA") %>
@@ -280,68 +380,29 @@
       </td>
     </tr>
       <% } %>
-	<%
-		String startTime = null;
-		String endTime = null;
-		if ( viewendentityhelper.profile.getUse(EndEntityProfile.STARTTIME, 0) || viewendentityhelper.profile.getUse(EndEntityProfile.ENDTIME, 0) ) {
-			ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
-			if ( ei != null ) {
-				startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
-				endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
-			} 
-		} if ( startTime != null || endTime != null ) { %>
-			<tr id="Row<%=(viewendentityhelper.row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td></tr>
-	<%	} if ( startTime != null ) { %>
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
-		<td>
-		<%	if ( !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>		
-				<% String[] dp = {"yyyy-MM-dd HH:mm"};
-					ejbcawebbean.printDateTime(DateUtils.parseDate(startTime, dp)); %>
-		<%	} else { %>
-				<%= startTime %>
-		<%	} %>
-		</td>
-    </tr> 
-	<%	} if ( endTime != null ) { %>
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFEND") %></td>
-		<td>
-		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
-				<%  String[] dp = {"yyyy-MM-dd HH:mm"};
-					ejbcawebbean.printDateTime(DateUtils.parseDate(endTime, dp)); %>
-		<%	} else { %>
-				<%= endTime %>
-		<%	} %>
-		</td>
-    </tr> 
-	<%	} %>
-	<%{
-		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
-		final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
-		final String certSerialNr = oldNr!=null ? oldNr.toString(16) : null;
-		if ( certSerialNr!=null ) { %>
-			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
-			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %></td>
-			<td><%= certSerialNr %></td>
-			</tr> 
-	<%	} }%>
+
+
+    <!-- ---------- End-entity information -------------------- -->
+
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr> 
+
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
       <td>
          <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeCreated()) %>
        </td>
     </tr> 
+
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("MODIFIED") %></td>
       <td>
          <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeModified()) %>
        </td>
      </tr> 
+
      <% if(viewendentityhelper.currentuserindex == 0){ %>
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("STATUS") %></td>
@@ -352,6 +413,10 @@
        </td>
      </tr> 
      <% } %> 
+
+
+      <!-- ---------- Actions ---------- -->
+
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td width="<%=ViewEndEntityHelper.columnwidth%>">
           <% if(viewendentityhelper.currentuserindex > 0 ){ %>
@@ -366,6 +431,7 @@
           <% } %>
        </td>
        </tr> 
+
      </table> 
    </form>
 
