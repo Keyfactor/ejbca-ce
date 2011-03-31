@@ -48,17 +48,7 @@ public class ValidityDate {
 	 * @return the date decoded from 'sDate'. null if no decoding can be done.
 	 */
 	public static Date getDateFromString(String sDate) {
-		/*
-		try {
-			final Date date = new Date(Long.parseLong(sDate, 16)*1000);
-			if ( date!=null ) {
-				log.debug("Date as '"+sDate+"' hexadecimal in seconds sinze epoc. Date: "+date);
-				return date;
-			}
-		} catch ( NumberFormatException e) {
-			// just try next
-		}
-		*/
+
 		try {
 			final Date date = defaultDateFormat.parse(sDate);
 			if ( date!=null ) {
