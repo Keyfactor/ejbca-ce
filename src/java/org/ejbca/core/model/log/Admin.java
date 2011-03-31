@@ -123,7 +123,7 @@ public class Admin implements Serializable {
     public AdminInformation getAdminInformation() {
     	if (adminInformation==null) {
             if (type == TYPE_CLIENTCERT_USER) {
-            	adminInformation = new AdminInformation(certificate);
+            	adminInformation = new AdminInformation(certificate, authToken);
             } else {
             	adminInformation = new AdminInformation(ADMINTYPETOADMINENTITY[type], authToken);
             }

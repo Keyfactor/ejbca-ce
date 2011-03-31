@@ -39,22 +39,24 @@ public class AdminInformation implements java.io.Serializable {
 	
 	// Public Methods
      /** Creates a new instance of AdminInformation */
-    public AdminInformation(Certificate certificate){
+    public AdminInformation(Certificate certificate, byte[] authToken) {
       this.certificate=certificate;
       this.specialuser=0;      
+      this.localAuthToken = authToken;
     }
     
     public AdminInformation(int specialuser, byte[] authToken) {
       this.specialuser=specialuser;
-      localAuthToken = authToken;
+      this.localAuthToken = authToken;
     }
     
-    private AdminInformation() { 
+    private AdminInformation(byte[] authToken) { 
   	  this.specialuser = 0;      
+  	  this.localAuthToken = authToken;
   	}
 
     public static AdminInformation getAdminInformationByGroupId(int adminGroupId) {
-    	AdminInformation adminInformation = new AdminInformation(); 
+    	AdminInformation adminInformation = new AdminInformation(getRandomToken()); 
     	adminInformation.adminGroupId = adminGroupId;
     	return adminInformation;
     }

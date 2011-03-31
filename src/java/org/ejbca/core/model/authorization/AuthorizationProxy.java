@@ -18,6 +18,7 @@ import java.util.HashMap;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.util.CertTools;
 
 
@@ -30,9 +31,9 @@ import org.ejbca.util.CertTools;
  */
 public class AuthorizationProxy implements Serializable {
 	private static final Logger log = Logger.getLogger(AuthorizationProxy.class);
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
     // Private fields.
     private HashMap<Integer, Boolean> authstore;
     private HashMap<Integer, Boolean> groupstore;
@@ -40,7 +41,6 @@ public class AuthorizationProxy implements Serializable {
     
     private boolean cliEnabled;
 
-    
     /** Creates a new instance of AuthorizationProxy. */
     public AuthorizationProxy(final AccessTree accesstree, final boolean cliEnabled) {
        authstore = new HashMap();
@@ -57,32 +57,48 @@ public class AuthorizationProxy implements Serializable {
      */
     public boolean isAuthorized(AdminInformation admin, String resource){
       Boolean returnval = null;
-      int adm = 0;
+      int adm = admin.getSpecialUser();
       
-      if (admin.isSpecialUser()) {
-        adm = admin.getSpecialUser();
-        if (log.isDebugEnabled()) {
-        	log.debug("Is special user: "+adm);
-    	}
-        // If we are special admin, verify local auth token to make
-        // sure that special admin can only be used inside this jvm
-        if (!ArrayUtils.isEquals(admin.getLocalAuthToken(), AdminInformation.randomToken)) {
-        	if ((adm == AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN) ||
-        			(adm == AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN) ||
-        			(adm == AdminEntity.SPECIALADMIN_RAADMIN)) {
-            	if (!cliEnabled) {
-            		// CLI access disabled
-            		log.info("Command line client access is disabled");
-            		return false;
-            	}
-        	} else {
-        		log.info("Failed internal admin check, and it's not a command line client");
-        		return false;
-        	}
-        }
-      } else {
-        adm = CertTools.getSerialNumber(admin.getX509Certificate()).hashCode();
-      }
+		// Check that the admin object was not created outside of EJBCA
+		if (ArrayUtils.isEquals(admin.getLocalAuthToken(), AdminInformation.randomToken)) {
+			if (admin.isSpecialUser()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Is special user: " + adm);
+				}
+			} else {
+				adm = CertTools.getSerialNumber(admin.getX509Certificate()).hashCode();
+			}
+		} else if (admin.isSpecialUser() 
+				&& ((adm == AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN)
+					|| (adm == AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN)
+					|| (adm == AdminEntity.SPECIALADMIN_RAADMIN))) {
+			if (log.isDebugEnabled()) {
+				log.debug("Is special user: " + adm);
+			}
+			// If admin was not created inside EJBCA it must be a type of
+			// command line admin _and_ command line client access must be enabled
+			if (!cliEnabled) {
+				// CLI access disabled
+				log.info("Command line client access is disabled");
+				return false;
+			}
+		} else {
+			if (EjbcaConfiguration.getIsInProductionMode() || admin.isSpecialUser()) {
+				log.info("Failed internal admin check, and it's not a command line client");
+				return false;
+			} else {
+				// Note: This is a special case were we allow access as a client certificate 
+				// user even without the randomToken but only when the application is not 
+				// running in production mode.
+				// Normally test code should use any of the command line admins but some 
+				// tests such as those for approvals require client certificate admins 
+				// and therefore this exception has been added.
+				// See ECA-2123.
+				log.info("Failed internal admin check, but running in test mode so allow it anyway");
+				adm = CertTools.getSerialNumber(admin.getX509Certificate()).hashCode();
+			}
+		}
+      
       int tmp = adm ^ resource.hashCode();
         // Check if name is in hashmap
       returnval = authstore.get(tmp);
