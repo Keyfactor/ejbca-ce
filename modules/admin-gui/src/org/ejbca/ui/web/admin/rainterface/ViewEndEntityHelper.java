@@ -70,7 +70,7 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 	
 	public static final   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
 	
-	public static final int columnwidth = 350;
+	public static final int columnwidth = 330;
 	
 	public boolean nouserparameter          = true;
 	public boolean notauthorized            = false;	
