@@ -87,6 +87,7 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.IPatternLogger;
+import org.ejbca.util.dn.DNFieldsUtil;
 import org.ejbca.util.query.Query;
 
 /** Helper class for other classes that wants to call remote EJBs.
@@ -384,7 +385,7 @@ public class EjbcaWSHelper {
         }
 
         final UserDataVO userdatavo = new UserDataVO(userdata.getUsername(),
-				userdata.getSubjectDN(),
+        		DNFieldsUtil.removeTrailingEmpties(userdata.getSubjectDN()),
 				caid,
 				userdata.getSubjectAltName(),
 				userdata.getEmail(),
