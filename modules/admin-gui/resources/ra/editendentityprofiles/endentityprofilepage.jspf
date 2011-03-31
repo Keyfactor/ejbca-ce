@@ -736,6 +736,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="40%" valign="top" align="right"> 
         <%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>
         <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN) ) { %>
+        		<br />
         		<%= ejbcawebbean.getText("USEONLYUPNDOMAIN") %>
         <%	} %>
       </td>
