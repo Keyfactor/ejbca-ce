@@ -200,6 +200,9 @@ public class SignSessionTest extends CaTestCase {
         if (rsakeyPrivKeyUsagePeriod == null) {
             rsakeyPrivKeyUsagePeriod = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
+        if (ecdsakeys == null) {
+            ecdsakeys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        }
         if (ecdsasecpkeys == null) {
             ecdsasecpkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         }
