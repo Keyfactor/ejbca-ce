@@ -30,9 +30,14 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
  * in session beans.
  * 
- * This cache is designed for continuous background updates and will respond with the latest
- * object in the cache. This means that you will not get a performance hit when when the
- * cache is out of date, but you might get a object that is slightly older than the cache timeout.
+ * This cache is designed so only one thread at the time will update the cache if it is too old. Other
+ * threads will happily return a bit too old object. If a cache update is forced, for example when
+ * a profile is edited, it will always update the cache even if the commit of the transaction fails.
+ * 
+ * Another known issue during forced updates is the race condition exists, so an update in progress
+ * might overwrite the result from forced update's database query.
+ * 
+ * The intention of this design is better throughput than fully ordered sequential updates.
  * 
  * @version $Id$
  */
@@ -65,29 +70,8 @@ public final class EndEntityProfileCache {
     	nameIdMapCacheTemplate.put(EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME, Integer.valueOf(SecConst.EMPTY_ENDENTITYPROFILE));
     }
 
-    private static final ReentrantLock fairLock = new ReentrantLock(false);
+    private static final ReentrantLock lock = new ReentrantLock(false);
 
-    /** @return true if caching is enabled */
-    public boolean isCacheEnabled() {
-    	return EjbcaConfiguration.getCacheEndEntityProfileTime() != 0;
-    }
-
-    /** @return the number of milliseconds left until the cache should be updated again. */
-    public long getTimeToNextUpdate() {
-        try {
-        	fairLock.lock();
-        	final long timeSinceLastUpdate = System.currentTimeMillis()-lastUpdate;
-        	final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
-        	if (timeSinceLastUpdate >= cacheEndEntityProfileTime) {
-        		return 0;
-        	} else {
-        		return cacheEndEntityProfileTime - timeSinceLastUpdate;
-        	}
-        } finally {
-        	fairLock.unlock();
-        }
-    }
-    
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
      * @param entityManager is required for reading the profiles from the database if we need to update the cache
@@ -97,37 +81,37 @@ public final class EndEntityProfileCache {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
+        final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
+        final long now = System.currentTimeMillis();
         try {
-        	fairLock.lock();
-        	final long cacheEndEntityProfileTime = EjbcaConfiguration.getCacheEndEntityProfileTime();
-        	final long now = System.currentTimeMillis();
-        	if (!force && isCacheEnabled() && lastUpdate+cacheEndEntityProfileTime > now) {
+        	lock.lock();
+        	if (!force && cacheEndEntityProfileTime!=0 && lastUpdate+cacheEndEntityProfileTime > now) {
         		return;	// We don't need to update cache
         	}
         	lastUpdate = now;
-            @SuppressWarnings("unchecked")
-        	final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
-            @SuppressWarnings("unchecked")
-        	final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
-        	final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
-        	try {
-        		final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
-        		for (final EndEntityProfileData next : result) {
-        			final Integer id = Integer.valueOf(next.getId());
-        			final String profileName = next.getProfileName();
-        			idNameCache.put(id, profileName);
-        			nameIdCache.put(profileName, id);
-        			profCache.put(id, next.getProfile());
-        		}
-        	} catch (Exception e) {
-        		LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
-        	}
-        	idNameMapCache = idNameCache;
-        	nameIdMapCache = nameIdCache;
-        	profileCache = profCache;
         } finally {
-        	fairLock.unlock();
+        	lock.unlock();
         }
+        @SuppressWarnings("unchecked")
+        final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
+        @SuppressWarnings("unchecked")
+        final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
+        final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
+        try {
+        	final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
+        	for (final EndEntityProfileData next : result) {
+        		final Integer id = Integer.valueOf(next.getId());
+        		final String profileName = next.getProfileName();
+        		idNameCache.put(id, profileName);
+        		nameIdCache.put(profileName, id);
+        		profCache.put(id, next.getProfile());
+        	}
+        } catch (Exception e) {
+        	LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
+        }
+        idNameMapCache = idNameCache;
+        nameIdMapCache = nameIdCache;
+        profileCache = profCache;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }

@@ -21,15 +21,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
@@ -75,49 +69,12 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
-    @Resource
-    private SessionContext sessionContext;
-    private TimerService timerService;	// When the sessionContext is injected, the timerService should be looked up.
 
     @EJB
     private AuthorizationSessionLocal authSession;
     @EJB
     private LogSessionLocal logSession;
-    private CertificateProfileSessionLocal certificateProfileSession;
     
-    private static final String CACHE_TIMER_ID = "certificateProfileCacheTimer";
-    
-    @PostConstruct
-    public void postConstruct() {
-    	certificateProfileSession = sessionContext.getBusinessObject(CertificateProfileSessionLocal.class);
-    	timerService = sessionContext.getTimerService();
-    }
-    
-    @Override
-    public void addCacheTimer() {
-    	cancelOldTimer();
-    	if (profileCache.isCacheEnabled()) {
-    		timerService.createTimer(profileCache.getTimeToNextUpdate(), CACHE_TIMER_ID);
-    	}
-    }
-    
-    private void cancelOldTimer() {
-    	for (Object o : timerService.getTimers()) {
-    		final Timer t = (Timer) o;
-    		if (CACHE_TIMER_ID.equals(t.getInfo())) {
-    			t.cancel();
-    			break;
-    		}
-    	}
-    }
-    
-    @Timeout
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void timeoutHandler(Timer timer) {
-    	certificateProfileSession.flushProfileCacheIfNeeded();
-    	certificateProfileSession.addCacheTimer();
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void addCertificateProfile(final Admin admin, final int profileid, final String profilename, final CertificateProfile profile)
@@ -185,17 +142,6 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
         profileCache.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache.");
-        }
-    }
-
-    @Override
-    public void flushProfileCacheIfNeeded() {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(">flushProfileCacheIfNeeded");
-        }
-        profileCache.updateProfileCache(entityManager, false);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Flushed profile cache if needed");
         }
     }
 
