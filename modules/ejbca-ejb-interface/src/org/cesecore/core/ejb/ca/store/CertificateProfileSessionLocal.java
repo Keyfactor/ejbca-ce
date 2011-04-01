@@ -19,10 +19,4 @@ import javax.ejb.Local;
  */
 @Local
 public interface CertificateProfileSessionLocal extends CertificateProfileSession {
-
-	/** Add the next Timer timeout when the profile cache should be updated. */
-	void addCacheTimer();
-
-	/** Called from the timer service to update the profile cache if needed. */
-	void flushProfileCacheIfNeeded();
 }

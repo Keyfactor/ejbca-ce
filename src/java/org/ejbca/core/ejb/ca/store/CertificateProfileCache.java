@@ -38,9 +38,14 @@ import org.ejbca.core.model.ca.certificateprofiles.ServerCertificateProfile;
  * Class Holding cache variable. Needed because EJB spec does not allow volatile, non-final fields
  * in session beans.
  * 
- * This cache is designed for continuous background updates and will respond with the latest
- * object in the cache. This means that you will not get a performance hit when when the
- * cache is out of date, but you might get a object that is slightly older than the cache timeout.
+ * This cache is designed so only one thread at the time will update the cache if it is too old. Other
+ * threads will happily return a bit too old object. If a cache update is forced, for example when
+ * a profile is edited, it will always update the cache even if the commit of the transaction fails.
+ * 
+ * Another known issue during forced updates is the race condition exists, so an update in progress
+ * might overwrite the result from forced update's database query.
+ * 
+ * The intention of this design is better throughput than fully ordered sequential updates.
  * 
  * @version $Id$
  */
@@ -87,28 +92,7 @@ public final class CertificateProfileCache {
     	nameIdMapCacheTemplate.put(HardTokenSignCertificateProfile.CERTIFICATEPROFILENAME, Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN));
     }
     
-    private static final ReentrantLock fairLock = new ReentrantLock(false);
-
-    /** @return true if caching is enabled */
-    public boolean isCacheEnabled() {
-    	return EjbcaConfiguration.getCacheCertificateProfileTime() != 0;
-    }
-
-    /** @return the number of milliseconds left until the cache should be updated again. */
-    public long getTimeToNextUpdate() {
-        try {
-        	fairLock.lock();
-        	final long timeSinceLastUpdate = System.currentTimeMillis()-lastUpdate;
-        	final long cacheCertificateProfileTime = EjbcaConfiguration.getCacheCertificateProfileTime();
-        	if (timeSinceLastUpdate >= cacheCertificateProfileTime) {
-        		return 0;
-        	} else {
-        		return cacheCertificateProfileTime - timeSinceLastUpdate;
-        	}
-        } finally {
-        	fairLock.unlock();
-        }
-    }
+    private static final ReentrantLock lock = new ReentrantLock(false);
 
     /**
      * Fetch all profiles from the database, unless cache is enabled, valid and we do not force an update.
@@ -119,37 +103,37 @@ public final class CertificateProfileCache {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">updateProfileCache");
         }
+        final long cacheCertificateProfileTime = EjbcaConfiguration.getCacheCertificateProfileTime();
+        final long now = System.currentTimeMillis();
         try {
-        	fairLock.lock();
-        	final long cacheCertificateProfileTime = EjbcaConfiguration.getCacheCertificateProfileTime();
-        	final long now = System.currentTimeMillis();
-        	if (!force && isCacheEnabled() && lastUpdate+cacheCertificateProfileTime > now) {
+        	lock.lock();
+        	if (!force && cacheCertificateProfileTime!=0 && lastUpdate+cacheCertificateProfileTime > now) {
         		return;	// We don't need to update cache
         	}
         	lastUpdate = now;
-        	@SuppressWarnings("unchecked")
-        	final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
-        	@SuppressWarnings("unchecked")
-        	final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
-        	final Map<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
-        	try {
-        		final List<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
-        		for (final CertificateProfileData current : result) {
-        			final Integer id = Integer.valueOf(current.getId());
-        			final String certificateProfileName = current.getCertificateProfileName();
-        			idNameCache.put(id, certificateProfileName);
-        			nameIdCache.put(certificateProfileName, id);
-        			profCache.put(id, current.getCertificateProfile());
-        		}
-        	} catch (Exception e) {
-        		LOG.error("Error reading certificate profiles: ", e);
-        	}
-        	idNameMapCache = idNameCache;
-        	nameIdMapCache = nameIdCache;
-        	profileCache = profCache;
         } finally {
-        	fairLock.unlock();
+        	lock.unlock();
         }
+        @SuppressWarnings("unchecked")
+        final Map<Integer, String> idNameCache = (Map<Integer, String>) idNameMapCacheTemplate.clone();
+        @SuppressWarnings("unchecked")
+        final Map<String, Integer> nameIdCache = (Map<String, Integer>) nameIdMapCacheTemplate.clone();
+        final Map<Integer, CertificateProfile> profCache = new HashMap<Integer, CertificateProfile>();
+        try {
+        	final List<CertificateProfileData> result = CertificateProfileData.findAll(entityManager);
+        	for (final CertificateProfileData current : result) {
+        		final Integer id = Integer.valueOf(current.getId());
+        		final String certificateProfileName = current.getCertificateProfileName();
+        		idNameCache.put(id, certificateProfileName);
+        		nameIdCache.put(certificateProfileName, id);
+        		profCache.put(id, current.getCertificateProfile());
+        	}
+        } catch (Exception e) {
+        	LOG.error("Error reading certificate profiles: ", e);
+        }
+        idNameMapCache = idNameCache;
+        nameIdMapCache = nameIdCache;
+        profileCache = profCache;
         if (LOG.isTraceEnabled()) {
             LOG.trace("<updateProfileCache");
         }

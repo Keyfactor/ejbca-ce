@@ -21,14 +21,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
@@ -36,7 +30,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogSessionLocal;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
@@ -68,9 +61,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
-    @Resource
-    private SessionContext sessionContext;
-    private TimerService timerService;	// When the sessionContext is injected, the timerService should be looked up.
 
     @EJB
     private AuthorizationSessionLocal authSession;
@@ -78,40 +68,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private CaSessionLocal caSession;
     @EJB
     private LogSessionLocal logSession;
-    private EndEntityProfileSessionLocal endEntityProfileSession;
-
-    private static final String CACHE_TIMER_ID = "endEntityProfileCacheTimer";
-    
-    @PostConstruct
-    public void postConstruct() {
-    	endEntityProfileSession = sessionContext.getBusinessObject(EndEntityProfileSessionLocal.class);
-    	timerService = sessionContext.getTimerService();
-    }
-    
-    @Override
-    public void addCacheTimer() {
-    	cancelOldTimer();
-    	if (profileCache.isCacheEnabled()) {
-    		timerService.createTimer(profileCache.getTimeToNextUpdate(), CACHE_TIMER_ID);
-    	}
-    }
-
-    private void cancelOldTimer() {
-    	for (final Object o : timerService.getTimers()) {
-    		final Timer t = (Timer) o;
-    		if (CACHE_TIMER_ID.equals(t.getInfo())) {
-    			t.cancel();
-    			break;
-    		}
-    	}
-    }
-    
-    @Timeout
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void timeoutHandler(Timer timer) {
-    	endEntityProfileSession.flushProfileCacheIfNeeded();
-    	endEntityProfileSession.addCacheTimer();
-    }
     
     @Override
     public void addEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
@@ -258,17 +214,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         profileCache.updateProfileCache(entityManager, true);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Flushed profile cache");
-        }
-    }
-
-    @Override
-    public void flushProfileCacheIfNeeded() {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(">flushProfileCacheIfNeeded");
-        }
-        profileCache.updateProfileCache(entityManager, false);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Flushed profile cache if needed");
         }
     }
 

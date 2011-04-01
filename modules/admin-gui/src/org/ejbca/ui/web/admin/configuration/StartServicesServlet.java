@@ -218,8 +218,6 @@ public class StartServicesServlet extends HttpServlet {
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
         signSession.isUniqueCertificateSerialNumberIndex();
-        certificateProfileSession.addCacheTimer();
-        endEntityProfileSession.addCacheTimer();
     }
     
     /**
