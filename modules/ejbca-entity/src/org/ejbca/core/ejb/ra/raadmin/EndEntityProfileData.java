@@ -114,7 +114,7 @@ public class EndEntityProfileData implements Serializable {
      * TODO: Still true with JPA?
      */
     private EndEntityProfile readAndUpgradeProfileInternal() {
-        EndEntityProfile returnval = new EndEntityProfile();
+        EndEntityProfile returnval = new EndEntityProfile(0);
         HashMap data = getData();
         // If EndEntityProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data 
         // and perhaps upgrading
