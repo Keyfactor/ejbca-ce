@@ -230,8 +230,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	init(emptyprofile);
     }
 
-    /** Creates a new instance of EndEntity Profile used during cloning */
-    private EndEntityProfile(final int unused) {
+    /** Creates a new instance of EndEntity Profile used during cloning or when we load all the data from the database. */
+    public EndEntityProfile(final int unused) {
     }
 
     private void init(final boolean emptyprofile){
@@ -248,18 +248,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         
         if (emptyprofile) {
         	for (final String key : dataConstantsUsedInEmpty) {
-        		addField(key);
-        		setValue(key, 0, "");
-        		setRequired(key, 0, false);
-        		setUse(key, 0, true);
-        		setModifyable(key, 0, true);        		
+        		addFieldWithDefaults(key, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
         	}
         	// Add another DC-field since (if used) more than one is always used
-        	addField(DnComponents.DOMAINCOMPONENT);
-        	setValue(DnComponents.DOMAINCOMPONENT,1,"");
-        	setRequired(DnComponents.DOMAINCOMPONENT,1,false);
-        	setUse(DnComponents.DOMAINCOMPONENT,1,true);
-        	setModifyable(DnComponents.DOMAINCOMPONENT,1,true);
+    		addFieldWithDefaults(DnComponents.DOMAINCOMPONENT, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
         	// Set required fields
         	setRequired(USERNAME,0,true);
         	setRequired(PASSWORD,0,true);
@@ -293,65 +285,35 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(MINPWDSTRENGTH,0,false);
         } else {
         	// initialize profile data
-        	addField(USERNAME);
-        	addField(PASSWORD);
+        	addFieldWithDefaults(USERNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(PASSWORD, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
         	addField(AUTOGENPASSWORDTYPE);
-        	addField(AUTOGENPASSWORDLENGTH);
-        	addField(DnComponents.COMMONNAME);
+        	addFieldWithDefaults(AUTOGENPASSWORDLENGTH, "8", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(DnComponents.COMMONNAME, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
         	addField(EMAIL);
-        	addField(DEFAULTCERTPROFILE);
-        	addField(AVAILCERTPROFILES);
-        	addField(DEFKEYSTORE);
-        	addField(AVAILKEYSTORE);
+        	addFieldWithDefaults(DEFAULTCERTPROFILE, CONST_DEFAULTCERTPROFILE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(AVAILCERTPROFILES, CONST_AVAILCERTPROFILES2, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(DEFKEYSTORE, CONST_DEFKEYSTORE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(AVAILKEYSTORE, CONST_AVAILKEYSTORE, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
         	addField(DEFAULTTOKENISSUER);
-        	addField(AVAILTOKENISSUER);
-        	addField(AVAILCAS);
-        	addField(DEFAULTCA);
-        	addField(STARTTIME);
-        	addField(ENDTIME);
-        	addField(ALLOWEDREQUESTS);
-        	addField(CARDNUMBER);
-        	addField(ISSUANCEREVOCATIONREASON);
-        	addField(MAXFAILEDLOGINS);
-
-        	setRequired(USERNAME,0,true);
-        	setRequired(PASSWORD,0,true);
-        	setRequired(DnComponents.COMMONNAME,0,true);
-        	setRequired(DEFAULTCERTPROFILE,0,true);
-        	setRequired(AVAILCERTPROFILES,0,true);
-        	setRequired(DEFKEYSTORE,0,true);
-        	setRequired(AVAILKEYSTORE,0,true);
-        	setRequired(DEFAULTCA,0,true);
-        	setRequired(AVAILCAS,0,true);
-        	setRequired(STARTTIME,0,false);
-        	setRequired(ENDTIME,0,false);
-        	setRequired(ALLOWEDREQUESTS,0,false);
-        	setRequired(CARDNUMBER,0,false);
-        	setRequired(ISSUANCEREVOCATIONREASON,0,false);
-        	setRequired(MAXFAILEDLOGINS, 0, false);
-
-        	setValue(AUTOGENPASSWORDLENGTH, 0, "8");
-        	setValue(DEFAULTCERTPROFILE,0, CONST_DEFAULTCERTPROFILE);
-        	setValue(AVAILCERTPROFILES,0, CONST_AVAILCERTPROFILES2);
-        	setValue(DEFKEYSTORE,0, CONST_DEFKEYSTORE);
-        	setValue(AVAILKEYSTORE,0, CONST_AVAILKEYSTORE);
-        	setValue(ISSUANCEREVOCATIONREASON, 0, CONST_ISSUANCEREVOCATIONREASON);
-
         	// Do not use hard token issuers by default.
-        	setUse(AVAILTOKENISSUER, 0, false);
-        	setUse(STARTTIME,0,false);
-        	setUse(ENDTIME,0,false);
-        	setUse(ALLOWEDREQUESTS,0,false);
-        	setUse(CARDNUMBER,0,false);
-        	setUse(ISSUANCEREVOCATIONREASON,0,false);
-        	setUse(MAXFAILEDLOGINS,0,false);
+        	addFieldWithDefaults(AVAILTOKENISSUER, "", Boolean.TRUE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(AVAILCAS, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(DEFAULTCA, "", Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+        	addFieldWithDefaults(STARTTIME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(ENDTIME, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(ALLOWEDREQUESTS, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(CARDNUMBER, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(ISSUANCEREVOCATIONREASON, CONST_ISSUANCEREVOCATIONREASON, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+        	addFieldWithDefaults(MAXFAILEDLOGINS, "", Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
         }
     }
 
+    /** Add a field with value="", required=false, use=true, modifyable=true */
     public void addField(final String parameter){
     	addField(getParameterNumber(parameter), parameter);
     }
-
+    
     /**
      * Function that adds a field to the profile.
      *
@@ -360,13 +322,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void addField(final int parameter){
     	addField(parameter, getParameter(parameter));
     }
+    
+    /** Add a field with value="", required=false, use=true, modifyable=true */
+    private void addField(final int parameter, final String parameterName) {
+    	addFieldWithDefaults(parameter, parameterName, "", Boolean.FALSE, Boolean.TRUE, Boolean.TRUE);
+    }
 
-    private void addField(final int parameter, final String parameterName){
+    private void addFieldWithDefaults(final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
+    	addFieldWithDefaults(getParameterNumber(parameterName), parameterName, value, required, use, modifyable);
+    }
+
+    private void addFieldWithDefaults(final int parameter, final String parameterName, final String value, final Boolean required, final Boolean use, final Boolean modifyable) {
     	final int size = getNumberOfField(parameter);
-    	setValue(parameter, size, "");
-    	setRequired(parameter, size, false);
-    	setUse(parameter, size, true);
-    	setModifyable(parameter, size, true);
+    	// Perform operations directly on "data" to save some cycles..
+    	final int offset = (NUMBERBOUNDRARY*size) + parameter;
+   		data.put(Integer.valueOf(FIELDBOUNDRARY_VALUE + offset), value);
+    	data.put(Integer.valueOf(FIELDBOUNDRARY_ISREQUIRED + offset), required);
+    	data.put(Integer.valueOf(FIELDBOUNDRARY_USE + offset), use);
+    	data.put(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + offset), modifyable);
     	if (DnComponents.isDnProfileField(parameterName)) {
     		final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
