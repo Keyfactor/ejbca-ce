@@ -348,6 +348,27 @@ function checkuseextendedkeyusagefield(){
   }
 }
 
+function checkprivkeyusageperiodnotbeforefield() {
+  if (document.editcertificateprofile.<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>.checked) {
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.value = "0d";
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET %>.value = "";
+  }
+}
+function checkprivkeyusageperiodnotafterfield() {
+  if (document.editcertificateprofile.<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>.checked) {
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = document.editcertificateprofile.<%= TEXTFIELD_VALIDITY %>.value;
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH %>.value = "";
+  }
+}
+
 function checkallfields(){
     var illegalfields = 0;
 
@@ -1043,6 +1064,40 @@ function checkallfields(){
       </td>
     </tr>
 
+ 	<%-- PrivateKeyUsagePeriod --%>
+	<tr id="Row<%=row%2%>">
+	  <td width="50%" align="right">
+	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_USE")%> [?]<br/>
+	  </td>
+	  <td width="50%">
+	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>" onclick="checkprivkeyusageperiodnotbeforefield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "CHECKED" : ""%>>
+	  </td>
+	</tr>
+	<tr id="Row<%=row%2%>">
+	  <td width="50%" align="right">
+	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_STARTOFFSET")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
+	  </td>
+	  <td width="50%">
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="45" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" />
+	  </td>
+	</tr>
+	
+	<tr id="Row<%=row%2%>">
+	  <td width="50%" align="right">
+	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_USE")%> [?]<br/>
+	  </td>
+	  <td width="50%">
+	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>" onclick="checkprivkeyusageperiodnotafterfield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "CHECKED" : ""%>>	     
+	  </td>
+	</tr>
+	<tr id="Row<%=row++%2%>">
+	  <td width="50%" align="right">
+	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_PERIODLENGTH")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
+	  </td>
+	  <td width="50%">
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="45" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" />	     
+	  </td>
+	</tr>
 
 
     <%-- Other extensions --%>

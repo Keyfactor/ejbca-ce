@@ -32,6 +32,15 @@ import org.ejbca.util.ValidityDate;
 public class CertificateValidity {
 
     private static final Logger log = Logger.getLogger(CertificateValidity.class);
+    
+    /** 
+     * Number of seconds before the issuing time the certificates notBefore date
+     * will be set to.
+     * The start date is set back ten minutes to avoid some problems with 
+     * unsynchronized clocks.
+     */
+    public static final long SETBACKTIME = 10 * 60 * 1000;
+    
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 	private static final String[] datePatterns = {"yyyy-MM-dd HH:mm"};
@@ -73,7 +82,7 @@ public class CertificateValidity {
 		    throw new IllegalValidityException("ca.toolateexpiredate in ejbca.properties is not a valid date.");
 		}
         // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
-        Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
+        Date now = new Date((new Date()).getTime() - SETBACKTIME);
 		Date startTimeDate = null; 
 		Date endTimeDate = null; 
         // Extract requested start and endtime from end endtity profile / user data

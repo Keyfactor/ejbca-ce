@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.certextensions.standard.FreshestCrl;
 import org.ejbca.core.model.ca.certextensions.standard.KeyUsage;
 import org.ejbca.core.model.ca.certextensions.standard.MsTemplate;
 import org.ejbca.core.model.ca.certextensions.standard.OcspNoCheck;
+import org.ejbca.core.model.ca.certextensions.standard.PrivateKeyUsagePeriod;
 import org.ejbca.core.model.ca.certextensions.standard.QcStatement;
 import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
 import org.ejbca.core.model.ca.certextensions.standard.StandardCertificateExtension;
@@ -90,6 +91,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId(), OcspNoCheck.class.getName());
 		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
 		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());
+		standardCertificateExtensions.put(X509Extensions.PrivateKeyUsagePeriod.getId(), PrivateKeyUsagePeriod.class.getName());
 	}
 	
 	private CertificateExtensionFactory(){}
