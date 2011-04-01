@@ -20,8 +20,8 @@
   static final String BUTTON_CLOSE             = "buttonclose"; 
   static final String BUTTON_REVOKE            = "buttonrevoke";
   static final String BUTTON_KEYRECOVER        = "buttonkeyrecover";
-  static final String BUTTON_VIEW_PREVIOUS     = "buttonviewprevious"; 
-  static final String BUTTON_VIEW_NEXT         = "buttonviewnext";
+  static final String BUTTON_VIEW_NEWER        = "buttonviewnewer"; 
+  static final String BUTTON_VIEW_OLDER        = "buttonviewolder";
 
   static final String SELECT_REVOKE_REASON       = "selectrevocationreason";
 
@@ -55,12 +55,12 @@
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
-  if(request.getParameter(BUTTON_VIEW_PREVIOUS) != null){
+  if(request.getParameter(BUTTON_VIEW_NEWER) != null){
     String indexstring = request.getParameter(INDEX_PARAMETER);
     if(indexstring!= null)
       index = Integer.parseInt(indexstring) -1;
   }
-  if(request.getParameter(BUTTON_VIEW_NEXT) != null){
+  if(request.getParameter(BUTTON_VIEW_OLDER) != null){
     String indexstring = request.getParameter(INDEX_PARAMETER);
     if(indexstring!= null)
       index = Integer.parseInt(indexstring) +1;
@@ -383,14 +383,14 @@ function viewcopies(link){
      <tr id="Row<%=(row++)%2%>">
         <td width="<%=columnwidth%>">
           <% if(index > 0 ){ %>
-           <input type="submit" name="<%= BUTTON_VIEW_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWPREVIOUS") %>" tabindex="1">&nbsp;&nbsp;&nbsp;
+           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %>" tabindex="1">&nbsp;&nbsp;&nbsp;
           <% } %>
         </td>
 	<td>
           <input type="reset" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="20"
                  onClick='self.close()'>
           <% if((index+1) < numberoftokens){ %>
-          &nbsp;&nbsp;&nbsp;<input type="submit" name="<%= BUTTON_VIEW_NEXT %>" value="<%= ejbcawebbean.getText("VIEWNEXT") %>" tabindex="3">
+          &nbsp;&nbsp;&nbsp;<input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="<%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="3">
           <% } %>
        </td>
      </tr> 

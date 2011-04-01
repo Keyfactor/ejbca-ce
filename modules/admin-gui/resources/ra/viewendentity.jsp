@@ -82,14 +82,16 @@
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td width="<%=ViewEndEntityHelper.columnwidth%>" style="text-align:right;">
-          <% if(viewendentityhelper.currentuserindex > 0 ){ %>
-           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %>" tabindex="1">
-          <% } %>	 
-	 </td>
-	 <td style="text-align:left;">
+          &nbsp;
           <% if((viewendentityhelper.currentuserindex+1) < viewendentityhelper.userdatas.length){ %>
-           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_NEXT %>" value="<%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="2">
+           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="1">
           <% } %>
+	   </td>
+	 <td style="text-align:left;">
+          <% if(viewendentityhelper.currentuserindex > 0 ){ %>
+           <input type="submit" name="<%= ViewEndEntityHelper.BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %> &gt;" tabindex="2">
+          <% } %>	 
+          &nbsp;
        </td>
        </tr> 
 

@@ -45,8 +45,8 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 	public static final String TIMESTAMP_PARAMETER           = "timestamp";
 	
 	public static final String BUTTON_CLOSE                  = "buttonclose";
-	public static final String BUTTON_PREVIOUS               = "buttonprevious";
-	public static final String BUTTON_NEXT                   = "buttonnext";
+	public static final String BUTTON_VIEW_NEWER             = "buttonviewnewer";
+	public static final String BUTTON_VIEW_OLDER             = "buttonviewolder";
 	
 	public static final String ACTION                        = "action";
 	public static final String ACTION_PAGE                   = "actionpage";
@@ -174,12 +174,12 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 				  
     			  if( action != null && request.getParameter(USER_PARAMETER)!=null){
         			  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-    				  if(request.getParameter(BUTTON_PREVIOUS)!=null){
+    				  if(request.getParameter(BUTTON_VIEW_NEWER)!=null){
     					  if(currentuserindex>0){
     						  currentuserindex--;
     					  }	  
     				  }
-    				  if(request.getParameter(BUTTON_NEXT)!=null){
+    				  if(request.getParameter(BUTTON_VIEW_OLDER)!=null){
     					  if(currentuserindex +1<userdatas.length){
     						  currentuserindex++;
     					  }	  

@@ -18,8 +18,8 @@
   static final String HARDTOKENSN_PARAMETER      = "tokensn";
 
   static final String BUTTON_CLOSE               = "buttonclose"; 
-  static final String BUTTON_VIEW_PREVIOUS       = "buttonviewprevious"; 
-  static final String BUTTON_VIEW_NEXT           = "buttonviewnext";
+  static final String BUTTON_VIEW_NEWER          = "buttonviewnewer"; 
+  static final String BUTTON_VIEW_OLDER          = "buttonviewolder";
   static final String BUTTON_REVOKE              = "buttonrevoke";
   static final String BUTTON_UNREVOKE            = "buttonunrevoke";
   static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
@@ -95,7 +95,7 @@
   }
   if( request.getParameter(CACERT_PARAMETER ) != null){
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
-     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
+     if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
        try{  
          ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
          ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AccessRulesConstants.CAPREFIX + caid);
@@ -110,7 +110,7 @@
      cacerts = true;
   }
   if(!noparameter){  
-     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null && 
+     if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null && 
         request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null &&
         request.getParameter(BUTTON_REPUBLISH) == null ){
         numberofcertificates = rabean.getNumberOfCertificates();
@@ -235,7 +235,7 @@
      numberofcertificates = rabean.getNumberOfCertificates();
    }
     
-    if(request.getParameter(BUTTON_VIEW_PREVIOUS) != null){
+    if(request.getParameter(BUTTON_VIEW_NEWER) != null){
        numberofcertificates = rabean.getNumberOfCertificates();
        noparameter=false;
        if(request.getParameter(HIDDEN_INDEX)!= null){
@@ -247,7 +247,7 @@
          notauthorized = false;
        }
     }
-    if(request.getParameter(BUTTON_VIEW_NEXT) != null){
+    if(request.getParameter(BUTTON_VIEW_OLDER) != null){
        numberofcertificates = rabean.getNumberOfCertificates();
        noparameter=false;
        if(request.getParameter(HIDDEN_INDEX)!= null){
@@ -381,13 +381,13 @@ function confirmrepublish(){
       <tr id="Row<%=(row++)%2%>">
          <td  align="right" width="<%=columnwidth%>"> 
            &nbsp;
-           <% if(currentindex > 0 ){ %>
-           <input type="submit" name="<%= BUTTON_VIEW_PREVIOUS %>" value="<%= ejbcawebbean.getText("VIEWPREVIOUS") %>" tabindex="1" />
+           <% if(currentindex < numberofcertificates -1 ){ %>
+           <input type="submit" name="<%= BUTTON_VIEW_OLDER %>" value="&lt; <%= ejbcawebbean.getText("VIEWOLDER") %>" tabindex="1" />
            <% } %>
          </td>
          <td>
-           <% if(currentindex < numberofcertificates -1 ){ %>
-           <input type="submit" name="<%= BUTTON_VIEW_NEXT %>" value="<%= ejbcawebbean.getText("VIEWNEXT") %>" tabindex="3" />
+           <% if(currentindex > 0 ){ %>
+           <input type="submit" name="<%= BUTTON_VIEW_NEWER %>" value="<%= ejbcawebbean.getText("VIEWNEWER") %> &gt;" tabindex="2" />
            <% } %>
            &nbsp;
          </td>
@@ -640,7 +640,7 @@ function confirmrepublish(){
             &nbsp;
           </td>   
           <td align="right" style="vertical-align: bottom;">
-            <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="2"
+            <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="3"
                    onClick='self.close()' />  
           </td>
        </tr> 
