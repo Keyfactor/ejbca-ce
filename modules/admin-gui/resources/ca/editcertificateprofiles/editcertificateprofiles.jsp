@@ -60,6 +60,8 @@
   static final String TEXTFIELD_QCETSIVALUELIMITCUR    = "textfieldqcetsivaluelimitcur";
   static final String TEXTFIELD_QCCUSTOMSTRINGOID      = "textfieldqccustomstringoid";
   static final String TEXTFIELD_QCCUSTOMSTRINGTEXT     = "textfieldqccustomstringtext";
+  static final String TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET     = "textfieldprivkeyusageperiodstartoffset";
+  static final String TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH          = "textfieldprivkeyusageperiodlength";
   
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -104,6 +106,8 @@
   static final String CHECKBOX_USEQCETSIRETENTIONPERIOD           = "checkqcetsiretentionperiod";
   static final String CHECKBOX_USEQCETSISIGNATUREDEVICE           = "checkqcetsisignaturedevice";
   static final String CHECKBOX_USEQCCUSTOMSTRING                  = "checkqccustomstring";
+  static final String CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE	  = "checkboxuseprivkeyusageperiodnotbefore";
+  static final String CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER	  = "checkboxuseprivkeyusageperiodnotafter";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -752,6 +756,49 @@
                  ArrayList useextensions = new ArrayList();
                  certificateprofiledata.setUsedCertificateExtensions(useextensions);
              }
+             
+             // PrivateKeyUsagePeriod extension
+             value = request.getParameter(CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE);
+             if (value != null) {
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUsePrivateKeyUsagePeriodNotBefore(use);
+                 if (use) {
+		             value = request.getParameter(TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET);
+		             if (value != null) {
+		             	value = value.trim();
+		             	if (value.length() > 0) {
+		                 	final long validity = ValidityDate.encode(value);
+		                 	if (validity < 0) {
+		                 	    throw new ParameterError(ejbcawebbean.getText("INVALIDPRIVKEYSTARTOFFSET"));
+		                 	}
+		                 	certificateprofiledata.setPrivateKeyUsagePeriodStartOffset(validity * 24 * 3600);
+		                }
+		             }
+		         }
+             } else {
+             	certificateprofiledata.setUsePrivateKeyUsagePeriodNotBefore(false);
+         	 }
+             
+             value = request.getParameter(CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER);
+             if (value != null) {
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUsePrivateKeyUsagePeriodNotAfter(use);
+                 if (use) {
+		             value = request.getParameter(TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH);
+		             if (value != null) {
+		             	value = value.trim();
+		             	if (value.length() > 0) {
+			                 final long validity = ValidityDate.encode(value);
+			                 if (validity < 0) {
+			                     throw new ParameterError(ejbcawebbean.getText("INVALIDPRIVKEYPERIOD"));
+			                 }
+			                 certificateprofiledata.setPrivateKeyUsagePeriodLength(validity * 24 * 3600);
+		                }
+		             }
+		         }
+             } else {
+             	certificateprofiledata.setUsePrivateKeyUsagePeriodNotAfter(false);
+         	 }
              
              certificateprofiledata.setUseQCStatement(false);
              certificateprofiledata.setQCStatementCritical(false);

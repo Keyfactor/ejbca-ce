@@ -47,7 +47,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 34.0;
+    public static final float LATEST_VERSION = (float) 35.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -199,6 +199,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
     protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
     protected static final String CVCACCESSRIGHTS                = "cvcaccessrights";
+    protected static final String USEPRIVKEYUSAGEPERIOD          = "useprivkeyusageperiod";
+    protected static final String USEPRIVKEYUSAGEPERIODNOTBEFORE = "useprivkeyusageperiodnotbefore";
+    protected static final String USEPRIVKEYUSAGEPERIODNOTAFTER  = "useprivkeyusageperiodnotafter";
+    protected static final String PRIVKEYUSAGEPERIODSTARTOFFSET	 = "privkeyusageperiodstartoffset";
+    protected static final String PRIVKEYUSAGEPERIODLENGTH	     = "privkeyusageperiodlength";
     
     /** OID for creating Smartcard Number Certificate Extension
      *  SEIS Cardnumber Extension according to SS 614330/31 */
@@ -219,6 +224,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	useStandardCertificateExtensions.put(USEQCSTATEMENT,X509Extensions.QCStatements.getId());
     	useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES,X509Extensions.SubjectDirectoryAttributes.getId());
     	useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS,X509Extensions.AuthorityInfoAccess.getId());
+    	useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, X509Extensions.PrivateKeyUsagePeriod.getId());
     	useStandardCertificateExtensions.put(USEOCSPNOCHECK,OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
     	useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE,CertTools.OID_MSTEMPLATE);
     	useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
@@ -350,6 +356,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       
       setNumOfReqApprovals(1);
       setApprovalSettings(Collections.EMPTY_LIST);
+      
+      // PrivateKeyUsagePeriod extension
+      setUsePrivateKeyUsagePeriodNotBefore(false);
+      setUsePrivateKeyUsagePeriodNotAfter(false);
+      setPrivateKeyUsagePeriodStartOffset(0);
+      setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
     }
 
 
@@ -1196,6 +1208,94 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 		Collection<Integer> approvalSettings = (Collection<Integer>) data.get(APPROVALSETTINGS);
 		return approvalSettings.contains(Integer.valueOf(action));
 	}
+    
+    /**
+     * @return If the PrivateKeyUsagePeriod extension should be used and with 
+     * the notBefore component.
+     */
+	public boolean isUsePrivateKeyUsagePeriodNotBefore() {
+		if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) {
+			return false;
+		}
+		return ((Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTBEFORE)).booleanValue();
+	}
+	
+	/**
+	 * Sets if the PrivateKeyUsagePeriod extension should be used and with 
+	 * the notBefore component.
+	 * Setting this to true means that there will be an PrivateKeyUsagePeriod 
+	 * extension and that it also at least will contain an notBefore component.
+	 * Setting this to false means that the extension will not contain an
+	 * notBefore component. In that case if there will be an extension depends 
+	 * on if {@link #isUsePrivateKeyUsagePeriodNotAfter()} is true.
+	 * 
+	 * @param use True if the notBefore component should be used.
+	 */
+	public void setUsePrivateKeyUsagePeriodNotBefore(final boolean use) {
+		data.put(USEPRIVKEYUSAGEPERIODNOTBEFORE, use);
+		data.put(USEPRIVKEYUSAGEPERIOD, use || isUsePrivateKeyUsagePeriodNotAfter());
+	}
+	
+	/**
+     * @return If the PrivateKeyUsagePeriod extension should be used and with 
+     * the notAfter component.
+     */
+	public boolean isUsePrivateKeyUsagePeriodNotAfter() {
+		if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) {
+			return false;
+		}
+		return ((Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTAFTER)).booleanValue();
+	}
+	
+	/**
+	 * Sets if the PrivateKeyUsagePeriod extension should be used and with 
+	 * the notAfter component.
+	 * Setting this to true means that there will be an PrivateKeyUsagePeriod 
+	 * extension and that it also at least will contain an notAfter component.
+	 * Setting this to false means that the extension will not contain an
+	 * notAfter component. In that case if there will be an extension depends 
+	 * on if {@link #isUsePrivateKeyUsagePeriodNotBefore()} is true.
+	 * 
+	 * @param use True if the notAfter component should be used.
+	 */
+	public void setUsePrivateKeyUsagePeriodNotAfter(final boolean use) {
+		data.put(USEPRIVKEYUSAGEPERIODNOTAFTER, use);
+		data.put(USEPRIVKEYUSAGEPERIOD, use || isUsePrivateKeyUsagePeriodNotBefore());
+	}
+	
+	/**
+	 * @return How long (in seconds) after the certificate's notBefore date the 
+	 * PrivateKeyUsagePeriod's notBefore date should be.
+	 */
+	public long getPrivateKeyUsagePeriodStartOffset() {
+		return ((Long) data.get(PRIVKEYUSAGEPERIODSTARTOFFSET)).longValue();
+	}
+	
+	/**
+	 * Sets how long (in seconds) after the certificate's notBefore date the 
+	 * PrivateKeyUsagePeriod's notBefore date should be.
+	 * @param start Offset from certificate issuance.
+	 */
+	public void setPrivateKeyUsagePeriodStartOffset(final long start) {
+		data.put(PRIVKEYUSAGEPERIODSTARTOFFSET, start);
+	}
+	
+	/**
+	 * @return The private key usage period (private key validity) length
+	 *  (in seconds).
+	 */
+	public long getPrivateKeyUsagePeriodLength() {
+		return ((Long) data.get(PRIVKEYUSAGEPERIODLENGTH)).longValue();
+	}
+	
+	/**
+	 * Sets the private key usage period (private key validity) length
+	 * (in seconds).
+	 * @param validity The length.
+	 */
+	public void setPrivateKeyUsagePeriodLength(final long validity) {
+		data.put(PRIVKEYUSAGEPERIODLENGTH, validity);
+	}
 
     public Object clone() throws CloneNotSupportedException {
     	final CertificateProfile clone = new CertificateProfile(0);
@@ -1433,6 +1533,19 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
             if (data.get(SIGNATUREALGORITHM) == null) { // v 34
                 setSignatureAlgorithm(null);
+            }
+            
+            if (data.get(USEPRIVKEYUSAGEPERIODNOTBEFORE) == null) { // v 35
+            	setUsePrivateKeyUsagePeriodNotBefore(false);
+            }
+            if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) { // v 35
+            	setUsePrivateKeyUsagePeriodNotAfter(false);
+            }
+            if (data.get(PRIVKEYUSAGEPERIODSTARTOFFSET) == null) { // v 35
+            	setPrivateKeyUsagePeriodStartOffset(0);
+            }
+        	if (data.get(PRIVKEYUSAGEPERIODLENGTH) == null) { // v 35
+            	setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

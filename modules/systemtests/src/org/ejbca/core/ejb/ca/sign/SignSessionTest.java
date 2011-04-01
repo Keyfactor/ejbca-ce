@@ -48,6 +48,7 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
@@ -56,6 +57,7 @@ import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.EjbcaException;
@@ -132,8 +134,14 @@ public class SignSessionTest extends CaTestCase {
             + "Yfl7tQ9RLOKUGX/1c5+XuvN1ZbGy0yUw3Le16UViahWmmx6FM1sW6M48U7C/CZOyoxagADALBgcq"
             + "hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ").getBytes());
 
+    private static final String CERTPROFILE_PRIVKEYUSAGEPERIOD = "TestPrivKeyUsagePeriodCertProfile";
+    private static final String EEPROFILE_PRIVKEYUSAGEPERIOD = "TestPrivKeyUsagePeriodEEProfile";
+    private static final String USER_PRIVKEYUSAGEPERIOD = "fooprivkeyusageperiod";
+    private static final String DN_PRIVKEYUSAGEPERIOD = "C=SE,CN=testprivatekeyusage";
+    
     private KeyPair rsakeys = null;
     private KeyPair rsakeys2 = null;
+    private KeyPair rsakeyPrivKeyUsagePeriod;
     private KeyPair ecdsakeys = null;
     private KeyPair ecdsasecpkeys = null;
     private KeyPair ecdsaimplicitlyca = null;
@@ -189,8 +197,8 @@ public class SignSessionTest extends CaTestCase {
         if (rsakeys2 == null) {
             rsakeys2 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
-        if (ecdsakeys == null) {
-            ecdsakeys = KeyTools.genKeys("prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA);
+        if (rsakeyPrivKeyUsagePeriod == null) {
+            rsakeyPrivKeyUsagePeriod = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
         if (ecdsasecpkeys == null) {
             ecdsasecpkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
@@ -343,6 +351,17 @@ public class SignSessionTest extends CaTestCase {
             userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
+        
+        if (!userAdminSession.existsUser(admin, USER_PRIVKEYUSAGEPERIOD)) {
+            userAdminSession.addUser(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
+                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+            log.debug("created user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
+        } else {
+            log.info("User " + USER_PRIVKEYUSAGEPERIOD + " already exists, resetting status.");
+            userAdminSession.setUserStatus(admin, USER_PRIVKEYUSAGEPERIOD, UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        
         if (log.isTraceEnabled()) {
             log.trace("<test01CreateNewUser()");
         }
@@ -1984,7 +2003,173 @@ public class SignSessionTest extends CaTestCase {
         log.trace("<test33certCreationErrorHandling");
     }
 
-
+    /**
+     * Tests that if the PrivateKeyUsagePeriod extension is not set in the profile
+     * it will not be in the certificate.
+     * @throws Exception In case of error.
+     */
+    public void test34privateKeyUsagePeriod_unused() throws Exception {
+    	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, false, 0L);        
+        assertNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
+    }
+    
+    /**
+     * Tests setting different notBefore dates. 
+     * @throws Exception In case of error.
+     */
+    public void test35privateKeyUsagePeriod_notBefore() throws Exception {
+    	// A: Only PrivateKeyUsagePeriod.notBefore with same as cert
+    	privateKeyUsageTestStartOffset(0L);
+    	
+        // B: Only PrivateKeyUsagePeriod.notBefore starting 33 days after cert
+    	privateKeyUsageTestStartOffset(33 * 24 * 3600L);
+    	
+    	// C: Only PrivateKeyUsagePeriod.notBefore starting 5 years after cert
+    	privateKeyUsageTestStartOffset(5 * 365 * 24 * 3600L);
+    	
+    	// D: Only PrivateKeyUsagePeriod.notBefore starting 1 second after cert
+    	privateKeyUsageTestStartOffset(1L);
+        
+    	// E: Only PrivateKeyUsagePeriod.notBefore starting 5 years before cert
+    	privateKeyUsageTestStartOffset(-5 * 365 * 24 * 3600L);
+    	
+    	// F: Only PrivateKeyUsagePeriod.notBefore starting 33 days before cert
+    	privateKeyUsageTestStartOffset(-33 * 24 * 3600L);
+    	
+    	// G: Only PrivateKeyUsagePeriod.notBefore starting 1 second before cert
+    	privateKeyUsageTestStartOffset(-1L);
+    }
+    
+    /**
+     * Tests setting different notAfter dates.
+     * @throws Exception In case of error.
+     */
+    public void test36privateKeyUsagePeriod_notAfter() throws Exception {
+        // 1: Only PrivateKeyUsagePeriod.notAfter 33 days after issuance
+    	privateKeyUsageTestValidityLength(33 * 24 * 3600L);
+    	
+    	// 2: Only PrivateKeyUsagePeriod.notAfter 5 years after issuance
+    	privateKeyUsageTestValidityLength(5 * 365 * 24 * 3600L);
+    	
+    	// 3: :Only PrivateKeyUsagePeriod.notAfter 1 second after issuance
+    	privateKeyUsageTestValidityLength(1L);
+        
+    	// 4: Only PrivateKeyUsagePeriod.notAfter with zero validity length (might not be a correct case)
+    	privateKeyUsageTestValidityLength(0L);
+    }
+    
+    /**
+     * Tests the combinations of different notBefore and notAfter dates.
+     * @throws Exception In case of error.
+     */
+    public void test37privateKeyUsagePeriod_both() throws Exception {
+    	// A: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(0L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(0L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(0L, 1L);
+    	privateKeyUsageTestBoth(0L, 0L);
+    	
+    	// B: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 1L);
+    	privateKeyUsageTestBoth(33 * 24 * 3600L, 0L);
+    	
+    	// C: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 1L);
+    	privateKeyUsageTestBoth(5 * 365 * 24 * 3600L, 0L);
+    	
+    	// D: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(1L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(1L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(1L, 1L);
+    	privateKeyUsageTestBoth(1L, 0L);
+        
+    	// E: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 1L);
+    	privateKeyUsageTestBoth(-5 * 365 * 24 * 3600L, 0L);
+    	
+    	// F: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 1L);
+    	privateKeyUsageTestBoth(-33 * 24 * 3600L, 0L);
+    	
+    	// G: 1, 2, 3, 4
+    	privateKeyUsageTestBoth(-1L, 33 * 24 * 3600L);
+    	privateKeyUsageTestBoth(-1L, 5 * 365 * 24 * 3600L);
+    	privateKeyUsageTestBoth(-1L, 1L);
+    	privateKeyUsageTestBoth(-1L, 0L);
+    }
+    
+    private void privateKeyUsageTestStartOffset(final long startOffset) throws Exception {
+    	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, false, 0L);        
+        assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
+        assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
+        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
+        assertNotNull("Has notBefore", ext.getNotBefore());
+        assertNull("Has no notAfter", ext.getNotAfter());
+        assertEquals("notBefore " + startOffset + " seconds after ca cert", cert.getNotBefore().getTime() + startOffset * 1000, ext.getNotBefore().getDate().getTime());
+    }
+    
+    private void privateKeyUsageTestValidityLength(final long length) throws Exception {
+    	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, true, length);        
+        assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
+        assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
+        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
+        assertNotNull("Has notAfter", ext.getNotAfter());
+        assertNull("Has no notBefore", ext.getNotBefore());
+        assertEquals("notAfter " + length + " seconds after issue time", cert.getNotBefore().getTime() + length * 1000, ext.getNotAfter().getDate().getTime());
+    }
+    
+    private void privateKeyUsageTestBoth(final long startOffset, final long length) throws Exception {
+    	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, true, length);        
+        assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
+        assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
+        PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
+        assertNotNull("Has notBefore", ext.getNotBefore());
+        assertNotNull("Has notAfter", ext.getNotAfter());
+        assertEquals("notBefore " + startOffset + " seconds after ca cert", cert.getNotBefore().getTime() + startOffset * 1000, ext.getNotBefore().getDate().getTime());
+        assertEquals("notAfter " + length + " seconds after notBefore", ext.getNotBefore().getDate().getTime() + length * 1000, ext.getNotAfter().getDate().getTime());
+    }
+    
+    private X509Certificate privateKeyUsageGetCertificate(final boolean useStartOffset, final long startOffset, final boolean usePeriod, final long period) throws Exception {
+    	certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
+    	final EndUserCertificateProfile certProfile = new EndUserCertificateProfile();
+    	certProfile.setUsePrivateKeyUsagePeriodNotBefore(useStartOffset);
+    	certProfile.setPrivateKeyUsagePeriodStartOffset(startOffset);
+    	certProfile.setUsePrivateKeyUsagePeriodNotAfter(usePeriod);
+    	certProfile.setPrivateKeyUsagePeriodLength(period);
+    	certificateProfileSession.addCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD, certProfile);
+    	final int certProfileId = certificateProfileSession.getCertificateProfileId(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
+    	endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+        final EndEntityProfile eeProfile = new EndEntityProfile();
+        eeProfile.addField(DnComponents.COUNTRY);
+        eeProfile.addField(DnComponents.COMMONNAME);
+        eeProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        eeProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfileId));
+        endEntityProfileSession.addEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD, eeProfile);
+        final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+        final UserDataVO user = new UserDataVO(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", SecConst.USER_ENDUSER, eeProfileId, certProfileId,
+                SecConst.TOKEN_SOFT_PEM, 0, null);
+        user.setPassword("foo123");
+        user.setStatus(UserDataConstants.STATUS_NEW);
+        userAdminSession.changeUser(admin, user, false);
+        
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+//        FileOutputStream fos = new FileOutputStream("cert.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
+//        System.out.println(cert);
+        String dn = cert.getSubjectDN().getName();
+        assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));
+        return cert;
+    }
     
     public void test99CleanUp() throws Exception {
         log.trace(">test99CleanUp()");
@@ -2000,6 +2185,14 @@ public class SignSessionTest extends CaTestCase {
         }
         try {
             endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+        } catch (Exception ignored) { /* ignore */
+        }
+        try {
+            certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
         } catch (Exception e) { /* ignore */
         }
         try {
@@ -2037,6 +2230,11 @@ public class SignSessionTest extends CaTestCase {
         try {
             userAdminSession.deleteUser(admin, "foodsa");
             log.debug("deleted user: foodsa, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, USER_PRIVKEYUSAGEPERIOD);
+            log.debug("deleted user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
         } catch (Exception e) { /* ignore */
         }
 
