@@ -867,6 +867,16 @@ the  specified number of times. The checkbox "Use" must be checked for the end e
 the specified number can be changed for a particular end entity at the creation time of the end entity or later by editing it.
 </p>
 </subsubsection>
+<subsubsection name="Number of allowed requests">
+<p>
+By checking 'Use' for number of allowed requests you enable the possibility to request several certificates in a row, without the user status being set to generated.
+Normally after a username/password pair has been used to generate a certificate, the users status is set from 'new' to 'generated'. This makes the password invalid, thus implementing a one-time password scheme.
+By selecting a number higher than one for 'number of allowed requests' the user can request several certificates before the status is set to 'generated'. This makes it possible to enroll for several certificates directly, for example one authentication and one signature certificate.
+</p><p>
+The 'number of allowed requests' in the End Entity Profile will set the default, and maximum value available when adding or editing a new end entity.
+When editing an existing end entity and setting the status to new, from a non-new status, the 'number of allowed requests' will automatically be altered to the default value for the profile. If the end entity profile used no longer uses the 'number of allowed requests' the request counter for the end entity will be removed when the end entity is edited.
+</p>
+</subsubsection>
 </subsection>
 </section>
 
