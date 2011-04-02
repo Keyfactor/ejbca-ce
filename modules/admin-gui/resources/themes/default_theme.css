@@ -622,6 +622,16 @@ body.popup {
 	white-space: nowrap;
 }
 
+/* Popup: Edit End-Entity */
+.popup#editendentity table.edit tr td {
+	padding: .15em .4em .15em .3em;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+.popup#editendentity table.edit tr td:last-child {
+	text-align: center;
+}
+
 /* Popup: View History */
 .popup#viewhistory h2,
 .popup#viewhistory h3,

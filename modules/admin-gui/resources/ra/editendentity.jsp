@@ -31,7 +31,7 @@
   static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
-  static final String TEXTFIELD_CARDNUMBER           = "textfieldcardnumber";
+  static final String TEXTFIELD_CARDNUMBER        = "textfieldcardnumber";
   static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
   static final String TEXTFIELD_CERTSERIALNUMBER  = "textfieldcertserialnumber";
 
@@ -974,10 +974,13 @@ function checkUseInBatch(){
       onload='<% if(usehardtokenissuers) out.write("setAvailableHardTokenIssuers();");
                  if(usekeyrecovery) out.write(" isKeyRecoveryPossible(); ");%>
                  fillCAField();'>
+
   <h2><%= ejbcawebbean.getText("EDITENDENTITYTITLE") %></h2>
+
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#editendentity"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+  </div> -->
+
  <%if(nouserparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
   <% } 
@@ -998,8 +1001,9 @@ function checkUseInBatch(){
     <%     } %>
 
 
-     <table border="0" cellpadding="0" cellspacing="2" width="500">
-      <tr id="Row<%=(row++)%2%>">
+     <table class="edit" border="0" cellpadding="0" cellspacing="2" width="100%">
+
+      <tr id="Row<%=(row++)%2%>" class="title">
 	 <td align="right"><%= ejbcawebbean.getText("ENDENTITYPROFILE")%></td>  
          <td><% if(rabean.getEndEntityProfileName(profileid)==null)
                   out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));
@@ -1007,23 +1011,29 @@ function checkUseInBatch(){
                   out.write(rabean.getEndEntityProfileName(profileid));%>
          </td>
          <td><%= ejbcawebbean.getText("REQUIRED") %></td>
+      </tr>
+
       <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
       </tr>
-      </tr>
+
        <form name="edituser" action="<%= THIS_FILENAME %>" method="post">   
          <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDITUSER %>'>   
          <input type="hidden" name='<%= HIDDEN_PROFILE %>' value='<%=profileid %>'>    
          <input type="hidden" name='<%= USER_PARAMETER %>' value='<%= username%>'>
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right"><%= ejbcawebbean.getText("USERNAME") %></td> 
-	<td>
-          <c:out value="<%= userdata.getUsername() %>"/>
-        </td>
+
+
+    <!-- ---------- Main -------------------- -->
+
+      <tr id="Row<%=(row++)%2%>" class="title">
+	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
+	<td><strong><c:out value="<%= userdata.getUsername() %>"/>
+        </strong></td>
 	<td></td>
       </tr>
+
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("PASSWORD") %></td>
@@ -1041,7 +1051,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" name="<%= TEXTFIELD_PASSWORD %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getPassword()!= null) out.write(userdata.getPassword()); %>'>
+             <input type="password" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getPassword()!= null) out.write(userdata.getPassword()); %>'>
            <% } %>
  
         </td>
@@ -1055,8 +1065,8 @@ function checkUseInBatch(){
         </td>
 	<td>&nbsp;</td>
       </tr>
-      <% } 
-          if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
+      <% } %>
+      <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right"><%= ejbcawebbean.getText("CONFIRMPASSWORD") %></td>
         <td>
@@ -1072,27 +1082,13 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getPassword()!= null) out.write(userdata.getPassword()); %>'>
+             <input type="password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<% if(userdata.getPassword()!= null) out.write(userdata.getPassword()); %>'>
            <% } %>
         </td>
-	<td>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</td> 
-      </tr>
-      <% }
-          if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%>
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right"><%= ejbcawebbean.getText("USEINBATCH") %></td>
-	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>"  onchange='return checkUseInBatch()' tabindex="<%=tabindex++%>" <% 
-                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0))
-                                                                                                                 out.write(" disabled='true'"); 
-                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0) || userdata.getClearTextPassword())
-                                                                                                                 out.write(" CHECKED ");
-                                                                                                             %>> 
-        </td>
-	<td></td> 
+	<td>&nbsp;</td> 
       </tr>
       <% } %>
-      
+
       <tr id="Row<%=(row++)%2%>">
 		<td align="right"><%= ejbcawebbean.getText("MAXFAILEDLOGINATTEMPTS") %></td>
        	<td>
@@ -1117,6 +1113,20 @@ function checkUseInBatch(){
       	</td>
 		<td>&nbsp;</td>
       </tr>
+
+      <% if(profile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0)){%>
+      <tr id="Row<%=(row++)%2%>">
+	<td align="right"><%= ejbcawebbean.getText("USEINBATCH") %></td>
+	<td><input type="checkbox" name="<%= CHECKBOX_CLEARTEXTPASSWORD %>" value="<%= CHECKBOX_VALUE %>"  onchange='return checkUseInBatch()' tabindex="<%=tabindex++%>" <% 
+                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0))
+                                                                                                                 out.write(" disabled='true'"); 
+                                                                                                               if(profile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD,0) || userdata.getClearTextPassword())
+                                                                                                                 out.write(" CHECKED ");
+                                                                                                             %>> 
+        </td>
+	<td></td> 
+      </tr>
+      <% } %>
       
       <% 
       	  if(profile.getUse(EndEntityProfile.EMAIL,0)){ 
@@ -1153,8 +1163,12 @@ function checkUseInBatch(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
        </tr>
        <% }%>
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right"><b><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></b></td>
+
+
+    <!-- ---------- Subject DN attributes -------------------- -->
+
+      <tr id="Row<%=(row++)%2%>" class="title">
+	<td align="right"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
 	<td>&nbsp;</td>
 	<td></td>
        </tr>
@@ -1194,12 +1208,16 @@ function checkUseInBatch(){
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
-     <% }
-        int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
+     <% } %>
+
+
+    <!-- ---------- Other subject attributes -------------------- -->
+
+     <% int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
         if(numberofsubjectaltnamefields > 0 ){
       %> 
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><b><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %></b></td>
+	<td align="right"><strong><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %></strong></td>
 	<td>&nbsp;</td>
 	<td></td>
        </tr>
@@ -1286,8 +1304,9 @@ function checkUseInBatch(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%   }
-        }
-        
+        } %>
+
+     <%
         int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
         if(numberofsubjectdirattrfields > 0){
 %> 
@@ -1326,7 +1345,24 @@ function checkUseInBatch(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%  } %>
-	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+	<%	} %>
+
+
+    <!-- ---------- Main certificate data -------------------- -->
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ---------- Other certificate data -------------------- -->
+
+	<%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr id="Row<%=(row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
 	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
@@ -1365,7 +1401,9 @@ function checkUseInBatch(){
 				/>
 			</td>
 		</tr>
-	<%	} if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+	<%	} %>
+
+	<%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
@@ -1401,8 +1439,9 @@ function checkUseInBatch(){
 				/>
 			</td>
 		</tr>
-	<% }
-	if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
+	<% } %>
+
+	<% if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %> <br />
@@ -1502,6 +1541,7 @@ function checkUseInBatch(){
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
+
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("CERTIFICATEPROFILE") %></td>
 	 <td>
@@ -1522,6 +1562,7 @@ function checkUseInBatch(){
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
        </tr>
+
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("CA") %></td>
 	 <td>
@@ -1530,6 +1571,7 @@ function checkUseInBatch(){
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
        </tr>
+
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("TOKEN") %></td>
 	 <td>
@@ -1557,6 +1599,7 @@ function checkUseInBatch(){
          </td>
 	 <td><input type="checkbox" name="checkbox" value="true"  disabled="true" CHECKED></td>
        </tr>
+
        <% if(usehardtokenissuers){ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("HARDTOKENISSUER") %></td>
@@ -1567,11 +1610,15 @@ function checkUseInBatch(){
 	 <td></td>
        </tr>
        <% } %>
+
+
+    <!-- ---------- Other data -------------------- -->
+
        <% if( usekeyrecovery 
            || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
            || profile.getUsePrinting()){ %>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right"><%= ejbcawebbean.getText("OTHERDATA") %></td>
+	 <td align="right"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
 	 <td>
          </td>
 	 <td></td>
@@ -1607,7 +1654,9 @@ function checkUseInBatch(){
             </select>
          </td>
        </tr>
-      <%} if(usekeyrecovery){ %>
+      <%} %>
+
+  	<% if(usekeyrecovery){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("KEYRECOVERABLE") %> 
@@ -1622,7 +1671,9 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
-    <% }if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
+    <% } %>
+
+	<% if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("CARDNUMBER") %>
@@ -1632,7 +1683,9 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
-     <% }if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
+     <% } %>
+
+ 	<% if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("SENDNOTIFICATION") %>
@@ -1647,7 +1700,9 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
-     <% }if(profile.getUsePrinting()){ %>
+     <% } %>
+
+ 	<% if(profile.getUsePrinting()){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("PRINTUSERDATA") %>
@@ -1662,6 +1717,7 @@ function checkUseInBatch(){
       <td></td>
     </tr>
       <%} %>
+
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         &nbsp;
@@ -1671,6 +1727,10 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
+
+
+    <!-- ---------- Status -------------------- -->
+
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         <%= ejbcawebbean.getText("STATUS") %>
@@ -1692,6 +1752,10 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
+
+
+    <!-- ---------- Form buttons -------------------- -->
+
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
 	 <td><input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="20"
@@ -1700,7 +1764,9 @@ function checkUseInBatch(){
          </td>
          <td></td>
        </tr> 
+
      </table> 
+
   </form>
 
   <%  }

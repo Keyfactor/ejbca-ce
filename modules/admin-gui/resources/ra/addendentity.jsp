@@ -1213,7 +1213,7 @@ function checkallfields(){
           <% if(profile.getUse(EndEntityProfile.USERNAME,0)){ %>
       <tr id="Row<%=(row++)%2%>">
 	<td>&nbsp;</td>
-	<td align="right"><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>"/></td> 
+	<td align="right"><strong><c:out value="<%= ejbcawebbean.getText(\"USERNAME\") %>"/></strong></td> 
 	<td>
             <% if(!profile.isModifyable(EndEntityProfile.USERNAME,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.USERNAME, 0).split(EndEntityProfile.SPLITCHAR);

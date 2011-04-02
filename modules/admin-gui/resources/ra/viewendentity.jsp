@@ -78,6 +78,39 @@
       </tr>
 
 
+    <!-- ---------- End-entity information -------------------- -->
+
+     <% if(viewendentityhelper.currentuserindex == 0){ %>
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+      <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("STATUS") %></td>
+      <td>
+        <% for(int i=0; i < ViewEndEntityHelper.statusids.length; i++)
+             if(viewendentityhelper.userdata.getStatus()==ViewEndEntityHelper.statusids[i])
+               out.write(ejbcawebbean.getText(ViewEndEntityHelper.statustexts[i])); %>
+       </td>
+     </tr> 
+     <% } else { %> 
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr> 
+     <% } %> 
+
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+      <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
+      <td>
+         <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeCreated()) %>
+       </td>
+    </tr> 
+
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+      <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("MODIFIED") %></td>
+      <td>
+         <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeModified()) %>
+       </td>
+     </tr> 
+
+
     <!-- ---------- Index -------------------- -->
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
@@ -402,39 +435,6 @@
       </td>
     </tr>
       <% } %>
-
-
-    <!-- ---------- End-entity information -------------------- -->
-
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr> 
-
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
-      <td>
-         <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeCreated()) %>
-       </td>
-    </tr> 
-
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("MODIFIED") %></td>
-      <td>
-         <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeModified()) %>
-       </td>
-     </tr> 
-
-     <% if(viewendentityhelper.currentuserindex == 0){ %>
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("STATUS") %></td>
-      <td>
-        <% for(int i=0; i < ViewEndEntityHelper.statusids.length; i++)
-             if(viewendentityhelper.userdata.getStatus()==ViewEndEntityHelper.statusids[i])
-               out.write(ejbcawebbean.getText(ViewEndEntityHelper.statustexts[i])); %>
-       </td>
-     </tr> 
-     <% } %> 
 
 
     <!-- ---------- Actions -------------------- -->
