@@ -1778,7 +1778,7 @@ function checkallfields(){
 			<td>&nbsp;</td>
 			<td align="right"><c:out value="<%= ejbcawebbean.getText(\"CARDNUMBER\") %>"/></td>
 			<td>
-				<input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
+				<input type="text" name="<%= TEXTFIELD_CARDNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value='<c:out value="<%=oldcardnumber%>"/>'>
 			</td>
 			<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
 		</tr>

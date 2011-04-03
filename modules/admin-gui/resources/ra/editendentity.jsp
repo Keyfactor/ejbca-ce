@@ -1003,7 +1003,7 @@ function checkUseInBatch(){
 
      <table class="edit" border="0" cellpadding="0" cellspacing="2" width="100%">
 
-      <tr id="Row<%=(row++)%2%>" class="title">
+      <tr id="Row<%=(row)%2%>" class="title">
 	 <td align="right"><%= ejbcawebbean.getText("ENDENTITYPROFILE")%></td>  
          <td><% if(rabean.getEndEntityProfileName(profileid)==null)
                   out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));
@@ -1014,7 +1014,7 @@ function checkUseInBatch(){
       </tr>
 
       <tr id="Row<%=(row++)%2%>">
-	<td>&nbsp;</td>
+	<td align="right">&nbsp;</td>
 	<td>&nbsp;</td>
 	<td>&nbsp;</td>
       </tr>
@@ -1031,7 +1031,7 @@ function checkUseInBatch(){
 	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
 	<td><strong><c:out value="<%= userdata.getUsername() %>"/>
         </strong></td>
-	<td></td>
+	<td>&nbsp;</td>
       </tr>
 
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
@@ -1124,7 +1124,7 @@ function checkUseInBatch(){
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>> 
         </td>
-	<td></td> 
+	<td>&nbsp;</td> 
       </tr>
       <% } %>
       
@@ -1142,7 +1142,7 @@ function checkUseInBatch(){
        <tr id="Row<%=(row++)%2%>">	 
 	 <td align="right"><%= ejbcawebbean.getText("EMAIL") %></td>
 	 <td>      
-           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<%=emailname%>'>@
+           <input type="text" name="<%= TEXTFIELD_EMAIL %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value='<%=emailname%>'> @
           <% if(!profile.isModifyable(EndEntityProfile.EMAIL,0)){ 
                  String[] options = profile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
                %>
@@ -1165,12 +1165,12 @@ function checkUseInBatch(){
        <% }%>
 
 
-    <!-- ---------- Subject DN attributes -------------------- -->
+    <!-- ---------- Subject DN -------------------- -->
 
       <tr id="Row<%=(row++)%2%>" class="title">
 	<td align="right"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
 	<td>&nbsp;</td>
-	<td></td>
+	<td>&nbsp;</td>
        </tr>
        <% int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
           for(int i=0; i < numberofsubjectdnfields; i++){
@@ -1217,9 +1217,9 @@ function checkUseInBatch(){
         if(numberofsubjectaltnamefields > 0 ){
       %> 
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><strong><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %></strong></td>
+	<td align="right"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME") %></strong></td>
 	<td>&nbsp;</td>
-	<td></td>
+	<td>&nbsp;</td>
        </tr>
       <% } %>
        <% 
@@ -1254,9 +1254,9 @@ function checkUseInBatch(){
                  // and we should not attempt to split it in name@domain parts
                  if (!(!modifyable && profilevalue.contains("@"))) {
                    if (EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)) { %> 
-                   <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
+                   <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>"> @
           <%       } else { %>       
-                   <input type="text" name="<%= TEXTFIELD_EMAIL +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>">@
+                   <input type="text" name="<%= TEXTFIELD_EMAIL +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= name %>"> @
           <%       }
                  }
                  // Only display the domain part if we have not completely locked down the email address
@@ -1311,9 +1311,9 @@ function checkUseInBatch(){
         if(numberofsubjectdirattrfields > 0){
 %> 
       <tr id="Row<%=(row++)%2%>">
-	<td align="right"><b><%= ejbcawebbean.getText("EXT_PKIX_SUBJECTDIRATTRS") %></b></td>
+	<td align="right"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTDIRATTRS") %></strong></td>
 	<td>&nbsp;</td>
-	<td></td>
+	<td>&nbsp;</td>
        </tr>
        <% }
           for(int i=0; i < numberofsubjectdirattrfields; i++){
@@ -1350,196 +1350,10 @@ function checkUseInBatch(){
 
     <!-- ---------- Main certificate data -------------------- -->
 
-
-
-
-
-
-
-
-
-
-
-    <!-- ---------- Other certificate data -------------------- -->
-
-	<%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
-		<tr id="Row<%=(row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
-		<tr  id="Row<%=(row++)%2%>"> 
-			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(new Date()) %> 
-				<%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()%>:
-				<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
-			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
-					<%	ExtendedInformation ei = userdata.getExtendedInformation();
-						String startTime = null;
-						if ( ei != null ) {
-							startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-							if ( startTime == null ) {
-								startTime = "";
-							} 
-							if ( !startTime.trim().equals("") && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-			                	String[] dp = {"yyyy-MM-dd HH:mm"};
-			                	startTime = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(startTime, dp));
-
-							}
-						}
-                    %>
-					value="<%= startTime %>"
-					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
-					readonly="true"
-					<%	} %>
-					/>
-			</td>
-			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_STARTTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
-				<%	if ( profile.isRequired(EndEntityProfile.STARTTIME, 0) ) {
-						out.write(" CHECKED ");
-					} %>
-				/>
-			</td>
-		</tr>
-	<%	} %>
-
-	<%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
-		<tr  id="Row<%=(row++)%2%>"> 
-			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(new Date()) %>
-				 <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase() %>:
-				 <%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
-			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
-					<%	ExtendedInformation ei = userdata.getExtendedInformation();
-						String endTime = null;
-						if ( ei != null ) {
-							endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-						}
-						if ( endTime == null ) {
-							endTime = "";
-						} 
-						if ( !endTime.trim().equals("") && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-							String[] dp = {"yyyy-MM-dd HH:mm"};
-							endTime = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(endTime, dp));
-		        		}
-						%>
-					value="<%= endTime %>"
-					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
-					readonly="true"
-					<%	} %>
-					/>
-			</td>
-			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_ENDTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
-				<%	if ( profile.isRequired(EndEntityProfile.ENDTIME, 0) ) {
-						out.write(" CHECKED ");
-					} %>
-				/>
-			</td>
-		</tr>
-	<% } %>
-
-	<% if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
-		<tr  id="Row<%=(row++)%2%>"> 
-			<td align="right"> 
-				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890abcdef)
-			</td><td> 
-				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
-					<%	final ExtendedInformation ei = userdata.getExtendedInformation();
-						final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
-						final String certSerialNr = oldNr!=null ? oldNr.toString(16) : "";
-						%>
-					value="<%= certSerialNr %>"
-					/>
-			</td>
-			<td>
-				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
-				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
-						out.write(" CHECKED ");
-					} %>
-			</td>
-		</tr>
-	<% } %> 
-	
-	 <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-     </tr>
-	
-        <% int revstatus = RevokedCertInfo.NOT_REVOKED;
-
-           ExtendedInformation revei = userdata.getExtendedInformation();
-		   if ( revei != null ) {
- 		       String value = revei.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
-	           if((value != null) && (((String) value).length() > 0)) {
-	               revstatus = (Integer.valueOf(value).intValue());
-	           }
-		   }
-        %>
-	
-		<% if( profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
-		<tr  id="Row<%=(row++)%2%>"> 
-			<td align="right"> 
-				<%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON") %>
-			</td><td> 
-        <select name="<%= SELECT_ISSUANCEREVOCATIONREASON %>" size="1"
-        	<%	if ( !profile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
-			  disabled
-		   <% } %>
-        >
-          <option value="<%= RevokedCertInfo.NOT_REVOKED %>" class="lightgreen" <%
-                if(revstatus == RevokedCertInfo.NOT_REVOKED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("ACTIVE") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD %>" class="lightyellow" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("REV_CERTIFICATEHOLD") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_UNSPECIFIED") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_KEYCOMPROMISE") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CACOMPROMISE") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AFFILIATIONCHANGED") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_SUPERSEDED %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_SUPERSEDED") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CESSATIONOFOPERATION") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_PRIVILEGEWITHDRAWN") %></option>
-
-          <option value="<%= RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE %>" class="lightred" <%
-                if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) out.write(" selected ");
-          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AACOMPROMISE") %></option>
-					
-        </select>
-			</td>
-		</tr>
-	<% } %> 
-	
-     <tr id="Row<%=(row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
+      <tr id="Row<%=(row++)%2%>" class="title">
+	<td align="right"><strong><%= ejbcawebbean.getText("MAINCERTIFICATEDATA") %></strong></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
        </tr>
 
        <tr id="Row<%=(row++)%2%>">
@@ -1607,9 +1421,136 @@ function checkUseInBatch(){
          <select name="<%= SELECT_HARDTOKENISSUER %>" size="1" tabindex="<%=tabindex++%>">
          </select>
          </td>
-	 <td></td>
+	 <td>&nbsp;</td>
        </tr>
        <% } %>
+
+
+    <!-- ---------- Other certificate data -------------------- -->
+
+	<%	if ( profile.getUse(EndEntityProfile.CERTSERIALNR, 0)
+		  || profile.getUse(EndEntityProfile.STARTTIME, 0)
+		  || profile.getUse(EndEntityProfile.ENDTIME, 0)
+		  || profile.getUse(EndEntityProfile.CARDNUMBER, 0)
+		   ) { %>
+      <tr id="Row<%=(row++)%2%>">
+	<td align="right"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
+	<td>&nbsp;</td>
+	<td>&nbsp;</td>
+       </tr>
+	<%	} %> 
+
+	<% if( profile.getUse(EndEntityProfile.CERTSERIALNR, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("CERT_SERIALNUMBER_HEXA") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> 1234567890abcdef)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_CERTSERIALNUMBER %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+					<%	final ExtendedInformation ei = userdata.getExtendedInformation();
+						final BigInteger oldNr = ei!=null ? ei.certificateSerialNumber() : null;
+						final String certSerialNr = oldNr!=null ? oldNr.toString(16) : "";
+						%>
+					value="<%= certSerialNr %>"
+					/>
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_CERTSERIALNUMBER %>" value="<%= CHECKBOX_VALUE %>" disabled="true" />
+				<%	if ( profile.isRequired(EndEntityProfile.CERTSERIALNR, 0) ) {
+						out.write(" CHECKED ");
+					} %>
+			</td>
+		</tr>
+	<% } %> 
+
+	<%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(new Date()) %> 
+				<%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()%>:
+				<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+					<%	ExtendedInformation ei = userdata.getExtendedInformation();
+						String startTime = null;
+						if ( ei != null ) {
+							startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+							if ( startTime == null ) {
+								startTime = "";
+							} 
+							if ( !startTime.trim().equals("") && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+			                	String[] dp = {"yyyy-MM-dd HH:mm"};
+			                	startTime = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(startTime, dp));
+
+							}
+						}
+                    %>
+					value="<%= startTime %>"
+					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
+					readonly="true"
+					<%	} %>
+					/>
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_STARTTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
+				<%	if ( profile.isRequired(EndEntityProfile.STARTTIME, 0) ) {
+						out.write(" CHECKED ");
+					} %>
+				/>
+			</td>
+		</tr>
+	<%	} %>
+
+	<%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(new Date()) %>
+				 <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase() %>:
+				 <%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
+					<%	ExtendedInformation ei = userdata.getExtendedInformation();
+						String endTime = null;
+						if ( ei != null ) {
+							endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+						}
+						if ( endTime == null ) {
+							endTime = "";
+						} 
+						if ( !endTime.trim().equals("") && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+							String[] dp = {"yyyy-MM-dd HH:mm"};
+							endTime = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(endTime, dp));
+		        		}
+						%>
+					value="<%= endTime %>"
+					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
+					readonly="true"
+					<%	} %>
+					/>
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_ENDTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
+				<%	if ( profile.isRequired(EndEntityProfile.ENDTIME, 0) ) {
+						out.write(" CHECKED ");
+					} %>
+				/>
+			</td>
+		</tr>
+	<% } %>
+
+	<% if( profile.getUse(EndEntityProfile.CARDNUMBER, 0) ) { %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("CARDNUMBER") %>
+      </td>
+      <td > 
+        <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="<%=userdata.getCardNumber()%>"> 
+      </td>
+      <td>&nbsp;</td>
+    </tr>
+     <% } %>
 
 
     <!-- ---------- Other data -------------------- -->
@@ -1619,12 +1560,11 @@ function checkUseInBatch(){
            || profile.getUsePrinting()){ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
-	 <td>
-         </td>
-	 <td></td>
+	 <td>&nbsp;</td>
+	 <td>&nbsp;</td>
        </tr>
        <% } %>
-       
+
        <!--  Max number of allowed requests for a password -->
        <% if(profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)){ %>
        <% 
@@ -1638,7 +1578,6 @@ function checkUseInBatch(){
         	   counter = defaultnrofrequests;
            }
          %>
-       
        <tr id="Row<%=(row++)%2%>">
   	   <td align="right"><%= ejbcawebbean.getText("ALLOWEDREQUESTS") %></td>
 	   <td>
@@ -1653,6 +1592,7 @@ function checkUseInBatch(){
 	            <% }%>
             </select>
          </td>
+	   <td>&nbsp;</td>
        </tr>
       <%} %>
 
@@ -1669,21 +1609,76 @@ function checkUseInBatch(){
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>  
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
     <% } %>
+	
+        <% int revstatus = RevokedCertInfo.NOT_REVOKED;
 
-	<% if(profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
-    <tr  id="Row<%=(row++)%2%>"> 
-      <td  align="right"> 
-        <%= ejbcawebbean.getText("CARDNUMBER") %>
-      </td>
-      <td > 
-        <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="20" tabindex="<%=tabindex++%>" value="<%=userdata.getCardNumber()%>"> 
-      </td>
-      <td></td>
-    </tr>
-     <% } %>
+           ExtendedInformation revei = userdata.getExtendedInformation();
+		   if ( revei != null ) {
+ 		       String value = revei.getCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
+	           if((value != null) && (((String) value).length() > 0)) {
+	               revstatus = (Integer.valueOf(value).intValue());
+	           }
+		   }
+        %>
+	
+		<% if( profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON") %>
+			</td><td> 
+        <select name="<%= SELECT_ISSUANCEREVOCATIONREASON %>" size="1"
+        	<%	if ( !profile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0) ) { %>
+			  disabled
+		   <% } %>
+        >
+          <option value="<%= RevokedCertInfo.NOT_REVOKED %>" class="lightgreen" <%
+                if(revstatus == RevokedCertInfo.NOT_REVOKED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("ACTIVE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD %>" class="lightyellow" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("SUSPENDED") %>: <%= ejbcawebbean.getText("REV_CERTIFICATEHOLD") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_UNSPECIFIED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_KEYCOMPROMISE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CACOMPROMISE") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AFFILIATIONCHANGED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_SUPERSEDED %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_SUPERSEDED) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_SUPERSEDED") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_CESSATIONOFOPERATION") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_PRIVILEGEWITHDRAWN") %></option>
+
+          <option value="<%= RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE %>" class="lightred" <%
+                if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) out.write(" selected ");
+          %>><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AACOMPROMISE") %></option>
+					
+        </select>
+			</td>
+	 <td>&nbsp;</td>
+		</tr>
+	<% } %> 
 
  	<% if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(row++)%2%>"> 
@@ -1698,7 +1693,7 @@ function checkUseInBatch(){
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>  
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
      <% } %>
 
@@ -1714,7 +1709,7 @@ function checkUseInBatch(){
                                                                                                                  out.write(" disabled='true' "); 
                                                                                                              %>> 
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
       <%} %>
 
@@ -1725,7 +1720,7 @@ function checkUseInBatch(){
       <td > 
         &nbsp;
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
 
 
@@ -1750,19 +1745,19 @@ function checkUseInBatch(){
          <option <%if(userdata.getStatus()== UserDataConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
       </td>
-      <td></td>
+      <td>&nbsp;</td>
     </tr>
 
 
     <!-- ---------- Form buttons -------------------- -->
 
        <tr id="Row<%=(row++)%2%>">
-	 <td></td>
+	 <td align="right">&nbsp;</td>
 	 <td><input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="20"
                     onClick='return checkallfields()'> 
              <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="21" onclick='self.close()'>
          </td>
-         <td></td>
+         <td>&nbsp;</td>
        </tr> 
 
      </table> 
