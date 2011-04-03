@@ -161,14 +161,13 @@
     <!-- ---------- Subject DN -------------------- -->
 
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td>&nbsp;</td>
+      <td align="right">&nbsp;</td>
       <td>&nbsp;</td>
       </tr> 
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
-	 <td>
-         </td>
+	 <td>&nbsp;</td>
        </tr>
 
       <% int subjectfieldsize = viewendentityhelper.profile.getSubjectDNFieldOrderLength();
@@ -191,8 +190,7 @@
        %> 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME") %></strong></td>
-	 <td>
-         </td>
+	 <td>&nbsp;</td>
        </tr>
       <% }
          for(int i = 0; i < subjectfieldsize; i++){
@@ -214,8 +212,7 @@
        %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("EXT_ABBR_SUBJECTDIRATTRS") %></strong></td>
-	 <td>
-         </td>
+	 <td>&nbsp;</td>
        </tr>
       <% }
          for(int i = 0; i < subjectfieldsize; i++){
@@ -234,14 +231,13 @@
     <!-- ---------- Main certificate data -------------------- -->
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td>&nbsp;</td>
+      <td align="right">&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("MAINCERTIFICATEDATA") %></strong></td>
-	 <td>
-         </td>
+	 <td>&nbsp;</td>
        </tr>
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
@@ -287,15 +283,9 @@
 
     <!-- ---------- Other certificate data -------------------- -->
 
-    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-    </tr> 
-
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
-	 <td>
-         </td>
+	 <td>&nbsp;</td>
        </tr>
 
 	<%{
@@ -359,19 +349,14 @@
 
        <%
        if ( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
+    	  || viewendentityhelper.profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0)
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
     	  || viewendentityhelper.profile.getUsePrinting()
     	  ) {
         %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td>&nbsp;</td>
-	 <td>&nbsp;</td>
-       </tr>
-
-       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
-	 <td>
-         </td>
+	 <td>&nbsp;</td>
        </tr>
       <% } %>
 
@@ -396,6 +381,7 @@
 	           }
 		   }
         %>
+      <% if(viewendentityhelper.profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0)){ %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
     	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("ISSUANCEREVOCATIONREASON") %></td>
 	     <td>
@@ -411,6 +397,7 @@
 	     <% if(revstatus == RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE) {%><%= ejbcawebbean.getText("REVOKED") %>: <%= ejbcawebbean.getText("REV_AACOMPROMISE")  %><%}%>
          </td>
        </tr>
+      <% } %>
 
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
@@ -440,8 +427,7 @@
     <!-- ---------- Actions -------------------- -->
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td width="<%=ViewEndEntityHelper.columnwidth%>">
-	 </td>
+     <td align="right">&nbsp;</td>
 	 <td>
              <input type="reset" name="<%= ViewEndEntityHelper.BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="3"
                     onClick='self.close()'>
