@@ -64,6 +64,7 @@
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
+  static final String CHECKBOX_REQUIRED_CARDNUMBER        = "checkboxrequiredcardnumber";
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
   static final String CHECKBOX_REQUIRED_SUBJECTDN         = "checkboxrequiredsubjectdn";
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
@@ -72,10 +73,10 @@
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
   static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
+  static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER  = "checkboxrequiredcertserialnumber";
   
   static final String CHECKBOX_RESETLOGINATTEMPTS	  	  = "checkboxresetloginattempts";
   static final String CHECKBOX_UNLIMITEDLOGINATTEMPTS	  = "checkboxunlimitedloginattempts";
-  static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER  = "checkboxrequiredcertserialnumber";
 
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
   static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
@@ -1001,28 +1002,49 @@ function checkUseInBatch(){
     <%     } %>
 
 
-     <table class="edit" border="0" cellpadding="0" cellspacing="2" width="100%">
+  <form name="edituser" action="<%= THIS_FILENAME %>" method="post">   
+	<input type="hidden" name="<%= ACTION %>" value="<%=ACTION_EDITUSER %>" />   
+	<input type="hidden" name="<%= HIDDEN_PROFILE %>" value="<%=profileid %>" />    
+	<input type="hidden" name="<%= USER_PARAMETER %>" value="<%= username %>" />
 
-      <tr id="Row<%=(row)%2%>" class="title">
-	 <td align="right"><%= ejbcawebbean.getText("ENDENTITYPROFILE")%></td>  
-         <td><% if(rabean.getEndEntityProfileName(profileid)==null)
-                  out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));
-                else
-                  out.write(rabean.getEndEntityProfileName(profileid));%>
-         </td>
-         <td><%= ejbcawebbean.getText("REQUIRED") %></td>
-      </tr>
+	<table class="edit" border="0" cellpadding="0" cellspacing="2" width="100%">
 
-      <tr id="Row<%=(row++)%2%>">
-	<td align="right">&nbsp;</td>
-	<td>&nbsp;</td>
-	<td>&nbsp;</td>
-      </tr>
+	<tr id="Row<%=(row)%2%>" class="title">
+	  <td align="right"><%= ejbcawebbean.getText("ENDENTITYPROFILE")%></td>  
+	  <td><% if(rabean.getEndEntityProfileName(profileid)==null)
+				out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));
+			 else
+				out.write(rabean.getEndEntityProfileName(profileid));%>
+		</td>
+	  <td><%= ejbcawebbean.getText("REQUIRED") %></td>
+	</tr>
 
-       <form name="edituser" action="<%= THIS_FILENAME %>" method="post">   
-         <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDITUSER %>'>   
-         <input type="hidden" name='<%= HIDDEN_PROFILE %>' value='<%=profileid %>'>    
-         <input type="hidden" name='<%= USER_PARAMETER %>' value='<%= username%>'>
+
+    <!-- ---------- Status -------------------- -->
+
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("STATUS") %>
+      </td>
+      <td > 
+        <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >
+         <%if(userdata.getStatus()== UserDataConstants.STATUS_KEYRECOVERY){ %>
+           <option selected value='<%= UserDataConstants.STATUS_KEYRECOVERY %>'><%= ejbcawebbean.getText("STATUSKEYRECOVERY") %></option>
+         <% }else{ %>  
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+         <% } %>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_GENERATED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_REVOKED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
+         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+        </select>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()' />
+      </td>
+      <td>&nbsp;</td>
+    </tr>
 
 
     <!-- ---------- Main -------------------- -->
@@ -1031,7 +1053,7 @@ function checkUseInBatch(){
 	<td align="right"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td> 
 	<td><strong><c:out value="<%= userdata.getUsername() %>"/>
         </strong></td>
-	<td>&nbsp;</td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_USERNAME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" CHECKED></td>
       </tr>
 
           <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ %>
@@ -1055,7 +1077,7 @@ function checkUseInBatch(){
            <% } %>
  
         </td>
-	<td>&nbsp;</td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
       </tr>
        <% }else{ %>
       <tr id="Row<%=(row++)%2%>">
@@ -1063,7 +1085,7 @@ function checkUseInBatch(){
         <td>              
          <input type="checkbox" name="<%= CHECKBOX_REGENERATEPASSWD %>" value="<%= CHECKBOX_VALUE %>"  tabindex="<%=tabindex++%>">
         </td>
-	<td>&nbsp;</td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_PASSWORD %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.PASSWORD,0)) out.write(" CHECKED "); %>></td>
       </tr>
       <% } %>
       <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){%>
@@ -1548,16 +1570,19 @@ function checkUseInBatch(){
       <td > 
         <input type="text" name="<%=TEXTFIELD_CARDNUMBER%>" size="20" maxlength="40" tabindex="<%=tabindex++%>" value="<%=userdata.getCardNumber()%>"> 
       </td>
-      <td>&nbsp;</td>
+	  <td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_CARDNUMBER %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.CARDNUMBER,0)) out.write(" CHECKED "); %>></td>
     </tr>
      <% } %>
 
 
     <!-- ---------- Other data -------------------- -->
 
-       <% if( usekeyrecovery 
-           || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
-           || profile.getUsePrinting()){ %>
+       <% if ( profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)
+            || usekeyrecovery 
+            || profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0)
+            || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
+            || profile.getUsePrinting()
+             ) { %>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
 	 <td>&nbsp;</td>
@@ -1711,56 +1736,21 @@ function checkUseInBatch(){
       </td>
       <td>&nbsp;</td>
     </tr>
-      <%} %>
-
-    <tr  id="Row<%=(row++)%2%>"> 
-      <td  align="right"> 
-        &nbsp;
-      </td>
-      <td > 
-        &nbsp;
-      </td>
-      <td>&nbsp;</td>
-    </tr>
-
-
-    <!-- ---------- Status -------------------- -->
-
-    <tr  id="Row<%=(row++)%2%>"> 
-      <td  align="right"> 
-        <%= ejbcawebbean.getText("STATUS") %>
-      </td>
-      <td > 
-        <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >
-         <%if(userdata.getStatus()== UserDataConstants.STATUS_KEYRECOVERY){ %>
-           <option selected value='<%= UserDataConstants.STATUS_KEYRECOVERY %>'><%= ejbcawebbean.getText("STATUSKEYRECOVERY") %></option>
-         <% }else{ %>  
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
-         <% } %>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_GENERATED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>  
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_REVOKED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>  -->
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
-        </select>
-      </td>
-      <td>&nbsp;</td>
-    </tr>
+    <% } %>
 
 
     <!-- ---------- Form buttons -------------------- -->
 
-       <tr id="Row<%=(row++)%2%>">
-	 <td align="right">&nbsp;</td>
-	 <td><input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="20"
-                    onClick='return checkallfields()'> 
-             <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="21" onclick='self.close()'>
-         </td>
-         <td>&nbsp;</td>
-       </tr> 
+	<tr id="Row<%=(row++)%2%>">
+	  <td align="right">&nbsp;</td>
+	  <td><input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()'>
+		  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		  <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="<%=tabindex++%>" onclick='self.close()'>
+	  </td>
+	  <td>&nbsp;</td>
+	</tr> 
 
-     </table> 
+	</table> 
 
   </form>
 
