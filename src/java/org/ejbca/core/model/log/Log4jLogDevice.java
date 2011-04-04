@@ -15,13 +15,14 @@ package org.ejbca.core.model.log;
 
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
@@ -127,8 +128,10 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         }else{
         	eventText = LogConstants.EVENTNAMES_INFO[event];	
         }
-
-        String logline = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogConstants.MODULETEXTS[module] + ", " + eventText + ", Administrator : " +
+        
+        String timePattern = ConfigurationHolder.getString("log4j.timepattern", "yyyy-MM-dd HH:mm");
+         
+        String logline = FastDateFormat.getInstance(timePattern).format(time) + ", CAId : " + caid + ", " + LogConstants.MODULETEXTS[module] + ", " + eventText + ", Administrator : " +
                 admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment;
         log.log(priority, logline, null);
 

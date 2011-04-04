@@ -1,1 +1,13 @@
-# Properties specific for the Log4j Log Device
+#
+# $Id$
+#
+# This is a sample file to override properties specific for the Log4j Log Device used 
+# during development (or deployment) of EJBCA
+#
+# You should copy and rename this file to log4j.properties
+# and customize at will
+#
+
+# The time format used when logging events and displaying them.
+# Default: yyyy-MM-dd HH:mm
+#log4j.timepattern=yyyy-MM-dd HH:mm
