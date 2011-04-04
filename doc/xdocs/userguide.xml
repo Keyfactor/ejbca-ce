@@ -704,6 +704,19 @@ extended key usages in the end. Be sure to follow the numbering.
 After editing the file, simply build and re-deploy EJBCA (ant clean; ant bootstrap).
 </p>
 </subsubsection>
+<subsubsection name="Private Key Usage Period">
+<p>
+The Private Key Usage Period certificate extension is specified in <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280</a>.
+</p>
+<p>
+EJBCA calculates the extension's notBefore and notAfter components based on the issuing time of the certificate (cert.notBefore) 
+and the values filled into the "Start offset" (startOffset) and "Period length" (periodLength) fields as follows:
+</p>
+<source>
+notBefore = cert.notBefore + startOffset
+notAfter = notBefore + periodLength
+</source>
+</subsubsection>
 <subsubsection name="Cardnumber">
 <p>
 Select this if you want to use the SEIS Cardnumber Extension. The card number is a unique identifier stored in the certificate and should also be printed on top of the card on which the certificate is stored.
