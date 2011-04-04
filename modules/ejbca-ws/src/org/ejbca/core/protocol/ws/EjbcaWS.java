@@ -265,9 +265,6 @@ public class EjbcaWS implements IEjbcaWS {
         	final Admin admin = ejbhelper.getAdmin();
         	logAdminName(admin,logger);
         	final UserDataVO userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
-            if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + userdatavo.getCAId())) {
-                Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + userdatavo.getCAId(), null);
-            }
             if (userAdminSession.existsUser(admin, userdatavo.getUsername())) {
             	if (log.isDebugEnabled()) {
             		log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );				  
@@ -1170,10 +1167,6 @@ public class EjbcaWS implements IEjbcaWS {
             logAdminName(admin,logger);
 			final int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
 			caAdminSession.verifyExistenceOfCA(caid);
-			// check that admin is authorized to CA
-			if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
-			}
 			final BigInteger serno = new BigInteger(certificateSN, 16);
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
