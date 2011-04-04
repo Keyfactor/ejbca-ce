@@ -63,7 +63,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -2628,20 +2627,20 @@ public class CertTools {
     } // BasicX509NameTokenizer
 
     /**
-     * Obtains a Vector with the DERObjectIdentifiers for 
+     * Obtains a List with the DERObjectIdentifiers for 
      * dNObjects names, in the specified order
      * 
      * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500 (C=SE,O=bar,CN=foo).
-     * @return Vector with DERObjectIdentifiers defining the known order we require
+     * @return List with DERObjectIdentifiers defining the known order we require
      * @see org.ejbca.util.dn.DnComponents#getDnObjects(boolean)
      */
-    public static Vector<DERObjectIdentifier> getX509FieldOrder(boolean ldaporder){
-      Vector<DERObjectIdentifier> fieldOrder = new Vector<DERObjectIdentifier>();
-      String[] dNObjects = DnComponents.getDnObjects(ldaporder);
-      for (int i = 0; i < dNObjects.length; i++) {
-          fieldOrder.add(DnComponents.getOid(dNObjects[i]));
-      }
-      return fieldOrder;
+    private static List<DERObjectIdentifier> getX509FieldOrder(final boolean ldaporder){
+        final String[] dNObjects = DnComponents.getDnObjects(ldaporder);
+        final List<DERObjectIdentifier> fieldOrder = new ArrayList<DERObjectIdentifier>(dNObjects.length);
+        for (final String dNObject : dNObjects) {
+        	fieldOrder.add(DnComponents.getOid(dNObject));
+        }
+        return fieldOrder;
     }
     
     /**
@@ -2653,62 +2652,48 @@ public class CertTools {
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500 order is the reverse
      * @return X509Name with ordered conmponents according to the orcering vector
      */
-    private static X509Name getOrderedX509Name( X509Name x509Name, boolean ldaporder, X509NameEntryConverter converter ){
+    private static X509Name getOrderedX509Name(final X509Name x509Name, final boolean ldaporder, final X509NameEntryConverter converter ){
         //-- Null prevent
     	// Guess order of the input name
-    	boolean isLdapOrder = !isDNReversed(x509Name.toString());
+    	final boolean isLdapOrder = !isDNReversed(x509Name.toString());
+        //-- New order for the X509 Fields
+        final List<DERObjectIdentifier> newOrdering  = new ArrayList<DERObjectIdentifier>();
+        final List<Object> newValues = new ArrayList<Object>();
+        //-- Add ordered fields
+        @SuppressWarnings("unchecked")
+        final Vector<DERObjectIdentifier> allOids = x509Name.getOIDs();
     	// If we think the DN is in LDAP order, first order it as a LDAP DN, if we don't think it's LDAP order
     	// order it as a X.500 DN
-        Vector<DERObjectIdentifier> ordering = CertTools.getX509FieldOrder(isLdapOrder);
-        
-        //-- New order for the X509 Fields
-        Vector<DERObjectIdentifier> newOrdering  = new Vector<DERObjectIdentifier>();
-        Vector<Object> newValues    = new Vector<Object>();
-        
-        Hashtable<DERObjectIdentifier, Object> ht = new Hashtable<DERObjectIdentifier, Object>();
-        Iterator<DERObjectIdentifier> it = ordering.iterator();
-        //-- Add ordered fields
-        while( it.hasNext() ){
-            DERObjectIdentifier oid = it.next();
-            if ( !ht.containsKey(oid) ){
-                Vector<Object> valueList = getX509NameFields(x509Name, oid);
+        final List<DERObjectIdentifier> ordering = getX509FieldOrder(isLdapOrder);
+        final HashSet<DERObjectIdentifier> hs = new HashSet<DERObjectIdentifier>(allOids.size()+ordering.size());
+        for (final DERObjectIdentifier oid : ordering) {
+            if (!hs.contains(oid)){
+            	hs.add(oid);
+            	@SuppressWarnings("unchecked")
+                final Vector<Object> valueList = x509Name.getValues(oid);
                 //-- Only add the OID if has not null value
-                if ( valueList != null ){
-                    Iterator<Object> itVals = valueList.iterator();
-                    while( itVals.hasNext() ){
-                        Object value = itVals.next();
-                        ht.put(oid, value);
-                        newOrdering.add(oid);
-                        newValues.add(value);
-                    }
+                for (final Object value : valueList) {
+                	newOrdering.add(oid);
+                	newValues.add(value);
                 }
-            } // if ht.containsKey
-        } // while it.hasNext
-        @SuppressWarnings("unchecked")
-        Vector<DERObjectIdentifier> allOids    = x509Name.getOIDs();
-        
+            }
+        }
         //-- Add unexpected fields to the end
-        for ( int i=0; i<allOids.size(); i++ ) {
-            DERObjectIdentifier oid = (DERObjectIdentifier) allOids.get(i);
-            if ( !ht.containsKey(oid) ){
-                Vector<Object> valueList = getX509NameFields(x509Name, oid);
+        for (final DERObjectIdentifier oid : allOids) {
+        	if (!hs.contains(oid)){
+            	hs.add(oid);
+            	@SuppressWarnings("unchecked")
+                final Vector<Object> valueList = x509Name.getValues(oid);
                 //-- Only add the OID if has not null value
-                if ( valueList != null ){
-                    Iterator<Object> itVals = valueList.iterator();
-                    
-                    while( itVals.hasNext() ){
-                        Object value = itVals.next();
-                        ht.put(oid, value);
-                        newOrdering.add(oid);
-                        newValues.add(value);
-                    	if (log.isDebugEnabled()) {
-                    		log.debug("added --> " + oid + " val: " + value);
-                    	}
-                    }
+                for (final Object value : valueList) {
+                	newOrdering.add(oid);
+                	newValues.add(value);
+                	if (log.isDebugEnabled()) {
+                		log.debug("added --> " + oid + " val: " + value);
+                	}
                 }
             } 
         }
-        
         // If the requested ordering was the reverse of the ordering the input string was in (by our guess in the beginning)
         // we have to reverse the vectors
         if (ldaporder != isLdapOrder) {
@@ -2718,19 +2703,8 @@ public class CertTools {
         	Collections.reverse(newOrdering);
         	Collections.reverse(newValues);
         }
-        //-- Create X509Name with the ordered fields
-        X509Name orderedName = new X509Name(newOrdering, newValues, converter);
-        return orderedName;
-    } // getOrderedX509Name
-
-    /** Obtain the values for a DN field from X509Name, or null in case of the field does not exist. */
-    private static Vector<Object> getX509NameFields(final X509Name name, final DERObjectIdentifier id) {
-    	@SuppressWarnings("unchecked")
-    	final Vector<Object> vRet = name.getValues(id);
-    	if (vRet.isEmpty()) {
-    		return null;
-    	}
-    	return vRet;
+        //-- Return X509Name with the ordered fields
+        return new X509Name(new Vector<DERObjectIdentifier>(newOrdering), new Vector<Object>(newValues), converter);
     }
     
     /**
