@@ -13,6 +13,10 @@
 
 package org.ejbca.core.ejb.ca.store;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
@@ -60,12 +64,13 @@ public class CertReqHistoryData implements Serializable {
 	 * Entity Bean holding info about a request data at the time the certificate was issued.
 	 * 
 	 * @param incert the certificate issued
+	 * @param issuerDN should be the same as CertTools.getIssuerDN(incert)
 	 * @param UserDataVO, the data used to issue the certificate. 
 	 */
-	public CertReqHistoryData(Certificate incert, UserDataVO useradmindata) {
+	public CertReqHistoryData(Certificate incert, String issuerDN, UserDataVO useradmindata) {
 		// Exctract fields to store with the certificate.
 		setFingerprint(CertTools.getFingerprintAsString(incert));
-        setIssuerDN(CertTools.getIssuerDN(incert));
+        setIssuerDN(issuerDN);
         if (log.isDebugEnabled()) {
         	log.debug("Creating certreqhistory data, serial=" + CertTools.getSerialNumberAsString(incert) + ", issuer=" + getIssuerDN());
         }
@@ -74,8 +79,8 @@ public class CertReqHistoryData implements Serializable {
 		setUsername(useradmindata.getUsername());
 		try {
 			// Save the user admin data in xml encoding.
-			java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-			java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final XMLEncoder encoder = new XMLEncoder(baos);
 			encoder.writeObject(useradmindata);
 			encoder.close();
 			if (log.isDebugEnabled()) {
@@ -83,7 +88,7 @@ public class CertReqHistoryData implements Serializable {
 			}
 			setUserDataVO(baos.toString("UTF8"));            
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			log.error("", e);
 			throw new RuntimeException(e);    	                                              
 		} 
 	}
@@ -197,13 +202,13 @@ public class CertReqHistoryData implements Serializable {
 	 */
 	@Transient
 	public CertReqHistory getCertReqHistory() {
-	    java.beans.XMLDecoder decoder;
+	    XMLDecoder decoder;
 		try {
-		  decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getUserDataVO().getBytes("UTF8")));
+		  decoder = new XMLDecoder(new ByteArrayInputStream(getUserDataVO().getBytes("UTF8")));
 		} catch (UnsupportedEncodingException e) {
 		  throw new RuntimeException(e);	// There is no nice way to recover from this
 		}
-		UserDataVO useradmindata  = (UserDataVO) decoder.readObject();	
+		final UserDataVO useradmindata  = (UserDataVO) decoder.readObject();	
 		decoder.close();
         return new CertReqHistory(this.getFingerprint(),this.getSerialNumber(), this.getIssuerDN(), this.getUsername(),
         		new Date(this.getTimestamp()), useradmindata);
