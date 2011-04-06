@@ -538,18 +538,18 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             if (oldstatus == UserDataConstants.STATUS_KEYRECOVERY && newstatus != UserDataConstants.STATUS_KEYRECOVERY && newstatus != UserDataConstants.STATUS_INPROCESS) {
                 keyRecoverySession.unmarkUser(admin, username);
             }
-            userData.setExtendedInformation(ei);
             if (ei != null) {
             	final String requestCounter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
             	if (StringUtils.equals(requestCounter, "0") && newstatus == UserDataConstants.STATUS_NEW && oldstatus != UserDataConstants.STATUS_NEW) {
             		// If status is set to new, we should re-set the allowed request counter to the default values
             		// But we only do this if no value is specified already, i.e. 0 or null
-            		resetRequestCounter(admin, userData, false);
+            		resetRequestCounter(admin, false, ei, username, endEntityProfileId);
             	} else {
             		// If status is not new, we will only remove the counter if the profile does not use it
-            		resetRequestCounter(admin, userData, true);
+            		resetRequestCounter(admin, true, ei, username, endEntityProfileId);
             	}
             }
+            userData.setExtendedInformation(ei);
             userData.setStatus(newstatus);
             if (StringUtils.isNotEmpty(newpassword)) {
                 if (clearpwd) {
@@ -658,7 +658,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     	if (data1 != null) {
     		caid = data1.getCaId();
     		assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
-    		resetRemainingLoginAttemptsInternal(admin, data1);
+    		final ExtendedInformation ei = data1.getExtendedInformation();
+    		if (ei != null) {
+    			resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
+    			data1.setTimeModified(new Date().getTime());
+    			data1.setExtendedInformation(ei);
+    		}
     	} else {
     		String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
     		logSession.log(admin, caid, LogConstants.MODULE_RA, new Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
@@ -669,27 +674,19 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     	}
     }
 
-    /** Assumes authorization has already been checked.. */
-    private void resetRemainingLoginAttemptsInternal(Admin admin, UserData data1) {
+    /**
+     * Assumes authorization has already been checked..
+     * Modifies the ExtendedInformation object to reset the remaining login attempts.
+     */
+    private void resetRemainingLoginAttemptsInternal(final Admin admin, final ExtendedInformation ei, final String username, final int caid) {
         if (log.isTraceEnabled()) {
             log.trace(">resetRemainingLoginAttemptsInternal");
         }
-        int resetValue = -1;
-        if (data1 != null) {
-            ExtendedInformation ei = data1.getExtendedInformation();
-            // Only do this is we have extended information available
-            if (ei != null) {
-                resetValue = ei.getMaxLoginAttempts();
-                if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
-                    ei.setRemainingLoginAttempts(resetValue);
-                    data1.setExtendedInformation(ei);
-                    final Date timeModified = new Date();
-                    data1.setTimeModified(timeModified.getTime());
-                    final String username = data1.getUsername();
-                    final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
-                    logSession.log(admin, data1.getCaId(), LogConstants.MODULE_RA, timeModified, username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-                }
-            }
+        final int resetValue = ei.getMaxLoginAttempts();
+        if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
+        	ei.setRemainingLoginAttempts(resetValue);
+        	final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
+        	logSession.log(admin, caid, LogConstants.MODULE_RA, new Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
         }
         if (log.isTraceEnabled()) {
             log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue);
@@ -707,7 +704,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (data1 != null) {
             caid = data1.getCaId();
             assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
-            ExtendedInformation ei = data1.getExtendedInformation();
+            final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
             	counter = ei.getRemainingLoginAttempts();
             	// If we get to 0 we must set status to generated
@@ -715,11 +712,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             		// if it isn't already
             		if (data1.getStatus() != UserDataConstants.STATUS_GENERATED) {
             			data1.setStatus(UserDataConstants.STATUS_GENERATED);
-            			final Date timeModified = new Date();
-            			data1.setTimeModified(timeModified.getTime());
-            			String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-            			logSession.log(admin, caid, LogConstants.MODULE_RA, timeModified, username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
-            			resetRemainingLoginAttemptsInternal(admin, data1);
+            			final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
+            			logSession.log(admin, caid, LogConstants.MODULE_RA, new Date(), username, null, LogConstants.EVENT_INFO_CHANGEDENDENTITY, msg);
+            			resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
+        				data1.setTimeModified(new Date().getTime());
+        				data1.setExtendedInformation(ei);
             		}
             	} else if (counter != -1) {
             		if (log.isDebugEnabled()) {
@@ -924,11 +921,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             WaitingForApprovalException {
         final int caid = data1.getCaId();
         final String username = data1.getUsername();
+        final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
         final int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
         if (numOfApprovalsRequired > 0) {
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin, null,
-                    numOfApprovalsRequired, data1.getCaId(), data1.getEndEntityProfileId());
+                    numOfApprovalsRequired, data1.getCaId(), endEntityProfileId);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
                 approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
@@ -940,11 +938,16 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             keyRecoverySession.unmarkUser(admin, username);
         }
         if ((status == UserDataConstants.STATUS_NEW) && (data1.getStatus() != UserDataConstants.STATUS_NEW)) {
-            // If status is set to new, when it is not already new, we should
-            // re-set the allowed request counter to the default values
-            resetRequestCounter(admin, data1, false);
-            // Reset remaining login counter
-            resetRemainingLoginAttemptsInternal(admin, data1);
+        	final ExtendedInformation ei = data1.getExtendedInformation();
+        	if (ei != null) {
+        		// If status is set to new, when it is not already new, we should
+        		// re-set the allowed request counter to the default values
+        		resetRequestCounter(admin, false, ei, username, endEntityProfileId);
+        		// Reset remaining login counter
+        		resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
+        		//data1.setTimeModified(new Date().getTime());
+        		data1.setExtendedInformation(ei);
+        	}
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("Status not changing from something else to new, not resetting requestCounter.");
@@ -1880,58 +1883,49 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
      * request counter should be used, the counter is removed.
      * 
      * @param admin administrator
-     * @param data1 UserDataLocal, the new user
+     * @param ei the ExtendedInformation object to modify
      */
-    private void resetRequestCounter(Admin admin, UserData data1, boolean onlyRemoveNoUpdate) {
+    private void resetRequestCounter(final Admin admin, final boolean onlyRemoveNoUpdate, final ExtendedInformation ei, final String username, final int endEntityProfileId) {
         if (log.isTraceEnabled()) {
-            log.trace(">resetRequestCounter(" + data1.getUsername() + ", " + onlyRemoveNoUpdate + ")");
+            log.trace(">resetRequestCounter(" + username + ", " + onlyRemoveNoUpdate + ")");
         }
-        int epid = data1.getEndEntityProfileId();
-        EndEntityProfile prof = endEntityProfileSession.getEndEntityProfile(admin, epid);
+        final EndEntityProfile prof = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileId);
         String value = null;
         if (prof != null) {
-            if (prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
-                value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
-            }
+        	if (prof.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+        		value = prof.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
+        	}
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Can not fetch entity profile with id " + epid);
-            }
+        	if (log.isDebugEnabled()) {
+        		log.debug("Can not fetch entity profile with id " + endEntityProfileId);
+        	}
         }
-        ExtendedInformation ei = data1.getExtendedInformation();
-        if (ei != null) {
-            String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
-            if (log.isDebugEnabled()) {
-                log.debug("Old counter is: " + counter + ", new counter will be: " + value);
-            }
-            // If this end entity profile does not use ALLOWEDREQUESTS, this
-            // value will be set to null
-            // We only re-set this value if the COUNTER was used in the first
-            // place, if never used, we will not fiddle with it
-            if (counter != null) {
-                if ((!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value == null))) {
-                    ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
-                    data1.setExtendedInformation(ei);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Re-set request counter for user '" + data1.getUsername() + "' to:" + value);
-                    }
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("No re-setting counter because we should only remove");
-                    }
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Request counter not used, not re-setting it.");
-                }
-            }
+        final String counter = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        if (log.isDebugEnabled()) {
+        	log.debug("Old counter is: " + counter + ", new counter will be: " + value);
+        }
+        // If this end entity profile does not use ALLOWEDREQUESTS, this
+        // value will be set to null
+        // We only re-set this value if the COUNTER was used in the first
+        // place, if never used, we will not fiddle with it
+        if (counter != null) {
+        	if ((!onlyRemoveNoUpdate) || (onlyRemoveNoUpdate && (value == null))) {
+        		ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
+        		if (log.isDebugEnabled()) {
+        			log.debug("Re-set request counter for user '" + username + "' to:" + value);
+        		}
+        	} else {
+        		if (log.isDebugEnabled()) {
+        			log.debug("No re-setting counter because we should only remove");
+        		}
+        	}
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("No extended information exists for user: " + data1.getUsername());
-            }
+        	if (log.isDebugEnabled()) {
+        		log.debug("Request counter not used, not re-setting it.");
+        	}
         }
         if (log.isTraceEnabled()) {
-            log.trace("<resetRequestCounter(" + data1.getUsername() + ", " + onlyRemoveNoUpdate + ")");
+            log.trace("<resetRequestCounter(" + username + ", " + onlyRemoveNoUpdate + ")");
         }
     }
 }

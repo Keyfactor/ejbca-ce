@@ -149,7 +149,8 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     	// Create the certificate in one go with all parameters at once. This used to be important in EJB2.1 so the persistence layer only creates *one* single
     	// insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
     	// Probably not important in EJB3 anymore
-    	CertificateData data1 = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, tag, updateTime);
+    	final CertificateData data1 = new CertificateData(incert, pubk, username, cafp, status, type, certificateProfileId, tag, updateTime);
+    	final String issuerDN = data1.getIssuerDN();
         try {
         	entityManager.persist(data1);
         } catch (Exception e) {
@@ -158,8 +159,8 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         	ce.setStackTrace(e.getStackTrace());
         	throw ce;
         }
-        String msg = intres.getLocalizedMessage("store.storecert");            	
-        logSession.log(admin, incert, LogConstants.MODULE_CA, new java.util.Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
+        final String msg = intres.getLocalizedMessage("store.storecert");            	
+        logSession.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new Date(), username, incert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);
         log.trace("<storeCertificate()");
         return true;
     }
@@ -461,7 +462,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     	String cafp = rev.getCaFingerprint();
     	int type = rev.getType();
     	Date now = new Date();
-    	String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
+    	final int caid = rev.getIssuerDN().hashCode();
     	
     	// A normal revocation
     	if ( (rev.getStatus() != SecConst.CERT_REVOKED) 
@@ -471,7 +472,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(reason);            	  
     		String msg = intres.getLocalizedMessage("store.revokedcert", Integer.valueOf(reason));            	
-    		logSession.log(admin, certificate, LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
+    		logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
     		publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
             // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
@@ -493,17 +494,17 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     			boolean published = publisherSession.storeCertificate(admin, publishers, certificate, username, password, userDataDN,
     					cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), null);
     			if ( !published ) {
-    				throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
+    				throw new Exception("Unrevoked cert:" + CertTools.getSerialNumberAsString(certificate) + " reason: " + reason + " Could not be republished.");
     			}                	  
     			String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));            	
-    			logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
+    			logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     		} catch (Exception ex) {
     			// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
-    			logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
+    			logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
     		}
     	} else {
-    		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));            	
-    		logSession.log(admin, CertTools.getIssuerDN(certificate).hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
+    		String msg = intres.getLocalizedMessage("store.ignorerevoke", CertTools.getSerialNumberAsString(certificate), Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));            	
+    		logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     	}
     	if (log.isTraceEnabled()) {
         	log.trace("<private setRevokeStatus(),  issuerdn=" + CertTools.getIssuerDN(certificate) + ", serno=" + CertTools.getSerialNumberAsString(certificate));
@@ -635,16 +636,18 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata){
+    	final String issuerDN = CertTools.getIssuerDN(cert);
+    	final String username = useradmindata.getUsername();
     	if (log.isTraceEnabled()) {
-        	log.trace(">addCertReqHistoryData(" + CertTools.getSerialNumberAsString(cert) + ", " + CertTools.getIssuerDN(cert) + ", " + useradmindata.getUsername() + ")");
+        	log.trace(">addCertReqHistoryData(" + CertTools.getSerialNumberAsString(cert) + ", " + issuerDN + ", " + username + ")");
     	}
         try {
-        	entityManager.persist(new CertReqHistoryData(cert, useradmindata));
-        	String msg = intres.getLocalizedMessage("store.storehistory", useradmindata.getUsername());            	
-            logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);            
+        	entityManager.persist(new CertReqHistoryData(cert, issuerDN, useradmindata));
+        	final String msg = intres.getLocalizedMessage("store.storehistory", username);            	
+            logSession.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new Date(), username, cert, LogConstants.EVENT_INFO_STORECERTIFICATE, msg);            
         } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("store.errorstorehistory", useradmindata.getUsername());            	
-            logSession.log(admin, cert, LogConstants.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
+        	final String msg = intres.getLocalizedMessage("store.errorstorehistory", useradmindata.getUsername());            	
+            logSession.log(admin, issuerDN.hashCode(), LogConstants.MODULE_CA, new Date(), username, cert, LogConstants.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
     	if (log.isTraceEnabled()) {
