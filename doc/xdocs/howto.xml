@@ -766,7 +766,7 @@ httpsserver.bindaddress.privhttps=127.0.0.1
 ...
 </source>
   <p>
-	After installation, go to EJBCA Admin GUI → System Configuration and
+	After installation, go to EJBCA Admin GUI -> System Configuration and
 	configure the autoenrollment settings.
   </p>
   </subsection>
@@ -1261,32 +1261,32 @@ debug=false
 	Install Certificate Templates by adding the corresponding Snap-in i the MMC console.
   </p><p>
 	Install the root CA-certificate(s) in the NTAuthStore, so windows can verify all cerificates produced by EJBCA.
-	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
-	Edit Default Domain Policy → Computer Configuration → Windows Settings → Security Settings → Public Key Policies →
-	Trusted Root Certificate Authorities → Import → import the root ca certificate and run "gpupdate /force" on
+	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->
+	Edit Default Domain Policy -> Computer Configuration -> Windows Settings -> Security Settings -> Public Key Policies ->
+	Trusted Root Certificate Authorities -> Import -> import the root ca certificate and run "gpupdate /force" on
 	machines that are used for testing. 
 	(You can fetch the CA certificate using the EJCBA CLI with "$EJBCA_HOME/bin/ejbca.sh ca getrootcert AdminCA1 ~/AdminCA1.crt -der".)
   </p><p>
   	Add Startup Scripts in 
-	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
-	Edit Default Domain Policy → Computer Configuration → Windows Settings → Scripts → Startup →
+	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->
+	Edit Default Domain Policy -> Computer Configuration -> Windows Settings -> Scripts -> Startup ->
 	Add the machine-related scripts from the shared directory.
   </p><p>
   	Add Login Scripts in 
-	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
-	Edit Default Domain Policy → User Configuration → Windows Settings → Scripts → Logon →
+	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->
+	Edit Default Domain Policy -> User Configuration -> Windows Settings -> Scripts -> Logon ->
 	Add the user-related scripts from the shared directory.
   </p><p>
   	Add the ca-server and shared directory to the Intranet
-	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
-	Edit Default Domain Policy → Computer Configuration | User Configuration (do both!!) → Administrative Templates →
-	Windows Components → Internet Explorer → Internet Control Page → Security Page →
-	Site to Zone assignement list → Enabled and added "https://ca-server.company.local" to zone "1", "\\Dc1\Shared" to zone "1"
+	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->
+	Edit Default Domain Policy -> Computer Configuration | User Configuration (do both!!) -> Administrative Templates ->
+	Windows Components -> Internet Explorer -> Internet Control Page -> Security Page ->
+	Site to Zone assignement list -> Enabled and added "https://ca-server.company.local" to zone "1", "\\Dc1\Shared" to zone "1"
   </p><p>
   	Configure clients to synchronize time using NTP:
-	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
-	Edit Default Domain Policy → Computer Configuration → Administrative Templates →
-	System → Windows Time Service → Time Providers → Configure Windows NTP Client (Add "dc1.company.local" as an NTP server.)
+	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->
+	Edit Default Domain Policy -> Computer Configuration -> Administrative Templates ->
+	System -> Windows Time Service -> Time Providers -> Configure Windows NTP Client (Add "dc1.company.local" as an NTP server.)
 	and Enable Windows NTP Client.
   </p><p>
   	Use "gpupdate /force" on clients before running tests or wait 8h.. =)
@@ -1316,8 +1316,8 @@ debug=false
 </source>
   <p>
 	Adding a custom Administrative template can be done as in this example if needed:
-	Start Menu → Administration → Users and Computer → Right click the domain name → Properties → Group Policy →
-	Edit Default Domain Policy → Computer Configuration → Administrative Templates → Add/Remove Templates → Add Autoenroll.adm
+	Start Menu -> Administration -> Users and Computer -> Right click the domain name -> Properties -> Group Policy ->
+	Edit Default Domain Policy -> Computer Configuration -> Administrative Templates -> Add/Remove Templates -> Add Autoenroll.adm
   </p>
   <p>
 	This is just a sample, but shows how a custom GP can be configured.. (<b>Use the intructions above instead of this template.</b>
