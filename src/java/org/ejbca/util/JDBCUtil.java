@@ -46,7 +46,8 @@ public class JDBCUtil {
     	String getInfoString();
     }
     
-    public static void execute(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
+    /** @return the current result as an update count; -1 if the current result is a ResultSet object or there are no more results */
+    public static int execute(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
         if ( sqlCommandTemplate!=null ) {
             Connection connection = null;
             PreparedStatement ps = null;
@@ -55,10 +56,12 @@ public class JDBCUtil {
                 ps = connection.prepareStatement(sqlCommandTemplate);
                 preparer.prepare(ps);
                 ps.execute();
+            	return ps.getUpdateCount();
             } finally {
                 JDBCUtil.close(connection, ps, null);
             }
         }
+        return -1;
     }
     public static String executeSelectString(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
     	String ret = null;
