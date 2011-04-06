@@ -428,11 +428,9 @@ This will fire up a rudimentary database interface. Only works on the same machi
       <question>How do I manipulate EJBCA-keystores using Oracle's 'keytool'?</question>
 	  <answer><p>EJBCA supports the PKCS12 format for the keystore because it is a standard, and we like standards.
 	  Normally keytool (e.g. Oracle's) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
-	  Put the BouncyCastle provider 'bcprov-jkd16-145.jar' in 'jre/lib/ext', the default classpath for extensions in java.
-	  Now it should be possible to run:
 	  </p>
 	  <source>
-keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
+keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath $EJBCA_HOME/lib/bcprov-jdk16-145.jar
 	  </source>
 	  <p>
 	  It should be possible to import etc as well using keytool.
@@ -471,7 +469,7 @@ In theory, you can use the same method with a BouncyCastle PKCS12 keystore by ad
 arguments to every command above:
 </p>
 <source>
--provider org.bouncycastle.jce.provider.BouncyCastleProvider/ -storetype PKCS12
+-provider org.bouncycastle.jce.provider.BouncyCastleProvider -storetype PKCS12 -providerpath $EJBCA_HOME/lib/bcprov-jdk16-145.jar
 </source>
 <p>
 unforturnately a bug in keytool prevents this from functioning properly at the moment, therefore I

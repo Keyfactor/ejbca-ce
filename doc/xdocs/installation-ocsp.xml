@@ -486,7 +486,7 @@ If these conditions are not met, no Fnr is returned.
 The GET OCSP request is defined in <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a> A.1.1 as: <code>'GET {url}/{url-encoding of base-64 encoding
 of the DER encoding of the OCSPRequest}'</code>. A base64-encoded request can contain the reserved
 characters '+', '/' and '=', but will be handled correctly both in their %-escaped and original form
-by the responder, since it's unclear if they do conflict as defined in <a href="http://www.ietf.org/rfc/rfc2395.txt">RFC 2395</a> 2.2. 
+by the responder, since it's unclear if they do conflict as defined in <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC 2396</a> 2.2. 
   </p><p>
 Not all web-product handles the encoded '/' (%2F) nicely. JBoss/Tomcat has to be started with
 <code>-Dorg.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=true</code> added to JAVA_OPT in
