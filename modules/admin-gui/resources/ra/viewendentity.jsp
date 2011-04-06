@@ -355,7 +355,8 @@
 
     <!-- ---------- Other data -------------------- -->
 
-    <% if ( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
+    <% if (  viewendentityhelper.profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)
+      	  ||(viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0)
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
     	  || viewendentityhelper.profile.getUsePrinting()
@@ -367,9 +368,25 @@
        </tr>
     <% } %>
 
+    <% if(viewendentityhelper.profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)){ %>
+    <% 
+        ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
+        String counter = ei!=null ? ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER) : null;
+      %>
+    <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
+      <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
+        <%= ejbcawebbean.getText("ALLOWEDREQUESTS") %> 
+      </td>
+      <td><% if (counter != null)
+                  out.write(counter);
+             else out.write("&nbsp;"); %>
+      </td>
+    </tr>
+    <% } %>
+
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
-      <td  align="right" width="<%=viewendentityhelper.columnwidth%>"> 
+      <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 
         <%= ejbcawebbean.getText("KEYRECOVERABLE") %> 
       </td>
       <td><% if(viewendentityhelper.userdata.getKeyRecoverable())
