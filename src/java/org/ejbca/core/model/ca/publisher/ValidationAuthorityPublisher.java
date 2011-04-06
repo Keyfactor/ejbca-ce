@@ -217,33 +217,32 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	throws PublisherException {
 		boolean fail = true;
 		if (log.isDebugEnabled()) {
-			String fingerprint = CertTools.getFingerprintAsString(incert);
+			final String fingerprint = CertTools.getFingerprintAsString(incert);
 			log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external OCSP");
 		}
-		StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate);
+		final StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate);
 		try {
 			if (status == SecConst.CERT_REVOKED) {
-				// If this is a revocation we assume that the certificate already exists in the database. In that case we will try an update first and if that fails an insers.
-				JDBCUtil.execute(updateCertificateSQL, prep, getDataSource());
-			} else {
-				JDBCUtil.execute(insertCertificateSQL, prep, getDataSource());    
-			}
-			fail = false;
-		} catch (SQLException e) {
-			if (log.isDebugEnabled()) {
-				String msg = intres.getLocalizedMessage("publisher.entryexists", e.getMessage());
-				log.debug(msg);
-			}
-			try {
-				if (status == SecConst.CERT_REVOKED) {
-					// If this is a revocation we tried an update below, if thart failed we have to do an insert here
-					JDBCUtil.execute(insertCertificateSQL, prep, getDataSource());    
+				// If this is a revocation we assume that the certificate already exists in the database. In that case we will try an update first and if that fails an insert.
+				if (JDBCUtil.execute(updateCertificateSQL, prep, getDataSource()) == 1) {
+					fail = false;	// We updated exactly one row, which is what we expect
 				} else {
-					JDBCUtil.execute(updateCertificateSQL, prep, getDataSource());
+					// If this is a revocation we tried an update below, if that failed we have to do an insert here
+					JDBCUtil.execute(insertCertificateSQL, prep, getDataSource());
+					fail = false;	// No exception throws, so this worked
 				}
-				fail = false;    
-			} catch (Exception ue) {
-				throwPublisherException(ue, prep);
+			} else {
+				try {
+					JDBCUtil.execute(insertCertificateSQL, prep, getDataSource());    
+					fail = false;	// No exception throws, so this worked
+				} catch (SQLException e) {
+					if (log.isDebugEnabled()) {
+						log.debug(intres.getLocalizedMessage("publisher.entryexists", e.getMessage()));
+					}
+					if (JDBCUtil.execute(updateCertificateSQL, prep, getDataSource()) == 1) {
+						fail = false;	// We updated exactly one row, which is what we expect
+					}
+				}
 			}
 		} catch (Exception e) {
 			throwPublisherException(e, prep);
