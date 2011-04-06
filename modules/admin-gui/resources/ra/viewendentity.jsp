@@ -231,7 +231,7 @@
     <!-- ---------- Main certificate data -------------------- -->
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-      <td align="right">&nbsp;</td>
+     <td align="right">&nbsp;</td>
 	 <td>&nbsp;</td>
        </tr>
 
@@ -283,10 +283,17 @@
 
     <!-- ---------- Other certificate data -------------------- -->
 
+    <% if (  viewendentityhelper.profile.getUse(EndEntityProfile.CERTSERIALNR, 0)
+    	  || viewendentityhelper.profile.getUse(EndEntityProfile.STARTTIME, 0) 
+    	  || viewendentityhelper.profile.getUse(EndEntityProfile.ENDTIME, 0)
+    	  || viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER, 0)
+    	  ) {
+        %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERCERTIFICATEDATA") %></strong></td>
 	 <td>&nbsp;</td>
        </tr>
+    <% } %>
 
 	<%{
 		final ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
@@ -297,7 +304,8 @@
 			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER") %></td>
 			<td><%= certSerialNr %></td>
 			</tr> 
-	<%	} }%>
+	<%	}
+	  } %>
 
 	<%
 		String startTime = null;
@@ -347,8 +355,7 @@
 
     <!-- ---------- Other data -------------------- -->
 
-       <%
-       if ( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
+    <% if ( (viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery())
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON,0)
     	  || viewendentityhelper.profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
     	  || viewendentityhelper.profile.getUsePrinting()
@@ -358,7 +365,7 @@
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("OTHERDATA") %></strong></td>
 	 <td>&nbsp;</td>
        </tr>
-      <% } %>
+    <% } %>
 
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.KEYRECOVERABLE,0) && globalconfiguration.getEnableKeyRecovery()){ %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
