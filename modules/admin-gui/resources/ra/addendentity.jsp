@@ -1301,7 +1301,7 @@ function checkallfields(){
              
              <input type="radio" name="<%= RADIO_MAXFAILEDLOGINS %>" value="<%= RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED %>" onclick="maxFailedLoginsUnlimited()" <% if(maxLoginAttempts == -1) { out.write("checked"); } %> <% if(!profile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0)) { out.write(" readonly"); } %>> <%= ejbcawebbean.getText("UNLIMITED") %>
         </td>
-		<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_MAXFAILEDLOGINS %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.MAXFAILEDLOGINS,0)) out.write(" CHECKED "); %>></td> 
+		<td>&nbsp;</td> 
       </tr>
       <% } %>
 
