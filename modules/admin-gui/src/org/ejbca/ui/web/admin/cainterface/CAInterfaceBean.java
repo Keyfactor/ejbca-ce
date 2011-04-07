@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
@@ -54,6 +55,7 @@ import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
@@ -356,25 +358,54 @@ public class CAInterfaceBean implements Serializable {
 		return returnval;
 	}
 
-	public String republish(CertificateView certificatedata){
+	public String republish(CertificateView certificatedata) {
 		String returnval = "CERTREPUBLISHFAILED";
-		CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped());
-		if(certreqhist != null){
-			CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
-			if(certprofile != null){
-				CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
-				if(certprofile.getPublisherList().size() > 0){
-					if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
-							certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation())){
+		int certificateProfileId = SecConst.CERTPROFILE_NO_PROFILE;
+		String username = null;
+		String password = null;
+		String dn = null;
+		ExtendedInformation ei = null;
+		final CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator, certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN());
+		if (certreqhist != null) {
+			// First try to look up all info using the Certificate Request History from when the certificate was issued
+			// We need this since the certificate subjectDN might be a subset of the subjectDN in the template
+			certificateProfileId = certreqhist.getUserDataVO().getCertificateProfileId();
+			username = certreqhist.getUserDataVO().getUsername();
+			password = certreqhist.getUserDataVO().getPassword();
+			dn = certreqhist.getUserDataVO().getDN();
+			ei = certreqhist.getUserDataVO().getExtendedinformation();
+		}
+		final CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
+		if (certinfo != null) {
+			// If we are missing Certificate Request History for this certificate, we can at least recover some of this info
+			if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
+				certificateProfileId = certinfo.getCertificateProfileId();
+			}
+			if (username == null) {
+				username = certinfo.getUsername();
+			}
+			if (dn == null) {
+				dn = certinfo.getSubjectDN();
+			}
+		}
+		if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
+			// If there is no cert req history and the cert profile was not defined in the CertificateData row, so we can't do anything about it..
+			returnval = "CERTREQREPUBLISHFAILED";
+		} else {
+			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator, certificateProfileId);
+			if (certprofile != null) {
+				if (certprofile.getPublisherList().size() > 0) {
+					if (publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), username, password, dn,
+							certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(),
+							certinfo.getTag(), certificateProfileId, certinfo.getUpdateTime().getTime(), ei)) {
 						returnval = "CERTREPUBLISHEDSUCCESS";
 					}
-				}else{
+				} else {
 					returnval = "NOPUBLISHERSDEFINED";
 				}
-
-			}else{
+			} else {
 				returnval = "CERTPROFILENOTFOUND";
-			}	  
+			}
 		}
 		return returnval; 
 	}
