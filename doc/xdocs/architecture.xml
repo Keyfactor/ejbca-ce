@@ -23,18 +23,11 @@
     	The following diagram is a very rough schema of the current architecture of EJBCA.
     </p>
     <p>
-    <img src="images/architecture.gif" alt="EJBCA architecture" />
+    <img src="images/architecture.png" alt="EJBCA architecture" />
     </p>
     <p>
-    	A more developer centric deployment diagram is given below. It displays the internal three layer architecture of EJBCA. The application is packages in an ear file. 
-    	In this ear file various web applications (war files) handles the interfaces with the surrounding world, mostly through various web interfaces. 
-    	The web applications uses ejb session beans to perform the business operations. The session beans in turn uses a persistence layer (data entities) to persist data in the database.    
-    </p>
-    <p> 
-        You can add your own components by for example deploying another web application (external.war) in the application server, making use of the session bean API of EJBCA.
-    </p>
-    <p>
-    <img src="images/DeploymentDiagram.png" alt="EJBCA deployment diagram" />
+    All the web modules are packaged as Web Archives (WAR) and packaged inside an Enterprise Archive (EAR) together with EJB modules for business logic,
+    code for mapping Java objects to database rows and additional libraries need by the application that isn't provided by the application server.
     </p>
   <subsection name="EJB Stateless Session Beans Dependencies">
     <p>
