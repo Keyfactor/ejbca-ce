@@ -323,7 +323,7 @@
 		<td>
 		<%	if ( !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>		
 				<% String[] dp = {"yyyy-MM-dd HH:mm"};
-					ejbcawebbean.printDateTime(DateUtils.parseDate(startTime, dp)); %>
+					out.write(ejbcawebbean.printDateTime(DateUtils.parseDate(startTime, dp))); %>
 		<%	} else { %>
 				<%= startTime %>
 		<%	} %>
@@ -336,7 +336,7 @@
 		<td>
 		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
 				<%  String[] dp = {"yyyy-MM-dd HH:mm"};
-					ejbcawebbean.printDateTime(DateUtils.parseDate(endTime, dp)); %>
+					out.write(ejbcawebbean.printDateTime(DateUtils.parseDate(endTime, dp))); %>
 		<%	} else { %>
 				<%= endTime %>
 		<%	} %>
