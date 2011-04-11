@@ -345,7 +345,7 @@ function confirmrepublish(){
      <input type="hidden" name='<%= HIDDEN_INDEX %>' value='<%=currentindex %>'>
 
 
-     <table border="0" cellpadding="0" cellspacing="2" width="100%">
+     <table class="view" border="0" cellpadding="0" cellspacing="2" width="100%">
 
       <!-- ---------- Title ---------- -->
 
@@ -408,7 +408,7 @@ function confirmrepublish(){
        
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_ISSUERDN") %></td>
-		 <td><%= certificatedata.getIssuerDN() %></td>
+		 <td class="dn"><%= certificatedata.getIssuerDN() %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDFROM") %></td>
@@ -420,7 +420,7 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
-		 <td><strong><%= certificatedata.getSubjectDN() %></strong></td>
+		 <td class="dn"><strong><%= certificatedata.getSubjectDN() %></strong></td>
        </tr>
        
       <% if (!certificatedata.getType().equalsIgnoreCase("CVC")) { %>

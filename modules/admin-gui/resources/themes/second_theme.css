@@ -345,6 +345,11 @@ table.add tr td h3 {
 	margin-bottom: -.25em;
 }
 
+/* Page: ALL View tables */
+table.view tr td.dn {
+	white-space: pre-wrap;
+}
+
 /* Page: ALL Edit forms */
 form#edit table tr td,			/* Services */
 form#basicRules table tr td,	/* Admin privileges */
