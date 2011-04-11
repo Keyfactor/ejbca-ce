@@ -374,7 +374,7 @@ Using an end entity is the recommended way to sign Sub CAs, because of the bette
 </p><p> 
 You can however also get the external Sub CA visible as a CA in EJBCA. 
 <ol>
-<li>In the 'Edit CA' page, choose a CA name of the external CA you are about to sign and click on 'Process Certificate Request'.</li>
+<li>In the 'Edit CA' page, enter a CA name of the external CA you are about to sign and click on 'Process Certificate Request'.</li>
 <li>Then you are requested to upload the certificate request sent from the external CA. This should be a file in PEM-encoding.</li>
 <li>The next step is to fill in the data about the CA certificate you are about to create. This is very similar to when you are creating an internal CA but with a fewer fields. The Subject DN is taken from the request. But the signing CA, certificate profile, validity, subject alt name and policy id have to filled in manually.</li>
 <li>After clicking 'Process Certificate Request' the certificate is created and displayed in PEM format. You can also download it as a regular PEM file or as a PKCS7 PEM file.</li>
