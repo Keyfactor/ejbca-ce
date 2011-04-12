@@ -50,6 +50,7 @@ public class UserDataVO implements Serializable {
 
     private String username;
     private String subjectDN;
+    private String subjectDNClean;
     private int caid;
     private String subjectAltName;
     private String subjectEmail;
@@ -148,7 +149,11 @@ public class UserDataVO implements Serializable {
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.strip(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
-        this.subjectDN=StringTools.putBase64String(dn);
+    	final StringBuilder removedTrailingEmpties = new StringBuilder(dn.length());
+    	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());
+    	DNFieldsUtil.removeEmpties(dn, removedTrailingEmpties, removedAllEmpties);
+    	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
+    	this.subjectDNClean=StringTools.putBase64String(removedAllEmpties.toString());
     }
     public String getDN() {return StringTools.getBase64String(subjectDN);}
     public int getCAId(){return this.caid;}
@@ -291,6 +296,6 @@ public class UserDataVO implements Serializable {
 
     /** @return the DN to be used when creating a certificate (without empty fields). */
     public String getCertificateDN() {
-        return DNFieldsUtil.removeAllEmpties(getDN());
+        return StringTools.getBase64String(subjectDNClean);
     }
 }

@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.util.dn;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -20,6 +23,7 @@ import org.apache.log4j.Logger;
  * Optimized to lower object instantiation by performing manipulations "in-place" using StringBuilder and char[].
  * 
  * Not built to handle '+' char separators or take special consideration to Unicode.
+ * Current implementation will treat unescaped '=' in values as ok (backwards compatible).
  * 
  * @author primelars
  * @version $Id$
@@ -27,142 +31,153 @@ import org.apache.log4j.Logger;
 public abstract class DNFieldsUtil {
 
 	private static final Logger LOG = Logger.getLogger(DNFieldsUtil.class);
+	private static final int EMPTY = -1;
 	private static final String MSG_ERROR_MISSING_EQUAL = "DN field definition is missing the '=': ";
 
 	/**
+	 * This method will take the supplied string and fill the two provided empty StringBuilders.
+	 * 
+	 * removedTrailingEmpties is produced by:
+	 * Removes fields (key=value) where the value is empty if it is the last value with the same key.
+	 * Example: "CN=abc,CN=,CN=def,O=,O=abc,O=" will become "CN=abc,CN=,CN=def,O=,O=abc".
+	 * Example: "CN=abc,DC=,O=,CN=def,O=,O=abc,O=" will become "CN=abc,O=,CN=def,O=,O=abc".
+	 * 
+	 * removedAllEmpties is produced by:
 	 * Removes all fields (key=value) where the value is empty.
-	 * Example: "CN=abc,CN=,CN=def,O=,O=abc,O=" will become "CN=abc,CN=def,O=abc".
+	 * Example: "CN=abc,CN=,O=,CN=def,O=,O=abc,O=" will become "CN=abc,CN=def,O=abc".
+	 * 
+	 * Since the algorithms are very similar for these two it makes sense to calculate them both at
+	 * the same time for use in UserDataVO.
+	 * 
 	 * @param sDN the String to clean.
-	 * @return a copy of the String where all fields with empty values have been removed.
+	 * @return a copy of the String where the value is empty if it is the last value with the same key.
 	 */
-    public static String removeAllEmpties(final String sDN) {
+	public static void removeEmpties(final String sDN, final StringBuilder removedTrailingEmpties, final StringBuilder removedAllEmpties) {
+    	// First make a list of where all the key=value pairs start and if they are empty or not
+    	final List<Integer> startOfPairs = new ArrayList<Integer>();
+    	final List<Integer> startOfValues = new ArrayList<Integer>();
     	final char[] buf = sDN.toCharArray();
-    	final StringBuilder sb = new StringBuilder(buf.length);
-    	int lastPairStartPos = 0;
-    	int lastEqualPos = 0;
-    	boolean notEscaped = true;
-    	for (int i=0; i<buf.length-1; i++) {
+    	populatePositionLists(startOfPairs, startOfValues, buf);
+    	// Go through all the pairs from first to last
+    	for (int i=0; i<startOfPairs.size(); i++) {
+    		final int startOfThisPair = startOfPairs.get(i).intValue();
+    		final int startOfNextPair;
+    		if (i == startOfPairs.size()-1) {
+    			startOfNextPair = buf.length;	// The "next element" begins at the end of the buffer
+    		} else {
+    			startOfNextPair = startOfPairs.get(i+1).intValue();
+    		}
+    		final int startOfThisValue = startOfValues.get(i).intValue();
+    		boolean addOnlyNonTrailingEmpties = true;
+    		if (startOfThisValue == EMPTY) {
+    	    	// If a pair is empty
+    			addOnlyNonTrailingEmpties = false;
+    			// If we only remove trailing empties there is a second chance that we will still add it..
+    			for (int j=i+1; j<startOfPairs.size(); j++) {
+    				final int startOfThisPair2 = startOfPairs.get(j).intValue();
+    				if (hasSameKey(buf, startOfThisPair, startOfThisPair2) && startOfValues.get(j).intValue() != EMPTY) {
+    					// if this was not the last pair with this key and one of the later ones is not empty: add it!
+    					addOnlyNonTrailingEmpties = true;
+    					break;
+    				}
+    			}
+    		} else {
+    			removedAllEmpties.append(buf, startOfThisPair, startOfNextPair-startOfThisPair);
+    		}
+    		if (addOnlyNonTrailingEmpties) {
+    			removedTrailingEmpties.append(buf, startOfThisPair, startOfNextPair-startOfThisPair);
+    		}
+    	}
+    	removeUnwatedLastChars(removedTrailingEmpties);
+    	removeUnwatedLastChars(removedAllEmpties);
+    }
+	
+	/** If we end up with a buffer ending with "," or ", " we need to remove these chars. */
+	private static void removeUnwatedLastChars(final StringBuilder sb) {
+    	if (sb.length()>0) {
+    		for (int i=sb.length()-1; i>=0; i--) {
+    			final char c = sb.charAt(i);
+    			if (c == ' ' || c == ',') {
+    				sb.deleteCharAt(i);
+    			} else {
+    				break;
+    			}
+    		}
+    	}
+	}
+
+	/** Populates the two lists with starting positions in the character buffer where the value=key pair begins and keys begin. */
+    private static void populatePositionLists(final List<Integer> startOfPairs, final List<Integer> startOfValues, final char[] buf) {
+    	if (buf.length>0) {
+        	startOfPairs.add(Integer.valueOf(0));
+    	}
+    	boolean notEscaped = true;	// Keep track of what is escapes and not
+    	for (int i=0; i<buf.length; i++) {
     		switch (buf[i]) {
     		case '\\':
-    			notEscaped ^= true;	// Keep track of what is escapes and not
+    			notEscaped ^= true;
     			break;
     		case ',':
     			if (notEscaped) {
-    				// If last char was '=' this value was empty and should not be included in the result
-    				if (lastEqualPos != i-1) {
-    					if (lastEqualPos <= lastPairStartPos) {
-    		    			LOG.info(MSG_ERROR_MISSING_EQUAL + sDN);
-    		    			return null;
-    					}
-    					sb.append(buf, lastPairStartPos, i+1-lastPairStartPos);
+        			if (startOfPairs.size() > startOfValues.size()) {
+        				// We are missing a '=' in the DN!
+        				LOG.info(MSG_ERROR_MISSING_EQUAL + new String(buf));
+        			}
+    				int j = i+1;
+    				while (j<buf.length && buf[j] == ' ') {
+    					j++;	// Ignore spaces
     				}
-    				lastEqualPos = 0;
-    				lastPairStartPos = i+1;
+    				startOfPairs.add(Integer.valueOf(j));
+    			} else {
+    				notEscaped = true;
     			}
     			break;
     		case '=':
     			if (notEscaped) {
-    				lastEqualPos = i;
+    				// Only use the first '=' after a ',' (backwards compatible)
+        			if (startOfPairs.size() > startOfValues.size()) {
+        				int j = i+1;
+        				while (j<buf.length && buf[j] == ' ') {
+        					j++;	// Ignore spaces
+        				}
+        				if (j>=buf.length || buf[j] == ',') {
+        					startOfValues.add(Integer.valueOf(EMPTY));	// Use -1 to mark that the value is empty
+        				} else {
+        					startOfValues.add(Integer.valueOf(j));
+        				}
+        			}
+    			} else {
+    				notEscaped = true;
     			}
     			break;
     		default:
     			notEscaped=true;
     		}
     	}
-    	// If last char was '=' this value was empty and should not be included in the result
-    	if (lastEqualPos != buf.length-1) {
-    		if (lastEqualPos <= lastPairStartPos) {
-    			LOG.info(MSG_ERROR_MISSING_EQUAL + sDN);
-    			return null;
-    		}
-    		sb.append(buf, lastPairStartPos, buf.length-lastPairStartPos);
-    	}
-    	return sb.toString();
     }
 
-	/**
-	 * Removes fields (key=value) where the value is empty if it is the last value with the same key.
-	 * Example: "CN=abc,CN=,CN=def,O=,O=abc,O=" will become "CN=abc,CN=,CN=def,O=,O=abc".
-	 * @param sDN the String to clean.
-	 * @return a copy of the String where the value is empty if it is the last value with the same key.
-	 */
-    public static String removeTrailingEmpties(final String sDN) {
-    	final StringBuilder sb = new StringBuilder(sDN);
-    	int lastPairWithNonEmptyValue = sb.length();
-    	for (int i=sb.length()-1; i>=0; i--) {
-    		if (sb.charAt(i) == ',' && isNotEscaped(sb, i)) {	// Not escaped ','
-    			final int startOfThisPair = getStartPos(sb, i-1);
-    			if (sb.charAt(i-1) == '=') {	// '='
-    				// If last char was '=' this value was empty and should be removed UNLESS FOLLOWED BY A PAIR WITH THE SAME KEY AND NON-EMPTY VALUE
-    				if (!hasSameKey(sb, startOfThisPair, lastPairWithNonEmptyValue)) {
-    					// Delete this pair, since it is the last one with this key
-    					sb.delete(startOfThisPair, lastPairWithNonEmptyValue);
-    					// Since the next pair has a different key we know the "startOfThisPair" is the new position
-    					lastPairWithNonEmptyValue = startOfThisPair;
-    				}
-    			} else {
-    				lastPairWithNonEmptyValue = startOfThisPair;
-    			}
-    		}
-    	}
-    	return sb.toString();
-    }
-
-    /** @return true if an even number of '\' precedes this position in the buffer. */
-    private static boolean isNotEscaped(final StringBuilder sb, final int pos) {
-    	boolean evenEscapes = true;
-    	for (int i=pos-1; i>=0; i--) {
-    		if (sb.charAt(i) == '\\') {
-    			evenEscapes ^= true;
-    		} else {
-    			break;
-    		}
-    	}
-    	return evenEscapes;
-    }
-
-    /** Find the position of the closest not escaped ',' before this position in the buffer. */
-    private static int getStartPos(final StringBuilder sb, final int pos) {
-    	for (int i=(pos>=sb.length()?sb.length()-1:pos); i>=0; i--) {
-    		if (sb.charAt(i) == ',' && isNotEscaped(sb, i)) {	// Not escaped ','
-    			return i+1;
-    		}
-    	}
-    	return 0;
-    }
-    
     /** Compares the two character sequences in the buffer at the positions until a not escaped '=' is found. */
-    private static boolean hasSameKey(final StringBuilder sb, final int pos1, final int pos2) {
-    	final int len = sb.length();
-    	int i = 0;
-    	boolean iOnlySpace = true;
-    	int j = 0;
-    	boolean jOnlySpace = true;
-    	while (len>pos1+i && len>pos2+j ) {
-        	final char c1 = sb.charAt(pos1+i);
-        	if (iOnlySpace && c1 == ' ') {
-        		// Skip spaces in the beginning
-        		i++;
-        		continue;
-        	} else {
-        		iOnlySpace = false;
+    private static boolean hasSameKey(final char[] sb, int pos1, int pos2) {
+    	final int len = sb.length;
+    	boolean notEscaped = true;	// Keep track of what is escapes and not
+    	while (len>pos1 && len>pos2 ) {
+        	final char c1 = sb[pos1];
+        	switch (c1) {
+        	case '\\':
+    			notEscaped ^= true;
+    			break;
+        	case '=':
+        		if (notEscaped && c1 == sb[pos2]) {
+        			return true;
+        		} // else.. continue with the default action..
+        	default:
+            	if (c1 != sb[pos2]) {
+            		return false;
+            	}
+    			notEscaped=true;
         	}
-        	final char c2 = sb.charAt(pos1+j);
-        	if (jOnlySpace && c2 == ' ') {
-        		// Skip spaces in the beginning
-        		j++;
-        		continue;
-        	} else {
-        		jOnlySpace = false;
-        	}
-        	if (c1 != c2) {
-        		return false;
-        	}
-        	if (c1 == '=' && isNotEscaped(sb, pos1+i)) {	// Not escaped '='
-        		return true;
-        	}
-        	i++;
-        	j++;
+        	pos1++;
+        	pos2++;
     	}
     	return false;
     }
