@@ -67,7 +67,7 @@
      <input type="hidden" name='<%= ViewEndEntityHelper.ACTION %>' value='<%= ViewEndEntityHelper.ACTION_PAGE%>'>
      <input type="hidden" name='<%= ViewEndEntityHelper.USER_PARAMETER %>' value='<%= java.net.URLEncoder.encode(viewendentityhelper.username,"UTF-8")%>'>
 
-     <table border="0" cellpadding="0" cellspacing="2" width="100%">
+     <table class="view" border="0" cellpadding="0" cellspacing="2" width="100%">
 
     <!-- ---------- Title -------------------- -->
 
@@ -177,7 +177,7 @@
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
-	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
+	 <td><span class="attribute"><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %></span>
          </td>
        </tr>
        <% } %>
