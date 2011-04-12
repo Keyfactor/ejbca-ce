@@ -60,12 +60,17 @@ public class TestDNFieldsUtil extends TestCase {
     }
     
     private String removeEmpties(String dn, boolean onlyTrailing) {
-    	final StringBuilder sb1 = new StringBuilder();
     	final StringBuilder sb2 = new StringBuilder();
-    	DNFieldsUtil.removeEmpties(dn, sb1, sb2);
+    	final StringBuilder sb1 = DNFieldsUtil.removeEmpties(dn, sb2, true);
+    	final String removedEmpties1 = DNFieldsUtil.removeAllEmpties(dn);
+    	final String removedEmpties2 = sb2.toString();
+		assertEquals(removedEmpties1, removedEmpties2);
+    	if (sb1 == null) {
+    		return removedEmpties2;
+    	}
     	if (onlyTrailing) {
     		return sb1.toString();
     	}
-		return sb2.toString();
+		return removedEmpties2;
     }
 }

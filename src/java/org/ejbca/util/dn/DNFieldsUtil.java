@@ -34,6 +34,13 @@ public abstract class DNFieldsUtil {
 	private static final int EMPTY = -1;
 	private static final String MSG_ERROR_MISSING_EQUAL = "DN field definition is missing the '=': ";
 
+	/** Invoke removeEmpties and only return the fully clean dn String. */
+	public static String removeAllEmpties(final String dn) {
+    	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());
+    	DNFieldsUtil.removeEmpties(dn, removedAllEmpties, false);
+		return removedAllEmpties.toString();
+	}
+
 	/**
 	 * This method will take the supplied string and fill the two provided empty StringBuilders.
 	 * 
@@ -50,14 +57,17 @@ public abstract class DNFieldsUtil {
 	 * the same time for use in UserDataVO.
 	 * 
 	 * @param sDN the String to clean.
-	 * @return a copy of the String where the value is empty if it is the last value with the same key.
+	 * @param processTrailing true is removedTrailingEmpties should be considered.
+	 * @return removedTrailingEmpties StringBuffer if both types of cleaning give different results or null if they are the same.
 	 */
-	public static void removeEmpties(final String sDN, final StringBuilder removedTrailingEmpties, final StringBuilder removedAllEmpties) {
+	public static StringBuilder removeEmpties(final String sDN, final StringBuilder removedAllEmpties, final boolean processTrailing) {
+		StringBuilder removedTrailingEmpties = null;
     	// First make a list of where all the key=value pairs start and if they are empty or not
     	final List<Integer> startOfPairs = new ArrayList<Integer>();
     	final List<Integer> startOfValues = new ArrayList<Integer>();
     	final char[] buf = sDN.toCharArray();
     	populatePositionLists(startOfPairs, startOfValues, buf);
+    	boolean areStringBuildersEqual = true;
     	// Go through all the pairs from first to last
     	for (int i=0; i<startOfPairs.size(); i++) {
     		final int startOfThisPair = startOfPairs.get(i).intValue();
@@ -69,27 +79,42 @@ public abstract class DNFieldsUtil {
     		}
     		final int startOfThisValue = startOfValues.get(i).intValue();
     		boolean addOnlyNonTrailingEmpties = true;
+    		boolean addAllNonEmpties = true;
     		if (startOfThisValue == EMPTY) {
     	    	// If a pair is empty
     			addOnlyNonTrailingEmpties = false;
+    			addAllNonEmpties = false;
     			// If we only remove trailing empties there is a second chance that we will still add it..
-    			for (int j=i+1; j<startOfPairs.size(); j++) {
-    				final int startOfThisPair2 = startOfPairs.get(j).intValue();
-    				if (hasSameKey(buf, startOfThisPair, startOfThisPair2) && startOfValues.get(j).intValue() != EMPTY) {
-    					// if this was not the last pair with this key and one of the later ones is not empty: add it!
-    					addOnlyNonTrailingEmpties = true;
-    					break;
-    				}
+    			if (processTrailing) {
+        			for (int j=i+1; j<startOfPairs.size(); j++) {
+        				final int startOfThisPair2 = startOfPairs.get(j).intValue();
+        				if (hasSameKey(buf, startOfThisPair, startOfThisPair2) && startOfValues.get(j).intValue() != EMPTY) {
+        					// if this was not the last pair with this key and one of the later ones is not empty: add it!
+        					addOnlyNonTrailingEmpties = true;
+        					break;
+        				}
+        			}
     			}
-    		} else {
+    		}
+    		if (areStringBuildersEqual && (addOnlyNonTrailingEmpties != addAllNonEmpties)) {
+    			// The StringBuilders are no longer equal, so we need to populate the empty one and let them diverge
+    			areStringBuildersEqual = false;
+    			if (processTrailing) {
+        			removedTrailingEmpties = new StringBuilder(removedAllEmpties);
+    			}
+    		}
+    		if (addAllNonEmpties) {
     			removedAllEmpties.append(buf, startOfThisPair, startOfNextPair-startOfThisPair);
     		}
-    		if (addOnlyNonTrailingEmpties) {
+    		if (processTrailing && !areStringBuildersEqual && addOnlyNonTrailingEmpties) {
     			removedTrailingEmpties.append(buf, startOfThisPair, startOfNextPair-startOfThisPair);
     		}
     	}
-    	removeUnwatedLastChars(removedTrailingEmpties);
     	removeUnwatedLastChars(removedAllEmpties);
+    	if (!areStringBuildersEqual) {
+        	removeUnwatedLastChars(removedTrailingEmpties);
+    	}
+    	return removedTrailingEmpties;
     }
 	
 	/** If we end up with a buffer ending with "," or ", " we need to remove these chars. */

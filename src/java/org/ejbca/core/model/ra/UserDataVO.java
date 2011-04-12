@@ -50,7 +50,7 @@ public class UserDataVO implements Serializable {
 
     private String username;
     private String subjectDN;
-    private String subjectDNClean;
+    transient private String subjectDNClean = null;
     private int caid;
     private String subjectAltName;
     private String subjectEmail;
@@ -149,11 +149,15 @@ public class UserDataVO implements Serializable {
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.strip(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {
-    	final StringBuilder removedTrailingEmpties = new StringBuilder(dn.length());
     	final StringBuilder removedAllEmpties = new StringBuilder(dn.length());
-    	DNFieldsUtil.removeEmpties(dn, removedTrailingEmpties, removedAllEmpties);
-    	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
-    	this.subjectDNClean=StringTools.putBase64String(removedAllEmpties.toString());
+    	final StringBuilder removedTrailingEmpties = DNFieldsUtil.removeEmpties(dn, removedAllEmpties, true);
+    	if (removedTrailingEmpties == null) {
+        	this.subjectDNClean=StringTools.putBase64String(removedAllEmpties.toString());
+        	this.subjectDN=this.subjectDNClean;
+    	} else {
+        	this.subjectDNClean=StringTools.putBase64String(removedAllEmpties.toString());
+        	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
+    	}
     }
     public String getDN() {return StringTools.getBase64String(subjectDN);}
     public int getCAId(){return this.caid;}
@@ -296,6 +300,11 @@ public class UserDataVO implements Serializable {
 
     /** @return the DN to be used when creating a certificate (without empty fields). */
     public String getCertificateDN() {
-        return StringTools.getBase64String(subjectDNClean);
+    	if (subjectDNClean == null) {
+    		// This might be fetched from database serialization so we need to perform the cleaning all over again
+    		return DNFieldsUtil.removeAllEmpties(getDN());
+    	} else {
+            return StringTools.getBase64String(subjectDNClean);
+    	}
     }
 }
