@@ -349,6 +349,9 @@ table.add tr td h3 {
 table.view tr td.dn {
 	white-space: pre-wrap;
 }
+table.view tr td .attribute {
+	white-space: pre !important;
+}
 
 /* Page: ALL Edit forms */
 form#edit table tr td,			/* Services */
@@ -359,6 +362,9 @@ table.edit tr td {
 form#edit table tr td.title,	/* Services */
 table.edit tr td.title {
 	font-size: 1.1em;
+}
+table.edit tr td .attribute {
+	white-space: pre !important;
 }
 table.edit tr td table tr td {
 	line-height: 1.75em;

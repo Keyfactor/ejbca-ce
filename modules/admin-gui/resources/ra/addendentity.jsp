@@ -1383,7 +1383,7 @@ function checkallfields(){
               <% }else{ %> 
                 <% if( options.length == 1 ){ %>
                    <input type="hidden" name="<%= SELECT_SUBJECTDN + i %>" value="<c:out value='<%=options[0].trim()%>'/>" />
-                   <strong><c:out value='<%=options[0].trim()%>'/></strong>
+                   <strong class="attribute"><c:out value='<%=options[0].trim()%>'/></strong>
                 <% }else{ %> 
                    <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                      <% for(int j=0;j < options.length;j++){ %>

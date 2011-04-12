@@ -1216,7 +1216,7 @@ function checkUseInBatch(){
               <% }else{ %> 
                 <% if( options.length == 1 ){ %>
                    <input type="hidden" name="<%= SELECT_SUBJECTDN + i %>" value="<%=options[0].trim()%>" />
-                   <strong><%=options[0].trim()%></strong>
+                   <strong class="attribute"><%=options[0].trim()%></strong>
                 <% }else{ %> 
                    <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                      <% for(int j=0;j < options.length;j++){ %>
