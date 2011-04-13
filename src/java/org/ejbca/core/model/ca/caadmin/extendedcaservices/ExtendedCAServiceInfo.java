@@ -38,9 +38,21 @@ public abstract class ExtendedCAServiceInfo  implements Serializable {
 	   
 	private int status = STATUS_INACTIVE;  
 	   
+    public static final String IMPLEMENTATIONCLASS = "IMPLCLASS";
+
     public ExtendedCAServiceInfo(int status){
       this.status = status;
     }
     
     public int getStatus(){ return this.status; }
+
+    /** @return a unique type identifier, such as ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE etc */
+    public abstract int getType();
+
+    /**
+     * The extended CA service implementation will be created using reflection.
+     * 
+     * @return a class name implementing the extended CA service
+     */
+    public abstract String getImplClass();
 }

@@ -19,15 +19,12 @@ import java.util.List;
 
 import org.ejbca.core.model.AlgorithmConstants;
 
-
-
 /**
  * Base class for CAServiceInfo used by extended services that does signing 
  * 
- * 
  * @version $Id$
  */
-public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
+public abstract class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
        
     private String subjectdn      = null;
     private String subjectaltname = null;   
@@ -37,46 +34,29 @@ public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements S
     
     private boolean renew = false;
            
-    /**
-     * Used when creating new service.
-     */
-       
-    public BaseSigningCAServiceInfo(int status,
-                             String subjectdn, 
-                             String subjectaltname, 
-                             String keyspec, 
-                             String keyalgorithm){
-      super(status);                       	
-      this.subjectdn = subjectdn;
-      this.subjectaltname = subjectaltname;    	
-      this.keyspec = keyspec;
-      this.keyalgorithm = keyalgorithm; 	 
+    /** Used when creating new service. */
+    public BaseSigningCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm) {
+    	super(status);
+    	this.subjectdn = subjectdn;
+    	this.subjectaltname = subjectaltname;
+    	this.keyspec = keyspec;
+    	this.keyalgorithm = keyalgorithm; 	 
     }
     
-	/**
-	 * Used when returning information from service
-	 */
-       
-	public BaseSigningCAServiceInfo(int status,
-							 String subjectdn, 
-							 String subjectaltname, 
-							 String keyspec, 
-							 String keyalgorithm,
-							 List<Certificate> certpath){
-	  super(status);                       	
-	  this.subjectdn = subjectdn;
-	  this.subjectaltname = subjectaltname;    	
-	  this.keyspec = keyspec;
-	  this.keyalgorithm = keyalgorithm; 	 
-	  this.certchain = certpath;
+	/** Used when returning information from service. */
+	public BaseSigningCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm, List<Certificate> certpath) {
+		super(status);
+		this.subjectdn = subjectdn;
+		this.subjectaltname = subjectaltname;
+		this.keyspec = keyspec;
+		this.keyalgorithm = keyalgorithm;
+		this.certchain = certpath;
 	}    
     
-    /*
-     * Used when updating existing services, only status is used.
-     */
+    /* Used when updating existing services, only status is used. */
     public BaseSigningCAServiceInfo(int status, boolean renew){
-      super(status);	
-      this.renew = renew;
+    	super(status);
+    	this.renew = renew;
     }
     
     public String getSubjectDN(){ return this.subjectdn; }
@@ -85,7 +65,4 @@ public class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements S
     public String getKeyAlgorithm(){ return this.keyalgorithm; }
     public boolean getRenewFlag(){ return this.renew; } 
     public List<Certificate> getCertificatePath(){ return this.certchain;}   
-    
-    
-
 }

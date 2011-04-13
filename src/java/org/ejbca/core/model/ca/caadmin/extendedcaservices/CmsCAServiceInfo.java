@@ -17,46 +17,36 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.List;
 
-
-
 /**
  * Class used mostly when creating service. Also used when info about the services 
- * is neesed
+ * is needed
  * 
  * @version $Id$
  */
 public class CmsCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        
-    /**
-     * Used when creating new service.
-     */
-       
-    public CmsCAServiceInfo(int status,
-                             String subjectdn, 
-                             String subjectaltname, 
-                             String keyspec, 
-                             String keyalgorithm){
+    /** Used when creating new service. */
+    public CmsCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec,  String keyalgorithm) {
         super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
     }
     
-	/**
-	 * Used when returning information from service
-	 */
-       
-	public CmsCAServiceInfo(int status,
-							 String subjectdn, 
-							 String subjectaltname, 
-							 String keyspec, 
-							 String keyalgorithm,
-							 List<Certificate> certchain){
+	/** Used when returning information from service. */
+	public CmsCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm, List<Certificate> certchain) {
 		super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, certchain);                       	
 	}    
     
-    /*
-     * Used when updating existing services, only status is used.
-     */
+    /* Used when updating existing services, only status is used. */
     public CmsCAServiceInfo(int status, boolean renew){
       super(status, renew);	
     }
 
+	@Override
+	public String getImplClass() {
+		return CmsCAService.class.getName();
+	}
+
+	@Override
+	public int getType() {
+		return ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE;
+	}
 }

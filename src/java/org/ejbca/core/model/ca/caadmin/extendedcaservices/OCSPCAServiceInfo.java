@@ -25,10 +25,18 @@ import java.io.Serializable;
  */
 public class OCSPCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        
-    /**
-     * Used when creating new service and when returning information from service
-     */
+    /** Used when creating new service and when returning information from service. */
     public OCSPCAServiceInfo(int status) {
     	super(status, null, null, null, null);                       	
     }
+
+	@Override
+	public String getImplClass() {
+		return OCSPCAService.class.getName();
+	}
+
+	@Override
+	public int getType() {
+		return ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE;
+	}
 }
