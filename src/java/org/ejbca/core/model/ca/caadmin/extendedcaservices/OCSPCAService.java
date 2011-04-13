@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
+import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
@@ -27,13 +28,13 @@ import org.ejbca.util.CryptoProviderTools;
  * 
  * @version $Id$
  */
-public class OCSPCAService extends ExtendedCAService implements java.io.Serializable {
+public class OCSPCAService extends ExtendedCAService implements Serializable {
 
     private static Logger log = Logger.getLogger(OCSPCAService.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 3; 
+    public static final float LATEST_VERSION = 4; 
     
     public static final String SERVICENAME = "OCSPCASERVICE";
 
@@ -49,42 +50,37 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	/** kept for upgrade purposes 3.3 -> 3.4 */
     private static final String KEYSIZE        = "keysize";
             
-    public OCSPCAService(ExtendedCAServiceInfo serviceinfo)  {
-      log.debug("OCSPCAService : constructor " + serviceinfo.getStatus()); 
-      CryptoProviderTools.installBCProvider();
-      data = new HashMap();   
-      data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
-	  setStatus(serviceinfo.getStatus());
-      data.put(VERSION, new Float(LATEST_VERSION));
+    public OCSPCAService(final ExtendedCAServiceInfo serviceinfo)  {
+    	log.debug("OCSPCAService : constructor " + serviceinfo.getStatus());
+    	CryptoProviderTools.installBCProviderIfNotAvailable();
+    	data = new HashMap();
+		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
+		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));	// For current version of EJBCA
+    	setStatus(serviceinfo.getStatus());
+    	data.put(VERSION, new Float(LATEST_VERSION));
     }
-    
-    public OCSPCAService(HashMap data) {
+
+    public OCSPCAService(final HashMap data) {
     	loadData(data);
     }
 
-   /* 
-	* @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	*/   
-   public void init(CA ca) throws Exception {
-	   log.debug("OCSPCAService : init ");
-	   OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
-	   setStatus(info.getStatus());
-   }   
+    @Override
+    public void init(final CA ca) throws Exception {
+    	log.debug("OCSPCAService : init ");
+    	final OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
+    	setStatus(info.getStatus());
+    }   
 
-   /* 
-	* @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	*/   
-   public void update(ExtendedCAServiceInfo serviceinfo, CA ca) throws Exception {		   
-	   log.debug("OCSPCAService : update " + serviceinfo.getStatus());
-	   setStatus(serviceinfo.getStatus());
-	   // Only status is updated
-	   this.info = new OCSPCAServiceInfo(serviceinfo.getStatus());
-   }
+    @Override
+    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) throws Exception {		   
+    	log.debug("OCSPCAService : update " + serviceinfo.getStatus());
+    	setStatus(serviceinfo.getStatus());
+    	// Only status is updated
+    	this.info = new OCSPCAServiceInfo(serviceinfo.getStatus());
+    }
 
-	/* 
-	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	 */
-	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+    @Override
+	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
         log.trace(">extendedService");
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			String msg = intres.getLocalizedMessage("caservice.notactive");
@@ -94,18 +90,21 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         if (!(request instanceof OCSPCAServiceRequest)) {
             throw new IllegalExtendedCAServiceRequestException();            
         }
-        OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
-    	PrivateKey privKey = ocspServiceReq.getPrivKey();
-    	String providerName = ocspServiceReq.getPrivKeyProvider();
-        ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, (X509Certificate[])ocspServiceReq.getCertificateChain().toArray(new X509Certificate[0]));
+        final OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+        final PrivateKey privKey = ocspServiceReq.getPrivKey();
+        final String providerName = ocspServiceReq.getPrivKeyProvider();
+        final ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(
+        		ocspServiceReq, privKey, providerName, (X509Certificate[])ocspServiceReq.getCertificateChain().toArray(new X509Certificate[0]));
         log.trace("<extendedService");		  		
 		return returnval;
 	}
 
+    @Override
 	public float getLatestVersion() {		
 		return LATEST_VERSION;
 	}
 
+    @Override
 	public void upgrade() {
 		if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			String msg = intres.getLocalizedMessage("ocspcaservice.upgrade", new Float(getVersion()));
@@ -116,13 +115,12 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 			data.remove(OCSPKEYSTORE);
 			data.remove(SUBJECTALTNAME);
 			data.remove(SUBJECTDN);
+	    	data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}  		
 	}
 
-	/* 
-	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#getExtendedCAServiceInfo()
-	 */
+    @Override
 	public ExtendedCAServiceInfo getExtendedCAServiceInfo() {		
 		if(info == null) {
 		  info = new OCSPCAServiceInfo(getStatus());

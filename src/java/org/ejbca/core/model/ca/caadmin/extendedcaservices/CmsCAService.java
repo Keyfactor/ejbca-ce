@@ -13,6 +13,7 @@
 
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
@@ -55,8 +56,6 @@ import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.keystore.KeyTools;
 
-
-
 /** Handles and maintains the CA-part of the CMS message functionality.
  *  The service have it's own certificate used for signing and encryption 
  * 
@@ -77,14 +76,14 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
-	public static final float LATEST_VERSION = 1; 
+	public static final float LATEST_VERSION = 2; 
 
 	public static final String SERVICENAME = "CMSCASERVICE";          
 
-	private PrivateKey      privKey        = null;
-	private List<Certificate>            certificatechain  = null;
+	private PrivateKey privKey = null;
+	private List<Certificate> certificatechain = null;
 
-	private CmsCAServiceInfo info = null;  
+	private CmsCAServiceInfo info = null;
 
 	private static final String KEYSTORE       = "keystore"; 
 	private static final String KEYSPEC        = "keyspec";
@@ -94,134 +93,97 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 
 	private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";   
 
-
-
-	public CmsCAService(ExtendedCAServiceInfo serviceinfo)  {
+	public CmsCAService(final ExtendedCAServiceInfo serviceinfo)  {
 		m_log.debug("CmsCAService : constructor " + serviceinfo.getStatus()); 
-		CryptoProviderTools.installBCProvider();
+		CryptoProviderTools.installBCProviderIfNotAvailable();
 		// Currently only RSA keys are supported
-		CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo;	
+		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo;	
 		data = new HashMap();   
-		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
-
+		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
+		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));	// For current version of EJBCA
 		data.put(KEYSPEC, info.getKeySpec());
 		data.put(KEYALGORITHM, info.getKeyAlgorithm());
 		setSubjectDN(info.getSubjectDN());
 		setSubjectAltName(info.getSubjectAltName());                       
 		setStatus(serviceinfo.getStatus());
-
 		data.put(VERSION, new Float(LATEST_VERSION));
 	}
 
-	public CmsCAService(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
-		CryptoProviderTools.installBCProvider();
-		loadData(data);  
-		if(data.get(KEYSTORE) != null){    
+	public CmsCAService(final HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
+		CryptoProviderTools.installBCProviderIfNotAvailable();
+		loadData(data);
+		if (data.get(KEYSTORE) != null) {    
 			// lookup keystore passwords      
-		    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
-		    int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
+			final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
+			int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
 			try {
 				m_log.debug("Loading CMS keystore");
-				KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
+				final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
 				keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
 				m_log.debug("Finished loading CMS keystore");
-
 				this.privKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-	            // Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
-	            // Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
-	            // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
-	            this.certificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
-	            status = getStatus();
+				// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
+				// Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
+				// As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
+				this.certificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
+				status = getStatus();
 			} catch (Exception e) {
-	        	m_log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage());
+				m_log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage());
 			} finally {
 				this.info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), 
 						(String) data.get(KEYALGORITHM), this.certificatechain);
 			}
-
 			data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));        
 		} 
 	}
 
-
-
-	/* 
-	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	 */   
-	public void init(CA ca) throws Exception {
+	@Override
+	public void init(final CA ca) throws Exception {
 		m_log.debug("CmsCAService : init");
 		// lookup keystore passwords      
 	    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
 		// Currently only RSA keys are supported
-		CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();       
-
+	    final CmsCAServiceInfo info = (CmsCAServiceInfo) getExtendedCAServiceInfo();
 		// Create KeyStore	    
-		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+	    final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
 		keystore.load(null, null);                              
-
-		KeyPair cmskeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
-
-		Certificate certificate =
-			ca.generateCertificate(new UserDataVO("NOUSERNAME", 	                                          
-					info.getSubjectDN(),
-					0, 
-					info.getSubjectAltName(),
-					"NOEMAIL",
-					0,0,0,0, null,null,0,0,null)																																
-			, cmskeys.getPublic(),
-			-1, // KeyUsage
-			ca.getValidity(),
-			new XKMSCertificateProfile(), // We can use the (simple) XKMS profile, since it uses the same values as we want for CMS
-			null // sequence
+		final KeyPair cmskeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
+		final Certificate certificate =
+			ca.generateCertificate(new UserDataVO("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null),
+					cmskeys.getPublic(),
+					-1, // KeyUsage
+					ca.getValidity(),
+					new XKMSCertificateProfile(), // We can use the (simple) XKMS profile, since it uses the same values as we want for CMS
+					null // sequence
 			);
-
 		certificatechain = new ArrayList<Certificate>();
 		certificatechain.add(certificate);
 		certificatechain.addAll(ca.getCertificateChain());
 		this.privKey = cmskeys.getPrivate(); 
-
 		keystore.setKeyEntry(PRIVATESIGNKEYALIAS,cmskeys.getPrivate(),null,(Certificate[]) certificatechain.toArray(new Certificate[certificatechain.size()]));              
-		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		keystore.store(baos, keystorepass.toCharArray());
 		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));      
 		// Store KeyStore
-
 		setStatus(info.getStatus());
-		this.info = new CmsCAServiceInfo(info.getStatus(),
-				getSubjectDN(),
-				getSubjectAltName(), 
-				(String)data.get(KEYSPEC), 
-				(String) data.get(KEYALGORITHM),
-				certificatechain);
-	}   
+		this.info = new CmsCAServiceInfo(info.getStatus(), getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), (String) data.get(KEYALGORITHM), certificatechain);
+	}
 
-	/* 
-	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	 */   
-	public void update(ExtendedCAServiceInfo serviceinfo, CA ca) throws Exception{		   
-		CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo; 
+	@Override
+	public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) throws Exception {
+		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo; 
 		m_log.debug("CmsCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
-		if(info.getRenewFlag()){  	 
-			// Renew The Signers certificate.	                            	       		 										  
+		if (info.getRenewFlag()) {
+			// Renew The Signers certificate.
 			this.init(ca);
-		}  
-
+		}
 		// Only status is updated
-		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(),
-				getSubjectDN(),
-				getSubjectAltName(), 
-				(String) data.get(KEYSPEC), 
-				(String) data.get(KEYALGORITHM),
-				certificatechain);							         									    	 									  
-	}   
+		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), (String) data.get(KEYSPEC), (String) data.get(KEYALGORITHM), certificatechain);							         									    	 									  
+	}
 
-
-
-	/* 
-	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
-	 */
-	public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+	@Override
+	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		m_log.trace(">extendedService");
 		if (!(request instanceof CmsCAServiceRequest)) {
 			throw new IllegalExtendedCAServiceRequestException();            
@@ -232,43 +194,40 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			throw new ExtendedCAServiceNotActiveException(msg);                            
 		}
 		ExtendedCAServiceResponse returnval = null;
-		X509Certificate signerCert = (X509Certificate) certificatechain.get(0);
-		CmsCAServiceRequest serviceReq = (CmsCAServiceRequest)request;
-
-        // Create the signed data
-        CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
-        try {
-        	byte[] resp = serviceReq.getDoc();
-            // Add our signer info and sign the message
-        	if((serviceReq.getMode() & CmsCAServiceRequest.MODE_SIGN) != 0){
-        		CertStore certs;
-        		certs = CertStore.getInstance("Collection",
-        				new CollectionCertStoreParameters(certificatechain), "BC");
-        		gen1.addCertificatesAndCRLs(certs);
-        		gen1.addSigner(privKey, signerCert, CMSSignedGenerator.DIGEST_SHA1);
-        		CMSProcessable msg = new CMSProcessableByteArray(resp);
-        		CMSSignedData s = gen1.generate(msg, true, "BC");
-        		resp = s.getEncoded();
-        	}
-        	if((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0){
-    	        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-    	        edGen.addKeyTransRecipient(getCMSCertificate());	
-    	        CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp),CMSEnvelopedDataGenerator.DES_EDE3_CBC,"BC");
-    	        resp = ed.getEncoded();
-        	}
-        	if((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0){
-	            CMSEnvelopedData ed = new CMSEnvelopedData(resp);   	    	
-	            RecipientInformationStore  recipients = ed.getRecipientInfos(); 
-	            RecipientId id = new RecipientId();
-	            id.setIssuer(getCMSCertificate().getIssuerX500Principal());
-	            id.setSerialNumber(getCMSCertificate().getSerialNumber());
-	            RecipientInformation recipient = recipients.get(id); 
-	            if(recipient != null){
-	                resp = recipient.getContent(this.privKey, "BC");
-	            }
-        	}
-        	returnval = new CmsCAServiceResponse(resp);
-        } catch (InvalidAlgorithmParameterException e) {
+		final X509Certificate signerCert = (X509Certificate) certificatechain.get(0);
+		final CmsCAServiceRequest serviceReq = (CmsCAServiceRequest)request;
+		// Create the signed data
+		final CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
+		try {
+			byte[] resp = serviceReq.getDoc();
+			// Add our signer info and sign the message
+			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_SIGN) != 0) {
+				final CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certificatechain), "BC");
+				gen1.addCertificatesAndCRLs(certs);
+				gen1.addSigner(privKey, signerCert, CMSSignedGenerator.DIGEST_SHA1);
+				final CMSProcessable msg = new CMSProcessableByteArray(resp);
+				final CMSSignedData s = gen1.generate(msg, true, "BC");
+				resp = s.getEncoded();
+			}
+			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0) {
+				CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+				edGen.addKeyTransRecipient(getCMSCertificate());
+				CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp),CMSEnvelopedDataGenerator.DES_EDE3_CBC,"BC");
+				resp = ed.getEncoded();
+			}
+			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0) {
+				CMSEnvelopedData ed = new CMSEnvelopedData(resp);
+				RecipientInformationStore  recipients = ed.getRecipientInfos();
+				RecipientId id = new RecipientId();
+				id.setIssuer(getCMSCertificate().getIssuerX500Principal());
+				id.setSerialNumber(getCMSCertificate().getSerialNumber());
+				RecipientInformation recipient = recipients.get(id);
+				if (recipient != null) {
+					resp = recipient.getContent(this.privKey, "BC");
+				}
+			}
+			returnval = new CmsCAServiceResponse(resp);
+		} catch (InvalidAlgorithmParameterException e) {
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);
         } catch (NoSuchAlgorithmException e) {
@@ -287,7 +246,6 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
         	m_log.error("Error in CmsCAService", e);
         	throw new ExtendedCAServiceRequestException(e);
 		}
-
 		m_log.trace("<extendedService");		  		
 		return returnval;
 	}
@@ -295,10 +253,10 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
     private X509Certificate cmsCertificate = null;
 	private X509Certificate getCMSCertificate() {
 		if(cmsCertificate == null){
-			Iterator iter = certificatechain.iterator();
-			while(iter.hasNext()){
-				X509Certificate cert = (X509Certificate) iter.next();
-				if(cert.getBasicConstraints() == -1){
+			Iterator<Certificate> iter = certificatechain.iterator();
+			while (iter.hasNext()) {
+				final X509Certificate cert = (X509Certificate) iter.next();
+				if (cert.getBasicConstraints() == -1) {
 					cmsCertificate = cert;
 					break;
 				}
@@ -307,38 +265,31 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		return cmsCertificate;
 	}
 
+	@Override
 	public float getLatestVersion() {		
 		return LATEST_VERSION;
 	}
 
+	@Override
 	public void upgrade() {
-		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+		if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
 			// New version of the class, upgrade
-
+			data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
 			data.put(VERSION, new Float(LATEST_VERSION));
-		}  		
+		}
 	}
 
-	/* 
-	 * @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#getExtendedCAServiceInfo()
-	 */
+	@Override
 	public ExtendedCAServiceInfo getExtendedCAServiceInfo() {			
-		if(info == null){
-			info = new CmsCAServiceInfo(getStatus(),
-					getSubjectDN(),
-					getSubjectAltName(), 
-					(String) data.get(KEYSPEC), 
-					(String) data.get(KEYALGORITHM),
-					certificatechain);
+		if (info == null) {
+			info = new CmsCAServiceInfo(getStatus(), getSubjectDN(), getSubjectAltName(), (String) data.get(KEYSPEC), (String) data.get(KEYALGORITHM), certificatechain);
 		}
-
 		return this.info;
 	}
 
-
-	public String getSubjectDN(){
+	private String getSubjectDN() {
 		String retval = null;
-		String str = (String)data.get(SUBJECTDN);
+		final String str = (String)data.get(SUBJECTDN);
 		try {
 			retval = new String(Base64.decode((str).getBytes("UTF-8")));
 		} catch (UnsupportedEncodingException e) {
@@ -348,12 +299,10 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			m_log.debug("Old non base64 encoded DN: "+str);
 			retval = str; 
 		}
-
 		return retval;		 
 	}
 
-	public void setSubjectDN(String dn){
-
+	private void setSubjectDN(final String dn) {
 		try {
 			data.put(SUBJECTDN,new String(Base64.encode(dn.getBytes("UTF-8"),false)));
 		} catch (UnsupportedEncodingException e) {
@@ -361,9 +310,9 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		}
 	}
 
-	public String getSubjectAltName(){
+	private String getSubjectAltName() {
 		String retval = null;
-		String str= (String) data.get(SUBJECTALTNAME);
+		final String str = (String) data.get(SUBJECTALTNAME);
 		try {
 			retval = new String(Base64.decode((str).getBytes("UTF-8")));
 		} catch (UnsupportedEncodingException e) {
@@ -373,12 +322,10 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			m_log.debug("Old non base64 encoded altname: "+str);
 			retval = str; 
 		}
-
 		return retval;		 
 	}
 
-	public void setSubjectAltName(String dn){
-
+	private void setSubjectAltName(final String dn) {
 		try {
 			data.put(SUBJECTALTNAME,new String(Base64.encode(dn.getBytes("UTF-8"), false)));
 		} catch (UnsupportedEncodingException e) {
@@ -386,4 +333,3 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		}
 	}
 }
-

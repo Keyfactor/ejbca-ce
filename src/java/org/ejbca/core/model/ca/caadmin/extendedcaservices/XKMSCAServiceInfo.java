@@ -17,8 +17,6 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 import java.util.List;
 
-
-
 /**
  * Class used mostly when creating service. Also used when info about the services 
  * is neesed
@@ -28,37 +26,30 @@ import java.util.List;
  */
 public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
                   
-    /**
-     * Used when creating new service.
-     */
-       
-    public XKMSCAServiceInfo(int status,
-                             String subjectdn, 
-                             String subjectaltname, 
-                             String keyspec, 
-                             String keyalgorithm){
+    /** Used when creating new service. */
+    public XKMSCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm) {
       super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
     }
     
-	/**
-	 * Used when returning information from service
-	 */       
-    public XKMSCAServiceInfo(int status,
-    		String subjectdn, 
-    		String subjectaltname, 
-    		String keyspec, 
-    		String keyalgorithm,
-    		List<Certificate> xkmscertchain) {
+	/** Used when returning information from service. */       
+    public XKMSCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm, List<Certificate> xkmscertchain) {
     	super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, xkmscertchain);                       	
     }    
     
-    /*
-     * Used when updating existing services, only status is used.
-     */
+    /* Used when updating existing services, only status is used. */
     public XKMSCAServiceInfo(int status, boolean renew){
       super(status, renew);	
     }
     
     public List<Certificate> getXKMSSignerCertificatePath(){ return super.getCertificatePath();}   
 
+	@Override
+	public String getImplClass() {
+		return XKMSCAService.class.getName();
+	}
+
+	@Override
+	public int getType() {
+		return ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE;
+	}
 }
