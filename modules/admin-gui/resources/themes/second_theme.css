@@ -313,6 +313,9 @@ div.h4 {
 .app h4 a:active {
 	color: #000 !important;
 }
+table h3 {
+	margin-top: 0em;
+}
 table.grid {
 	border-collapse: collapse;
 }
