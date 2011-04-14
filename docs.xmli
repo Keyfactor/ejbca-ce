@@ -102,7 +102,7 @@
 		  </fileset>
 	    </copy>
 	    <copy overwrite="yes" file="${ws.objects.dir}/package.html" todir="${jdocs.ws.tmp}/${ws.client.gen.relative-path}"/>
-	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" classpath="${docs.tools.dest}" failonerror="yes" fork="true">
+	  	<java classname="org.ejbca.util.JAXWSDocAndConvTools" classpath="${docs.tools.dest}" failonerror="yes" fork="true" inputstring="">
 	  	    <arg value="${ws.master.file}"/>
 	  	    <arg value="${ws.client.gen.src}/${ws.client.gen.relative-path}/${client.ws.class}.java"/>
 		    <arg value="${jdocs.ws.tmp}"/>
