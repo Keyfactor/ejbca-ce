@@ -306,6 +306,9 @@ div.h4 {
 	-webkit-border-radius: .8em .8em 0em 0em;
 	color: #FFF;
 }
+table h3 {
+	margin-top: 0em;
+}
 table.grid {
 	border-collapse: collapse;
 }
