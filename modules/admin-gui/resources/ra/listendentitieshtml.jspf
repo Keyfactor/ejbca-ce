@@ -210,7 +210,10 @@ function confirmrevocation(){
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>
   </p>
-  
+
+
+  <!-- ----- Navigation ----- -->
+
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
@@ -228,7 +231,12 @@ function confirmrevocation(){
       </td>
     </tr>
   </table>
-  <table width="100%" border="0" cellspacing="1" cellpadding="0">
+
+
+  <!-- ----- Results ----- -->
+
+  <table class="results" width="100%" border="0" cellspacing="1" cellpadding="0">
+  <thead>
   <tr> 
     <td width="5%"><c:out value="<%= ejbcawebbean.getText(\"SELECT\") %>"/>
      </td>
@@ -297,10 +305,11 @@ function confirmrevocation(){
     <td width="8%"> &nbsp;
     </td>
   </tr>
+  </thead>
+  <tbody>
   <% if(blank){ %>
- <tr id="Row0"> 
-   <td width="5%"> 
-   </td>
+  <tr id="Row0"> 
+    <td width="5%">&nbsp;</td>
     <td width="11%">&nbsp;</td>
     <td width="10%">&nbsp;</td>
     <td width="19%">&nbsp;</td>
@@ -312,11 +321,8 @@ function confirmrevocation(){
   <% }else{
        if(users == null || users.length == 0){     %>
   <tr id="Row0"> 
-   <td width="5%"> 
-   </td>
-    <td width="11%">&nbsp;</td>
-    <td width="10%">&nbsp;</td>
-    <td width="19%"><c:out value="<%= ejbcawebbean.getText(\"NOENDENTITIESFOUND\") %>"/></td>
+    <td width="26%" colspan="3"><br/><c:out value="<%= ejbcawebbean.getText(\"NOENDENTITIESFOUND\") %>"/></td>
+    <td width="19%">&nbsp;</td>
     <td width="17%">&nbsp;</td>
     <td width="18%">&nbsp;</td>
     <td width="12%">&nbsp;</td>
@@ -400,7 +406,12 @@ function confirmrevocation(){
  <%      }
        }
      } %>
+  </tbody>
 </table>
+
+
+  <!-- ----- Navigation ----- -->
+
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
       <td width="14%">
@@ -427,6 +438,7 @@ function confirmrevocation(){
       </td>
     </tr>
   </table>
+
 
   <br /><br />
 
@@ -483,8 +495,11 @@ function confirmrevocation(){
       </td>
     </tr>
   </table>
+
   <% } %>
   </form>
+
+
   <%// Include Footer 
    String footurl =   globalconfiguration.getFootBanner(); %>
    

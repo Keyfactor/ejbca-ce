@@ -306,6 +306,10 @@ div.h4 {
 	-webkit-border-radius: .8em .8em 0em 0em;
 	color: #FFF;
 }
+div.error {
+	text-align: center;
+	font-weight: bold;
+}
 table h3 {
 	margin-top: 0em;
 }
@@ -370,6 +374,12 @@ table.edit tr td table tr td {
 table.search tr td {
 	padding: .25em .5em .1em 0em;
 	line-height: 1.75em;
+}
+table.search tr td select option.separator {
+	border-top: 1px solid #A0A0A0;
+	background-color: #D0D0D0;
+	color: #404040;
+	font-weight: bold;
 }
 table.search tr td select.day {
 	text-align: right;
