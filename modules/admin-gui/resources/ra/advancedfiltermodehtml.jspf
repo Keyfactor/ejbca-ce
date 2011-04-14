@@ -3,17 +3,22 @@
    TreeMap caids = ejbcawebbean.getInformationMemory().getCANames();
  
    String[] connectorreferences = {"AND","OR","ANDNOT","ORNOT"}; //Do not change the order of the connectors is this array. In the SQL Query: AND=0, OR=1, ANDNOT=2, ORNOT=3. These values are defined in org.ejbca.util.query.Query, so unless you change these values in the Query class, do not change the order of the connectors in this array
-   String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN","MONTHJUL","MONTHAUG","MONTHSEP"
-                                  ,"MONTHOCT","MONTHNOV","MONTHDEC"};
-   int[] matchwithfields        = {UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_WITH_CA, UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER, 
-                                   UserMatch.MATCH_WITH_GIVENNAME,UserMatch.MATCH_WITH_INITIALS, UserMatch.MATCH_WITH_SURNAME, UserMatch.MATCH_WITH_TITLE, 
-                                   UserMatch.MATCH_WITH_ORGANIZATIONUNIT, UserMatch.MATCH_WITH_ORGANIZATION , UserMatch.MATCH_WITH_LOCALE, UserMatch.MATCH_WITH_STATE,
-                                   UserMatch.MATCH_WITH_DOMAINCOMPONENT, UserMatch.MATCH_WITH_COUNTRY, UserMatch.MATCH_WITH_EMAIL, 
-                                   UserMatch.MATCH_WITH_STATUS, UserMatch.MATCH_WITH_ENDENTITYPROFILE, UserMatch.MATCH_WITH_CERTIFICATEPROFILE};
-                                   
-   String[] matchwithtexts      = {"MATCHUSERNAME", "MATCHCA", "MATCHUID", "MATCHCOMMONNAME", "MATCHDNSERIALNUMBER", "MATCHGIVENNAME", "MATCHINITIALS", "MATCHSURNAME",
-                                   "MATCHTITLE", "MATCHORGANIZATIONALUNIT", "MATCHORGANIZATION", "MATCHLOCALITY", "MATCHSTATEORPROVINCE", "MATCHDOMAINCOMPONENT",
-                                   "MATCHCOUNTRY", "MATCHEMAILADDRESS", "MATCHSTATUS", "MATCHENDENTITYPROFILE", "MATCHCERTIFICATEPROFILE"};
+   String[] monthreferences     = {"MONTHJAN","MONTHFEB","MONTHMAR","MONTHAPR","MONTHMAY","MONTHJUN",
+                                   "MONTHJUL","MONTHAUG","MONTHSEP","MONTHOCT","MONTHNOV","MONTHDEC"};
+   int[] matchwithfields        = {UserMatch.MATCH_WITH_CA, UserMatch.MATCH_WITH_CERTIFICATEPROFILE, UserMatch.MATCH_WITH_ENDENTITYPROFILE,
+                                   UserMatch.MATCH_WITH_STATUS, UserMatch.MATCH_WITH_EMAIL, UserMatch.MATCH_WITH_USERNAME,
+                                   UserMatch.MATCH_NONE,  // Separator
+                                   UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER,
+                                   UserMatch.MATCH_WITH_GIVENNAME, UserMatch.MATCH_WITH_INITIALS, UserMatch.MATCH_WITH_SURNAME,
+                                   UserMatch.MATCH_WITH_TITLE, UserMatch.MATCH_WITH_ORGANIZATIONUNIT, UserMatch.MATCH_WITH_ORGANIZATION,
+                                   UserMatch.MATCH_WITH_LOCALE, UserMatch.MATCH_WITH_STATE, UserMatch.MATCH_WITH_DOMAINCOMPONENT,
+                                   UserMatch.MATCH_WITH_COUNTRY};
+   String[] matchwithtexts      = {"MATCHCA", "MATCHCERTIFICATEPROFILE", "MATCHENDENTITYPROFILE",
+                                   "MATCHSTATUS", "MATCHEMAILADDRESS", "MATCHUSERNAME",
+                                   "CERT_SUBJECTDN_ATTRIBUTES",  // Separator title
+                                   "MATCHUID", "MATCHCOMMONNAME", "MATCHDNSERIALNUMBER", "MATCHGIVENNAME", "MATCHINITIALS",
+                                   "MATCHSURNAME", "MATCHTITLE", "MATCHORGANIZATIONALUNIT", "MATCHORGANIZATION",
+                                   "MATCHLOCALITY", "MATCHSTATEORPROVINCE", "MATCHDOMAINCOMPONENT", "MATCHCOUNTRY"};
 
    Calendar calendar = Calendar.getInstance();
    int dayofmonth    = calendar.get(Calendar.DAY_OF_MONTH);
@@ -243,11 +248,15 @@ function changematchfields(row){
            <option  value='<c:out value="<%= VALUE_NONE %>"/>'><c:out value="<%= ejbcawebbean.getText(\"NONE\") %>"/>
            </option>
            <% for(int i =0; i < matchwithfields.length;i++){ %>
-  
+               <% if (matchwithfields[i]==UserMatch.MATCH_NONE) { %>
+           <option value='<c:out value="<%= matchwithfields[i] %>"/>' class="separator">--- <c:out value="<%= ejbcawebbean.getText(matchwithtexts[i]) %>"/>
+           </option>
+               <% } else { %>
            <option <%  if(tempval == matchwithfields[i])
                          out.write(" selected ");
                     %> value='<c:out value="<%= matchwithfields[i] %>"/>'><c:out value="<%= ejbcawebbean.getText(matchwithtexts[i]) %>"/>
            </option>
+               <% } %>
            <% } %>
         </select> &nbsp;&nbsp;
           <%
@@ -390,11 +399,15 @@ function changematchfields(row){
            <option  value='<c:out value="<%= VALUE_NONE %>"/>'><c:out value="<%= ejbcawebbean.getText(\"NONE\") %>"/>
            </option>
            <% for(int i =0; i < matchwithfields.length;i++){ %>
-  
+               <% if (matchwithfields[i]==UserMatch.MATCH_NONE) { %>
+           <option value='<c:out value="<%= matchwithfields[i] %>"/>' class="separator">--- <c:out value="<%= ejbcawebbean.getText(matchwithtexts[i]) %>"/>
+           </option>
+               <% } else { %>
            <option <%  if(tempval == matchwithfields[i])
                          out.write(" selected ");
                     %> value='<c:out value="<%= matchwithfields[i] %>"/>'><c:out value="<%= ejbcawebbean.getText(matchwithtexts[i]) %>"/>
            </option>
+               <% } %>
            <% } %>
         </select> &nbsp;&nbsp;
           <%
@@ -537,10 +550,15 @@ function changematchfields(row){
            <option  value='<%= VALUE_NONE %>'><c:out value="<%= ejbcawebbean.getText(\"NONE\") %>"/>
            </option>
            <% for(int i =0; i < matchwithfields.length;i++){ %>
+               <% if (matchwithfields[i]==UserMatch.MATCH_NONE) { %>
+           <option value='<c:out value="<%= matchwithfields[i] %>"/>' class="separator">--- <c:out value="<%= ejbcawebbean.getText(matchwithtexts[i]) %>"/>
+           </option>
+               <% } else { %>
            <option <%  if(tempval == matchwithfields[i])
                          out.write(" selected ");
                     %> value='<c:out value="<%= matchwithfields[i] %>"/>'><c:out value="<%= ejbcawebbean.getText(matchwithtexts[i]) %>"/>
            </option>
+               <% } %>
            <% } %>
         </select> &nbsp;&nbsp;
           <%

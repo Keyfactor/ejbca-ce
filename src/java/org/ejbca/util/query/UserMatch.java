@@ -32,6 +32,8 @@ package org.ejbca.util.query;
 public class UserMatch extends BasicMatch {
     // Public Constants
 
+    public static final int MATCH_NONE                     = -1;
+
     public static final int MATCH_WITH_USERNAME            = 0;
     public static final int MATCH_WITH_EMAIL               = 1;
     public static final int MATCH_WITH_STATUS              = 2; // Value must the number representation.
