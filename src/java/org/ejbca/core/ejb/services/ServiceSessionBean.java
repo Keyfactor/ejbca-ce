@@ -59,6 +59,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
@@ -139,6 +140,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    @EJB
+    private CertificateRequestSessionLocal certificateRequestSession;
     
     private Admin intAdmin = Admin.getInternalAdmin();	// The administrator that the services should be run as.
 
@@ -563,6 +566,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         	ejbs.put(UserAdminSessionLocal.class, userAdminSession);
         	ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
         	ejbs.put(PublisherSessionLocal.class, publisherSession);
+        	ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
             worker.work(ejbs);
         	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
         			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
