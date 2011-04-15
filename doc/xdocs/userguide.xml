@@ -549,6 +549,9 @@ If the Admin GUI should be used for creating entities you must also add "Custom 
 With web services you use the 'setCertificateSerialNumber' for your 'UserDataVOWS' user.
 </p>
 <p>
+With External RA (ExtRA) the OneshotCertReqRequest takes a certificate serial number as a parameter.
+</p>
+<p>
 Please note that the row 'serialNumber' number in the table 'CertificateData' of the database must have an unique index for this feature to work should work, normally you use an index for unique issuerDN, serialNumber.
 Without index the feature is automatically disabled.
 </p>
