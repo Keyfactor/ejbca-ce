@@ -417,12 +417,18 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN) {
+    	setRevokeStatus(admin, issuerdn, serno, new Date(), publishers, reason, userDataDN);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Date revokedate, Collection<Integer> publishers, int reason, String userDataDN) {
     	if (log.isTraceEnabled()) {
         	log.trace(">setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno.toString(16)+", reason="+reason);
     	}
         try {
         	Certificate certificate = findCertificateByIssuerAndSerno(admin, issuerdn, serno);
-	        setRevokeStatus(admin, certificate, publishers, reason, userDataDN);
+	        setRevokeStatus(admin, certificate, revokedate, publishers, reason, userDataDN);
         } catch (FinderException e) {
         	String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
             logSession.log(admin, issuerdn.hashCode(), LogConstants.MODULE_CA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_REVOKEDCERT, msg);
@@ -447,7 +453,7 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
      * @param userDataDN if an DN object is not found in the certificate use object from user data instead.
      * @throws FinderException 
      */
-    private void setRevokeStatus(Admin admin, Certificate certificate, Collection<Integer> publishers, int reason, String userDataDN) throws FinderException {
+    private void setRevokeStatus(Admin admin, Certificate certificate, Date revokedate, Collection<Integer> publishers, int reason, String userDataDN) throws FinderException {
     	if (certificate == null) {
     		return;
     	}
@@ -468,13 +474,13 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     	if ( (rev.getStatus() != SecConst.CERT_REVOKED) 
     			&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ) {
     		rev.setStatus(SecConst.CERT_REVOKED);
-    		rev.setRevocationDate(now);
+    		rev.setRevocationDate(revokedate);
     		rev.setUpdateTime(now.getTime());
     		rev.setRevocationReason(reason);            	  
     		String msg = intres.getLocalizedMessage("store.revokedcert", Integer.valueOf(reason));            	
     		logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_REVOKEDCERT, msg);
     		// Revoke in all related publishers
-    		publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, now.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
+    		publisherSession.revokeCertificate(admin, publishers, certificate, username, userDataDN, cafp, type, reason, revokedate.getTime(), rev.getTag(), rev.getCertificateProfileId(), now.getTime());
             // Unrevoke, can only be done when the certificate was previously revoked with reason CertificateHold
     	} else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) 
     			&& (rev.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) ) {
