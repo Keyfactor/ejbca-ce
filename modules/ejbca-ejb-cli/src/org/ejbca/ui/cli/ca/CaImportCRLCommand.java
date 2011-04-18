@@ -176,19 +176,6 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 		getLogger().info(STRICT_OP + " means that all certificates must be in the database and that the CRL must not already be in the database");
 		getLogger().info(LENIENT_OP + " means not strict and not adaptive");
 		getLogger().info(ADAPTIVE_OP + " means that missing certficates will be replaced by dummy certificates to cater for proper CRLs for missing certificates");
-		// List available CAs by name
-		final StringBuilder existingCas = new StringBuilder();
-		try {
-			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin())) {
-				final String caName = ejb.getCAAdminSession().getCAInfo(getAdmin(), nextId.intValue()).getName();
-				if (existingCas.length()>0) {
-					existingCas.append(", ");
-				}
-				existingCas.append("\"").append(caName).append("\"");
-			}
-		} catch (Exception e) {
-			existingCas.append("<unable to fetch available CA(s)>");
-		}
-		getLogger().info(" Existing CAs: " + existingCas.toString());
+		getLogger().info(" Existing CAs: " + getAvailableCasString());
 	}	
 }
