@@ -227,6 +227,11 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
+	public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Date revokeDate, Collection<Integer> publishers, int reason, String userDataDN) {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
 	public boolean setStatus(String fingerprint, int status) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
