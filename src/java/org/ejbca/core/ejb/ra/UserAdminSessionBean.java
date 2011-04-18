@@ -1182,6 +1182,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @Override
     public void revokeCert(final Admin admin, final BigInteger certserno, final String issuerdn, final int reason) throws AuthorizationDeniedException,
             FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+    	revokeCert(admin, certserno, new Date(), issuerdn, reason);
+    }
+
+    @Override
+    public void revokeCert(Admin admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason) throws AuthorizationDeniedException,
+    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ")");
         }
