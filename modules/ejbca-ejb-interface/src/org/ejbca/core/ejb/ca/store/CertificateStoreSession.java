@@ -244,6 +244,25 @@ public interface CertificateStoreSession {
     public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN);
 
     /**
+     * Set the status of certificate with given serno to revoked, or unrevoked (re-activation).
+     *
+     * Re-activating (unrevoking) a certificate have two limitations.
+     * 1. A password (for for example AD) will not be restored if deleted, only the certificate and certificate status and associated info will be restored
+     * 2. ExtendedInformation, if used by a publisher will not be used when re-activating a certificate
+     *
+     * The method leaves up to the caller to find the correct publishers and userDataDN.
+     *
+     * @param admin      Administrator performing the operation
+     * @param issuerdn   Issuer of certificate to be removed.
+     * @param serno      the serno of certificate to revoke.
+     * @param revokedate when it was revoked
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.
+     * @param reason     the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
+     * @param userDataDN if an DN object is not found in the certificate, the object could be taken from user data instead.
+     */
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Date revokedate, Collection<Integer> publishers, int reason, String userDataDN);
+
+    /**
      * Revokes a certificate (already revoked by the CA), in the database. Also handles re-activation of suspended certificates.
      *
      * Re-activating (unrevoking) a certificate have two limitations.

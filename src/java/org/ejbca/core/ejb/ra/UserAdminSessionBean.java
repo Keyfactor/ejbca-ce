@@ -1277,7 +1277,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             log.warn("No certificate profile for certificate with serial #"+certserno+" issued by "+issuerdn);
         }
         // Revoke certificate in database and all publishers
-        certificateStoreSession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason, userDataDN);
+        certificateStoreSession.setRevokeStatus(admin, issuerdn, certserno, revocationdate, publishers, reason, userDataDN);
         if (XkmsConfiguration.getEnabled() && data != null) {
         	// Reset the revocation code identifier used in XKMS
         	final ExtendedInformation inf = data.getExtendedInformation();
