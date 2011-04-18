@@ -190,13 +190,13 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	private void usage() {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <username-source> <caname> <status> <certificate dir> <endentityprofile> <certificateprofile>");
-		getLogger().info(" Username-source: must be \"DN\" or \"FILE\" which denote subject DN or actual file name");
+		getLogger().info(" Username-source: \"DN\" means use certificate's SubjectDN as username and \"FILE\" means user the file's name as username");
 		// List available CAs by name
-		getLogger().info(" Existing CAs: " + getAvailableCasString());
+		getLogger().info(" Available CAs: " + getAvailableCasString());
 		getLogger().info(" Status: ACTIVE, REVOKED");
-		getLogger().info(" Certificate: must be PEM encoded");
-		getLogger().info(" End entity profiles: " + getAvailableEepsString());
-		getLogger().info(" Certificate profiles: " + getAvailableEndUserCpsString());
+		getLogger().info(" Certificate dir: A directory where all files are PEM encoded certificates");
+		getLogger().info(" Available end entity profiles: " + getAvailableEepsString());
+		getLogger().info(" Available certificate profiles: " + getAvailableEndUserCpsString());
 	}
 	
 	/** Load a PEM encoded certificate from the specified file. */
