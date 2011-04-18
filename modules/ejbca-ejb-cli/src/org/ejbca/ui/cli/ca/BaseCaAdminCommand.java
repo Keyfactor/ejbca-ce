@@ -28,6 +28,7 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -53,8 +54,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     /**
      * Retrieves the complete certificate chain from the CA
      * 
-     * @param human
-     *            readable name of CA
+     * @param human readable name of CA
      * @return array of certificates, from ISignSession.getCertificateChain()
      */
     protected Collection<Certificate> getCertChain(String caname) throws Exception {
@@ -160,4 +160,55 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().info("Initalizing Temporary Authorization Module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
         ejb.getAdminGroupSession().init(getAdmin(), caid, superAdminCN);     
     } // initAuthorizationModule
+    
+    protected String getAvailableCasString() {
+		// List available CAs by name
+		final StringBuilder existingCas = new StringBuilder();
+		try {
+			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin())) {
+				final String caName = ejb.getCAAdminSession().getCAInfo(getAdmin(), nextId.intValue()).getName();
+				if (existingCas.length()>0) {
+					existingCas.append(", ");
+				}
+				existingCas.append("\"").append(caName).append("\"");
+			}
+		} catch (Exception e) {
+			existingCas.append("<unable to fetch available CA(s)>");
+		}
+		return existingCas.toString();
+    }
+
+    protected String getAvailableEepsString() {
+		// List available CAs by name
+		final StringBuilder existingCas = new StringBuilder();
+		try {
+			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin())) {
+				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), nextId.intValue());
+				if (existingCas.length()>0) {
+					existingCas.append(", ");
+				}
+				existingCas.append("\"").append(caName).append("\"");
+			}
+		} catch (Exception e) {
+			existingCas.append("<unable to fetch available End Entity Profile(s)>");
+		}
+		return existingCas.toString();
+    }
+
+    protected String getAvailableEndUserCpsString() {
+		// List available CAs by name
+		final StringBuilder existingCas = new StringBuilder();
+		try {
+			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin()))) {
+				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(getAdmin(), nextId.intValue());
+				if (existingCas.length()>0) {
+					existingCas.append(", ");
+				}
+				existingCas.append("\"").append(caName).append("\"");
+			}
+		} catch (Exception e) {
+			existingCas.append("<unable to fetch available Certificate Profile(s)>");
+		}
+		return existingCas.toString();
+    }
 }
