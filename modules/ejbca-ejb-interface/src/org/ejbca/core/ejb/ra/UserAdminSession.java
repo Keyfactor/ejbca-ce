@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.FinderException;
@@ -338,6 +339,23 @@ public interface UserAdminSession {
      * @throws AlreadyRevokedException if the certificate was already revoked
      */
     public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
+
+    /**
+     * Method that revokes a certificate for a user. It can also be used to
+     * un-revoke a certificate that has been revoked with reason ON_HOLD. This
+     * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
+     * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
+     * 
+     * @param admin the administrator performing the action
+     * @param certserno the serno of certificate to revoke.
+     * @param revocationdate the revocation date
+     * @param reason the reason of revocation, one of the RevokedCertInfo.XX
+     *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
+     *            certificate on hold.
+     * @throws AlreadyRevokedException if the certificate was already revoked
+     */
+    public void revokeCert(Admin admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason) throws AuthorizationDeniedException,
+    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Method that revokes a certificate for a user. It can also be used to
