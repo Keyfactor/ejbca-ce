@@ -202,8 +202,8 @@ select table_name from user_tables;
 
 MS-SQL specifics
 ----------------
-You can either use Microsofts JDBC driver or the open source JDBC driver from http://jtds.sourceforge.net/ .
-This driver is not tested by us (yet), but it has received very good reviews as beeing much better than Microsofts
+You can either use Microsoft's JDBC driver or the open source JDBC driver from http://jtds.sourceforge.net/ .
+This driver is not tested by us (yet), but it has received very good reviews as being much better than Microsoft's
 driver, so I suggest you take it for a spin.
 
 In Sql Server Configuration Manager under SQL Server Network Configuration make sure that the TCP/IP is
