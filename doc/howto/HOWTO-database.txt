@@ -206,6 +206,8 @@ You can either use Microsoft's JDBC driver or the open source JDBC driver from h
 This driver is not tested by us (yet), but it has received very good reviews as being much better than Microsoft's
 driver, so I suggest you take it for a spin.
 
+Using the MS-SQL jdbc driver you should only use sqljdbc4.jar.
+
 In Sql Server Configuration Manager under SQL Server Network Configuration make sure that the TCP/IP is
 enabled and that everything else is disabled. When configuring the TCP/IP protocol (the properties view), make sure that:
 
