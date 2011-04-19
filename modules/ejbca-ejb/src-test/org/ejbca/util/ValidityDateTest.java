@@ -19,11 +19,6 @@ public class ValidityDateTest extends TestCase {
 
 	public void test01ParseStringDates() {
 		
-		Date date = new Date();
-		String dateStr = fastDateFormat.format(date);
-		assertEquals(date.getTime(), ValidityDate.encode(dateStr));
-		
-		
 		// TODO add code to test a period in the format *y *mo *d
 		
 		// parsing time in hex vs decimal formats
@@ -32,7 +27,7 @@ public class ValidityDateTest extends TestCase {
 		assertEquals(Long.parseLong(hexTime), ValidityDate.encode(hexTime));
 		assertNull(ValidityDate.getDateFromString(hexTime));
 
-		date = new Date(ValidityDate.encode(hexTime));
+		Date date = new Date(ValidityDate.encode(hexTime));
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		assertNotSame(2038, calendar.get(Calendar.YEAR));
@@ -43,11 +38,9 @@ public class ValidityDateTest extends TestCase {
 	}
 	
 	public void test02FormatStringDates() {
-		
 		Date date = new Date();
 		String dateStr = fastDateFormat.format(date);
 		assertEquals(dateStr, ValidityDate.getString(date.getTime()));
-		
 	}
 	
 	
