@@ -698,18 +698,28 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
     
     /**
-     * Adds a timer to the bean, and cancels all existing timeouts for this id.
+     * Adds a timer to the bean
      * @param id the id of the timer
      */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
     private Timer addTimer(long interval, Integer id) {
+    	if (log.isDebugEnabled()) {
+    		log.debug("addTimer: "+id);
+    	}
         return timerService.createTimer(interval, id);
     }
 
+    /**
+     * Cancels all existing timeouts for this id.
+     * @param id the id of the timer
+     */
     // We don't want the appserver to persist/update the timer in the same transaction if they are stored in different non XA DataSources. This method should not be run from within a transaction.
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public void cancelTimer(Integer id) {
+    	if (log.isDebugEnabled()) {
+    		log.debug("cancelTimer: "+id);
+    	}
         for (Timer next : (Collection<Timer>) timerService.getTimers()) {
             try {
                 if (id.equals(next.getInfo())) {
