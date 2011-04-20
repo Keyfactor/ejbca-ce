@@ -123,6 +123,11 @@ to automatically instantiate the correct processor, so it is important that the 
 </p><p>
 See also the more External RA clients "SCEP RA Server" and "External RA GUI" described below. 
 </p>
+<p>To generate javadoc for the external RA API you can:</p>
+<source>
+cd modules/externalra
+javadoc -classpath ../../lib/hibernate/ejb3-persistence.jar -d javadoc -sourcepath src -subpackages org.ejbca
+</source>
 </section>
 
 <section name="Security">
