@@ -213,6 +213,8 @@
        	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java"/>
 		<!-- Tool used to tidy up JavaDoc and make generated WS client classes usable. -->
         <include name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
+  		<!-- Tool for tests. -->
+        <include name="org/ejbca/util/NonEjbTestTools.java"/>
 	</fileset>
 	<pathconvert refid="source.fileset.ejbca-util" pathsep=" " property="source.fileset.ejbca-util.files"><map from="${src.dir}/" to=""/></pathconvert>
 
