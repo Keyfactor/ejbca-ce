@@ -964,7 +964,7 @@ function checkallfields(){
         </table>
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<%= policy.getPolicyID() %>" size="45" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<%= policy.getPolicyID() %>" size="20" maxlength="255"/><br/>
         <input readonly type="text" name="<%= TEXTAREA_POLICYNOTICE_UNOTICE + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_unotice)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="45" maxlength="255"/><br/>
         <input readonly type="text" name="<%= TEXTFIELD_POLICYNOTICE_CPSURL + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_cps)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="45" maxlength="255"/>
       </td>
@@ -1078,7 +1078,7 @@ function checkallfields(){
 	  	<%=ejbcawebbean.getText("EXT_PKIX_PKUP_STARTOFFSET")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
 	  </td>
 	  <td width="50%">
-	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="45" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" />
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" />
 	  </td>
 	</tr>
 	
@@ -1095,7 +1095,7 @@ function checkallfields(){
 	  	<%=ejbcawebbean.getText("EXT_PKIX_PKUP_PERIODLENGTH")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
 	  </td>
 	  <td width="50%">
-	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="45" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" />	     
+	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" />	     
 	  </td>
 	</tr>
 
