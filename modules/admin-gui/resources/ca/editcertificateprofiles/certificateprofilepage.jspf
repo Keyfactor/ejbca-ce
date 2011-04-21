@@ -1067,7 +1067,7 @@ function checkallfields(){
  	<%-- PrivateKeyUsagePeriod --%>
 	<tr id="Row<%=row%2%>">
 	  <td width="50%" align="right">
-	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_USE")%> <%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%><br/>
+	  	<%=ejbcawebbean.getText("EXT_PKIX_PRIVKEYUSAGEPERIOD")%> <%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%><br/>
 	  </td>
 	  <td width="50%">
 	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTBEFORE%>" onclick="checkprivkeyusageperiodnotbeforefield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "CHECKED" : ""%>>
@@ -1075,7 +1075,7 @@ function checkallfields(){
 	</tr>
 	<tr id="Row<%=row%2%>">
 	  <td width="50%" align="right">
-	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_STARTOFFSET")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
+	  	<%=ejbcawebbean.getText("EXT_PKIX_PKUP_STARTOFFSET")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
 	  </td>
 	  <td width="50%">
 	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODSTARTOFFSET%>" size="45" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotBefore() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodStartOffset() / (24 * 3600)) : ""%>" />
@@ -1084,7 +1084,7 @@ function checkallfields(){
 	
 	<tr id="Row<%=row%2%>">
 	  <td width="50%" align="right">
-	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_USE")%> <%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%><br/>
+	  	<%=ejbcawebbean.getText("EXT_PKIX_PRIVKEYUSAGEPERIOD")%> <%=ejbcawebbean.getHelpReference("/userguide.html#Private%20Key%20Usage%20Period")%><br/>
 	  </td>
 	  <td width="50%">
 	    <input name="<%=CHECKBOX_USEPRIVKEYUSAGEPERIODNOTAFTER%>" onclick="checkprivkeyusageperiodnotafterfield()" type="checkbox" value="<%=CHECKBOX_VALUE%>" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "CHECKED" : ""%>>	     
@@ -1092,7 +1092,7 @@ function checkallfields(){
 	</tr>
 	<tr id="Row<%=row++%2%>">
 	  <td width="50%" align="right">
-	  	<%=ejbcawebbean.getText("EXT_PRIVKEYUP_PERIODLENGTH")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
+	  	<%=ejbcawebbean.getText("EXT_PKIX_PKUP_PERIODLENGTH")%> <%= ejbcawebbean.getText("YEARMONTHDAYTIME") %>
 	  </td>
 	  <td width="50%">
 	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="45" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" />	     
