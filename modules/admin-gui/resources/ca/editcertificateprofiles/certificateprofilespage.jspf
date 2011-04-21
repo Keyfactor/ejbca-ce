@@ -16,31 +16,31 @@
   <table class="list">
   <% if(triedtoeditfixedcertificateprofile){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("YOUCANTEDITFIXEDCERTPROFS") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTEDITFIXEDCERTPROFS") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(triedtodeletefixedcertificateprofile){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("YOUCANTDELETEFIXEDCERT") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTDELETEFIXEDCERT") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(triedtoaddfixedcertificateprofile){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("YOUCANTADDFIXEDCERT") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTADDFIXEDCERT") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(certificateprofileexists){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CERTIFICATEPROFILEALREADY") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CERTIFICATEPROFILEALREADY") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(certificateprofiledeletefailed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTPROF") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTPROF") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>

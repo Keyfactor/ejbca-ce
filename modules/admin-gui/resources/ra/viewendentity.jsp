@@ -45,21 +45,21 @@
   <h2><%= ejbcawebbean.getText("VIEWENDENTITY2") %></h2>
 
   <%if(viewendentityhelper.nouserparameter){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
   <% }else{
        if(viewendentityhelper.userdata == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></div> 
     <% }else{ 
          if(viewendentityhelper.notauthorized){ %>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEW") %></h4></div>   
+  <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEW") %>></div>   
      <%  }else{
            if(viewendentityhelper.profilenotfound){ %>
-         <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("CANNOTVIEWUSERPROFREM") %></h4></div>   
+         <div class="message alert"><%=ejbcawebbean.getText("CANNOTVIEWUSERPROFREM") %></div>   
         <%  }else{    
          if(viewendentityhelper.currentuserindex == 0){ %>
-        	   <div align="center"><h4><%=ejbcawebbean.getText("CURRENTUSERDATA") %></h4></div> 
+        	   <div class="message info"><%=ejbcawebbean.getText("CURRENTUSERDATA") %></div> 
        <%}else{ %>
-               <div align="center"><h4><%=ejbcawebbean.getText("HISTORICALUSERDATA") %></h4></div> 
+               <div class="message info"><%=ejbcawebbean.getText("HISTORICALUSERDATA") %></div> 
        <% } %>
 
 

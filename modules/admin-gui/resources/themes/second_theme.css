@@ -12,10 +12,6 @@
    Tigris style project, http://style.tigris.org/. */ 
 /* Tigris begin */
 
-.app h3, .app h4, .tabs td, .tabs th, .functnbar {
-	background-image: url(../images/nw_maj_rond.gif);
-	background-repeat: no-repeat;
-}
 .app h3, .app h4 {
 	color: #fff;
 }
@@ -34,10 +30,7 @@
 	background-color: #bbb;
 	white-space: nowrap;
 }
-body, .app h3, .app h4, #rightcol h3, pre, code, #apphead h2 small {
-	font-size: x-small;
-	voice-family: "\"}\"";
-	voice-family: inherit;
+.app h3, .app h4, pre, code {
 	font-size: small;
 }
 .app h3, .app h4 {
@@ -49,10 +42,7 @@ body, .app h3, .app h4, #rightcol h3, pre, code, #apphead h2 small {
 .app td, .app th {
 	padding: 2px 3px;
 }
-.app .axial td th {
-	text-align: left;
-}
-.app h3, .app h4, .bars {
+.app h3, .app h4 {
 	clear: both;
 }
 body .grid td {
@@ -63,17 +53,12 @@ body .grid td {
 .a td {
 	background: #ddd;
 }
-
 .b td {
 	background: #efefef;
 }
-h4, table {
+table {
 	font-size: 1em;
 }
-h3, h4 {
-	margin-bottom: 0;
-}
-
 .app table, th, td {
 	border: none;
 	vertical-align: top;
@@ -293,7 +278,7 @@ p.help {
 div.h4 {
 	margin: 0em .5em;
 }
-.app h4 {
+#home h4 {
 	margin: 0px;
 	padding: 3px 4px;
 	background: #DDD none;
@@ -306,16 +291,16 @@ div.h4 {
 	-webkit-border-radius: .8em .8em 0em 0em;
 	color: #000;
 }
-.app h4 a:link,
-.app h4 a:visited,
-.app h4 a:hover,
-.app h4 a:focus,
-.app h4 a:active {
+#home h4 a:link,
+#home h4 a:visited,
+#home h4 a:hover,
+#home h4 a:focus,
+#home h4 a:active {
 	color: #000 !important;
 }
-div.error {
+div.message {
+	margin-top: .5em;
 	text-align: center;
-	font-weight: bold;
 }
 table h3 {
 	margin-top: 0em;
@@ -428,10 +413,10 @@ div#information code {
 	font-size: 1.15em;
 /*	font-weight: bold;	/**/
 }
-div#projecthome {
+div#home {
 	margin-top: 1.5em;
 }
-div#projecthome > table > tbody > tr > td {
+div#home > table > tbody > tr > td {
 	margin: 0em;
 	padding: 0em;
 }
@@ -676,7 +661,8 @@ body.popup {
 
 /*--------------------------------------------------------------------------*/
 
-#alert, .alert { color: red; font-size: 11pt; background-color: white; }
+.alert { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
+.info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
 #Row0 { color: black; font-size: 9pt; background-color: white; }
 #Row1 { color: black; font-size: 9pt; background-color: #e5ecff; }

@@ -279,14 +279,14 @@ function viewcert(row){
   <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
   <input type="hidden" name='<%= HIDDEN_SORTBY  %>' value='<%=sortby %>'>
   <% if(nouserparam){ %>
-    <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
+    <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
   <% }else{ %>
     <% if(notauthorized){ %>
-      <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWHIST") %></h4></div> 
+      <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWHIST") %></div> 
     <% }else{ %>
     <%   if(largeresult){ %>
-         <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
-                                             + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
+         <div class="message alert"><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+                                             + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %></div>
     <%   } %>
   <p>
 	<%= ejbcawebbean.getText("FROM") %>

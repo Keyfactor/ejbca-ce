@@ -34,7 +34,7 @@
 	<div><%= ejbcawebbean.getText("SERVERTIME") + " : "%><code><%= ejbcawebbean.getServerTime()%></code></div>
 </div>
 
-<div id="projecthome" class="app">
+<div id="home" class="app">
    <table width="50%" align="top">
    <tr>
    

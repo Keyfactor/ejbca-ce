@@ -20,73 +20,73 @@
   <table class="list">
   <% if(caexists){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CAALREADY") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CAALREADY") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(cadeletefailed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETECA") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETECA") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(caactivated){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CAACTIVATED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(catokenoffline){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CATOKENISOFFLINE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CATOKENISOFFLINE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(catokenauthfailed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CATOKENAUTHFAILED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CATOKENAUTHFAILED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(xkmsrenewed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("XKMSCERTIFICATERENEWED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(cmsrenewed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CMSCERTIFICATERENEWED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(illegaldnoraltname){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("INVALIDSUBJECTDN") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("INVALIDSUBJECTDN") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(errorrecievingfile){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("ERRORRECIEVINGFILE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("ERRORRECIEVINGFILE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(carenewed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CARENEWED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CARENEWED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(capublished){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("CACERTPUBLISHINGQUEUED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(errormessage != null){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= errormessage %></h4></td>
+      <td width="40%" class="alert"><%= errormessage %></td>
       <td width="60%"></td>
     </tr>
   <% } %>

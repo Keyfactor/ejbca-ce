@@ -7,7 +7,7 @@
 <h1><%= ejbcawebbean.getText("ENDENTITYPROFILES") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
-     <u><%= ejbcawebbean.getText("HELP") %></u> </z> -->
+     <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
 
 <form name="editprofiles" method="post"  action="<%= THIS_FILENAME%>">
 
@@ -16,31 +16,31 @@
   <table class="list">
   <% if(triedtoeditemptyprofile){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("YOUCANTEDITEMPTYPROFILE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTEDITEMPTYPROFILE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(triedtodeleteemptyprofile){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("YOUCANTDELETEEMPTYPROFILE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANTDELETEEMPTYPROFILE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %> 
   <% if(profileexists){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("PROFILEALREADYEXISTS") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("PROFILEALREADYEXISTS") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(profiledeletefailed){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEPROFILE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEPROFILE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(cannotcloneempty){ %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("YOUCANNOTUSEEMPTYPROFILE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("YOUCANNOTUSEEMPTYPROFILE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
