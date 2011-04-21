@@ -242,18 +242,18 @@ function viewcopies(link){
     <u><%= ejbcawebbean.getText("HELP") %></u> </A>
   </div>  -->
   <%if(noparameter){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYPARAMETER") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYPARAMETER") %></div> 
   <% } 
      else{
        if(token == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("HARDTOKENDOESNTEXIST") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("HARDTOKENDOESNTEXIST") %></div> 
     <% }
        else{ 
          if(!authorized){ %>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWTOKEN") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWTOKEN") %></div> 
      <%  }else{%>
     <% if(message != null){ %>
-  <div align="center"><h4 id="alert"><%= message%></h4></div>
+  <div class="message alert"><%= message%></div>
   <% } %>
   <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>

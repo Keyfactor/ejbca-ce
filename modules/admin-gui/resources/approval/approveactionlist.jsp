@@ -47,7 +47,7 @@ function viewcert(link){
   <h:commandButton id="list" action="#{listApproveActionSessionBean.list}" value="#{web.text.LIST}"/>
   </p>
 </h:form>
-  <h4 align="center"><h:messages  layout="table" errorClass="alert"/></h4>
+  <div class="message"><h:messages layout="table" errorClass="alert"/></div>
   <hr/>
   <h:form >
     <p align="center">

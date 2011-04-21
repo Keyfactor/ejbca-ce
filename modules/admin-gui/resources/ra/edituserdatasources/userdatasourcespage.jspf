@@ -17,7 +17,7 @@
   <% if(userdatasourcehelper.userdatasourceexists){ 
         userdatasourcehelper.userdatasourceexists= false;%> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("USERDATASOURCEALREADY") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("USERDATASOURCEALREADY") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
@@ -25,7 +25,7 @@
         userdatasourcehelper.userdatasourcedeletefailed = false; 
         %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEUSERDATASOURCE") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEUSERDATASOURCE") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>

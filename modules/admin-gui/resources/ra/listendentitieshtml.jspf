@@ -179,32 +179,32 @@ function confirmrevocation(){
      <%   } %>
 
   <% if(illegalquery){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"INVALIDQUERY\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"INVALIDQUERY\") %>"/></div>
   <% } %>
   <% if(notauthorizedrevokeall){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESREV\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESREV\") %>"/></div>
   <% } %>
   <% if(notfoundall){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"COULDNOTFINDALLOBJECTS\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"COULDNOTFINDALLOBJECTS\") %>"/></div>
   <% } %>
   <% if(notapprovedall){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"ONLYNONREVENDENTITIESREV\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"ONLYNONREVENDENTITIESREV\") %>"/></div>
   <% } %>
   <% if(waitingforapproval){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"REQHAVEBEENADDEDFORAPPR\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"REQHAVEBEENADDEDFORAPPR\") %>"/></div>
   <% } %>
   <% if(alreadyrevoked){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"SOMEWEREALREADYREVOKED\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"SOMEWEREALREADYREVOKED\") %>"/></div>
   <% } %>
   <% if(notauthorizeddeleteall){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESDEL\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESDEL\") %>"/></div>
   <% } %>
   <% if(notauthorizedchangeall){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESCHANG\") %>"/></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"ONLYAUTHORIZEDENDENTITIESCHANG\") %>"/></div>
   <% } %>
   <% if(largeresult){ %>
-     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
-                                             + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>"/></div> </H4>  
+     <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + RAInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+                                             + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>"/></div>
   <% } 
   if(!blank){ %>
   <p>

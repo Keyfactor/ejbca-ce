@@ -162,15 +162,15 @@ function viewcert(row){
      <%   } %>
 
   <% if(illegalquery){ %>
-      <H4 id="alert"><div align="center"><c:out value="<%= ejbcawebbean.getText(\"INVALIDQUERY\") %>" /></div></H4>
+      <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"INVALIDQUERY\") %>" /></div>
   <% } %>
 
   <% if(largeresult){ %>
-     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
-                                             + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>" /> </div> </H4>  
+     <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"TOLARGERESULT\")  + \" \" + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+                                             + \" \" + ejbcawebbean.getText(\"ROWSWILLBEDISPLAYED\") %>" /></div>
   <% } %>
   <% if(cmsnotactive){ %>
-     <H4 id="alert"><div align="center" ><c:out value="<%= ejbcawebbean.getText(\"EXPORTCMSSERVICENOTACTIVE\") %>" /> </div> </H4>  
+     <div class="message alert"><c:out value="<%= ejbcawebbean.getText(\"EXPORTCMSSERVICENOTACTIVE\") %>" /></div>
   <% } %>
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value='<c:out value="<%= ejbcawebbean.getText(\"RELOAD\") %>"/>'>

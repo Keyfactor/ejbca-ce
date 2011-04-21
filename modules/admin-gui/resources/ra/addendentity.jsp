@@ -1156,20 +1156,20 @@ function checkallfields(){
     <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>"/></u> </A> 
   </div> -->
   <% if(noprofiles){ %>
-    <div align="center"><h4 id="alert"><c:out value="<%=ejbcawebbean.getText(\"NOTAUTHORIZEDTOCREATEENDENTITY\") %>"/></h4></div>
+    <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"NOTAUTHORIZEDTOCREATEENDENTITY\") %>"/></div>
   <% }else{
        if(userexists){ %>
-  <div align="center"><h4 id="alert"><c:out value="<%=ejbcawebbean.getText(\"ENDENTITYALREADYEXISTS\") %>"/></h4></div>
-  <div align="center"><h4 id="alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonfind=value&textfieldusername=" + request.getParameter(TEXTFIELD_USERNAME) + "\">See existing user</a>"); %></h4></div>
+  <div class="message alert"><c:out value="<%=ejbcawebbean.getText(\"ENDENTITYALREADYEXISTS\") %>"/></div>
+  <div class="message alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonfind=value&textfieldusername=" + request.getParameter(TEXTFIELD_USERNAME) + "\">See existing user</a>"); %></div>
   <% } %>
     <% if(approvalmessage != null){ %>
-  <div align="center"><h4 id="alert"><c:out value="<%= approvalmessage%>"/></h4></div>
+  <div class="message alert"><c:out value="<%= approvalmessage%>"/></div>
   		<% if(approvalmessage.equals(ejbcawebbean.getText("SERIALNUMBERALREADYEXISTS"))){ %>
-  <div align="center"><h4 id="alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonadvancedlist=value&selectmatchwithrow1=" + UserMatch.MATCH_WITH_DNSERIALNUMBER + "&selectmatchtyperow1=" + BasicMatch.MATCH_TYPE_EQUALS + "&textfieldmatchvaluerow1=" + serialnumber + "\">See existing user</a>"); %></h4></div>
+  <div class="message alert"><% out.write("<a href=\"" + ejbcawebbean.getBaseUrl() + ejbcawebbean.getGlobalConfiguration().getRaPath() + "/listendentities.jsp?action=listusers&buttonadvancedlist=value&selectmatchwithrow1=" + UserMatch.MATCH_WITH_DNSERIALNUMBER + "&selectmatchtyperow1=" + BasicMatch.MATCH_TYPE_EQUALS + "&textfieldmatchvaluerow1=" + serialnumber + "\">See existing user</a>"); %></div>
   		<% } %>
   <% } %>
   <% if(useradded){ %>
-  <div align="center"><h4 ><c:out value="<%= ejbcawebbean.getText(\"ENDENTITY\")+ \" \" + addedusername + \" \" + ejbcawebbean.getText(\"ADDEDSUCCESSFULLY\") %>"/></h4></div>
+  <div class="message info"><c:out value="<%= ejbcawebbean.getText(\"ENDENTITY\")+ \" \" + addedusername + \" \" + ejbcawebbean.getText(\"ADDEDSUCCESSFULLY\") %>"/></div>
   <% } %>
 
 

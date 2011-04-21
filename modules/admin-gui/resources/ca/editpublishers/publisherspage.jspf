@@ -17,7 +17,7 @@
   <% if(publisherhelper.publisherexists){ 
         publisherhelper.publisherexists= false;%> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("PUBLISHERALREADY") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("PUBLISHERALREADY") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
@@ -25,7 +25,7 @@
         publisherhelper.publisherdeletefailed = false; 
         %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEPUBLISHER") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEPUBLISHER") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>

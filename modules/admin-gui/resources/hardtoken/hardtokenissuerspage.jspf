@@ -40,13 +40,13 @@ function checkselected(){
   <table class="list">
   <% if(issuerexists){ %> 
     <tr> 
-      <td width="40%"><div align="center"><h4 id="alert"><%= ejbcawebbean.getText("ISSUERALREADYEXISTS") %></h4></div></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("ISSUERALREADYEXISTS") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(issuerdeletefailed){ %> 
     <tr> 
-      <td width="40%"><div align="center"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEISSUER") %></h4></div></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEISSUER") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>

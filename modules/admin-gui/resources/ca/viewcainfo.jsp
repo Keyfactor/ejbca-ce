@@ -41,14 +41,14 @@
   </div>-->
 
   <%if(viewcainfohelper.generalerrormessage != null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></div> 
   <% } 
      else{
        if(viewcainfohelper.activationerrormessage != null){ %>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.activationerrormessage) + " : " + viewcainfohelper.activationerrorreason %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText(viewcainfohelper.activationerrormessage) + " : " + viewcainfohelper.activationerrorreason %></div> 
      <%  }       
          if(viewcainfohelper.activationmessage != null){ %>
-              <div align="center"><h4><%=ejbcawebbean.getText(viewcainfohelper.activationmessage) %></h4></div> 
+              <div class="message info"><%=ejbcawebbean.getText(viewcainfohelper.activationmessage) %></div> 
      <%  }%>
 
 

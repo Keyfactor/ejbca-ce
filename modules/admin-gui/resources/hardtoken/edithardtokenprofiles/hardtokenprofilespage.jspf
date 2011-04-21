@@ -17,14 +17,14 @@
   <% if(edithardtokenprofile.hardtokenprofileexists){ 
         edithardtokenprofile.hardtokenprofileexists= false;%> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("HARDTOKENPROFILEALREADY") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("HARDTOKENPROFILEALREADY") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
   <% if(edithardtokenprofile.profilemalformed){ 
         edithardtokenprofile.profilemalformed= false;%> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("HARDTOKENPROFILEMALFORMED") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("HARDTOKENPROFILEMALFORMED") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>
@@ -32,7 +32,7 @@
         edithardtokenprofile.hardtokenprofiledeletefailed = false; 
         %> 
     <tr> 
-      <td width="40%"><h4 id="alert"><%= ejbcawebbean.getText("COULDNTDELETEHARDTOKENPROF") %></h4></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETEHARDTOKENPROF") %></td>
       <td width="60%"></td>
     </tr>
   <% } %>

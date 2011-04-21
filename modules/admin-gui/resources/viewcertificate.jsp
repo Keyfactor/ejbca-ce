@@ -313,19 +313,19 @@ function confirmrepublish(){
 -->
 
   <%if(noparameter){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></div> 
   <% } 
      else{
       if(notauthorized){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWCERT") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWCERT") %></div> 
   <%   } 
        else{
          if(certificatedata == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("CERTIFICATEDOESNTEXIST") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("CERTIFICATEDOESNTEXIST") %></div> 
     <%   }
          else{         	 
    if(message != null){ %>
-      <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(message) %></h4></div> 
+      <div class="message alert"><%=ejbcawebbean.getText(message) %></div> 
   <% } %>
 
 

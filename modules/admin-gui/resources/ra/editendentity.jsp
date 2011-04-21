@@ -983,22 +983,22 @@ function checkUseInBatch(){
   </div> -->
 
  <%if(nouserparameter){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYUSERNAME") %></div> 
   <% } 
      else{
        if(userdata == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("ENDENTITYDOESNTEXIST") %></div> 
     <% }
        else{
          if(notauthorized || profile == null){%>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></h4></div> 
+  <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></div> 
     <%   }
          else{ 
              if(approvalmessage != null){ %>
-        	    <div align="center"><h4 id="alert"><%= approvalmessage%></h4></div>
+        	    <div class="message alert"><%= approvalmessage%></div>
         	 <% }         	 
            if(endentitysaved){%>
-  <div align="center"><h4><%=ejbcawebbean.getText("ENDENTITYSAVED") %></h4></div> 
+  <div class="message info"><%=ejbcawebbean.getText("ENDENTITYSAVED") %></div> 
     <%     } %>
 
 
