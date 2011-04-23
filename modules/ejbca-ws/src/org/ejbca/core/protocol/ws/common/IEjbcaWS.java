@@ -52,7 +52,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise an AuthorizationDenied exception will be thrown.
  * 
  * @author Philip Vendil et al
- * $Id$
+ * @version $Id$
  */
 public interface IEjbcaWS {
 	
@@ -916,9 +916,12 @@ public interface IEjbcaWS {
 	 * - /ca_functionality/create_certificate
 	 * - /ca/&lt;ca of user&gt;
 	 * </pre>
+	 * When the requestType is PUBLICKEY the requestData should be an 
+	 * SubjectPublicKeyInfo structure either base64 encoded or in PEM format.
+	 * 
 	 * @param userData the user
-	 * @param requestData the PKCS10/CRMF/SPKAC request in base64
-	 * @param requestType PKCS10, CRMF or SPKAC request as specified by
+	 * @param requestData the PKCS10/CRMF/SPKAC/PUBLICKEY request in base64
+	 * @param requestType PKCS10, CRMF, SPKAC or PUBLICKEY request as specified by
 	 * {@link org.ejbca.core.protocol.ws.common.CertificateHelper}.CERT_REQ_TYPE_ parameters.
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
