@@ -180,7 +180,20 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 				//CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
 				//imsg = reqmsg;
 			} else if (reqType == SecConst.CERT_REQ_TYPE_PUBLICKEY) {
-				final byte[] request = FileTools.getBytesFromPEM(req.getBytes(), CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+				byte[] request;
+				// Request can be Base64 encoded or in PEM format
+				try {
+					request = FileTools.getBytesFromPEM(req.getBytes(), CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
+				} catch (IOException ex) {
+					try {
+						request = Base64.decode(req.getBytes());
+						if (request == null) {
+							throw new IOException("Base64 decode of buffer returns null");
+						}					
+					} catch (ArrayIndexOutOfBoundsException ae) {
+						throw new IOException("Base64 decode fails, message not base64 encoded: " + ae.getMessage());
+					}
+				}
 				final ASN1InputStream in = new ASN1InputStream(request);
 				final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
 				final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithmId();
