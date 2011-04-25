@@ -12,13 +12,15 @@
     <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate/CRL Retrieval</title>
 	<link rel="shortcut icon" href="../images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />
-    <script type="text/javascript" src="scripts/functions.js"></script>
-    <script type="text/vbscript" src="scripts/functions.vbs"></script>
+    <script type="text/javascript" src="../scripts/functions.js"></script>
+    <script type="text/vbscript" src="../scripts/functions.vbs"></script>
   </head>
 
   <body>
-    <div class="logobar">
-      <a href="../index.jsp"><img src="../images/logotype.png" alt="EJBCA" border="0"/></a>
+    <div id="header">
+		<div id="banner">
+			<a href="../index.jsp"><img src="../images/logotype.png" alt="EJBCA" /></a>
+		</div>
     </div>
     <div class="menucontainer">
       <div class="menu">
