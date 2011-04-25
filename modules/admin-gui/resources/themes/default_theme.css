@@ -1,6 +1,7 @@
 /*
  * EJBCA - Enterprise Java Bean Certificate Authority
  *
+ * GUI   : Administration
  * Style : CSS (Cascading Style Sheets)
  * Media : all
  * Theme : default
@@ -175,7 +176,7 @@ body#menu {
 
 /* Header */
 body#header {
-	margin: .5em .75em;
+	margin: 0em;
 	padding: 0em;
 	background-color: #FFF;
 	color: #000;
@@ -183,15 +184,17 @@ body#header {
 }
 #header div#banner {
 	height: 84px;
-}
-#header div#banner img {
-	max-height: 84px;
-	margin-top: 0px;
-	/* For ALT */
+	margin: 8px 12px;
+	padding: 0em;
+	/* For IMG ALT */
 	color: #404040;
 	font-size: 3em;
 	line-height: 1.9em;
 	white-space: nowrap;
+}
+#header div#banner img {
+	max-height: 84px;
+	margin-top: 0px;
 }
 
 /* Footer */

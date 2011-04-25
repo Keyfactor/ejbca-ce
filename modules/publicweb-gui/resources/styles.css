@@ -1,5 +1,35 @@
-/* basic elements */
+/*
+ * EJBCA - Enterprise Java Bean Certificate Authority
+ *
+ * GUI   : Public Web
+ * Style : CSS (Cascading Style Sheets)
+ * Media : all
+ *
+ */
 
+
+/*--------------------------------------------------------------------------*/
+/* GLOBAL */
+
+* {
+	font-family: Verdana, Arial, Helvetica, Geneva, sans-serif;
+}
+body {
+	margin: 0em;
+	padding: 0em;
+	background-color: #FFF;
+	color: #000;
+	font-size: 11pt;
+}
+code, code *, pre, pre * {
+	font-family: "Courier New", Courier, monospace;
+}
+a img {
+	border-width: 0px;
+}
+
+
+/*
 body, ul, li, p {
     font-family: Georgia, Palatino, Times, serif;
     font-size: small;
@@ -11,6 +41,7 @@ body {
     margin: 0px;
     padding: 0px;
 }
+/**/
 
 ul {
     list-style-type: square;
@@ -69,7 +100,9 @@ a:hover { color:#000066}
 
 acronym { border-bottom: none; }
 
-/* Left column menu */
+
+/*--------------------------------------------------------------------------*/
+/* NAVIGATION */
 
 @media print {
    .menu {
@@ -95,22 +128,68 @@ acronym { border-bottom: none; }
 .menu a:link {   }
 .menu a:visited {  }
 .menu a:hover { text-decoration: underline; }
-.menu ul { margin: 0px 0px 0px 20px; padding: 0px; }
+.menu ul { margin: 0px 0px 0px 15px; padding: 0px; }
 .menu li  {  list-style-type: none; font-weight : normal ; }
 .menu ul ul li .sel { list-style-type: none; font-style : italic; }
 .menu ul ul li  { list-style-type: disc; font-weight : normal; }
 
 .menuheader {
-    font: italic normal 10pt georgia;
+    color: #555;
+	font-size: 11pt;
+	font-weight: bold;
     letter-spacing: 1px;
     border-bottom: 1px dashed #688B9A;
     margin-top: 8px;
     margin-bottom: 5px;
     padding: 2px;
-    padding-left: 5px;
+    padding-left: 0px;
 }
 
-/* Forms */
+
+/*--------------------------------------------------------------------------*/
+/* HEADER */
+
+#header {
+	height: 100px;
+	margin: 0em;
+	padding: 0em;
+    border-bottom: 1px solid #DDD;
+	background-color: #005B88;
+	color: #FFF;
+	overflow: hidden;
+}
+#header div#banner {
+	height: 84px;
+	margin: 8px 12px;
+	padding: 0em;
+	/* For IMG ALT */
+	color: #FFF;
+	font-size: 3em;
+	line-height: 1.9em;
+	white-space: nowrap;
+}
+#header div#banner a:link,
+#header div#banner a:visited,
+#header div#banner a:hover,
+#header div#banner a:focus,
+#header div#banner a:active {
+	color: #FFF;
+	text-decoration: none;
+}
+#header div#banner img {
+	max-height: 84px;
+	margin-top: 0px;
+}
+
+
+/*--------------------------------------------------------------------------*/
+/* CONTENT */
+
+
+
+/*--------------------------------------------------------------------------*/
+/* FORMS */
+
 /* The form styles were adapted from <http://www.websiteoptimization.com/speed/tweak/forms/>
 
 /* set width in form, not fieldset (still takes up more room w/ fieldset width) */
@@ -199,20 +278,6 @@ form br {
     padding: 5px 5px 5px 10px;
 }
 
-.logobar {
-    background-color: #005B88;
-    
-    color: white;
-    font-size: 16pt;
-    font-style: italic;
-    padding-right: 10px;
-    margin: 0px;
-    padding-left: 18pt;
-    padding-top: 12pt;
-    padding-bottom: 6pt;
-    border-bottom: 1px solid #ddd;
-}
-
 .frame {
   border: solid black 1px;
   margin: 1em 3em;
@@ -234,3 +299,6 @@ form br {
   font-size: 90%;
 }
 
+
+/*--------------------------------------------------------------------------*/
+/* EOF */
