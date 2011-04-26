@@ -3090,6 +3090,10 @@ See the section about HSM property parameters to see which keys can be of differ
 Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM must support both ECDSA and RSA keys. 
 You can use PKCS11HSMKeyTool from the clientToolBox to generate keys and certificate requests from an HSM.
 </p>
+<p>
+PrimeKey has made a patches for the java issues with ECDSA. These patches are waiting for approval in the OpenJDK 7. 
+You can get a compiled patch together with an installation script for Linux operating systems (can be adapted for Windows as well) from <a href="http://www.primekey.se/">PrimeKey</a>. 
+</p>
   <subsubsection name="Sun Java PKCS#11 ECC key issue">
   <p>If you are using the clientToolBox tool in EJBCA to generate ECC keys in an HSM using the PKCS#11 interface you are likely
   to stumble on a bug in the JDK which prevents reading of the public key from the HSM. The clientToolBox tool needs to read the public key,
