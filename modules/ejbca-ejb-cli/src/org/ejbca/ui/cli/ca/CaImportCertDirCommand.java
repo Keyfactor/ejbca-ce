@@ -53,12 +53,12 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
+		CryptoProviderTools.installBCProvider();
 		if (args.length != 7) {
 			usage();
 			return;
 		}
 		try {
-			CryptoProviderTools.installBCProvider();
 			// Parse arguments into more coder friendly variable names and validate switches
 			final String usernameFilter = args[1];
 			final String caName = args[2];
@@ -74,8 +74,10 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			} else {
 				throw new Exception("Invalid certificate status.");
 			}
-			if (!usernameFilter.equalsIgnoreCase("DN") && !usernameFilter.equalsIgnoreCase("FILE")) {
-				throw new Exception(usernameFilter + "is not a valid option. Currently only \"DN\" and \"FILE\" username-source are implemented");
+			if (!usernameFilter.equalsIgnoreCase("DN") && 
+					!usernameFilter.equalsIgnoreCase ("CN") &&
+					!usernameFilter.equalsIgnoreCase("FILE")) {
+				throw new Exception(usernameFilter + "is not a valid option. Currently only \"DN\", \"CN\" and \"FILE\" username-source are implemented");
 			}
 			// Fetch CA info
 			final CAInfo caInfo = getCAInfo(caName);
@@ -111,7 +113,17 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			for (final File file : files) {
 				final X509Certificate certificate = (X509Certificate) loadcert(file.getCanonicalPath());
 				final String filename = file.getName();
-				final String username = usernameFilter.equalsIgnoreCase("DN") ? CertTools.getSubjectDN(certificate) : filename;
+				String username = usernameFilter.equalsIgnoreCase("FILE") ? 
+						 filename : CertTools.getSubjectDN(certificate);
+				if (usernameFilter.equalsIgnoreCase("CN")) {
+					String cn = CertTools.getPartFromDN(username, "CN");
+					// Workaround for "difficult" certificates lacking CNs
+					if (cn == null || cn.length () == 0) {
+						getLogger ().info("Certificate '" + CertTools.getSerialNumberAsString(certificate) + "' lacks CN, DN used instead, file: " +filename);
+					} else {
+						username = cn;
+					}
+				}
 				switch (performImport(certificate, status, endEntityProfileId, certificateProfileId, cacert, caInfo, filename, issuer, username)) {
 				case STATUS_REDUNDANT: redundant++; break;
 				case STATUS_REJECTED: rejected++; break;
@@ -190,7 +202,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	private void usage() {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <username-source> <caname> <status> <certificate dir> <endentityprofile> <certificateprofile>");
-		getLogger().info(" Username-source: \"DN\" means use certificate's SubjectDN as username and \"FILE\" means user the file's name as username");
+		getLogger().info(" Username-source: \"DN\" means use certificate's SubjectDN as username, \"CN\" means use certificate subject's common name as username and \"FILE\" means user the file's name as username");
 		// List available CAs by name
 		getLogger().info(" Available CAs: " + getAvailableCasString());
 		getLogger().info(" Status: ACTIVE, REVOKED");
