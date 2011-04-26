@@ -143,7 +143,7 @@ public class RequestInstance {
 			// Check user
 			int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
 
-			usekeyrecovery = (globalConfigurationSession.getCachedGlobalConfiguration(administrator)).getEnableKeyRecovery();
+			usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration(administrator).getEnableKeyRecovery();
 
 			UserDataVO data = userAdminSession.findUser(administrator, username);
 

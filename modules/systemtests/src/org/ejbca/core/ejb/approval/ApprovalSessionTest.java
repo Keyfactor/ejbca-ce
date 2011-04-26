@@ -153,7 +153,7 @@ public class ApprovalSessionTest extends CaTestCase {
             admin2 = new Admin(admincert2, adminusername2, null);
             reqadmin = new Admin(reqadmincert, reqadminusername, null);
 
-            gc = globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID));
+            gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
         }
     }
 

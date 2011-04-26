@@ -152,7 +152,7 @@ public class CertificateDataTest extends TestCase {
 
         // List all certificates for user foo, which we have created in
         // TestSignSession
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_CACOMMANDLINE_USER), subjectDN, issuerDN);
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(admin, subjectDN, issuerDN);
         assertTrue("something weird with size, all < foos", size >= certfps.size());
         log.debug("List certs for foo: " + certfps.size());
         Iterator<Certificate> iter = certs.iterator();
@@ -180,7 +180,7 @@ public class CertificateDataTest extends TestCase {
         String subjectDN = CertTools.getSubjectDN(cert);
         // List all certificates for user foo, which we have created in
         // TestSignSession
-        Collection<Certificate> certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_CACOMMANDLINE_USER), subjectDN, issuerDN);
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(admin, subjectDN, issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -226,7 +226,7 @@ public class CertificateDataTest extends TestCase {
         assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getSubjectDN(cert),
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(admin, CertTools.getSubjectDN(cert),
                 CertTools.getIssuerDN(cert));
         Iterator<Certificate> iter = certs.iterator();
         while (iter.hasNext()) {
@@ -258,19 +258,19 @@ public class CertificateDataTest extends TestCase {
 
         log.info("1. Looking for cert with expireDate=" + findDate);
 
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(new Admin(Admin.TYPE_CACOMMANDLINE_USER), findDate);
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(admin, findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
-        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(new Admin(Admin.TYPE_CACOMMANDLINE_USER), findDate);
+        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(admin, findDate);
         log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
         assertTrue("No certs should have expired before this date", usernames.size() == 0);
         findDateSecs = data.getExpireDate().getTime() + 10000;
         findDate = new Date(findDateSecs);
         log.info("2. Looking for cert with expireDate=" + findDate);
-        certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(new Admin(Admin.TYPE_CACOMMANDLINE_USER), findDate);
+        certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(admin, findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("Some certs should have expired before this date", certs.size() != 0);
-        usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(new Admin(Admin.TYPE_CACOMMANDLINE_USER), findDate);
+        usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(admin, findDate);
         log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
         assertTrue("Some certs should have expired before this date", usernames.size() != 0);
 
@@ -301,7 +301,7 @@ public class CertificateDataTest extends TestCase {
         assertNotNull("Failed to find cert", data3);
 
         log.debug("Looking for cert with DN:" + CertTools.getIssuerDN(cert) + " and serno " + cert.getSerialNumber());
-        Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_CACOMMANDLINE_USER), issuerDN, cert.getSerialNumber());
+        Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(admin, issuerDN, cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
 
         // log.debug(fcert.toString());
@@ -456,7 +456,7 @@ public class CertificateDataTest extends TestCase {
 
         // Revoke certificate and set to ON HOLD, this will change status from
         // ARCHIVED to REVOKED
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
+        certificateStoreSession.setRevokeStatus(admin, CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
                 RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
@@ -482,19 +482,19 @@ public class CertificateDataTest extends TestCase {
         assertEquals(revDate, status.revocationDate);
 
         // Now unrevoke the certificate, REMOVEFROMCRL
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
+        certificateStoreSession.setRevokeStatus(admin, CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
                 RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
         // Revoke certificate and set to ON HOLD again, this will change status to REVOKED (again)
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
+        certificateStoreSession.setRevokeStatus(admin, CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Now unrevoke the certificate, NOT_REVOKED
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
+        certificateStoreSession.setRevokeStatus(admin, CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
@@ -506,7 +506,7 @@ public class CertificateDataTest extends TestCase {
 
         // Finally revoke for real, this will change status from ARCHIVED to
         // REVOKED
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
+        certificateStoreSession.setRevokeStatus(admin, CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null,
                 RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
@@ -514,7 +514,7 @@ public class CertificateDataTest extends TestCase {
         revDate = status.revocationDate;
 
         // Try to unrevoke the certificate, should not work, because it is permanently revoked
-        certificateStoreSession.setRevokeStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
+        certificateStoreSession.setRevokeStatus(admin, CertTools.getIssuerDN(xcert), xcert.getSerialNumber(), null, RevokedCertInfo.NOT_REVOKED, null);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);

@@ -120,36 +120,13 @@
          String footbanner = request.getParameter(TEXTFIELD_FOOTBANNER); 
          gc.setFootBanner(footbanner);
        }
-       if(request.getParameter(CHECKBOX_ENABLEEEPROFILELIMITATIONS) != null){
-         gc.setEnableEndEntityProfileLimitations(request.getParameter(CHECKBOX_ENABLEEEPROFILELIMITATIONS).equals(CHECKBOX_VALUE));
-       }
-       else{
-         gc.setEnableEndEntityProfileLimitations(false);
-       }
-       if(request.getParameter(CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY) != null){
-         gc.setEnableAuthenticatedUsersOnly(request.getParameter(CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY).equals(CHECKBOX_VALUE));
-       }
-       else{
-         gc.setEnableAuthenticatedUsersOnly(false);
-       }
-       if(request.getParameter(CHECKBOX_ENABLEKEYRECOVERY) != null){
-         gc.setEnableKeyRecovery(request.getParameter(CHECKBOX_ENABLEKEYRECOVERY).equals(CHECKBOX_VALUE));
-       }
-       else{
-         gc.setEnableKeyRecovery(false);
-       }
-       if(request.getParameter(CHECKBOX_ISSUEHARDWARETOKENS) != null){
-         gc.setIssueHardwareTokens(request.getParameter(CHECKBOX_ISSUEHARDWARETOKENS).equals(CHECKBOX_VALUE));
-       }
-       else{
-         gc.setIssueHardwareTokens(false);
-       }
 
-       if(request.getParameter(CHECKBOX_ENABLECOMMANDLINEINTERFACE) != null){
-         gc.setEnableCommandLineInterface(request.getParameter(CHECKBOX_ENABLECOMMANDLINEINTERFACE).equals(CHECKBOX_VALUE));
-       } else {
-       	 gc.setEnableCommandLineInterface(false);
-       }
+       // Set boolean values from checkboxes where default is false
+       gc.setEnableEndEntityProfileLimitations(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLEEEPROFILELIMITATIONS)));
+       gc.setEnableAuthenticatedUsersOnly(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY)));
+       gc.setEnableKeyRecovery(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLEKEYRECOVERY)));
+       gc.setIssueHardwareTokens(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ISSUEHARDWARETOKENS)));
+       gc.setEnableCommandLineInterface(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLECOMMANDLINEINTERFACE)));
 
        if(request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS) != null && request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS).equals(CHECKBOX_VALUE)){
     	   gc.setUseApprovalNotifications(true);

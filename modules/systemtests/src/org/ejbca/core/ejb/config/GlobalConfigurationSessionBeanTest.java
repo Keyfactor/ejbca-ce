@@ -48,7 +48,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 	private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
 
-    private Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);;
+    private Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
     private GlobalConfiguration original = null;
 
     /**

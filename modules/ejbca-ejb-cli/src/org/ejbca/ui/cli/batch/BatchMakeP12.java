@@ -127,7 +127,7 @@ public class BatchMakeP12 extends BaseCommand {
 
     private boolean getUseKeyRecovery() {
         if (usekeyrecovery == null) {
-            usekeyrecovery = (ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin())).getEnableKeyRecovery();
+            usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin()).getEnableKeyRecovery();
         }
         return usekeyrecovery;
     }

@@ -175,16 +175,16 @@ public class UserDataTest extends CaTestCase {
     public void test05ListNewUser() throws Exception {
         log.trace(">test05ListNewUser()");
 
-        Collection<UserDataVO> coll = userAdminSession.findAllUsersByStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), UserDataConstants.STATUS_NEW);
+        Collection<UserDataVO> coll = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
         Iterator<UserDataVO> iter = coll.iterator();
         while (iter.hasNext()) {
 
             UserDataVO data = iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
-            userAdminSession.setUserStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
+            userAdminSession.setUserStatus(admin, data.getUsername(), UserDataConstants.STATUS_GENERATED);
         }
 
-        Collection<UserDataVO> coll1 = userAdminSession.findAllUsersByStatus(new Admin(Admin.TYPE_CACOMMANDLINE_USER), UserDataConstants.STATUS_NEW);
+        Collection<UserDataVO> coll1 = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.trace("<test05ListNewUser()");
     }
