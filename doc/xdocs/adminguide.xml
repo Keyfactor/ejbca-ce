@@ -3010,7 +3010,9 @@ Now it should be impossible to do any backup of the key. If you got a key ceremo
 </p>
 </subsubsection>
 <note>
-The emulator has a bug. Each key of same length that are generated seems to be the same. This means that a slot may only have one key. If a second key is generated for a slot the certificate object for the first key is deleted before writing the certificate object for the new key. This is done since the Sun p11 wrapper provider does not allow two keys that are equal to be present in a keystore.
+The emulator has an annoying feature (only emulator not real HSM). Each key of same length that are generated is the same, because the seed for the random number generator is static. 
+This means that a slot may only have one key. If a second key is generated for a slot the certificate object for the first key is deleted before writing the certificate object for the new key. This is done since the Sun p11 wrapper provider does not allow two keys that are equal to be present in a keystore.
+To fix this you should set the environment variable ET_PTKC_SW_AUTOSEEDRNG=true.
 </note>
 <subsubsection name="Generating keys using ProtectServer tools">
 <p>
