@@ -43,8 +43,8 @@ public class AuthorizationProxy implements Serializable {
 
     /** Creates a new instance of AuthorizationProxy. */
     public AuthorizationProxy(final AccessTree accesstree, final boolean cliEnabled) {
-       authstore = new HashMap();
-       groupstore = new HashMap();
+       authstore = new HashMap<Integer, Boolean>();
+       groupstore = new HashMap<Integer, Boolean>();
        this.accesstree = accesstree;
        this.cliEnabled = cliEnabled;
     }
