@@ -36,7 +36,7 @@ Before putting anything on JBoss up on the internet, at least do the following:
 <ul>
 <li>Remove jmx-console (in jboss_home/server/default/deploy)</li>
 <li>Remove management console (in jboss_home/server/default/deploy)</li>
-<li>Remove ROOT.war (in jboss_home/server/default/deploy/jboss-web.deployer)</li>
+<li>Remove ROOT.war (in jboss_home/server/default/deploy or jboss_home/server/default/deploy/jboss-web.deployer)</li>
 </ul>
 </note>
 <p>
