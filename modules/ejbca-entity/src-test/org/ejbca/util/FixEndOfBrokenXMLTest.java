@@ -84,7 +84,21 @@ public class FixEndOfBrokenXMLTest extends TestCase {
 			// We have to remove the first 64 bytes of the xml, because it contains the java version used, 
 			// and the java version running this test can be different from the java version that created the test.xml file
 			byte[] xmlsub = ArrayUtils.subarray(xml, 64, xml.length+1);
+			// Trim space in the beginning and end, seems some JDK version behave differently
+			if (xmlsub[0] == ' ') {
+				xmlsub = ArrayUtils.remove(xmlsub, 0);
+			}
+			if (xmlsub[xmlsub.length-1] == ' ') {
+				xmlsub = ArrayUtils.remove(xmlsub, xmlsub.length-1);
+			}
 			byte[] decodedxmlsub = ArrayUtils.subarray(decodedXml, 64, decodedXml.length+1);
+			// Trim space in the beginning and end, seems some JDK version behave differently
+			if (decodedxmlsub[0] == ' ') {
+				decodedxmlsub = ArrayUtils.remove(decodedxmlsub, 0);
+			}
+			if (decodedxmlsub[decodedxmlsub.length-1] == ' ') {
+				decodedxmlsub = ArrayUtils.remove(decodedxmlsub, decodedxmlsub.length-1);
+			}
 			int limit = 32;
 			if ( !Arrays.equals(xmlsub,decodedxmlsub) ) {
 				if (nrOfBytesMissing < limit) {
