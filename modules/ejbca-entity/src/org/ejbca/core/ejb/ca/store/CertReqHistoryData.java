@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FixEndOfBrokenXML;
 import org.ejbca.util.StringTools;
 
 /**
@@ -213,74 +214,22 @@ public class CertReqHistoryData implements Serializable {
 		                          this.getIssuerDN(),this.getUsername(),new Date(this.getTimestamp()),
 		                          decodeXML(getUserDataVO(), false));
 	}
+	
+	/** just used internally in the this class to indicate that the XML can not be fixed.
+	 */
 	private class NotPossibleToFixXML extends Exception {
 		// just used internally in the this class to indicate that the XML can not be fixed.
 		public NotPossibleToFixXML() {
 			// do nothing
 		}
 	}
-	static private class FixEndOfXML {
-		final private String sXML;
-		final private String sTag;
-		final private String sTail;
-		private int position = 0;
-		private int level = 0;
-		private FixEndOfXML( String s, String l, String t ) {
-			this.sXML = s;
-			this.sTag = l;
-			this.sTail = t;
-		}
-		private void next() {
-			final int pLabel = this.sXML.indexOf(this.sTag, this.position);
-			if ( pLabel<this.position ) {
-				return;
-			}
-			boolean noHit = true;
-			if ( pLabel>2 && this.sXML.substring(pLabel-2, pLabel).equals("</") ) {
-				this.position = pLabel-2;
-				this.level--;
-				noHit = false;
-			}
-			if ( this.level<0 ) {
-				return;
-			}
-			if ( pLabel>1 && this.sXML.substring(pLabel-1, pLabel).equals("<") ) {
-				this.position = pLabel-1;
-				this.level++;
-				noHit = false;
-			}
-			if ( noHit ) {
-				this.position += this.sTag.length();
-				next();
-				return;
-			}
-			final int pEnd = this.sXML.indexOf('>', pLabel);
-			if ( pEnd<pLabel+this.sTag.length() ) {
-				this.level++;
-				return;
-			}
-			if ( this.sXML.charAt(pEnd-1)=='/' ) {
-				this.level--;
-			}
-			this.position = pEnd+1;
-			next();
-		}
-		private String getFixedString() {
-			next();
-			if ( this.level<0 ) {
-				return null;
-			}
-			String result = this.sXML.substring(0, this.position);
-			for ( int i=0; i<this.level; i++) {
-				result += "</"+this.sTag+">";
-			}
-			result += this.sTail;
-			return result;
-		}
-		static String fixXML(String s) {
-			return new FixEndOfXML(s, "string", "</void></object></java>").getFixedString();
-		}
-	}
+	
+	/** decode objects that have been serialized to xml.
+	 * This method tries to fix xml that has been broken by some characters missing in the end.
+	 * This has been found in some older DB during upgrade from EJBCA 3.4, and seemed to be due to 
+	 * internationalized characters. This seemed to truncate the XML somehow, and here we try to handle that
+	 * in a nice way.  
+	 */
 	private UserDataVO decodeXML(final String sXML, final boolean lastTry) {
 		final byte baXML[];
 		try {
@@ -301,7 +250,7 @@ public class CertReqHistoryData implements Serializable {
 				if ( lastTry ) {
 					return null;
 				}
-				final String sFixedXML = FixEndOfXML.fixXML(sXML);
+				final String sFixedXML = FixEndOfBrokenXML.fixXML(sXML, "string", "</void></object></java>");
 				if ( sFixedXML==null ) {
 					throw new NotPossibleToFixXML();					
 				}

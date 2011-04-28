@@ -42,13 +42,17 @@
 		<fileset dir="${jdbc.driver.dir}" includes="*.jar"/>
 	</path>
 
-	<path id="test.classpath">
+	<path id="test.classpath-nojdbc">
 		<path refid="compile.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
-		<path refid="jdbc-jars.classpath"/>
 		<path location="${build-test.dir}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 		<path refid="lib.junit.classpath"/>
+	</path>
+
+	<path id="test.classpath">
+		<path refid="test.classpath"/>
+		<path refid="jdbc-jars.classpath"/>
 	</path>
 
 	<path id="generate.classpath">
@@ -171,10 +175,35 @@
     	<echounlesstrue unless-true="databaseschemarest.ok" message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
 
+	<target name="test" depends="compile-test" description="Run tests for this module">
+    	<antcall target="showtime"/>
+    	<property name="reports.dir" location="${reports.base.dir}/test"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<echo message=" ** Running stand-alone tests. **"/>
+		<junit printsummary="yes" haltonfailure="no" dir="${this.dir}">
+			<classpath>
+	    		<path refid="test.classpath-nojdbc"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}" includes="org/ejbca/util/**/*Test.class" excludes=""/>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
+    	<antcall target="showtime"/>
+    </target>
+
     <target name="compile-test" depends="with.clover, ejbca-util, build">
     	<mkdir dir="${build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"/>
+		<copy todir="${build-test.dir}" failonerror="true">
+			<fileset dir="${src-test.dir}">
+				<include name="**/*.xml"/>
+			</fileset>
+		</copy>
     </target>
 
     <target name="generate-dbscripts" description="Generate create and drop script for the configured database." depends="compile-test, handlepersistence">
@@ -184,5 +213,25 @@
     	<mkdir dir="${ejbca.home}/dist"/>
 		<java classname="org.ejbca.util.DatabaseSchemaScriptCreator" classpathref="generate.classpath" args="${ejbca.home}/doc/sql-scripts ${database.name}"/>
     </target>
+
+	<target name="runone" depends="compile-test">
+		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
+    	<property name="reports.dir" location="${reports.base.dir}/runone"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+        		<path refid="test.classpath-nojdbc"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/${test.runone}.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
+	</target>
 
 </project>
