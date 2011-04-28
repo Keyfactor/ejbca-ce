@@ -1189,7 +1189,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     public void revokeCert(Admin admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason) throws AuthorizationDeniedException,
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         if (log.isTraceEnabled()) {
-            log.trace(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ")");
+            log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
         }
         // Check that the admin has revocation rights.
         if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
@@ -1271,10 +1271,10 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (certificateProfile != null) {
             publishers = certificateProfile.getPublisherList();
             if ( publishers==null || publishers.size()==0 ) {
-                log.debug("No publishers defined for certificate with serial #"+certserno+ " issued by "+issuerdn);
+                log.debug("No publishers defined for certificate with serial #"+certserno.toString(16)+ " issued by "+issuerdn);
             }
         } else {
-            log.warn("No certificate profile for certificate with serial #"+certserno+" issued by "+issuerdn);
+            log.warn("No certificate profile for certificate with serial #"+certserno.toString(16)+" issued by "+issuerdn);
         }
         // Revoke certificate in database and all publishers
         certificateStoreSession.setRevokeStatus(admin, issuerdn, certserno, revocationdate, publishers, reason, userDataDN);
