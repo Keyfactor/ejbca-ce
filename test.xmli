@@ -13,6 +13,7 @@
 
     <target name="test:runsa" description="run stand-alone JUnit test cases">
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" />
+    	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     </target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear">
@@ -30,6 +31,7 @@
     	    <path>
 				<fileset dir="${ejbca.home}" id="test.runone.fileset">
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-entity/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 				</fileset>
@@ -38,6 +40,9 @@
     	</pathconvert>
     	<condition property="module" value="modules/ejbca-ejb">
     		<matches string="${test-fullname}" pattern="^modules/ejbca-ejb/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ejbca-entity">
+    		<matches string="${test-fullname}" pattern="^modules/ejbca-entity/.*$"/>
     	</condition>
     	<condition property="module" value="modules/externalra">
     		<matches string="${test-fullname}" pattern="^modules/externalra/.*$"/>

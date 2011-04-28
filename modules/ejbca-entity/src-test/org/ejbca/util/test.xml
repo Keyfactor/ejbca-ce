@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.6.0_18" class="java.beans.XMLDecoder">
+ <object class="org.ejbca.core.model.ra.UserDataVO">
+  <void property="CAId">
+   <int>-1916092745</int>
+  </void>
+  <void property="DN">
+   <string>CN=Mustafa GÖKCEK,SN=10022428256,T=Şirket Müdürü,O=Gökcek Mühendislik Güneş Enerji Doğal Gaz Elektrik Elektronik Makina İnşaat Nakliye Pazarlama İthalat İhracat Sanayi Ticaret Limited Şirketi,L=Kayseri,C=TR</string>
+  </void>
+  <void property="certificateProfileId">
+   <int>882418189</int>
+  </void>
+  <void property="email">
+   <string>info@incisolar.com</string>
+  </void>
+  <void property="endEntityProfileId">
+   <int>742506063</int>
+  </void>
+  <void property="hardTokenIssuerId">
+   <int>885775217</int>
+  </void>
+  <void property="password">
+   <string>8rwXGAh</string>
+  </void>
+  <void property="status">
+   <int>10</int>
+  </void>
+  <void property="subjectAltName">
+   <string>RFC822NAME=info@incisolar.com</string>
+  </void>
+  <void property="timeCreated">
+   <object class="java.util.Date">
+    <long>1238676660589</long>
+   </object>
+  </void>
+  <void property="timeModified">
+   <object class="java.util.Date">
+    <long>1238678371492</long>
+   </object>
+  </void>
+  <void property="tokenType">
+   <int>897457823</int>
+  </void>
+  <void property="type">
+   <int>1</int>
+  </void>
+  <void property="username">
+   <string>10022428256</string>
+  </void>
+ </object>
+</java>

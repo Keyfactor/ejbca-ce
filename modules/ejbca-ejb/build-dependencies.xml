@@ -303,6 +303,7 @@
 			<copy todir="${src-temp.dir}/certhist">
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/ca/store/CertReqHistoryData.java"/>
+	    			<include name="org/ejbca/util/FixEndOfBrokenXML.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
