@@ -10,7 +10,7 @@
   <note>
   <p><strong>2011-03-08: EJBCA 4.0.1 and cert-cvc 1.2.12 with EAC ePassport support is now out!</strong>
   <br/>Visit the <a href="download.html">download</a> section. There is also a LiveCD!
-  </p>
+  </p><p><strong>2011-04-29: EJBCA 3.11.2 released.</strong></p>
   </note>
   <note>
   The cert-cvc library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
