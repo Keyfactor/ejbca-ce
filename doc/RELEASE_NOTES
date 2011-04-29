@@ -1,3 +1,17 @@
+EJBCA 3.11.2 
+------------
+This is a maintenance release containing 11 bug fixes, and 12 new features/improvements.
+
+* Noteworthy changes: 
+- Several bug fixes
+- Increased algorithm support on PKCS11 HSMs
+- Added a webservice based RA written by Daniel Horn
+- Possibility to disable the command line interface
+- New CA CLI commands to import CRLs and certificates which are useful when migrating to EJBCA
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.1
 -----------
 This is a maintenance release – only one issue is resolved.
