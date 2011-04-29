@@ -20,10 +20,9 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.log4j.Logger;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 /**
  * 
@@ -64,7 +63,10 @@ public class FixEndOfBrokenXMLTest extends TestCase {
 		assertFalse("Only possible to fix "+nrOfBytesMissing+" missing bytes. We should be able to handle "+limit+" missing bytes.", nrOfBytesMissing<limit);
 	}
 	public void test01() throws Exception {
-		final byte xml[] = readXmlFromFile();
+		final byte testXml[] = readXmlFromFile();
+		// We need to decode and encode it with the current JDK we are running, 
+		// because the JDK version is in the XML and different JDKs add different amount of whitespace
+		byte[] xml = decodeAndEncode(testXml);		
 		for ( int nrOfBytesMissing = 0; xml.length>nrOfBytesMissing; nrOfBytesMissing++ ) {
 			final byte brokenXml[] = Arrays.copyOf(xml, xml.length-nrOfBytesMissing);
 			final byte fixedXml[] = FixEndOfBrokenXML.fixXML(new String(brokenXml, "UTF-8"), "string", "</void></object></java>").getBytes("UTF-8");
@@ -81,32 +83,23 @@ public class FixEndOfBrokenXMLTest extends TestCase {
 				return;
 			}
 			final byte decodedXml[] = baos.toByteArray();
-			// We have to remove the first 64 bytes of the xml, because it contains the java version used, 
-			// and the java version running this test can be different from the java version that created the test.xml file
-			byte[] xmlsub = ArrayUtils.subarray(xml, 64, xml.length+1);
-			// Trim space in the beginning and end, seems some JDK version behave differently
-			if (xmlsub[0] == ' ') {
-				xmlsub = ArrayUtils.remove(xmlsub, 0);
-			}
-			if (xmlsub[xmlsub.length-1] == ' ') {
-				xmlsub = ArrayUtils.remove(xmlsub, xmlsub.length-1);
-			}
-			byte[] decodedxmlsub = ArrayUtils.subarray(decodedXml, 64, decodedXml.length+1);
-			// Trim space in the beginning and end, seems some JDK version behave differently
-			if (decodedxmlsub[0] == ' ') {
-				decodedxmlsub = ArrayUtils.remove(decodedxmlsub, 0);
-			}
-			if (decodedxmlsub[decodedxmlsub.length-1] == ' ') {
-				decodedxmlsub = ArrayUtils.remove(decodedxmlsub, decodedxmlsub.length-1);
-			}
 			int limit = 32;
-			if ( !Arrays.equals(xmlsub,decodedxmlsub) ) {
+			if ( !Arrays.equals(xml,decodedXml) ) {
 				if (nrOfBytesMissing < limit) {
-					assertEquals("Only possible to fix "+nrOfBytesMissing+" missing bytes. We should be able to handle "+limit+" missing bytes.", new String(xmlsub), new String(decodedxmlsub));
+					assertEquals("Only possible to fix "+nrOfBytesMissing+" missing bytes. We should be able to handle "+limit+" missing bytes.", new String(xml), new String(decodedXml));
 				}
 				notPossibleToRemoveMoreBytes(nrOfBytesMissing, brokenXml);
 				return;
 			}
 		}
+	}
+
+	private byte[] decodeAndEncode(final byte[] testXml) {
+		final XMLDecoder dec = new XMLDecoder(new ByteArrayInputStream(testXml));
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		final XMLEncoder encoder = new XMLEncoder(baos);
+		encoder.writeObject(dec.readObject());
+		encoder.close();
+		return baos.toByteArray();
 	}
 }
