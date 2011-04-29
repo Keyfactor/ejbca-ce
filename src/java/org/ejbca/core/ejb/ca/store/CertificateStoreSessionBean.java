@@ -686,6 +686,8 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
         log.trace("<removeCertReqHistData()");       	
     }
     
+    // getCertReqHistory() might perform database updates, so we always need to run this in a transaction
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public CertReqHistory getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN){
     	CertReqHistory retval = null;
@@ -696,6 +698,8 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     	return retval;
     }
 
+    // getCertReqHistory() might perform database updates, so we always need to run this in a transaction
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public List<CertReqHistory> getCertReqHistory(Admin admin, String username){
     	ArrayList<CertReqHistory> retval = new ArrayList<CertReqHistory>();

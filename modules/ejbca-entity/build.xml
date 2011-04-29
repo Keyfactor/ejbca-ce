@@ -216,6 +216,7 @@
 
 	<target name="runone" depends="compile-test">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
+        <copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
     	<property name="reports.dir" location="${reports.base.dir}/runone"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
