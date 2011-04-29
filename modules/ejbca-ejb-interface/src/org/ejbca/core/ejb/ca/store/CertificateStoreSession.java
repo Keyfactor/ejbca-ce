@@ -342,6 +342,10 @@ public interface CertificateStoreSession {
     /**
      * Retrieves the certificate request data belonging to given certificate serialnumber and issuerdn
      * 
+	 * NOTE: This method will try to repair broken XML and will in that case
+	 * update the database. This means that this method must always run in a
+	 * transaction! 
+	 * 
      * @param admin
      * @param certificateSN serial number of the certificate
      * @param issuerDN
@@ -349,7 +353,13 @@ public interface CertificateStoreSession {
      */
     public CertReqHistory getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN);
 
-    /** @return all certificate request data belonging to a user. */
+    /**
+	 * NOTE: This method will try to repair broken XML and will in that case
+	 * update the database. This means that this method must always run in a
+	 * transaction! 
+	 * 
+     * @return all certificate request data belonging to a user.
+     */
     public List<CertReqHistory> getCertReqHistory(Admin admin, String username);
 
     /**
