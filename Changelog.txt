@@ -1,3 +1,34 @@
+EJBCA 3.11.2, 2011-04-29
+
+** Bug
+    * [ECA-1981] - End Entity History: Administrator is not listed right (NullPointerException)
+    * [ECA-1996] - NPE in approvals page when logged in as RA Admin without End Entity Profiles access rights
+    * [ECA-2008] - Date in certificate profile decreased by one if different daylight savings time
+    * [ECA-2024] - External CAs are set to expired, and treated as normal CAs giving exceptions in log
+    * [ECA-2037] - Compilations fails on JDK 5
+    * [ECA-2092] - Not possible to revoke some certificate after upgrading from 3.4.x to 3.11.1
+    * [ECA-2102] - Some WS calls do not write the DN and issuer DN of the client making the call to the WS transaction log.
+    * [ECA-2120] - External OCSP does not deploy on JBoss 5.1
+    * [ECA-2127] - Republishing a revoked certificate to VA does not work
+    * [ECA-2131] - Republish button in Admin GUI's view certificate page will not work when CertReqHistory isn't present for the certificate.
+    * [ECA-2135] - Republish button in Admin GUI does not work for special characters
+
+** Improvement
+    * [ECA-2012] - Support named curves for Brainpool ECC in PKCS11 HSMs
+    * [ECA-2082] - Add note about potential future error in fresh installations on EJBCA 3.11.0 and 3.11.1 on MySQL.
+
+** New Feature
+    * [ECA-2009] - Add GlassFish database schema for Oracle
+    * [ECA-2013] - Support SHA224WithECDSA on PKCS11 HSMs
+    * [ECA-2014] - Support signing with SHA256WithRSAandMGF1 on PKCS11 HSMs
+    * [ECA-2018] - Possibility to disable command line interface
+    * [ECA-2021] - WS Call for retrieving CA path
+    * [ECA-2022] - Add Web Service RA standalone application
+    * [ECA-2083] - Add Import CRL to the EJBCA CLI
+    * [ECA-2093] - CA CLI: Add import certificates from a directory of PEM files
+    * [ECA-2112] - Web service operation issuing certificate from public key
+    * [ECA-2141] - ExtRA certificate request that also edit user and sets serial number
+
 4.0.1, 2011-03-08
 ---
 Bug
