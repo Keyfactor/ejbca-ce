@@ -206,8 +206,9 @@ public class CertReqHistoryData implements Serializable {
 	 * This is the method that should be used to retreive cert req history 
 	 * correctly.
 	 * 
-	 * NOTE: This method will under some circumstances update the database and
-	 * must always run in a transaction! 
+	 * NOTE: This method will try to repair broken XML and will in that case
+	 * update the database. This means that this method must always run in a
+	 * transaction! 
 	 * 
 	 * @return certificate request history object
 	 */
