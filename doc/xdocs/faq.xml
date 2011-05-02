@@ -7,13 +7,13 @@
   <faqsection title="General">
     <faq id="jboss600">
      <question>
-      I get an error during installation on JBoss 6.0.0, using Oracle JDK.
+      I get an error during installation on JBoss 6.0.0 (or JBoss 5.1), using Oracle JDK.
       </question>
       <answer>
       <p>
       This is because JBoss 6.0.0 have a bug using security providers with Oracle JDK. See JBoss issue <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>.
       </p><p>Everything works fine using openJDK. The only way to work around this with Oracle JDK is to copy ejbca/lib/bc*.jar to $JAVA_HOME/jre/lib/ext. If you are unsure about this workaround
-      (and the implications it has for upgrades) we suggest using JBoss 5.1.0 instead.
+      (and the implications it has for upgrades) we suggest using JBoss 5.1.0 instead, where there is a simpler workaround decribed in the install guide.
       </p>
       </answer>    
     </faq>
@@ -224,6 +224,18 @@ fi
       </p>
       </answer>
     </faq>
+	
+	<faq id="subjectAltNameSize">
+	  <question>
+	  I get an exception reporting an SQL error like "Value too large for column USERDATA.SUBJECTALTNAME" when adding a new user.
+	  </question>
+  	  <answer>
+	  <p>
+	  This can happen if you have specified  one or more fields of the "Subject Alternative Name" with a total length exceeding 255 characters.
+	  To avoid this problem you can safely extend the size of the column SUBJECTALTNAME of the table USERDATA.
+	  </p>
+	  </answer>  
+	</faq>
 
     <faq id="jbossServiceWin">
       <question>How can I run JBoss as a service in Windows?</question>
