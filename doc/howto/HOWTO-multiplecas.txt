@@ -25,7 +25,7 @@ If you want the certicates from the production CA published in LDAP, start by cr
 with 'Edit publishers'. Consult HOWTO-LDAP.txt for help with this.
 
 Create your production CA with the admin GUI. This is done with 'Edit Certificate Authorities'.
-If the CA will use a publisher select your publisher as 'CRL Publishers'. The ProdCA can for example have 
+If the CA will use a publisher select your publisher as 'Publishers'. The ProdCA can for example have 
 a DN 'CN=ProdCA,O=Foo,DC=bigcorp,dc=com'.
 
 Creating an administrator for ProdCA
