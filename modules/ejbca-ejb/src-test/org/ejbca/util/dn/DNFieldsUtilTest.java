@@ -19,8 +19,7 @@ import junit.framework.TestCase;
  * @author primelars
  * @version $Id$
  */
-// TODO: Rename to DNFieldsUtilTest
-public class TestDNFieldsUtil extends TestCase {
+public class DNFieldsUtilTest extends TestCase {
     final private static String trickyValue1=" 10/2=5; 2 backs and a comma\\\\\\\\\\, 8/2=4 2 backs\\\\\\\\";// last comma is end of value since it is a even number (4) of \ before
     final private static String trickyValue2="\\,";// a single comma
     final private static String trickyValue3="\\\\\\\\\\\\\\,";// 3 backs and a comma
