@@ -27,7 +27,7 @@ Version is 1.2.16.
 
 cert-cvc.jar is a library for handling Card Verifiable Certificates, developed
 by Keijo Kurkinen, and contributed to EJBCA. License is LGPL.
-Version is 1.2.12.
+Version is 1.2.13.
 cert-cvc.jar is built from the sub project cert-cvc of EJBCA.
 
 libidn.jar: version 0.6.9, http://www.gnu.org/software/libidn/, java library is LGPL.
