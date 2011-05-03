@@ -12,7 +12,7 @@ This CA is not exposed to users and other administrator.
 
 Installing EJBCA 
 ----------------
-Installation of ejbca is done with the regular installation instruction. 
+Installation of EJBCA is done with the regular installation instruction. 
 This will create an initial RootCA.
 You can call this AdminCA. The certificate for the superadministrator and for the tomcat server
 is issued by this CA.
@@ -21,7 +21,7 @@ superadmin.
 
 Creating the production CA (ProdCA)
 -----------------------------------
-If you want the certicates from the production CA published in LDAP, start by creating a new publisher
+If you want the certificates from the production CA published in LDAP, start by creating a new publisher
 with 'Edit publishers'. Consult HOWTO-LDAP.txt for help with this.
 
 Create your production CA with the admin GUI. This is done with 'Edit Certificate Authorities'.
@@ -38,7 +38,7 @@ Add a new end entity with the administrators DN etc. CA should be ProdCA and don
 Issue the certificate for the administrator.
 Create a new administrator group for the CA and edit access rules to what you like, for example 'CA Administrators'.
 Add the new administrator the the admin group by selecting for example 'CN' in the drop down list and 
-giving the administrators CN. You can also use other attributes such as the certificate serialnumber etc.
+giving the administrators CN. You can also use other attributes such as the certificate serial number etc.
 When you create the administrator group, do not forget to select ProdCA from the drop-down.
 
 In order for JBoss to accept certificate issued by ProdCA for SSL connections, you must add the ProdCA certificate
