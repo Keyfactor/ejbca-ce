@@ -30,9 +30,6 @@ ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 # Possible values are:
 # soft
 # org.ejbca.core.model.ca.catoken.PKCS11CAToken
-# org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken
-# org.ejbca.core.model.ca.catoken.NFastCAToken
-# org.ejbca.core.model.ca.catoken.EracomCAToken
 # se.primeKey.caToken.card.PrimeCAToken
 #
 # Default: soft
@@ -48,6 +45,7 @@ ca.tokenpassword=null
 # by the administrative CA. Same as the Hard CA Token Properties in Admin gui.
 # Remove everything in the file and add your own configuration.
 # Note that this must be a full path.
+# On windows use / instead of \
 #ca.tokenproperties=/home/ejbca/ejbca/conf/catoken.properties
 
 # The keyspec for the administrative CAs key. 
