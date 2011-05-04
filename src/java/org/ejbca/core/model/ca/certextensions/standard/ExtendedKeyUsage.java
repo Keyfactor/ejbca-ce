@@ -38,23 +38,14 @@ import org.ejbca.core.model.ra.UserDataVO;
 public class ExtendedKeyUsage extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(ExtendedKeyUsage.class);
 
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+	@Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.ExtendedKeyUsage.getId());
         // Extended Key Usage may be either critical or non-critical
 		super.setCriticalFlag(certProf.getExtendedKeyUsageCritical());
 	}
-	/**
-	 * Method that should return the DEREncodable value used in the extension
-	 * this is the method at all implementors must implement.
-	 * 
-	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
-	 * @param certProfile the certificate profile
-	 * @return a DEREncodable or null.
-	 */
+	
+	@Override
 	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		org.bouncycastle.asn1.x509.ExtendedKeyUsage ret = null;
         // Get extended key usage from certificate profile

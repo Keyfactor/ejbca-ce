@@ -34,22 +34,13 @@ import org.ejbca.core.model.ra.UserDataVO;
  */
 public class OcspNoCheck extends StandardCertificateExtension {
 	
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+	@Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
 		super.setCriticalFlag(false);
 	}
-	/**
-	 * Method that should return the DEREncodable value used in the extension
-	 * this is the method at all implementors must implement.
-	 * 
-	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
-	 * @param certProfile the certificate profile
-	 * @return a DEREncodable or null.
-	 */
+	
+	@Override
 	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		return new DERNull();
 	}	

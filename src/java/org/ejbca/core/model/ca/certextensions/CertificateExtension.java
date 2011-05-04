@@ -109,7 +109,7 @@ public abstract class CertificateExtension {
 		this.criticalFlag = criticalFlag;
 	
 		this.properties = new Properties();
-		Iterator keyIter = config.keySet().iterator();
+		Iterator<Object> keyIter = config.keySet().iterator();
 		String matchString = "id" + id + ".property."; 
 		while(keyIter.hasNext()){
 			String nextKey = (String) keyIter.next();
@@ -129,8 +129,9 @@ public abstract class CertificateExtension {
 	 * @param ca the CA data with access to all the keys etc
 	 * @param certProfile the certificate profile
 	 * @param userPublicKey public key of the user, or null if not available
+	 * @param caPublicKey public key of the CA, or null if not available
 	 * @return a DEREncodable or null, if this extension should not be used, which was determined from the values somehow.
-	 * @throws CertificateExtensionException TODO
+	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
 	 */
 	public abstract DEREncodable getValue(UserDataVO userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
 

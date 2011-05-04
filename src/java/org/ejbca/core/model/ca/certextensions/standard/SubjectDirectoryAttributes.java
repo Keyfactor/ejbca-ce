@@ -41,23 +41,14 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
 public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);
 
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+	@Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.SubjectDirectoryAttributes.getId());
 		// Subject Directory Attributes must always be non-critical
 		super.setCriticalFlag(false);
 	}
-	/**
-	 * Method that should return the DEREncodable value used in the extension
-	 * this is the method at all implementors must implement.
-	 * 
-	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
-	 * @param certProfile the certificate profile
-	 * @return a DEREncodable or null.
-	 */
+	
+	@Override
 	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DEREncodable ret = null;
 		final String dirAttrString  = subject.getExtendedinformation() != null ? subject.getExtendedinformation().getSubjectDirectoryAttributes() : null;

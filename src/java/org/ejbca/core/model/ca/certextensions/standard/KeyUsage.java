@@ -36,22 +36,13 @@ import org.ejbca.util.CertTools;
 public class KeyUsage extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(KeyUsage.class);
 
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+	@Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.KeyUsage.getId());
 		super.setCriticalFlag(certProf.getKeyUsageCritical());
 	}
-	/**
-	 * Method that should return the DEREncodable value used in the extension
-	 * this is the method at all implementors must implement.
-	 * 
-	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
-	 * @param certProfile the certificate profile
-	 * @return a DEREncodable or null.
-	 */
+	
+	@Override
 	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		// Key usage
 		X509KeyUsage ret = null;

@@ -49,22 +49,13 @@ import org.ejbca.core.model.ra.UserDataVO;
 public class CertificatePolicies extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(CertificatePolicies.class);
 	
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+	@Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(X509Extensions.CertificatePolicies.getId());
 		super.setCriticalFlag(certProf.getCertificatePoliciesCritical());
 	}
-	/**
-	 * Method that should return the DEREncodable value used in the extension
-	 * this is the method at all implementors must implement.
-	 * 
-	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
-	 * @param certProfile the certificate profile
-	 * @return a DEREncodable or null.
-	 */
+	
+	@Override
 	public DEREncodable getValue(final UserDataVO subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DERSequence ret = null;
     	// The UserNotice policy qualifier can have two different character encodings,
