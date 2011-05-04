@@ -365,8 +365,11 @@ table.search tr td {
 }
 table.search tr td select option.separator {
 	border-top: 1px solid #A0A0A0;
-	background-color: #D0D0D0;
-	color: #404040;
+	border-color: rgba(0,0,0,.30);
+	background-color: #D0D0D0;		/* Keep it, for old web browsers */
+	background-color: rgba(0,0,0,.10);
+	color: #404040;					/* Keep it, for old web browsers */
+	color: rgba(0,0,0,.65);
 	font-weight: bold;
 }
 table.search tr td select.day {
