@@ -221,7 +221,6 @@ ocsp.signaturealgorithm  = ${ocsp.signaturealgorithm}
 datasource.jndi-name     = ${datasource.jndi-name}
 datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
 database.name            = ${database.name}
-datasource.mapping       = ${datasource.mapping}
 database.url             = ${database.url}
 database.driver          = ${database.driver}
 database.username        = ${database.username}
