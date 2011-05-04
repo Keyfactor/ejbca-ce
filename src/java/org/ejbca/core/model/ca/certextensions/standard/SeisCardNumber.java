@@ -43,15 +43,13 @@ public class SeisCardNumber extends StandardCertificateExtension {
      *  SEIS Cardnumber Extension according to SS 614330/31 */
     public static final String OID_CARDNUMBER = CertificateProfile.OID_CARDNUMBER;	//"1.2.752.34.2.1";
 
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+	@Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(SeisCardNumber.OID_CARDNUMBER);
 		super.setCriticalFlag(false);
 	}
 	
-
+	@Override
 	public DEREncodable getValue(final UserDataVO userData, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey)
 			throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		final String cardnumber = userData.getCardNumber();

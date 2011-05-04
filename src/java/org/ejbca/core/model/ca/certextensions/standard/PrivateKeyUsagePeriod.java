@@ -43,26 +43,16 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
 	/** Logger for this class. */
     private static final Logger LOG = Logger.getLogger(PrivateKeyUsagePeriod.class);
 
-	/**
-	 * @see StandardCertificateExtension#init(CertificateProfile)
-	 */
+    @Override
 	public void init(CertificateProfile certProf) {
 		super.setOID(X509Extensions.PrivateKeyUsagePeriod.getId());
 		super.setCriticalFlag(false);
 	}
 
-	/**
-	 * Method that should return the DEREncodable value used in the extension
-	 * this is the method at all implementors must implement.
-	 * 
-	 * @param userData the userdata of the issued certificate.
-	 * @param ca the CA data with access to all the keys etc
-	 * @param certProfile the certificate profile
-	 * @return a DEREncodable or null.
-	 */
+	@Override
 	public DEREncodable getValue(final UserDataVO subject, final CA ca, 
 			final CertificateProfile certProfile, final PublicKey userPublicKey, 
-			final PublicKey argx) throws CertificateExtentionConfigurationException, 
+			final PublicKey caPublicKey) throws CertificateExtentionConfigurationException, 
 			CertificateExtensionException {
         // Construct the start and end dates of PrivateKeyUsagePeriod
         // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
