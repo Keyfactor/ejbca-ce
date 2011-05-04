@@ -388,11 +388,11 @@ public final class EjbcaConfiguration {
      */
     public static int getPasswordLogRounds() {
     	final String PROPERTY_NAME = "ejbca.passwordlogrounds";
-        int time = 1; // cache 30 seconds is the default
+        int time = 1; // only 1 single round is the default
         try {
             time = Integer.valueOf(ConfigurationHolder.getString(PROPERTY_NAME, "1"));
         } catch (NumberFormatException e) {
-            log.error("Invalid value in " + PROPERTY_NAME + ", must be decimal number: " + e.getMessage());
+            log.error("Invalid value in " + PROPERTY_NAME + ", must be decimal number, using 1 round: " + e.getMessage());
         }
         return time;
     }
