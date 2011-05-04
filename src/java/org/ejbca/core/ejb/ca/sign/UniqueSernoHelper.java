@@ -42,6 +42,11 @@ public final class UniqueSernoHelper {
 
 	static private Boolean isUniqueCertificateSerialNumberIndex = null;
 
+	/** Required by multiple entry unit tests since isUniqueCertificateSerialNumberIndex is a static variable. */
+	protected static final void reset() {
+		isUniqueCertificateSerialNumberIndex = null;
+	}
+	
 	/**
 	 * Will test if there is a unique index/constraint for (certificate serial number,issuer DN) first time it is run.
 	 * @return returns true if there is a database index for unique certificate serial number / issuer DN.
