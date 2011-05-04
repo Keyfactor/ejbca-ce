@@ -134,6 +134,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             // used by X509CA
             SernoGenerator.instance().setAlgorithm(EjbcaConfiguration.getRNGAlgorithm());
             SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());
+            // We can not inject ourself, JBoss will not start then therefor we use this to get a reference to this session bean
+            // to call isUniqueCertificateSerialNumberIndex we want to do it on the real bean in order to get
+            // the transaction setting (NOT_SUPPORTED) which suspends the active transaciton and makes the check outside the transaction
             signSession = sessionContext.getBusinessObject(SignSessionLocal.class);
         } catch (Exception e) {
             log.debug("Caught exception in ejbCreate(): ", e);
