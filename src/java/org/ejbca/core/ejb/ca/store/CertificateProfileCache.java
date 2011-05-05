@@ -110,7 +110,7 @@ public final class CertificateProfileCache {
         	if (!force && cacheCertificateProfileTime!=0 && lastUpdate+cacheCertificateProfileTime > now) {
         		return;	// We don't need to update cache
         	}
-        	lastUpdate = now;
+        	lastUpdate = now; // make sure next thread does not also pass the update test
         } finally {
         	lock.unlock();
         }

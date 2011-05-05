@@ -149,12 +149,12 @@ public interface CertificateProfileSession {
             throws CertificateProfileExistsException;
 
     /**
-     * Method to check if a CA exists in any of the certificate profiles. Used
+     * Method to check if a CA exists in any of the End Entity certificate profiles. Used
      * to avoid desynchronization of CA data.
      *
      * @param admin Administrator performing the operation
      * @param caid  the caid to search for.
-     * @return true if CA exists in any of the certificate profiles.
+     * @return true if CA exists in any of the End Entity certificate profiles.
      */
     public boolean existsCAInCertificateProfiles(Admin admin, int caid);
     
