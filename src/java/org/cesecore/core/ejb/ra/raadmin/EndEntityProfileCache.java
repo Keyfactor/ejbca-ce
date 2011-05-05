@@ -88,7 +88,7 @@ public final class EndEntityProfileCache {
         	if (!force && cacheEndEntityProfileTime!=0 && lastUpdate+cacheEndEntityProfileTime > now) {
         		return;	// We don't need to update cache
         	}
-        	lastUpdate = now;
+        	lastUpdate = now; // make sure next thread does not also pass the update test
         } finally {
         	lock.unlock();
         }
