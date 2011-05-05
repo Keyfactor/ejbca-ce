@@ -44,8 +44,7 @@ function viewcert(link){
      <br /><h:messages  layout="table" errorClass="alert"/><br />
      <h:outputText value="#{web.text.CURRENTSTATUS}"/> <h:outputText value=" : "/> <h:outputText value="#{approvalActionSession.approveRequestData.status}"/><br />     
    </h3>
-   <h4 align="center">
-   	</h4>
+
    	<table border="0" cellpadding="5" width="100%">
    	   	<tr id="Row0">
    			<td><h:outputText value="#{web.text.REQUESTDATE}"/></td>
