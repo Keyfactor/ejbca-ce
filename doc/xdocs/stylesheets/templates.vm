@@ -247,18 +247,18 @@
               //  -->
         </script>
       </p>
-      <!-- Piwik -->
+<!-- Piwik -->
 <script type="text/javascript">
-var pkBaseURL = (("https:" == document.location.protocol) ? "https://sourceforge.net/apps/piwik/ejbca/" : "http://sourceforge.net/apps/piwik/ejbca/");
+var pkBaseURL = (("https:" == document.location.protocol) ? "https://stat.primekey.se/piwik/" : "http://stat.primekey.se/piwik/");
 document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
 </script><script type="text/javascript">
 try {
-var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
+var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 5);
 piwikTracker.trackPageView();
 piwikTracker.enableLinkTracking();
 } catch( err ) {}
-</script><noscript><p><img src="http://sourceforge.net/apps/piwik/ejbca/piwik.php?idsite=1" style="border:0" alt=""/></p></noscript>
-<!-- End Piwik Tag -->
+</script><noscript><p><img src="http://stat.primekey.se/piwik/piwik.php?idsite=5" style="border:0" alt="" /></p></noscript>
+<!-- End Piwik Tracking Code -->
     </body>
   </html>
 #end
