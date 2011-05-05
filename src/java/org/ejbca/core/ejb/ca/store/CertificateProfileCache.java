@@ -60,11 +60,11 @@ public final class CertificateProfileCache {
      */
 
     /** Cache of mappings between profileId and profileName */
-    private transient volatile Map<Integer, String> idNameMapCache = null;
+    private volatile Map<Integer, String> idNameMapCache = null;
     /** Cache of mappings between profileName and profileId */
-    private transient volatile Map<String, Integer> nameIdMapCache = null;
+    private volatile Map<String, Integer> nameIdMapCache = null;
     /** Cache of certificate profiles, with Id as keys */
-    private transient volatile Map<Integer, CertificateProfile> profileCache = null;
+    private volatile Map<Integer, CertificateProfile> profileCache = null;
 
     private volatile long lastUpdate = 0;
 
