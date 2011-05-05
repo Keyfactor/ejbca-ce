@@ -21,8 +21,8 @@
   <% if(globalconfiguration.getIssueHardwareTokens()){ %>
   <p><c:out value="<%= ejbcawebbean.getText(\"ORTOKENSERIALPATTERN\") %>"/>
     <input type="text" name="<%=TEXTFIELD_TOKENSERIALNUMBER %>" size="33" maxlength="255" 
-     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDTOKEN)) %>
-          value='<c:out value="<%= oldactionvalue %>"/>'
+     <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDTOKEN)) { %>
+          value='<c:out value="<%= oldactionvalue %>"/>' <%}%>
      >
     &nbsp;
     <input type="submit" name="<%=BUTTON_FINDTOKEN %>" value='<c:out value="<%= ejbcawebbean.getText(\"SEARCH\") %>"/>' 
