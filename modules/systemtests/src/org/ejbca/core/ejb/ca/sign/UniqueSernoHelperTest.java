@@ -22,12 +22,14 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
-import junit.framework.TestCase;
+import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.util.CryptoProviderTools;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test the behavior of UniqueSernoHelper with help of a mock CertificateStoreSession.
@@ -35,7 +37,7 @@ import org.ejbca.util.CryptoProviderTools;
  * 
  * @version $Id$
  */
-public class UniqueSernoHelperTest extends TestCase {
+public class UniqueSernoHelperTest {
 
 	private static final Logger log = Logger.getLogger(UniqueSernoHelperTest.class);
 	private static final Class<?>[] cs = {CertificateStoreSession.class};
@@ -46,8 +48,8 @@ public class UniqueSernoHelperTest extends TestCase {
 	
 	private static Certificate dummyCert = null;
 	
-	public UniqueSernoHelperTest(String name) {
-		super(name);
+	@BeforeClass
+	public static void beforeClass() {
 		CryptoProviderTools.installBCProvider();
 	}
 	
@@ -57,6 +59,7 @@ public class UniqueSernoHelperTest extends TestCase {
 	 * Expected result:
 	 * - Index is not present
 	 */
+	@Test
 	public void test01BothCertsPresent() throws Exception {
 		log.trace(">test01BothCertsPresent");
 		testInternal(false, new CertificateStoreSessionMock(getDummyCert(), getDummyCert(), null, null));
@@ -70,6 +73,7 @@ public class UniqueSernoHelperTest extends TestCase {
 	 * Expected result:
 	 * - Index is present
 	 */
+	@Test
 	public void test02FirstCertsPresent() throws Exception {
 		log.trace(">test02BothCertsPresent");
 		testInternal(true, new CertificateStoreSessionMock(getDummyCert(), null, new Exception(), null));
@@ -83,6 +87,7 @@ public class UniqueSernoHelperTest extends TestCase {
 	 * Expected result:
 	 * - Index is not present
 	 */
+	@Test
 	public void test03FirstCertsPresent() throws Exception {
 		log.trace(">test03BothCertsPresent");
 		testInternal(false, new CertificateStoreSessionMock(getDummyCert(), null, true, true));
@@ -96,11 +101,12 @@ public class UniqueSernoHelperTest extends TestCase {
 	 * Expected result:
 	 * - RuntimeException
 	 */
+	@Test
 	public void test04DatabaseError() throws Exception {
 		log.trace(">test04DatabaseError");
 		try {
 			testInternal(false, new CertificateStoreSessionMock(null, null, new Exception(), null));
-			fail(NO_DATABASE_ERROR);
+			Assert.fail(NO_DATABASE_ERROR);
 		} catch (RuntimeException e) {
 			log.debug("This is the expected Exception we get in case of database failure:", e);
 		}
@@ -115,6 +121,7 @@ public class UniqueSernoHelperTest extends TestCase {
 	 * Expected result:
 	 * - Index is not present
 	 */
+	@Test
 	public void test05NoCertsNoIndex() throws Exception {
 		log.trace(">test05NoCertsNoIndex");
 		testInternal(false, new CertificateStoreSessionMock(null, null, true, true));
@@ -129,6 +136,7 @@ public class UniqueSernoHelperTest extends TestCase {
 	 * Expected result:
 	 * - Index is present
 	 */
+	@Test
 	public void test06NoCertsIndex() throws Exception {
 		log.trace(">test06NoCertsIndex");
 		testInternal(true, new CertificateStoreSessionMock(null, null, true, new Exception()));
@@ -142,11 +150,11 @@ public class UniqueSernoHelperTest extends TestCase {
 		UniqueSernoHelper.reset();
         // Multiple entries should give the same result, so we run the test twice
 		if (indexExpectedToBePresent) {
-	        assertTrue(MOCKED_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
-	        assertTrue(MOCKED_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
+			Assert.assertTrue(MOCKED_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
+			Assert.assertTrue(MOCKED_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
 		} else {
-	        assertFalse(MOCKED_NO_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
-	        assertFalse(MOCKED_NO_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
+			Assert.assertFalse(MOCKED_NO_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
+			Assert.assertFalse(MOCKED_NO_INDEX_FAILED, UniqueSernoHelper.isUniqueCertificateSerialNumberIndex(certificateStoreSessionMock));
 		}
 		log.trace("<testInternal");
 	}
