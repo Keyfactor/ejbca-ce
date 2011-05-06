@@ -23,5 +23,6 @@
 	  <li>List User's Certificates - List certificates for a user for whom you know the certificate Distinguished Name.</li>
 	  <li>Check Certificate Status - Check revocation status for a certificate where you know the Issuer Distinguished Name and the serial number.</li>
 	  <li>Administration - Go to the EJBCA Admin-GUI. Requires client certificate authentication.</li>  
+	  <li>Documentation - Go to the on-line EJBCA documentation.</li>  
   </ul>
 <%@ include file="footer.inc" %>

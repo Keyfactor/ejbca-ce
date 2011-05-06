@@ -18,7 +18,7 @@ body {
 	margin: 0em;
 	padding: 0em;
 	background-color: #FFF;
-	color: #000;
+	color: #444;
 	font-size: 11pt;
 }
 code, code *, pre, pre * {
@@ -27,21 +27,6 @@ code, code *, pre, pre * {
 a img {
 	border-width: 0px;
 }
-
-
-/*
-body, ul, li, p {
-    font-family: Georgia, Palatino, Times, serif;
-    font-size: small;
-}
-
-body { 
-    color: #454743; 
-    background-color: #ffffff;
-    margin: 0px;
-    padding: 0px;
-}
-/**/
 
 ul {
     list-style-type: square;
@@ -62,15 +47,18 @@ p {
 
 h1, h2, h3, h4, h5, h6 {
     font-family: "Trebuchet MS", verdana, arial, helvetica, sans-serif;
-    font-weight: bold;
     margin-top: 1em;
-    margin-bottom: 1em;
-    padding-bottom: 5px;
+    margin-bottom: .5em;
 }
 
 h1 {
-    font-size: 160%;
-    color: rgb(218, 92, 5);    
+	color: rgb(218, 92, 5);
+	font-size: 1.8em;
+	text-shadow: .05em .05em 0em rgba(0,0,0,.2);
+	-o-text-shadow: .05em .05em 0em #CCC;
+	-moz-text-shadow: .05em .05em 0em rgba(0,0,0,.2);
+	-khtml-text-shadow: .05em .05em 0em #CCC;
+	-webkit-text-shadow: .05em .05em 0em rgba(0,0,0,.2);
 }
 
 h3 { 
@@ -120,29 +108,53 @@ acronym { border-bottom: none; }
 
 .menu {
     font-size : 90%;
-    padding: 3px 8px 5px 3px;
-    border-left: 1px solid #ddd;
+    padding: 0em 1.2em 1em 1.2em;
 }
 
-.menu a { font-weight:normal; font-style: normal; color: #1081b9; text-decoration : none; }
-.menu a:link {   }
-.menu a:visited {  }
-.menu a:hover { text-decoration: underline; }
-.menu ul { margin: 0px 0px 0px 15px; padding: 0px; }
-.menu li  {  list-style-type: none; font-weight : normal ; }
-.menu ul ul li .sel { list-style-type: none; font-style : italic; }
-.menu ul ul li  { list-style-type: disc; font-weight : normal; }
+.menu a {
+	display: block;
+	padding: .3em 0em;
+	color: #1081b9;
+	text-decoration : none;
+}
+.menu a:link,
+.menu a:visited {
+}
+.menu a:hover,
+.menu a:focus,
+.menu a:active {
+	color: #FF4F00;
+}
+
+.menu ul {
+	margin: 0em;
+	padding: 0em;
+}
+.menu li {
+	margin: 0em;
+	margin-bottom: -1px;
+	padding: 0em;
+	list-style-type: none;
+}
+.menu ul ul li  {
+	list-style-type: none;
+	font-weight : normal;
+}
 
 .menuheader {
-    color: #555;
+	margin-top: 1em;
+	margin-bottom: .25em;
+	padding: 0em 0em .25em 0em;
+	border-bottom: 1px dashed #688B9A;
+	color: #555;
 	font-size: 11pt;
 	font-weight: bold;
-    letter-spacing: 1px;
-    border-bottom: 1px dashed #688B9A;
-    margin-top: 8px;
-    margin-bottom: 5px;
-    padding: 2px;
-    padding-left: 0px;
+	letter-spacing: 1px;
+	text-shadow: .1em .1em 0em rgba(0,0,0,.1);
+	-o-text-shadow: .1em .1em 0em #CCC;
+	-moz-text-shadow: .1em .1em 0em rgba(0,0,0,.1);
+	-khtml-text-shadow: .1em .1em 0em #CCC;
+	-webkit-text-shadow: .1em .1em 0em rgba(0,0,0,.1);
 }
 
 
