@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.loginterface;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.ejbca.core.model.log.LogEntry;
@@ -95,13 +94,10 @@ public class LogEntriesView implements java.io.Serializable {
      * Method that clears the internal data and adds a collection of logentries.
      */ 
     public void setEntries(Collection<LogEntry> logentries) { 
-    	LogEntryView logentryview;   
     	this.logentryviews.clear();
-    	if(logentries!=null && logentries.size() > 0){
-    		Iterator<LogEntry> i = logentries.iterator();
-    		while(i.hasNext()){
-    			LogEntry nextentry = i.next();  
-    			logentryview = new LogEntryView(nextentry, dnproxy, localinfoeventnames, localerroreventnames, localsystemeventnames, localmodulenames, caidtonamemap); 
+    	if (logentries!=null && logentries.size() > 0) {
+    		for (final LogEntry nextentry : logentries) {
+    			LogEntryView logentryview = new LogEntryView(nextentry, dnproxy, localinfoeventnames, localerroreventnames, localsystemeventnames, localmodulenames, caidtonamemap); 
     			logentryview.setSortBy(this.sortby);
     			logentryviews.add(logentryview);
     		}

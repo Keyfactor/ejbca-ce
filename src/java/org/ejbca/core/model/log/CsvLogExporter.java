@@ -17,8 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -29,60 +27,36 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
+import org.ejbca.core.model.util.EjbLocalHelper;
 
+/**
+ * Exports a collection of log entries as, optionally signed, Comma Separated Values (CSV).
+ * 
+ * Depends on CAAdminSession for use of a CA's extended CMS service.
+ * 
+ * @version $Id$
+ */
 public class CsvLogExporter implements ILogExporter {
 	
 	private static final long serialVersionUID = 1L;
-
-	/** Log4j logging */
 	private static final Logger log = Logger.getLogger(CsvLogExporter.class);
 	
-	private Collection<LogEntry> logentries = null;
 	private String signingCA = null;
-	
-	/**
-	 * @see org.ejbca.core.model.log.ILogExporter
-	 */
-	public void setEntries(Collection<LogEntry> logentries) {
-		this.logentries = logentries;
-	}
-	
-	/**
-	 * @see org.ejbca.core.model.log.ILogExporter
-	 */
-	public int getNoOfEntries() {
-		if (logentries == null) {
-			return 0;
-		}
-		return logentries.size();
+
+	public CsvLogExporter(final String signingCA) {
+		this.signingCA = signingCA;
 	}
 
-	/** Gets a CA used to create a signed CMS message of the log export, can be null for plain export
-	 * 
-	 * @return signCA CA (caid in string format, 12345) used to create a signed CMS message of the log export, or null for plain export
-	 */
-	public String getSigningCA() {
-		return signingCA;
-	}
-	
-	public void setSigningCA(String ca) {
-		this.signingCA = ca;
-	}
-
-	/**
-	 * @see org.ejbca.core.model.log.ILogExporter
-	 */
-	public byte[] export(Admin admin, Map<Class<?>, Object> ejbs) throws Exception {
+	/** @see org.ejbca.core.model.log.ILogExporter */
+	@Override
+	public byte[] export(final Admin admin, final Collection<LogEntry> logentries) throws Exception {
 		log.trace(">export");
-		CAAdminSession caAdminSession = (CAAdminSession) ejbs.get(CAAdminSession.class);
 		byte[] ret = null;		
 		if (logentries != null) {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			PrintWriter pw = new PrintWriter(baos);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final PrintWriter pw = new PrintWriter(baos);
 			try {
-				Iterator<LogEntry> i = logentries.iterator();
-				while (i.hasNext()) {
-					LogEntry next = i.next();
+				for (final LogEntry next : logentries) {
 					pw.print(next.getTime());
 					pw.print("\t");
 					pw.print(next.getAdminType());
@@ -117,18 +91,16 @@ public class CsvLogExporter implements ILogExporter {
 				}
 			}
 		}
-		int no = getNoOfEntries();
 		// Sign the result if we have a signing CA
-		String ca = getSigningCA();
 		if (log.isDebugEnabled()) {
-			log.debug("Signing CA is '"+ca+"'");    		
+			log.debug("Signing CA is '"+signingCA+"'");    		
 		}        	
-		if ( (ret != null) && StringUtils.isNotEmpty(ca) ) {
+		if (ret!=null && StringUtils.isNotEmpty(signingCA)) {
 			try {
-				int caid = Integer.parseInt(ca);
-				CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
-				//ISignSessionLocal signSession = ((ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME)).create();
-				CmsCAServiceResponse resp = (CmsCAServiceResponse) caAdminSession.extendedService(admin, caid, request);
+				final int caid = Integer.parseInt(signingCA);
+				final CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
+				final CAAdminSession caAdminSession = new EjbLocalHelper().getCaAdminSession();
+				final CmsCAServiceResponse resp = (CmsCAServiceResponse) caAdminSession.extendedService(admin, caid, request);
 				ret = resp.getCmsDocument();
 			} catch (IllegalExtendedCAServiceRequestException e) {
 				log.error("Bad CA service", e);
@@ -140,8 +112,13 @@ public class CsvLogExporter implements ILogExporter {
 				throw e;
 			}
 		}
-		log.trace("<export: "+no+" entries");
+		if (log.isTraceEnabled()) {
+			int no = 0;
+			if (logentries != null) {
+				no = logentries.size();
+			}
+			log.trace("<export: "+no+" entries");
+		}
 		return ret;
 	}
-
 }

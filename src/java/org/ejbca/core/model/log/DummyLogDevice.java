@@ -26,7 +26,9 @@ import org.ejbca.util.query.Query;
  */
 public class DummyLogDevice implements ILogDevice, Serializable {
 
-	public final static String DEFAULT_DEVICE_NAME = "DummyLogDevice";
+	private static final long serialVersionUID = 1L;
+
+	public static final String DEFAULT_DEVICE_NAME = "DummyLogDevice";
 
 	private static DummyLogDevice instance;
 	
@@ -49,43 +51,30 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 		return instance;
 	}
 
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
+	/** @see org.ejbca.core.model.log.ILogDevice */
+	@Override
 	public String getDeviceName() {
 		return deviceName;
 	}
 	
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
-	public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter, int maxResult) throws IllegalQueryException, Exception {
-		return null;
-	}
-
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
+	/** @see org.ejbca.core.model.log.ILogDevice */
+	@Override
 	public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 	}
 
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
+	/** @see org.ejbca.core.model.log.ILogDevice */
+	@Override
 	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException {
 		return null;
 	}
 
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
+	/** @see org.ejbca.core.model.log.ILogDevice */
+	@Override
 	public boolean getAllowConfigurableEvents() {
 		return true;
 	}
 
-	/**
-	 * @see org.ejbca.core.model.log.ILogDevice
-	 */
+	/** @see org.ejbca.core.model.log.ILogDevice */
 	@Override
 	public boolean isSupportingQueries() {
 		return false;

@@ -67,20 +67,6 @@ public interface LogSession {
     void log(Admin admin, Certificate caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
 
     /**
-     * Method to export log records according to a customized query on the log db data. The parameter query should be a legal Query object.
-     *
-     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
-     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-     * @param logexporter is the obbject that converts the result set into the desired log format 
-     * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT, returns null if there is nothing to export
-     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
-     * @throws Exception differs depending on the ILogExporter implementation
-     * @see org.ejbca.util.query.Query
-     */
-    byte[] export(String deviceName, Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter,
-            int maxResults) throws IllegalQueryException, Exception;
-
-    /**
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
      *
      * @param query a number of statements compiled by query class to a SQL 'WHERE'-clause statement.
