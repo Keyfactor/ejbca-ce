@@ -273,8 +273,9 @@ public class LogInterfaceBean implements Serializable {
      * @throws Exception differs depending on the used ILogExporter 
      * @see org.ejbca.core.model.log.ILogExporter
      */
-    public byte[] exportLastQuery(String deviceName, ILogExporter exporter) throws Exception {    	
-    	return logSession.export(deviceName, admin, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter, MAXIMUM_QUERY_ROWCOUNT);
+    public byte[] exportLastQuery(final String deviceName, final ILogExporter exporter) throws Exception {
+    	final Collection<LogEntry> logentries = logSession.query(deviceName, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
+    	return exporter.export(admin, logentries);
     }
     
     public Collection<String> getAvailableQueryLogDevices() {

@@ -15,16 +15,13 @@ package org.ejbca.core.model.log;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.log.LogConfigurationSessionRemote;
 import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.BasicMatch;
@@ -113,11 +110,8 @@ public class LogTest extends CaTestCase {
         	}
         	assertTrue("Couldn't retrieve correct log data from database.", found);
         }
- 	   ILogExporter exporter = new CsvLogExporter();
- 	   exporter.setEntries(result);
- 	   Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
- 	   ejbs.put(CAAdminSession.class, caAdminSession);
- 	   byte[] export = exporter.export(admin, ejbs);
+ 	   final ILogExporter exporter = new CsvLogExporter(null);
+ 	   byte[] export = exporter.export(admin, result);
 	   assertNotNull("Nothing was exported!", export);
 	   String str = new String(export);
 	   //assertEquals("foo", str);

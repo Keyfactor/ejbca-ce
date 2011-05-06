@@ -227,8 +227,7 @@
        if ( (signcsvca != null) && ((signcsvca.equals(SELECT_EMPTYVALUE)) || (signcsvca.length() == 0)) ) {
     	   signcsvca = null;
        }
-	   CsvLogExporter exporter = new CsvLogExporter();
-	   exporter.setSigningCA(signcsvca);
+	   CsvLogExporter exporter = new CsvLogExporter(signcsvca);
 	   try {
 		   byte[] export = logbean.exportLastQuery(request.getParameter(SELECT_VIEWLOGDEVICE), exporter);
 		   if (export != null) {
@@ -243,15 +242,13 @@
 			   out.clear();
 			   out = pageContext.pushBody();
 			   return;		   
-		   }		   
-	   } catch (Exception e) {
-		   if (e instanceof ExtendedCAServiceNotActiveException) {
-			   cmsnotactive = true;
-		   } else if (e instanceof IllegalQueryException) {
-			   illegalquery = true;
-		   } else {
-			   throw e;
 		   }
+	   } catch (ExtendedCAServiceNotActiveException e) {
+		   cmsnotactive = true;
+	   } catch (IllegalQueryException e) {
+		   illegalquery = true;
+	   } catch (Exception e) {
+		   throw e;
 	   }
    }
 

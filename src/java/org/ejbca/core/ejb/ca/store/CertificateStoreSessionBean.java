@@ -440,17 +440,6 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     }
 
     /**
-     * Just used locally to catch exceptions thrown in the class.
-     * This exception class must be used instead of the "Exception" when trowing an Exception that should be caught by this class.
-     * Throwing just an exception will cause other exceptions not thrown by this class and null pointers to be caught as well which
-     * is not the intention.
-     */
-    private class LocalException extends Exception {
-    	LocalException(String s) {
-    		super(s);
-    	}
-    }
-    /**
      * Helper method to set the status of certificate to revoked or active. Re-activating (unrevoking) a certificate have two limitations.
      * 1. A password (for for example AD) will not be restored if deleted, only the certificate and certificate status and associated info will be restored
      * 2. ExtendedInformation, if used by a publisher will not be used when re-activating a certificate 
@@ -504,20 +493,17 @@ public class CertificateStoreSessionBean extends CertificateDataUtil implements 
     		int revocationReason = RevokedCertInfo.NOT_REVOKED;
     		rev.setRevocationReason(revocationReason);
     		// Republish the certificate if possible
-    		// If it is not possible, only log error but continue the operation of not revoking the certificate
-    		try {
-    			// Republishing will not restore a password, for example in AD, it will only re-activate the certificate.
-    			String password = null;
-    			boolean published = publisherSession.storeCertificate(admin, publishers, certificate, username, password, userDataDN,
-    					cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), null);
-    			if ( !published ) {
-    				throw new LocalException("Unrevoked cert:" + CertTools.getSerialNumberAsString(certificate) + " reason: " + reason + " Could not be republished.");
-    			}                	  
-    			String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));            	
+    		// Republishing will not restore a password, for example in AD, it will only re-activate the certificate.
+    		String password = null;
+    		boolean published = publisherSession.storeCertificate(admin, publishers, certificate, username, password, userDataDN,
+    				cafp, status, type, revocationDate, revocationReason, rev.getTag(), rev.getCertificateProfileId(), now.getTime(), null);
+    		if (published) {
+    			final String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));            	
     			logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
-    		} catch (LocalException ex) {
-    			// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
-    			logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, ex.getMessage());
+    		} else {
+        		// If it is not possible, only log error but continue the operation of not revoking the certificate
+    			final String msg = "Unrevoked cert:" + CertTools.getSerialNumberAsString(certificate) + " reason: " + reason + " Could not be republished.";
+    			logSession.log(admin, caid, LogConstants.MODULE_CA, new Date(), null, certificate, LogConstants.EVENT_INFO_NOTIFICATION, msg);
     		}
     	} else {
     		String msg = intres.getLocalizedMessage("store.ignorerevoke", CertTools.getSerialNumberAsString(certificate), Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));            	

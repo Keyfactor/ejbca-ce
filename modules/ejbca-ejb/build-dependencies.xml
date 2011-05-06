@@ -127,7 +127,7 @@
 			</javac>
 
 			<!-- Logging component -->
-			<echo message=" ** Validating component: Logging (except OldLogDevice and CsvLogExporter) **"/>
+			<echo message=" ** Validating component: Logging (except CsvLogExporter) **"/>
 			<mkdir dir="${src-temp.dir}/logging"/>
 			<mkdir dir="${build-temp.dir}/logging"/>
 			<copy todir="${src-temp.dir}/logging">
@@ -146,8 +146,6 @@
 					<include name="org/ejbca/util/query/**/*.java"/>
 					<include name="org/ejbca/util/ObjectCache.java"/>
 					<exclude name="org/ejbca/core/model/log/CsvLogExporter.java"/>
-					<exclude name="org/ejbca/core/model/log/OldLogDevice.java"/>
-					<exclude name="org/ejbca/core/model/log/OldLogDeviceFactory.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/logging" destdir="${build-temp.dir}/logging" debug="on" includeantruntime="no"

@@ -36,11 +36,9 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
-import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -174,23 +172,6 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     			LOG.error(INTRES.getLocalizedMessage("log.errormissingentry"), e);
     		}
         }
-    }
-
-    @Override
-    public byte[] export(final String deviceName, final Admin admin, final Query query, final String viewlogprivileges, final String capriviledges, final ILogExporter logexporter, final int maxResults) throws IllegalQueryException, Exception {
-    	byte[] result = null;
-    	final Iterator<ILogDevice> i = logdevices.iterator();
-        while (i.hasNext()) {
-        	final ILogDevice dev = i.next();
-            if (dev.getDeviceName().equalsIgnoreCase(deviceName)) {
-            	if (dev instanceof OldLogDevice) {
-            		((OldLogDevice)dev).setCAAdminSessionInterface(sessionContext.getBusinessObject(CAAdminSessionLocal.class));	// To avoid consequences of circular dependencies
-            	}
-            	result = dev.export(admin, query, viewlogprivileges, capriviledges, logexporter, maxResults);
-            	break;
-            }
-        }
-		return result;
     }
 
     @Override
