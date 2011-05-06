@@ -18,6 +18,7 @@
 <li>Supports DSA key algorithm with 1024 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
 <li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-2.</li>
+<li>Compliant with NSA SUITE B algorithms and certificates.</li>
 <li>Support for X.509 certificates and Card Verifiable certificates (CVC BSI TR-03110 used by EU EAC ePassports).</li> 
 <li>Standalone or integrated in any JEE application.</li>
 <li>Simple installation and configuration.</li>
