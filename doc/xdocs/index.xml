@@ -53,6 +53,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Client VPN access with certificates in users VPN clients.</li>
 <li>Single sign-on by using a single certificate to secure logon to web applications.</li>
 <li>Creating signed documents.</li>
+<li>Mobile PKI, <a href="adminguide.html#iPhone/iOS">enrolling iOS</a> etc.</li>
 <li>Issue citizen certificates for access to government resources, used in passports etc.</li>
 <li>Create CVCAs and DVs and issue CV certificates (CVC) to Document Verifiers and Inspection Systems for <a href="cvccas.html">EU EAC ePassports</a>.</li>
 <li>... and many many more ...</li>
@@ -63,10 +64,10 @@ You can also use EJBCA to set up a CA independent, high performance, highly avai
 </p>
 <p>Together with sister projects (see <i><a href="complimentary.html">Complimentary software</a></i>) of EJBCA you can also:
 <ul>
-<li>Get central trusted Time Stamps for you electronically signed documents.</li>
-<li>Perform central signing of document.</li>
+<li>Get central trusted <a href="http://signserver.org">Time Stamps</a> for you electronically signed documents.</li>
+<li>Perform <a href="http://signserver.org">central signing of documents</a>.</li>
 <li>Sign electronic passport data (MRTD).</li>
-<li>Issue hard tokens (smart cards) and manage the complete life cycle of cards and certificates.</li>
+<li>Issue hard tokens (<a href="complimentary.html#Hardware%20tokens">smart cards</a>) and manage the complete life cycle of cards and certificates.</li>
 <li>... and many many more ...</li>
 </ul>
 </p>
