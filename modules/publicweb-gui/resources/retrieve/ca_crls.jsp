@@ -1,7 +1,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file="header.jsp" %>
 
-	<h1><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Fetch CA CRL</h1>
+	<h1>Fetch CA CRLs</h1>
 
 	<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 	<% finder.initialize(request.getRemoteAddr()); %>

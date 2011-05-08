@@ -1,4 +1,4 @@
-<h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate Enrollment</h1>
+<h1 class="title">Certificate enrollment</h1>
 
 <p>Welcome to certificate enrollment.</p>
 <p>Please enter your username and password. Then click OK to generate your token.</p>
@@ -14,11 +14,11 @@
 	<input type="hidden" name="${ACTION}" value="${ACTION_GENERATETOKEN}" />
     <input type="hidden" name="${HIDDEN_BROWSER}" value="${BROWSER_UNKNOWN}" />
 
-	<label for="${TEXTFIELD_USERNAME}">Username:</label>
-	<input type="text" size="20" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
+	<label for="${TEXTFIELD_USERNAME}">Username</label>
+	<input type="text" size="40" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
 	<br />
-    <label for="${TEXTFIELD_PASSWORD}">Password:</label>
-    <input type="password" size="20" name="${TEXTFIELD_PASSWORD}" id="${TEXTFIELD_PASSWORD}" accesskey="p" />
+    <label for="${TEXTFIELD_PASSWORD}">Password</label>
+    <input type="password" size="40" name="${TEXTFIELD_PASSWORD}" id="${TEXTFIELD_PASSWORD}" accesskey="p" />
     <br />
     <label for="${BUTTON_SUBMIT_USERNAME}"></label>
     <input type="submit" value="OK" name="${BUTTON_SUBMIT_USERNAME}" id="${BUTTON_SUBMIT_USERNAME}" />
