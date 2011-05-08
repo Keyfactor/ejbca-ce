@@ -1,5 +1,5 @@
 <%@ include file="header.jsp" %>
-<h1 class="title">Enroll For Certificate from a CSR</h1>
+<h1 class="title">Certificate enrollment from a CSR</h1>
 <p>Please give your username and password, select a PEM- or DER-formated certification request file (CSR) for upload, 
 or paste a PEM-formated request into the field below and click OK to fetch your certificate. 
 </p>
@@ -14,27 +14,25 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
   <fieldset >
     <legend>Enroll</legend>
 	<label for="user">Username</label>
-	<input type="text" size="10" name="user" id="user" value="foo" accesskey="u" />
+	<input type="text" size="40" name="user" id="user" accesskey="u" />
 	<br />
 	<label for="password">Password</label>
-	<input type="password" size="10" name="password" id="password" value="foo123" accesskey="p" />
+	<input type="password" size="40" name="password" id="password" accesskey="p" />
+
 	<br />
 	<br />
-	Request file:
-	<label for="pkcs10file"></label>
-	<input type="FILE" name="pkcs10file" id="pkcs10file"></input>
-	
-    <br />
-    <br />
-    or pasted request
-	<label for="pkcs10req"></label>
-	<textarea rows="15" cols="70" name="pkcs10req" id="pkcs10req"></textarea>
+	<label for="pkcs10file">Request file</label>
+	<input type="file" size="40" name="pkcs10file" id="pkcs10file"></input>
+	<br />
+	<label for="pkcs10req">or pasted request</label>
+	<textarea rows="15" cols="66" name="pkcs10req" id="pkcs10req"></textarea>
+
 	<br />
 	<br />
 	<label for="resulttype">Result type</label>
 	<select name="resulttype" id="resulttype">
-		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE%>">PEM Certificate</option> 
-		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_PKCS7%>">PKCS7</option>
+		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE%>">PEM certificate</option> 
+		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_PKCS7%>">PKCS#7 certificate</option>
 	</select>
 	<br />
 	<label for="ok"></label>

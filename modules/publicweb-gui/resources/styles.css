@@ -46,13 +46,13 @@ p {
 
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: "Trebuchet MS", verdana, arial, helvetica, sans-serif;
-    margin-top: 1em;
+    font-family: "Trebuchet MS", Verdana, Arial, Helvetica, Geneva, sans-serif;
+    margin-top: .75em;
     margin-bottom: .5em;
 }
 
 h1 {
-	color: rgb(218, 92, 5);
+	color: #C00;
 	font-size: 1.8em;
 	text-shadow: .05em .05em 0em rgba(0,0,0,.2);
 	-o-text-shadow: .05em .05em 0em #CCC;
@@ -123,7 +123,7 @@ acronym { border-bottom: none; }
 .menu a:hover,
 .menu a:focus,
 .menu a:active {
-	color: #FF4F00;
+	color: #A00;
 }
 
 .menu ul {
@@ -197,6 +197,32 @@ acronym { border-bottom: none; }
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 
+.content {
+    margin-left: 270px;
+    margin-right: 20px;
+    padding: 5px 10px;
+}
+
+.frame {
+	margin: 1em 0em;
+	border: solid black 1px;
+}
+
+.frame .label {
+	padding: 5px 10px;
+	background: #369;
+	color: white;
+	font-weight: bold;
+}
+
+.frame .content {
+	margin: 0px;
+	padding: 5px 10px;
+	background: #F0F0FF;
+	color: black;
+	line-height: 120%;
+	font-size: 90%;
+}
 
 
 /*--------------------------------------------------------------------------*/
@@ -206,12 +232,12 @@ acronym { border-bottom: none; }
 
 /* set width in form, not fieldset (still takes up more room w/ fieldset width) */
 form {
-  font:100% "Trebuchet MS", verdana, arial, helvetica, sans-serif;
+  font:100% "Trebuchet MS", Verdana, Arial, Helvetica, Geneva, sans-serif;
   margin: 0;
   padding: 0;
   min-width: 400px;
-  max-width: 600px;
-  width: 560px; 
+  max-width: 800px;
+  width: 700px; 
 }
 
 form fieldset {
@@ -233,10 +259,11 @@ form fieldset legend {
 form label { 
 	display: block;
 	float: left; 
-	width: 150px; 
+	width: 160px; 
 	padding: 0; 
 	margin: 5px 0 0;
-	text-align: right; 
+	text-align: right;
+	white-space: nowrap;
 }
 
 /* use first-letter pseudo-class to underline accesskey, note that */
@@ -261,7 +288,10 @@ form input#reset {
 	margin-left:0px;
 }
 
-textarea { overflow: auto; }
+textarea {
+	overflow: auto;
+	font-family: "Courier New", Courier, monospace;
+}
 
 /* instructions/comments left margin set to align w/ right column inputs */
 form small {
@@ -279,36 +309,6 @@ form .required{
 /* setting clear on inputs didn't work consistently, so brs added for degrade */
 form br {
 	clear:left;
-}
-
-
-/* Other */
-
-.content {
-    margin-left: 280px;
-    margin-right: 5px;
-    padding: 5px 5px 5px 10px;
-}
-
-.frame {
-  border: solid black 1px;
-  margin: 1em 3em;
-}
-
-.frame .label {
-  background: #369;
-  color: white;
-  font-weight: bold;
-  padding: 5px 10px;
-}
-
-.frame .content {
-  padding: 5px 10px;
-  margin: 0px;
-  background: #F0F0FF;
-  color: black;
-  line-height: 120%;
-  font-size: 90%;
 }
 
 

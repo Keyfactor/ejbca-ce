@@ -9,7 +9,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
-    <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Certificate/CSR Inspection</title>
+    <title>Certificate/CSR Inspection - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Public Web</title>
 	<link rel="shortcut icon" href="../images/favicon.png" type="image/png" />
     <link rel="stylesheet" href="../styles.css" type="text/css" />
     <script type="text/javascript" src="../scripts/functions.js"></script>

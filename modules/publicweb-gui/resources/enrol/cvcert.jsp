@@ -1,5 +1,5 @@
 <%@ include file="header.jsp" %>
-<h1 class="title">Enroll For CV Certificate</h1>
+<h1 class="title">Enroll for CV certificate</h1>
 <p>Please give your username and password, select a PEM- or DER-formated certification request file (CSR) for upload, 
 or paste a PEM-formated request into the field below and click OK to fetch your certificate. 
 </p>
@@ -14,21 +14,19 @@ or paste a PEM-formated request into the field below and click OK to fetch your 
   <fieldset >
     <legend>Enroll</legend>
 	<label for="user">Username</label>
-	<input type="text" size="10" name="user" id="user" value="foo" accesskey="u" />
+	<input type="text" size="40" name="user" id="user" accesskey="u" />
 	<br />
 	<label for="password">Password</label>
-	<input type="password" size="10" name="password" id="password" value="foo123" accesskey="p" />
+	<input type="password" size="40" name="password" id="password" accesskey="p" />
+
 	<br />
 	<br />
-	Request file:
-	<label for="cvcreqfile"></label>
-	<input type="FILE" name="cvcreqfile" id="cvcreqfile"></input>
-	
-    <br />
-    <br />
-    or pasted request
-	<label for="cvcreq"></label>
-	<textarea rows="15" cols="70" name="cvcreq" id="cvcreq"></textarea>
+	<label for="cvcreqfile">Request file</label>
+	<input type="file" size="40" name="cvcreqfile" id="cvcreqfile"></input>
+	<br />
+	<label for="cvcreq">or pasted request</label>
+	<textarea rows="15" cols="66" name="cvcreq" id="cvcreq"></textarea>
+
 	<br />
 	<br />
 	<label for="resulttype">Result type</label>
