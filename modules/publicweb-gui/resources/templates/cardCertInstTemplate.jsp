@@ -166,11 +166,11 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
     <h1 class="title">Internet Explorer Certificate Enrollment.</h1>
 
 	<noscript>
-		<div class="frame">
+		<div class="message">
 		  <div class="label">Note</div>
 		  <div class="content">
-		    <p>Either Javascript is turned off or your browser cannot
-			handle Javascript.</p>
+		    <p>Either JavaScript is turned off or your browser cannot
+			handle JavaScript.</p>
 		  </div>
 		</div>
 	</noscript>
