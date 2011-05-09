@@ -22,7 +22,7 @@
   </fieldset>
 </form>
 
-<div class="frame">
+<div class="message">
   <div class="label">Note</div>
   <div class="content">
     <p>If you receive a <em>404-Not found</em> response, it means that

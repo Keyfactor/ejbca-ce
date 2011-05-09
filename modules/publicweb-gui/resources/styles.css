@@ -203,19 +203,20 @@ acronym { border-bottom: none; }
     padding: 5px 10px;
 }
 
-.frame {
+/* Message: Note, Alert, etc. (e.g. in frame) */
+.message {
 	margin: 1em 0em;
 	border: solid black 1px;
 }
 
-.frame .label {
+.message .label {
 	padding: 5px 10px;
 	background: #369;
 	color: white;
 	font-weight: bold;
 }
 
-.frame .content {
+.message .content {
 	margin: 0px;
 	padding: 5px 10px;
 	background: #F0F0FF;
@@ -230,9 +231,14 @@ acronym { border-bottom: none; }
 
 /* The form styles were adapted from <http://www.websiteoptimization.com/speed/tweak/forms/>
 
+/* set font for all fields */
+form * {
+  font-family: "Trebuchet MS", Verdana, Arial, Helvetica, Geneva, sans-serif;
+  font-size: 100%;
+}
+
 /* set width in form, not fieldset (still takes up more room w/ fieldset width) */
 form {
-  font:100% "Trebuchet MS", Verdana, Arial, Helvetica, Geneva, sans-serif;
   margin: 0;
   padding: 0;
   min-width: 400px;
@@ -261,7 +267,7 @@ form label {
 	float: left; 
 	width: 160px; 
 	padding: 0; 
-	margin: 5px 0 0;
+	margin: 8px 0px 0px 0px;
 	text-align: right;
 	white-space: nowrap;
 }

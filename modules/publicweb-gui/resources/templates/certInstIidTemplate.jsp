@@ -144,11 +144,11 @@
 	<h1 class="title">Certificate enrollment.</h1>
 
 	<noscript>
-		<div class="frame">
+		<div class="message">
 		  <div class="label">Note</div>
 		  <div class="content">
-		    <p>Either Javascript is turned off or your browser cannot 
-			handle Javascript.</p>
+		    <p>Either JavaScript is turned off or your browser cannot 
+			handle JavaScript.</p>
 		  </div>
 		</div>
 	</noscript>
