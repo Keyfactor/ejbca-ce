@@ -310,12 +310,6 @@ You must stop and start JBoss after doing this.
 </p>
 </subsection>
 
-<subsection name="Additional howtos">
-<p>
-In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
-</p>
-</subsection>
-
 </section>
 
 <section name="Ubuntu quick start">
@@ -884,6 +878,15 @@ but it will give an indication as well for other platforms what configuration st
 <li>conf/keystore/truststore.jks</li>
 <li>deploy/jboss-web.deployer/server.xml</li>
 </ul>
+</p>
+</section>
+
+<section name="Additional howtos">
+<p>
+Branco Majic have a good detailed guide for setting up <a href="http://majic.rs/book/free-software-x509-cookbook/setting-up-ejbca-as-certification-authority">EJBCA with JBoss</a> in a rather thorough setup.
+</p>
+<p>
+In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
 </p>
 </section>
 
