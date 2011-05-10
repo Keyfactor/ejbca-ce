@@ -19,13 +19,12 @@ import java.util.Collection;
 /** This interface is used for exporting a number of log entries to 
  * any format defined by the implementing class.
  * 
- * @author tomas
  * @version $Id$
  */
 public interface ILogExporter extends Serializable {
 
 	/** Returns the exported data, determined by the exporting class. Can be binary or text data.
-	 * @param logentries 
+	 * @param logentries the log entries that will be exported
 	 * @throws Exception if an error occurs during export
 	 * @return byte data or null if no of exported entries are 0.
 	 */
