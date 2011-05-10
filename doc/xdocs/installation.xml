@@ -310,14 +310,6 @@ You must stop and start JBoss after doing this.
 </p>
 </subsection>
 
-<subsection name="Using JBoss/Tomcat native SSL connector">
-<p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
-improve performance.
-</p><p>
-See documentation in src/appserver/tomcat60jboss5.
-</p> 
-</subsection>
-
 <subsection name="Additional howtos">
 <p>
 In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
@@ -434,6 +426,13 @@ You can luckily turn of schema validation. Here is RedHat's <a href="http://docs
 &lt;!-- in case xml validation is disabled, it's also better to turn off schema validation
 &lt;property name="useSchemaValidation"&gt;false&lt;/property --&gt;
 </source>
+</subsubsection>
+<subsubsection name="Using JBoss/Tomcat native SSL connector">
+<p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
+improve performance.
+</p><p>
+See documentation in src/appserver/tomcat60jboss5.
+</p> 
 </subsubsection>
 </subsection>
 <subsection name="Glassfish">
