@@ -1423,21 +1423,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             /* In EJBCA 4.0.0 we changed the date format to ISO 8601.
              * In the Admin GUI the example was:
              *     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale())
-             * The start and end time in the EndEntityProfile are stored as String objects in the same format 
-             * the user enters them. A.k.a. DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT. ejbcawebbean.getLocale()),
-             * which is what we need to upgrade from.
-             * 
-             * Side note: when adding an EndEntity, the start and end time for the specific entity are store in the
-             * ExtendedInformation object. The user inputs the times in the same format illustrated by the example
-             * above, but upon reading it, it is converted from
-             * 		DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale())
-             * to
-             * 		DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.US)
-             * and then stored in the ExtendedInformation object in the later format. 
-             * 
+             * but the only absolute format that could have worked is the same enforced by the 
+             * doesUserFullfillEndEntityProfile check and this is what need to upgrade from:
+             * 	   DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US)
              */
         	if (getVersion() < 13) {
-        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.US);
+        		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
         		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
         		try {
         			final String oldStartTime = getValue(STARTTIME, 0);
