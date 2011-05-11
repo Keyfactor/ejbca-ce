@@ -18,7 +18,7 @@ signed by a valid CA (it is valid if the root is trusted).
 The configuration file conf/certstore.properties is used to configure the service.
 </p><p>
 If you view the page <strong>http://vahost:8080/certificates/search.cgi</strong> (when the service is enabled) you will get links to all URLs that can be used.
-'certificates' is the default URL path for the web module, but this can be changed in the configuration.
+'certificates' is the default URL path for the web module, but this can be changed in the configuration (on EJBCA CA config change url end to ejbca/publicweb/certificates/search.cgi).
 </p>
 </subsection>
 <subsection name="CRL store">
@@ -28,7 +28,7 @@ The CRL store is used to get a Certificate Revocation List (a signed list of rev
 The configuration file conf/crlstore.properties is used to configure the service.
 </p><p>
 If you view the page <strong>http://vahost:8080/crls/search.cgi</strong> you will get links to all URLs that could be used.
-'crls' is the default path for the web module, but this can be changed in the configuration.
+'crls' is the default path for the web module, but this can be changed in the configuration (on EJBCA CA config change url end to ejbca/publicweb/crls/search.cgi).
 </p>
 </subsection>
 <subsection name="OCSP responder">
