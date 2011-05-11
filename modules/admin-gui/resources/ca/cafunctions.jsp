@@ -187,11 +187,11 @@ function getPasswordAndSubmit(formname) {
            }else{
            boolean expired = crlinfo.getExpireDate().compareTo(new Date()) < 0; %>
 <%=ejbcawebbean.getText("LATESTCRL") + ": "  
-  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.printDateTime(crlinfo.getCreateDate()) + ","%>
+  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getCreateDate()) + ","%>
         <% if(expired){
-              out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.printDateTime(crlinfo.getExpireDate()) + "</font>");
+              out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getExpireDate()) + "</font>");
            }else{
-              out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.printDateTime(crlinfo.getExpireDate()));
+              out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.formatAsISO8601(crlinfo.getExpireDate()));
            } 
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + crlinfo.getLastCRLNumber()); %>  
 <i><a href="<%=DOWNLOADCRL_LINK%>?cmd=crl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETCRL") %></a></i>
@@ -210,11 +210,11 @@ function getPasswordAndSubmit(formname) {
 	       }else{
 	       	 boolean expired = deltacrlinfo.getExpireDate().compareTo(new Date()) < 0; %>
 	<%=ejbcawebbean.getText("LATESTDELTACRL") + ": "  
-	  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.printDateTime(deltacrlinfo.getCreateDate()) + ","%>
+	  + ejbcawebbean.getText("CREATED") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getCreateDate()) + ","%>
 	        <% if(expired){
-	              out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.printDateTime(deltacrlinfo.getExpireDate()) + "</font>");
+	              out.write(" <font id=\"alert\">" + ejbcawebbean.getText("EXPIRED") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getExpireDate()) + "</font>");
 	           }else{
-	              out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.printDateTime(deltacrlinfo.getExpireDate()));
+	              out.write(ejbcawebbean.getText("EXPIRES") + " " + ejbcawebbean.formatAsISO8601(deltacrlinfo.getExpireDate()));
 	           } 
            out.write(", " + ejbcawebbean.getText("NUMBER") + " " + deltacrlinfo.getLastCRLNumber()); %>  
 <i><a href="<%=DOWNLOADCRL_LINK%>?cmd=deltacrl&issuer=<%= subjectdn %>" ><%=ejbcawebbean.getText("GETDELTACRL") %></a></i>

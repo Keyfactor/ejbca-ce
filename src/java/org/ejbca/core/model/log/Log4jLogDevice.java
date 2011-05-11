@@ -25,6 +25,7 @@ import org.apache.log4j.Priority;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.ValidityDate;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -129,7 +130,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         	eventText = LogConstants.EVENTNAMES_INFO[event];	
         }
         
-        String timePattern = ConfigurationHolder.getString("log4j.timepattern", "yyyy-MM-dd HH:mm");
+        String timePattern = ConfigurationHolder.getString("log4j.timepattern", ValidityDate.ISO8601_DATE_FORMAT);
          
         String logline = FastDateFormat.getInstance(timePattern).format(time) + ", CAId : " + caid + ", " + LogConstants.MODULETEXTS[module] + ", " + eventText + ", Administrator : " +
                 admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment;

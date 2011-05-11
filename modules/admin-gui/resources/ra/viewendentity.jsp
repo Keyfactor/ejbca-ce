@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.config.GlobalConfiguration, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
                  org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
-                 org.ejbca.core.model.ra.ExtendedInformation, org.apache.commons.lang.time.FastDateFormat, org.apache.commons.lang.time.DateUtils, java.util.Locale, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
+                 org.ejbca.core.model.ra.ExtendedInformation, org.apache.commons.lang.time.DateUtils, java.util.Locale, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -99,14 +99,14 @@
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
       <td>
-         <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeCreated()) %>
+         <%= ejbcawebbean.formatAsISO8601(viewendentityhelper.userdata.getTimeCreated()) %>
        </td>
     </tr> 
 
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("MODIFIED") %></td>
       <td>
-         <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeModified()) %>
+         <%= ejbcawebbean.formatAsISO8601(viewendentityhelper.userdata.getTimeModified()) %>
        </td>
      </tr> 
 
@@ -321,12 +321,7 @@
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
 		<td>
-		<%	if ( !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>		
-				<% String[] dp = {"yyyy-MM-dd HH:mm"};
-					out.write(ejbcawebbean.printDateTime(DateUtils.parseDate(startTime, dp))); %>
-		<%	} else { %>
-				<%= startTime %>
-		<%	} %>
+			<%= ejbcawebbean.getISO8601FromImpliedUTCOrRelative(startTime) %>
 		</td>
     </tr> 
 	<%	} %>
@@ -334,12 +329,7 @@
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFEND") %></td>
 		<td>
-		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
-				<%  String[] dp = {"yyyy-MM-dd HH:mm"};
-					out.write(ejbcawebbean.printDateTime(DateUtils.parseDate(endTime, dp))); %>
-		<%	} else { %>
-				<%= endTime %>
-		<%	} %>
+			<%= ejbcawebbean.getISO8601FromImpliedUTCOrRelative(endTime) %>
 		</td>
     </tr> 
 	<%	} %>

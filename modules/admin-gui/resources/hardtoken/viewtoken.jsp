@@ -313,7 +313,7 @@ function viewcopies(link){
 	 <td><% Object o = token.getField(i);
                 if(o != null){ 
                   if( o instanceof java.util.Date){
-                    out.write(ejbcawebbean.printDateTime((java.util.Date) o));
+                    out.write(ejbcawebbean.formatAsISO8601((java.util.Date) o));
                   }else{
                     out.write(o.toString());
                   }
@@ -359,13 +359,13 @@ function viewcopies(link){
        <tr id="Row<%=(row++)%2%>">
          <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
          <td>
-           <%= ejbcawebbean.printDateTime(token.getCreateTime()) %>
+           <%= ejbcawebbean.formatAsISO8601(token.getCreateTime()) %>
          </td>
        </tr> 
     <tr id="Row<%=(row++)%2%>">
       <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("MODIFIED") %></td>
       <td>
-           <%= ejbcawebbean.printDateTime(token.getModifyTime()) %>
+           <%= ejbcawebbean.formatAsISO8601(token.getModifyTime()) %>
        </td>
      </tr> 
     <tr id="Row<%=(row++)%2%>">

@@ -15,10 +15,10 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.util.ValidityDate;
 
 /**
  * List information about the latest CRL from each CA.
@@ -33,7 +33,6 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
 
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
-		final FastDateFormat iso8601DateFormat = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss");
         try {
         	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin());
         	for (Integer caId : caIds) {
@@ -43,16 +42,16 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         		final CRLInfo crlInfo = ejb.getCrlSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), false);
         		if (crlInfo != null) {
             		sb.append(" CRL# ").append(crlInfo.getLastCRLNumber());
-            		sb.append(" issued ").append(iso8601DateFormat.format(crlInfo.getCreateDate()));
-            		sb.append(" expires ").append(iso8601DateFormat.format(crlInfo.getExpireDate()));
+            		sb.append(" issued ").append(ValidityDate.formatAsUTC(crlInfo.getCreateDate()));
+            		sb.append(" expires ").append(ValidityDate.formatAsUTC(crlInfo.getExpireDate()));
         		} else {
         			sb.append(" NO_CRL_ISSUED");
         		}
         		final CRLInfo deltaCrlInfo = ejb.getCrlSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), true);
         		if (deltaCrlInfo!=null) {
             		sb.append(" DELTACRL# ").append(deltaCrlInfo.getLastCRLNumber());
-            		sb.append(" issued ").append(iso8601DateFormat.format(deltaCrlInfo.getCreateDate()));
-            		sb.append(" expires ").append(iso8601DateFormat.format(deltaCrlInfo.getExpireDate()));
+            		sb.append(" issued ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getCreateDate()));
+            		sb.append(" expires ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getExpireDate()));
         		} else {
         			sb.append(" NO_DELTACRL_ISSUED");
         		}

@@ -5,7 +5,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents,
-                 org.apache.commons.lang.time.FastDateFormat, org.apache.commons.lang.time.DateUtils, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger" %>
+                 org.apache.commons.lang.time.DateUtils, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -542,11 +542,7 @@
 				if ( value != null ) {
 					value = value.trim();
 					if (value.length() > 0) {
-						String storeValue = value;
-						if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-							String[] dp = {"yyyy-MM-dd HH:mm"};
-							storeValue = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(DateUtils.parseDate(value, dp));
-  	        		    }
+						String storeValue = ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value);
 						ExtendedInformation ei = newuser.getExtendedInformation();
 						if ( ei == null ) {
 							ei = new ExtendedInformation();
@@ -562,11 +558,7 @@
 				if ( value != null ) {
 					value = value.trim();
 					if (value.length() > 0) {
-						String storeValue = value;
-	                    if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-							String[] dp = {"yyyy-MM-dd HH:mm"};
-							storeValue = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(DateUtils.parseDate(value, dp));
-		        		}
+						String storeValue = ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value);
 						ExtendedInformation ei = newuser.getExtendedInformation();
 						if ( ei == null ) {
 							ei = new ExtendedInformation();
@@ -1730,11 +1722,11 @@ function checkallfields(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFSTART\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= FastDateFormat.getInstance(\"yyyy-MM-dd HH:mm\").format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
+				(<c:out value="<%= ejbcawebbean.getText(\"ENDDATEINFO\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getDateExample() %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
 				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
-					<%	String startTime = profile.getValue(EndEntityProfile.STARTTIME, 0); %>
+					<%	String startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.STARTTIME, 0)); %>
 					value='<c:out value="<%= startTime %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
 					readonly="true"
@@ -1755,11 +1747,11 @@ function checkallfields(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
 				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFEND\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"EXAMPLE\").toLowerCase() %>"/> <c:out value="<%= FastDateFormat.getInstance(\"yyyy-MM-dd HH:mm\").format(new Date()) %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
+				(<c:out value="<%= ejbcawebbean.getText(\"ENDDATEINFO\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getDateExample() %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
 				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
-					value='<c:out value="<%= profile.getValue(EndEntityProfile.ENDTIME, 0) %>"/>'
+					value='<c:out value="<%= ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.ENDTIME, 0)) %>"/>'
 					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
 					readonly="true"
 					<%	} %>

@@ -18,7 +18,6 @@ import java.security.cert.Certificate;
 
 import javax.ejb.EJBException;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -43,7 +42,7 @@ public class ApprovalView {
 	}
 	
 	public String getApprovalDate(){
-		return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(approval.getApprovalDate());
+		return EjbcaJSFHelper.getBean().getEjbcaWebBean().formatAsISO8601(approval.getApprovalDate());
 	}
 	
 	public String getApprovalAdmin(){

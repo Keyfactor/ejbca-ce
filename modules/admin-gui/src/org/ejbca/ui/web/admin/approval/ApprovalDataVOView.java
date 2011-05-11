@@ -26,7 +26,6 @@ import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -85,7 +84,7 @@ public class ApprovalDataVOView implements Serializable {
     }
     
     private String fastDateFormat(final Date date) {
-    	return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(date);
+		return EjbcaJSFHelper.getBean().getEjbcaWebBean().formatAsISO8601(date);
     }
 
     public String getCaName() {

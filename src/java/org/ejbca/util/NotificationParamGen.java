@@ -17,8 +17,6 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.time.FastDateFormat;
-
 /**
  * Base class generating parameter data for email notifications. Derived classes can add additional parameters.
  * 
@@ -115,6 +113,6 @@ public class NotificationParamGen {
   }
   
   protected String fastDateFormat(Date date) {
-	  return FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(date);
+	  return ValidityDate.formatAsISO8601(date, ValidityDate.TIMEZONE_SERVER);
   }
 }

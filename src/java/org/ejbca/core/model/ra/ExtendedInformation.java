@@ -20,11 +20,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.util.ValidityDate;
 
 
 /**
@@ -50,7 +52,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
      */
     private static final long serialVersionUID = 3981761824188420320L;
     
-    private static final float LATEST_VERSION = 3;
+    private static final float LATEST_VERSION = 4;
 
     /** Different types of implementations of extended information, can be used to have different implementing classes of extended information */
     static final int TYPE_BASIC = 0;
@@ -283,13 +285,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
             if(data.get(REMAININGLOGINATTEMPTS) == null) {
             	setRemainingLoginAttempts(DEFAULT_REMAININGLOGINATTEMPTS);
             }
-            // In EJBCA 4.0.0 we changed the date format to ISO 8601
+            // In EJBCA 4.0.0 we changed the date format
         	if (getVersion() < 3) {
         		final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
         		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
         		try {
         			final String oldCustomStartTime = getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-        			if ( oldCustomStartTime != null && oldCustomStartTime.length()>0 && !oldCustomStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        			if ( !isEmptyOrRelative(oldCustomStartTime) ) {
         				// We use an absolute time format, so we need to upgrade
             			final String newCustomStartTime = newDateFormat.format(oldDateFormat.parse(oldCustomStartTime));
     					setCustomData(ExtendedInformation.CUSTOM_STARTTIME, newCustomStartTime);
@@ -302,7 +304,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
 				}
         		try {
         			final String oldCustomEndTime = getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-        			if ( oldCustomEndTime != null && oldCustomEndTime.length()>0 && !oldCustomEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        			if ( !isEmptyOrRelative(oldCustomEndTime) ) {
         				// We use an absolute time format, so we need to upgrade
             			final String newCustomEndTime = newDateFormat.format(oldDateFormat.parse(oldCustomEndTime));
     					setCustomData(ExtendedInformation.CUSTOM_ENDTIME, newCustomEndTime);
@@ -314,10 +316,44 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
 					log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_ENDTIME + " in extended user information.", e);
 				}
         	}
+        	// In 4.0.2 we further specify the storage format by saying that UTC TimeZone is implied instead of local server time
+        	if (getVersion() < 4) {
+        		final String[] timePatterns = {"yyyy-MM-dd HH:mm"};
+    			final String oldStartTime = getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+    			if (!isEmptyOrRelative(oldStartTime)) {
+            		try {
+            			final String newStartTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldStartTime, timePatterns));
+    					setCustomData(ExtendedInformation.CUSTOM_STARTTIME, newStartTime);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Upgraded " + ExtendedInformation.CUSTOM_STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
+    					}
+					} catch (ParseException e) {
+						log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_STARTTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
+					}
+    			}
+    			final String oldEndTime = getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+    			if (!isEmptyOrRelative(oldEndTime)) {
+    				// We use an absolute time format, so we need to upgrade
+					try {
+						final String newEndTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldEndTime, timePatterns));
+						setCustomData(ExtendedInformation.CUSTOM_ENDTIME, newEndTime);
+						if (log.isDebugEnabled()) {
+							log.debug("Upgraded " + ExtendedInformation.CUSTOM_ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
+						}
+					} catch (ParseException e) {
+						log.error("Unable to upgrade " + ExtendedInformation.CUSTOM_ENDTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
+					}
+    			}
+        	}
     		data.put(VERSION, new Float(LATEST_VERSION));
     	}
     }
     
+    /** @return true if argument is null, empty or in the relative time format. */
+    private boolean isEmptyOrRelative(final String time) {
+    	return (time == null || time.length()==0 || time.matches("^\\d+:\\d?\\d:\\d?\\d$"));
+    }
+
     /**
      * Method that returns the classpath to the this or inheriting classes.
      * @return String containing the classpath.

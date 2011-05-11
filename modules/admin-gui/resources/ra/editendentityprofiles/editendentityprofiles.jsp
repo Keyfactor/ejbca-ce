@@ -6,7 +6,7 @@
                 org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
-                org.apache.commons.lang.ArrayUtils, org.apache.commons.lang.time.FastDateFormat"%>
+                org.apache.commons.lang.ArrayUtils"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -613,7 +613,7 @@
 				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
 					value = request.getParameter(TEXTFIELD_STARTTIME);
 					if( value != null ) {
-						profiledata.setValue(EndEntityProfile.STARTTIME, 0, value);
+						profiledata.setValue(EndEntityProfile.STARTTIME, 0, ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value));
 					} else {
 						profiledata.setValue(EndEntityProfile.STARTTIME, 0, "");
 					}
@@ -633,7 +633,7 @@
 				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
 					value = request.getParameter(TEXTFIELD_ENDTIME);
 					if( value != null ) {
-						profiledata.setValue(EndEntityProfile.ENDTIME, 0, value);
+						profiledata.setValue(EndEntityProfile.ENDTIME, 0, ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value));
 					} else {
 						profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
 					}

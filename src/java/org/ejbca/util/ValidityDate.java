@@ -13,10 +13,8 @@
  
 package org.ejbca.util;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.time.DateUtils;
@@ -24,124 +22,154 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 
 /**
- * Class for encoding and decoding certificate validity and end date.
+ * A collection of time parsing related methods. Mainly designed for
+ * encoding and decoding certificate validity and end date.
  * 
  * @author lars
  * @version $Id$
  */
 public class ValidityDate {
-	final private static Logger log = Logger.getLogger(ValidityDate.class);
-	final private static Locale defaultLocale = Locale.getDefault();
-	final private static int dateStyle = DateFormat.SHORT;
-	final private static int timeStyle = DateFormat.MEDIUM;
-	final private static DateFormat oldDateFormat = DateFormat.getDateTimeInstance(dateStyle, timeStyle);
-	final private static String[] timePatterns = {"yyyy-MM-dd HH:mm"};
-	final private static TimeZone utcTimeZone = TimeZone.getTimeZone("UTC");
-	static {
-		oldDateFormat.setTimeZone(utcTimeZone);
+
+	/** The date and time format defined in ISO8601. The 'T' can be omitted (and we do to save some parsing cycles). */
+	public static final String ISO8601_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssZZ";
+	public static final TimeZone TIMEZONE_UTC = TimeZone.getTimeZone("UTC");
+	public static final TimeZone TIMEZONE_SERVER = TimeZone.getDefault();
+
+	private static final Logger log = Logger.getLogger(ValidityDate.class);
+	// Time format for storage where implied timezone is UTC
+	private static final String[] IMPLIED_UTC_PATTERN = {"yyyy-MM-dd HH:mm"};
+	private static final String[] IMPLIED_UTC_PATTERN_TZ = {"yyyy-MM-dd HH:mmZZ"};
+	// Time format for human interactions
+	private static final String[] ISO8601_PATTERNS = {ISO8601_DATE_FORMAT};
+	
+	/** Parse a String in the format "yyyy-MM-dd HH:mm" as a date with implied TimeZone UTC. */
+	public static Date parseAsUTC(final String dateString) throws ParseException {
+		return DateUtils.parseDateStrictly(dateString+"+00:00", IMPLIED_UTC_PATTERN_TZ);
 	}
 
-	/**
-	 * This method tries to use a date string to get a {@link java.util.Date} object.
-	 * Different ways of getting the date is tried. If one is not working the next is tried:
-	 * 1. We just assume that the input is a hex string encoded in seconds since epoch (the Unix time).
-	 * 2. The default local is used to try to decode the date in {@link java.text.DateFormat#SHORT} format and time in {@link java.text.DateFormat#MEDIUM} format. Time zone 'UTC' is used.
-	 * 3. All available locales are tried until one works. Decoding done the same way as 2
-	 * @param sDate the encoded date.
-	 * @return the date decoded from 'sDate'. null if no decoding can be done.
-	 */
-	public static Date getDateFromString(String sDate) {
-		
-		// First try to parse the time in the format yyyy-MM-dd HH:mm
-		try {
-			return DateUtils.parseDate(sDate, timePatterns);
-		} catch (ParseException e) {
-			// just try next
-		}
-		
-		// For backward compatibility, try parsing the time in the local time format.
-		try {
-			final Date date = oldDateFormat.parse(sDate);
-			if ( date!=null ) {
-				log.debug("Date string '"+sDate+"' with default local '"+defaultLocale.getDisplayName()+"' gives '"+date+"' when decoded." );
-				return date;
-			}
-		} catch (ParseException e1) {
-			// just try next
-		}
-		log.debug("The default locale '"+defaultLocale.getDisplayName()+"' can not decode the date string '"+sDate+"'.");
-		final Locale[] locales=DateFormat.getAvailableLocales();
-		for ( int i=0; i<locales.length; i++) {
-			final Locale locale = locales[i];
-			try {
-				final DateFormat dateFormat = DateFormat.getDateTimeInstance(dateStyle, timeStyle, locale);
-				dateFormat.setTimeZone(utcTimeZone);
-				final Date date = dateFormat.parse(sDate);
-				if ( date!=null ) {
-					log.warn("Default local '"+defaultLocale.getDisplayName()+"' not possible to use. Date string '"+sDate+"' in locale '"+locale.getDisplayName()+"' gives '"+date+"' when decoded. This date will be used. To use the default locale '"+defaultLocale.getDisplayName()+"' specify the date as '"+oldDateFormat.format(date)+"'." );
-					return date;
-				}
-			} catch (ParseException e1) {
-				// just try next
-			}
-			log.debug("Locale '"+locale.getDisplayName()+"' can not decode the date string '"+sDate+"'.");
-		}
-		final Date exampleDate=new Date();
-		log.info("Not possible to decode the date '"+sDate+"'. Example: The date '"+exampleDate+"' should be encoded as '"+FastDateFormat.getInstance(timePatterns[0]).format(exampleDate)+"'");
-		return null;
+	/** Parse a String in the format "yyyy-MM-dd HH:mm:ssZZ". */
+	public static Date parseAsIso8601(final String dateString) throws ParseException {
+		return DateUtils.parseDateStrictly(dateString, ISO8601_PATTERNS);
 	}
-	/**
-	 * Encoding of the validity for a CA. Either delta time or end date.
-	 * @param sValidity h*m*d* or valid date string in current locale.
-	 * @return delta time in days if h*m*d*; milliseconds since epoch if valid thate; -1 if neither
-	 */
-	public static long encode(String sValidity) {
-		try {
-			// First try with decimal format (days)
-			return Integer.parseInt(sValidity);
-		} catch(NumberFormatException ex) {
-			// Use '*y *mo *d'-format
-		}
-		YearMonthDayTime ymod = YearMonthDayTime.getInstance(sValidity, "0"+YearMonthDayTime.TYPE_DAYS);
-		if ( ymod!=null ) {
-			return (int) ymod.daysFrom(new Date());
-		}
-		final Date date = getDateFromString(sValidity);
-		if ( date!=null ) {
-			return date.getTime();
-		}
-		return -1;
+
+	/** Convert a Date to the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
+	public static String formatAsUTC(final Date date) {
+		return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[0], TIMEZONE_UTC).format(date);
 	}
-	private static boolean isDeltaTime(long lEncoded) {
-		return lEncoded < Integer.MAX_VALUE;
+	
+	/** Convert a absolute number of milliseconds to the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
+	public static String formatAsUTC(final long millis) {
+		return FastDateFormat.getInstance(IMPLIED_UTC_PATTERN[0], TIMEZONE_UTC).format(millis);
+	}
+	
+	/** Convert a Date to the format "yyyy-MM-dd HH:mm:ssZZ" (the T is not required). The server's time zone is used. */
+	public static String formatAsISO8601(final Date date, final TimeZone timeZone) {
+		return FastDateFormat.getInstance(ISO8601_PATTERNS[0], timeZone).format(date);
+	}
+
+	/** Convert a Date in milliseconds to the format "yyyy-MM-dd HH:mm:ssZZ". The server's time zone is used. */
+	public static String formatAsISO8601ServerTZ(final long millis, final TimeZone timeZone) {
+		return FastDateFormat.getInstance(ISO8601_PATTERNS[0], TIMEZONE_SERVER).format(millis);
+	}
+
+	/** Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC. */
+	public static String getImpliedUTCFromISO8601(final String dateString) throws ParseException {
+		return formatAsUTC(parseAsIso8601(dateString));
+	}
+	
+	/** Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to "yyyy-MM-dd HH:mm:ssZZ". */
+	public static String getISO8601FromImpliedUTC(final String dateString, final TimeZone timeZone) throws ParseException {
+		return formatAsISO8601(parseAsUTC(dateString), timeZone);
 	}
 	
 	/**
-	 * decodes encoded value to string.
+	 * Encoding of the validity for a CA or certificate profile. Either delta time or end date.
+	 * @param sValidity *y *mo *d or absolute date in the form "yyyy-MM-dd HH:mm:ssZZ"
+	 * @return delta time in days if h*m*d*; milliseconds since epoch if valid absolute date; -1 if neither
 	 */
-	public static String getString(long lEncoded) {
-		if ( isDeltaTime(lEncoded) ) {
+	public static long encode(final String sValidity) {
+		long returnValue = -1;
+		// Try '*y *mo *d'-format
+		final YearMonthDayTime yearMonthDayTime = YearMonthDayTime.getInstance(sValidity, "0"+YearMonthDayTime.TYPE_DAYS);
+		if (yearMonthDayTime!=null) {
+			long days = yearMonthDayTime.daysFrom(new Date());
+			if (isDeltaTime(days)) {
+				returnValue = days;
+			} else {
+				returnValue = Integer.valueOf(Integer.MAX_VALUE-1).longValue();
+				log.info(sValidity + " was parsed as a relative time, but is too far in the future. Limiting to " + returnValue + " days.");
+			}
+		} else {
+			// Try to parse the time in the format yyyy-MM-dd HH:mm:ssZZ
+			try {
+				returnValue = parseAsIso8601(sValidity).getTime();
+			} catch (ParseException e) {
+				if (log.isDebugEnabled()) {
+					final Date exampleDate = new Date();
+					log.debug("Not possible to decode the date '"+sValidity+"'. Example: The date '"+exampleDate+"' should be encoded as '"+formatAsUTC(exampleDate)+"'");
+				}
+			}
+		}
+		return returnValue;
+	}
+
+	/**
+	 * Decodes encoded value to string in the form "yyyy-MM-dd HH:mm:ssZZ" or "1234d" (relative days).
+	 * @param lEncoded If this is below Integer.MAX_VALUE it is interpreted as a number of days to firstDate, otherwise an unix timestamp.
+	 */
+	public static String getString(final long lEncoded) {
+		if (isDeltaTime(lEncoded)) {
 			return "" + lEncoded + YearMonthDayTime.TYPE_DAYS;
 		}
-		return FastDateFormat.getInstance(timePatterns[0]).format(new Date(lEncoded));		
+		return formatAsISO8601ServerTZ(lEncoded, TIMEZONE_SERVER);		
 	}
 	
 	/**
 	 * Decodes encoded value to Date.
-	 * @param lEncoded encoded value
-	 * @param firstDate date to be used if encoded value is a delta time.
+	 * @param lEncoded encoded value. If this is below Integer.MAX_VALUE it is interpreted as a number of days to firstDate, otherwise an unix timestamp.
+	 * @param firstDate date to be used if encoded value is a delta time. Can never be null.
 	 */
-	public static Date getDate(long lEncoded, Date firstDate) {
+	public static Date getDate(final long lEncoded, final Date firstDate) {
 		if ( isDeltaTime(lEncoded) ) {
 			return new Date(firstDate.getTime() + ( lEncoded * 24 * 60 * 60 * 1000));
 		}
 		return new Date(lEncoded);
 	}
+
+	/** If below the integer capacity we have stored a relative date in days, otherwise it is an absolute time in milliseconds. */
+	private static boolean isDeltaTime(final long lEncoded) {
+		return lEncoded < Integer.MAX_VALUE;	// This could probably be <= instead??
+	}
+	
 	/**
-	 * To be used when giving format example.
-	 * @return locale name and current date.
+	 * Parse a date as either "yyyy-MM-dd HH:mm:ssZZ" or a relative hex encoded UNIX time stamp (in seconds).
+	 * Use for parsing of the build time property "ca.toolateexpiredate" in ejbca.properties.
+	 * @return the date or the largest possible Date if unable to parse the argument.
 	 */
-	public static String getDateExample() {
-		return "(" + timePatterns[0] + "): '" +  FastDateFormat.getInstance(timePatterns[0]).format(new Date()) + "'.";
+	public static Date parseCaLatestValidDateTime(final String sDate) {
+		Date tooLateExpireDate = null;
+        if (sDate.length()>0) {
+        	//First, try to parse the date in ISO8601 date time format.
+    		try {
+    			return parseAsIso8601(sDate);
+    		} catch (ParseException e) {
+        		log.debug("tooLateExpireDate could not be parsed as an ISO8601 date: " + e.getMessage());
+    		}
+    		// Second, try to parse it as a hexadecimal value (without markers of any kind.. just a raw value).
+            if (tooLateExpireDate == null) {
+            	try {
+            		tooLateExpireDate = new Date(Long.parseLong(sDate, 16)*1000);
+            	} catch (NumberFormatException e) {
+            		log.debug("tooLateExpireDate could not be parsed as a hex value: " + e.getMessage());
+            	}
+            }
+        }
+        if (tooLateExpireDate == null) {
+        	log.debug("Using default value for ca.toolateexpiredate.");
+            tooLateExpireDate = new Date(Long.MAX_VALUE);
+        } else if (log.isDebugEnabled()) {
+        	log.debug("tooLateExpireData is set to: "+tooLateExpireDate);
+        }
+        return tooLateExpireDate;
 	}
 }

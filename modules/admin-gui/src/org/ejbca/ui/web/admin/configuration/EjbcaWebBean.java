@@ -22,18 +22,19 @@ import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
@@ -61,6 +62,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.ValidityDate;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -128,6 +130,14 @@ public class EjbcaWebBean implements Serializable {
     private Boolean[]                      raauthorized;
     private Admin                          administrator;
     private String                         requestServerName;
+
+    /*
+     * We should make this configurable, so GUI client can use their own time zone rather than the
+     * servers. Using JavaScript's "new Date().getTimezoneOffset()" in a cookie will not work on
+     * the first load of the GUI, so a configurable parameter in the user's preferences is probably
+     * the way to go.
+     */
+    private final TimeZone timeZone = ValidityDate.TIMEZONE_SERVER;
 
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() {
@@ -590,9 +600,65 @@ public class EjbcaWebBean implements Serializable {
         return str;
     }
 
-    public String printDateTime(Date date){
-    	return FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(date);
+    /** @return a more user friendly representation of a Date. */
+    public String formatAsISO8601(final Date date) {
+    	return ValidityDate.formatAsISO8601(date, timeZone);
     }
+
+    /** Parse a Date and reformat it as vailidation. */
+    public String validateDateFormat(String value) throws ParseException {
+    	return ValidityDate.formatAsUTC(ValidityDate.parseAsUTC(value));
+    }
+    
+    /** Check if the argument is a relative date/time in the form days:min:seconds. */
+    public boolean isRelativeDateTime(final String dateString) {
+    	return dateString.matches("^\\d+:\\d?\\d:\\d?\\d$");
+    }
+
+	/** To be used when giving format example. */
+	public String getDateExample() {
+		return "[" + ValidityDate.ISO8601_DATE_FORMAT + "]: '" +  formatAsISO8601(new Date()) + "'.";
+	}
+
+	/** Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC used when storing. */
+	public String getImpliedUTCFromISO8601(final String dateString) throws ParseException {
+		return ValidityDate.getImpliedUTCFromISO8601(dateString);
+	}
+	
+	/**
+	 * Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC used when storing.
+	 * If it is a relative date or something else we return it as it was.
+	 */
+	public String getImpliedUTCFromISO8601OrRelative(final String dateString) throws ParseException {
+		if (!isRelativeDateTime(dateString)) {
+			try {
+				return getImpliedUTCFromISO8601(dateString);
+			} catch (ParseException e) {
+				log.debug(e.getMessage());
+			}
+		}
+		return dateString;
+	}
+	
+	/** Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to a more user friendly "yyyy-MM-dd HH:mm:ssZZ". */
+	public String getISO8601FromImpliedUTC(final String dateString) throws ParseException {
+		return ValidityDate.getISO8601FromImpliedUTC(dateString, timeZone);
+	}
+
+	/**
+	 * Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to a more user friendly "yyyy-MM-dd HH:mm:ssZZ".
+	 * If it is a relative date or something else we return it as it was.
+	 */
+	public String getISO8601FromImpliedUTCOrRelative(final String dateString) throws ParseException {
+		if (!isRelativeDateTime(dateString)) {
+			try {
+				return getISO8601FromImpliedUTC(dateString);
+			} catch (ParseException e) {
+				log.debug(e.getMessage());
+			}
+		}
+		return dateString;
+	}
 
     public void reloadGlobalConfiguration() throws  Exception {
       globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
@@ -688,11 +754,9 @@ public class EjbcaWebBean implements Serializable {
 	    return hostname;
     }
     
-    /**
-     * @return The current time on the server
-     */
+    /** @return The current time on the server */
     public String getServerTime(){
-    	return FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ssz").format(new Date());
+    	return ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER);
     }
 
     /**
