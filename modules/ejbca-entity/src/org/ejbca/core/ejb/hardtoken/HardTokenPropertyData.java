@@ -24,7 +24,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 /**
- * Complimentary class used to assign extended properties like copyof to a hard
+ * Complementary class used to assign extended properties like copyof to a hard
  * token.
  * 
  * Id is represented by primary key of hard token table.

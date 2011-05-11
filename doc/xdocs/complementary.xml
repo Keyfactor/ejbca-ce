@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <document>
   <properties>
-    <title>Complimentary software</title>
+    <title>Complementary software</title>
   </properties>
 
   <body>
@@ -80,7 +80,7 @@ can be used together with PKI to even further improve your PKI experience.
     Using Bouncycastle you can create your own tools and applications, or PKI enable your existing java applications.
     </p>
     <p>
-    Bouncycastle also have a section with complimentary packages (under resources) that you should look at.
+    Bouncycastle also have a section with complementary packages (under resources) that you should look at.
     </p>
 </subsection>
 
