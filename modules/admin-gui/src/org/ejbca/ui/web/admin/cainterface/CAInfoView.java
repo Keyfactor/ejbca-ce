@@ -150,7 +150,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         if(cainfo.getExpireTime() == null) {
 		  cainfodata[EXPIRETIME] = "";
         } else {
-          cainfodata[EXPIRETIME] = ejbcawebbean.printDateTime(cainfo.getExpireTime());
+          cainfodata[EXPIRETIME] = ejbcawebbean.formatAsISO8601(cainfo.getExpireTime());
         }
         
         switch(cainfo.getStatus()){
@@ -168,7 +168,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
                                                     ejbcawebbean.getText("REASON") + " : <br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
                                                     ejbcawebbean.getText(SecConst.reasontexts[cainfo.getRevocationReason()]) + "<br>&nbsp;&nbsp;" +
 			                                        ejbcawebbean.getText("CRL_ENTRY_REVOCATIONDATE") + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
-			                                        ejbcawebbean.printDateTime(cainfo.getRevocationDate());
+			                                        ejbcawebbean.formatAsISO8601(cainfo.getRevocationDate());
               break;
             case SecConst.CA_WAITING_CERTIFICATE_RESPONSE :
               cainfodata[STATUS]     = ejbcawebbean.getText("WAITINGFORCERTRESPONSE");

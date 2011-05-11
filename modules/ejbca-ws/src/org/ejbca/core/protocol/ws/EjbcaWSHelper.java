@@ -41,7 +41,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
-import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
@@ -87,6 +86,7 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.IPatternLogger;
+import org.ejbca.util.ValidityDate;
 import org.ejbca.util.query.Query;
 
 /** Helper class for other classes that wants to call remote EJBs.
@@ -321,15 +321,18 @@ public class EjbcaWSHelper {
 		if(userdata.getStartTime() != null) {
 			String customStartTime = userdata.getStartTime();
 			try {
-				if ( customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") && !customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")) {
-					// We use the old absolute time format, so we need to upgrade and log deprecation info
-					final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-					final String newCustomStartTime = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(oldDateFormat.parse(customStartTime));
-					log.info("WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm should be used for absolute time and any fetched UserDataVOWS will use this format.");
-					if (log.isDebugEnabled()) {
-						log.debug(" Changed startTime \"" + customStartTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+				if (customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+					if (!customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
+						// We use the old absolute time format, so we need to upgrade and log deprecation info
+						final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+						final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customStartTime), ValidityDate.TIMEZONE_UTC);
+						log.info("WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
+						if (log.isDebugEnabled()) {
+							log.debug(" Changed startTime \"" + customStartTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+						}
+						customStartTime = newCustomStartTime;
 					}
-					customStartTime = newCustomStartTime;
+					customStartTime = ValidityDate.getImpliedUTCFromISO8601(customStartTime);
 				}
 				ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, customStartTime);
 				useEI = true;
@@ -341,15 +344,18 @@ public class EjbcaWSHelper {
         if(userdata.getEndTime() != null) {
 			String customEndTime = userdata.getEndTime();
 			try {
-				if ( customEndTime.length()>0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") && !customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$")) {
-					// We use the old absolute time format, so we need to upgrade and log deprecation info
-					final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-					final String newCustomStartTime = FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(oldDateFormat.parse(customEndTime));
-					log.info("WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm should be used for absolute time and any fetched UserDataVOWS will use this format.");
-					if (log.isDebugEnabled()) {
-						log.debug(" Changed endTime \"" + customEndTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+				if (customEndTime.length()>0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")){
+					if (!customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
+						// We use the old absolute time format, so we need to upgrade and log deprecation info
+						final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+						final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customEndTime), ValidityDate.TIMEZONE_UTC);
+						log.info("WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
+						if (log.isDebugEnabled()) {
+							log.debug(" Changed endTime \"" + customEndTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+						}
+						customEndTime = newCustomStartTime;
 					}
-					customEndTime = newCustomStartTime;
+					customEndTime = ValidityDate.getImpliedUTCFromISO8601(customEndTime);
 				}
 	            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, customEndTime);
 	            useEI = true;
@@ -463,8 +469,26 @@ public class EjbcaWSHelper {
 
 		ExtendedInformation ei = userdata.getExtendedinformation();
 		if(ei != null) {
-		    dataWS.setStartTime(ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
-            dataWS.setEndTime(ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
+			String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+			if (startTime!=null && startTime.length()>0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+				try {
+					// Always respond with the time formatted in a neutral time zone
+					startTime = ValidityDate.getISO8601FromImpliedUTC(startTime, ValidityDate.TIMEZONE_UTC);
+				} catch (ParseException e) {
+					log.info("Failed to convert " + ExtendedInformation.CUSTOM_STARTTIME + " to ISO8601 format.");
+				}
+			}
+		    dataWS.setStartTime(startTime);
+		    String endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+			if (endTime!=null && endTime.length()>0 && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+				try {
+					// Always respond with the time formatted in a neutral time zone
+					endTime = ValidityDate.getISO8601FromImpliedUTC(endTime, ValidityDate.TIMEZONE_UTC);
+				} catch (ParseException e) {
+					log.info("Failed to convert " + ExtendedInformation.CUSTOM_ENDTIME + " to ISO8601 format.");
+				}
+			}
+            dataWS.setEndTime(endTime);
     		// Fill custom data in extended information
     		HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
     		if (data != null) {

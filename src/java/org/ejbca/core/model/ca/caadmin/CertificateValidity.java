@@ -16,7 +16,6 @@ import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
@@ -43,28 +42,12 @@ public class CertificateValidity {
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
-	private static final String[] datePatterns = {"yyyy-MM-dd HH:mm"};
 
     private Date lastDate;
     private Date firstDate;
     
-    private static Date tooLateExpireDate;
-    static {
-        final String sDate = EjbcaConfiguration.getCaTooLateExpireDate();
-        if ( sDate.length()<1 ) {
-        	log.debug("Using default value for ca.toolateexpiredate.");
-            tooLateExpireDate = new Date(Long.MAX_VALUE);
-        } else {
-        	//First, try to parse the date in the SHORT date and MEDIUM time format. If this fails (= returns null), then try to parse it as hexadecimal.
-            tooLateExpireDate = ValidityDate.getDateFromString(sDate);
-            if(tooLateExpireDate == null) {
-            	try {
-            		tooLateExpireDate = new Date(Long.parseLong(sDate, 16)*1000);
-            	} catch (NumberFormatException e) {}
-            }
-        	log.debug("tooLateExpireData is set to: "+tooLateExpireDate);
-        }
-    }
+    private static Date tooLateExpireDate = ValidityDate.parseCaLatestValidDateTime(EjbcaConfiguration.getCaTooLateExpireDate());
+
     /** Protected method so we can JUnit test this
      */
     protected static void setTooLateExpireDate(Date date) {
@@ -98,7 +81,8 @@ public class CertificateValidity {
         			startTimeDate = new Date(now.getTime() + relative);
         		} else {
         			try {
-        				startTimeDate = DateUtils.parseDate(eiStartTime, datePatterns);
+        				// Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
+        				startTimeDate = ValidityDate.parseAsUTC(eiStartTime);
         			} catch (ParseException e) {
         				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiStartTime));
         			}
@@ -115,7 +99,8 @@ public class CertificateValidity {
         			endTimeDate = new Date(now.getTime() + relative);
         		} else {
         			try {
-        				endTimeDate = DateUtils.parseDate(eiEndTime, datePatterns);
+        				// Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
+        				endTimeDate = ValidityDate.parseAsUTC(eiEndTime);
         			} catch (ParseException e) {
         				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiEndTime));
         			}

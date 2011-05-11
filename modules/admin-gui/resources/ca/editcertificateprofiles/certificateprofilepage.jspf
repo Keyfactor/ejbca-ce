@@ -530,7 +530,7 @@ function checkallfields(){
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="20" maxlength="255" 
            value="<%= ValidityDate.getString(certificateprofiledata.getValidity())  %>"><br />
-           <%= ejbcawebbean.getText("ENDDATEINFO") %> <%= ValidityDate.getDateExample()  %>
+           <%= ejbcawebbean.getText("ENDDATEINFO") %> <%= ejbcawebbean.getDateExample()  %>
       </td>
     </tr>
 

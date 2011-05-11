@@ -487,7 +487,7 @@ The field 'notAfter' in the issued certificate will have the value 'now + validi
 It can also, if noted in the field, be entered in terms of years, months and days. For instance '10y 9mo 8d' is translated to 
 10 years, 9 months and 8 days from now.
 Instead of the validity period an absolute end date could specify the end of the validity period. This date should be given in
-the format 'yyyy-MM-dd HH:mm', for example, the date 'June 3rd, 2011 at 6:15 PM' should be given as '2011-06-03 18:15'. 
+the format 'yyyy-MM-dd HH:mm:ssZZ', for example, the date 'June 3rd, 2011 at 6:15 PM' in UTC should be given as '2011-06-03 18:15:00+00:00'. 
 </p><p>
 The check box 'Allow Validity Override' will make it possible to request a specific notAfter date. This is currently possible when using CMP (the CRMF request format), or when using the API to issue certificates.
 </p><p>

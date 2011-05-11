@@ -81,21 +81,12 @@
 #    The value 80000000 will give the time when the integer becomes negative if casted to 32 bit.
 #    This is when the year 2038 problem occurs. See http://en.wikipedia.org/wiki/Year_2038_problem .
 #    Set to this value if you don't want to issue any certificates that could cause this problem.
-#
-# 2. Otherwise the SHORT date and MEDIUM time format of the java.text.DateFormat class is used when parsing the time and date string.
-#    You should specify it in the used local. See examples below.
-#    The date and time is given in UTC.
-#    First the default local is tried when parsing. If the default is not working available locales is tried until one works.
+# 2. For you convenience this could also be specified in the ISO8601 date format.
 # Default: no limitation
 # The 2038 problem:
 #ca.toolateexpiredate=80000000
-# 'Sun Apr 26 19:25:00 2015' with different locales.
-# English (United States)
-#ca.toolateexpiredate=1/19/2038 3:14:08 AM
-# Svenska (Sverige)
-#ca.toolateexpiredate=2038-01-19 03:14:08
-# English (United Kingdom)
-#ca.toolateexpiredate=19/1/2038 3:14:08 AM
+#ca.toolateexpiredate=2038-01-19 03:14:08+00:00
+
 
 # The idea of a HSM to use a HSM is to have the private keys protected. It should not be possible to extract them.
 # To prevent using a key with the private part extractable a test is made before activating a CA.

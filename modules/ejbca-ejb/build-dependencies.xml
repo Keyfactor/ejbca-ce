@@ -93,6 +93,10 @@
 					<!-- Dependencies from CertTools -->
 					<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
 					<include name="org/ejbca/util/dn/DnComponents.java"/>
+					<!-- Dependencies from noticifations, WS and AdminGUI -->
+					<include name="org/ejbca/util/ValidityDate.java"/>
+					<include name="org/ejbca/util/YearMonthDayTime.java"/>
+					<include name="org/ejbca/util/UnitParser.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
@@ -429,10 +433,7 @@
 					<include name="org/ejbca/core/model/ca/SignRequestException.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/SernoGenerator.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/ISernoGenerator.java"/>
-					<include name="org/ejbca/util/ValidityDate.java"/>
 					<include name="org/ejbca/util/SimpleTime.java"/>
-					<include name="org/ejbca/util/UnitParser.java"/>
-					<include name="org/ejbca/util/YearMonthDayTime.java"/>
 					<include name="org/ejbca/util/RequestMessageUtils.java"/>
 					<include name="org/ejbca/util/cert/PrintableStringEntryConverter.java"/>
 					<include name="org/ejbca/core/model/ra/NotFoundException.java"/>

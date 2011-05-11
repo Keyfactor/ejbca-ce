@@ -39,6 +39,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.ValidityDate;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -61,7 +62,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 13;
+    public static final float LATEST_VERSION = 14;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -1083,9 +1084,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	if ( (startTimeDate != null) && (endTimeDate != null) ) {
     		if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
-    			final FastDateFormat sm = FastDateFormat.getInstance(datePatterns[0]);
     			throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
-    					sm.format(startTimeDate)+" "+sm.format(endTimeDate));
+    					ValidityDate.formatAsUTC(startTimeDate)+" "+ValidityDate.formatAsUTC(endTimeDate));
     		}    	  
     	}
     	// Check number of allowed requests
@@ -1432,7 +1432,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         		final FastDateFormat newDateFormat = FastDateFormat.getInstance("yyyy-MM-dd HH:mm");
         		try {
         			final String oldStartTime = getValue(STARTTIME, 0);
-        			if ( oldStartTime != null && oldStartTime.length()>0 && !oldStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        			if (!isEmptyOrRelative(oldStartTime)) {
         				// We use an absolute time format, so we need to upgrade
             			final String newStartTime = newDateFormat.format(oldDateFormat.parse(oldStartTime));
     					setValue(STARTTIME, 0, newStartTime);
@@ -1445,7 +1445,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 				}
         		try {
         			final String oldEndTime = getValue(ENDTIME, 0);
-        			if ( oldEndTime != null && oldEndTime.length()>0 && !oldEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        			if (!isEmptyOrRelative(oldEndTime)) {
         				// We use an absolute time format, so we need to upgrade
             			final String newEndTime = newDateFormat.format(oldDateFormat.parse(oldEndTime));
     					setValue(ENDTIME, 0, newEndTime);
@@ -1457,10 +1457,47 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 					log.error("Unable to upgrade " + ENDTIME + " in EndEntityProfile! Manual interaction is required (edit and verify).", e);
 				}
         	}
+        	/*
+        	 * In version 13 we converted some dates to the "yyyy-MM-dd HH:mm" format using default Locale.
+        	 * These needs to be converted to the same format but should be stored in UTC, so we always know what the times are.
+        	 */
+        	if (getVersion() < 14) {
+        		final String[] timePatterns = {"yyyy-MM-dd HH:mm"};
+    			final String oldStartTime = getValue(STARTTIME, 0);
+    			if (!isEmptyOrRelative(oldStartTime)) {
+            		try {
+            			final String newStartTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldStartTime, timePatterns));
+    					setValue(STARTTIME, 0, newStartTime);
+    					if (log.isDebugEnabled()) {
+    						log.debug("Upgraded " + STARTTIME + " from \"" + oldStartTime + "\" to \"" + newStartTime + "\" in EndEntityProfile.");
+    					}
+					} catch (ParseException e) {
+						log.error("Unable to upgrade " + STARTTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
+					}
+    			}
+    			final String oldEndTime = getValue(ENDTIME, 0);
+    			if (!isEmptyOrRelative(oldEndTime)) {
+    				// We use an absolute time format, so we need to upgrade
+					try {
+						final String newEndTime = ValidityDate.formatAsUTC(DateUtils.parseDateStrictly(oldEndTime, timePatterns));
+						setValue(ENDTIME, 0, newEndTime);
+						if (log.isDebugEnabled()) {
+							log.debug("Upgraded " + ENDTIME + " from \"" + oldEndTime + "\" to \"" + newEndTime + "\" in EndEntityProfile.");
+						}
+					} catch (ParseException e) {
+						log.error("Unable to upgrade " + ENDTIME + " to UTC in EndEntityProfile! Manual interaction is required (edit and verify).", e);
+					}
+    			}
+        	}
         	// Finally, update the version stored in the map to the current version
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.trace("<upgrade");
+    }
+    
+    /** @return true if argument is null, empty or in the relative time format. */
+    private boolean isEmptyOrRelative(final String time) {
+    	return (time == null || time.length()==0 || time.matches("^\\d+:\\d?\\d:\\d?\\d$"));
     }
 
     public static boolean isFieldImplemented(final int field) {

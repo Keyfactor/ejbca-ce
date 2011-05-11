@@ -5,7 +5,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, java.math.BigInteger,
-                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, org.apache.commons.lang.time.FastDateFormat, org.apache.commons.lang.time.DateUtils, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
+                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, org.apache.commons.lang.time.DateUtils, org.ejbca.core.model.ra.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -438,11 +438,7 @@
 			if ( value != null ) {
 				value = value.trim();
 				if (value.length() > 0) {
-					String storeValue = value;
-	                if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-	                	String[] dp = {"yyyy-MM-dd HH:mm"};
-	                	storeValue = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(value, dp));
-	        		}
+					String storeValue = ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value);
 					ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
 					newuser.setExtendedInformation(ei);					
 				}
@@ -451,11 +447,7 @@
 			if ( value != null ) {
 				value = value.trim();
 				if (value.length() > 0) {
-					String storeValue = value;
-	                if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-	                	String[] dp = {"yyyy-MM-dd HH:mm"};
-	                	storeValue = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(value, dp));
-	        		}
+					String storeValue = ejbcawebbean.getImpliedUTCFromISO8601OrRelative(value);
 					ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
 					newuser.setExtendedInformation(ei);					
 				}
@@ -1522,7 +1514,7 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(new Date()) %>)
+				(<%= ejbcawebbean.getText("ENDDATEINFO").toLowerCase() %> <%= ejbcawebbean.getDateExample() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1532,10 +1524,8 @@ function checkUseInBatch(){
 							if ( startTime == null ) {
 								startTime = "";
 							} 
-							if ( !startTime.trim().equals("") && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-			                	String[] dp = {"yyyy-MM-dd HH:mm"};
-			                	startTime = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(startTime, dp));
-
+							if ( !startTime.trim().equals("") && !ejbcawebbean.isRelativeDateTime(startTime) ) {
+								startTime = ejbcawebbean.getISO8601FromImpliedUTC(startTime);
 							}
 						}
                     %>
@@ -1559,7 +1549,7 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
-				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= FastDateFormat.getInstance("yyyy-MM-dd HH:mm").format(new Date()) %>)
+				(<%= ejbcawebbean.getText("ENDDATEINFO").toLowerCase() %> <%= ejbcawebbean.getDateExample() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1570,9 +1560,8 @@ function checkUseInBatch(){
 						if ( endTime == null ) {
 							endTime = "";
 						} 
-						if ( !endTime.trim().equals("") && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
-							String[] dp = {"yyyy-MM-dd HH:mm"};
-							endTime = FastDateFormat.getInstance(dp[0]).format(DateUtils.parseDate(endTime, dp));
+						if ( !endTime.trim().equals("") && !ejbcawebbean.isRelativeDateTime(endTime) ) {
+							endTime = ejbcawebbean.getISO8601FromImpliedUTC(endTime);
 		        		}
 						%>
 					value="<%= endTime %>"

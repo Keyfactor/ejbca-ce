@@ -412,11 +412,11 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDFROM") %></td>
-		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidFrom()) %></td>
+		 <td><%= ejbcawebbean.formatAsISO8601(certificatedata.getValidFrom()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_VALIDTO") %></td>
-		 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidTo()) %></td>
+		 <td><%= ejbcawebbean.formatAsISO8601(certificatedata.getValidTo()) %></td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong></td>
@@ -573,7 +573,7 @@ function confirmrepublish(){
          <td ><%  if(certificatedata.isRevoked()){
                     out.write(ejbcawebbean.getText("YES") + "<br/>"
                     		+ ejbcawebbean.getText("CRL_ENTRY_REVOCATIONDATE") + " "
-                    		+ ejbcawebbean.printDateTime(certificatedata.getRevocationDate()) + "<br/>"
+                    		+ ejbcawebbean.formatAsISO8601(certificatedata.getRevocationDate()) + "<br/>"
                     		+ ejbcawebbean.getText("REVOCATIONREASONS") + " ");
                     final String reason = certificatedata.getRevocationReason();
                     if (reason != null) {

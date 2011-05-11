@@ -18,11 +18,11 @@ import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.FastDateFormat;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
+import org.ejbca.util.ValidityDate;
 import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
@@ -95,7 +95,7 @@ public class LogEntryView implements Serializable, Cloneable, Comparable {
        
     /** Sets the values according to the values in the LogEntry object.*/ 
     public void setValues(LogEntry logentry,  String[] localinfoeventnames, String[] localerroreventnames, String[] localsystemeventnames,String[] localmodulenames, Map<Integer,String> caidtonamemap) {
-       logentrydata[TIME] = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss").format(logentry.getTime());
+       logentrydata[TIME] = ValidityDate.formatAsISO8601(logentry.getTime(), ValidityDate.TIMEZONE_SERVER);
        this.time = logentry.getTime();
       
        logentrydata[ADMINTYPE] = Integer.toString(logentry.getAdminType());

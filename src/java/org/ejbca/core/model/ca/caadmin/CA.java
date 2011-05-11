@@ -572,7 +572,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param subject
      * @param publicKey
      * @param keyusage
-     * @param validity requested validity in days
+     * @param validity requested validity in days or -1 to use default from Certificate Profile.
      * @param certProfile
      * @param sequence an optional requested sequence number (serial number) for the certificate, may or may not be used by the CA. Currently used by CVC CAs for sequence field. Can be set to null.
      * @return

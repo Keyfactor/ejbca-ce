@@ -9,5 +9,5 @@
 #
 
 # The time format used when logging events and displaying them.
-# Default: yyyy-MM-dd HH:mm
-#log4j.timepattern=yyyy-MM-dd HH:mm
+# Default: yyyy-MM-dd HH:mm:ssZZ
+#log4j.timepattern=yyyy-MM-dd HH:mm:ssZZ
