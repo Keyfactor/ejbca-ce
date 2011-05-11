@@ -19,6 +19,7 @@ import org.ejbca.core.model.log.Admin;
 
 /**
  * Remote interface for RaAdminSession.
+ * @version $Id$
  */
 @Remote
 public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSession {
