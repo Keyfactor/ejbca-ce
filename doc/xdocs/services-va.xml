@@ -17,7 +17,7 @@ signed by a valid CA (it is valid if the root is trusted).
 <a href="#RFC 4387">RFC 4387</a> specifies how the certificates are retrieved.
 The configuration file conf/certstore.properties is used to configure the service.
 </p><p>
-If you view the page http://vahost:8080/certificates/search.cgi (when the service is enabled) you will get links to all URLs that can be used.
+If you view the page <strong>http://vahost:8080/certificates/search.cgi</strong> (when the service is enabled) you will get links to all URLs that can be used.
 'certificates' is the default URL path for the web module, but this can be changed in the configuration.
 </p>
 </subsection>
@@ -27,7 +27,7 @@ The CRL store is used to get a Certificate Revocation List (a signed list of rev
 <a href="#RFC 4387">RFC 4387</a> specifies how the CRLs are retrieved.
 The configuration file conf/crlstore.properties is used to configure the service.
 </p><p>
-If you view the page http://vahost:8080/crls/search.cgi you will get links to all URLs that could be used.
+If you view the page <strong>http://vahost:8080/crls/search.cgi</strong> you will get links to all URLs that could be used.
 'crls' is the default path for the web module, but this can be changed in the configuration.
 </p>
 </subsection>
@@ -36,7 +36,7 @@ If you view the page http://vahost:8080/crls/search.cgi you will get links to al
 The OCSP responder is used to ask if a certificate is revoked or not. The OCSP protocol is specified in <a href="http://www.ietf.org/rfc/rfc2560.txt">RFC 2560</a>.
 See <a href="architecture-ocsp.html">OCSP Architecture</a>
 </p>
-<p>The url for OCSP services is http://vahost:8080/ejbca/publicweb/status/ocsp
+<p>The url for OCSP services is <strong>http://vahost:8080/ejbca/publicweb/status/ocsp</strong>
 </p>
 </subsection>
 </section>
