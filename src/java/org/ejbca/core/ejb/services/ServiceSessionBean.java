@@ -431,7 +431,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 addTimer(30 * 1000, timerInfo);
         	}
         	if (serviceName == null) {
-                logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
+                logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
                         LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
         	} else {
             	// Get interval of worker
@@ -457,13 +457,25 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                         }
                 	}
                     if (worker != null) {
-                   		serviceSession.executeServiceInNoTransaction(worker, serviceName);
+                    	try {
+                    		serviceSession.executeServiceInNoTransaction(worker, serviceName);
+                    	} catch (RuntimeException e) {
+                    		/*
+                    		 * If the service worker fails with a RuntimeException we need to
+                    		 * swallow this here. If we allow it to propagate outside the
+                    		 * ejbTimeout method it is up to the application server config how it
+                    		 * should be retried, but we have already scheduled a new try
+                    		 * previously in this method. We still want to log this as an ERROR
+                    		 * since it is some kind of catastrophic failure..
+                    		 */
+                    		log.error("Service worker execution failed.", e);
+                    	}
                     } else {
                     	Object o = timerInfo;
                     	if (serviceName != null) {
                     		o = serviceName;
                     	}
-                    	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
+                    	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
                     			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", o));
                     }
                     if (new Date().getTime() - startOfTimeOut > serviceInterval * 1000) {
