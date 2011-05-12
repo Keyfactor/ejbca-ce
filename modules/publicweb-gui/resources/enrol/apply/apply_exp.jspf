@@ -347,11 +347,11 @@
 	<script type="text/javascript">
 	<!--
 	    if ( navigator.userAgent.indexOf("Windows NT 6") != -1 ) {
-			document.writeln(	"If not instructed otherwise by your local administrator:<br />"+
-								"<li>Install &quot;Root CA&quot; certificate in &quot;Trusted Root Certificate Authorities&quot;-storage.<\/li>"+
-								"<li>Make sure IE is allowed to run the CertEnroll addon.<\/li>"+
-								"<li>Add this site to the list of Trusted Sites.<\/li>"+
-								"<li>Set &quot;Initialize and script ActiveX controls not marked as safe for scripting&quot; to &quot;Prompt&quot;.<\/li>");
+			document.writeln(	"If not instructed otherwise by your local administrator:<br/>"+
+								"<ul><li>Install &quot;Root CA&quot; certificate in &quot;Trusted Root Certificate Authorities&quot;-storage.</li>"+
+								"<li>Make sure IE is allowed to run the CertEnroll addon.</li>"+
+								"<li>Add this site to the list of Trusted Sites.</li>"+
+								"<li>Set &quot;Initialize and script ActiveX controls not marked as safe for scripting&quot; to &quot;Prompt&quot;.</li></ul>");
 		} else {
 			document.writeln(	"If you do not get a list of CSPs in the list below, you may have to upgrade Internet Explorer "+
 								"with the new certificate enrollment control (see Microsoft support issue Q323172). Try performing "+
