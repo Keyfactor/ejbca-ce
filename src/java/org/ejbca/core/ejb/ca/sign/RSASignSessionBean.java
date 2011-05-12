@@ -693,12 +693,23 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		}
 	}
 
+	/** Small function that makes a list of users, space separated. Used for logging.
+	 * Only actually displays the first 10 records, then a notice how many records were not displayed
+	 * 
+	 * @param users a set of usernames to create a string of
+	 * @return space separated list of usernames, i.e. "'user1' 'user2' 'user3'", max 10 users
+	 */
     private String listUsers(Set<String> users) {
-    	final StringBuilder sb = new StringBuilder("");
+    	final StringBuilder sb = new StringBuilder();
+    	int bar = 0; // limit number of displayed users
     	for (final String user : users) {
         	if (sb.length()>0) {
         		sb.append(' ');
         	}
+    		if (bar++ > 9) {
+    			sb.append("and ").append(users.size()-bar+1).append(" users not displayed");
+    			break;
+    		}        	
         	sb.append('\'');
         	sb.append(user);
         	sb.append('\'');
