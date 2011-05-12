@@ -617,7 +617,7 @@ public class EjbcaWebBean implements Serializable {
 
 	/** To be used when giving format example. */
 	public String getDateExample() {
-		return "[" + ValidityDate.ISO8601_DATE_FORMAT + "]: '" +  formatAsISO8601(new Date()) + "'.";
+		return "[" + ValidityDate.ISO8601_DATE_FORMAT + "]: '" +  formatAsISO8601(new Date()) + "'";
 	}
 
 	/** Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC used when storing. */

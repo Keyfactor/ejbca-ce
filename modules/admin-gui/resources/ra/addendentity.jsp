@@ -1721,9 +1721,10 @@ function checkallfields(){
     <%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
-				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFSTART\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"ENDDATEINFO\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getDateExample() %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
-				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
+				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
+				(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample()
+				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	String startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.STARTTIME, 0)); %>
@@ -1746,9 +1747,10 @@ function checkallfields(){
     <%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td>&nbsp;</td><td align="right"> 
-				<c:out value="<%= ejbcawebbean.getText(\"TIMEOFEND\") %>"/> <br />
-				(<c:out value="<%= ejbcawebbean.getText(\"ENDDATEINFO\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getDateExample() %>"/> <c:out value="<%= ejbcawebbean.getText(\"OR\").toLowerCase() %>"/> <c:out value="<%= ejbcawebbean.getText(\"DAYS\").toLowerCase()
-				%>"/>:<c:out value="<%= ejbcawebbean.getText(\"HOURS\").toLowerCase() %>"/>:<c:out value="<%= ejbcawebbean.getText(\"MINUTES\").toLowerCase() %>"/>)
+				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
+				(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample() 
+				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					value='<c:out value="<%= ejbcawebbean.getISO8601FromImpliedUTCOrRelative(profile.getValue(EndEntityProfile.ENDTIME, 0)) %>"/>'
@@ -1965,7 +1967,7 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'view_user','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_user','height=650,width=750,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 
@@ -1974,7 +1976,7 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    win_popup = window.open(link, 'edit_user','height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'edit_user','height=650,width=1000,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
 

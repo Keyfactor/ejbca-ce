@@ -1513,8 +1513,10 @@ function checkUseInBatch(){
 	<%	if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
-				(<%= ejbcawebbean.getText("ENDDATEINFO").toLowerCase() %> <%= ejbcawebbean.getDateExample() %>)
+				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
+				(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample()
+				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();
@@ -1548,8 +1550,10 @@ function checkUseInBatch(){
 	<%	if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
-				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
-				(<%= ejbcawebbean.getText("ENDDATEINFO").toLowerCase() %> <%= ejbcawebbean.getDateExample() %>)
+				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
+				(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample() 
+				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
 				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="20" maxlength="40" tabindex="<%=tabindex++%>"
 					<%	ExtendedInformation ei = userdata.getExtendedInformation();

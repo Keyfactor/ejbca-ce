@@ -1115,7 +1115,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="40%" valign="top" align="right"> 
 		<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
-		(<%= ejbcawebbean.getText("ENDDATEINFO").toLowerCase() %> <%= ejbcawebbean.getDateExample()
+		(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample()
 		%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 		%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
       </td>
@@ -1154,7 +1154,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="40%" valign="top" align="right"> 
 		<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
-		(<%= ejbcawebbean.getText("ENDDATEINFO").toLowerCase() %> <%= ejbcawebbean.getDateExample() 
+		(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample() 
 		%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 		%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
       </td>
