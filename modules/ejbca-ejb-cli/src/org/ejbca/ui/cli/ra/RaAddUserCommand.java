@@ -204,22 +204,22 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 // not found
                 // i
                 // database.
-                getLogger().error("Couldn't find certificate profile in database.");
+                getLogger().error("Could not find certificate profile in database.");
                 error = true;
             }
 
             if (profileid == 0) { // End entity profile not found i database.
-                getLogger().error("Couldn't find end entity profile in database.");
+                getLogger().error("Could not find end entity profile in database.");
                 error = true;
             }
 
             if (caid == 0) { // CA not found i database.
-                getLogger().error("Couldn't find CA in database.");
+                getLogger().error("Could not find CA in database.");
                 error = true;
             }
 
             if (usehardtokenissuer && hardtokenissuerid == SecConst.NO_HARDTOKENISSUER) {
-                getLogger().error("Couldn't find hard token issuer in database.");
+                getLogger().error("Could not find hard token issuer in database.");
                 error = true;
             }
 
