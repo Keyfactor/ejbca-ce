@@ -1514,7 +1514,7 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFSTART") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
-				(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample()
+				(<%= ejbcawebbean.getText("DATE_INFO") %><br/><%= ejbcawebbean.getDateExample()
 				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
@@ -1551,7 +1551,7 @@ function checkUseInBatch(){
 		<tr  id="Row<%=(row++)%2%>"> 
 			<td align="right"> 
 				<%= ejbcawebbean.getText("TIMEOFEND") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Certificate%20Validity") %><br />
-				(<%= ejbcawebbean.getText("ENDDATEINFO") %><br/><%= ejbcawebbean.getDateExample() 
+				(<%= ejbcawebbean.getText("DATE_INFO") %><br/><%= ejbcawebbean.getDateExample() 
 				%> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
 				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
 			</td><td> 
