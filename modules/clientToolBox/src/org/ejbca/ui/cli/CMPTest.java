@@ -148,8 +148,9 @@ class CMPTest extends ClientToolBox {
         private CertRequest genCertReq(final String userDN,
                                        final X509Extensions extensions) throws IOException {
             final OptionalValidity myOptionalValidity = new OptionalValidity();
-            myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
-            myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
+            final int day = 1000*60*60*24;
+            myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time(new Date(new Date().getTime()-day)) );
+            myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date(new Date().getTime()+10*day)) );
 
             final CertTemplate myCertTemplate = new CertTemplate();
             myCertTemplate.setValidity( myOptionalValidity );
@@ -567,10 +568,11 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Not possbile to create certificate.");
                 return null;
             }
+            /* Removed to be able to test unid-fnr
             if ( cert.getSubjectDN().hashCode() != new X509Name(sessionData.getUserDN()).hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Subject is '"+cert.getSubjectDN()+"' but should be '"+sessionData.getUserDN()+'\'');
                 return null;
-            }
+            }*/
             if ( cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Issuer is '"+cert.getIssuerDN()+"' but should be '"+this.cacert.getSubjectDN()+'\'');
                 return null;
@@ -775,16 +777,23 @@ class CMPTest extends ClientToolBox {
                 }
                 return this.socket;
             }
+            private String getRandomAllDigitString( int length ) {
+            	final String s = Integer.toString( StressTest.this.performanceTest.getRandom().nextInt() );
+            	return s.substring(s.length()-length);
+            }
+            private String getFnrLra() {
+            	return getRandomAllDigitString(6)+getRandomAllDigitString(5)+'-'+getRandomAllDigitString(5);
+            }
             private int getRandomAndRepeated() {
                 // Initialize with some new value every time the test is started
                 // Return the same value once in a while so we have multiple requests for the same username
-                if ( lastNextInt==0 || howOftenToGenerateSameUsername==0 || StressTest.this.performanceTest.getRandom().nextInt()%howOftenToGenerateSameUsername!=0 ) {
-                    lastNextInt = StressTest.this.performanceTest.getRandom().nextInt();
+                if ( this.lastNextInt==0 || howOftenToGenerateSameUsername==0 || StressTest.this.performanceTest.getRandom().nextInt()%howOftenToGenerateSameUsername!=0 ) {
+                    this.lastNextInt = StressTest.this.performanceTest.getRandom().nextInt();
                 }
-                return lastNextInt;
+                return this.lastNextInt;
             }
             void newSession() {
-                this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",O=CMP Test,C=SE,E=email.address@my.com";
+                this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",O=CMP Test,C=SE,E=email.address@my.com,SN="+getFnrLra();
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
                 StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
             }
