@@ -39,7 +39,7 @@ fi
 # Finally run java
 #set -x
 if [ "x$CLASSES" = "x" ] ; then
-	${JAVACMD} "${JAVA_OPT}" -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
+	${JAVACMD} ${JAVA_OPT} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
 else
-	${JAVACMD} "${JAVA_OPT}" -cp ${CLASSES} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
+	${JAVACMD} ${JAVA_OPT} -cp ${CLASSES} -jar $TOOLBOX_HOME/clientToolBox.jar "${@}"
 fi

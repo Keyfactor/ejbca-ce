@@ -151,16 +151,19 @@ public class BaseCmpMessageHandler {
 	}
 
 	/** @return the certificate profile to use for a request based on the current configuration and keyId. */
-	protected int getUsedCertProfileId(final String keyId) throws NotFoundException {
-		int ret = 0;
-		String certificateProfile = CmpConfiguration.getRACertificateProfile();
+	protected String getUsedCertProfileName(final String keyId) throws NotFoundException {
+		final String certificateProfile = CmpConfiguration.getRACertificateProfile();
 		if (StringUtils.equals(certificateProfile, "KeyId")) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using Certificate Profile with same name as KeyId in request: " + keyId);
 			}
-			certificateProfile = keyId;
+			return keyId;
 		}
-		ret = certificateProfileSession.getCertificateProfileId(admin, certificateProfile);					
+		return certificateProfile;
+	}
+	/** @return the certificate profile to use for a request based on the current configuration and keyId. */
+	protected int getUsedCertProfileId(final String certificateProfile) throws NotFoundException {
+		final int ret = this.certificateProfileSession.getCertificateProfileId(this.admin, certificateProfile);					
 		if (ret == 0) {
 			final String msg = "No certificate profile found with name: "+certificateProfile;
 			LOG.info(msg);

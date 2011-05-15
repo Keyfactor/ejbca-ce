@@ -51,7 +51,10 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.ExtendedUserDataHandler;
+import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.FailInfo;
+import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.CertTools;
@@ -74,22 +77,32 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
 
 	/** Parameters used for username generation if we are using RA mode to create users */
-	private UsernameGeneratorParams usernameGenParams = null;
+	private final UsernameGeneratorParams usernameGenParams;
 	/** Parameters used for temporary password generation */
-	private String userPwdParams = "random";
+	private final String userPwdParams;
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
-	private String raAuthSecret = null;
+	private final String raAuthSecret;
 	/** Parameter used to determine the type of protection for the response message */
-	private String responseProt = null;
+	private final String responseProt;
 	/** Determines if it the RA will look for requested custom certificate serial numbers, if false such data is ignored */
-	private boolean allowCustomCertSerno = false;
+	private final boolean allowCustomCertSerno;
+	private final ExtendedUserDataHandler extendedUserDataHandler;
 	
-	private SignSession signSession;
-	private UserAdminSession userAdminSession;
-	private CertificateRequestSession certificateRequestSession;
+	private final SignSession signSession;
+	private final UserAdminSession userAdminSession;
+	private final CertificateRequestSession certificateRequestSession;
 	
 	public CrmfMessageHandler () {
 		super();
+		this.usernameGenParams = null;
+		this.userPwdParams = "random";
+		this.raAuthSecret = null;
+		this.responseProt = null;
+		this.allowCustomCertSerno = false;
+		this.signSession =null;
+		this.userAdminSession = null;
+		this.certificateRequestSession = null;
+		this.extendedUserDataHandler = null;
 	}
 	
 	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
@@ -102,21 +115,40 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
-			usernameGenParams = new UsernameGeneratorParams();
-			usernameGenParams.setMode(CmpConfiguration.getRANameGenerationScheme());
-			usernameGenParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
-			usernameGenParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
-			usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
-			userPwdParams =  CmpConfiguration.getUserPasswordParams();
-			raAuthSecret = CmpConfiguration.getRAAuthenticationSecret();
-			allowCustomCertSerno = CmpConfiguration.getRAAllowCustomCertSerno();
-			responseProt = CmpConfiguration.getResponseProtection();
+			this.usernameGenParams = new UsernameGeneratorParams();
+			this.usernameGenParams.setMode(CmpConfiguration.getRANameGenerationScheme());
+			this.usernameGenParams.setDNGeneratorComponent(CmpConfiguration.getRANameGenerationParameters());
+			this.usernameGenParams.setPrefix(CmpConfiguration.getRANameGenerationPrefix());
+			this.usernameGenParams.setPostfix(CmpConfiguration.getRANameGenerationPostfix());
+			this.userPwdParams =  CmpConfiguration.getUserPasswordParams();
+			this.raAuthSecret = CmpConfiguration.getRAAuthenticationSecret();
+			this.allowCustomCertSerno = CmpConfiguration.getRAAllowCustomCertSerno();
+			this.responseProt = CmpConfiguration.getResponseProtection();
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("cmp.operationmode=ra");
 				LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
 				LOG.debug("cmp.ra.passwordgenparams="+userPwdParams);
 				LOG.debug("cmp.responseprotection="+responseProt);
 			}
+		} else {
+			this.usernameGenParams = null;
+			this.userPwdParams = "random";
+			this.raAuthSecret = null;
+			this.responseProt = null;
+			this.allowCustomCertSerno = false;
+		}
+		final String unidClass = CmpConfiguration.getUnidClass();
+		if ( unidClass!=null ) {
+			ExtendedUserDataHandler tmp;
+			try {
+				tmp = (ExtendedUserDataHandler)Class.forName(unidClass).newInstance();
+			} catch (Exception e) {
+				tmp = null;
+				LOG.warn("The configured unid class '"+unidClass+"' is not existing.");
+			}
+			this.extendedUserDataHandler = tmp;			
+		} else {
+			this.extendedUserDataHandler = null;
 		}
 	}
 
@@ -228,14 +260,14 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @throws ClassNotFoundException
 	 */
 	private IResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException {
-		int eeProfileId;        // The endEntityProfile to be used when adding users in RA mode.
-		int caId = 0;           // The CA to user when adding users in RA mode
-		int certProfileId = 0;  // The certificate profile to use when adding users in RA mode.
+		final int eeProfileId;        // The endEntityProfile to be used when adding users in RA mode.
+		final int caId;           // The CA to user when adding users in RA mode
+		final String certProfileName;  // The certificate profile to use when adding users in RA mode.
+		final int certProfileId;
 		// Try to find a HMAC/SHA1 protection key
 		final int requestId = crmfreq.getRequestId();
 		final int requestType = crmfreq.getRequestType();
-		IResponseMessage resp = null; // The CMP response message to be sent back to the client
-		String keyId = getSenderKeyId(crmfreq.getHeader());
+		final String keyId = getSenderKeyId(crmfreq.getHeader());
 		if (keyId == null) {			// No keyId found in message so we can not authenticate it.
 			final String errMsg = INTRES.getLocalizedMessage("cmp.errorunauthmessagera");
 			LOG.info(errMsg); // info because this is something we should expect and we handle it
@@ -244,7 +276,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		try {
 			final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
 			// If we use a globally configured shared secret for all CAs we check it right away
-			if (raAuthSecret != null && !verifyer.verify(raAuthSecret)) {
+			if (this.raAuthSecret != null && !verifyer.verify(this.raAuthSecret)) {
 				String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Global auth secret");
 				LOG.info(errMsg); // info because this is something we should expect and we handle it
 				if (verifyer.getErrMsg() != null) {
@@ -255,18 +287,18 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			try {
 				eeProfileId = getUsedEndEntityProfileId(keyId);
 				caId = getUsedCaId(keyId, eeProfileId);
-				certProfileId = getUsedCertProfileId(keyId);
+				certProfileName = getUsedCertProfileName(keyId);
+				certProfileId = getUsedCertProfileId(certProfileName);
 			} catch (NotFoundException e) {
 				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-				if (raAuthSecret == null) {
+				if (this.raAuthSecret == null) {
 					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-				} else {
-					return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 				}
+				return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			}
 			// Now we know which CA the request is for, if we didn't use a global shared secret we can check it now!
-			if (raAuthSecret == null) {
-				CAInfo caInfo = caAdminSession.getCAInfo(admin, caId);
+			if (this.raAuthSecret == null) {
+				CAInfo caInfo = this.caAdminSession.getCAInfo(this.admin, caId);
 				String cmpRaAuthSecret = null;  
 				if (caInfo instanceof X509CAInfo) {
 					cmpRaAuthSecret = ((X509CAInfo) caInfo).getCmpRaAuthSecret();
@@ -286,15 +318,16 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				}
 			}
 			// Create a username and password and register the new user in EJBCA
-			final UsernameGenerator gen = UsernameGenerator.getInstance(usernameGenParams);
+			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
-			final X509Name dnname = crmfreq.getRequestX509Name();
+			final IRequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.handleIt(crmfreq, certProfileName) : crmfreq;
+			final X509Name dnname = req.getRequestX509Name();
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating username from base dn: "+dnname.toString());
 			}
 			final String username = gen.generateUsername(dnname.toString());
-			String pwd;
-			if (StringUtils.equals(userPwdParams, "random")) {
+			final String pwd;
+			if (StringUtils.equals(this.userPwdParams, "random")) {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Setting 12 char random user password.");
 				}
@@ -304,18 +337,20 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Setting fixed user password from config.");
 				}
-				pwd = userPwdParams;                                                                    
+				pwd = this.userPwdParams;                                                                    
 			}
 			// AltNames may be in the request template
 			final String altNames = crmfreq.getRequestAltNames();
-			String email = null;
+			final String email;
 			final List<String> emails = CertTools.getEmailFromDN(altNames);
 			emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
 			if (!emails.isEmpty()) {
-				email = (String) emails.get(0); // Use rfc822name or first SubjectDN email address as user email address if available
+				email = emails.get(0); // Use rfc822name or first SubjectDN email address as user email address if available
+			} else {
+				email = null;
 			}
-			ExtendedInformation ei = null;
-			if (allowCustomCertSerno) {
+			final ExtendedInformation ei;
+			if (this.allowCustomCertSerno) {
 				// Don't even try to parse out the field if it is not allowed
 				BigInteger customCertSerno = crmfreq.getSubjectCertSerialNo();
 				if (customCertSerno != null) {
@@ -325,7 +360,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Custom certificate serial number: "+customCertSerno.toString(16));					
 					}
+				} else {
+					ei = null;
 				}
+			} else {
+				ei = null;
 			}
 			final UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
 			userdata.setPassword(pwd);
@@ -339,9 +378,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final int pbeIterationCount = verifyer.getIterationCount();
 			final String raSecret = verifyer.getLastUsedRaSecret();
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("responseProt="+responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
+				LOG.debug("responseProt="+this.responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
 			}
-			if (StringUtils.equals(responseProt, "pbe")) {
+			if (StringUtils.equals(this.responseProt, "pbe")) {
 				crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 			}
 			try {
@@ -349,7 +388,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Creating new request with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");                                                               
 					}
-					resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+					return this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				} catch (PersistenceException e) {
 					// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
 					// This was very strange, we didn't find it before, but now it exists?
@@ -357,28 +396,30 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
 					LOG.info(updateMsg);
 					// Try again
-					resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+					return this.certificateRequestSession.processCertReq(this.admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
 			} catch (UserDoesntFullfillEndEntityProfile e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 			} catch (ApprovalException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				return CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 			} catch (PersistenceException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				return CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 			}
 		} catch (NoSuchAlgorithmException e) {
 			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		} catch (NoSuchProviderException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		} catch (InvalidKeyException e) {
 			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+		} catch (HandlerException e) {
+			LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
+			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		}
-		return resp;
 	}
 }
