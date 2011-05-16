@@ -131,7 +131,14 @@ public class RequestHelper {
 
         X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator,
                 username, password, nscr.getPublicKey());
+        log.debug("Created certificate for " + username);
+        if (debug != null) {
+            debug.print("<h4>Generated certificate:</h4>");
+            debug.printInsertLineBreaks(cert.toString().getBytes());
+        }
+        return cert.getEncoded();
 
+/* ECA-2065 we actually say (mime-wise) "cert" but return "pkcs7" 
         // Don't include certificate chain in the PKCS7 to Firefox
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert, false);
         log.debug("Created certificate (PKCS7) for " + username);
@@ -141,6 +148,7 @@ public class RequestHelper {
         }
 
         return pkcs7;
+*/
     } //nsCertRequest
 
     /**
