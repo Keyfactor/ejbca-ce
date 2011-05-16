@@ -391,44 +391,31 @@
              boolean matchadded = false; 
 
              if(matchwithrow1 == LogMatch.MATCH_WITH_SPECIALADMIN || matchwithrow1 == LogMatch.MATCH_WITH_EVENT || 
-                matchwithrow1 == LogMatch.MATCH_WITH_MODULE || matchwithrow1 == LogMatch.MATCH_WITH_CA){
-                  matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
-             }else{
-               if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                  matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toUpperCase();
-               else
-                 if(matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE)
-                   matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1).toUpperCase();
-                 else{ 
-                  matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);  
-                }
-              } 
-              if(matchwithrow2 == LogMatch.MATCH_WITH_SPECIALADMIN || matchwithrow2 == LogMatch.MATCH_WITH_EVENT || 
+                matchwithrow1 == LogMatch.MATCH_WITH_MODULE || matchwithrow1 == LogMatch.MATCH_WITH_CA) {
+            	 matchvaluerow1 = request.getParameter(SELECT_MATCHVALUE_ROW1);
+             }else if(matchwithrow1 == LogMatch.MATCH_WITH_ADMINCERTIFICATE || matchwithrow1 == LogMatch.MATCH_WITH_CERTIFICATE ) {
+            	 matchvaluerow1 = logbean.getCertificateSerialnumber(request.getParameter(TEXTFIELD_MATCHVALUE_ROW1));
+             } else {
+            	 matchvaluerow1 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW1);
+             }
+             
+             if(matchwithrow2 == LogMatch.MATCH_WITH_SPECIALADMIN || matchwithrow2 == LogMatch.MATCH_WITH_EVENT || 
                 matchwithrow2 == LogMatch.MATCH_WITH_MODULE || matchwithrow2 == LogMatch.MATCH_WITH_CA){
                     matchvaluerow2 = request.getParameter(SELECT_MATCHVALUE_ROW2);
-              }else{
-                  if(matchwithrow2 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                    matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2).toUpperCase();
-                  else
-                    if(matchwithrow2 == LogMatch.MATCH_WITH_CERTIFICATE)
-                      matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2).toUpperCase();
-                    else{
-                      matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);              
-                    }
-               }
-               if(matchwithrow3 == LogMatch.MATCH_WITH_SPECIALADMIN || matchwithrow3 == LogMatch.MATCH_WITH_EVENT || 
+             } else if(matchwithrow2 == LogMatch.MATCH_WITH_ADMINCERTIFICATE || matchwithrow2 == LogMatch.MATCH_WITH_CERTIFICATE) {
+                    matchvaluerow2 = logbean.getCertificateSerialnumber(request.getParameter(TEXTFIELD_MATCHVALUE_ROW2));
+             } else {
+                    matchvaluerow2 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW2);              
+             }
+               
+             if(matchwithrow3 == LogMatch.MATCH_WITH_SPECIALADMIN || matchwithrow3 == LogMatch.MATCH_WITH_EVENT || 
                  matchwithrow3 == LogMatch.MATCH_WITH_MODULE || matchwithrow3 == LogMatch.MATCH_WITH_CA){
                   matchvaluerow3 = request.getParameter(SELECT_MATCHVALUE_ROW3);
-               }else{
-                    if(matchwithrow3 == LogMatch.MATCH_WITH_ADMINCERTIFICATE)
-                      matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3).toUpperCase();
-                    else
-                      if(matchwithrow3 == LogMatch.MATCH_WITH_CERTIFICATE)
-                        matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3).toUpperCase();
-                      else{
-                       matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
-                      }   
-               }
+             } else if(matchwithrow3 == LogMatch.MATCH_WITH_ADMINCERTIFICATE || matchwithrow3 == LogMatch.MATCH_WITH_CERTIFICATE) {
+                  matchvaluerow3 = logbean.getCertificateSerialnumber(request.getParameter(TEXTFIELD_MATCHVALUE_ROW3));
+             } else {
+                  matchvaluerow3 = request.getParameter(TEXTFIELD_MATCHVALUE_ROW3);
+             }   
                          
 
                oldmatchvaluerow1=matchvaluerow1;

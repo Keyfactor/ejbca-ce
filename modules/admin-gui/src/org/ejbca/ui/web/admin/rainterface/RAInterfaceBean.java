@@ -802,4 +802,13 @@ public class RAInterfaceBean implements Serializable {
     	}
     	return printerNames;
     }
+    
+    public String getFormatedCertSN(CertificateView certificateData) {
+    	String serialnumber = certificateData.getSerialNumber();
+    	if((serialnumber.length() >= 14) && (serialnumber.length() < 16) ){
+    		if(serialnumber.length() == 14)	return "00"+serialnumber;
+    		if(serialnumber.length() == 15)	return "0"+serialnumber;
+    	}
+    	return serialnumber;
+    }
 }

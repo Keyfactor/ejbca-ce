@@ -403,7 +403,7 @@ function confirmrepublish(){
       
      <tr id="Row<%=(row++)%2%>">
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER") %></td>
-		 <td><%= certificatedata.getSerialNumber() %></td>
+		 <td><%= rabean.getFormatedCertSN(certificatedata) %></td>
      </tr>
        
        <tr id="Row<%=(row++)%2%>">

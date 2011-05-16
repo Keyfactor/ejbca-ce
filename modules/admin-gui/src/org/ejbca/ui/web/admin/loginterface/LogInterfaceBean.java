@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.loginterface;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -349,5 +350,20 @@ public class LogInterfaceBean implements Serializable {
     		localmodulenamestoid.put(localmodulenames[i], Integer.valueOf(i));
     	}
     	Arrays.sort(localmodulenames);
+    }
+    
+    /**
+     * This method converts the serialnumber into a decimal form and 
+     * then back again to Hex to remove unnecessary leading zeros.
+     * 
+     * The certificate serialnumber has to be in upper-case because that is how it is stored in the database.
+     * 
+     * @param serialnumber the certificate serialnumber in Hex format.
+     * @return The certificate serialnumber in Hex format without leading 0s.
+     */
+    public String getCertificateSerialnumber(String serialnumber) throws NumberFormatException {
+    	BigInteger sn = new BigInteger(serialnumber, 16);
+		return sn.toString(16).toUpperCase();    		
+    	
     }
 }
