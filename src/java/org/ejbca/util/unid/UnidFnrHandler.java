@@ -62,235 +62,11 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		super();
 		this.storage = _storage;
 	}
-	private static class InputSerialNumber {
-		final String fnr;
-		final String lra;
-		private InputSerialNumber(String _fnr, String _lra) {
-			this.fnr = _fnr;
-			this.lra = _lra;
-		}
-		static InputSerialNumber getIt(String inputSerialNr) {
-			if ( inputSerialNr.length()!=17 ) {
-				return null;
-			}
-			if ( inputSerialNr.charAt(11)!='-' ) {
-				return null;
-			}
-			final String fnr = inputSerialNr.substring(0, 11);
-			if ( !hasOnlyDecimalDigits(fnr) ) {
-				return null;
-			}
-			final String lra = inputSerialNr.substring(12);
-			if ( !hasOnlyDecimalDigits(lra) ) {
-				return null;
-			}
-			return new InputSerialNumber(fnr, lra);
-		}
-	}
-	private class RequestMessageAdapter implements IRequestMessage {
-		final private IRequestMessage original;
-		final private X509Name dn;
-		RequestMessageAdapter(IRequestMessage req, X509Name _dn) {
-			this.original = req;
-			this.dn = _dn;
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getUsername()
-		 */
-		@Override
-		public String getUsername() {
-			return this.original.getUsername();
-		}
-
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getPassword()
-		 */
-		@Override
-		public String getPassword() {
-			return this.original.getPassword();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getIssuerDN()
-		 */
-		@Override
-		public String getIssuerDN() {
-			return this.original.getIssuerDN();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getSerialNo()
-		 */
-		@Override
-		public BigInteger getSerialNo() {
-			return this.original.getSerialNo();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestDN()
-		 */
-		@Override
-		public String getRequestDN() {
-			final X509Name name = getRequestX509Name();
-			if ( name==null ) {
-				return null;
-			}
-			return CertTools.stringToBCDNString(name.toString());
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestX509Name()
-		 */
-		@Override
-		public X509Name getRequestX509Name() {
-			return this.dn;
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestAltNames()
-		 */
-		@Override
-		public String getRequestAltNames() {
-			return this.original.getRequestAltNames();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestValidityNotBefore()
-		 */
-		@Override
-		public Date getRequestValidityNotBefore() {
-			return this.original.getRequestValidityNotBefore();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestValidityNotAfter()
-		 */
-		@Override
-		public Date getRequestValidityNotAfter() {
-			return this.original.getRequestValidityNotAfter();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestExtensions()
-		 */
-		@Override
-		public X509Extensions getRequestExtensions() {
-			return this.original.getRequestExtensions();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getCRLIssuerDN()
-		 */
-		@Override
-		public String getCRLIssuerDN() {
-			return this.original.getCRLIssuerDN();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getCRLSerialNo()
-		 */
-		@Override
-		public BigInteger getCRLSerialNo() {
-			return this.original.getCRLSerialNo();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestPublicKey()
-		 */
-		@Override
-		public PublicKey getRequestPublicKey() throws InvalidKeyException,
-				NoSuchAlgorithmException, NoSuchProviderException {
-			return this.original.getRequestPublicKey();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#verify()
-		 */
-		@Override
-		public boolean verify() throws InvalidKeyException,
-				NoSuchAlgorithmException, NoSuchProviderException {
-			return this.original.verify();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#requireKeyInfo()
-		 */
-		@Override
-		public boolean requireKeyInfo() {
-			return this.original.requireKeyInfo();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#setKeyInfo(java.security.cert.Certificate, java.security.PrivateKey, java.lang.String)
-		 */
-		@Override
-		public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-			this.original.setKeyInfo(cert, key, provider);
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getErrorNo()
-		 */
-		@Override
-		public int getErrorNo() {
-			return this.original.getErrorNo();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getErrorText()
-		 */
-		@Override
-		public String getErrorText() {
-			return this.original.getErrorText();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getSenderNonce()
-		 */
-		@Override
-		public String getSenderNonce() {
-			return this.original.getSenderNonce();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getTransactionId()
-		 */
-		@Override
-		public String getTransactionId() {
-			return this.original.getTransactionId();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestKeyInfo()
-		 */
-		@Override
-		public byte[] getRequestKeyInfo() {
-			return this.original.getRequestKeyInfo();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getPreferredDigestAlg()
-		 */
-		@Override
-		public String getPreferredDigestAlg() {
-			return this.original.getPreferredDigestAlg();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#includeCACert()
-		 */
-		@Override
-		public boolean includeCACert() {
-			return this.original.includeCACert();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestType()
-		 */
-		@Override
-		public int getRequestType() {
-			return this.original.getRequestType();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#getRequestId()
-		 */
-		@Override
-		public int getRequestId() {
-			return this.original.getRequestId();
-		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.core.protocol.IRequestMessage#createResponseMessage(java.lang.Class, org.ejbca.core.protocol.IRequestMessage, java.security.cert.Certificate, java.security.PrivateKey, java.lang.String)
-		 */
-		@Override
-		public IResponseMessage createResponseMessage(Class responseClass,
-				IRequestMessage req, Certificate cert, PrivateKey signPriv,
-				String provider) {
-			return this.original.createResponseMessage(responseClass, req, cert, signPriv, provider);
-		}		
-	}
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.protocol.ExtendedUserDataHandler#handleIt(org.bouncycastle.asn1.x509.X509Name, java.lang.String)
 	 */
 	@Override
-	public IRequestMessage handleIt(IRequestMessage req, String certificateProfileName) throws HandlerException {
+	public IRequestMessage processRequestMessage(IRequestMessage req, String certificateProfileName) throws HandlerException {
 		final X509Name dn = req.getRequestX509Name();
 		LOG.debug("take care of :'"+dn+"' and '"+certificateProfileName+"'");
 		final String unidPrefix = getPrefixFromCertProfileName(certificateProfileName);
@@ -300,14 +76,14 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		final Vector<String> v = dn.getValues();
 		final Vector<Object> o = dn.getOIDs();
 		if( v.size()!=o.size() ) {
-			throw new Error("the BC X509Name object is corrupt.");
+			throw new HandlerException("the BC X509Name object is corrupt.");
 		}
 		for ( int i=0; i<v.size(); i++ ) {
 			if ( o.get(i).equals(X509Name.SERIALNUMBER) ) {
 				final String newSerial = storeUnidFrnAndGetNewSerialNr(v.get(i), unidPrefix);
 				if ( newSerial!=null ) {
 					v.set(i, newSerial);
-					return new RequestMessageAdapter( req, new X509Name(o,v) );
+					return new RequestMessageSubjectDnAdapter( req, new X509Name(o,v) );
 				}
 			}
 		}
@@ -338,13 +114,23 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		return certificateProfileName.substring(0, 10);
 	}
 	private String storeUnidFrnAndGetNewSerialNr(String inputSerialNr, String unidPrefix) throws HandlerException {
-		final InputSerialNumber isn = InputSerialNumber.getIt(inputSerialNr);
-		if ( isn==null ) {
+		if ( inputSerialNr.length()!=17 ) {
+			return null;
+		}
+		if ( inputSerialNr.charAt(11)!='-' ) {
+			return null;
+		}
+		final String fnr = inputSerialNr.substring(0, 11);
+		if ( !hasOnlyDecimalDigits(fnr) ) {
+			return null;
+		}
+		final String lra = inputSerialNr.substring(12);
+		if ( !hasOnlyDecimalDigits(lra) ) {
 			return null;
 		}
 		final String random = new LettersAndDigitsPasswordGenerator().getNewPassword(6, 6);
-		final String unid = unidPrefix + isn.lra + random;
-		this.storage.storeIt(unid, isn.fnr);
+		final String unid = unidPrefix + lra + random;
+		this.storage.storeIt(unid, fnr);
 		return unid;
 	}
 	/**
@@ -358,12 +144,16 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		 */
 		void storeIt(String unid, String fnr) throws HandlerException;
 	}
+	/**
+	 * Runtime implementation. Junit test will have another implementation.
+	 *
+	 */
 	private static class MyStorage implements Storage {
 		private final String dataSource;
 
 		public MyStorage() {
 			super();
-			this.dataSource = CmpConfiguration.getUNID_DS();
+			this.dataSource = CmpConfiguration.getUNID_getUnidDataSourceDS();
 			try {
 				JDBCUtil.execute(
 						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",

@@ -92,6 +92,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private final UserAdminSession userAdminSession;
 	private final CertificateRequestSession certificateRequestSession;
 	
+	/**
+	 * Used only by unit test.
+	 */
 	public CrmfMessageHandler () {
 		super();
 		this.usernameGenParams = null;
@@ -105,6 +108,16 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.extendedUserDataHandler = null;
 	}
 	
+	/**
+	 * Construct the message handler.
+	 * @param admin
+	 * @param caAdminSession
+	 * @param certificateProfileSession
+	 * @param certificateRequestSession
+	 * @param endEntityProfileSession
+	 * @param signSession
+	 * @param userAdminSession
+	 */
 	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
 			EndEntityProfileSession endEntityProfileSession, SignSession signSession, UserAdminSession userAdminSession) {
 		super(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
@@ -267,6 +280,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		// Try to find a HMAC/SHA1 protection key
 		final int requestId = crmfreq.getRequestId();
 		final int requestType = crmfreq.getRequestType();
+		IResponseMessage resp = null; // The CMP response message to be sent back to the client
 		final String keyId = getSenderKeyId(crmfreq.getHeader());
 		if (keyId == null) {			// No keyId found in message so we can not authenticate it.
 			final String errMsg = INTRES.getLocalizedMessage("cmp.errorunauthmessagera");
@@ -320,7 +334,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// Create a username and password and register the new user in EJBCA
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
-			final IRequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.handleIt(crmfreq, certProfileName) : crmfreq;
+			final IRequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName) : crmfreq;
 			final X509Name dnname = req.getRequestX509Name();
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating username from base dn: "+dnname.toString());
@@ -388,7 +402,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Creating new request with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");                                                               
 					}
-					return this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+					resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				} catch (PersistenceException e) {
 					// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
 					// This was very strange, we didn't find it before, but now it exists?
@@ -396,30 +410,31 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
 					LOG.info(updateMsg);
 					// Try again
-					return this.certificateRequestSession.processCertReq(this.admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+					resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
 			} catch (UserDoesntFullfillEndEntityProfile e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 			} catch (ApprovalException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				return CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 			} catch (PersistenceException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				return CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
 			}
 		} catch (NoSuchAlgorithmException e) {
 			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		} catch (NoSuchProviderException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		} catch (InvalidKeyException e) {
 			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		} catch (HandlerException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
-			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		}
+		return resp;
 	}
 }

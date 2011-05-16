@@ -26,15 +26,9 @@ public interface ExtendedUserDataHandler {
 	 * @param req Request to be modified.
 	 * @param otherData some other data
 	 * @return
-	 * @throws Exception 
-	 */
-	/**
-	 * @param req
-	 * @param otherData
-	 * @return
 	 * @throws HandlerException
 	 */
-	IRequestMessage handleIt( IRequestMessage req, String otherData ) throws HandlerException;
+	IRequestMessage processRequestMessage( IRequestMessage req, String otherData ) throws HandlerException;
 	/**
 	 * Exception thrown by handler. No certificate should be created if this exception is thrown.
 	 *
