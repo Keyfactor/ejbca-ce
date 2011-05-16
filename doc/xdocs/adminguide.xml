@@ -2969,8 +2969,10 @@ testKey test
 sharedLibrary=/opt/PTK/lib/libcryptoki.so
 slot=5
 </source>
+</subsubsection>
+<subsubsection name="Test and list keys on slot 5">
 <source>
-./ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
+$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
 ...
 Testing of key: test
 SunJCE version 1.7SunPKCS11-libcryptoki.so-slot3 version 1.7; modulus length: 2048; byte length 53. The docoded byte string is equal to the original!
@@ -2979,13 +2981,8 @@ Signature test of key test1: signature length 64; first byte 3d; verifying true
 Signings per second: 257
 Decryptions per second: 260
 </source>
-<p>the attributes are listed as "token object, sensitive, extractable", and here is important that is says 'sensitive' (extractable only means that the key can be backed up securely using SafeNet tools).
+<p>The attributes are listed as "token object, sensitive, extractable", and here is important that is says 'sensitive' (extractable only means that the key can be backed up securely using SafeNet tools).
 </p>
-</subsubsection>
-<subsubsection name="Test and list keys on slot 5">
-<source>
-$EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh PKCS11HSMKeyTool test /opt/PTK/lib/libcryptoki.so 5
-</source>
 </subsubsection>
 <subsubsection name="Backup and restore">
 <p>
