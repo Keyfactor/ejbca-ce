@@ -568,11 +568,11 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Not possbile to create certificate.");
                 return null;
             }
-            /* Removed to be able to test unid-fnr
+            // Remove this test to be able to test unid-fnr
             if ( cert.getSubjectDN().hashCode() != new X509Name(sessionData.getUserDN()).hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Subject is '"+cert.getSubjectDN()+"' but should be '"+sessionData.getUserDN()+'\'');
                 return null;
-            }*/
+            }
             if ( cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode() ) {
                 StressTest.this.performanceTest.getLog().error("Issuer is '"+cert.getIssuerDN()+"' but should be '"+this.cacert.getSubjectDN()+'\'');
                 return null;
