@@ -354,7 +354,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				pwd = this.userPwdParams;                                                                    
 			}
 			// AltNames may be in the request template
-			final String altNames = crmfreq.getRequestAltNames();
+			final String altNames = req.getRequestAltNames();
 			final String email;
 			final List<String> emails = CertTools.getEmailFromDN(altNames);
 			emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
@@ -402,7 +402,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("Creating new request with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");                                                               
 					}
-					resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				} catch (PersistenceException e) {
 					// CreateException will catch also DuplicateKeyException because DuplicateKeyException is a subclass of CreateException 
 					// This was very strange, we didn't find it before, but now it exists?
@@ -410,17 +410,17 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					final String updateMsg = INTRES.getLocalizedMessage("cmp.erroradduserupdate", username);
 					LOG.info(updateMsg);
 					// Try again
-					resp = certificateRequestSession.processCertReq(admin, userdata, crmfreq, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
+					resp = this.certificateRequestSession.processCertReq(this.admin, userdata, req, org.ejbca.core.protocol.cmp.CmpResponseMessage.class);
 				}
 			} catch (UserDoesntFullfillEndEntityProfile e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (ApprovalException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			} catch (PersistenceException e) {
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
-				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, responseProt);
+				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			}
 		} catch (NoSuchAlgorithmException e) {
 			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
