@@ -1526,8 +1526,8 @@ function checkUseInBatch(){
 							if ( startTime == null ) {
 								startTime = "";
 							} 
-							if ( !startTime.trim().equals("") && !ejbcawebbean.isRelativeDateTime(startTime) ) {
-								startTime = ejbcawebbean.getISO8601FromImpliedUTC(startTime);
+							if ( !startTime.trim().equals("") ) {
+								startTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(startTime);
 							}
 						}
                     %>
@@ -1564,8 +1564,8 @@ function checkUseInBatch(){
 						if ( endTime == null ) {
 							endTime = "";
 						} 
-						if ( !endTime.trim().equals("") && !ejbcawebbean.isRelativeDateTime(endTime) ) {
-							endTime = ejbcawebbean.getISO8601FromImpliedUTC(endTime);
+						if ( !endTime.trim().equals("") ) {
+							endTime = ejbcawebbean.getISO8601FromImpliedUTCOrRelative(endTime);
 		        		}
 						%>
 					value="<%= endTime %>"
