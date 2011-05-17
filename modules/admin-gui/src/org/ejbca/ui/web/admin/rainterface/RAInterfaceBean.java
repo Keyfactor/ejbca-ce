@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
@@ -805,10 +806,12 @@ public class RAInterfaceBean implements Serializable {
     
     public String getFormatedCertSN(CertificateView certificateData) {
     	String serialnumber = certificateData.getSerialNumber();
-    	if((serialnumber.length() >= 14) && (serialnumber.length() < 16) ){
-    		if(serialnumber.length() == 14)	return "00"+serialnumber;
-    		if(serialnumber.length() == 15)	return "0"+serialnumber;
+    	int snsize = EjbcaConfiguration.getCaSerialNumberOctetSize() * 2;
+    	int fillsize = snsize - serialnumber.length();
+    	String zeros = "";
+    	for(int i=0; i<fillsize; i++) {
+    		zeros = zeros + "0";
     	}
-    	return serialnumber;
+    	return zeros + serialnumber;
     }
 }
