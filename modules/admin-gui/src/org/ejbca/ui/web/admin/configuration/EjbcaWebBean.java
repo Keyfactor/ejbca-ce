@@ -627,15 +627,11 @@ public class EjbcaWebBean implements Serializable {
 	
 	/**
 	 * Convert a the format "yyyy-MM-dd HH:mm:ssZZ" to "yyyy-MM-dd HH:mm" with implied TimeZone UTC used when storing.
-	 * If it is a relative date or something else we return it as it was.
+	 * If it is a relative date we return it as it was. Otherwise we try to parse it as a ISO8601 date time.
 	 */
 	public String getImpliedUTCFromISO8601OrRelative(final String dateString) throws ParseException {
 		if (!isRelativeDateTime(dateString)) {
-			try {
-				return getImpliedUTCFromISO8601(dateString);
-			} catch (ParseException e) {
-				log.debug(e.getMessage());
-			}
+			return getImpliedUTCFromISO8601(dateString);
 		}
 		return dateString;
 	}
@@ -647,14 +643,18 @@ public class EjbcaWebBean implements Serializable {
 
 	/**
 	 * Convert a the format "yyyy-MM-dd HH:mm" with implied TimeZone UTC to a more user friendly "yyyy-MM-dd HH:mm:ssZZ".
-	 * If it is a relative date or something else we return it as it was.
+	 * If it is a relative date we return it as it was.
+	 * If we fail to parse the stored date we return an error-string followed by the stored value.
 	 */
-	public String getISO8601FromImpliedUTCOrRelative(final String dateString) throws ParseException {
+	public String getISO8601FromImpliedUTCOrRelative(final String dateString) {
 		if (!isRelativeDateTime(dateString)) {
 			try {
 				return getISO8601FromImpliedUTC(dateString);
 			} catch (ParseException e) {
 				log.debug(e.getMessage());
+				// If we somehow managed to store an invalid date, we want to give the admin the option
+				// to correct this. If we just throw an Exception here it would not be possible.
+				return "INVALID: " + dateString;
 			}
 		}
 		return dateString;
