@@ -39,7 +39,7 @@ import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 /**
  * Adds items to the Unid-Fnr DB.
- * @author lars
+ * @author primelars
  * @version $Id$
  */
 public class UnidFnrHandler implements ExtendedUserDataHandler {
@@ -92,7 +92,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	private static boolean hasOnlyDecimalDigits(String s, int first, int last) {
 		return hasOnlyDecimalDigits( s.substring(first, last));
 	}
-	static boolean hasOnlyDecimalDigits(String s) {
+	private static boolean hasOnlyDecimalDigits(String s) {
 		return onlyDecimalDigits.matcher(s).matches();
 	}
 	private String getPrefixFromCertProfileName(String certificateProfileName) {
