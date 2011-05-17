@@ -13,26 +13,15 @@
 
 package org.ejbca.util.unid;
 
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.sql.PreparedStatement;
-import java.util.Date;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
