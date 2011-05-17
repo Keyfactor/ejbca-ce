@@ -112,11 +112,11 @@ public class CmpConfiguration {
 		return "true".equalsIgnoreCase(ConfigurationHolder.getString(CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false"));
 	}
 
-	public static String getUnidDataSourceDS() {
-		return ConfigurationHolder.getString("cmp.certreqhandler.class", null);
+	public static String getUnidDataSource() {
+		return ConfigurationHolder.getString("cmp.uniddatasource", null);
 	}
 
-	public static String getUnidClass() {
-		return ConfigurationHolder.getString("cmp.unidclass", null);
+	public static String getCertReqHandlerClass() {
+		return ConfigurationHolder.getString("cmp.certreqhandler.class", null);
 	}
 }
