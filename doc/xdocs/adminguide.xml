@@ -752,7 +752,18 @@ options as for jCert.
 <p>CMP has been tested with CryptLib.</p>
 <p>For internal testing a modified version of the Novosec extension to BouncyCastle is used.</p>
 </subsection>
-
+<subsection name="Custom handling of certificate request">
+<p>
+It is possible to add a custom plug-in class to handle a certificate request.
+The class implementing this plug-in must implement the org.ejbca.core.protocol.ExtendedUserDataHandler interface.
+</p><p>
+The idea is that the implementation uses information from the certificate profile or name and the request itself to manipulate the request before it is processed the normal way. This is done when 'processRequestMessage' (see source code of the interface) is called. The used certificate profile name is passed as 'otherData'.
+</p><p>
+Set the property cmp.unidclass in $EJBCA_HOME/conf/cmp.properties to the name of the plug-in class to enable it. You may then add additional properties that you can use in your implementation.
+</p><p>
+In EJBCA there is already an implementation included. This implementation writes to the unid-fnr DB (see <a href="userguide-ocsp.html#Fnr-Unid mapping">Fnr-Unid mapping</a>). To activate this plug-in just uncomment the cmp.unidclass property line and also set the data source on the following line.
+</p>
+</subsection>
 <subsection name="CMP Proxy">
 <p>
 In some installations it may be desirable to terminate the client connection in a DMZ before connecting further to the CA. In this case the client never has a direct 
