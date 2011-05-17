@@ -83,6 +83,7 @@ If the Fnr returned is null, there are several possible errors:
 <li>There was no Unid Fnr mapping available.</li>
 <li>There was no Unid in the certificate (serialNumber DN component).</li>
 </ol>
+EJBCA can generate UNID's automatically when you use the <a href="adminguide.html#Custom%20handling%20of%20certificate%20request">CMP protocol</a>. 
     </p>
 </section>
 <section name="OCSP extensions">
