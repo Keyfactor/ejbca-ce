@@ -102,6 +102,13 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		}
 		return certificateProfileName.substring(0, 10);
 	}
+	/**
+	 * @param inputSerialNr SN of subject DN in the incoming request
+	 * @param unidPrefix Prefix of the unid
+	 * @return the serial number of the subject DN of the certificate that will be created. Null if the format of the SN is not fnr-lra.
+	 * Returning null means that the handler should not do anything (SN in DN not changed and nothing stored to DB).
+	 * @throws HandlerException if unid-fnr can't be stored in DB. This will prevent any certificate to be created.
+	 */
 	private String storeUnidFrnAndGetNewSerialNr(String inputSerialNr, String unidPrefix) throws HandlerException {
 		if ( inputSerialNr.length()!=17 ) {
 			return null;
@@ -142,7 +149,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 
 		public MyStorage() {
 			super();
-			this.dataSource = CmpConfiguration.getUNID_getUnidDataSourceDS();
+			this.dataSource = CmpConfiguration.getUnidDataSourceDS();
 			try {
 				JDBCUtil.execute(
 						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",
@@ -155,16 +162,10 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 			public DoNothingPreparer() {
 				// do nothing
 			}
-			/* (non-Javadoc)
-			 * @see org.ejbca.util.JDBCUtil.Preparer#prepare(java.sql.PreparedStatement)
-			 */
 			@Override
 			public void prepare(PreparedStatement ps) {
 				// do nothing
 			}
-			/* (non-Javadoc)
-			 * @see org.ejbca.util.JDBCUtil.Preparer#getInfoString()
-			 */
 			@Override
 			public String getInfoString() {
 				return null;

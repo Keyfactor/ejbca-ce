@@ -79,34 +79,24 @@ public class UnidFnrHandlerTest extends TestCase {
 		}
 		@Override
 		public String getUsername() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getPassword() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getIssuerDN() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public BigInteger getSerialNo() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getRequestDN() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public X509Name getRequestX509Name() {
 			return this.dn;
@@ -114,125 +104,86 @@ public class UnidFnrHandlerTest extends TestCase {
 
 		@Override
 		public String getRequestAltNames() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public Date getRequestValidityNotBefore() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public Date getRequestValidityNotAfter() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public X509Extensions getRequestExtensions() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getCRLIssuerDN() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public BigInteger getCRLSerialNo() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public PublicKey getRequestPublicKey() throws InvalidKeyException,
 				NoSuchAlgorithmException, NoSuchProviderException {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public boolean verify() throws InvalidKeyException,
 				NoSuchAlgorithmException, NoSuchProviderException {
-			// TODO Auto-generated method stub
 			return false;
 		}
-
 		@Override
 		public boolean requireKeyInfo() {
-			// TODO Auto-generated method stub
 			return false;
 		}
-
 		@Override
 		public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
-			// TODO Auto-generated method stub
-			
+			// do nothing
 		}
-
 		@Override
 		public int getErrorNo() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
-
 		@Override
 		public String getErrorText() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getSenderNonce() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getTransactionId() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public byte[] getRequestKeyInfo() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public String getPreferredDigestAlg() {
-			// TODO Auto-generated method stub
 			return null;
 		}
-
 		@Override
 		public boolean includeCACert() {
-			// TODO Auto-generated method stub
 			return false;
 		}
-
 		@Override
 		public int getRequestType() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
-
 		@Override
 		public int getRequestId() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
-
 		@Override
 		public IResponseMessage createResponseMessage(Class responseClass,
 				IRequestMessage req, Certificate cert, PrivateKey signPriv,
 				String provider) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 	}

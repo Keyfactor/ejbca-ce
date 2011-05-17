@@ -157,10 +157,10 @@
 # Default: 0.0.0.0
 #cmp.tcp.bindadress=0.0.0.0
 
-# ---------- UNID FNR DB mapping ---------- #
+# ---------- Custom certificate request handling ---------- #
 
-# The classname of the implementation. Just uncomment to enable the implementation that comes with EJBCA.
-#cmp.unidclass=org.ejbca.util.unid.UnidFnrHandler
+# The classname of the implementation. Just uncomment to enable the FNR-UNID implementation that comes with EJBCA.
+#cmp.certreqhandler.class=org.ejbca.util.unid.UnidFnrHandler
 
 # The datasource of the DB where the mapping should be written. Must be defined for org.ejbca.util.unid.UnidFnrHandler
 #cmp.uniddatasource=java:/UnidDS
