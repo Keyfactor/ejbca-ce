@@ -149,7 +149,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 
 		public MyStorage() {
 			super();
-			this.dataSource = CmpConfiguration.getUnidDataSourceDS();
+			this.dataSource = CmpConfiguration.getUnidDataSource();
 			try {
 				JDBCUtil.execute(
 						"CREATE TABLE UnidFnrMapping( unid varchar(250) NOT NULL DEFAULT '', fnr varchar(250) NOT NULL DEFAULT '', PRIMARY KEY (unid) )",

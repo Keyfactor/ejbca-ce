@@ -150,7 +150,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			this.responseProt = null;
 			this.allowCustomCertSerno = false;
 		}
-		final String unidClass = CmpConfiguration.getUnidClass();
+		final String unidClass = CmpConfiguration.getCertReqHandlerClass();
 		if ( unidClass!=null ) {
 			ExtendedUserDataHandler tmp;
 			try {
