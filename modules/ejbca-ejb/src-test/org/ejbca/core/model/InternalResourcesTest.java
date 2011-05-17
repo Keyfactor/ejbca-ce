@@ -27,7 +27,7 @@ import junit.framework.TestCase;
  */
 public class InternalResourcesTest extends TestCase {
 
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
     }
 
@@ -49,14 +49,14 @@ public class InternalResourcesTest extends TestCase {
 
     public void testGetLocalizedMessageStringObject() {
         InternalResources intres = InternalResourcesStub.getInstance();
-        String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", new Boolean(true), "bye");
+        String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), new Integer(3), "hi", new Boolean(true), "bye");
         assertEquals("Test 1 3 hi true bye message 1", res);
     }
 
     public void testGetLocalizedMessageStringObjectWithNull() {
         InternalResources intres = InternalResourcesStub.getInstance();
 
-        String res = intres.getLocalizedMessage("raadmin.testparams", null, Integer.valueOf(3), null, new Boolean(true), "bye");
+        String res = intres.getLocalizedMessage("raadmin.testparams", null, new Integer(3), null, new Boolean(true), "bye");
         assertEquals("Test  3  true bye message ", res);
 
         res = intres.getLocalizedMessage("raadmin.testparams");
