@@ -805,13 +805,17 @@ public class RAInterfaceBean implements Serializable {
     }
     
     public String getFormatedCertSN(CertificateView certificateData) {
+    	
     	String serialnumber = certificateData.getSerialNumber();
-    	int snsize = EjbcaConfiguration.getCaSerialNumberOctetSize() * 2;
-    	int fillsize = snsize - serialnumber.length();
-    	String zeros = "";
-    	for(int i=0; i<fillsize; i++) {
-    		zeros = zeros + "0";
+    	if(serialnumber.length()==6 || serialnumber.length()==14) {
+    		return "00" + serialnumber;
     	}
-    	return zeros + serialnumber;
+    	
+    	if((serialnumber.length()%2) != 0) {
+    		return "0" + serialnumber;
+    	}
+    	
+    	return serialnumber;
+
     }
 }
