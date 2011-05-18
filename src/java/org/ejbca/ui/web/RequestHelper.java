@@ -138,7 +138,13 @@ public class RequestHelper {
         }
         return cert.getEncoded();
 
-/* ECA-2065 we actually say (mime-wise) "cert" but return "pkcs7" 
+/* ECA-2065: the <keygen> specification doesn't say anything about the
+ * returned certificate.  Originally EJBCA used a PKCS7 container but
+ * this has proved to be incompatible with Safari and Chrome.  ECA-2065
+ * changes returned data to just a DER-encoded certificate which has
+ * been verified to work in Firefox, Chrome and Safari.  The mime-type
+ * remains application/x-x509-user-certificate.  Below is the deleted
+ * code: 
         // Don't include certificate chain in the PKCS7 to Firefox
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert, false);
         log.debug("Created certificate (PKCS7) for " + username);
