@@ -807,14 +807,15 @@ public class RAInterfaceBean implements Serializable {
     public String getFormatedCertSN(CertificateView certificateData) {
     	
     	String serialnumber = certificateData.getSerialNumber();
-    	if(serialnumber.length()==6 || serialnumber.length()==14) {
-    		return "00" + serialnumber;
-    	}
+    	if(StringUtils.equals(certificateData.getType(), "X.509")) {
+    		if(serialnumber.length()==6 || serialnumber.length()==14) {
+    			return "00" + serialnumber;
+    		}
     	
-    	if((serialnumber.length()%2) != 0) {
-    		return "0" + serialnumber;
+    		if((serialnumber.length()%2) != 0) {
+    			return "0" + serialnumber;
+    		}
     	}
-    	
     	return serialnumber;
 
     }
