@@ -808,13 +808,15 @@ public class RAInterfaceBean implements Serializable {
     	
     	String serialnumber = certificateData.getSerialNumber();
     	if(StringUtils.equals(certificateData.getType(), "X.509")) {
-    		if(serialnumber.length()==6 || serialnumber.length()==14) {
-    			return "00" + serialnumber;
+    		if((serialnumber.length()%2) != 0) {
+    			serialnumber = "0" + serialnumber;
+    		}
+    		
+    		int octetChar = serialnumber.charAt(0) - '0';
+    		if(octetChar > 7) {
+    			serialnumber = "00" + serialnumber;
     		}
     	
-    		if((serialnumber.length()%2) != 0) {
-    			return "0" + serialnumber;
-    		}
     	}
     	return serialnumber;
 
