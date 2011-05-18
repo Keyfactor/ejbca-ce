@@ -4758,7 +4758,7 @@ On startup of EJBCA each node adds its hostname to the "Nodes in Cluster" list. 
 </subsection>
 </section>
 
-<section name="High Availability (HA)">
+<section name="High Availability (HA), a.k.a Clustering">
 <p>
 EJBCA is designed to work well in a clustered, high availability configuration. The key to EJBCA high availability is to have a HA database, since all EJBCA nodes shares the same database.
 The process of setting up EJBCA in a HA setup is:
