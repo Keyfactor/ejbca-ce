@@ -397,88 +397,9 @@ If you use category instead of logger Log4j will output warnings on startup
   <section name="Setting up the Unid-Fnr OCSP extension">
   <note>If you don't know what a Unid-Fnr mapping is, you are probably not interested in this part.
   </note>
-  
-  <subsection name="Configuring the Unid lookup server">
   <p>
-The OCSP responder comes with an extension for looking up Unid-Fnr mappings.
-To enable the Unid extension you configure the options:
-</p>
-<source>
-ocsp.extensionoid=2.16.578.1.16.3.2
-ocsp.extensionclass=org.ejbca.core.protocol.ocsp.OCSPUnidExtension
-</source>
-<p>
-in conf/ejbca.properties of the OCSP responder. All options are described in ejbca.properties.sample.
-There are three options for the Unid extension itself:
-</p><p>
-<b>1. ocsp.uniddatsource</b>
-<br/> 
-This should be set to a datasource configured in JBoss that goes to the correct database.
-the database must contain the table according to the (MySQL) definition:
-</p>
-<source>
-CREATE TABLE UnidFnrMapping(
-    unid varchar(250) NOT NULL DEFAULT '',
-    fnr varchar(250) NOT NULL DEFAULT '',
-    PRIMARY KEY (unid)
-);
-</source>
-<p>
-Example of ocsp.uniddatsource is java:/UnidDS, where UnidDS is configured similarly as EjbcaDS in 
-JBOSS_HOME/server/default/deploy/ejbca-ds.xml, but using another database.
-</p><p>
-<b>2. ocsp.unidtrustdir</b>
-All clients that will be allowed to lookup Unid-Fnr mapping must be issued a client certificate. 
-The issuer of the client certificates must be the same as the issuer of the server certificate for TLS 
-communication with the OCSP server (see below).
-You should use these parameters (where differing from default) when issuing keystores to the clients:
-<br/>
-- PKCS#12 files<br/>
-- Extended key usage 'TLS client'
-</p><p>
-When a certificate has been issued for a lookup client, you must download the certificate from the admin-GUI of the CA
-and place it in ocsp.unidtrustdir.
-When a new certificate has been added, the OCSP application on the JBoss server must be re-deployed 
-(you can do this with the command 'touch ejbca.ear' in JBOSS_HOME/server/default/deploy).
-</p><p>
-<b>3. ocsp.unidcacert</b>
-This is the CA certificate, in PEM format, that signed the certificates in ocsp.unidtrustdir. You can download it in PEM-format from EJBCA.
-</p>
-</subsection>
-
-<subsection name="Configuring TLS on the Unid lookup server">
-<p>
-If you are running the OCSP server integrated with EJBCA you do not have to bother with this, as EJBCA set up TLS for you.
-</p><p>
-On a stand alone OCSP server you must configure TLS with client authentication. To do this you first need a JKS keystore for 
-the key and certificate for the server.
-You should use these parameters (where differing from default) when issuing keystores to the TLS servers:
-<br/>
-- JKS files<br/>
-- Key usage: Digital Signature, Key Encipherment<br/>
-- Extended key usage: 'TLS server'
-</p><p>
-The Common Name (CN) for a TLS server should be the same as the machines fully qualified DNS name used to call the server. 
-For example 'CN=ocsp.primekey.se'.The other DN components you can choose freely.
-</p><p>
-Once the JKS keystore is issued you can configure TLS on the OCSP server in the same way as on the EJBCA server. 
-It is configured in the file JBOSS_HOME/server/default/deploy/jboss-web.deployer/server.xml on the CA server.
-The Connectors for port 8442 and 8443 is the TLS configuration.
-The keystoreFile, keystorePass, truststoreFile and truststorePass are important to get right.
-<br/>It is easiest if you put the keystore for the TLS server in the file p12/tomcat.jks on the external OCSP responder.
-When doing this it should be deployed correctly when using 'ant ocsp-deploy', and you don't have to change the server.xml file which is 
-over-written by 'ant ocsp-deploy'.
-</p>
-</subsection>
-
-<subsection name="Security of the lookup server">
-<p>
-the lookup server always checks that each client is using TLS with client authentication and that the certificate is valid and is one
-of the certificates placed in the directory pointed to by 'ocsp.unidtrustdir'. 
-<br/>
-If these conditions are not met, no Fnr is returned.
-</p>
-</subsection>
+  The Unid functionality is described in a separate <a href="unid.html">document</a>. 
+  </p>
   </section>
 
   <section name="OCSP GET">

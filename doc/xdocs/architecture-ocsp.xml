@@ -51,6 +51,7 @@
     <li>High performance, >500 request per second on a single server.</li>
     <li>On-line renewal of OCSP responder keys and certificates.</li>
     <li>OCSP client in Java (Client ToolBox).</li>
+    <li>Support for Norwegian <a href="unid.html">Unid</a> extension.</li>
     </ul>
     </p>
   </section>

@@ -72,19 +72,11 @@ org.ejbca.ui.cli.Ocsp.
 </p>
 </section>
 <section name="Fnr-Unid mapping">
+  <note>If you don't know what a Unid-Fnr mapping is, you are probably not interested in this part.
+  </note>
 <p>
-For the Unid Lookup part, you must use https with a client certificate with the ocsp client. If you use http with a client certificate
-and the OCSP responder is set up to answer Lookup requests, the OCSP client will returns the Fnr. The Fnr will be returned if the certificate 
-contains a Unid in the SN component of the SubjectDN, and the Unid has a valid mapping to an Fnr in the OCSP responders Fnr-Unid mapping database.
-</p><p>
-If the Fnr returned is null, there are several possible errors:
-<ol>
-<li>The client was not authorized to request an Fnr.</li>
-<li>There was no Unid Fnr mapping available.</li>
-<li>There was no Unid in the certificate (serialNumber DN component).</li>
-</ol>
-EJBCA can generate UNID's automatically when you use the <a href="adminguide.html#Custom%20handling%20of%20certificate%20request">CMP protocol</a>. 
-    </p>
+The Unid functionality is described in a separate <a href="unid.html">document</a>. 
+</p>
 </section>
 <section name="OCSP extensions">
 <p>
