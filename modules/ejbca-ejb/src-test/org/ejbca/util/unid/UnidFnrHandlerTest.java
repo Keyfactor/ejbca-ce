@@ -29,6 +29,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.util.unid.UnidFnrHandler.Storage;
 
 import junit.framework.TestCase;
@@ -67,7 +68,7 @@ public class UnidFnrHandlerTest extends TestCase {
 			this.unid = _unid;
 		}
 	}
-	private static class MyIRequestMessage implements IRequestMessage {
+	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		final X509Name dn;
 
 		MyIRequestMessage(String serialNumber) {
@@ -184,6 +185,26 @@ public class UnidFnrHandlerTest extends TestCase {
 		public IResponseMessage createResponseMessage(Class responseClass,
 				IRequestMessage req, Certificate cert, PrivateKey signPriv,
 				String provider) {
+			return null;
+		}
+		@Override
+		public int getPbeIterationCount() {
+			return 0;
+		}
+		@Override
+		public String getPbeDigestAlg() {
+			return null;
+		}
+		@Override
+		public String getPbeMacAlg() {
+			return null;
+		}
+		@Override
+		public String getPbeKeyId() {
+			return null;
+		}
+		@Override
+		public String getPbeKey() {
 			return null;
 		}
 	}
