@@ -307,15 +307,15 @@ public class CmpResponseMessage implements IResponseMessage {
     	this.requestId = reqid;
     }
     
-    public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
-    	if (reqMsg instanceof CrmfRequestMessage) {
-			CrmfRequestMessage crmf = (CrmfRequestMessage) reqMsg;
+    @Override
+	public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
+    	if (reqMsg instanceof ICrmfRequestMessage) {
+    		ICrmfRequestMessage crmf = (ICrmfRequestMessage) reqMsg;
 			this.pbeIterationCount = crmf.getPbeIterationCount();
 			this.pbeDigestAlg = crmf.getPbeDigestAlg();
 			this.pbeMacAlg = crmf.getPbeMacAlg();
 			this.pbeKeyId = crmf.getPbeKeyId();
 			this.pbeKey = crmf.getPbeKey();
-			
 		}
     }
 

@@ -625,6 +625,14 @@ public class CmpTestCase extends CaTestCase {
         return null;
     }
 
+    /**
+     * Normally not overrided. Could be overrided if DN in cert is changed from request by a {@link org.ejbca.core.protocol.ExtendedUserDataHandler}. 
+     * @param expected
+     * @param actual
+     */
+    protected void checkDN(String expected, X509Name actual) {
+        assertEquals(CertTools.stringToBCDNString(expected), CertTools.stringToBCDNString(actual.toString()));
+    }
     protected X509Certificate checkCmpCertRepMessage(String userDN, Certificate cacert, byte[] retMsg, int requestId) throws IOException,
             CertificateException {
         //
@@ -650,7 +658,7 @@ public class CmpTestCase extends CaTestCase {
         assertNotNull(cc);
         X509CertificateStructure struct = cc.getCertificate();
         assertNotNull(struct);
-        assertEquals(CertTools.stringToBCDNString(struct.getSubject().toString()), CertTools.stringToBCDNString(userDN));
+        checkDN(userDN, struct.getSubject());
         assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.getSubjectDN(cacert));
         return (X509Certificate) CertTools.getCertfromByteArray(struct.getEncoded());
     }

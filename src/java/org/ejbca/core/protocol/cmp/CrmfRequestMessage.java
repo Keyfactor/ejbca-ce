@@ -73,7 +73,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * @author tomas
  * @version $Id$
  */
-public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
+public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMessage {
 	
 	private static final Logger log = Logger.getLogger(CrmfRequestMessage.class);
 	
