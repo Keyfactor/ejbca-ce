@@ -10,10 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-/*
- * Copyright 2005-2006 MULTICERT S.A.
- * All rights reserved.
- */
 package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.io.Serializable;
