@@ -17,6 +17,9 @@ so clients no longer have to be aware of in what time zone the CA servers are lo
 The old format (in US Locale) will still work for incoming requests in the WS, but any returned
 UserDataVOWS containing custom start and end date will use the new format.
 
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
+
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
 
