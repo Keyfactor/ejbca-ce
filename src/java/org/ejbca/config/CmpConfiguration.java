@@ -26,6 +26,8 @@ public class CmpConfiguration {
 	public static final String CONFIG_RA_CERTIFICATEPROFILE   = "cmp.ra.certificateprofile";
 	public static final String CONFIG_RESPONSEPROTECTION      = "cmp.responseprotection";
 	public static final String CONFIG_RACANAME				  = "cmp.ra.caname";
+	public static final String CONFIG_CERTREQHANDLER_CLASS    = "cmp.certreqhandler.class";
+	public static final String CONFIG_UNIDDATASOURCE		  = "cmp.uniddatasource";
 
 	/**
 	 * This defines if we allows messages that has a POPO setting of raVerify. 
@@ -113,10 +115,10 @@ public class CmpConfiguration {
 	}
 
 	public static String getUnidDataSource() {
-		return ConfigurationHolder.getString("cmp.uniddatasource", null);
+		return ConfigurationHolder.getString(CONFIG_UNIDDATASOURCE, null);
 	}
 
 	public static String getCertReqHandlerClass() {
-		return ConfigurationHolder.getString("cmp.certreqhandler.class", null);
+		return ConfigurationHolder.getString(CONFIG_CERTREQHANDLER_CLASS, null);
 	}
 }

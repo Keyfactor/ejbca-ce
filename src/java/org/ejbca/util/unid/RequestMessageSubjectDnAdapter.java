@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.util.CertTools;
 
 /**
@@ -38,8 +39,8 @@ import org.ejbca.util.CertTools;
  * @version $Id$
  *
  */
-class RequestMessageSubjectDnAdapter implements IRequestMessage {
-	final private IRequestMessage original;
+class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
+	final private ICrmfRequestMessage original;
 	transient private X509Principal dn;
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
@@ -52,7 +53,7 @@ class RequestMessageSubjectDnAdapter implements IRequestMessage {
 		this.dn = new X509Principal(b);
 	}
 	RequestMessageSubjectDnAdapter(IRequestMessage req, X509Name _dn) {
-		this.original = req;
+		this.original = (ICrmfRequestMessage)req;
 		this.dn = new X509Principal(_dn);
 	}
 	@Override
@@ -166,5 +167,25 @@ class RequestMessageSubjectDnAdapter implements IRequestMessage {
 			IRequestMessage req, Certificate cert, PrivateKey signPriv,
 			String provider) {
 		return this.original.createResponseMessage(responseClass, req, cert, signPriv, provider);
+	}
+	@Override
+	public int getPbeIterationCount() {
+		return this.original.getPbeIterationCount();
+	}
+	@Override
+	public String getPbeDigestAlg() {
+		return this.original.getPbeDigestAlg();
+	}
+	@Override
+	public String getPbeMacAlg() {
+		return this.original.getPbeMacAlg();
+	}
+	@Override
+	public String getPbeKeyId() {
+		return this.original.getPbeKeyId();
+	}
+	@Override
+	public String getPbeKey() {
+		return this.original.getPbeKey();
 	}		
 }
