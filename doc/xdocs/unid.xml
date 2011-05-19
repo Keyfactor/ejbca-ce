@@ -118,6 +118,36 @@ If these conditions are not met, no Fnr is returned.
 </p>
 </subsection>
   </section>
+
+<section name="Unid CMP configuration">
+<p>
+You can configure EJBCA to generate Unids when an RA is using the CMP protocol. The generated Unids are stored in a mapping database that can be read by the OCSP responder.</p>
+<p>
+Requirements:
+</p>
+<ol>
+<li>The database table is assumed to be identical to that of the OCSP UNID/FNR implementation (probably the same database).</li>
+<li>The certificate request is assumed to be performed with CMP.</li>
+<li>The UNID feature is activated through the following settings in "cmp.properties":<br/>
+  cmp.ra.certificateprofile=KeyId<br/>
+  cmp.uniddatasource=[as in OCSP (for example java:/UnidDS)]
+</li>
+</ol>
+<p>
+Detailed operation:
+</p>
+<ul>
+<li>A CMP Certificate Request is performed with KeyId holding a Certificate Profile with name "pppp-pppp-..."</li>
+<li>The Certificate Request contains a DN serialNumber attribute holding the ll-digit FNR + 5-digt LRA according to the following:<br/>
+     Subject DN: CN=Alexander Rybak, serialNumber=fffffffffff-lllll, C=NO
+</li>
+<li>Now EJBCA creates a random 6-character alphanumeric string "rrrrrr" and rewrites the Subject DN so that the resulting certificate will be like:<br/>
+     Subject DN: CN=Alexander Rybak, serialNumber=pppp-pppp-lllllrrrrrr, C=NO
+</li>
+<li>In the database FNR is set to "fffffffffff" and UNID to "pppp-pppp-lllllrrrrrr". UNID is a primary key in the DB to guarantee that it is unique.</li>
+</ul>
+
+</section>
   
 </body>
 </document>
