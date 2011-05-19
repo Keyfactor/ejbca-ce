@@ -1,9 +1,24 @@
 EJBCA 4.0.2
 -----------
+This is a maintenance release with many improvements and fixes. In all 44 issues have been resolved.
+
+* Noteworthy changes:
+- Internal optimizations makes this the fastest version of EJBCA ever, capable of issuing > 400 certificates/second (depending on configuration).
+- Certificate enrollment now works also with Safari and Chrome browsers.
+- Support for PrivateKeyUsagePeriod certificate extension. 
+- Fixed a time zone bug issuing CVC certificates where the date was encoded using local timezone instead of GMT in certificates.
+- More admin console and public web improvements from David Carella of Linagora.
+- Now uses ISO8601 date format consistently when entering dates in admin console. 
+- Automatic generation of Norwegian UNID numbers from CMP requests.
+- Many small bug fixes and improvements.
+
 The ISO8601 date format (yyyy-MM-dd HH:mm:ssZZ) is used in the Admin GUI and EJBCA WS interface,
 so clients no longer have to be aware of in what time zone the CA servers are located.
 The old format (in US Locale) will still work for incoming requests in the WS, but any returned
 UserDataVOWS containing custom start and end date will use the new format.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
 
 EJBCA 3.11.2 
 ------------

@@ -1,5 +1,59 @@
-EJBCA 3.11.2, 2011-04-29
+EJBCA 4.0.2, 2011-05-20
+---
+New Feature
+    [ECA-1405] - Support for adding PrivateKeyUsagePeriod certificate extension
+    [ECA-1678] - Support Public Web enrollment in Chrome
+    [ECA-2172] - Storing of a secret not allowed to be in certificate in a DB with mapping to a fieald in the certificate.
 
+Improvement
+    [ECA-1827] - Optimize unique subject DN check
+    [ECA-1909] - End-Entity popups layout improved
+    [ECA-1959] - Public web layout improved
+    [ECA-1975] - View Log layout improved
+    [ECA-1976] - Fix PMD warnings
+    [ECA-2075] - Use ISO 8601 date format for absolute CertificateValidity, LogjDevice and in interfaces
+    [ECA-2076] - Change label 'CRL Publishers' to 'Publishers' for CAs
+    [ECA-2081] - Optimize EJBCA
+    [ECA-2084] - Create combined JDK patch for SHA224WithECDSA and RSAWithMGF1
+    [ECA-2097] - End-Entity Search form usability
+    [ECA-2100] - Make the number of BCrypt rounds configurable
+    [ECA-2106] - Improve CertificateProfileCache and EndEntityProfileCache
+    [ECA-2107] - Use getResultList instead of getSingleResult for JPA queries
+    [ECA-2110] - Improve log error message when CMP RA CA does not exist
+    [ECA-2111] - View History popup improved
+    [ECA-2115] - Use StringBuilder instead of StringBuffer where thread safety isn't required
+    [ECA-2119] - Optimize DNFieldsUtil
+    [ECA-2125] - GUI usability: History navigation in popups
+
+Bug
+    [ECA-2006] - Certain hexadecimal values of the Validity field on the Edit CA page are parsed incorrectly
+    [ECA-2065] - Certificate enrollment using OS X 10.6 and Safari 5.0.3
+    [ECA-2085] - During install asked twice to input password
+    [ECA-2098] - Check for unique index on (certificate serialNumber, issuerDN) does not work as expected
+    [ECA-2108] - Property for custom available access rules miss-spelled
+    [ECA-2113] - CA Tokentype ignored during installation
+    [ECA-2132] - Start and end time displaying bugged in View EE popup
+    [ECA-2133] - DN displaying bugged in View Certificate popup
+    [ECA-2136] - Displaying of DN attributes which contains several spaces
+    [ECA-2137] - Fix EJBCA Web Configuration layout
+    [ECA-2143] - External RA PKCS12 request gives NPE
+    [ECA-2152] - Certificate not published to OCSP when reactivating after jboss restart.
+    [ECA-2153] - Error serial number start with 0
+    [ECA-2154] - Cert-cvc date decoding does not take timezone into consideration
+    [ECA-2158] - Export log as CSV does not work
+    [ECA-2166] - CertificateExpireTest does not remove the test CA
+    [ECA-2168] - If ServicetimerSessionBean.timeoutHandler throws exception multiple timers are created
+    [ECA-2169] - Possible too much logging when violating unique user public key and/or DN
+    [ECA-2176] - Deploying XKMS on JBoss 6 downloads dtd from w3c
+
+Task
+    [ECA-2073] - Update generated documentation
+    [ECA-2091] - Upgrade Extended CA services to include implementation classpath
+    [ECA-2147] - Clean up HTML code
+    [ECA-2148] - Message keys refactoring
+
+EJBCA 3.11.2, 2011-04-29
+---
 ** Bug
     * [ECA-1981] - End Entity History: Administrator is not listed right (NullPointerException)
     * [ECA-1996] - NPE in approvals page when logged in as RA Admin without End Entity Profiles access rights
