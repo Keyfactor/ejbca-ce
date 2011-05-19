@@ -37,6 +37,9 @@ See Admin Guide
 
 Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
 
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
+
 EJBCA 4.0alpha1 NOTE
 --------------------
 There is no guarantee that there will be an upgrade path between the alpha release and EJBCA 4.0.0.
