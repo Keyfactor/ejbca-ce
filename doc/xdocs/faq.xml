@@ -125,7 +125,12 @@
       </p>
       </answer>
     </faq>
-    
+    <faq id="NoSuchMethodError after upgrade to 4.0">
+      <question>After upgrade I get a "java.lang.NoSuchMethodError" error accessing the admin GUI.</question>
+      <answer>
+      <p>JBoss (5.1) is bad at cleaning temporary files, sometimes we have to help. Remove the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss.</p>
+      </answer>
+    </faq>
     <faq id="errorsDuringBuild">
       <question>During the build process I get errors like:
       BUILD FAILED
