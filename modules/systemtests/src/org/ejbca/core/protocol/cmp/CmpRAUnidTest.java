@@ -215,9 +215,9 @@ public class CmpRAUnidTest extends CmpTestCase {
 			pw.println("If you don't bother about it (don't if you don't know what it is) please just ignore this error.");
 			pw.println("But if you want to run the test please make sure that the mysql unid-fnr DB is set up.");
 			pw.println("Then execute next line at the mysql prompt:");
-			pw.println("mysql> grant all on "+name+" to "+user+"@'"+host+"' identified by '"+pass+"';");
+			pw.println("mysql> grant all on "+name+".* to "+user+"@'"+host+"' identified by '"+pass+"';");
 			pw.println("And then create the DB:");
-			pw.println("$ mysqladmin -u"+host+" -u"+user+" -p"+pass+" create "+name);
+			pw.println("$ mysqladmin -u"+host+" -u"+user+" -p"+pass+" create "+name+";.");
 			pw.println("These properties must the also be defined for the jboss data source. The name of the DS must be: "+UNID_DS);
 			pw.println("You also have to set the path to the 'mysql.jar' as the 'mysql.lib' system property for the test.");
 			pw.println("Example how to the test with this property:");
