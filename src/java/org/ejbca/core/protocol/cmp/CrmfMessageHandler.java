@@ -86,7 +86,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private final String responseProt;
 	/** Determines if it the RA will look for requested custom certificate serial numbers, if false such data is ignored */
 	private final boolean allowCustomCertSerno;
-	private final ExtendedUserDataHandler extendedUserDataHandler;
+	private ExtendedUserDataHandler extendedUserDataHandler = null;
 	
 	private final SignSession signSession;
 	private final UserAdminSession userAdminSession;
@@ -150,18 +150,24 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			this.responseProt = null;
 			this.allowCustomCertSerno = false;
 		}
-		final String unidClass = CmpConfiguration.getCertReqHandlerClass();
-		if ( unidClass!=null ) {
-			ExtendedUserDataHandler tmp;
-			try {
-				tmp = (ExtendedUserDataHandler)Class.forName(unidClass).newInstance();
-			} catch (Exception e) {
-				tmp = null;
-				LOG.warn("The configured unid class '"+unidClass+"' is not existing.");
+		initExtendedUserDataHandler();
+	}
+
+	/** Checks if an extended user data hander is configured and if so, creates the handler class.
+	 * It will only create the handler class if it has not already been created, if configured with one and 
+	 * then switched to another handler class, a restart is needed.
+	 */
+	private void initExtendedUserDataHandler() {
+		final String handlerClass = CmpConfiguration.getCertReqHandlerClass();
+		if ( (handlerClass!=null) && (extendedUserDataHandler == null) ) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("CertReqHandlerClass="+handlerClass);
 			}
-			this.extendedUserDataHandler = tmp;			
-		} else {
-			this.extendedUserDataHandler = null;
+			try {
+				this.extendedUserDataHandler = (ExtendedUserDataHandler)Class.forName(handlerClass).newInstance();
+			} catch (Exception e) {
+				LOG.warn("The configured cert req handler class '"+handlerClass+"' does not exist in classpath.");
+			}
 		}
 	}
 
@@ -334,6 +340,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			// Create a username and password and register the new user in EJBCA
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
+			initExtendedUserDataHandler();
 			final IRequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName) : crmfreq;
 			final X509Name dnname = req.getRequestX509Name();
 			if (LOG.isDebugEnabled()) {

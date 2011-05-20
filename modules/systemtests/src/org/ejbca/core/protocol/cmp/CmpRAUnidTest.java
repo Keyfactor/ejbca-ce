@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
@@ -50,6 +49,7 @@ import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.protocol.unid.UnidFnrHandler;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
@@ -60,6 +60,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * Tests the unid-fnr plugin.
  * Read the assert printout {@link #test01()} to understand how to set things up for the test.
+ * 
  * @author primelars
  * @version $Id$
  */
@@ -142,7 +143,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 		updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "KeyId");
 		updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "KeyId");
 		updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
-		updatePropertyOnServer(CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS, "org.ejbca.util.unid.UnidFnrHandler");
+		updatePropertyOnServer(CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS, UnidFnrHandler.class.getName());
 		updatePropertyOnServer(CmpConfiguration.CONFIG_UNIDDATASOURCE, UNID_DS);
 		// Configure a Certificate profile (CmpRA) using ENDUSER as template
 		if (this.certificateProfileSession.getCertificateProfile(this.admin, CPNAME) == null) {
@@ -150,7 +151,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 			try { // TODO: Fix this better
 				this.certificateProfileSession.addCertificateProfile(this.admin, CPNAME, cp);
 			} catch (CertificateProfileExistsException e) {
-				e.printStackTrace();
+				log.error("Certificate profile exists: ", e);
 			}
 		}
 		final int cpId = this.certificateProfileSession.getCertificateProfileId(this.admin, CPNAME);

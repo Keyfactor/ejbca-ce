@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.util.unid;
+package org.ejbca.core.protocol.unid;
 
 import java.sql.PreparedStatement;
 import java.util.Vector;
@@ -51,13 +51,13 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		super();
 		this.storage = _storage;
 	}
-	/* (non-Javadoc)
-	 * @see org.ejbca.core.protocol.ExtendedUserDataHandler#handleIt(org.bouncycastle.asn1.x509.X509Name, java.lang.String)
-	 */
+	
 	@Override
 	public IRequestMessage processRequestMessage(IRequestMessage req, String certificateProfileName) throws HandlerException {
 		final X509Name dn = req.getRequestX509Name();
-		LOG.debug("take care of :'"+dn+"' and '"+certificateProfileName+"'");
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
+		}
 		final String unidPrefix = getPrefixFromCertProfileName(certificateProfileName);
 		if ( unidPrefix==null ) {
 			return req;
@@ -179,25 +179,19 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 				this.unid = _unid;
 				this.fnr = _fnr;
 			}
-			/* (non-Javadoc)
-			 * @see org.ejbca.util.JDBCUtil.Preparer#prepare(java.sql.PreparedStatement)
-			 */
+			
 			@Override
 			public void prepare(PreparedStatement ps) throws Exception {
 				ps.setString(1, this.unid);
 				ps.setString(2, this.fnr);
 			}
-			/* (non-Javadoc)
-			 * @see org.ejbca.util.JDBCUtil.Preparer#getInfoString()
-			 */
+			
 			@Override
 			public String getInfoString() {
 				return "Unid: '"+this.unid+" FNR: '"+this.fnr+"'";
 			}
 		}
-		/* (non-Javadoc)
-		 * @see org.ejbca.util.unid.UnidFnrHandler.Storage#storeIt(java.lang.String, java.lang.String)
-		 */
+		
 		@Override
 		public void storeIt(String unid, String fnr) throws HandlerException {
 			try {
