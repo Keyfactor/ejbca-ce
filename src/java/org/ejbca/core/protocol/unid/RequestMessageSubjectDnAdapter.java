@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.util.unid;
+package org.ejbca.core.protocol.unid;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
