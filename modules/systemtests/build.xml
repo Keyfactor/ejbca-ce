@@ -125,7 +125,7 @@
 	<!-- =================================
           Run most system tests
          ================================= -->
-    <target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests">
+    <target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test.">
     	<antcall target="showtime"/>
 		<delete dir="${reports.base.dir}/run" />
 		<mkdir dir="${reports.base.dir}/run/html"/>
@@ -136,6 +136,10 @@
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
 			<socket server="127.0.0.1" port="5587"/>
 		</waitfor>
+	    <!-- The CMP unid test requires the mysql.lib property to be set -->
+    	<condition property="cmpunid.enabled" value="true">
+    		<isset property="mysql.lib"/>
+    	</condition>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
 				<path location="${build.dir}" />
@@ -186,6 +190,8 @@
 					<!-- Tests that require the CMP TCP listener -->
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
+					<!-- Tests that require the CMP Unid datahandler -->
+					<exclude name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 					<!-- Tests that require unique index in the database to work -->
 					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
 					<exclude name="org/ejbca/core/protocol/ws/CustomCertSerialnumberWSTest.class" />
@@ -201,6 +207,12 @@
 				<fileset dir="${build.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
+				</fileset>
+			</batchtest>
+			<!-- Tests that require the CMP Unid data handler -->
+			<batchtest fork="yes" todir="${reports.base.dir}/run" if="cmpunid.enabled">
+				<fileset dir="${build.dir}">
+					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -264,6 +276,7 @@
 					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
