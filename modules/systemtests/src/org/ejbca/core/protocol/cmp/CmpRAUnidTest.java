@@ -72,7 +72,6 @@ public class CmpRAUnidTest extends CmpTestCase {
 	private static final String UNIDPREFIX = "1234-5678-";
 	private static final String CPNAME = UNIDPREFIX+CmpRAUnidTest.class.getName();
 	private static final String EEPNAME = UNIDPREFIX+CmpRAUnidTest.class.getName();
-	private static final String UNID_DS = "java:/UnidDS";
 
 	/**
 	 * SUBJECT_DN of user used in this test, this contains special, escaped,
@@ -144,7 +143,6 @@ public class CmpRAUnidTest extends CmpTestCase {
 		updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "KeyId");
 		updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
 		updatePropertyOnServer(CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS, UnidFnrHandler.class.getName());
-		updatePropertyOnServer(CmpConfiguration.CONFIG_UNIDDATASOURCE, UNID_DS);
 		// Configure a Certificate profile (CmpRA) using ENDUSER as template
 		if (this.certificateProfileSession.getCertificateProfile(this.admin, CPNAME) == null) {
 			final CertificateProfile cp = new EndUserCertificateProfile();
@@ -219,7 +217,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 			pw.println("mysql> grant all on "+name+".* to "+user+"@'"+host+"' identified by '"+pass+"';");
 			pw.println("And then create the DB:");
 			pw.println("$ mysqladmin -u"+host+" -u"+user+" -p"+pass+" create "+name+";.");
-			pw.println("These properties must the also be defined for the jboss data source. The name of the DS must be: "+UNID_DS+". Not that the datasource must be a 'no-tx-datasource', like OcspDS.");
+			pw.println("These properties must the also be defined for the jboss data source. The name of the DS must be set in cmp.properties. Not that the datasource must be a 'no-tx-datasource', like OcspDS.");
 			pw.println("You also have to set the path to the 'mysql.jar' as the 'mysql.lib' system property for the test.");
 			pw.println("Example how to the test with this property:");
 			pw.println("ant -Dmysql.lib=/usr/share/java/mysql.jar test:run");
