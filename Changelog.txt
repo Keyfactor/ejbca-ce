@@ -1,4 +1,4 @@
-EJBCA 4.0.2, 2011-05-20
+EJBCA 4.0.2, 2011-05-22
 ---
 New Feature
     [ECA-1405] - Support for adding PrivateKeyUsagePeriod certificate extension
