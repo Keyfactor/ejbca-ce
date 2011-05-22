@@ -126,12 +126,14 @@ public class RequestHelper {
             throw new SignRequestSignatureException(
                 "Invalid signature in NetscapeCertRequest, popo-verification failed.");
         }
-
-        log.debug("POPO verification successful");
-
+        if (log.isDebugEnabled()) {
+        	log.debug("POPO verification successful");
+        }
         X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator,
                 username, password, nscr.getPublicKey());
-        log.debug("Created certificate for " + username);
+        if (log.isDebugEnabled()) {
+        	log.debug("Created certificate for " + username);
+        }
         if (debug != null) {
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
