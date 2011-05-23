@@ -1607,7 +1607,6 @@ public class EjbcaWS implements IEjbcaWS {
 						} catch (AlreadyRevokedException e) {
 							// Ignore previously revoked certificates
 						} catch (FinderException e) {
-							log.info("TMPDEBUG: currentHardToken.getUsername()=" + currentHardToken.getUsername() + " e.message=" + e.getMessage());
                             throw EjbcaWSHelper.getEjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.",
                                                     logger, ErrorCode.USER_NOT_FOUND, null);
 						} 
