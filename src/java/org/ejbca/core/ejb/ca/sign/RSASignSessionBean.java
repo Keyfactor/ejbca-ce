@@ -942,7 +942,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch( NoUniqueCertSerialNumberIndexException e ) {
         	throw e;
         } catch (Exception e) {
-            log.error(e);
+            log.error("Error creating certificate: ", e);
             throw new EJBException(e);
         }
     }
