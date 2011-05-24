@@ -883,7 +883,7 @@ but it will give an indication as well for other platforms what configuration st
 
 <section name="Additional howtos">
 <p>
-Branco Majic have a good detailed guide for setting up <a href="http://majic.rs/book/free-software-x509-cookbook/setting-up-ejbca-as-certification-authority">EJBCA with JBoss</a> in a rather thorough setup.
+Branko Majic have a good detailed guide for setting up <a href="http://majic.rs/book/free-software-x509-cookbook/setting-up-ejbca-as-certification-authority">EJBCA with JBoss</a> in a rather thorough setup.
 </p>
 <p>
 In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
