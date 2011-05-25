@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.authorization;
 
 import java.io.Serializable;
-import java.math.BigInteger;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -24,6 +23,7 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AccessRule;
+import org.ejbca.util.ValueExtractor;
 
 /**
  * Representation of access rule in EJBCA authorization module.
@@ -181,8 +181,7 @@ public class AccessRulesData implements Serializable {
     /** @return return the count. isRecursive should never be referenced in the WHERE clause. */
     public static long findCountByCustomQuery(final EntityManager entityManager, final String whereClause) {
         final Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
-        final BigInteger v = (BigInteger) query.getSingleResult(); // Always returns a result
-        return v.longValue();
+        return ValueExtractor.extractLongValue(query.getSingleResult()); // Always returns a result;
     }
 
 }
