@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.core.ejb.log;
+package org.ejbca.core.ejb.log;
 
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -24,12 +24,14 @@ import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.log.LogConfigurationData;
+import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
+import org.ejbca.core.ejb.log.LogConfigurationSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.util.ObjectCache;
 
 /**
- * @see org.cesecore.core.ejb.log.LogConfigurationSession
+ * @see org.ejbca.core.ejb.log.LogConfigurationSession
  * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "LogConfigurationSessionRemote")

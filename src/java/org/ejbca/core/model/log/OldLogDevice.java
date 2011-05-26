@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.log.OldLogSession;
-import org.cesecore.core.ejb.log.OldLogSessionLocal;
+import org.ejbca.core.ejb.log.OldLogSession;
+import org.ejbca.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;

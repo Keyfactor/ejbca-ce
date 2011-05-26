@@ -18,11 +18,11 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.log.LogConfigurationSessionRemote;
-import org.cesecore.core.ejb.log.LogSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.log.LogConfigurationSessionRemote;
+import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;

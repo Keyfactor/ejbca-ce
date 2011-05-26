@@ -71,7 +71,7 @@ public class InternalResourcesTest extends TestCase {
         assertEquals("Test SV", res);
 
     }
-    
+
     static class InternalResourcesStub extends InternalResources {
 
         private static final long serialVersionUID = 1L;
@@ -138,5 +138,3 @@ public class InternalResourcesTest extends TestCase {
 
     }
 }
-
-

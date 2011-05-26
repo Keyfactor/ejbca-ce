@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.core.ejb.ra.raadmin;
+package org.ejbca.core.ejb.ra.raadmin;
 
 import javax.ejb.Remote;
 

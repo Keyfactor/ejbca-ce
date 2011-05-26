@@ -52,7 +52,7 @@
         <ejb-name>EndEntityProfileSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSessionRemote</business-remote>
+                <business-remote>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote</business-remote>
                 <jndi-name>ejbca/EndEntityProfileSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -82,7 +82,7 @@
         <ejb-name>AdminEntitySessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.authorization.AdminEntitySessionRemote</business-remote>
+                <business-remote>org.ejbca.core.ejb.authorization.AdminEntitySessionRemote</business-remote>
                 <jndi-name>ejbca/AdminEntitySessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -92,7 +92,7 @@
         <ejb-name>LogConfigurationSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.log.LogConfigurationSessionRemote</business-remote>
+                <business-remote>org.ejbca.core.ejb.log.LogConfigurationSessionRemote</business-remote>
                 <jndi-name>ejbca/LogConfigurationSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -102,7 +102,7 @@
         <ejb-name>LogSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.log.LogSessionRemote</business-remote>
+                <business-remote>org.ejbca.core.ejb.log.LogSessionRemote</business-remote>
                 <jndi-name>ejbca/LogSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -162,7 +162,7 @@
         <ejb-name>OldLogSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.log.OldLogSessionRemote</business-remote>
+                <business-remote>org.ejbca.core.ejb.log.OldLogSessionRemote</business-remote>
                 <jndi-name>ejbca/OldLogSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>

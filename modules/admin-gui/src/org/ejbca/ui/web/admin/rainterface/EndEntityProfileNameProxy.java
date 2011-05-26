@@ -21,7 +21,7 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.HashMap;
 
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.log.Admin;
 
 /**
