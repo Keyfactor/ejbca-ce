@@ -136,8 +136,8 @@
 			<mkdir dir="${build-temp.dir}/logging"/>
 			<copy todir="${src-temp.dir}/logging">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/cesecore/core/ejb/log/Log*.java"/>
-					<include name="org/cesecore/core/ejb/log/OldLog*.java"/>
+					<include name="org/ejbca/core/ejb/log/Log*.java"/>
+					<include name="org/ejbca/core/ejb/log/OldLog*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/log/Log*.java"/>
