@@ -11,25 +11,20 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.core.ejb.log;
+package org.ejbca.core.ejb.log;
 
-import org.ejbca.core.model.log.LogConfiguration;
+import javax.ejb.Local;
 
 /**
- * Interface for interactions with LogConfigurationData.
+ * @see org.ejbca.core.ejb.log.LogConfigurationSession
  * @version $Id$
  */
-public interface LogConfigurationSession {
+@Local
+public interface LogConfigurationSessionLocal extends LogConfigurationSession {
 
     /**
-     * Loads the log configuration from the database.
-     * @return the LogConfiguration or a new default LogConfiguration if no such configuration exists
+     * Update counter stored in LogConfiguration with id 0.
+     * @return an allocated logEntryRowNumber or -1 if the operation failed
      */
-    LogConfiguration loadLogConfiguration(int caid);
-
-    /** Do not use unless updates without audit log are intentional. Save a logConfiguration. Updates or creates new row in database. */
-    void saveLogConfiguration(int caid, LogConfiguration logConfiguration, boolean updateCache);
-
-    /** Clear and reload log profile caches. */
-    void flushConfigurationCache();
+	int getAndIncrementRowCount();
 }

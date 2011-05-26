@@ -10,14 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.core.ejb.authorization;
 
-import javax.ejb.Remote;
+package org.ejbca.core.ejb.log;
+
+import javax.ejb.Local;
 
 /**
  * @version $Id$
  */
-@Remote
-public interface AdminEntitySessionRemote extends AdminEntitySession {
+@Local
+public interface OldLogSessionLocal extends OldLogSession {
 
 }

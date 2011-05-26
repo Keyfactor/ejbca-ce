@@ -11,20 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.core.ejb.log;
+package org.ejbca.core.ejb.log;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 /**
- * @see org.cesecore.core.ejb.log.LogConfigurationSession
  * @version $Id$
  */
-@Local
-public interface LogConfigurationSessionLocal extends LogConfigurationSession {
+@Remote
+public interface OldLogSessionRemote extends OldLogSession {
 
-    /**
-     * Update counter stored in LogConfiguration with id 0.
-     * @return an allocated logEntryRowNumber or -1 if the operation failed
-     */
-	int getAndIncrementRowCount();
 }

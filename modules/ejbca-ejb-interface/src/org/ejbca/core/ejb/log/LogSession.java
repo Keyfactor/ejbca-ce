@@ -10,14 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.core.ejb.log;
+package org.ejbca.core.ejb.log;
 
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.IllegalQueryException;

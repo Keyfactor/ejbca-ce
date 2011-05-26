@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-/**
+/** 
  * Test the PatternLogger
  * 
  * @version $Id$
@@ -31,7 +31,7 @@ public class PatternLoggerTest {
     private static final Logger log = Logger.getLogger(PatternLoggerTest.class);
 
     /** Try out some interpolation with focus on different date formats. */
-    @Test
+    @Test 
     public void testPatternLoggerDateFormats() throws Exception {
         log.trace(">testPatternLogger");
         final String LOG_PATTERN = "${VAR1};\"${VAR2}\";${" + IPatternLogger.LOG_TIME + "};${" + IPatternLogger.LOG_ID + "};${VAR3}";

@@ -16,7 +16,6 @@ package org.ejbca.core.protocol.xkms.generators;
 import java.security.cert.X509Certificate;
 
 import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.cesecore.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -24,6 +23,7 @@ import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.KeyBindingAbstractType;

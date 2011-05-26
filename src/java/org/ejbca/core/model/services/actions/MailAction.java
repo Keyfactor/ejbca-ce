@@ -18,7 +18,7 @@ import java.util.Map;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;

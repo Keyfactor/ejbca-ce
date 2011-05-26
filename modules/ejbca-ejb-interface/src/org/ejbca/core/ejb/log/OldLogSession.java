@@ -11,14 +11,23 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.core.ejb.log;
+package org.ejbca.core.ejb.log;
 
-import javax.ejb.Local;
+import java.security.cert.Certificate;
+import java.util.Collection;
+import java.util.Date;
+
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.util.query.IllegalQueryException;
+import org.ejbca.util.query.Query;
 
 /**
  * @version $Id$
  */
-@Local
-public interface OldLogSessionLocal extends OldLogSession {
+public interface OldLogSession {
 
+	public boolean log(Admin admin, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
+	
+	public Collection<LogEntry> query(Query query, String viewlogprivileges, String capriviledges, int maxResults) throws IllegalQueryException ;
 }

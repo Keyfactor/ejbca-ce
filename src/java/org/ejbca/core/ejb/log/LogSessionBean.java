@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.core.ejb.log;
+package org.ejbca.core.ejb.log;
 
 import java.lang.reflect.Method;
 import java.security.cert.Certificate;
@@ -36,6 +36,10 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.log.LogSessionRemote;
+import org.ejbca.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
