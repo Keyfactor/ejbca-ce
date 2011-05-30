@@ -100,11 +100,14 @@ public class CmpMessageHelper {
 	}
 
     public static byte[] signPKIMessage(PKIMessage myPKIMessage, X509Certificate signCert, PrivateKey signKey, String digestAlg, String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, IOException, CertificateEncodingException {
-		LOG.trace(">signPKIMessage()");
+    	if (LOG.isTraceEnabled()) {
+    		LOG.trace(">signPKIMessage()");
+    	}
 		X509CertificateStructure signStruct = X509CertificateStructure.getInstance(new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded())).readObject());
 		CmpMessageHelper.buildCertBasedPKIProtection( myPKIMessage, signStruct, signKey, digestAlg, provider);
-
-		LOG.trace("<signPKIMessage()");
+    	if (LOG.isTraceEnabled()) {
+    		LOG.trace("<signPKIMessage()");
+    	}
 		// Return response as byte array 
 		return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
     }
@@ -120,12 +123,16 @@ public class CmpMessageHelper {
 		if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5)) {
 			oid = PKCSObjectIdentifiers.md5WithRSAEncryption;			
 		}
-		LOG.debug("Selected signature alg oid: "+oid.getId());
+    	if (LOG.isDebugEnabled()) {
+    		LOG.debug("Selected signature alg oid: "+oid.getId());
+    	}
 		pKIMessage.getHeader().setProtectionAlg( new AlgorithmIdentifier(oid) );
 		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
 		// we use BC classes to translate it into a signature algorithm name instead
 		final String sigAlg = new BasicOCSPResp(new BasicOCSPResponse(null, new AlgorithmIdentifier(oid), null, null)).getSignatureAlgName();
-		LOG.debug("Signing CMP message with signature alg: "+sigAlg);
+    	if (LOG.isDebugEnabled()) {
+    		LOG.debug("Signing CMP message with signature alg: "+sigAlg);
+    	}
 		Signature sig = Signature.getInstance(sigAlg , provider );
 		sig.initSign(key);
 		sig.update( pKIMessage.getProtectedBytes() );
