@@ -76,7 +76,7 @@ public class POPOSigningKeyInput implements DEREncodable
       {
         ASN1TaggedObject tagObj = (ASN1TaggedObject)obj;
         if( tagObj.getTagNo() == 0 ) {
-          this.sender = GeneralName.getInstance( (ASN1TaggedObject)tagObj.getObject(), true ); //QQQ ??? choice is always explicit --> true
+          this.sender = GeneralName.getInstance(tagObj.getObject());
         } else {
           throw new IllegalArgumentException("unknown tag: " + tagObj.getTagNo());
         }
