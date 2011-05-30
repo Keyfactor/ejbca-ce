@@ -55,13 +55,17 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 		int tag = body.getTagNo();
 		if (tag == 19) {
 			// this is a PKIConfirmContent
-			log.debug("Received a PKIConfirm message");
+			if (log.isDebugEnabled()) {
+				log.debug("Received a PKIConfirm message");
+			}
 			// This is a null message, so there is nothing to get here
 			//DERNull obj = body.getConf();
 		}
 		if (tag == 24) {
 			// this is a CertConfirmContent
-			log.debug("Received a Cert Confirm message");
+			if (log.isDebugEnabled()) {
+				log.debug("Received a Cert Confirm message");
+			}
 			CertConfirmContent obj = body.getCertConf();
 			PKIStatusInfo status = obj.getPKIStatus();
 			if (status != null) {
@@ -75,7 +79,9 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 		}
 		if (tag == 11) {
 			// this is a RevReqContent,
-			log.debug("Received a RevReqContent");
+			if (log.isDebugEnabled()) {
+				log.debug("Received a RevReqContent");
+			}
 			RevReqContent rr = body.getRr();
 			RevDetails rd = rr.getRevDetails(0);
 			CertTemplate ct = rd.getCertDetails();

@@ -67,7 +67,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 		responseProtection = CmpConfiguration.getResponseProtection();
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		LOG.trace(">handleMessage");
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">handleMessage");
+		}
 		int version = msg.getHeader().getPvno().getValue().intValue();
 		IResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
@@ -131,7 +133,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 				}
 			}
-			LOG.debug("Creating a PKI confirm message response");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Creating a PKI confirm message response");
+			}
 			CmpConfirmResponseMessage cresp = new CmpConfirmResponseMessage();
 			cresp.setRecipientNonce(msg.getSenderNonce());
 			cresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
@@ -139,7 +143,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			cresp.setRecipient(msg.getSender());
 			cresp.setTransactionId(msg.getTransactionId());
 			// Set all protection parameters
-			LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+			}
 			if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
 				cresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
 			}
@@ -160,7 +166,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 				LOG.error("Exception during CMP processing: ", e);			
 			}							
 		} else {
-			LOG.debug("Cmp1999 - Not creating a PKI confirm meessage response");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Cmp1999 - Not creating a PKI confirm message response");
+			}
 		}
 		return resp;
 	}
