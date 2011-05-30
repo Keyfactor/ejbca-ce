@@ -23,6 +23,10 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Vector;
 
@@ -30,6 +34,7 @@ import junit.framework.TestCase;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
@@ -38,13 +43,16 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -142,7 +150,7 @@ public class CrmfRequestMessageTest extends TestCase {
     	assertEquals("Inherited object was not properly deserilized: ", "macAlg", crmf2.getPbeMacAlg());
     }
 
-    public void testNovosecRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public void testNovosecRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
     	// Check that we can parse request from  Novosec
     	// Read an initialization request with RAVerifiedPOP to see that we can process it
     	{
@@ -181,13 +189,60 @@ public class CrmfRequestMessageTest extends TestCase {
     		assertTrue(msg.verify());
     		// Since we don't have RA POP we can't test for that...
     		assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
-    		assertEquals("CN=abc123rry1750504717845328000,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
-    		assertEquals("abc123rry1750504717845328000", msg.getUsername());
+    		assertEquals("CN=abc123rry2942812801980668853,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
+    		assertEquals("abc123rry2942812801980668853", msg.getUsername());
     		assertEquals("foo123", msg.getPassword());
+    		// Verify signature protection
+    		AlgorithmIdentifier algId = msg.getMessage().getProtectedPart().getHeader().getProtectionAlg();
+    		String oid = algId.getObjectId().getId();
+    		assertEquals("1.2.840.113549.1.1.5", oid);
+    		// Check that this is an old message, created before ECA-2104, using null instead of DERNull as algorithm parameters.
+    		DEREncodable pp = algId.getParameters();
+    		assertNull(pp);
+    		// Try to verify, it should work good even though the small bug in ECA-2104, since we don't use algorithm parameters for RSA-PKCS signatures
+    		PublicKey pubKey = msg.getRequestPublicKey();
+    		assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
+    		// Verify that our verification routine does not give positive result for any other keys
+    		KeyPair keys = KeyTools.genKeys("512", "RSA");
+    		assertFalse(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), keys.getPublic()));
+    	}
+    	// Re-protect the message, now fixed by ECA-2104
+    	{
+    		ASN1InputStream in = new ASN1InputStream(novosecsigpopir);
+    		DERObject derObject = in.readObject();
+    		PKIMessage myPKIMessage = PKIMessage.getInstance(derObject);
+    		KeyPair keys = KeyTools.genKeys("512", "RSA");
+    		X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
+    		// Re-sign the message
+    		byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		in = new ASN1InputStream(newmsg);
+    		derObject = in.readObject();
+    		PKIMessage pkimsg = PKIMessage.getInstance(derObject);
+    		// We have to do this twice, because Novosec caches ProtectedBytes in the PKIMessage object, so we need to 
+    		// encode it and re-decode it again to get the changes from ECA-2104 encoded correctly.
+    		// Not needed when simply signing a new message that you create, only when re-signing 
+    		newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+    		in = new ASN1InputStream(newmsg);
+    		derObject = in.readObject();
+    		pkimsg = PKIMessage.getInstance(derObject);
+    		AlgorithmIdentifier algId = pkimsg.getProtectedPart().getHeader().getProtectionAlg();
+    		String oid = algId.getObjectId().getId();
+    		assertEquals("1.2.840.113549.1.1.5", oid);
+    		// Check that we have DERNull and not plain java null as algorithm parameters.
+    		DEREncodable pp = algId.getParameters();
+    		assertNotNull(pp);
+    		assertEquals(DERNull.class.getName(), pp.getClass().getName());
+    		// Try to verify, also verify at the same time that encoding decoding of the signature works
+    		assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(pkimsg, keys.getPublic()));
+    		// Verify that our verification routine does not give positive result for any other keys
+    		CrmfRequestMessage msg = new CrmfRequestMessage(pkimsg, "CN=AdminCA1", false, "CN");
+    		assertTrue(msg.verify());
+    		PublicKey pubKey = msg.getRequestPublicKey();
+    		assertFalse(CmpMessageHelper.verifyCertBasedPKIProtection(pkimsg, pubKey));
     	}
     }
 
-    public void testBc146Request() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public void testBc146Request() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Check that we can parse request from BouncyCastle version 1.46.
     	// Read an initialization request with RAVerifiedPOP to see that we can process it
     	{
@@ -216,7 +271,7 @@ public class CrmfRequestMessageTest extends TestCase {
 			assertFalse(verifyer.verify("foo123"));
     	}
     	
-    	// Read an initialization request with a signature POP to see that we can process it
+    	// Read an initialization request with a signature POP, and signature protection, to see that we can process it
     	{
     		ASN1InputStream in = new ASN1InputStream(bc146sigpopir);
     		DERObject derObject = in.readObject();
@@ -231,10 +286,20 @@ public class CrmfRequestMessageTest extends TestCase {
     		assertEquals("CN=user", msg.getRequestDN());
     		assertEquals("user", msg.getUsername());
     		assertEquals("foo123", msg.getPassword());
+    		// Check signature protection
+    		AlgorithmIdentifier algId = msg.getMessage().getProtectedPart().getHeader().getProtectionAlg();
+    		String oid = algId.getObjectId().getId();
+    		assertEquals("1.2.840.113549.1.1.5", oid);
+    		// Check that we have DERNull and not plain java null as algorithm parameters.
+    		DEREncodable pp = algId.getParameters();
+    		assertNotNull(pp);
+    		assertEquals(DERNull.class.getName(), pp.getClass().getName());
+    		// Try to verify the protection signature
+    		assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), msg.getRequestPublicKey()));
     	}
     }
     
-    public void testHuaweiRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public void testHuaweiRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	
     	// Read an initialization request to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(huaweiir);
@@ -248,6 +313,17 @@ public class CrmfRequestMessageTest extends TestCase {
     	assertEquals("21030533610000000012 eNodeB", msg.getUsername());
     	// We would like a password here...
 		assertNull(msg.getPassword());
+		AlgorithmIdentifier algId = msg.getMessage().getProtectedPart().getHeader().getProtectionAlg();
+		String oid = algId.getObjectId().getId();
+		assertEquals("1.2.840.113549.1.1.5", oid);
+		// Check that we have DERNull and not plain java null as algorithm parameters.
+		DEREncodable pp = algId.getParameters();
+		assertNotNull(pp);
+		assertEquals(DERNull.class.getName(), pp.getClass().getName());
+		// Try to verify message protection
+		// TODO: does not work for the Huawei message, is it signed by the same key as in the request at all?
+		//PublicKey pubKey = msg.getRequestPublicKey();
+		//assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
 
     	// Read the certconf, so see that we can process it
     	in = new ASN1InputStream(huaweicertconf);
@@ -255,8 +331,17 @@ public class CrmfRequestMessageTest extends TestCase {
 		PKIMessage certconf = PKIMessage.getInstance(derObject);
 		//log.info(certconf.toString());
 		GeneralCmpMessage conf = new GeneralCmpMessage(certconf);
-		String oid = conf.getMessage().getProtectedPart().getHeader().getProtectionAlg().getObjectId().getId();
+		algId = conf.getMessage().getProtectedPart().getHeader().getProtectionAlg();
+		oid = algId.getObjectId().getId();
 		assertEquals("1.2.840.113549.1.1.5", oid);
+		// Check that we have DERNull and not plain java null as algorithm parameters.
+		pp = algId.getParameters();
+		assertNotNull(pp);
+		assertEquals(DERNull.class.getName(), pp.getClass().getName());
+		// Try to verify message protection
+		// TODO: does not work for the Huawei message, is it signed by the same key as in the request at all?
+		//PublicKey pubKey = msg.getRequestPublicKey();
+		//assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), pubKey));
     }
 
     static byte[] huaweiir = Base64.decode(("MIIRmTCB8gIBAqRuMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdp" +
@@ -407,9 +492,9 @@ public class CrmfRequestMessageTest extends TestCase {
     
     static byte[] bc146rapopir = Base64.decode(("MIIBcjCBowIBAqQRMA8xDTALBgNVBAMMBHVzZXKkFTATMREwDwYDVQQDDAhBZG1pbkNBMaARGA8yMDExMDUzMDA5MjUxMlqhQDA+BgkqhkiG9n0HQg0wMQQU5CQjYqE1xefkRkpUs+gnZvbik88wBwYFKw4DAhoCAgPoMAwGCCsGAQUFCAECBQCiBwQFS2V5SWSkCgQI9oHh9MJNp/qlCgQI9oHh9MJNp/qggbAwga0wgaowgaUCAXswgYijFTATMREwDwYDVQQDDAhBZG1pbkNBMaURMA8xDTALBgNVBAMMBHVzZXKmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAzPE7ZaY6jiyeELeotH4rHA3imjvDwrzgcrefX3gbNiOKiz9/CJwQOU/V2jCc8pbAm02TS41ZSwrL7B7v4rtWbQIDAQABMBUwEwYJKwYBBQUHBQEBDAZmb28xMjOAAKAXAxUA49wkvBjdn5ENdJJnJb3wU1bHmcs=").getBytes());
     
-    static byte[] bc146sigpopir = Base64.decode(("MIICPTCBowIBAqQRMA8xDTALBgNVBAMMBHVzZXKkFTATMREwDwYDVQQDDAhBZG1pbkNBMaARGA8yMDExMDUzMDA5MjYzMFqhQDA+BgkqhkiG9n0HQg0wMQQU4XYbPJXSGgTGcH2rru3coFhKk+IwBwYFKw4DAhoCAgPoMAwGCCsGAQUFCAECBQCiBwQFS2V5SWSkCgQIYIYn3cwhIK+lCgQIYIYn3cwhIK+gggF6MIIBdjCCAXIwgaUCAXswgYijFTATMREwDwYDVQQDDAhBZG1pbkNBMaURMA8xDTALBgNVBAMMBHVzZXKmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAjDSjCRrcEjSj01dkpMbzLeoT0m8w3UOVeFq0YZoqWj8fB8YyrlS4Ta5YSRNAnABFy6QCeKaWXDxzVYvqNFqeAwIDAQABMBUwEwYJKwYBBQUHBQEBDAZmb28xMjOhgcegc6ATpBEwDzENMAsGA1UEAwwEdXNlcjBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQCMNKMJGtwSNKPTV2SkxvMt6hPSbzDdQ5V4WrRhmipaPx8HxjKuVLhNrlhJE0CcAEXLpAJ4ppZcPHNVi+o0Wp4DAgMBAAEwDQYJKoZIhvcNAQEFBQADQQBi/JJEYnskb+Q3fmdIXN3C7RRBF8VP2qjfxA69+pijWJgbwGqqMLZIkrxg3BPffqWlZg0BaPFIA5+QyaTnHag+oBcDFQB/I0BP0qxgj8uQa5nHzaDrJ8WWDg==").getBytes());
+    static byte[] bc146sigpopir = Base64.decode(("MIICNzByAgECpBEwDzENMAsGA1UEAwwEdXNlcqQVMBMxETAPBgNVBAMMCEFkbWluQ0ExoBEYDzIwMTEwNTMwMTQxNTQ2WqEPMA0GCSqGSIb3DQEBBQUAogcEBUtleUlkpAoECBJ7Wyn/3xaopQoECBJ7Wyn/3xaooIIBejCCAXYwggFyMIGlAgF7MIGIoxUwEzERMA8GA1UEAwwIQWRtaW5DQTGlETAPMQ0wCwYDVQQDDAR1c2VyplwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAI7LgKEDN49fq08G3v8kXa8GmlqqLtAy4OKDkbfvtQG/rHvki19isRCat3GPNKhFp5hUrVApPOkC7pwKrtCh3u8CAwEAATAVMBMGCSsGAQUFBwUBAQwGZm9vMTIzoYHHoHOgE6QRMA8xDTALBgNVBAMMBHVzZXIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAjsuAoQM3j1+rTwbe/yRdrwaaWqou0DLg4oORt++1Ab+se+SLX2KxEJq3cY80qEWnmFStUCk86QLunAqu0KHe7wIDAQABMA0GCSqGSIb3DQEBBQUAA0EAFqKulRt/zRzvd+HzPpYTBWd4g7tKaFAZEb+vHbt0hojMLq20kqIE1t2aYpezjGZdV4zyQJPUOi5VYfLesujvjqBDA0EAX8AwJDr+yzjxv3067lsiINO75x5GqqR644GogxEIH1cyKkRbhlixw8qLdfWt2VShw1TdliLRkuZA5tCOtWlhlw==").getBytes());
 
-    static byte[] novosecsigpopir = Base64.decode(("MIICuTCB0QIBAqRWMFQxJTAjBgNVBAMMHGFiYzEyM3JyeTE3NTA1MDQ3MTc4NDUzMjgwMDAxHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9ucyBBQjELMAkGA1UEBhMCU0WkOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaARGA8yMDExMDUzMDA5MDY1M1qkEgQQjQdEh+ZKqzejhnIxAKjC4aUSBBCMhxu1vRwlN0jyWaZQ1//foIIB4TCCAd0wggHZMIIBagIBBDCCAWOjOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaQkoBEYDzIwMDMwMjExMDAyMTIwWqEPFw0xMTA1MzAwOTA2NTNapVYwVDElMCMGA1UEAwwcYWJjMTIzcnJ5MTc1MDUwNDcxNzg0NTMyODAwMDEeMBwGA1UECgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMQswCQYDVQQGEwJTRaZcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC8L+KRCXfluQXmRFXph4YahC5Xmv60fTy2eQlKiZ02DytQunzrtdBqTP2PbCMymDzcrvRq63sakZrx9QP9/OQRAgMBAAGpSjA7BgNVHREENDAygRBmb29lbWFpbEBiYXIuY29toB4GCisGAQQBgjcUAgOgEAwOZm9vdXBuQGJhci5jb20wCwYDVR0PBAQDAgXgoVIwUDALBgkqhkiG9w0BAQUDQQAQtKo4vRBCrRk3f0G2ncUABddbk18aKncEjsUDv2zVFYRwios9/m4WqjFWSnjm92+rlBbT4RAMROCmwuiRS8HcMBUwEwYJKwYBBQUHBQEBDAZmb28xMjM=").getBytes());
+    static byte[] novosecsigpopir = Base64.decode(("MIIEUDCB4AIBAqRWMFQxJTAjBgNVBAMMHGFiYzEyM3JyeTI5NDI4MTI4MDE5ODA2Njg4NTMxHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9ucyBBQjELMAkGA1UEBhMCU0WkOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaARGA8yMDExMDUzMDEyNTQyMVqhDTALBgkqhkiG9w0BAQWkEgQQFoG/DzbmQiksb5Yrrih6xqUSBBCcgBl5fXla0Ilj/Qib+iVPoIIB4TCCAd0wggHZMIIBagIBBDCCAWOjOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaQkoBEYDzIwMDMwMjExMDAyMTIwWqEPFw0xMTA1MzAxMjU0MjFapVYwVDElMCMGA1UEAwwcYWJjMTIzcnJ5Mjk0MjgxMjgwMTk4MDY2ODg1MzEeMBwGA1UECgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMQswCQYDVQQGEwJTRaZcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQDFiXtcgIBhL9FFnNASa0ezOX513vxlkWLTgkVqS0TEv/wmTxNZ4wgTM9zRYGDK/MVKiOzPREoHPwib0F8X4OwdAgMBAAGpSjA7BgNVHREENDAygRBmb29lbWFpbEBiYXIuY29toB4GCisGAQQBgjcUAgOgEAwOZm9vdXBuQGJhci5jb20wCwYDVR0PBAQDAgXgoVIwUDALBgkqhkiG9w0BAQUDQQANpvmT5H0S9nh7O2WD5+MgHvu0FT7umak741nuPo3fAgKJJbzMF6rG5/lwE7tNAnAZKVzuhAF9pSk5KjxDIl0UMBUwEwYJKwYBBQUHBQEBDAZmb28xMjOgQwNBAA+6Is7z6dNIMMQjEpwk2CEx44rE1KhehrrSS4wqPgkcE6MUt7+IBq/zOD3IE4DT/YoyDIx9bIugIJj8pJiJAbahggE/MIIBOzCCATcwgeKgAwIBAgIIN5Wx1B7SXAEwDQYJKoZIhvcNAQEFBQAwGDEWMBQGA1UEAwwNQ01QIFNpZ24gVGVzdDAeFw0xMTA1MzAxMjQ0MjFaFw0yMTA1MjcxMjU0MjFaMBgxFjAUBgNVBAMMDUNNUCBTaWduIFRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAxYl7XICAYS/RRZzQEmtHszl+dd78ZZFi04JFaktExL/8Jk8TWeMIEzPc0WBgyvzFSojsz0RKBz8Im9BfF+DsHQIDAQABoxAwDjAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBBQUAA0EAvdqiow8CoVzeupH6AtR6IbfM87KPV8TyxiPk5Qt3Mwst8g2nLP7CqMYjlufPFH+FvGoZN00zEJZcfeqwhtClCQ==").getBytes());
 
     static byte[] novosecrapopir = Base64.decode(("MIICwjCCAQ8CAQKkVzBVMSYwJAYDVQQDDB1hYmMxMjNycnktNDM3MTkzOTU0MzkxMzYzOTg4MTEeMBwGA1UECgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMQswCQYDVQQGEwJTRaQ5MDcxETAPBgNVBAMMCEFkbWluQ0ExMRUwEwYDVQQKDAxFSkJDQSBTYW1wbGUxCzAJBgNVBAYTAlNFoBEYDzIwMTEwNTMwMDkwNTQyWqEwMC4GCSqGSIb2fQdCDTAhBAZmb28xMjMwBwYFKw4DAhoCAgI3MAoGCCqGSIb3DQIHogkEB215a2V5aWSkEgQQJV0C01odEXcv7BG4uW6bO6USBBD2+lerPhUqwF4Az6Vemh2yoIIBkjCCAY4wggGKMIIBawIBBDCCAWSjOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaQkoBEYDzIwMDMwMjExMDAyMTIwWqEPFw0xMTA1MzAwOTA1NDJapVcwVTEmMCQGA1UEAwwdYWJjMTIzcnJ5LTQzNzE5Mzk1NDM5MTM2Mzk4ODExHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9ucyBBQjELMAkGA1UEBhMCU0WmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAkM6qeA9Vkaz+NHyejepEgBrwvbCKIta3CpG+mp+0zayL7NA90AknRsW7A3sX0i3IEDY3wvUhJ1+yc53M89OaKQIDAQABqUowOwYDVR0RBDQwMoEQZm9vZW1haWxAYmFyLmNvbaAeBgorBgEEAYI3FAIDoBAMDmZvb3VwbkBiYXIuY29tMAsGA1UdDwQEAwIF4KACBQAwFTATBgkrBgEFBQcFAQEMBmZvbzEyM6AXAxUAnJ0lrTWxB+sKIdj1oCSYfJ1/Fpk=").getBytes());
 
