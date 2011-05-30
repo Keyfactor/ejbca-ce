@@ -45,6 +45,7 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.util.Arrays;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.util.Base64;
@@ -62,6 +63,7 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
 import com.novosec.pkix.asn1.crmf.CertTemplate;
 import com.novosec.pkix.asn1.crmf.OptionalValidity;
 import com.novosec.pkix.asn1.crmf.POPOSigningKey;
+import com.novosec.pkix.asn1.crmf.POPOSigningKeyInput;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
@@ -434,24 +436,64 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		} else if (pop.getSignature() != null) {
 			try {
 				POPOSigningKey sk = pop.getSignature();
+				POPOSigningKeyInput pski = sk.getPoposkInput();
+				byte[] protBytes;
+				// Use of POPOSigningKeyInput or not, as described in RFC4211, section 4.1.
+				if (pski == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("Using CertRequest as POPO input.");
+					}
+					ByteArrayOutputStream bao = new ByteArrayOutputStream();
+					DEROutputStream out = new DEROutputStream(bao);
+					out.writeObject(getReq().getCertReq());
+					protBytes = bao.toByteArray();	
+				} else {
+					// Assume POPOSigningKeyInput with the public key and name, MUST be the same as in the request according to RFC4211
+					if (log.isDebugEnabled()) {
+						log.debug("Using POPOSigningKeyInput as POPO input.");
+					}
+					CertRequest req = getReq().getCertReq();
+					// If subject is present in cert template it must be the same as in POPOSigningKeyInput
+					X509Name subject = req.getCertTemplate().getSubject();
+					boolean ok = true;
+					if (subject != null) {						
+						if (!subject.toString().equals(pski.getSender().getName().toString())) {
+							log.info("Subject '"+subject.toString()+"̈́', is not equal to '"+pski.getSender().toString()+"'.");
+							ok = false;
+						} 
+					}
+					// If public key is present in cert template it must be the same as in POPOSigningKeyInput
+					SubjectPublicKeyInfo pk = req.getCertTemplate().getPublicKey();
+					if (pk != null) {
+						if (!Arrays.areEqual(pk.getEncoded(), pski.getPublicKey().getEncoded())) {
+							log.info("Subject key in cert template, is not equal to subject key in POPOSigningKeyInput.");
+							ok = false;
+						}
+					}
+					// Perhaps it's a bit ugly, but I couldn't figure out the optimal way of doing it.
+					// If we are not ok, because name or public key was not the same in POPOSigningKeyInput as in the CertTemplate,
+					// the we simply don't set the correct protection bytes here, so signature will fail for sure.
+					if (ok) {
+						ByteArrayOutputStream bao = new ByteArrayOutputStream();
+						DEROutputStream out = new DEROutputStream(bao);
+						out.writeObject(pski);
+						protBytes = bao.toByteArray();
+					} else {
+						// leave as null, will cause SignatureException leading to a false return value
+						protBytes = null;
+					}
+				}
 				AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
 				if (log.isDebugEnabled()) {
+					log.debug("POP protection bytes length: "+protBytes != null ? protBytes.length : "null");
 					log.debug("POP algorithm identifier is: "+algId.getObjectId().getId());
 				}
-				DERBitString bs = sk.getSignature();
+				Signature sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
 				PublicKey pk = getRequestPublicKey();
-				ByteArrayOutputStream bao = new ByteArrayOutputStream();
-				DEROutputStream out = new DEROutputStream(bao);
-				out.writeObject(getReq().getCertReq());
-				byte[] protBytes = bao.toByteArray();	
-				if (log.isDebugEnabled()) {
-					log.debug("POP protection bytes length: "+protBytes.length);
-				}
-				Signature sig;
-				sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
 				sig.initVerify(pk);
 				sig.update(protBytes);
-				ret = sig.verify(bs.getBytes());
+				DERBitString bs = sk.getSignature();
+				ret = sig.verify(bs.getBytes());					
 			} catch (IOException e) {
 				log.error("Error encoding CertReqMsg: ", e);
 			} catch (SignatureException e) {

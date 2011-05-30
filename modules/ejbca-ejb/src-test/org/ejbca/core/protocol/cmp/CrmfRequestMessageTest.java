@@ -279,8 +279,8 @@ public class CrmfRequestMessageTest extends TestCase {
     		//log.info(req.toString());
     		// Verify should be ok if we do not allow RA verify POP here
     		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
-    		// TODO: currently BC messages fail POP verification for unknown reasons
-    		//assertTrue(msg.verify());
+    		// BC messages in BC1.46 uses POPOSigningKeyInput for POPO, not the 3rd case in RFC4211 section 4.1, like everyone else...
+    		assertTrue(msg.verify());
     		// Since we don't have RA POP we can't test for that...
     		assertEquals("CN=AdminCA1", msg.getIssuerDN());
     		assertEquals("CN=user", msg.getRequestDN());
