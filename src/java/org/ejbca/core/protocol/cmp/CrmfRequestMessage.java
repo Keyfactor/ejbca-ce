@@ -216,7 +216,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 			}
 			ret = password;
 		} else {
-			// If there is "Registration Token Control" containing a password, we can use that
+			// If there is "Registration Token Control" in the CertReqMsg regInfo containing a password, we can use that
 			AttributeTypeAndValue av = null;
 			int i = 0;
 			do {
@@ -235,8 +235,24 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 			} while ( (av != null) && (ret == null) );
 		}		
 		if (ret == null) {
-			// Otherwise there may be Password Based HMAC/SHA-1 protection
-			// TODO 			
+			// If there is "Registration Token Control" in the CertRequest controls containing a password, we can use that
+			// Note, this is the correct way to use the regtoken according to RFC4210
+			AttributeTypeAndValue av = null;
+			int i = 0;
+			do {
+				av = getReq().getCertReq().getControls(i);
+				if (av != null) {
+					if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
+						DEREncodable enc = av.getParameters();
+						DERUTF8String str = DERUTF8String.getInstance(enc);
+						ret = str.getString();
+						if (log.isDebugEnabled()) {
+							log.debug("Found a request password in CRMF request regCtrl_regToken");
+						}
+					}
+				}
+				i++;
+			} while ( (av != null) && (ret == null) );
 		}
 		return ret;
 	}
