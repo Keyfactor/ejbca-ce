@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -32,6 +33,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -42,6 +44,7 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.keystore.KeyTools;
 
@@ -64,6 +67,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * @version $Id$
  */
 public class CrmfRequestMessageTest extends TestCase {
+	//private static final Logger log = Logger.getLogger(CrmfRequestMessageTest.class);
 
 	/**
      * @param name name
@@ -137,5 +141,276 @@ public class CrmfRequestMessageTest extends TestCase {
     	CrmfRequestMessage crmf2 = (CrmfRequestMessage) o;
     	assertEquals("Inherited object was not properly deserilized: ", "macAlg", crmf2.getPbeMacAlg());
     }
+
+    public void testNovosecRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    	// Check that we can parse request from  Novosec
+    	// Read an initialization request with RAVerifiedPOP to see that we can process it
+    	{
+    		ASN1InputStream in = new ASN1InputStream(novosecrapopir);
+    		DERObject derObject = in.readObject();
+    		PKIMessage req = PKIMessage.getInstance(derObject);
+    		//log.info(req.toString());
+    		// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
+    		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    		assertFalse(msg.verify());
+    		// Verify should be ok when we allow RA verified POP
+    		msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
+    		assertTrue(msg.verify());
+    		assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
+    		assertEquals("CN=abc123rry-4371939543913639881,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
+    		assertEquals("abc123rry-4371939543913639881", msg.getUsername());
+    		assertEquals("foo123", msg.getPassword());
+    		// Verify PBE protection
+    		PKIHeader head = msg.getHeader();
+    		final DEROctetString os = head.getSenderKID();
+			String keyId = new String(os.getOctets(), "UTF-8");
+			assertEquals("mykeyid", keyId);
+			final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
+			assertTrue(verifyer.verify("foo123"));
+			assertFalse(verifyer.verify("bar123"));
+    	}
+    	
+    	// Read an initialization request with a signature POP to see that we can process it
+    	{
+    		ASN1InputStream in = new ASN1InputStream(novosecsigpopir);
+    		DERObject derObject = in.readObject();
+    		PKIMessage req = PKIMessage.getInstance(derObject);
+    		//log.info(req.toString());
+    		// Verify should be ok if we do not allow RA verify POP here
+    		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    		assertTrue(msg.verify());
+    		// Since we don't have RA POP we can't test for that...
+    		assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", msg.getIssuerDN());
+    		assertEquals("CN=abc123rry1750504717845328000,O=PrimeKey Solutions AB,C=SE", msg.getRequestDN());
+    		assertEquals("abc123rry1750504717845328000", msg.getUsername());
+    		assertEquals("foo123", msg.getPassword());
+    	}
+    }
+
+    public void testBc146Request() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    	// Check that we can parse request from BouncyCastle version 1.46.
+    	// Read an initialization request with RAVerifiedPOP to see that we can process it
+    	{
+    		ASN1InputStream in = new ASN1InputStream(bc146rapopir);
+    		DERObject derObject = in.readObject();
+    		PKIMessage req = PKIMessage.getInstance(derObject);
+    		//log.info(req.toString());
+    		// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
+    		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    		assertFalse(msg.verify());
+    		// Verify should be ok when we allow RA verified POP
+    		msg = new CrmfRequestMessage(req, "CN=AdminCA1", true, "CN");
+    		assertTrue(msg.verify());
+    		assertEquals("CN=AdminCA1", msg.getIssuerDN());
+    		assertEquals("CN=user", msg.getRequestDN());
+    		assertEquals("user", msg.getUsername());
+    		// We should want a password
+    		assertEquals("foo123", msg.getPassword());
+    		// Verify PBE protection
+    		PKIHeader head = msg.getHeader();
+    		final DEROctetString os = head.getSenderKID();
+			String keyId = new String(os.getOctets(), "UTF-8");
+			assertEquals("KeyId", keyId);
+			final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
+			assertTrue(verifyer.verify("password"));
+			assertFalse(verifyer.verify("foo123"));
+    	}
+    	
+    	// Read an initialization request with a signature POP to see that we can process it
+    	{
+    		ASN1InputStream in = new ASN1InputStream(bc146sigpopir);
+    		DERObject derObject = in.readObject();
+    		PKIMessage req = PKIMessage.getInstance(derObject);
+    		//log.info(req.toString());
+    		// Verify should be ok if we do not allow RA verify POP here
+    		CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    		// TODO: currently BC messages fail POP verification for unknown reasons
+    		//assertTrue(msg.verify());
+    		// Since we don't have RA POP we can't test for that...
+    		assertEquals("CN=AdminCA1", msg.getIssuerDN());
+    		assertEquals("CN=user", msg.getRequestDN());
+    		assertEquals("user", msg.getUsername());
+    		assertEquals("foo123", msg.getPassword());
+    	}
+    }
+    
+    public void testHuaweiRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    	
+    	// Read an initialization request to see that we can process it
+    	ASN1InputStream in = new ASN1InputStream(huaweiir);
+		DERObject derObject = in.readObject();
+		PKIMessage req = PKIMessage.getInstance(derObject);
+		//log.info(req.toString());
+    	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
+    	assertTrue(msg.verify());
+    	assertEquals("CN=AdminCA1", msg.getIssuerDN());
+    	assertEquals("CN=21030533610000000012 eNodeB", msg.getRequestDN());
+    	assertEquals("21030533610000000012 eNodeB", msg.getUsername());
+    	// We would like a password here...
+		assertNull(msg.getPassword());
+
+    	// Read the certconf, so see that we can process it
+    	in = new ASN1InputStream(huaweicertconf);
+		derObject = in.readObject();
+		PKIMessage certconf = PKIMessage.getInstance(derObject);
+		//log.info(certconf.toString());
+		GeneralCmpMessage conf = new GeneralCmpMessage(certconf);
+		String oid = conf.getMessage().getProtectedPart().getHeader().getProtectionAlg().getObjectId().getId();
+		assertEquals("1.2.840.113549.1.1.5", oid);
+    }
+
+    static byte[] huaweiir = Base64.decode(("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" +
+    		"OZck9LLi").getBytes());
+
+    static byte[] huaweicertconf = Base64.decode(("MIIBrTCB/gIBAqRuMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdp" +
+    		"cmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAx" +
+    		"MiBlTm9kZUKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYD" +
+    		"VQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaEPMA0GCSqGSIb3DQEBBQUApAYE" +
+    		"BEbnKIilBgQEWWI60aYSBBATrD26fYGHOwYhgJaiquBEuCMwITAfBBR5s9gPoXPyWm2uEGhrPssR" +
+    		"QIhf0AICAWMwAwIBAKCBhAOBgQBmn2VJ+0olRYdN7W2sX0cyVjYGPLcla5Nb6f9BDoYiKMhwnFmk" +
+    		"QUGpsIklj0MibFx8qN1Nz5IiYOgMmEDc5P++v/hwYQs9P1/j+8jQEtSYYxEP/w3sX56bhIQAw+37" +
+    		"Um6i30qhLj/1YtCx/5guQwG+Fu4tcsE6dI98R23Pd5dbWg==").getBytes());
+
+    // Not used, just kept for reference
+    static byte[] huaweiresponse = Base64.decode(("MIILtTCCARECAQKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQsw" +
+    		"CQYDVQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaRuMGwxCzAJBgNVBAYTAkNO" +
+    		"MQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5l" +
+    		"MSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUKgERgPMjAxMTAyMjIxNzU2MDFa" +
+    		"oQ8wDQYJKoZIhvcNAQEFBQCkBgQERucoiKUSBBATrD26fYGHOwYhgJaiquBEpgYEBCGfBFKhggVD" +
+    		"MIIFP6GCAmgwggJkMIICYDCCAcmgAwIBAgIJALJSzpNbH+s6MA0GCSqGSIb3DQEBBQUAMFQxCzAJ" +
+    		"BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL" +
+    		"EwNsdGUxEDAOBgNVBAMTB2VuYnJvb3QwHhcNMTAwNjAzMDgzMzI4WhcNMTEwNjAzMDgzMzI4WjBS" +
+    		"MQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYDVQQKEwJ3bDEMMAoG" +
+    		"A1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAzIwN" +
+    		"8oP7/TcXeFpDmXZZlKkeZ4/PAzRancAj6mmdhbeZY+lvgOt/KmQyolu1jPkUUDDy2nxzyuuADAQe" +
+    		"C9o6VHgteppQzT2XC75ol5YUc1BtCaU2CD7MmpqFC9NB/UWCP++r1mRPXWzdI/rkhAqudfberNRX" +
+    		"ouSmmHXqF0KQY+UCAwEAAaM8MDowHQYDVR0OBBYEFExg23UkAFE/LF9llJj7VRVeIwBFMAwGA1Ud" +
+    		"EwQFMAMBAf8wCwYDVR0PBAQDAgH2MA0GCSqGSIb3DQEBBQUAA4GBACppwv0KgJOD6st8oW5IyKuz" +
+    		"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").getBytes());
+
+    
+    static byte[] bc146rapopir = Base64.decode(("MIIBcjCBowIBAqQRMA8xDTALBgNVBAMMBHVzZXKkFTATMREwDwYDVQQDDAhBZG1pbkNBMaARGA8yMDExMDUzMDA5MjUxMlqhQDA+BgkqhkiG9n0HQg0wMQQU5CQjYqE1xefkRkpUs+gnZvbik88wBwYFKw4DAhoCAgPoMAwGCCsGAQUFCAECBQCiBwQFS2V5SWSkCgQI9oHh9MJNp/qlCgQI9oHh9MJNp/qggbAwga0wgaowgaUCAXswgYijFTATMREwDwYDVQQDDAhBZG1pbkNBMaURMA8xDTALBgNVBAMMBHVzZXKmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAzPE7ZaY6jiyeELeotH4rHA3imjvDwrzgcrefX3gbNiOKiz9/CJwQOU/V2jCc8pbAm02TS41ZSwrL7B7v4rtWbQIDAQABMBUwEwYJKwYBBQUHBQEBDAZmb28xMjOAAKAXAxUA49wkvBjdn5ENdJJnJb3wU1bHmcs=").getBytes());
+    
+    static byte[] bc146sigpopir = Base64.decode(("MIICPTCBowIBAqQRMA8xDTALBgNVBAMMBHVzZXKkFTATMREwDwYDVQQDDAhBZG1pbkNBMaARGA8yMDExMDUzMDA5MjYzMFqhQDA+BgkqhkiG9n0HQg0wMQQU4XYbPJXSGgTGcH2rru3coFhKk+IwBwYFKw4DAhoCAgPoMAwGCCsGAQUFCAECBQCiBwQFS2V5SWSkCgQIYIYn3cwhIK+lCgQIYIYn3cwhIK+gggF6MIIBdjCCAXIwgaUCAXswgYijFTATMREwDwYDVQQDDAhBZG1pbkNBMaURMA8xDTALBgNVBAMMBHVzZXKmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAjDSjCRrcEjSj01dkpMbzLeoT0m8w3UOVeFq0YZoqWj8fB8YyrlS4Ta5YSRNAnABFy6QCeKaWXDxzVYvqNFqeAwIDAQABMBUwEwYJKwYBBQUHBQEBDAZmb28xMjOhgcegc6ATpBEwDzENMAsGA1UEAwwEdXNlcjBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQCMNKMJGtwSNKPTV2SkxvMt6hPSbzDdQ5V4WrRhmipaPx8HxjKuVLhNrlhJE0CcAEXLpAJ4ppZcPHNVi+o0Wp4DAgMBAAEwDQYJKoZIhvcNAQEFBQADQQBi/JJEYnskb+Q3fmdIXN3C7RRBF8VP2qjfxA69+pijWJgbwGqqMLZIkrxg3BPffqWlZg0BaPFIA5+QyaTnHag+oBcDFQB/I0BP0qxgj8uQa5nHzaDrJ8WWDg==").getBytes());
+
+    static byte[] novosecsigpopir = Base64.decode(("MIICuTCB0QIBAqRWMFQxJTAjBgNVBAMMHGFiYzEyM3JyeTE3NTA1MDQ3MTc4NDUzMjgwMDAxHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9ucyBBQjELMAkGA1UEBhMCU0WkOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaARGA8yMDExMDUzMDA5MDY1M1qkEgQQjQdEh+ZKqzejhnIxAKjC4aUSBBCMhxu1vRwlN0jyWaZQ1//foIIB4TCCAd0wggHZMIIBagIBBDCCAWOjOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaQkoBEYDzIwMDMwMjExMDAyMTIwWqEPFw0xMTA1MzAwOTA2NTNapVYwVDElMCMGA1UEAwwcYWJjMTIzcnJ5MTc1MDUwNDcxNzg0NTMyODAwMDEeMBwGA1UECgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMQswCQYDVQQGEwJTRaZcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQC8L+KRCXfluQXmRFXph4YahC5Xmv60fTy2eQlKiZ02DytQunzrtdBqTP2PbCMymDzcrvRq63sakZrx9QP9/OQRAgMBAAGpSjA7BgNVHREENDAygRBmb29lbWFpbEBiYXIuY29toB4GCisGAQQBgjcUAgOgEAwOZm9vdXBuQGJhci5jb20wCwYDVR0PBAQDAgXgoVIwUDALBgkqhkiG9w0BAQUDQQAQtKo4vRBCrRk3f0G2ncUABddbk18aKncEjsUDv2zVFYRwios9/m4WqjFWSnjm92+rlBbT4RAMROCmwuiRS8HcMBUwEwYJKwYBBQUHBQEBDAZmb28xMjM=").getBytes());
+
+    static byte[] novosecrapopir = Base64.decode(("MIICwjCCAQ8CAQKkVzBVMSYwJAYDVQQDDB1hYmMxMjNycnktNDM3MTkzOTU0MzkxMzYzOTg4MTEeMBwGA1UECgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMQswCQYDVQQGEwJTRaQ5MDcxETAPBgNVBAMMCEFkbWluQ0ExMRUwEwYDVQQKDAxFSkJDQSBTYW1wbGUxCzAJBgNVBAYTAlNFoBEYDzIwMTEwNTMwMDkwNTQyWqEwMC4GCSqGSIb2fQdCDTAhBAZmb28xMjMwBwYFKw4DAhoCAgI3MAoGCCqGSIb3DQIHogkEB215a2V5aWSkEgQQJV0C01odEXcv7BG4uW6bO6USBBD2+lerPhUqwF4Az6Vemh2yoIIBkjCCAY4wggGKMIIBawIBBDCCAWSjOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaQkoBEYDzIwMDMwMjExMDAyMTIwWqEPFw0xMTA1MzAwOTA1NDJapVcwVTEmMCQGA1UEAwwdYWJjMTIzcnJ5LTQzNzE5Mzk1NDM5MTM2Mzk4ODExHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9ucyBBQjELMAkGA1UEBhMCU0WmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAkM6qeA9Vkaz+NHyejepEgBrwvbCKIta3CpG+mp+0zayL7NA90AknRsW7A3sX0i3IEDY3wvUhJ1+yc53M89OaKQIDAQABqUowOwYDVR0RBDQwMoEQZm9vZW1haWxAYmFyLmNvbaAeBgorBgEEAYI3FAIDoBAMDmZvb3VwbkBiYXIuY29tMAsGA1UdDwQEAwIF4KACBQAwFTATBgkrBgEFBQcFAQEMBmZvbzEyM6AXAxUAnJ0lrTWxB+sKIdj1oCSYfJ1/Fpk=").getBytes());
 
 }
