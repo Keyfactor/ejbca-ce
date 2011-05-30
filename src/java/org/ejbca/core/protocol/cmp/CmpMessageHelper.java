@@ -22,6 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
@@ -39,6 +40,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -126,7 +128,7 @@ public class CmpMessageHelper {
     	if (LOG.isDebugEnabled()) {
     		LOG.debug("Selected signature alg oid: "+oid.getId());
     	}
-		pKIMessage.getHeader().setProtectionAlg( new AlgorithmIdentifier(oid) );
+		pKIMessage.getHeader().setProtectionAlg(new AlgorithmIdentifier(oid, new DERNull()));
 		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
 		// we use BC classes to translate it into a signature algorithm name instead
 		final String sigAlg = new BasicOCSPResp(new BasicOCSPResponse(null, new AlgorithmIdentifier(oid), null, null)).getSignatureAlgName();
@@ -139,6 +141,31 @@ public class CmpMessageHelper {
 		
 		pKIMessage.setProtection( new DERBitString(sig.sign()) );
 		pKIMessage.addExtraCert( cert );
+	}
+	
+	/** verifies signature protection on CMP PKI messages
+	 *  
+	 * @param pKIMessage the CMP message to verify signature on, if protected by signature protection
+	 * @param pubKey the public key used to verify the signature
+	 * @return true if verification is ok or false if verification fails
+	 * @throws NoSuchAlgorithmException message is signed by an unknown algorithm
+	 * @throws NoSuchProviderException the BouncyCastle (BC) provider is not installed
+	 * @throws InvalidKeyException pubKey is not valid for signature verification
+	 * @throws SignatureException if the passed-in signature is improperly encoded or of the wrong type, if this signature algorithm is unable to process the input data provided, etc.
+	 */
+	public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+		AlgorithmIdentifier sigAlg = pKIMessage.getHeader().getProtectionAlg();
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Verifying signature with algorithm: "+sigAlg.getObjectId().getId());
+		}
+		Signature sig = Signature.getInstance(sigAlg.getObjectId().getId(), "BC");
+		sig.initVerify(pubKey);
+		sig.update(pKIMessage.getProtectedBytes());
+		boolean result = sig.verify(pKIMessage.getProtection().getBytes());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Verification result: "+result);
+		}
+		return result;
 	}
 	
 	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId, int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
