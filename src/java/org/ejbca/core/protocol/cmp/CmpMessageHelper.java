@@ -128,6 +128,8 @@ public class CmpMessageHelper {
     	if (LOG.isDebugEnabled()) {
     		LOG.debug("Selected signature alg oid: "+oid.getId());
     	}
+    	// According to PKCS#1 AlgorithmIdentifier for RSA-PKCS#1 has null Parameters, this means a DER Null (asn.1 encoding of null), not Java null.
+    	// For the RSA signature algorithms specified above RFC3447 states "...the parameters MUST be present and MUST be NULL."
 		pKIMessage.getHeader().setProtectionAlg(new AlgorithmIdentifier(oid, new DERNull()));
 		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
 		// we use BC classes to translate it into a signature algorithm name instead
