@@ -94,7 +94,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     private int requestId = 0;
 	private String b64SenderNonce = null;
 	private String b64TransId = null;
-	private String defaultCA = null;
+	/** Default CA DN */
+	private String defaultCADN = null;
 	private boolean allowRaVerifyPopo = false;
 	private String extractUsernameComponent = null;
     /** manually set username */
@@ -124,16 +125,16 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     /**
      * 
      * @param msg PKIMessage
-     * @param defaultCA possibility to enforce a certain CA, instead of taking the CA name from the request, if set to null the CA is taken from the request
+     * @param defaultCA possibility to enforce a certain CA, instead of taking the CA subject DN from the request, if set to null the CA subject DN is taken from the request
      * @param allowRaVerifyPopo true if we allows the user/RA to specify the POP should not be verified
      * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the username should have been pre-set, or that here it is the same as CN.
      */
-	public CrmfRequestMessage(PKIMessage msg, String defaultCA, boolean allowRaVerifyPopo, String extractUsernameComponent) {
+	public CrmfRequestMessage(PKIMessage msg, String defaultCADN, boolean allowRaVerifyPopo, String extractUsernameComponent) {
     	if (log.isTraceEnabled()) {
     		log.trace(">CrmfRequestMessage");
     	}
 		setPKIMessage(msg);
-		this.defaultCA = defaultCA;
+		this.defaultCADN = defaultCADN;
 		this.allowRaVerifyPopo = allowRaVerifyPopo;
 		this.extractUsernameComponent = extractUsernameComponent;
         init();
@@ -289,7 +290,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 	}
 
 	public void setIssuerDN(String issuer) {
-		this.defaultCA = issuer;
+		this.defaultCADN = issuer;
 	}
 	public String getIssuerDN() {
 		String ret = null;
@@ -298,7 +299,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		} else {
-			ret = defaultCA;
+			ret = defaultCADN;
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Issuer DN is: "+ret);
