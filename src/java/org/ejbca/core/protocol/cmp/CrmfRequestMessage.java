@@ -70,7 +70,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * Certificate request message (crmf) according to RFC4211.
  * - Supported POPO: 
  * -- raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
- * -- Self signature
+ * -- Self signature, using the key in CertTemplate, or POPOSigningKeyInput (name and public key), option 2 and 3 in RFC4211, section "4.1.  Signature Key POP"
  * 
  * @author tomas
  * @version $Id$
@@ -129,7 +129,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
      * @param allowRaVerifyPopo true if we allows the user/RA to specify the POP should not be verified
      * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the username should have been pre-set, or that here it is the same as CN.
      */
-	public CrmfRequestMessage(PKIMessage msg, String defaultCADN, boolean allowRaVerifyPopo, String extractUsernameComponent) {
+	public CrmfRequestMessage(final PKIMessage msg, final String defaultCADN, final boolean allowRaVerifyPopo, final String extractUsernameComponent) {
     	if (log.isTraceEnabled()) {
     		log.trace(">CrmfRequestMessage");
     	}
@@ -153,7 +153,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		}
 		return getMessage();
 	}
-	public void setPKIMessage(PKIMessage msg) {
+	public void setPKIMessage(final PKIMessage msg) {
 		try {
 			this.pkimsgbytes = msg.getDERObject().getEncoded();
 		} catch (IOException e) {
@@ -163,10 +163,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 	}
 
 	private void init() {
-		PKIBody body = getPKIMessage().getBody();
-		PKIHeader header = getPKIMessage().getHeader();
+		final PKIBody body = getPKIMessage().getBody();
+		final PKIHeader header = getPKIMessage().getHeader();
 		requestType = body.getTagNo();
-		CertReqMessages msgs = getCertReqFromTag(body, requestType);
+		final CertReqMessages msgs = getCertReqFromTag(body, requestType);
 		requestId = msgs.getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		this.req = msgs.getCertReqMsg(0);
 		DEROctetString os = header.getTransactionID();
@@ -187,20 +187,21 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		setSender(header.getSender());
 	}
 	
+	@Override
 	public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-		CertRequest request = getReq().getCertReq();
-		CertTemplate templ = request.getCertTemplate();
-		SubjectPublicKeyInfo keyInfo = templ.getPublicKey();
-		PublicKey pk = getPublicKey(keyInfo, "BC");
+		final CertRequest request = getReq().getCertReq();
+		final CertTemplate templ = request.getCertTemplate();
+		final SubjectPublicKeyInfo keyInfo = templ.getPublicKey();
+		final PublicKey pk = getPublicKey(keyInfo, "BC");
 		return pk;
 	}
-	private PublicKey getPublicKey(SubjectPublicKeyInfo subjectPKInfo, String  provider) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {		
+	private PublicKey getPublicKey(final SubjectPublicKeyInfo subjectPKInfo, final String  provider) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {		
 		try {
-			X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
-			AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithmId ();
+			final X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
+			final AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithmId ();
 			return KeyFactory.getInstance(keyAlg.getObjectId().getId (), provider).generatePublic(xspec);
 		} catch (java.security.spec.InvalidKeySpecException e) {
-			InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+			final InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
 			newe.initCause(e);
 			throw newe;
 		}
@@ -208,9 +209,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 	
     /** force a password, i.e. ignore the password in the request
      */
-    public void setPassword(String pwd) {
+	public void setPassword(final String pwd) {
         this.password = pwd;
     }
+	
+	@Override
 	public String getPassword() {
 		String ret = null;
 		if (password != null) {
@@ -226,8 +229,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 				av = getReq().getRegInfo(i);
 				if (av != null) {
 					if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
-						DEREncodable enc = av.getParameters();
-						DERUTF8String str = DERUTF8String.getInstance(enc);
+						final DEREncodable enc = av.getParameters();
+						final DERUTF8String str = DERUTF8String.getInstance(enc);
 						ret = str.getString();
 						if (log.isDebugEnabled()) {
 							log.debug("Found a request password in CRMF request regCtrl_regToken");
@@ -239,15 +242,15 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		}		
 		if (ret == null) {
 			// If there is "Registration Token Control" in the CertRequest controls containing a password, we can use that
-			// Note, this is the correct way to use the regtoken according to RFC4210
+			// Note, this is the correct way to use the regToken according to RFC4211, section "6.1.  Registration Token Control"
 			AttributeTypeAndValue av = null;
 			int i = 0;
 			do {
 				av = getReq().getCertReq().getControls(i);
 				if (av != null) {
 					if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
-						DEREncodable enc = av.getParameters();
-						DERUTF8String str = DERUTF8String.getInstance(enc);
+						final DEREncodable enc = av.getParameters();
+						final DERUTF8String str = DERUTF8String.getInstance(enc);
 						ret = str.getString();
 						if (log.isDebugEnabled()) {
 							log.debug("Found a request password in CRMF request regCtrl_regToken");
@@ -262,10 +265,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     /** force a username, i.e. ignore the DN/username in the request
      */
-    public void setUsername(String username) {
+    public void setUsername(final String username) {
         this.username = username;
     }
     
+	@Override
 	public String getUsername() {
 		String ret = null;
         if (username != null) {
@@ -289,13 +293,14 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         return ret;
 	}
 
-	public void setIssuerDN(String issuer) {
+	public void setIssuerDN(final String issuer) {
 		this.defaultCADN = issuer;
 	}
+	@Override
 	public String getIssuerDN() {
 		String ret = null;
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		X509Name name = templ.getIssuer();
+		final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		final X509Name name = templ.getIssuer();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		} else {
@@ -307,14 +312,17 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		return ret;
 	}
 
+	@Override
 	public BigInteger getSerialNo() {
 		return null;
 	}
 
+	@Override
 	public String getCRLIssuerDN() {
 		return null;
 	}
 
+	@Override
 	public BigInteger getCRLSerialNo() {
 		return null;
 	}
@@ -327,21 +335,19 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 	 */
 	public BigInteger getSubjectCertSerialNo() {
 		BigInteger ret = null;
-		CertRequest request = getReq().getCertReq();
-		CertTemplate templ = request.getCertTemplate();
-		DERInteger serno = templ.getSerialNumber();
+		final CertRequest request = getReq().getCertReq();
+		final CertTemplate templ = request.getCertTemplate();
+		final DERInteger serno = templ.getSerialNumber();
 		if (serno != null) {
 			ret = serno.getValue();			
 		}
 		return ret;
 	}
 
-    /**
-     * @see IRequestMessage#getRequestDN()
-     */
+	@Override
 	public String getRequestDN() {
 		String ret = null;
-		X509Name name = getRequestX509Name();
+		final X509Name name = getRequestX509Name();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		}
@@ -351,24 +357,24 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		return ret;
 	}
 
-    /**
-     * @see IRequestMessage#getRequestX509Name()
-     */
+
+	@Override
 	public X509Name getRequestX509Name() {
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		X509Name name = templ.getSubject();
+		final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		final X509Name name = templ.getSubject();
 		if (log.isDebugEnabled()) {
 			log.debug("Request X509Name is: "+name);
 		}
 		return name;
 	}
 
-    public String getRequestAltNames() {
+	@Override
+	public String getRequestAltNames() {
     	String ret = null;
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		X509Extensions exts = templ.getExtensions();
+    	final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+    	final X509Extensions exts = templ.getExtensions();
 		if (exts != null) {
-			X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+			final X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
 			if (ext != null) {
 				ret = CertTools.getAltNameStringFromExtension(ext);
 			}
@@ -379,12 +385,13 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     	return ret;
     }
 
+	@Override
 	public Date getRequestValidityNotBefore() {
 		Date ret = null;
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		OptionalValidity val = templ.getValidity();
+		final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		final OptionalValidity val = templ.getValidity();
 		if (val != null) {
-			Time time = val.getNotBefore();
+			final Time time = val.getNotBefore();
 			if (time != null) {
 				ret = time.getDate();
 			}
@@ -395,10 +402,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		return ret;
 	}
 	
+	@Override
 	public Date getRequestValidityNotAfter() {
 		Date ret = null;
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		OptionalValidity val = templ.getValidity();
+		final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		final OptionalValidity val = templ.getValidity();
 		if (val != null) {
 			Time time = val.getNotAfter();
 			if (time != null) {
@@ -411,9 +419,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		return ret;
 	}
 
+	@Override
 	public X509Extensions getRequestExtensions() {
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		X509Extensions exts = templ.getExtensions();
+		final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		final X509Extensions exts = templ.getExtensions();
 		if (log.isDebugEnabled()) {
 			if (exts != null) {
 				log.debug("Request contains extensions");			
@@ -424,9 +433,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		return exts;
 	}
 
+	@Override
 	public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
-		ProofOfPossession pop = getReq().getPop();
+		final ProofOfPossession pop = getReq().getPop();
 		if (log.isDebugEnabled()) {
 			log.debug("allowRaVerifyPopo: "+allowRaVerifyPopo);
 			log.debug("pop.getRaVerified(): "+(pop.getRaVerified() != null));
@@ -436,16 +446,16 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 			ret = true;
 		} else if (pop.getSignature() != null) {
 			try {
-				POPOSigningKey sk = pop.getSignature();
-				POPOSigningKeyInput pski = sk.getPoposkInput();
+				final POPOSigningKey sk = pop.getSignature();
+				final POPOSigningKeyInput pski = sk.getPoposkInput();
 				byte[] protBytes;
 				// Use of POPOSigningKeyInput or not, as described in RFC4211, section 4.1.
 				if (pski == null) {
 					if (log.isDebugEnabled()) {
 						log.debug("Using CertRequest as POPO input.");
 					}
-					ByteArrayOutputStream bao = new ByteArrayOutputStream();
-					DEROutputStream out = new DEROutputStream(bao);
+					final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+					final DEROutputStream out = new DEROutputStream(bao);
 					out.writeObject(getReq().getCertReq());
 					protBytes = bao.toByteArray();	
 				} else {
@@ -453,9 +463,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 					if (log.isDebugEnabled()) {
 						log.debug("Using POPOSigningKeyInput as POPO input.");
 					}
-					CertRequest req = getReq().getCertReq();
+					final CertRequest req = getReq().getCertReq();
 					// If subject is present in cert template it must be the same as in POPOSigningKeyInput
-					X509Name subject = req.getCertTemplate().getSubject();
+					final X509Name subject = req.getCertTemplate().getSubject();
 					boolean ok = true;
 					if (subject != null) {						
 						if (!subject.toString().equals(pski.getSender().getName().toString())) {
@@ -464,7 +474,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 						} 
 					}
 					// If public key is present in cert template it must be the same as in POPOSigningKeyInput
-					SubjectPublicKeyInfo pk = req.getCertTemplate().getPublicKey();
+					final SubjectPublicKeyInfo pk = req.getCertTemplate().getPublicKey();
 					if (pk != null) {
 						if (!Arrays.areEqual(pk.getEncoded(), pski.getPublicKey().getEncoded())) {
 							log.info("Subject key in cert template, is not equal to subject key in POPOSigningKeyInput.");
@@ -475,8 +485,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 					// If we are not ok, because name or public key was not the same in POPOSigningKeyInput as in the CertTemplate,
 					// the we simply don't set the correct protection bytes here, so signature will fail for sure.
 					if (ok) {
-						ByteArrayOutputStream bao = new ByteArrayOutputStream();
-						DEROutputStream out = new DEROutputStream(bao);
+						final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+						final DEROutputStream out = new DEROutputStream(bao);
 						out.writeObject(pski);
 						protBytes = bao.toByteArray();
 					} else {
@@ -484,16 +494,16 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 						protBytes = null;
 					}
 				}
-				AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
+				final AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
 				if (log.isDebugEnabled()) {
 					log.debug("POP protection bytes length: "+protBytes != null ? protBytes.length : "null");
 					log.debug("POP algorithm identifier is: "+algId.getObjectId().getId());
 				}
-				Signature sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
-				PublicKey pk = getRequestPublicKey();
+				final Signature sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
+				final PublicKey pk = getRequestPublicKey();
 				sig.initVerify(pk);
 				sig.update(protBytes);
-				DERBitString bs = sk.getSignature();
+				final DERBitString bs = sk.getSignature();
 				ret = sig.verify(bs.getBytes());					
 			} catch (IOException e) {
 				log.error("Error encoding CertReqMsg: ", e);
@@ -504,71 +514,78 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		return ret;
 	}
 
+	@Override
 	public boolean requireKeyInfo() {
 		return false;
 	}
 
-	public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
+	@Override
+	public void setKeyInfo(final Certificate cert, final PrivateKey key, final String provider) {
 	}
 
+	@Override
 	public int getErrorNo() {
 		return 0;
 	}
 
+	@Override
 	public String getErrorText() {
 		return null;
 	}
 
-	public void setSenderNonce(String b64nonce) {
+	public void setSenderNonce(final String b64nonce) {
 		this.b64SenderNonce = b64nonce;
 	}
+	@Override
 	public String getSenderNonce() {
 		return b64SenderNonce;
 	}
 
-	public void setTransactionId(String b64transid) {
+	public void setTransactionId(final String b64transid) {
 		this.b64TransId = b64transid;
 	}
+	@Override
 	public String getTransactionId() {
 		return b64TransId;
 	}
 
+	@Override
 	public byte[] getRequestKeyInfo() {
 		return null;
 	}
 
+	@Override
 	public String getPreferredDigestAlg() {
 		return preferredDigestAlg;
 	}
 
+	@Override
 	public boolean includeCACert() {
 		return false;
 	}
 
-    /** @see org.ejbca.core.protocol.IRequestMessage
-     */
-    public int getRequestType() {
+	@Override
+	public int getRequestType() {
     	return requestType;
     }
 
-    /** @see org.ejbca.core.protocol.IRequestMessage
-     */
-    public int getRequestId() {
+	@Override
+	public int getRequestId() {
     	return requestId;
     }
 
-	// Returns the subject DN from the request
+	// Returns the subject DN from the request, used from CrmfMessageHandler
 	public String getSubjectDN() {
 		String ret = null;
-		CertTemplate templ = getReq().getCertReq().getCertTemplate();
-		X509Name name = templ.getSubject();
+		final CertTemplate templ = getReq().getCertReq().getCertTemplate();
+		final X509Name name = templ.getSubject();
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		}
 		return ret;
 	}
 
-	private CertReqMessages getCertReqFromTag(PKIBody body, int tag) {
+	private CertReqMessages getCertReqFromTag(final PKIBody body, final int tag) {
 		CertReqMessages msgs = null;
 		switch (tag) {
 		case 0:
@@ -591,9 +608,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 		}
 		return msgs;
 	}
-    /** @see org.ejbca.core.protocol.IRequestMessage
-     */
-    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
+
+	@Override
+	public IResponseMessage createResponseMessage(final Class responseClass, final IRequestMessage req, final Certificate cert, final PrivateKey signPriv, final String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
 }
