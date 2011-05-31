@@ -138,7 +138,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			int unknownMessageType = -1;
 			switch (tagno) {
 			case 0:
-				// 0 and 2 are both certificate requests
+				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
 				handler = new CrmfMessageHandler(admin, caAdminSession,  certificateProfileSession, certificateRequestSession, endEntityProfileSession, signSession, userAdminSession);
 				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
@@ -147,14 +147,14 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 19:
-				// PKI confirm
+				// PKI confirm (pkiconf, Confirmation)
 			case 24:
-				// Certificate confirmation
+				// Certificate confirmation (certConf, Certificate confirm)
 				handler = new ConfirmationMessageHandler(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
-				// Revocation request
+				// Revocation request (rr, Revocation Request)
 				handler = new RevocationMessageHandler(admin, certificateStoreSession, userAdminSession, caAdminSession, endEntityProfileSession, certificateProfileSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
