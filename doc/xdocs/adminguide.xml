@@ -599,6 +599,13 @@ The following CMP messages are supported:
 </ul>
 Certificate requests use the CRMF (RFC4211).
 </p>
+<p>EJBCA can work in two modes with CMP:</p>
+<ul>
+<li><b>Client mode</b> - This is the default mode. Client mode works like any other enrollment in EJBCA. When a request comes in EJBCA verifies the request (see User authentication below)
+and issues a certificate to a user that has been previously registered in EJBCA.</li>
+<li><b>RA mode</b> - RA mode is used when the CMP client will act as an RA to EJBCA. When the RA sends a certificate request to EJBCA. No user is pre-registered in EJBCA, 
+but when authenticated RA CMP messages arrive a user is created in EJBCA and a certificate is issued.</li>
+</ul>
 <p>
 CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
 password used to protect the CMP messages (PBE protection).
@@ -625,7 +632,22 @@ When re-deploying EJBCA this will start a TCP listener on the default port for C
 See the documentation in conf/cmp.properties for information about configuration options for TCP. We recommend using a non standard port > 1024.
 </p>
 </subsection>
-<subsection name="User authentication">
+
+<subsection name="Client mode for CMP">
+<p>
+Client mode is used when the CMP client will act as an End Entity to EJBCA. this means that the End Entity must be pre-registered in EJBCA and that the client request is authenticated
+with this pre-registered end entity before a certificate is issued. This is the same authentication model as for regular enrollment, i.e. browser enrollment, using a username/password combination. 
+<ul>
+<li>The users DN is deducted from the request according to rules configured.</li>
+<li>The username in EJBCA must be pre-registered.</li>
+<li>The password for the user in EJBCA must be passed in the request (one-time password).</li>
+<li>If the Certificate Profile allows it, keyUsage, validity and extensions are also taken from the CertTemplate in the request message.</li>
+<li>Signature POPO is used.</li>
+</ul>
+After the user has been authenticated in EJBCA, a certificate is generated as usual and sent back to the client.
+</p>
+<p>To use client mode, no particular configuration is needed, since this is the default mode.</p>
+<subsubsection name="User authentication">
 <p>
 Initialization and certification requests uses the CRMF request message (RFC4211).
 There messages are interesting as there are a zillion options how to authenticate them.
@@ -637,43 +659,21 @@ Users can be looked up from the request in different ways, as configured in conf
 By default the subject DN from the certTemplate in the request is used to look up the used in EJBCA. 
 You can also configure EJBCA to use the CN or the UID from the subject DN as the username in EJBCA.
 </p>
-</subsection>
-<subsection name="Proof of possession">
-<p>
-Proof of Possession (POP) is another part where CMP has gazillions of different options. 
-<br/>
-The following POPs in the CRMF are supported by EJBCA:
-<ul>
-<li>raVerify - if configured so in conf/cmp.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
-<li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
-<li>signature with POPOSigningKeyInput - where the PublicKey and subject DN is in POPOSigningKeyInput, possibly just copied from the CertTemplate. The signature is calculated over the POPOSigningKeyInput (if the values are also in the CertTemplate they must be identical).</li>
-</ul>
-Currently these are the POPOs supported by EJBCA, so if you don't use raVerify or signature your request will fail because POPO is not verified.
-</p>
+</subsubsection>
 </subsection>
 
-<subsection name="Normal or RA mode for CMP">
-<p>
-CMP in EJBCA can work in two modes:
-</p>
-<subsubsection name="Normal">
-<p>
-Normal mode works like any other enrollment in EJBCA. When a request comes in EJBCA verifies the request (see User authentication above)
-and issues a certificate to a user that has been previously registered in EJBCA.
-<br/>
-This is the default mode of operation.
-</p>
-</subsubsection>
-<subsubsection name="RA">
+<subsection name="RA mode for CMP">
 <p>
 RA mode is used when the CMP client will act as an RA to EJBCA. When the RA sends a certificate request to EJBCA, no user is pre-registered in EJBCA. 
-When EJBCA receives the request, the message will be authenticated using PasswordBasedMAc, as defined in the CMP spec, using a pre-shared password.
+When EJBCA receives the request, the message will be authenticated using PasswordBasedMac, as defined in the CMP spec, using a pre-shared password.
 When the message has been authenticated, a user is created in EJBCA and a certificate is issued.
 <ul>
 <li>The users DN is taken from the CertTemplate in the request message send from the RA (i.e. the DN requested by the RA).</li>
 <li>The username in EJBCA is generated according to the options set in conf/cmp.properties.</li>
 <li>The password for the user in EJBCA is random.</li>
-<li>If the Certificate Profile allows it, keyUsage and validity is also taken from the CertTemplate in the request message.</li>
+<li>If the Certificate Profile allows it, keyUsage, validity and extensions are also taken from the CertTemplate in the request message.</li>
+<li>raVerify POPO is used.</li>
+<li>Messages are authenticated using PasswordBasedMac, using a shared secret between the CA and the RA.</li>
 </ul>
 After the user has been created in EJBCA, a certificate is generated as usual and sent back to the RA, who will distribute it to the end-user.
 </p>
@@ -684,7 +684,6 @@ the existing user will be modified with new values for profile etc, and a new ce
 <p>
 To allow requests with different KeyId to be mapped to different CAs and profiles in EJBCA, see the documentation for the options in conf/cmp.properties.sample.
 </p>
-</subsubsection>
 <subsubsection name="Sample config">
 <p>
 A sample config of EJBCA to allow an RA to request certificates for users. 
@@ -721,6 +720,20 @@ This property will otherwise override the CA specific configuration.
 </subsubsection>
 </subsection>
 
+<subsection name="Proof of possession">
+<p>
+Proof of Possession (POP) is another part where CMP has gazillions of different options. 
+<br/>
+The following POPs in the CRMF are supported by EJBCA:
+<ul>
+<li>raVerify - if configured so in conf/cmp.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
+<li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
+<li>signature with POPOSigningKeyInput - where the PublicKey and subject DN is in POPOSigningKeyInput, possibly just copied from the CertTemplate. The signature is calculated over the POPOSigningKeyInput (if the values are also in the CertTemplate they must be identical).</li>
+</ul>
+Currently these are the POPOs supported by EJBCA, so if you don't use raVerify or signature your request will fail because POPO is not verified.
+</p>
+</subsection>
+
 <subsection name="Certificate validity">
 <p>Normally the validity period of issued certificates are controlled by the certificate profile. 
 If you enable 'Allow validity override' in the certificate profile, and the CMP initialization- or certification request contains a 
@@ -746,11 +759,12 @@ with:
 <li>and other configurations you want for your RA.</li>
 </ul>
 </p>
-<p>CMP has been tested with BlueX from AET Europe (http://www.aeteurope.nl/). From EJBCA's point of view BlueX functions as an RA with the same configuration 
+<p>CMP has been tested with BlueX from <a href="http://www.aeteurope.nl/">AET Europe</a>. From EJBCA's point of view BlueX functions as an RA with the same configuration 
 options as for jCert.
 </p>
-<p>CMP has been tested with Aventra card management system. Same configuration as above.</p>
-<p>CMP has been tested with CryptLib.</p>
+<p>CMP has been tested with <a href="http://aventra.fi/English/index_E.php">Aventra</a> card management system. Same configuration as above.</p>
+<p>CMP has been tested with <a href="http://www.cryptlib.com/">CryptLib</a>.</p>
+<p>CMP has been tested with <a href="http://www.bouncycastle.org">BouncyCastle</a> CMP classes, available in BC 1.46 or later. Both client and RA mode should work.</p>
 <p>For internal testing a modified version of the Novosec extension to BouncyCastle is used.</p>
 </subsection>
 <subsection name="Custom handling of certificate request">
