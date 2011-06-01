@@ -1,3 +1,14 @@
+EJBCA 4.0.3
+-----------
+This is a maintenance release with a few improvements and bug fixes. In all 5 issues have been resolved.
+
+* Noteworthy changes:
+- Improved CMP interoperability, with minor improvement and bugfixes.
+- Fixed a bug that made it impossible to delete end entity profile on certain databases, in particular hsql (test database).
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.2
 -----------
 This is a maintenance release with many improvements and fixes. In all 44 issues have been resolved.
