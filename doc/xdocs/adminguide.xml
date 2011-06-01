@@ -646,8 +646,9 @@ The following POPs in the CRMF are supported by EJBCA:
 <ul>
 <li>raVerify - if configured so in conf/cmp.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
 <li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
+<li>signature with POPOSigningKeyInput - where the PublicKey and subject DN is in POPOSigningKeyInput, possibly just copied from the CertTemplate. The signature is calculated over the POPOSigningKeyInput (if the values are also in the CertTemplate they must be identical).</li>
 </ul>
-Currently these are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail because POP is not verified.
+Currently these are the POPOs supported by EJBCA, so if you don't use raVerify or signature your request will fail because POPO is not verified.
 </p>
 </subsection>
 
