@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;

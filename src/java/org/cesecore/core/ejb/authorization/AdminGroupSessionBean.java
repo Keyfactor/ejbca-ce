@@ -29,7 +29,6 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.authorization.AdminEntitySessionLocal;
 import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;

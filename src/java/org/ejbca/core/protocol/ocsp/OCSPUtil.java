@@ -225,7 +225,7 @@ public class OCSPUtil {
     	}
     	try {
     		final int respIdType = ocspServiceReq.getRespIdType();
-    		final BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, providerName, chain, respIdType);
+    		final BasicOCSPResp ocspresp = generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, providerName, chain, respIdType);
     		final OCSPCAServiceResponse result = new OCSPCAServiceResponse(ocspresp, Arrays.asList(chain));
     		isCertificateValid(signerCert);
     		return result;
