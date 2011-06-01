@@ -1,3 +1,15 @@
+EJBCA 4.0.3, 2011-06-01
+---
+Improvement
+    [ECA-2188] - CMP improvements and minor bug fixes
+    [ECA-2189] - Fetch CMP regToken Control from CertRequest as well as CertReqMsg
+
+Bug
+    [ECA-2101] - CMP error parsing POP signing key from BC1.46 clients
+    [ECA-2104] - CMP protection using digital signatures is missing DERNull for RSA AlgorithmParameters
+    [ECA-2181] - Exception deleting end entity profiles, AccessRulesData.findCountByCustomQuery does not use valuextractor
+    [ECA-2190] - POPO verification fails for BC1.46 signed CMP messages
+
 EJBCA 4.0.2, 2011-05-22
 ---
 New Feature
