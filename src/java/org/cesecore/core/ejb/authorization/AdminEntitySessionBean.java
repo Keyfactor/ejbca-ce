@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authorization;
+package org.cesecore.core.ejb.authorization;
 
 import java.util.Collection;
 

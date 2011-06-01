@@ -10,15 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authorization;
+package org.cesecore.core.ejb.authorization;
 
-import javax.ejb.Local;
+import java.util.Collection;
+
+import org.ejbca.core.model.authorization.AdminEntity;
+import org.ejbca.core.model.log.Admin;
 
 /**
+ * 
  * @version $Id$
- *
  */
-@Local
-public interface AdminEntitySessionLocal extends AdminEntitySession {
-
+public interface AdminEntitySession {
+ 
+    /**
+     * Adds a Collection of AdminEnity to the admingroup. Changes their values
+     * if they already exists. Does not give any errors if the admin group does
+     * not exist.
+     */
+    public void addAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
+    
+    /** Removes a Collection of AdminEntity from the administrator group. */
+    public void removeAdminEntities(Admin admin, String admingroupname, Collection<AdminEntity> adminentities);
+    
 }

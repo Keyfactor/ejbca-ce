@@ -10,9 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authorization;
+package org.cesecore.core.ejb.authorization;
 
 import javax.ejb.Remote;
+
 
 /**
  * @version $Id$
