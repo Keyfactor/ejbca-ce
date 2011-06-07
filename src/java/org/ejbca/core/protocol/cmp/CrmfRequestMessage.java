@@ -481,7 +481,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 					final byte[] protBytes = bao.toByteArray();
 					final AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
 					if (log.isDebugEnabled()) {
-						log.debug("POP protection bytes length: "+protBytes != null ? protBytes.length : "null");
+						log.debug("POP protection bytes length: "+(protBytes != null ? protBytes.length : "null"));
 						log.debug("POP algorithm identifier is: "+algId.getObjectId().getId());
 					}
 					final Signature sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
@@ -489,6 +489,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 					sig.update(protBytes);
 					final DERBitString bs = sk.getSignature();
 					ret = sig.verify(bs.getBytes());					
+					if (log.isDebugEnabled()) {
+						log.debug("POP verify returns: "+ret);
+					}
 				}
 			} catch (IOException e) {
 				log.error("Error encoding CertReqMsg: ", e);

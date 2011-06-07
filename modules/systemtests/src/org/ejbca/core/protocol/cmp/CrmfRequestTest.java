@@ -28,6 +28,7 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -152,7 +153,33 @@ public class CrmfRequestTest extends CmpTestCase {
     	log.trace("<test01CrmfHttpUnknowUser");
     }
 
-    public void test02CrmfHttpOkUser() throws Exception {
+    public void test02CrmfHttpUnknowUserSignedMessage() throws Exception {
+        // A name that does not exist
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null);
+        assertNotNull(req);
+        X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
+        CmpMessageHelper.signPKIMessage(req, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
+        //PKIMessage req = protectPKIMessage(req1, false, "foo123", "mykeyid", 567);
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(req);
+        byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        /*
+         * FileOutputStream fos = new
+         * FileOutputStream("/home/tomas/dev/support/cmp_0_ir"); fos.write(ba);
+         * fos.close();
+         */
+        byte[] resp = sendCmpHttp(ba, 200);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
+    }
+
+    public void test03CrmfHttpOkUser() throws Exception {
     	log.trace(">test02CrmfHttpOkUser");
         // Create a new good user
         createCmpUser();
@@ -201,7 +228,7 @@ public class CrmfRequestTest extends CmpTestCase {
     	log.trace("<test02CrmfHttpOkUser");
     }
 
-    public void test03BlueXCrmf() throws Exception {
+    public void test04BlueXCrmf() throws Exception {
     	log.trace(">test03BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
@@ -209,7 +236,7 @@ public class CrmfRequestTest extends CmpTestCase {
     	log.trace("<test03BlueXCrmf");
     }
 
-    public void test04BadBytes() throws Exception {
+    public void test05BadBytes() throws Exception {
     	log.trace(">test04BadBytes");
         byte[] msg = bluexir;
         // Change some bytes to make the message bad
