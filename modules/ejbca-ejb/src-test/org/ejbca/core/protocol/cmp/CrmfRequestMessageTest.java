@@ -245,9 +245,17 @@ public class CrmfRequestMessageTest extends TestCase {
     }
 
     public void testBc146RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    	testBcRARequest(bc146rapopir);
+    }
+
+    public void testBc147RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    	testBcRARequest(bc147rapopir);
+    }
+
+    private void testBcRARequest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Check that we can parse request from BouncyCastle version 1.46.
     	// Read an initialization request with RAVerifiedPOP with PBE protection to see that we can process it
-    	ASN1InputStream in = new ASN1InputStream(bc146rapopir);
+    	ASN1InputStream in = new ASN1InputStream(message);
     	DERObject derObject = in.readObject();
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
@@ -273,15 +281,24 @@ public class CrmfRequestMessageTest extends TestCase {
     }
 
     public void testBc146ClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    	testBcClientRequest(bc146sigpopir);
+    }
+    
+    public void testBc147ClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    	testBcClientRequest(bc147sigpopir);
+    }
+
+    private void testBcClientRequest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Check that we can parse request from BouncyCastle version 1.46.    	
     	// Read an initialization request with a signature POP, and signature protection, to see that we can process it
-    	ASN1InputStream in = new ASN1InputStream(bc146sigpopir);
+    	ASN1InputStream in = new ASN1InputStream(message);
     	DERObject derObject = in.readObject();
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be ok if we do not allow RA verify POP here
     	CrmfRequestMessage msg = new CrmfRequestMessage(req, "CN=AdminCA1", false, "CN");
     	// BC messages in BC1.46 uses POPOSigningKeyInput for POPO, not the 3rd case in RFC4211 section 4.1, like everyone else...
+    	// BC messages in BC1.47 should use normal POPO, 3rd case
     	assertTrue(msg.verify());
     	// Since we don't have RA POP we can't test for that...
     	assertEquals("CN=AdminCA1", msg.getIssuerDN());
@@ -505,6 +522,11 @@ public class CrmfRequestMessageTest extends TestCase {
     
     /** CMP initial request message, created with BouncyCastle 1.46, with POPOSigningKey POP and signature protection */
     static byte[] bc146sigpopir = Base64.decode(("MIICNzByAgECpBEwDzENMAsGA1UEAwwEdXNlcqQVMBMxETAPBgNVBAMMCEFkbWluQ0ExoBEYDzIwMTEwNTMwMTQxNTQ2WqEPMA0GCSqGSIb3DQEBBQUAogcEBUtleUlkpAoECBJ7Wyn/3xaopQoECBJ7Wyn/3xaooIIBejCCAXYwggFyMIGlAgF7MIGIoxUwEzERMA8GA1UEAwwIQWRtaW5DQTGlETAPMQ0wCwYDVQQDDAR1c2VyplwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAI7LgKEDN49fq08G3v8kXa8GmlqqLtAy4OKDkbfvtQG/rHvki19isRCat3GPNKhFp5hUrVApPOkC7pwKrtCh3u8CAwEAATAVMBMGCSsGAQUFBwUBAQwGZm9vMTIzoYHHoHOgE6QRMA8xDTALBgNVBAMMBHVzZXIwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAjsuAoQM3j1+rTwbe/yRdrwaaWqou0DLg4oORt++1Ab+se+SLX2KxEJq3cY80qEWnmFStUCk86QLunAqu0KHe7wIDAQABMA0GCSqGSIb3DQEBBQUAA0EAFqKulRt/zRzvd+HzPpYTBWd4g7tKaFAZEb+vHbt0hojMLq20kqIE1t2aYpezjGZdV4zyQJPUOi5VYfLesujvjqBDA0EAX8AwJDr+yzjxv3067lsiINO75x5GqqR644GogxEIH1cyKkRbhlixw8qLdfWt2VShw1TdliLRkuZA5tCOtWlhlw==").getBytes());
+
+    /** CMP initial request message, created with BouncyCastle 1.47, with RAVerified POP and PBE protection */
+    static byte[] bc147rapopir = Base64.decode(("MIIBcjCBowIBAqQRMA8xDTALBgNVBAMMBHVzZXKkFTATMREwDwYDVQQDDAhBZG1pbkNBMaARGA8yMDExMDYwNzA3MTkzMlqhQDA+BgkqhkiG9n0HQg0wMQQUuntpSbyZ6c92+PuwG/hPugOq/C4wBwYFKw4DAhoCAgPoMAwGCCsGAQUFCAECBQCiBwQFS2V5SWSkCgQIP80XoNAlmuylCgQIP80XoNAlmuyggbAwga0wgaowgaUCAXswgYijFTATMREwDwYDVQQDDAhBZG1pbkNBMaURMA8xDTALBgNVBAMMBHVzZXKmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAmNU532N0oqncVerEF6QUugLlyC9RfFwO9yRgeLlejbV86j/0sqIs//Zc1Y0SHLqV0pIHTuf3pke0jPJYVHIN6wIDAQABMBUwEwYJKwYBBQUHBQEBDAZmb28xMjOAAKAXAxUAeZsIGZFSEUpsNBtfA17aHxwjs/Y=").getBytes());
+    /** CMP initial request message, created with BouncyCastle 1.47, with POPOSigningKey POP and signature protection */
+    static byte[] bc147sigpopir = Base64.decode(("MIIBvzByAgECpBEwDzENMAsGA1UEAwwEdXNlcqQVMBMxETAPBgNVBAMMCEFkbWluQ0ExoBEYDzIwMTEwNjA3MDcxOTMyWqEPMA0GCSqGSIb3DQEBBQUAogcEBUtleUlkpAoECD/NF6DQJZrspQoECD/NF6DQJZrsoIIBAjCB/zCB/DCBpQIBezCBiKMVMBMxETAPBgNVBAMMCEFkbWluQ0ExpREwDzENMAsGA1UEAwwEdXNlcqZcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQCY1TnfY3SiqdxV6sQXpBS6AuXIL1F8XA73JGB4uV6NtXzqP/Syoiz/9lzVjRIcupXSkgdO5/emR7SM8lhUcg3rAgMBAAEwFTATBgkrBgEFBQcFAQEMBmZvbzEyM6FSMA0GCSqGSIb3DQEBBQUAA0EAGsbIFtJIwveAYvRzLtFwx9M2CFqr/tLbllNgogcljzhJ3bab4gsh25PZC2bvG7T3ieQXj8fR2KGp6xUQjl4Ii6BDA0EASsMjeH6FutbH9wIGr/5smC59E3+z+RjnhhFyUxgMMLV7wKZbKtoJUzKjjc2Hh7IzCjt6sBmcf0dBMpR1Qq8OWA==").getBytes());
 
     /** CMP initial request message, created with EJBCA 4.0.2 code, with RAVerified POP and PBE protection */
     static byte[] novosecrapopir = Base64.decode(("MIICwjCCAQ8CAQKkVzBVMSYwJAYDVQQDDB1hYmMxMjNycnktNDM3MTkzOTU0MzkxMzYzOTg4MTEeMBwGA1UECgwVUHJpbWVLZXkgU29sdXRpb25zIEFCMQswCQYDVQQGEwJTRaQ5MDcxETAPBgNVBAMMCEFkbWluQ0ExMRUwEwYDVQQKDAxFSkJDQSBTYW1wbGUxCzAJBgNVBAYTAlNFoBEYDzIwMTEwNTMwMDkwNTQyWqEwMC4GCSqGSIb2fQdCDTAhBAZmb28xMjMwBwYFKw4DAhoCAgI3MAoGCCqGSIb3DQIHogkEB215a2V5aWSkEgQQJV0C01odEXcv7BG4uW6bO6USBBD2+lerPhUqwF4Az6Vemh2yoIIBkjCCAY4wggGKMIIBawIBBDCCAWSjOTA3MREwDwYDVQQDDAhBZG1pbkNBMTEVMBMGA1UECgwMRUpCQ0EgU2FtcGxlMQswCQYDVQQGEwJTRaQkoBEYDzIwMDMwMjExMDAyMTIwWqEPFw0xMTA1MzAwOTA1NDJapVcwVTEmMCQGA1UEAwwdYWJjMTIzcnJ5LTQzNzE5Mzk1NDM5MTM2Mzk4ODExHjAcBgNVBAoMFVByaW1lS2V5IFNvbHV0aW9ucyBBQjELMAkGA1UEBhMCU0WmXDANBgkqhkiG9w0BAQEFAANLADBIAkEAkM6qeA9Vkaz+NHyejepEgBrwvbCKIta3CpG+mp+0zayL7NA90AknRsW7A3sX0i3IEDY3wvUhJ1+yc53M89OaKQIDAQABqUowOwYDVR0RBDQwMoEQZm9vZW1haWxAYmFyLmNvbaAeBgorBgEEAYI3FAIDoBAMDmZvb3VwbkBiYXIuY29tMAsGA1UdDwQEAwIF4KACBQAwFTATBgkrBgEFBQcFAQEMBmZvbzEyM6AXAxUAnJ0lrTWxB+sKIdj1oCSYfJ1/Fpk=").getBytes());
