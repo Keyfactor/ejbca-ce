@@ -850,7 +850,7 @@ ProtectedPKIMessage message = pbuilder.build(msgsigner);
 </source>
 </subsubsection>
 <subsubsection name="CMP for OpenSSL">
-<p>CMP has been tested with <a href="http://cmpforopenssl.sourceforge.net/">cmpforopenssl, with partial success</a>.</p>
+<p>CMP has been tested with <a href="http://cmpforopenssl.sourceforge.net/">cmpforopenssl</a>, with partial success.</p>
 <p>
 Cmpforopenssl as a library is quite usable with EJBCA. The current client tool cmpclient works but is not really usable due to some missing configuration options.
 </p><p>
