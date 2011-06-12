@@ -749,6 +749,7 @@ key usage in the CRMF request template, this key usage will be used.
 </subsection>
 
 <subsection name="Interoperability">
+<subsubsection name="RSA jCert">
 <p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
 with:
 <ul>
@@ -759,6 +760,7 @@ with:
 <li>and other configurations you want for your RA.</li>
 </ul>
 </p>
+</subsubsection>
 <subsubsection name="AET BlueX">
 <p>CMP has been tested with BlueX from <a href="http://www.aeteurope.nl/">AET Europe</a>. From EJBCA's point of view BlueX functions as an RA with the same configuration 
 options as for jCert.
@@ -850,9 +852,10 @@ ProtectedPKIMessage message = pbuilder.build(msgsigner);
 </source>
 </subsubsection>
 <subsubsection name="CMP for OpenSSL">
-<p>CMP has been tested with <a href="http://cmpforopenssl.sourceforge.net/">cmpforopenssl</a>, with partial success.</p>
+<p>CMP has been tested with <a href="http://cmpforopenssl.sourceforge.net/">cmpforopenssl</a>.</p>
 <p>
-Cmpforopenssl as a library is quite usable with EJBCA. The current client tool cmpclient works but is not really usable due to some missing configuration options.
+Cmpforopenssl works with EJBCA. The current client tool, cmpclient, works with EJBCA CMP in RA mode. 
+Using the cmpforopenssl API everything is possible and you can also use EJBCA CMP in client mode, not only RA mode.
 </p><p>
 Cmpforopenssl works with with EJBCA with the following EJBCA configuration (cmp.properties, unset properties = default):</p>
 <source>
@@ -861,15 +864,16 @@ cmp.responseprotection=pbe
 cmp.ra.authenticationsecret=password
 </source>
 <p>
-You can then use cmpclient:</p>
+You can then use cmpclient (as an RA):</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.pem --ir --user mykeyid --password password --clcert clcert.pem --key key.pem --insta3.3
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.pem --ir --user mykeyid --password password --clcert clcert.pem --key key.pem --subject "CN=User Name;O=My Organization;C=SE"
 </source>
+<p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
+EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.</p>
 <p>
-Cmpforopenssl currently uses the keyid in a request as the requested username. EJBCA uses the keyid for other purposes and tries to get the requested user from the actual certificate request.
-When using the option "--insta3.3" a requested DN of "CN=My Common Name" is used. This means all issued certificates will have this DN. If it was possible to configure the requested DN, you could use cmpclient as an RA. Of course, using the cmpforopenssl API everything is possible and you can even use EJBCA CMP in client mode, not only RA mode.
+EJBCA currently does not work with cmpforopenssl in client mode. In client mode cmpforopenssl currently uses the keyid in a request as the requested username, and uses HMAC protection with the client password. 
+EJBCA uses the keyid for other purposes and tries to get the requested user from the actual certificate request, and EJBCA CMP in client mode does not currently work using HMAC protection with the client password.
 </p>
-<p>We will be tracking further progress with cmpforopenssl, it is an interesting project.</p>
 </subsubsection>
 </subsection>
 <subsection name="Custom handling of certificate request">
