@@ -23,11 +23,6 @@
     External RA API is now a part of the EJBCA bundle. The old separate download bundle is only used with EJBCA 3.9.x and earlier.
     </note>
   </section>
-  <section name="Source packages and older releases">
-    <p>
-    Download any of the source packages from <a href="http://sourceforge.net/projects/ejbca/files/">Sourceforge</a>.
-    </p>
-  </section>
 
   <section name="Live CD">
     <p>
@@ -41,6 +36,12 @@
   <section name="Help and support">
     <p>
     You can find both free and commercial support offerings at the <a href="contact.html">Contact &amp; Support</a> page.
+    </p>
+  </section>
+
+  <section name="Source packages and older releases">
+    <p>
+    Download any of the source packages from <a href="http://sourceforge.net/projects/ejbca/files/">Sourceforge</a>.
     </p>
   </section>
 
