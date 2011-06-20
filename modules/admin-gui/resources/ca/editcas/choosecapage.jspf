@@ -145,8 +145,8 @@
         <input type="text" name="<%=TEXTFIELD_CANAME%>" size="40" maxlength="255">   
         <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("CREATE") %>...">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br />
-        <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>">
-        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("SIGNREQUEST") %>">
+        <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20an%20External%20CA") %>
+        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("SIGNREQUEST") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20a%20roll-over%20certificate%20(NewWithOld)") %>
       </td>
     </tr>
   </table>
