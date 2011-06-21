@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="oldlogexport-cli" default="build">
+    <description>
+		A CLI for exporting LogEntryData database table to file.
+    </description>
+
+	<dirname property="this.dir" file="${ant.file.oldlogexport-cli}"/>
+	<import file="${this.dir}/../build.xml"/>
+	
+	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="build.dir" location="${this.dir}/build"/>
+
+	<path id="oldlogexport.lib.classpath">
+		<path refid="lib.jpa.classpath"/>
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.commons-collections.classpath"/>
+		<path refid="lib.commons-lang.classpath"/>
+		<path refid="lib.commons-logging.classpath"/>
+		<path refid="lib.commons-config.classpath"/>
+		<path refid="lib.bouncycastle-provonly.classpath"/>
+		<path refid="lib.cert-cvc.classpath"/>
+		<path refid="lib.ldap.classpath"/>
+	</path>
+
+    <target name="build" description="Build this module" depends="compile">
+    	<pathconvert property="oldlogexport.dependencies" pathsep=" ">
+    	    <path>
+	        	<fileset dir="${mod.oldlogexport.dist}" includes="lib/*.jar"/>
+    	    </path>
+    		<map from="${mod.oldlogexport.dist}/" to=""/>
+    	</pathconvert>
+        <jar jarfile="${mod.oldlogexport.lib}">
+    		<manifest >
+    			<attribute name="Class-path" value="${oldlogexport.dependencies} ./" />
+    			<attribute name="Main-Class" value="org.ejbca.ui.cli.OldLogExportCli"/>
+    		</manifest>
+            <fileset dir="${build.dir}"/>
+        </jar>
+    </target>
+
+    <target name="clean" description="Clean up this module">
+		<delete dir="${build.dir}" />
+		<delete dir="${mod.oldlogexport.dist}" />
+    </target>
+	
+    <target name="compile" depends="setup">
+    	<mkdir dir="${build.dir}" />
+        <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
+            <src path="${mod.ejbca-entity.path}/src" />
+            <src path="${ejbca.home}/src/java" />
+        	<src path="${src.dir}"/>
+            <include name="org/ejbca/ui/cli/OldLogExportCli.java" />
+        </javac>
+    </target>
+
+    <target name="setup">
+    	<mkdir dir="${mod.oldlogexport.dist}/META-INF"/>
+    	<!-- Copy all the files in the clientToolBox.lib.classpath to mod.clientToolBox.dist/lib -->
+    	<pathconvert property="lib.oldlogexport.classpath.property" pathsep=" ">
+    	    <path refid="oldlogexport.lib.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.oldlogexport.dist}/lib" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${lib.oldlogexport.classpath.property}"/>
+    	</copy>
+    	<!-- Copy scripts etc to mod.clientToolBox.dist -->
+        <copy todir="${mod.oldlogexport.dist}" file="${this.dir}/resources/README"/>
+        <copy todir="${build.dir}">
+            <fileset dir="${this.dir}/resources" includes="log4j.xml META-INF/*.*"/>
+        </copy>
+    	<!-- Specify Hibernate dialect -->
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"><equals arg1="${database.name}" arg2="derby"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"><equals arg1="${database.name}" arg2="hsqldb"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.InformixDialect"><equals arg1="${database.name}" arg2="informix"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.IngresDialect"><equals arg1="${database.name}" arg2="ingres"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"><equals arg1="${database.name}" arg2="mssql"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"><equals arg1="${database.name}" arg2="mysql"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect"><equals arg1="${database.name}" arg2="oracle"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
+    	<condition property="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"><equals arg1="${database.name}" arg2="sybase"/></condition>
+    	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/>
+        <copy tofile="${mod.oldlogexport.dist}/META-INF/persistence.xml" file="${this.dir}/resources/persistence-template.xml" failonerror="true" overwrite="true">
+        	<filterchain><expandproperties/></filterchain>
+        </copy>
+    </target>
+
+</project>
