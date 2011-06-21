@@ -75,6 +75,9 @@
     <property name="mod.clientToolBox.dist" location="${ejbca.dist.path}/clientToolBox" />
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
+    <property name="mod.oldlogexport.dist" location="${ejbca.dist.path}/oldlogexport-cli" />
+    <property name="mod.oldlogexport.lib" location="${mod.oldlogexport.dist}/oldlogexport-cli.jar" />
+    <property name="mod.oldlogexport.path" location="${mod.path}/oldlogexport-cli" />
     <property name="mod.cmpTcpProxy.dist" location="${ejbca.dist.path}/cmpTcpProxy" />
     <property name="mod.cmpHttpProxy.dist" location="${ejbca.dist.path}/cmpHttpProxy" />
     <property name="mod.cmpProxy.path" location="${mod.path}/cmpProxy" />
