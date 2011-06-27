@@ -4512,6 +4512,21 @@ You can find information about configuring log4j on JBoss in the EJBCA <a href="
 </subsection>
 <subsection name="OldLogDevice">
 <p>
+From EJBCA 4.1 the LogEntryData table is no longer used for audit log. The existing log entries can be exported
+using by using a small export CLI. Configure conf/database.properties with (if not done already)
+<code>
+database.url=...
+database.username=...
+database.password=...
+</code>
+then build with
+<code>
+$ ant oldlogexport-cli
+</code>
+This will create the CLI in "dist/oldlogexport-cli/". Referr the README file in this directory
+for further instructions on how to run it.
+</p>
+<p>
 OldLogDevice stores log-events in the database. Viewed events can
 be exported from the Admin GUI.
 </p>

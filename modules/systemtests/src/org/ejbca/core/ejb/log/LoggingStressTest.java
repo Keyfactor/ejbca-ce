@@ -29,7 +29,7 @@ public class LoggingStressTest extends TestCase {
 	private static Logger log = Logger.getLogger(LoggingStressTest.class);
 	
 	private static final int NUMBER_OF_THREADS = 10; 
-	private static final int TIME_TO_RUN = 15*60000; // Run for 3 minutes
+	private static final int TIME_TO_RUN = 15*60000; // Run for 15 minutes
 
     public void setUp() throws Exception {
     }
