@@ -77,7 +77,7 @@ the JCE.
 <p>
 Needed to build and run are:</p>
 <ul>
-<li>JDK 1.6 (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle JDK download</a>)</li>
+<li>JDK 1.6 OpenJDK or (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">Oracle JDK download</a>), if available OpenJDK is recommended</li>
 <li><i>Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files</i> for your JDK (<a href="http://www.oracle.com/technetwork/java/javase/downloads/">download for Oracle's JDK</a>, not required for OpenJDK)</li>
 <li>JBoss Application Server 5.1.x or later for JDK6 (<a href="http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip/download">download</a>)</li>
 <li>Apache Ant 1.7.1 or later to build (<a href="http://ant.apache.org/">download</a>)</li>
@@ -103,21 +103,22 @@ All properties are documented in sample files and to configure an option you cop
 and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/install.properties</i> and <i>conf/ejbca.properties</i>.
 Most options, except those in install.properties can be changed after installation.
 </p> 
-<p>
-You must configure 'appserver.home' in ejbca.properties to point to your application server directory. You find examples of how
-to do this in ejbca.properties.sample.<br/> This makes libraries from the application server available to EJBCA during the build.
-</p> 
-<p>
-If you are only testing EJBCA at this stage and is not setting up a production environment, you can skip the rest of this step.
-There are default configuration options, that should work in a test environment, for everything.
-</p>
 </subsubsection>
 
 <subsubsection name="EJBCA configuration">
 <p>
 1) Copy conf/install.properties.sample to conf/install.properties and conf/ejbca.properties.sample to conf/ejbca.properties
 Customize if needed. The default values works fine for a test installation. 
-</p><p>
+</p>
+<p>
+You must configure 'appserver.home' in ejbca.properties to point to your application server directory. You find examples of how
+to do this in ejbca.properties.sample.<br/> This makes libraries from the application server available to EJBCA during the build.
+</p>
+<p>
+If you are only testing EJBCA at this stage and is not setting up a production environment, you can skip the rest of this step.
+There are default configuration options, that should work in a test environment, for everything.
+</p>
+<p>
 <ul>
 <li>Customize the CA properties in conf/ejbca.properties if you need to do so.
 For production use you need to do this, don't forget to edit
@@ -143,51 +144,9 @@ For production use you should use a real database instead of the embedded one.</
 </p>
 </subsubsection>
 
-<subsubsection name="JBoss settings">
-<p>
-If you are using Oracle's JDK and JBoss 5.1.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
-Remember this when it's time for upgrades! This is a bug tracked by JBoss as <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
-OpenJDK works just fine though, such as the OpenJDK distributed with RedHat, Ubuntu, Debian etc.
-<br/> 
-The workaround described above does not work on JBoss 6.0.0, see the JBAS issue for more information.</p>
-<p>
-JBoss 5.1.x also has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample
-for configuration instructions. Tracked by JBoss as <a href="https://issues.jboss.org/browse/JBPAPP-3766">JBPAPP-3766</a>.
-</p> 
-<p>
-There is also an issue with WebServices on JBoss 5.1.x and JBoss EAP 5.1, edit (not needed on JBoss 6.0.x)
-</p> 
-<source>
- APPSRV_HOME/server/default/deployers/jbossws.deployer/META-INF/jboss-beans.xml
-</source>
-<p> 
-and comment out the line:
-</p> 
-<source>
-&lt;property name="webServiceHost"&gt;${jboss.bind.address}&lt;/property&gt;
-</source> 
-<p>
-to force the location to be generated with info from the WSDL request. 
-</p>
-<p>
-On JBoss 6 logging is not included in the regular server.log file (because JBoss does not use log4j anymore).
-Configure conf/log4j-jboss6-xml for logging level and log file locations (default works as well). A sample file is provided.
-</p>
-</subsubsection>
-<subsubsection name="Memory configuration">
-<p>
-The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
-a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
-configuration of java memory arguments to set them to
-at least '-Xms128m -Xmx512m -XX:MaxPermSize=256m'. 
-For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
-</p>
-<source>
-JAVA_OPTS="-server -Xms128m -Xmx512m -XX:MaxPermSize=256m"
-</source>
-<p>
-can be changed.
-</p>
+<subsubsection name="Configure application server">
+<p>Due to differences, and bugs, in different application servers you have to configure your application server with some settings, and EJBCA with server specific settings.
+<br/>See the <a href="#Application servers">application servers</a> section.</p>
 </subsubsection>
 
 <subsubsection name="Considerations">
@@ -390,7 +349,18 @@ On JBoss 6 logging is not included in the regular server.log file (because JBoss
 <br/>Configure <i>conf/log4j-jboss6-xml</i> for logging level and log file locations (default works as well). A sample file is provided.
 </p>
 </subsubsection>
-<subsubsection name="WS WSDL location">
+<subsubsection name="JBoss and OracleJVM bug">
+<p>
+If you are using Oracle's JDK and JBoss 5.1.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
+Remember this when it's time for upgrades! This is a bug tracked by JBoss as <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
+OpenJDK works just fine though, such as the OpenJDK distributed with RedHat, Ubuntu, Debian etc.
+<p>
+The same bug is present on JBoss 6.0, but the workaround is different, the same workaround as for JBoss 5.1 does not work with JBoss 6.
+The only way to work around this with Oracle JDK and JBoss 6 is to copy ejbca/lib/bc*.jar to $JAVA_HOME/jre/lib/ext, and to remove lib/bc*.jar from the deployed ejbca.ear file.
+See the <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a> issue for more information.</p>
+</p>
+</subsubsection>
+<subsubsection name="JBoss 5.1 WS WSDL location">
 <p>
 On JBoss 5.1.x (not on JBoss 6.0.x) the WSDL location gets incorrectly generated by default. To fix this (see JBoss settings during install) edit: 
 </p> 
@@ -408,7 +378,29 @@ to force the location to be generated with info from the WSDL request.
 If this is not done you will get "HTTP 302 Moved Temporarily" errors when running the WS client.  
 </p>
 </subsubsection>
-<subsubsection name="Schema validation">
+<subsubsection name="Memory configuration">
+<p>
+The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
+a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
+configuration of java memory arguments to set them to
+at least '-Xms128m -Xmx512m -XX:MaxPermSize=256m'. 
+For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
+</p>
+<source>
+JAVA_OPTS="-server -Xms128m -Xmx512m -XX:MaxPermSize=256m"
+</source>
+<p>
+can be changed.
+</p>
+</subsubsection>
+<subsubsection name="JBoss 5 and multiple mail configuration">
+<p>
+JBoss 5.1.x has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample
+for configuration instructions. Tracked by JBoss as <a href="https://issues.jboss.org/browse/JBPAPP-3766">JBPAPP-3766</a>.
+This should be resolved in JBoss EAP 5.1.
+</p>
+</subsubsection>
+<subsubsection name="JBoss 6 Schema validation">
 <p>By default JBoss (at least 6.0.0) tries to validate schemas when deploying for example web services (XKMS is notorious). 
 If you don't have an internet connection this will obviously not work if the appserver does not have all schema built in (it does not for XKMS).
 You can luckily turn of schema validation. Here is RedHat's <a href="http://docs.redhat.com/docs/en-US/JBoss_Enterprise_Web_Platform/5/html/Installation_Guide/migration.apps.html">description</a>.
@@ -425,17 +417,18 @@ You can luckily turn of schema validation. Here is RedHat's <a href="http://docs
 <p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
 improve performance.
 </p><p>
-See documentation in src/appserver/tomcat60jboss5.
+See documentation in src/appserver/tomcat60jboss5, and the JBoss documentation for installing the native connector.
 </p> 
 </subsubsection>
 </subsection>
+
 <subsection name="Glassfish">
 <p>
 Currently EJBCA has been tested with Glassfish v2.1.1.
 </p>
 <p>Don't forget to install 'Unlimited Strength Jurisdiction Policy Files' for Java.</p>
 
-<subsubsection name="Derby">
+<subsubsection name="Using Derby database (Glassfish built in)">
 <p>
 <ol>
 <li>Start JavaDB and create the database instance.
@@ -474,7 +467,7 @@ bin/asadmin start-domain
 </p>
 </subsubsection>
 
-<subsubsection name="MySQL">
+<subsubsection name="Using MySQL database">
 <p>
 <ol>
 <li>Start the database and create the MySQL database "ejbca". Grant privileges to the "ejbca" user with password "ejbca_pwd" (don't use this password in production!)</li>
