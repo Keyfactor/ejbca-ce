@@ -275,13 +275,13 @@ You must stop and start JBoss after doing this.
 <p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
 To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
 </p><p>
-This quick start guide assumes EJBCA 4.0.1 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
+This quick start guide assumes EJBCA 4.0.3 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
 We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
 </p>
 <ol>
 <li>Install Ubuntu 10.10 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).</li>
 <li>Open a new terminal "ejbca".</li>
-<li>Copy jboss-5.1.0.GA-jdk6.zip and ejbca_4_0_1.zip to machine user account.</li>
+<li>Copy jboss-5.1.0.GA-jdk6.zip and ejbca_4_0_3.zip to machine user account.</li>
 <li>Install needed software from Ubuntu repositories.<br/>
 <source>
 sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp
@@ -290,17 +290,17 @@ sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp
 <li>Install software not in Ubuntu repositories.<br/>
 <source>
 unzip jboss-5.1.0.GA-jdk6.zip<br/>
-unzip ejbca_4_0_1.zip
+unzip ejbca_4_0_3.zip
 </source>
 </li>
 <li>Configure EJBCA so it can find the application server (JBoss).<br/>
 <source>
-echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_4_0_1/conf/ejbca.properties
+echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_4_0_3/conf/ejbca.properties
 </source>
 </li>
 <li>Build and deploy EJBCA to JBoss.<br/>
 <source>
-cd ejbca_4_0_1<br/>
+cd ejbca_4_0_3<br/>
 ant bootstrap
 </source>
 </li>
@@ -322,7 +322,7 @@ ctrl-c<br/>
 jboss-5.1.0.GA/bin/run.sh
 </source>
 </li>
-<li>Import /home/user/ejbca_4_0_1/p12/superadmin.p12 in web browser.</li>
+<li>Import /home/user/ejbca_4_0_3/p12/superadmin.p12 in web browser.</li>
 <li>Go to http://localhost:8443/ejbca</li>
 </ol>
 <p>Done!</p>
