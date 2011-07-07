@@ -1,3 +1,10 @@
+EJBCA 3.11.3, 2011-07-08
+---
+** Bug
+    * [ECA-2065] - Certificate enrollment using OS X 10.6 and Safari 5.0.3
+    * [ECA-2152] - Certificate not published to OCSP when reactivating after jboss restart.
+    * [ECA-2212] - Problem between 'ant install' and 'ant deploy' on JBoss EAP 5.1.
+
 EJBCA 4.0.3, 2011-06-01
 ---
 Improvement
