@@ -693,11 +693,9 @@
 			<copy todir="${src-temp.dir}/raadmin">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/ra/raadmin/*.java"/>
-					<include name="org/cesecore/core/ejb/ra/raadmin/*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/ra/raadmin/*.java"/>
-					<include name="org/cesecore/core/ejb/ra/raadmin/*.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/ra/raadmin/*SessionBean.java"/>
