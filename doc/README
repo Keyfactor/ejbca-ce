@@ -32,8 +32,11 @@ PDF
 A good set of commands to generate a nice PDF version of the User's Guide is:
  ant doc
  apt-get install htmldoc
- htmldoc --footer "  /"  --toclevels 4 -t pdf14 tmp/htdocs/manual.html -f manual.pdf
-  
+ htmldoc --footer "  /"  --toclevels 4 -t pdf14 tmp/htdocs/adminguide.html -f adminguide.pdf
+ htmldoc --footer "  /"  --toclevels 4 -t pdf14 tmp/htdocs/userguide.html -f userguide.pdf
+
+You can fix the look of the document by removing a h1 header and moving (replace) h3->h1, h4->h2 and h5 to h3.
+
 Release notes and upgrade
 -------------------------
 In this directory you will find RELEASE_NOTES with some notes relating to this specific release and
