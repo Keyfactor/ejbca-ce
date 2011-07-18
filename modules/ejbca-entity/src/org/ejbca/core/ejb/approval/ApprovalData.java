@@ -221,11 +221,11 @@ s	 */
 	public String getRowProtection() { return rowProtection; }
 	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
-	@Transient Date getRequestDate(){    
+	@Transient public Date getRequestDate() {
 		return new Date(getRequestdate());
 	}
 
-	@Transient Date getExpireDate(){    
+	@Transient public Date getExpireDate() {
 		return new Date(getExpiredate());
 	}
 
@@ -241,7 +241,7 @@ s	 */
 	 * The status is set to expired of it as
 	 * @return true of the request or approval have expired
 	 */
-	boolean haveRequestOrApprovalExpired(){
+	public boolean haveRequestOrApprovalExpired() {
 		final Date currentDate = new Date();
 		boolean retval = false;
 		if(currentDate.after(getExpireDate())){
