@@ -26,6 +26,7 @@
 		<path refid="lib.commons-logging.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-entity.lib}"/>
+		<pathelement location="${mod.ejbca-properties.lib}"/>
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws-ejb.jar}"/>
 		<pathelement location="${mod.ejbca-xkms-cli.lib}"/>

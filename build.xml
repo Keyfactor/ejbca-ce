@@ -301,6 +301,7 @@
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
                 <include name="ejbca-entity.jar" />
+                <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" />
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
