@@ -20,7 +20,6 @@
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
-	<property name="internalresources.base.dir" location="${ejbca.home}/src"/>
 
 	<path id="compile-util.classpath">
 		<path refid="lib.cert-cvc.classpath"/>
@@ -326,16 +325,9 @@
     </target>
 	
     <target name="build" description="Build this module" depends="compile-ejbca-ejb">
-    	<copy todir="${build.dir}" file="${ejbca.home}/src/internal.properties">
-    		<filterchain>
-    			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
-    		</filterchain>
-    	</copy>
         <jar destfile="${mod.ejbca-ejb.lib}">
         	<fileset dir="${build.dir}"/>
-            <fileset dir="${ejbca.home}" includes="conf/**/*.properties"/>
             <fileset dir="${ejbca.home}/src/upgrade"/>
-            <fileset dir="${internalresources.base.dir}" includes="intresources/*.properties"/>
         	<!--
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
@@ -362,17 +354,10 @@
     </target>
 
     <target name="build-va" description="Build this module" depends="build-va-common, compile-va-ejb">
-    	<copy todir="${build-va.dir}" file="${ejbca.home}/src/internal.properties">
-    		<filterchain>
-    			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
-    		</filterchain>
-    	</copy>
     	<mkdir dir="${ocsp.hardToken.classes}"/>	<!-- If it doesn't exist.. -->
         <jar destfile="${mod.va-ejb.lib}">
         	<fileset dir="${build-va.dir}" />
             <fileset dir="${ocsp.hardToken.classes}"/>
-        	<fileset dir="${ejbca.home}/src" includes="intresources/*.properties"/>
-            <fileset dir="${ejbca.home}" includes="conf/**/*.properties"/>
         </jar>
     </target>
 
