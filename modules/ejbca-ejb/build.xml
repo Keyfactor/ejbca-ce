@@ -146,7 +146,7 @@
       	<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfile.java"/>
       	<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
       	<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceData.java"/>
-      	<include name="org/ejbca/core/model/ra/userdatasource/BaseUserDataSource.java"/>
+      	<include name="org/ejbca/core/model/ra/userdatasource/*DataSource.java"/>
       	<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
        	<include name="org/ejbca/util/GUIDGenerator.java"/>
     	<!-- From EJBCA interface lib -->
@@ -234,6 +234,7 @@
        	<include name="org/ejbca/core/model/approval/approvalrequests/DummyApprovalRequest.java"/>
        	<include name="org/ejbca/util/cert/CertificateNotBeforeComparator.java"/>
        	<include name="org/ejbca/core/model/ca/publisher/CustomPublisherContainer.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
        	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerDoesntExistsException.java"/>
        	<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerExistsException.java"/>
        	<include name="org/ejbca/core/model/ra/userdatasource/CustomUserDataSourceContainer.java"/>
