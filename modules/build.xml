@@ -255,7 +255,7 @@
     </target>
 
 	<target name="ejbca.clients" depends="ejbca-ejb-cli, ejbca-ws-cli, ejbca-xkms-cli"/>
-	<target name="ejbca.ear.module-dependencies" depends="publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients"/>
+	<target name="ejbca.ear.module-dependencies" depends="publicweb-gui, renew-war, scep-war, webdist-war, va-ejbca-war, cmp-war, healthcheck-ejbca-war, clearcache-ejbca-war, admin-gui, ejbca-ejb, ejbca-properties, ejbca-ws, ejbca-xkms, externalra-service, ejbca-cmp-tcp, ejbca.clients"/>
 
 	<!-- Helper to execute the EJBCA EJB CLI -->
 	<target name="ejbca-cli" depends="ejbca-ejb-cli">

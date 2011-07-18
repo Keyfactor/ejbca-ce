@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ejbca-ejb" default="build-jar">
+<project name="ejbca-properties" default="build-jar">
     <description>
             The EJBCA properties files
     	
@@ -7,7 +7,7 @@
     		ejbca-ws-ejb
     </description>
 
-	<dirname property="this.dir" file="${ant.file.ejbca-ejb}"/>
+	<dirname property="this.dir" file="${ant.file.ejbca-properties}"/>
 	<import file="${this.dir}/../build.xml"/>
 	
 	<property name="build.dir" location="${this.dir}/build"/>
@@ -20,6 +20,9 @@
     			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
     		</filterchain>
     	</copy>
+    	
+    	<dirname file="${mod.ejbca-properties.lib}" property="mod.ejbca-properties.lib.dir"/>
+    	<mkdir dir="${mod.ejbca-properties.lib.dir}" />
         <jar destfile="${mod.ejbca-properties.lib}">
         	<fileset dir="${build.dir}"/>
             <fileset dir="${ejbca.home}" includes="conf/**/*.properties"/>
