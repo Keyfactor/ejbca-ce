@@ -11,6 +11,11 @@
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	
+	<!-- Include endorsed jars from Glassfish -->
+	<condition property="tests.jvmargs" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
+		<equals arg1="${appserver.subtype}" arg2="glassfish3"/>
+	</condition>
+
 	<!-- When running WS tests we don't want the JEE classes of the appserver, ws should be independent of that,
 	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
 	<path id="systemtests.classpath.nojee">
@@ -112,6 +117,7 @@
 				<path refid="${runone-internal.classpath}" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}" includes="**/${test.runone}.class" excludes="**/${test.runoneexclude}.class"/>
@@ -147,6 +153,7 @@
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
@@ -234,6 +241,7 @@
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/runweb">
 				<fileset dir="${build.dir}">
@@ -271,6 +279,7 @@
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/runcmp" unless="cmptcplistener.notrunning">
 				<fileset dir="${build.dir}">
@@ -420,6 +429,7 @@
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
@@ -442,6 +452,7 @@
                 <path refid="lib.clientToolBox.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.dir}">
@@ -466,6 +477,7 @@
                 <path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=0 -Dvertest.expectedFailures=3 -Dvertest.expectedWarnings=0"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
@@ -491,6 +503,7 @@
                 <path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
+			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedFailures=0"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
