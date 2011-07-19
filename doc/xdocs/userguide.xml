@@ -521,13 +521,14 @@ in ejbca.properties. See the documentation in conf/ejbca.properties.sample for m
 </subsubsection>
 <subsubsection name="Allow extension override">
 <p>
-If extension override is allowed, the X509 certificate extension created in a certificate can come from the request 
-sent by the user. If the request contains an extension than that will be used instead of the one defined in the profile.
-If the request does not contain an extension, the one defined in the profile will be used.
+If extension override is allowed, X509 certificate extensions featured in <i>certificate requests</i> are honored, otherwise they are ignored.
+Externally supplied extensions are added to certificates "as-is".
+In the case such an extension is already defined in the certificate profile (i.e. having the same OID), the definition in the profile 
+will be overridden including the criticality flag.
 </p>
 <p>
 This option should only be used when you know that the request comes from a very trusted source. Such a trusted source is  
-normally an RA through CMP or webservice.
+normally an RA through CMP or WebService.
 </p>
 <p>
 Currently this only works for extensions in CRMF (CMP) requests.
