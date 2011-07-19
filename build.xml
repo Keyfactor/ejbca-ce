@@ -360,6 +360,7 @@
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
+		<ant dir="modules" target="ejbca-properties" />
 		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
 		<condition property="bundle-hibernate-exclude" value="" else="**">
 			<isset property="bundle-hibernate-jpa"/>
@@ -387,6 +388,7 @@
                 <include name="va-ejb.jar" />
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
+                <include name="ejbca-properties.jar" />
                 <include name="va-ejb3-interface.jar" />
                 <include name="va-entity.jar" />
                 <include name="va-common.jar" />
