@@ -14,6 +14,10 @@
 	  -->
 	<!--property name="j2ee.web-noconfigure" value="true"/-->
 	
+    <!-- JSP precompilation fails in GF 3 (ECA-2219) -->
+    <condition property="glassfish.precompilejsp.option" value="" else="--precompilejsp">
+        <equals arg1="${appserver.subtype}" arg2="glassfish3"/>
+    </condition>
 	
 	<target name="j2ee:check">
         <!--
@@ -57,7 +61,7 @@
         </exec>
 		<echo>Deploying EJBCA application.</echo>
         <exec executable="${appserver.home}/bin/asadmin" failonerror="true">
-            <arg line="deploy --precompilejsp ${dist.dir}/ejbca.ear"/>
+            <arg line="deploy ${glassfish.precompilejsp.option} ${dist.dir}/ejbca.ear"/>
         </exec>
 	</target>
 
