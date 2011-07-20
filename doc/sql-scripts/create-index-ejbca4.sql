@@ -14,6 +14,9 @@ create index logentry_idx2 on LogEntryData (caId);
 create index logentry_idx3 on LogEntryData (event);
 create index logentry_idx4 on LogEntryData (username);
 
+-- Selecting log entries when verifying/exporting IntegrityProtectedDevice logs:
+CREATE UNIQUE INDEX auditrecorddata_idx1 ON AuditRecordData (nodeId,timeStamp,sequenceNumber);
+
 -- Indexes on CRLData:	
 -- unique to ensure that no two CRLs with the same CRLnumber from the same issuer is created
 create unique index crldata_idx1 on CRLData (issuerDN,cRLNumber);

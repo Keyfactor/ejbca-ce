@@ -40,6 +40,7 @@
                                                   + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
   final String LOG_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/viewlog.jsp";
+  final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
   final String LOG_CONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/logconfiguration/logconfiguration.jsp";
   final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
@@ -269,6 +270,7 @@
               logheaderprinted=true;
             }  %>
 				<li><a href="<%= LOG_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("VIEWLOG") %></a></li>
+				<li><a href="<%= AUDIT_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("VIEWLOG") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 
 

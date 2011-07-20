@@ -19,6 +19,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
@@ -112,6 +114,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return getEjbLocal().getCrlCreateSession(); }
 	@Override public CrlSessionLocal getCrlSession() { return getEjbLocal().getCrlSession(); }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return getEjbLocal().getEndEntityProfileSession(); }
+	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return getEjbLocal().getGlobalConfigurationSession(); }
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return getEjbLocal().getHardTokenBatchJobSession(); }
 	@Override public HardTokenSessionLocal getHardTokenSession() { return getEjbLocal().getHardTokenSession(); }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return getEjbLocal().getKeyRecoverySession(); }
@@ -122,8 +125,9 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public OldLogSessionLocal getOldLogSession() { return getEjbLocal().getOldLogSession(); }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return getEjbLocal().getPublisherQueueSession(); }
 	@Override public PublisherSessionLocal getPublisherSession() { return getEjbLocal().getPublisherSession(); }
-	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
+	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return getEjbLocal().getSecurityEventsAuditorSession(); }
+	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return getEjbLocal().getSecurityEventsLoggerSession(); }
 	@Override public ServiceSessionLocal getServiceSession() { return getEjbLocal().getServiceSession(); }
 	@Override public SignSessionLocal getSignSession() { return getEjbLocal().getSignSession(); }
-	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return getEjbLocal().getGlobalConfigurationSession(); }
+	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
 }

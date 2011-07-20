@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="dist/ejbca-ejb-cli"/>
 	<classpathentry kind="src" path="modules/admin-gui/src"/>
 	<classpathentry kind="src" path="modules/appserver-ext/src"/>
 	<classpathentry kind="src" path="modules/clearcache-war/src"/>

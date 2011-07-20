@@ -850,4 +850,8 @@ public class EjbcaWebBean implements Serializable {
     		log.trace("<clearClusterCache");
     	}
     }
+    
+    public EjbLocalHelper getEjb() {
+    	return ejb;
+    }
 }

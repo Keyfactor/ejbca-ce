@@ -25,9 +25,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests the ProtectedData class
+ * Test the ProtectedData class
  * 
- * Based on cesecore version:
+ * Based on cesecore version:   
  *      ProtectedDataPKCS11Test.java 901 2011-06-21 17:29:08Z johane
  * 
  * @version $Id$
