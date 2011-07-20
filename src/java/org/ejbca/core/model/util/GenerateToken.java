@@ -7,7 +7,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -27,13 +27,13 @@ import org.ejbca.util.keystore.KeyTools;
 public class GenerateToken {
     private static final Logger log = Logger.getLogger(GenerateToken.class);
 
-	private AuthenticationSession authenticationSession;
+	private OldAuthenticationSession authenticationSession;
 	private UserAdminSession userAdminSession;
 	private CAAdminSession caAdminSession;
 	private KeyRecoverySession keyRecoverySession;
 	private SignSession signSession;
 	
-    public GenerateToken(AuthenticationSession authenticationSession, UserAdminSession useradminsession, CAAdminSession caAdminSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
+    public GenerateToken(OldAuthenticationSession authenticationSession, UserAdminSession useradminsession, CAAdminSession caAdminSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
     	this.authenticationSession = authenticationSession;
     	this.userAdminSession = useradminsession;
     	this.caAdminSession = caAdminSession;

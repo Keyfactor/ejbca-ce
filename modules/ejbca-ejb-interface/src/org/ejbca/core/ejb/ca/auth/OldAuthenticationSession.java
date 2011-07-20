@@ -23,7 +23,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * Provides access to authentication system.
  * @version $Id$
  */
-public interface AuthenticationSession {
+public interface OldAuthenticationSession {
 
     /**
      * Authenticates a user to the user database and returns the user DN.

@@ -30,7 +30,7 @@ import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -104,7 +104,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public AdminGroupSessionLocal getAdminGroupSession() { return getEjbLocal().getAdminGroupSession(); }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return getEjbLocal().getApprovalExecutionSession(); }
 	@Override public ApprovalSessionLocal getApprovalSession() { return getEjbLocal().getApprovalSession(); }
-	@Override public AuthenticationSessionLocal getAuthenticationSession() { return getEjbLocal().getAuthenticationSession(); }
+	@Override public OldAuthenticationSessionLocal getAuthenticationSession() { return getEjbLocal().getAuthenticationSession(); }
 	@Override public AuthorizationSessionLocal getAuthorizationSession()  { return getEjbLocal().getAuthorizationSession(); }
 	@Override public CAAdminSessionLocal getCaAdminSession() { return getEjbLocal().getCaAdminSession(); }
 	@Override public CaSessionLocal getCaSession() { return getEjbLocal().getCaSession(); }

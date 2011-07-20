@@ -74,7 +74,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -200,7 +200,7 @@ public class EjbcaWS implements IEjbcaWS {
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
-    private AuthenticationSessionLocal authenticationSession;
+    private OldAuthenticationSessionLocal authenticationSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB

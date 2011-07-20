@@ -17,7 +17,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
@@ -46,7 +46,7 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
 	//private static Logger log = Logger.getLogger(RegisterResponseGenerator.class);
 
 	public RegisterResponseGenerator(String remoteIP, RegisterRequestType req, Document requestDoc,
-    		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CAAdminSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
 		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,

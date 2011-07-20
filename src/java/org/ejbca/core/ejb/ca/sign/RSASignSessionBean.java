@@ -52,7 +52,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -105,7 +105,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private AuthenticationSessionLocal authenticationSession;
+    private OldAuthenticationSessionLocal authenticationSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB

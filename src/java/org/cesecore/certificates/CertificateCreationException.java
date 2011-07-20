@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,14 +10,34 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ca.auth;
-
-import javax.ejb.Local;
+package org.cesecore.certificates;
 
 /**
- * Local interface for AuthenticationSession.
+ * RuntimeException thrown when an error is encountered during certificate creation.
+ * 
+ * Based on cesecore version: 
+ *      CertificateCreationException.java 124 2011-01-20 14:41:21Z tomas
+ * 
+ * @version $Id$
+ *
  */
-@Local
-public interface AuthenticationSessionLocal extends AuthenticationSession{
+public class CertificateCreationException extends RuntimeException {
+
+    private static final long serialVersionUID = -3148367537076684178L;
+
+    public CertificateCreationException() {
+    }
+    
+    public CertificateCreationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public CertificateCreationException(String message) {
+        super(message);
+    }
+
+    public CertificateCreationException(Throwable cause) {
+        super(cause);
+    }
 
 }

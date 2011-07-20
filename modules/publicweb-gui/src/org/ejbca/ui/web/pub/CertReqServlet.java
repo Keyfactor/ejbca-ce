@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -67,7 +67,7 @@ public class CertReqServlet extends HttpServlet {
 
     // This injection has been verified on JBoss
 	@EJB
-	private AuthenticationSessionLocal authenticationSession;
+	private OldAuthenticationSessionLocal authenticationSession;
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
 	@EJB

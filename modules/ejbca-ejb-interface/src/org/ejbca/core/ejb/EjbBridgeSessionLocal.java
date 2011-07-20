@@ -25,7 +25,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -65,7 +65,7 @@ public interface EjbBridgeSessionLocal {
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
 	AuthorizationSessionLocal getAuthorizationSession();
-	AuthenticationSessionLocal getAuthenticationSession();
+	OldAuthenticationSessionLocal getAuthenticationSession();
 	CAAdminSessionLocal getCaAdminSession();
 	CaSessionLocal getCaSession();
 	CertificateProfileSessionLocal getCertificateProfileSession();

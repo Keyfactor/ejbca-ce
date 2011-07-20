@@ -51,7 +51,7 @@ import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -97,7 +97,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private static final Logger log = Logger.getLogger(CertificateRequestSessionBean.class);
     
     @EJB
-    private AuthenticationSessionLocal authenticationSession;
+    private OldAuthenticationSessionLocal authenticationSession;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
