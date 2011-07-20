@@ -44,7 +44,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /**
- * TODO: Add proper AuthenticationToken created from admin cert
+ * TODO: Add proper AuthenticationToken created from admin cert 
  * @version $Id$
  */
 public class AuditorManagedBean implements Serializable {
