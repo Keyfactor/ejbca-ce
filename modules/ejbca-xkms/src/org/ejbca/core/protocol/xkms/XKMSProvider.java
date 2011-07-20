@@ -61,7 +61,7 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
@@ -136,7 +136,7 @@ public class XKMSProvider implements Provider<Source> {
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private AuthenticationSessionLocal authenticationSession;
+    private OldAuthenticationSessionLocal authenticationSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB

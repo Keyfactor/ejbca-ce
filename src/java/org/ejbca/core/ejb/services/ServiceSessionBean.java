@@ -47,7 +47,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -111,7 +111,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
-    private AuthenticationSessionLocal authenticationSession;
+    private OldAuthenticationSessionLocal authenticationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -561,7 +561,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 			// Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since we have circular dependencies! 
         	Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
         	ejbs.put(ApprovalSessionLocal.class, approvalSession);
-        	ejbs.put(AuthenticationSessionLocal.class, authenticationSession);
+        	ejbs.put(OldAuthenticationSessionLocal.class, authenticationSession);
         	ejbs.put(AuthorizationSessionLocal.class, authorizationSession);
         	ejbs.put(CAAdminSessionLocal.class, caAdminSession);
         	ejbs.put(CaSessionLocal.class, caSession);

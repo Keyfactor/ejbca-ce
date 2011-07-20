@@ -43,15 +43,15 @@ import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Authenticates users towards a user database.
- * @see AuthenticationSession
+ * @see OldAuthenticationSession
  *
  * @version $Id$
  */
 @Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "AuthenticationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class AuthenticationSessionBean implements AuthenticationSessionLocal, AuthenticationSessionRemote {
+public class OldAuthenticationSessionBean implements OldAuthenticationSessionLocal, OldAuthenticationSessionRemote {
 
-    private static final Logger log = Logger.getLogger(AuthenticationSessionBean.class);
+    private static final Logger log = Logger.getLogger(OldAuthenticationSessionBean.class);
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;

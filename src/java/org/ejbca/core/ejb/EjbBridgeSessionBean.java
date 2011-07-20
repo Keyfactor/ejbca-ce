@@ -28,7 +28,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -69,7 +69,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalSessionLocal approvalSession;
 	@EJB AuthorizationSessionLocal authorizationSession;
-	@EJB AuthenticationSessionLocal authenticationSession;
+	@EJB OldAuthenticationSessionLocal authenticationSession;
 	@EJB CAAdminSessionLocal caAdminSession;
 	@EJB CaSessionLocal caSession;
 	@EJB CertificateProfileSessionLocal certificateProfileSession;
@@ -100,7 +100,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
 	@Override public AuthorizationSessionLocal getAuthorizationSession() { return authorizationSession; }
-	@Override public AuthenticationSessionLocal getAuthenticationSession() { return authenticationSession; }
+	@Override public OldAuthenticationSessionLocal getAuthenticationSession() { return authenticationSession; }
 	@Override public CAAdminSessionLocal getCaAdminSession() { return caAdminSession; }
 	@Override public CaSessionLocal getCaSession() { return caSession; }
 	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return certificateProfileSession; }

@@ -21,7 +21,7 @@ import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
@@ -55,7 +55,7 @@ public class EjbRemoteHelper {
     private AdminGroupSessionRemote adminGroupSession = null;
     private ApprovalSessionRemote approvalSession = null;
     private ApprovalExecutionSessionRemote approvalExecutionSession = null;
-    private AuthenticationSessionRemote authenticationSession = null;
+    private OldAuthenticationSessionRemote authenticationSession = null;
     private AuthorizationSessionRemote authorizationSession = null;
     private CAAdminSessionRemote caAdminSession = null;
     private CaSessionRemote caSession = null;
@@ -194,9 +194,9 @@ public class EjbRemoteHelper {
         return authorizationSession;
     }
 
-    public AuthenticationSessionRemote getAuthenticationSession() {
+    public OldAuthenticationSessionRemote getAuthenticationSession() {
         if (authenticationSession == null) {
-            authenticationSession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
+            authenticationSession = JndiHelper.getRemoteSession(OldAuthenticationSessionRemote.class);
         }
         return authenticationSession;
     }

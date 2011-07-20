@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.ConfigurationHolder;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -71,7 +71,7 @@ public class RequestInstance {
 	
 	private ServletContext servletContext;
 	private ServletConfig servletConfig;
-	private AuthenticationSessionLocal authenticationSession;
+	private OldAuthenticationSessionLocal authenticationSession;
 	private CAAdminSessionLocal caAdminSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
@@ -80,7 +80,7 @@ public class RequestInstance {
 	private UserAdminSessionLocal userAdminSession;
 	private GlobalConfigurationSession globalConfigurationSession;
 	
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, AuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, OldAuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;

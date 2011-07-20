@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,14 +10,20 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ca.auth;
+package org.cesecore.authentication;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
- * Remote interface for AuthenticationSession.
+ * Local interface of the Authentication session bean.
+ * 
+ * Based on cesecore version:
+ *      AuthenticationSessionLocal.java 168 2011-01-27 10:07:30Z mikek
+ * 
+ * @version $Id$
+ *
  */
-@Remote
-public interface AuthenticationSessionRemote extends AuthenticationSession {
+@Local
+public interface AuthenticationSessionLocal extends AuthenticationSession {
 
 }

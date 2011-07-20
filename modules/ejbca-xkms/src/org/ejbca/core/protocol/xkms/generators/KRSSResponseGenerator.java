@@ -52,7 +52,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.ejbca.core.ejb.ca.auth.AuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
@@ -103,7 +103,7 @@ public class KRSSResponseGenerator extends
 	 protected Document requestDoc = null;
 
 	 private CAAdminSession caadminsession;
-	 private AuthenticationSession authenticationSession;
+	 private OldAuthenticationSession authenticationSession;
 	 private CertificateStoreSession certificateStoreSession;
 	 private EndEntityProfileSession endEntityProfileSession;
 	 private KeyRecoverySession keyRecoverySession;
@@ -112,7 +112,7 @@ public class KRSSResponseGenerator extends
 	 private UserAdminSession userAdminSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
-    		CAAdminSession caadminsession, AuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CAAdminSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
         super(remoteIP, req, caadminsession, certificateStoreSession, crlSession);
