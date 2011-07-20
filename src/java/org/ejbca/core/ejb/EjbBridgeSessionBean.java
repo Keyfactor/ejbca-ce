@@ -18,6 +18,8 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
@@ -76,6 +78,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CrlSessionLocal crlSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB EndEntityProfileSessionLocal endEntityProfileSession;
+	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
 	@EJB HardTokenBatchJobSessionLocal hardTokenBatchJobSession;
 	@EJB HardTokenSessionLocal hardTokenSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
@@ -85,11 +88,12 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB RaAdminSessionLocal raSession;
+	@EJB SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
+	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB UserAdminSessionLocal userAdminSession;
-	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
 
 	@Override public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }
 	@Override public AdminGroupSessionLocal getAdminGroupSession() { return adminGroupSession; }
@@ -113,6 +117,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
 	@Override public RaAdminSessionLocal getRaAdminSession() { return raSession; }
+	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return securityEventsAuditorSession; }
+	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }

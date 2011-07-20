@@ -15,6 +15,8 @@ package org.ejbca.core.ejb;
 
 import javax.ejb.Local;
 
+import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
@@ -44,6 +46,17 @@ import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
+/**
+ * Due to the lack of standardization in JEE5 there is no way to lookup local interfaces.
+ * 
+ * This Stateless Session Bean (SSB) act as a bridge between calling classes in the same JVM,
+ * and the real ejb references.
+ * 
+ * This will allow us to define a single (this) local EJB in all web.xml and ejb-jar.xml files
+ * and are then free to change and move around SSBs and their interfaces without XML changes.
+ * 
+ * @version $Id$
+ */
 @Local
 public interface EjbBridgeSessionLocal {
 
@@ -61,6 +74,8 @@ public interface EjbBridgeSessionLocal {
 	CrlSessionLocal getCrlSession();
 	CrlCreateSessionLocal getCrlCreateSession();
 	EndEntityProfileSessionLocal getEndEntityProfileSession();
+	LogConfigurationSessionLocal getLogConfigurationSession();
+	GlobalConfigurationSessionLocal getGlobalConfigurationSession();
 	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();
 	HardTokenSessionLocal getHardTokenSession();
 	KeyRecoverySessionLocal getKeyRecoverySession();
@@ -69,10 +84,10 @@ public interface EjbBridgeSessionLocal {
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();
 	RaAdminSessionLocal getRaAdminSession();
+	SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession();
+	SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession();
 	ServiceSessionLocal getServiceSession();
 	SignSessionLocal getSignSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	UserAdminSessionLocal getUserAdminSession();
-	LogConfigurationSessionLocal getLogConfigurationSession();
-	GlobalConfigurationSessionLocal getGlobalConfigurationSession();
 }

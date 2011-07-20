@@ -23,6 +23,131 @@
          - Community supported and not well tested.
     -->
 
+<!--
+    CESeCore classes not yet present in EJBCA are commented out and should be enabled when the classes are added.
+    Also remember to remove the EJBCA counterpart mapping when doing so.
+    
+    <entity class="org.cesecore.authorization.rules.AccessRuleData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="accessRuleName"><column name="accessRule" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="state"><column name="rule_" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="recursiveBool"><column name="isRecursive" column-definition="BIT" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+            <transient name="recursiveInt"/>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.authorization.cache.AccessTreeUpdateData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.authorization.user.AccessUserAspectData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="matchWith"><column name="matchWith" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="matchType"><column name="matchType" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="matchValue"><column name="matchValue" column-definition="VARCHAR(255)"/></basic>
+            <basic name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+-->
+    <entity class="org.cesecore.audit.impl.integrityprotected.AuditRecordData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="pk"><column name="pk" column-definition="VARCHAR(255)"/></id>
+            <basic name="nodeId"><column name="nodeId" column-definition="VARCHAR(255)" nullable="false" updatable="false"/></basic>
+            <basic name="sequenceNumber"><column name="sequenceNumber" column-definition="DECIMAL(20,0)" nullable="false" updatable="false"/></basic>
+            <basic name="timeStamp"><column name="timeStamp" column-definition="DECIMAL(20,0)" nullable="false" updatable="false"/></basic>
+            <basic name="eventType"><column name="eventType" column-definition="VARCHAR(255)" nullable="false" updatable="false"/></basic>
+            <basic name="eventStatus"><column name="eventStatus" column-definition="VARCHAR(255)" nullable="false" updatable="false"/></basic>
+            <basic name="authToken"><column name="authToken" column-definition="VARCHAR(255)" nullable="false" updatable="false"/></basic>
+            <basic name="service"><column name="service" column-definition="VARCHAR(255)" nullable="false" updatable="false"/></basic>
+            <basic name="module"><column name="module" column-definition="VARCHAR(255)" nullable="false" updatable="false"/></basic>
+            <basic name="customId"><column name="customId" column-definition="VARCHAR(255)" nullable="true" updatable="false"/></basic>
+            <basic name="searchDetail1"><column name="searchDetail1" column-definition="VARCHAR(255)" nullable="true" updatable="false"/></basic>
+            <basic name="searchDetail2"><column name="searchDetail2" column-definition="VARCHAR(255)" nullable="true" updatable="false"/></basic>
+            <basic name="additionalDetails"><column name="additionalDetails" column-definition="TEXT" nullable="true" updatable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+<!--
+    <entity class="org.cesecore.certificates.ca.CAData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="caId"><column name="cAId" column-definition="INTEGER"/></id>
+            <basic name="name"><column name="name" column-definition="VARCHAR(255)"/></basic>
+            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(255)"/></basic>
+            <basic name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="expireTime"><column name="expireTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="data"><column name="data" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255)"/></id>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(255)"/></basic>
+            <basic name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="type"><column name="type" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="expireDate"><column name="expireDate" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="revocationDate"><column name="revocationDate" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
+            <!- - We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! - ->
+            <basic name="base64Cert"><column name="base64Cert" column-definition="TEXT"/><lob/></basic>
+            <basic name="username"><column name="username" column-definition="VARCHAR(255)"/></basic>
+            <basic name="tag"><column name="tag" column-definition="VARCHAR(255)"/></basic>
+            <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(255)"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.certificates.certificateprofile.CertificateProfileData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="id"><column name="id" column-definition="INTEGER"/></id>
+            <basic name="certificateProfileName"><column name="certificateProfileName" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="dataUnsafe"><column name="data" column-definition="IMAGE" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.certificates.crl.CRLData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(255)"/></id>
+            <basic name="crlNumber"><column name="cRLNumber" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="thisUpdate"><column name="thisUpdate" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="nextUpdate"><column name="nextUpdate" column-definition="DECIMAL(20,0)" nullable="false"/></basic>
+            <basic name="deltaCRLIndicator"><column name="deltaCRLIndicator" column-definition="INTEGER" nullable="false"/></basic>
+            <basic name="base64Crl"><column name="base64Crl" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="roleName"><column name="adminGroupName" column-definition="VARCHAR(255)" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+            <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="RoleData_accessRules" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
+            <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="RoleData_accessUsers" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
+        </attributes>
+    </entity>
+-->
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INTEGER"/></id>

@@ -26,6 +26,11 @@
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
   <managed-bean>
+    	<managed-bean-name>auditor</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.audit.AuditorManagedBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
     	<managed-bean-name>listServicesManagedBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.services.ListServicesManagedBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
@@ -58,7 +63,12 @@
         <validator-id>hexSerialNumberValidator</validator-id>
         <validator-class>org.ejbca.ui.web.admin.administratorprivileges.HexSerialNumberValidator</validator-class>
   </validator>
-  
+
+  <converter>
+        <converter-id>mapToStringConverter</converter-id>
+        <converter-class>org.ejbca.ui.web.admin.audit.MapToStringConverter</converter-class>
+  </converter>
+
   <navigation-rule>
     <from-view-id>/approval/approveactionlist.jsp</from-view-id>
     <navigation-case>
