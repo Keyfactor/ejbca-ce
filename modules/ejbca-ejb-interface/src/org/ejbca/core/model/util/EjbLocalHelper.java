@@ -21,11 +21,13 @@ import javax.naming.NamingException;
 
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
 import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
@@ -104,7 +106,8 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public AdminGroupSessionLocal getAdminGroupSession() { return getEjbLocal().getAdminGroupSession(); }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return getEjbLocal().getApprovalExecutionSession(); }
 	@Override public ApprovalSessionLocal getApprovalSession() { return getEjbLocal().getApprovalSession(); }
-	@Override public OldAuthenticationSessionLocal getAuthenticationSession() { return getEjbLocal().getAuthenticationSession(); }
+	@Override public AuthenticationSessionLocal getAuthenticationSession() { return getEjbLocal().getAuthenticationSession(); }
+	@Deprecated @Override public OldAuthenticationSessionLocal getOldAuthenticationSession() { return getEjbLocal().getOldAuthenticationSession(); }
 	@Override public AuthorizationSessionLocal getAuthorizationSession()  { return getEjbLocal().getAuthorizationSession(); }
 	@Override public CAAdminSessionLocal getCaAdminSession() { return getEjbLocal().getCaAdminSession(); }
 	@Override public CaSessionLocal getCaSession() { return getEjbLocal().getCaSession(); }
@@ -130,4 +133,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 	@Override public ServiceSessionLocal getServiceSession() { return getEjbLocal().getServiceSession(); }
 	@Override public SignSessionLocal getSignSession() { return getEjbLocal().getSignSession(); }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return getEjbLocal().getUserDataSourceSession(); }
+	
+	//TODO: Temporary mock
+	@Deprecated @Override public SimpleAuthenticationProviderLocal getSimpleAuthenticationProvider() { return getEjbLocal().getSimpleAuthenticationProvider(); }
 }

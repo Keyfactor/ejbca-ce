@@ -58,9 +58,7 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
     @Override
     public AuthenticationToken authenticate(final AuthenticationSubject subject, AuthenticationProvider authenticationProvider) {
         AuthenticationToken result = null;
-            
-        result = authenticationProvider.authenticate(subject);
-        
+        result = authenticationProvider.authenticate(subject);   
         if(result == null) {
             HashMap<String, Object> message = new LinkedHashMap<String, Object>();
             message.put("message", "Subject " + subject + " could not be authenticated.");

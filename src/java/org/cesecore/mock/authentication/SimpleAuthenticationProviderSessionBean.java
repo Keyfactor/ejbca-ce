@@ -51,7 +51,7 @@ import org.cesecore.util.CryptoProviderTools;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SimpleAuthenticationProviderRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class SimpleAuthenticationProviderSessionBean implements SimpleAuthenticationProviderRemote {
+public class SimpleAuthenticationProviderSessionBean implements SimpleAuthenticationProviderRemote, SimpleAuthenticationProviderLocal {
 
     private static final long serialVersionUID = -5788194519235705323L;
 
