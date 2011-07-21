@@ -34,8 +34,11 @@ import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.AuthenticationSessionLocal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.cesecore.util.QueryCriteria;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -55,6 +58,8 @@ public class AuditorManagedBean implements Serializable {
 	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
 	private final SecurityEventsLoggerSessionLocal securityEventsLoggerSession = new EjbLocalHelper().getSecurityEventsLoggerSession();
 	private final CAAdminSessionLocal caAdminSession = new EjbLocalHelper().getCaAdminSession();
+	private final SimpleAuthenticationProviderLocal simpleAuthenticationProvider = new EjbLocalHelper().getSimpleAuthenticationProvider();
+	private final AuthenticationSessionLocal authenticationSession = new EjbLocalHelper().getAuthenticationSession();
 	private String device;
 	private String sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
 	private boolean sortOrder = QueryCriteria.ORDER_DESC;
@@ -290,7 +295,9 @@ public class AuditorManagedBean implements Serializable {
 				criteria = criteria.lsr(condition.getColumn(), conditionValue); break;
 			}
 		}
-		results = securityEventsAuditorSession.selectAuditLogs(null, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
+		AuthenticationToken token = authenticationSession.authenticate(null, simpleAuthenticationProvider);
+		
+		results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
 	}
 
 	public void next() throws AuthorizationDeniedException {
