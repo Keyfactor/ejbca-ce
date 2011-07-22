@@ -20,10 +20,8 @@ import javax.persistence.Query;
 /**
  * Helper class to cope with Hibernates JPA 1.0 Provider implementation.
  * 
- * Based on EJBCA version: 
- *      QueryResultWrapper.java 11570 2011-03-21 20:08:57Z jeklund
- * Based on CESeCore version:
- *      QueryResultWrapper.java 933 2011-07-07 18:53:11Z mikek 
+ * Based on EJBCA version: QueryResultWrapper.java 11570 2011-03-21 20:08:57Z jeklund Based on CESeCore version: QueryResultWrapper.java 933
+ * 2011-07-07 18:53:11Z mikek
  * 
  * @version $Id$
  */
@@ -39,7 +37,11 @@ public abstract class QueryResultWrapper {
      * @return single result or null
      */
     public static <T> T getSingleResult(final Query query) {
-    	return getSingleResult(query, null);
+        /*
+         * The odd syntax below is due to a bug in the hotspot compiler
+           See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302954
+        */
+        return QueryResultWrapper.<T> getSingleResult(query, null);
     }
 
     /**
@@ -60,9 +62,9 @@ public abstract class QueryResultWrapper {
         case 1:
             final T value = (T) resultList.get(0);
             if (value == null) {
-            	return defaultValue;
+                return defaultValue;
             } else {
-            	return value;
+                return value;
             }
         default:
             throw new NonUniqueResultException();
