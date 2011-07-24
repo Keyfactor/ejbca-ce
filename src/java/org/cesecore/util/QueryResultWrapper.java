@@ -39,8 +39,8 @@ public abstract class QueryResultWrapper {
     public static <T> T getSingleResult(final Query query) {
         /*
          * The odd syntax below is due to a bug in the hotspot compiler
-           See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302954
-        */
+         * See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6302954
+         */
         return QueryResultWrapper.<T> getSingleResult(query, null);
     }
 

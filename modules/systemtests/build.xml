@@ -9,6 +9,7 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src.test.dir" location="${this.dir}/src-test"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	
 	<!-- Include endorsed jars from Glassfish -->
@@ -57,11 +58,11 @@
 
     <target name="compile" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
     	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
+        <javac srcdir="${src.test.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
         	<exclude name="org/ejbca/core/protocol/xkms/**"/>
     	</javac>
-        <javac srcdir="${src.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
+        <javac srcdir="${src.test.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
         	<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
         	<classpath path="${build.dir}"/>
@@ -440,7 +441,7 @@
 		</junit>
 		<antcall target="createreport"/>
 	</target>
-
+	
     <target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
 		<echo message="Use ejbca-custom/dist/clientToolBox/lib for your JDBC driver and ejbca-custom/dist/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
     	<property name="reports.dir" location="${reports.base.dir}/ctb"/>
