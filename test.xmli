@@ -8,7 +8,7 @@
     </target>
 
     <target name="test:runsys" description="run system test">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="run" />
+    	<ant antfile="build.xml" dir="modules/systemtests" target="run" />    	
     </target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases">
