@@ -113,30 +113,6 @@
 		<chmod file="${tomcat.dir}/server.xml" perm="600"/>
 	</target>
 
-	<target name="j2ee:deployTestEar" depends="j2ee:configure, test-ejbca.ear">
-		<copy todir="${jboss.farm.dir}" overwrite="true">
-			<fileset dir="src/appserver/jboss">
-				<include name="ejbca-ds.xml"/>
-				<include name="ejbca-mail-service.xml"/>
-			</fileset>
-			<filterchain>
-				<expandproperties />
-			</filterchain>
-		</copy>
-		<mkdir dir="dist/datasources" />
-		<chmod dir="dist/datasources" includes="*.xml" perm="600" failonerror="false" />
-		<copy todir="${jboss.farm.dir}" overwrite="true" failonerror="false">
-			<fileset dir="dist/datasources" includes="**" />
-		</copy>
-		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600" />
-		<chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600" />
-
-		<copy todir="${jboss.farm.dir}">
-			<fileset dir="${dist.dir}" includes="ejbca.ear" />
-		</copy>
-		<chmod file="${dist.dir}/ejbca.ear" perm="600" />
-	</target>
-
 	<target name="j2ee:deployBase" depends="j2ee:configure">
 		<copy todir="${jboss.farm.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss">

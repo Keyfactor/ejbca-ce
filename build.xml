@@ -38,6 +38,14 @@
         <ant antfile="modules/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
     </target>
 	
+	<!-- =================================================================== -->
+	<!-- Clean Dist dirs                                                           -->
+	<!-- =================================================================== -->
+	<target name="cleanDistDir">
+		 <delete dir="${dist.dir}" />
+		 <ant antfile="modules/build.xml" target="clean" inheritall="false"/>
+	</target>
+	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
@@ -303,6 +311,8 @@
                 <include name="ejbca-entity.jar" />
                 <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" />
+        		<include name="systemtests-ejb.jar" />
+        		<include name="systemtests-interfaces.jar" />
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
@@ -313,130 +323,7 @@
     	<antcall target="signjar">
         	<param name="signjar.file" value="${caear}"/>
     	</antcall>
-    </target>
-	
-	 <!-- =================================================================== -->
-	    <!-- Build Test EAR                                                        -->
-	    <!-- =================================================================== -->
-		<target name="test-ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle">
-			<antcall target="doc.war"><param name="external-deps-satfisfied" value="isset"/></antcall>
-			<ant dir="modules/systemtests" target="build-libs"/>
-			<property name="test_ear" value="${dist.dir}/ejbca.ear" />
-			<property name="eardd.src" value="${tmp}/ear" />
-			<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
-			<mkdir dir="${eardd.src}/META-INF"/>
-			<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
-			<war-replacement-in-module
-				replacement-tag="!--@doc.war@-->"
-				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="${doc.war.enabled}"
-				replacement-web-uri="doc.war"
-				replacement-context-root="/ejbca/doc"
-			/>
-			<war-replacement-in-module
-				replacement-tag="!--@renew.war@-->"
-				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="${web.renewalenabled}"
-				replacement-web-uri="renew.war"
-				replacement-context-root="/ejbca/renew"
-			/>
-			<war-replacement-in-module
-				replacement-tag="!--@ejbca-cmp-tcp.war@-->"
-				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="${cmp.tcp.enabled}"
-				replacement-web-uri="ejbca-cmp-tcp.war"
-				replacement-context-root="/ejbca/cmp-tcp"
-			/>
-			<jar-replacement-in-module
-				replacement-tag="!--@ejbca-ws-ejb.jar@-->"
-				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="${ejbcaws.enabled}"
-				replacement-ejb="ejbca-ws-ejb.jar"
-			/>
-			<jar-replacement-in-module
-				replacement-tag="!--@ejbca-xkms-ejb.jar@-->"
-				replacement-file="${eardd.src}/META-INF/application.xml"
-				replacement-enabled="${xkms.enabled}"
-				replacement-ejb="ejbca-xkms-ejb.jar"
-			/>
-			<antcall target="va_replacings_in_application.xml">
-				<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
-			</antcall>
-			<!-- This dir has to exist here -->
-			<mkdir dir="${hwtoken.class.dir}"/>
-			<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
-			<condition property="bundle-hibernate-exclude" value="" else="**">
-				<isset property="bundle-hibernate-jpa"/>
-			</condition>
-			<!-- Include Xerces library if it don't exist in the current application server (jboss6 won't start with it). -->
-			<condition property="bundle-xerces-exclude" value="xerces*.jar, xml-apis.jar" else="">
-				<isset property="exclude-xerces"/>
-			</condition>
-			<!-- Include Xalan library if it don't exist in the current application server (jboss6 won't start with it). -->
-			<condition property="bundle-xalan-exclude" value="xalan*.jar" else="">
-				<isset property="exclude-xalan"/>
-			</condition>
-			<!-- Include serializer library if it don't exist in the current application server (jboss6 won't start with it). -->
-			<condition property="bundle-serializer-exclude" value="serializer*.jar" else="">
-				<isset property="exclude-serializer"/>
-			</condition>
-			<!-- Do we need special WebSphere handling? -->
-	    	<condition property="websphere-specials" value="true"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
-			<!-- Build the EAR -->
-	        <ear destfile="${test_ear}" appxml="${eardd.src}/META-INF/application.xml">
-	    		<!-- Specify that we will use a specific WS implementation -->
-	            <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
-	            <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml"/>
-	            <zipfileset prefix="lib" dir="${lib}">
-	            	<!-- Since WepSphere 7's "special" tools can't handle the signature of these objects, we will add them later. -->
-	                <include name="bcmail-jdk${java.ver}-145.jar" unless="websphere-specials"/>
-	                <include name="bcprov-jdk${java.ver}-145.jar" unless="websphere-specials"/>
-	                <include name="bctsp-jdk${java.ver}-145.jar" unless="websphere-specials"/>
-	                <include name="cert-cvc.jar" />
-	                <include name="log4j-1.2.16.jar" />
-	                <include name="ldap.jar" />
-	                <include name="commons-*.jar" />
-	                <include name="libidn.jar" />	<!-- XKMS -->
-	            </zipfileset>
-	            <zipfileset prefix="lib" dir="${lib}/batik" includes="*.jar" excludes="${bundle-xerces-exclude}"/>
-	            <zipfileset prefix="lib" dir="${lib}/xmlsign" includes="*.jar" excludes="${bundle-xalan-exclude},${bundle-serializer-exclude}"/>	<!-- XKMS -->
-	            <fileset dir="${dist.dir}" includes="doc.war"/>
-	            <fileset dir="${ejbca.home}/modules/dist">
-	                <include name="ejbca-ejb.jar" />
-	                <include name="ejbca-ws-ejb.jar" />
-	                <include name="ejbca-xkms-ejb.jar" />
-	                <include name="adminweb.war" />
-	                <include name="cmp.war" />
-	                <include name="publicweb.war" />
-	                <include name="scep.war" />
-	                <include name="healthcheck.war" />
-	                <include name="clearcache.war" />
-	                <include name="webdist.war" />
-	                <include name="status.war" />
-	                <include name="certstore.war" />
-	                <include name="crlstore.war" />
-	                <include name="renew.war" />
-	                <include name="ejbca-cmp-tcp.war" />
-	            </fileset>
-	        	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
-	                <include name="externalra-service.jar" />
-	                <include name="ejbca-common-web.jar" />
-	                <include name="ejbca-interface.jar" />
-	                <include name="ejbca-entity.jar" />
-	                <include name="ejbca-properties.jar" />
-	                <include name="log4jconfig.jar" />
-	        	</zipfileset>
-	        	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
-	        	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
-	        	<!-- Include PrimeCard HSM libraries. TODO: Test that this works. Previously the classes were included in ejbca-ejb.jar.. -->
-	        	<zipfileset prefix="lib" dir="${hwtoken.class.dir}" includes="*.jar"/>
-			</ear>
-	    	<antcall target="websphere-specials"/>
-	    	<antcall target="signjar">
-	        	<param name="signjar.file" value="${caear}"/>
-	    	</antcall>
-	    </target>
-	
+    </target>	
 
 	<target name="websphere-specials" if="websphere-specials">
 		<!--
@@ -594,10 +481,12 @@
 		</input>
 	</target>
 	
+
+	
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="failinproduction-ca,build, inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the main EJBCA application">
+    <target name="deploy" depends="cleanDistDir, failinproduction-ca,build, inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy the main EJBCA application">       
     	<antcall target="j2ee:deploy" />
         <antcall target="showtime" />
     </target>
@@ -746,6 +635,8 @@
     		includes="intresources.fr.properties" 
     	/>
 	</target>
+	
+
 	
 	<target name="ejbca.ear.module-dependencies">
     	<ant dir="modules" target="ejbca.ear.module-dependencies"/>
