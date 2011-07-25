@@ -553,10 +553,11 @@
 					<include name="org/ejbca/core/ejb/ca/sign/*.java"/>
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
 					<include name="org/ejbca/core/ejb/ca/auth/OldAuthenticationSessionLocal.java"/>
-					<include name="org/ejbca/core/ejb/ca/auth/AuthenticationSession.java"/>
+					<include name="org/ejbca/core/ejb/ca/auth/OldAuthenticationSession.java"/>
 					<include name="org/ejbca/core/ejb/ra/UserAdminSessionLocal.java"/>
 					<include name="org/ejbca/core/ejb/ra/UserAdminSession.java"/>
 					<include name="org/cesecore/authentication/AuthenticationSessionBean.java"/>
+					<include name="org/cesecore/authentication/AuthenticationSessionBeanLocal.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/ca/sign/*SessionBean.java"/>
