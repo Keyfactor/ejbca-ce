@@ -6,17 +6,17 @@
 
 	<dirname property="this.dir" file="${ant.file.systemtests}"/>
 	<import file="${this.dir}/../build.xml"/>
-
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build.test.dir" location="${this.dir}/build/test"/>
 	<property name="build.src.dir" location="${this.dir}/build/src"/>
 	<property name="build.interface.dir" location="${this.dir}/build/interface"/>
+	<property name="systemtests.dist.dir" location="${ejbca.home}/modules/dist"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src.test.dir" location="${this.dir}/src-test"/>
 	<property name="src.interface.dir" location="${this.dir}/src-interface"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
-	<property name="test-ejb.jar" location="${build.dir}/systemtests-ejb.jar"/>
-	<property name="test-interface.jar" location="${build.dir}/systemtests-interfaces.jar" />
+	<property name="test-ejb.jar" location="${systemtests.dist.dir}/systemtests-ejb.jar"/>
+	<property name="test-interface.jar" location="${systemtests.dist.dir}/systemtests-interfaces.jar" />
 
 	<!-- Include endorsed jars from Glassfish -->
 	<condition property="tests.jvmargs" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
@@ -88,33 +88,36 @@
 		<path location="${build.interface.dir}" />
 	</path>
 
-	<target name="build" description="Build this module" depends="compile-tests" />
+	<target name="build" description="Build this module" depends="build-libs, compile-tests" />
 
 	<target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${this.dir}/reports" />
 	</target>
 
-	<target name="compile-interfaces" depends="assert-notinproduction, ejbca-properties, ejbca-ejb">
+	<target name="systemtest-compile-interfaces" depends="ejbca-properties">
 		<mkdir dir="${build.interface.dir}" />
 		<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
 	        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
 		</javac>
 	</target>
 
-	<target name="compile-src" depends="assert-notinproduction, ejbca-properties, ejbca-ejb">
+	<target name="systemtest-compile-src" depends="ejbca-properties">
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
 		</javac>
 	</target>
 
-	<target name="build-libs" depends="compile-interfaces, compile-src">
+	<target name="build-libs" depends="check-inproduction" unless="in-production-mode">
+		<mkdir dir="${dist.dir}" />
+		<antcall target="systemtest-compile-interfaces" />
+		<antcall target="systemtest-compile-src" />	
 		<jar destfile="${test-interface.jar}" basedir="${build.interface.dir}"/>
 		<jar destfile="${test-ejb.jar}" basedir="${build.src.dir}"/>
 	</target>
 
-	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws, compile-interfaces, compile-src">
+	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
@@ -140,6 +143,16 @@
 				</or>
 			</condition>
 		</fail>
+	</target>
+	
+	<target name="check-inproduction">
+		<condition property="in-production-mode">
+			<or>
+				<equals arg1="${ejbca.productionmode}" arg2="ocsp" casesensitive="false"/>
+				<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
+				<equals arg1="${ejbca.productionmode}" arg2="true" casesensitive="false"/>
+			</or>
+		</condition>
 	</target>
 
 	<target name="assert-appserverrunning" description="Check that the server is running">
