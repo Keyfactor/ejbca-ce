@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="systemtests" default="build" basedir=".">
-    <description>
+	<description>
             This module contains all system tests that require a running application server.
     </description>
-	
+
 	<dirname property="this.dir" file="${ant.file.systemtests}"/>
 	<import file="${this.dir}/../build.xml"/>
-	
+
 	<property name="build.dir" location="${this.dir}/build"/>
+	<property name="build.test.dir" location="${this.dir}/build/test"/>
+	<property name="build.src.dir" location="${this.dir}/build/src"/>
+	<property name="build.interface.dir" location="${this.dir}/build/interface"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src.test.dir" location="${this.dir}/src-test"/>
+	<property name="src.interface.dir" location="${this.dir}/src-interface"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
-	
+	<property name="test-ejb.jar" location="${build.dir}/systemtests-ejb.jar"/>
+	<property name="test-interface.jar" location="${build.dir}/systemtests-interfaces.jar" />
+
 	<!-- Include endorsed jars from Glassfish -->
 	<condition property="tests.jvmargs" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
 		<equals arg1="${appserver.subtype}" arg2="glassfish3"/>
@@ -26,9 +32,12 @@
 		<path refid="lib.utils.classpath"/>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.ldap.classpath"/>	<!-- TestPublisher uses this -->
-		<path refid="lib.xmlsec.classpath"/>	<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
-		<path refid="lib.idn.classpath"/>	<!-- Use by XKMS -->
+		<path refid="lib.ldap.classpath"/>
+		<!-- TestPublisher uses this -->
+		<path refid="lib.xmlsec.classpath"/>
+		<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
+		<path refid="lib.idn.classpath"/>
+		<!-- Use by XKMS -->
 		<path refid="lib.commons-logging.classpath"/>
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-entity.lib}"/>
@@ -47,32 +56,81 @@
 	<path id="systemtests.classpath">
 		<path refid="systemtests.classpath.nojee"/>
 		<path refid="lib.jee.classpath"/>
+		<pathelement location="${test-ejb.jar}"/>
+		<pathelement location="${test-interface.jar}"/>
 	</path>
 
-    <target name="build" description="Build this module" depends="compile"/>
+	<path id="interfaces.classpath">
+		<path refid="lib.ejbca-util.classpath"/>
+		<pathelement location="${mod.ejbca-entity.lib}" />
+		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.jee.classpath"/>
+	</path>
 
-    <target name="clean" description="Clean up this module">
+	<path id="compile-ejb.classpath">
+		<path refid="lib.cert-cvc.classpath" />
+		<path refid="lib.bouncycastle.classpath" />
+		<path refid="lib.log4j.classpath" />
+		<path refid="lib.commons-lang.classpath" />
+		<path refid="lib.commons-config.classpath" />
+		<path refid="lib.commons-collections.classpath" />
+		<path refid="lib.commons-logging.classpath" />
+		<path refid="lib.commons-io.classpath" />
+		<path refid="lib.servlet.classpath" />
+		<path refid="lib.ldap.classpath" />
+		<path refid="lib.mail.classpath" />
+		<path refid="lib.batik.classpath" />
+		<path refid="lib.xmlsec.classpath" />
+		<path refid="lib.jee.classpath" />
+		<path refid="lib.ejbca-common-web.classpath" />
+		<path location="${mod.ejbca-entity.lib}" />
+		<path refid="lib.quickserver.classpath" />
+		<path location="${build.interface.dir}" />
+	</path>
+
+	<target name="build" description="Build this module" depends="compile-tests" />
+
+	<target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${this.dir}/reports" />
-    </target>
+	</target>
 
-    <target name="compile" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
-    	<mkdir dir="${build.dir}" />
-        <javac srcdir="${src.test.dir}" destdir="${build.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
-        	<exclude name="org/ejbca/core/protocol/xkms/**"/>
-    	</javac>
-        <javac srcdir="${src.test.dir}" destdir="${build.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
-        	<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
-        	<classpath path="${build.dir}"/>
-    	</javac>
-        <copy file="${log4j.test.file}" tofile="${build.dir}/log4j.xml" failonerror="true"/>
-        <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
-        <copy file="${jndi.properties.file}" todir="${build.dir}" failonerror="false"/>
-    </target>
+	<target name="compile-interfaces" depends="assert-notinproduction, ejbca-properties, ejbca-ejb">
+		<mkdir dir="${build.interface.dir}" />
+		<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
+	        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
+		</javac>
+	</target>
 
-    <target name="assert-notinproduction">
+	<target name="compile-src" depends="assert-notinproduction, ejbca-properties, ejbca-ejb">
+		<mkdir dir="${build.src.dir}" />
+		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
+			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
+		</javac>
+	</target>
+
+	<target name="build-libs" depends="compile-interfaces, compile-src">
+		<jar destfile="${test-interface.jar}" basedir="${build.interface.dir}"/>
+		<jar destfile="${test-ejb.jar}" basedir="${build.src.dir}"/>
+	</target>
+
+	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws, compile-interfaces, compile-src">
+		<mkdir dir="${build.test.dir}" />
+		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
+			<exclude name="org/ejbca/core/protocol/xkms/**"/>
+		</javac>
+		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
+        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
+			<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
+			<classpath path="${build.test.dir}"/>
+		</javac>
+		<copy file="${log4j.test.file}" tofile="${build.dir}/log4j.xml" failonerror="true"/>
+		<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+		<copy file="${jndi.properties.file}" todir="${build.dir}" failonerror="false"/>
+	</target>
+
+	<target name="assert-notinproduction">
 		<fail message="You cannot run system tests in a production environment.">
 			<condition>
 				<or>
@@ -82,14 +140,14 @@
 				</or>
 			</condition>
 		</fail>
-    </target>
-	
+	</target>
+
 	<target name="assert-appserverrunning" description="Check that the server is running">
 		<echo message="Verifying that the application server is up and running..."/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.publicweb">
 			<http url="http://localhost:${httpserver.pubhttp}/ejbca/index.jsp"/>
 		</waitfor>
-		<fail message="Please start application server before running this script" if="appserver.notrunning.publicweb"/>	
+		<fail message="Please start application server before running this script" if="appserver.notrunning.publicweb"/>
 	</target>
 
 	<target name="assert-appserverrunning-ocsp" description="Check that the server is at least running the OCSP service">
@@ -97,7 +155,7 @@
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="appserver.notrunning.ocsp">
 			<http url="http://localhost:${httpserver.pubhttp}/ejbca/publicweb/status/ocsp/"/>
 		</waitfor>
-		<fail message="Please start application server before running this script" if="appserver.notrunning.ocsp"/>	
+		<fail message="Please start application server before running this script" if="appserver.notrunning.ocsp"/>
 	</target>
 
 	<!-- If using antcall you must use inheritrefs="true" in order for not having to call clover-setup every time -->
@@ -108,67 +166,75 @@
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
-		<mkdir dir="${this.dir}/p12"/>	<!-- Workaround for tests using BatchMakeP12 -->
-		<mkdir dir="${build.dir}/conf"/>	<!-- Workaround for tests TestCertificateProfile -->
-    	<copy todir="${build.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />	<!-- Workaround for tests TestCertificateProfile -->
-		<property name="runone-internal.classpath" value="systemtests.classpath"/>	<!-- set a default -->
+		<mkdir dir="${this.dir}/p12"/>
+		<!-- Workaround for tests using BatchMakeP12 -->
+		<mkdir dir="${build.test.dir}/conf"/>
+		<!-- Workaround for tests TestCertificateProfile -->
+		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />
+		<!-- Workaround for tests TestCertificateProfile -->
+		<property name="runone-internal.classpath" value="systemtests.classpath"/>
+		<!-- set a default -->
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
-				<path location="${build.dir}" />
+				<path location="${build.test.dir}" />
 				<path refid="${runone-internal.classpath}" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.dir}" includes="**/${test.runone}.class" excludes="**/${test.runoneexclude}.class"/>
+				<fileset dir="${build.test.dir}" includes="**/${test.runone}.class" excludes="**/${test.runoneexclude}.class"/>
 			</batchtest>
 		</junit>
-		<delete dir="${this.dir}/p12" />	<!-- Workaround for tests using BatchMakeP12 -->
-	<antcall target="createreport">
-		<param name="reports.dir" value="${reports.dir}"/>
-	</antcall>
+		<delete dir="${this.dir}/p12" />
+		<!-- Workaround for tests using BatchMakeP12 -->
+		<antcall target="createreport">
+			<param name="reports.dir" value="${reports.dir}"/>
+		</antcall>
 	</target>
 
 	<!-- =================================
           Run most system tests
          ================================= -->
-    <target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test.">
-    	<antcall target="showtime"/>
+	<target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test.">
+		<antcall target="showtime"/>
 		<delete dir="${reports.base.dir}/run" />
 		<mkdir dir="${reports.base.dir}/run/html"/>
-		<mkdir dir="${this.dir}/p12"/>	<!-- Workaround for tests using BatchMakeP12 -->
-		<mkdir dir="${build.dir}/conf"/>	<!-- Workaround for tests TestCertificateProfile -->
-    	<copy todir="${build.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />	<!-- Workaround for tests TestCertificateProfile -->
+		<mkdir dir="${this.dir}/p12"/>
+		<!-- Workaround for tests using BatchMakeP12 -->
+		<mkdir dir="${build.test.dir}/conf"/>
+		<!-- Workaround for tests TestCertificateProfile -->
+		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />
+		<!-- Workaround for tests TestCertificateProfile -->
 		<echo message="Checking if the CMP TCP listener is listening on port 127.0.0.1:5587... (will result in additional tests being run)"/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
 			<socket server="127.0.0.1" port="5587"/>
 		</waitfor>
-	    <!-- The CMP unid test requires the mysql.lib property to be set -->
-    	<condition property="cmpunid.enabled" value="true">
-    		<isset property="mysql.lib"/>
-    	</condition>
+		<!-- The CMP unid test requires the mysql.lib property to be set -->
+		<condition property="cmpunid.enabled" value="true">
+			<isset property="mysql.lib"/>
+		</condition>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path location="${build.dir}" />
+				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
-				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
+				<fileset dir="${build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
 			</batchtest>
 			<!-- Tests that require CAsTest to setup CAs -->
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
-				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/sign/SignSessionTest.class"/>
+				<fileset dir="${build.test.dir}" includes="org/ejbca/core/ejb/ca/sign/SignSessionTest.class"/>
 			</batchtest>
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
-				<fileset dir="${build.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class"/>
+				<fileset dir="${build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class"/>
 			</batchtest>
 			<!-- Most system tests -->
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
-				<fileset dir="${build.dir}">
+				<fileset dir="${build.test.dir}">
 					<include name="**/*Test.class" />
 					<!-- Tests that require TestCAs to setup CAs -->
 					<exclude name="org/ejbca/core/ejb/ca/caadmin/CAsTest.class" />
@@ -191,8 +257,8 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$1.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
-                    <exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
-                    <exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
+					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
+					<exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspSignedHttpTest.class" />
 					<exclude name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class"/>
@@ -213,77 +279,78 @@
 			</batchtest>
 			<!-- Tests that require the CMP TCP listener -->
 			<batchtest fork="yes" todir="${reports.base.dir}/run" unless="cmptcplistener.notrunning">
-				<fileset dir="${build.dir}">
+				<fileset dir="${build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeTcpRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Tests that require the CMP Unid data handler -->
 			<batchtest fork="yes" todir="${reports.base.dir}/run" if="cmpunid.enabled">
-				<fileset dir="${build.dir}">
+				<fileset dir="${build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-		<delete dir="${this.dir}/p12" />	<!-- Workaround for tests using BatchMakeP12 -->
-    	<antcall target="createreport">
-    		<param name="reports.dir" value="${reports.base.dir}/run"/>
-    	</antcall>
-    	<antcall target="showtime"/>
-    </target>
+		<delete dir="${this.dir}/p12" />
+		<!-- Workaround for tests using BatchMakeP12 -->
+		<antcall target="createreport">
+			<param name="reports.dir" value="${reports.base.dir}/run"/>
+		</antcall>
+		<antcall target="showtime"/>
+	</target>
 
-    <target name="runweb" depends="build, assert-appserverrunning" description="Run web-realted system tests">
-    	<antcall target="showtime"/>
+	<target name="runweb" depends="build, assert-appserverrunning" description="Run web-realted system tests">
+		<antcall target="showtime"/>
 		<delete dir="${reports.base.dir}/runweb" />
 		<mkdir dir="${reports.base.dir}/runweb/html"/>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path location="${build.dir}" />
+				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/runweb">
-				<fileset dir="${build.dir}">
-                    <include name="org/ejbca/core/protocol/scep/ProtocolScepHttpTest.class" />
-                    <include name="org/ejbca/core/protocol/scep/ProtocolOcspHttpTest.class" />
-                    <include name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
-                    <include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
-                	<include name="org/ejbca/ui/web/pub/WebdistHttpTest.class" />
-                	<include name="org/ejbca/ui/web/pub/CertRequestHttpTest.class" />
-                	<include name="org/ejbca/ui/web/pub/WebEjbcaHealthCheckTest.class" />
+				<fileset dir="${build.test.dir}">
+					<include name="org/ejbca/core/protocol/scep/ProtocolScepHttpTest.class" />
+					<include name="org/ejbca/core/protocol/scep/ProtocolOcspHttpTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
+					<include name="org/ejbca/ui/web/pub/WebdistHttpTest.class" />
+					<include name="org/ejbca/ui/web/pub/CertRequestHttpTest.class" />
+					<include name="org/ejbca/ui/web/pub/WebEjbcaHealthCheckTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-	<antcall target="createreport">
-		<param name="reports.dir" value="${reports.base.dir}/runweb"/>
-	</antcall>
-    	<antcall target="showtime"/>
-    </target>
+		<antcall target="createreport">
+			<param name="reports.dir" value="${reports.base.dir}/runweb"/>
+		</antcall>
+		<antcall target="showtime"/>
+	</target>
 
-    <target name="runcmp" depends="build, assert-appserverrunning" description="Run CMP system tests">
-    	<antcall target="showtime"/>
+	<target name="runcmp" depends="build, assert-appserverrunning" description="Run CMP system tests">
+		<antcall target="showtime"/>
 		<delete dir="${reports.base.dir}/runcmp" />
 		<mkdir dir="${reports.base.dir}/runcmp/html"/>
 		<echo message="Checking if the CMP TCP listener is listening on port 127.0.0.1:5587..."/>
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
 			<socket server="127.0.0.1" port="5587"/>
 		</waitfor>
-    	<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
+		<fail if="cmptcplistener.notrunning" message="This test requires a running CMP TCP listener"/>
 		<junit printsummary="yes" haltonfailure="no">
-		    <sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
-		    <sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
-		    <sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
-		    <classpath>
-				<path location="${build.dir}" />
+			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
+			<sysproperty key="tcpCmpProxyIP" value="${tcpCmpProxyIP}"/>
+			<sysproperty key="tcpCmpProxyPort" value="${tcpCmpProxyPort}"/>
+			<classpath>
+				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.base.dir}/runcmp" unless="cmptcplistener.notrunning">
-				<fileset dir="${build.dir}">
+				<fileset dir="${build.test.dir}">
 					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRATcpRequestTest.class" />
@@ -291,18 +358,18 @@
 				</fileset>
 			</batchtest>
 		</junit>
-	<antcall target="createreport">
-		<param name="reports.dir" value="${reports.base.dir}/runcmp"/>
-	</antcall>
-    	<antcall target="showtime"/>
-    </target>
+		<antcall target="createreport">
+			<param name="reports.dir" value="${reports.base.dir}/runcmp"/>
+		</antcall>
+		<antcall target="showtime"/>
+	</target>
 
 	<!-- =================================
           Run a single test specified with -Dtest.runone=TestName
          ================================= -->
 	<target name="runone" description="Run a single JUnit-test specified -Dtest.runone=classname" unless="test.runone.fileset.notempty">
 		<antcall target="runone-internal" inheritrefs="true">
-			 <param name="reports.dir" value="${reports.base.dir}/run-one"/>
+			<param name="reports.dir" value="${reports.base.dir}/run-one"/>
 		</antcall>
 	</target>
 
@@ -310,14 +377,15 @@
           Run the log stress test
          ================================= -->
 	<target name="runlogstress" description="Run the log stress test (runs for one hour)">
-    	<property name="test.runone" value="LoggingStressTest"/>
+		<property name="test.runone" value="LoggingStressTest"/>
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runlogstress"/>
 		</antcall>
 	</target>
 
 	<target name="runws" description="Run Web Services system tests">
-		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>	<!-- no jee classes for ws tests -->
+		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
+		<!-- no jee classes for ws tests -->
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runws"/>
 			<param name="test.runone" value="EjbcaWS*Test"/>
@@ -329,31 +397,31 @@
 		<property name="runone-internal.classpath" value="systemtests.classpath.nojee"/>
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runxkms"/>
-	    	<param name="test.runone" value="XKMS*Test"/>
+			<param name="test.runone" value="XKMS*Test"/>
 			<!-- Exclude test of broken functionality -->
 			<param name="test.runoneexclude" value="org/ejbca/core/protocol/xkms/XKMSSigTest"/>
 		</antcall>
 	</target>
 
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
-    	<property name="test.runone" value="AddLotsofCertsPerUserTest"/>
+		<property name="test.runone" value="AddLotsofCertsPerUserTest"/>
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
 		</antcall>
 	</target>
 
 	<target name="runlotsofusers" description="Run system tests that creates lots of users">
-    	<property name="test.runone" value="AddLotsofUsersTest"/>
-	<antcall target="runone-internal" inheritrefs="true">
-		<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
-	</antcall>
+		<property name="test.runone" value="AddLotsofUsersTest"/>
+		<antcall target="runone-internal" inheritrefs="true">
+			<param name="reports.dir" value="${reports.base.dir}/runlotsperuser"/>
+		</antcall>
 	</target>
 
 	<target name="runperf" description="Run system tests that creates lots of certificates">
-    	<property name="test.runone" value="SignLotsOfCertsTest"/>
-	<antcall target="runone-internal" inheritrefs="true">
-		<param name="reports.dir" value="${reports.base.dir}/runperf"/>
-	</antcall>
+		<property name="test.runone" value="SignLotsOfCertsTest"/>
+		<antcall target="runone-internal" inheritrefs="true">
+			<param name="reports.dir" value="${reports.base.dir}/runperf"/>
+		</antcall>
 	</target>
 
 	<!-- Target that setups a user with cert as required by ProtocolOcspHttpStandaloneTest -->
@@ -426,14 +494,14 @@
 		<echo message="${runocsp.warning}"/>
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
-				<path location="${build.dir}" />
+				<path location="${build.test.dir}" />
 				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.dir}">
+				<fileset dir="${build.test.dir}">
 					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
 					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />
 				</fileset>
@@ -441,32 +509,34 @@
 		</junit>
 		<antcall target="createreport"/>
 	</target>
-	
-    <target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
+
+	<target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
 		<echo message="Use ejbca-custom/dist/clientToolBox/lib for your JDBC driver and ejbca-custom/dist/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
-    	<property name="reports.dir" location="${reports.base.dir}/ctb"/>
+		<property name="reports.dir" location="${reports.base.dir}/ctb"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path location="${build.dir}" />
-                <path refid="lib.clientToolBox.classpath" />
+				<path location="${build.test.dir}" />
+				<path refid="lib.clientToolBox.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.dir}">
-                    <include name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
+				<fileset dir="${build.test.dir}">
+					<include name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-    	<antcall target="createreport"/>
-   	</target>
+		<antcall target="createreport"/>
+	</target>
 
 	<target name="rungfver" depends="build">
-		<condition property="isglassfish"><matches pattern="glassfish" string="${appserver.type}"/></condition>
-    	<property name="reports.dir" location="${reports.base.dir}/gfver"/>
+		<condition property="isglassfish">
+			<matches pattern="glassfish" string="${appserver.type}"/>
+		</condition>
+		<property name="reports.dir" location="${reports.base.dir}/gfver"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
 		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
@@ -474,25 +544,27 @@
 		</exec>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path location="${build.dir}" />
-                <path refid="systemtests.classpath" />
+				<path location="${build.test.dir}" />
+				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=0 -Dvertest.expectedFailures=3 -Dvertest.expectedWarnings=0"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
-				<fileset dir="${build.dir}">
-                    <include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
+				<fileset dir="${build.test.dir}">
+					<include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-    	<antcall target="createreport"/>
+		<antcall target="createreport"/>
 	</target>
 
 	<target name="rungfver-ocsp" depends="build">
-		<condition property="isglassfish"><matches pattern="glassfish" string="${appserver.type}"/></condition>
-    	<property name="reports.dir" location="${reports.base.dir}/gfver-ocsp"/>
+		<condition property="isglassfish">
+			<matches pattern="glassfish" string="${appserver.type}"/>
+		</condition>
+		<property name="reports.dir" location="${reports.base.dir}/gfver-ocsp"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
 		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
@@ -500,20 +572,20 @@
 		</exec>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
-				<path location="${build.dir}" />
-                <path refid="systemtests.classpath" />
+				<path location="${build.test.dir}" />
+				<path refid="systemtests.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedFailures=0"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
-				<fileset dir="${build.dir}">
-                    <include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
+				<fileset dir="${build.test.dir}">
+					<include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
-    	<antcall target="createreport"/>
+		<antcall target="createreport"/>
 	</target>
 
 </project>
