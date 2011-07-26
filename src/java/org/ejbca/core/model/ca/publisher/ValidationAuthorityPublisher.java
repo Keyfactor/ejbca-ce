@@ -258,14 +258,14 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 		private final String fingerprint;
 		private final long thisUpdate;
 		private final long nextUpdate;
-		StoreCRLPreparer(byte[] incrl, String cafp, int number) throws PublisherException{
+		StoreCRLPreparer(byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 			super();
 			final X509CRL crl;
 			try {
 				crl = CertTools.getCRLfromByteArray(incrl);
 				// Is it a delta CRL?
 				this.deltaCRLIndicator = crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId())!=null ? 1 : -1;
-				this.issuerDN = new X509Principal(crl.getIssuerX500Principal().getEncoded()).getName();// getName() the BC way
+				this.issuerDN = userDN;
 				this.cRLNumber = number;
 				this.cAFingerprint = cafp;
 				this.base64Crl = new String(Base64.encode(incrl));
@@ -309,7 +309,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 			}
 			return true;
 		}
-		final Preparer prep = new StoreCRLPreparer(incrl,cafp,number);
+		final Preparer prep = new StoreCRLPreparer(incrl,cafp,number, userDN);
 		try {
 			JDBCUtil.execute(insertCRLSQL, prep, getDataSource());    
 		} catch (SQLException e) {
