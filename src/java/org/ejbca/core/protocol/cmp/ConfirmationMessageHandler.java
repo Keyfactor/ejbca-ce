@@ -25,17 +25,26 @@ import org.apache.log4j.Logger;
 import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenContainer;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
+
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 /**
  * Message handler for certificate request confirmation message.
@@ -60,11 +69,15 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	private String raAuthenticationSecret = null;
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
+	/** CA Session used to sign the response */
+	private CaSession caSession;
 	
-	public ConfirmationMessageHandler(Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+//	public ConfirmationMessageHandler(Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+	public ConfirmationMessageHandler(Admin admin, CAAdminSession caAdminSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
 		super(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
+		this.caSession = caSession;
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		if (LOG.isTraceEnabled()) {
@@ -148,6 +161,37 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			}
 			if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
 				cresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
+			} else if (StringUtils.equals(responseProtection, "signature")) {
+				try {
+					// Get the CA that should sign the response
+					String cadn = CertTools.stringToBCDNString(msg.getRecipient().getName().toString());
+					CA ca = null;
+					if (cadn == null) {
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("Using Default CA to sign Certificate Confirm message: "+CmpConfiguration.getDefaultCA());
+						}
+						ca = caSession.getCA(admin, CmpConfiguration.getDefaultCA());
+					} else if (CmpConfiguration.getDefaultCA() != null) {
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("Using recipient CA to sign Certificate Confirm message: '"+cadn+"', "+cadn.hashCode());
+						}
+						ca = caSession.getCA(admin, cadn.hashCode());
+					}
+					if (ca != null) {
+						CATokenContainer catoken = ca.getCAToken();
+						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());						
+					} else {
+						if (LOG.isDebugEnabled()) {
+							LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA()+"). Not signing Certificate Confirm.");
+						}
+					}
+				} catch (CADoesntExistsException e) {
+					LOG.error("Exception during CMP response signing: ", e);			
+				} catch (IllegalKeyStoreException e) {
+					LOG.error("Exception during CMP response signing: ", e);			
+				} catch (CATokenOfflineException e) {
+					LOG.error("Exception during CMP response signing: ", e);			
+				}
 			}
 			resp = cresp;
 			try {

@@ -17,12 +17,16 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
@@ -52,6 +56,17 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 	 *
 	 */
 	static final long serialVersionUID = 10003L;
+
+	private static final Logger log = Logger.getLogger(CmpConfirmResponseMessage.class);
+	
+    /** Default digest algorithm for CMP response message, can be overridden */
+	private String digestAlg = CMSSignedGenerator.DIGEST_SHA1;
+	/** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
+	private String provider = "BC";
+	/** Certificate for the signer of the response message (CA) */
+	private transient Certificate signCert = null;
+	/** Private key used to sign the response message */
+	private transient PrivateKey signKey = null;
 
 	/** The encoded response message */
     private byte[] responseMessage = null;
@@ -106,7 +121,26 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
-			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			
+			//responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
+			if ((signCert != null) && (signKey != null)) {
+				try {
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
+				} catch (CertificateEncodingException e) {
+					log.error("Error creating CmpConfirmMessage: ", e);
+				} catch (SecurityException e) {
+					log.error("Error creating CmpConfirmMessage: ", e);
+				} catch (SignatureException e) {
+					log.error("Error creating CmpConfirmMessage: ", e);
+				}				
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Not signing CMP Confirm Response, because signCert or signKey is not set.");
+				}
+			}
+			// If we could not create the signed response message, create a non-protected one instead.
+			if (responseMessage == null) {
+				responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
+			}
 		}
 		return true;
 	}
@@ -114,9 +148,17 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 	public boolean requireSignKeyInfo() {
 		return false;
 	}
-
+/*
 	public void setSignKeyInfo(Certificate cert, PrivateKey key,
 			String provider) {
+	}
+*/
+	public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
+		this.signCert = cert;
+		this.signKey = key;
+		if (provider != null) {
+			this.provider = provider;
+		}
 	}
 
 	public void setSenderNonce(String senderNonce) {
