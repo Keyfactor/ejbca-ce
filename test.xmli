@@ -32,7 +32,7 @@
 				<fileset dir="${ejbca.home}" id="test.runone.fileset">
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-entity/src-test/**/${test.runone}.java" />
-					<include name="modules/systemtests/src/**/${test.runone}.java" />
+					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
 					<include name="modules/externalra/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
