@@ -28,6 +28,7 @@ import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -78,6 +79,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private UserAdminSessionLocal userAdminSession;
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private CaSessionLocal caSession;
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
@@ -150,7 +153,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-				handler = new ConfirmationMessageHandler(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
+				//handler = new ConfirmationMessageHandler(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
+				handler = new ConfirmationMessageHandler(admin, caAdminSession, caSession, endEntityProfileSession, certificateProfileSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:

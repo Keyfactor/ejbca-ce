@@ -228,6 +228,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 			do {
 				av = getReq().getRegInfo(i);
 				if (av != null) {
+					if (log.isTraceEnabled()) {
+						log.trace("Found AttributeTypeAndValue (in CertReqMsg): "+av.getObjectId().getId());
+					}
 					if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
 						final DEREncodable enc = av.getParameters();
 						final DERUTF8String str = DERUTF8String.getInstance(enc);
@@ -248,6 +251,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 			do {
 				av = getReq().getCertReq().getControls(i);
 				if (av != null) {
+					if (log.isTraceEnabled()) {
+						log.trace("Found AttributeTypeAndValue (in CertReq): "+av.getObjectId().getId());
+					}
 					if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
 						final DEREncodable enc = av.getParameters();
 						final DERUTF8String str = DERUTF8String.getInstance(enc);
