@@ -107,6 +107,13 @@
 			<!-- ... -->
 		</or>
 	</condition>
+	
+	<condition property="exclude-slf4j">
+		<or>
+			<matches pattern="glassfish3" string="${appserver.subtype}"/>
+			<!-- ... -->
+		</or>
+	</condition>
 
 	<condition property="exclude-xerces">
 		<or>
