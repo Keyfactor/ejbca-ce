@@ -1,0 +1,229 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.cesecore.authentication.tokens;
+
+import java.math.BigInteger;
+import java.security.cert.X509Certificate;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+
+/**
+ * This is an implementation of the AuthenticationToken concept, based on using an {@link X509Certificate} as it's single credential, and that
+ * certificate's {@link X500Principal} as its principle, but as the X500Principle is contained in the X509Certificate, this remains little more than a
+ * formality. This AuthenticationToken is the default used in EJBCA.
+ * 
+ * The implementation of the <code>matches(...)</code> method is based on <code>AdminEntity.java 10832 2010-12-13 13:54:25Z anatom</code> from EJBCA.
+ * 
+ * Based on cesecore version:
+ *      X509CertificateAuthenticationToken.java 937 2011-07-14 15:57:25Z mikek
+ * 
+ * @version $Id$
+ * 
+ */
+public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
+
+    private static final long serialVersionUID = 1097165653913865515L;
+
+    private static final Pattern serialPattern = Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
+
+    private final X509Certificate certificate;
+
+    /**
+     * Standard constructor for X509CertificateAuthenticationToken
+     * 
+     * @param principals
+     *            A set of X500Principals. Should contain one and only one value.
+     * @param credentials
+     *            A set of X509Certificates. As with the principals, this set should contain one and only one value, anything else will result in a
+     *            {@link InvalidAuthenticationTokenException} being thrown.
+     */
+    public X509CertificateAuthenticationToken(Set<X500Principal> principals, Set<X509Certificate> credentials) {
+        super(principals, credentials);
+
+        /*
+         * In order to save having to verify the credentials set every time the <code>matches(...)</code> method is called, it's checked here, and the
+         * resulting credential is stored locally.
+         */
+        X509Certificate[] certificateArray = getCredentials().toArray(new X509Certificate[0]);
+        if (certificateArray.length != 1) {
+            throw new InvalidAuthenticationTokenException("X509CertificateAuthenticationToken was containing " + certificateArray.length
+                    + " credentials instead of 1.");
+        } else {
+            certificate = certificateArray[0];
+        }
+    }
+
+    /**
+     * This implementation presumes that a lone {@link X509Certificate} has been submitted as a credential (which should have been verified by the
+     * constructor), and will use that value to match this authentication token to the AccessUserData entity submitted.
+     * 
+     * FIXME: This class is a candidate for optimization. FIXME: Attempt to remove as many static calls as
+     * possible.
+     * 
+     */
+    @Override
+    public boolean matches(AccessUserAspect accessUser) {
+    	// Protect against spoofing by checking if this token was created locally
+    	if (!super.isCreatedInThisJvm()) {
+    		return false;
+    	}
+        boolean returnvalue = false;
+
+        String certstring = CertTools.getSubjectDN(certificate).toString();
+        int adminCaId = CertTools.getIssuerDN(certificate).hashCode();
+
+        certstring = serialPattern.matcher(certstring).replaceAll("SN=");
+
+        String anString = null;
+
+        anString = CertTools.getSubjectAlternativeName(certificate);
+
+        int parameter;
+        int size = 0;
+        String[] clientstrings = null;
+
+        // First check that issuers match.
+        if (accessUser.getCaId() == adminCaId) {
+            // Determine part of certificate to match with.
+            DNFieldExtractor dn = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
+            DNFieldExtractor an = new DNFieldExtractor(anString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+            DNFieldExtractor usedExtractor = dn;
+            AccessMatchValue matchValue = accessUser.getMatchWithByValue();
+            if (matchValue == AccessMatchValue.WITH_SERIALNUMBER) {
+                BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
+                switch (accessUser.getMatchTypeAsType()) {
+                case TYPE_EQUALCASE:
+                case TYPE_EQUALCASEINS:
+                    try {
+                        returnvalue = matchValueAsBigInteger.equals(certificate.getSerialNumber());
+                    } catch (NumberFormatException nfe) {
+                    }
+                    break;
+                case TYPE_NOT_EQUALCASE:
+                case TYPE_NOT_EQUALCASEINS:
+                    try {
+                        returnvalue = !matchValueAsBigInteger.equals(certificate.getSerialNumber());
+                    } catch (NumberFormatException nfe) {
+                    }
+                    break;
+                default:
+                }
+            } else {
+                parameter = DNFieldExtractor.CN;
+                switch (matchValue) {
+                case WITH_COUNTRY:
+                    parameter = DNFieldExtractor.C;
+                    break;
+                case WITH_DOMAINCOMPONENT:
+                    parameter = DNFieldExtractor.DC;
+                    break;
+                case WITH_STATE:
+                    parameter = DNFieldExtractor.L;
+                    break;
+                case WITH_LOCALE:
+                    parameter = DNFieldExtractor.ST;
+                    break;
+                case WITH_ORGANIZATION:
+                    parameter = DNFieldExtractor.O;
+                    break;
+                case WITH_ORGANIZATIONUNIT:
+                    parameter = DNFieldExtractor.OU;
+                    break;
+                case WITH_TITLE:
+                    parameter = DNFieldExtractor.T;
+                    break;
+                case WITH_DNSERIALNUMBER:
+                    parameter = DNFieldExtractor.SN;
+                    break;
+                case WITH_COMMONNAME:
+                    parameter = DNFieldExtractor.CN;
+                    break;
+                case WITH_UID:
+                    parameter = DNFieldExtractor.UID;
+                    break;
+                case WITH_DNEMAIL:
+                    parameter = DNFieldExtractor.E;
+                    break;
+                case WITH_RFC822NAME:
+                    parameter = DNFieldExtractor.RFC822NAME;
+                    usedExtractor = an;
+                    break;
+                case WITH_UPN:
+                    parameter = DNFieldExtractor.UPN;
+                    usedExtractor = an;
+                    break;
+                default:
+                }
+                size = usedExtractor.getNumberOfFields(parameter);
+                clientstrings = new String[size];
+                for (int i = 0; i < size; i++) {
+                    clientstrings[i] = usedExtractor.getField(parameter, i);
+                }
+
+                // Determine how to match.
+                if (clientstrings != null) {
+                    switch (accessUser.getMatchTypeAsType()) {
+                    case TYPE_EQUALCASE:
+                        for (int i = 0; i < size; i++) {
+                            returnvalue = clientstrings[i].equals(accessUser.getMatchValue());
+                            if (returnvalue) {
+                                break;
+                            }
+                        }
+                        break;
+                    case TYPE_EQUALCASEINS:
+                        for (int i = 0; i < size; i++) {
+                            returnvalue = clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
+                            if (returnvalue) {
+                                break;
+                            }
+                        }
+                        break;
+                    case TYPE_NOT_EQUALCASE:
+                        for (int i = 0; i < size; i++) {
+                            returnvalue = !clientstrings[i].equals(accessUser.getMatchValue());
+                            if (returnvalue) {
+                                break;
+                            }
+                        }
+                        break;
+                    case TYPE_NOT_EQUALCASEINS:
+                        for (int i = 0; i < size; i++) {
+                            returnvalue = !clientstrings[i].equalsIgnoreCase(accessUser.getMatchValue());
+                            if (returnvalue) {
+                                break;
+                            }
+                        }
+                        break;
+                    default:
+                    }
+                }
+            }
+        }
+
+        return returnvalue;
+    }
+
+    /** Returns user information of the user this authentication token belongs to. */
+    @Override
+    public String toString() {
+    	return CertTools.getSubjectDN(certificate);
+    }
+}
