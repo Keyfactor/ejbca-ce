@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
 import org.junit.Test;
 
 /**
@@ -92,8 +93,8 @@ public class InternalResourcesTest {
         }
 
         private void setupResources() {
-            String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase();
-            String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase();
+            String primaryLanguage = CesecoreConfiguration.getInternalResourcesPreferredLanguage().toLowerCase();
+            String secondaryLanguage = CesecoreConfiguration.getInternalResourcesSecondaryLanguage().toLowerCase();
 
             InputStream primaryStream = null;
             InputStream secondaryStream = null;

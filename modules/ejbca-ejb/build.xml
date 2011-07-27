@@ -132,9 +132,12 @@
 		<include name="org/cesecore/authentication/tokens/*.java"/>
 		<include name="org/cesecore/authorization/*.java"/>
 		<include name="org/cesecore/authorization/control/*.java"/>
+		<include name="org/cesecore/authorization/rules/*.java"/>
+		<include name="org/cesecore/authorization/user/*.java"/>
 		<include name="org/cesecore/internal/*.java"/>
 		<include name="org/cesecore/keys/token/*.java"/>
 		<include name="org/cesecore/keys/util/*.java"/>
+		<include name="org/cesecore/roles/*.java"/>
 		<include name="org/cesecore/time/*.java"/>
 		<include name="org/cesecore/time/providers/*.java"/>
 		<include name="org/cesecore/util/*.java"/>
@@ -365,7 +368,7 @@
 				<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
 			</filterchain>
 		</copy>
-		<copy todir="${build.dir}" file="${ejbca.home}/src/defaultvalues.properties"/>
+		<copy todir="${build.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}"/>

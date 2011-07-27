@@ -1,0 +1,54 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.cesecore.roles.access;
+
+import java.util.Collection;
+
+import org.cesecore.roles.RoleData;
+
+/**
+ * Implementations of this bean give access to RoleData objects.
+ * 
+ * Based on cesecore version:
+ *      RoleAccessSession.java 538 2011-03-14 13:12:09Z tomas
+ * 
+ * @version $Id$
+ * 
+ */
+public interface RoleAccessSession {
+
+    /**
+     * Retrieves all roles in the database..
+     * 
+     * @return all the roles in the database.
+     */
+    Collection<RoleData> getAllRoles();
+
+    /**
+     * Finds a RoleData object by its primary key.
+     * 
+     * @param primaryKey
+     *            The primary key.
+     * @return the found entity instance or null if the entity does not exist.
+     */
+    RoleData findRole(final Integer primaryKey);
+
+    /**
+     * Finds a specific role by name.
+     * @param roleName
+     *            Name of the sought role.
+     * 
+     * @return The sought roll, null
+     */
+    RoleData findRole(final String roleName);
+}
