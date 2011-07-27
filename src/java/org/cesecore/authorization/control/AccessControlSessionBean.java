@@ -58,13 +58,8 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     private static AccessTreeCache accessTreeCache;
 
     @Override
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) {
-
-        if (updateNeccessary()) {
-            updateAuthorizationTree(authenticationToken);
-        }
-
-        if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
+    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) { 
+        if (isAuthorizedNoLog(authenticationToken, resource)) {
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("resource", resource);
             securityEventsLoggerSession.log(EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
@@ -73,6 +68,14 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         } else {
             return false;
         }
+    }
+    
+    @Override 
+    public boolean isAuthorizedNoLog(AuthenticationToken authenticationToken, String resource) {
+        if (updateNeccessary()) {
+            updateAuthorizationTree(authenticationToken);
+        }
+        return accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource);
     }
 
     @Override
