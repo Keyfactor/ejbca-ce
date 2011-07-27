@@ -198,6 +198,14 @@
 			<include name="lib/appserv-rt.jar"/>
 			<include name="lib/appserv-ext.jar"/>
 			<include name="lib/appserv-deployment-client.jar"/>
+			
+			<!-- Glassfish 3.1 -->
+			<include name="lib"/>
+			<include name="lib/gf-client.jar"/>
+			<include name="lib/jndi-properties.jar"/>
+			<!-- FIXME These are supposed to be loaded automatically by gf-client. Why doens't that work? -->
+			<include name="modules/*.jar"/>
+			
 			<!-- Weblogic 10.3.4 (generic) -->
 			<!-- This library built with "java -jar wljarbuilder.jar" cannot be used since it also contains webservices etc..
 			<include name="wlserver_10.3/server/lib/wlfullclient.jar"/>
@@ -235,6 +243,8 @@
 		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
 		<!-- Glassfish 2.1.1 -->
 		<include name="lib/jsf-impl.jar" />
+		<!-- Glassfish 3.1 -->
+		<include name="modules/jsf-impl.jar" />
 		<!-- WebLogic 10.3.4 -->
 		<include name="modules/javax.jsf_1.1.0.0_1-2.jar" />
 		<!-- websphere ? -->
@@ -251,6 +261,7 @@
 			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
 			<!-- Glassfish -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
+			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
 			<!-- WebLogic 10.3.4 -->
 			<!-- websphere ? -->
 		</fileset>
@@ -267,6 +278,7 @@
 			<include name="lib/appserv-rt.jar" /> <!-- 2.1.1 -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
 			<include name="lib/javaee.jar" /> <!-- 2.1.1 -->
+			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
 			<!-- WebLogic 10.3.4 -->
 			<!-- websphere ? -->
 		</fileset>
@@ -307,8 +319,8 @@
             <include name="hibernate-validator-*.jar"/>
             <include name="javassist-3.4.GA.jar"/>
             <include name="ejb3-persistence.jar"/>
-            <include name="slf4j-api-1.5.2.jar"/>
-            <include name="slf4j-log4j12.jar"/>
+            <include name="slf4j-api-1.5.2.jar" unless="exclude-slf4j"/>
+            <include name="slf4j-log4j12.jar" unless="exclude-slf4j"/>
             <include name="jta-1.1.jar"/>
             <include name="dom4j-*.jar"/>
         </fileset>
