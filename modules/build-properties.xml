@@ -127,6 +127,12 @@
 			<include name="commons-io-*.jar"/>	<!-- ProtocolScepHttpTest -->
 		</fileset>
 	</path>
+	
+	<path id="lib.easymock.classpath">
+		<fileset dir="${ejbca.home}/lib/ext/easymock">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
 
 	<path id="lib.log4j.classpath"><fileset dir="${ejbca.home}/lib" includes="log4j*.jar"/></path>
 	<path id="lib.commons-lang.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-lang-*.jar"/></path>

@@ -65,6 +65,7 @@
 		<!-- TODO: Refactor so this isn't neccessary for building the tests..? -->
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path refid="lib.easymock.classpath"/>
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-entity.lib}"/>
 	</path>
