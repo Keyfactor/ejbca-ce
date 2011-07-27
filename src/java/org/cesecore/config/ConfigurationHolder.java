@@ -70,11 +70,11 @@ public final class ConfigurationHolder {
         if (config == null) {
             // Read in default values
             defaultValues = new CompositeConfiguration();
-            try {
-                URL url = ConfigurationHolder.class.getResource(DEFAULT_CONFIG_FILE);
-                defaultValues.addConfiguration(new PropertiesConfiguration(url));
+            final URL defaultConfigUrl = ConfigurationHolder.class.getResource(DEFAULT_CONFIG_FILE);
+            try {            
+                defaultValues.addConfiguration(new PropertiesConfiguration(defaultConfigUrl));
             } catch (ConfigurationException e) {
-                log.error("Error encountered when loading default properties", e);
+                log.error("Error encountered when loading default properties. Could not load configuration from " + defaultConfigUrl, e);
             }
 
             // read cesecore.properties, from config file built into jar, and see if we allow configuration by external files

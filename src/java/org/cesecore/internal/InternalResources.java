@@ -49,10 +49,7 @@ public class InternalResources implements Serializable {
      * /serialization/spec/version.doc.html> details. </a>
      * 
      */
-    private static final long serialVersionUID = -1001L;
-
-    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();
+    private static final long serialVersionUID = -1003L;
 
     protected static InternalResources instance = null;
 
@@ -74,8 +71,8 @@ public class InternalResources implements Serializable {
     }
 
     private void setupResources() {
-        final String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
-        final String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
+        final String primaryLanguage = CesecoreConfiguration.getInternalResourcesPreferredLanguage().toLowerCase(Locale.ENGLISH);
+        final String secondaryLanguage = CesecoreConfiguration.getInternalResourcesSecondaryLanguage().toLowerCase(Locale.ENGLISH);
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
         InputStream secondaryStream = null;
