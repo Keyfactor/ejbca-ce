@@ -31,6 +31,13 @@
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/va-war/src"/>
 	<classpathentry kind="src" path="modules/systemtests/src-test"/>
+	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
+	<classpathentry kind="src" path="modules/systemtests/src"/>
+	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>
+	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces-comps.jar"/>
+	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
+	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
+	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/tomahawk-1.1.6.jar"/>
@@ -63,6 +70,15 @@
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/libidn.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations.jar"/>
+	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/easymock/easymock-3.0.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
@@ -75,18 +91,5 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
-	<classpathentry kind="lib" path="lib/hibernate/ejb3-persistence.jar"/>
-	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>
-	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces-comps.jar"/>
-	<classpathentry kind="src" path="modules/batchenrollment-gui/src"/>
-	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/appframework-1.0.3.jar"/>
-	<classpathentry kind="lib" path="modules/batchenrollment-gui/lib/swing-app-framework/swing-worker-1.1.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations.jar"/>
-	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
