@@ -20,6 +20,7 @@
     			<replacestring from="#datasource.jndi-name-prefix=" to="datasource.jndi-name-prefix=${datasource.jndi-name-prefix}"/>
     		</filterchain>
     	</copy>
+    	<copy todir="${build.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
     	
     	<dirname file="${mod.ejbca-properties.lib}" property="mod.ejbca-properties.lib.dir"/>
     	<mkdir dir="${mod.ejbca-properties.lib.dir}" />
