@@ -131,6 +131,8 @@
 		<copy file="${log4j.test.file}" tofile="${build.dir}/log4j.xml" failonerror="true"/>
 		<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
 		<copy file="${jndi.properties.file}" todir="${build.dir}" failonerror="false"/>
+		<!-- needed by the cesecore tests -->
+		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 	</target>
 
 	<target name="assert-notinproduction">
@@ -186,6 +188,8 @@
 		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />
 		<!-- Workaround for tests TestCertificateProfile -->
 		<property name="runone-internal.classpath" value="systemtests.classpath"/>
+		<!-- needed by the cesecore tests -->
+		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 		<!-- set a default -->
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
@@ -223,6 +227,8 @@
 		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="cmptcplistener.notrunning">
 			<socket server="127.0.0.1" port="5587"/>
 		</waitfor>
+		<!-- needed by the cesecore tests -->
+		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 		<!-- The CMP unid test requires the mysql.lib property to be set -->
 		<condition property="cmpunid.enabled" value="true">
 			<isset property="mysql.lib"/>
