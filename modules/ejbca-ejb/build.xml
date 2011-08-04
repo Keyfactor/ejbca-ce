@@ -363,6 +363,9 @@
 	</target>
 
 	<target name="build" description="Build this module" depends="compile-ejbca-ejb">
+		<!-- FIXME Figure out why this has to be here. We should keep all properties files in ejbca-properties - Samuel -->
+		<copy todir="${build.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
+
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}"/>
 			<fileset dir="${ejbca.home}/src/upgrade"/>
