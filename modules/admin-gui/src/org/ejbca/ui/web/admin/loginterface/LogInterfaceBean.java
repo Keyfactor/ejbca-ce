@@ -24,11 +24,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
 import org.ejbca.core.ejb.log.LogSession;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
@@ -37,7 +38,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.HTMLTools;
-import org.ejbca.util.StringTools;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.LogMatch;
@@ -58,7 +58,7 @@ public class LogInterfaceBean implements Serializable {
     private LogSession logSession;
     private LogConfigurationSessionLocal logConfigurationSession;
     private LogEntriesView                 logentriesview;
-    private Admin                          admin;
+    private AuthenticationToken admin;
     private SubjectDNProxy                 dnproxy;  
     private boolean                        initialized = false;
     private InformationMemory              informationmemory;

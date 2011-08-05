@@ -17,8 +17,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.model.hardtoken.types.HardToken;
-import org.ejbca.util.StringTools;
 
 
 /**

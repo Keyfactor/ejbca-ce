@@ -19,19 +19,19 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.ICAToken;
-import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -51,7 +51,8 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-    
+    private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
+
     public CAKeystoreExportRemoveRestoreTest(String name) {
         super(name);
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -414,7 +415,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
         }
 
         try {
-            keyFingerPrint = caAdminSession.getKeyFingerPrint(admin, caname);
+            keyFingerPrint = catestsession.getKeyFingerPrint(caname);
         } catch (Exception e) {
             log.error("getKeyFingerPrint", e);
             fail("getKeyFingerPrint: " + e.getMessage());
@@ -454,7 +455,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
         }
 
         try {
-            String emptyFingerprint = caAdminSession.getKeyFingerPrint(admin, caname);
+            String emptyFingerprint = catestsession.getKeyFingerPrint(caname);
             log.error("Got fingerprint: " + emptyFingerprint);
             fail("Should not have got a fingerprint");
         } catch (Exception e) {
@@ -462,7 +463,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
             while (root.getCause() != null) {
                 root = root.getCause();
             }
-            if (root instanceof CATokenOfflineException) {
+            if (root instanceof CryptoTokenOfflineException) {
                 // OK
             } else {
                 log.error("getKeyFingerPrint", e);
@@ -480,7 +481,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // Compare fingerprints
         try {
-            String restoredFingerprint = caAdminSession.getKeyFingerPrint(admin, caname);
+            String restoredFingerprint = catestsession.getKeyFingerPrint(caname);
             assertEquals("restored fingerprint", keyFingerPrint, restoredFingerprint);
         } catch (Exception e) {
             log.error("getKeyFingerPrint2", e);

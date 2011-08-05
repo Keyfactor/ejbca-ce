@@ -32,16 +32,16 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.caadmin.CertificateProfileData;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
@@ -73,7 +73,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost) {
+    public boolean upgrade(AuthenticationToken admin, String dbtype, String sOldVersion, boolean isPost) {
         if (log.isTraceEnabled()) {
             log.trace(">upgrade(" + admin.toString() + ")");
         }

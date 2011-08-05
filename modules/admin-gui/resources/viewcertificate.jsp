@@ -4,7 +4,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.CertificateView, org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
-                 org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.CertTools" %>
+                 org.cesecore.authorization.AuthorizationDeniedException;, org.ejbca.util.CertTools" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />

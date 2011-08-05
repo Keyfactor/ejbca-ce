@@ -28,19 +28,21 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.dn.DNFieldExtractor;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.KeyValueType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -79,16 +81,16 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	protected String resultMajor = null;
 	protected String resultMinor = null;
 
-	private CAAdminSession caAdminSession;
+	private CaSession caSession;
 	private CertificateStoreSession certificateStoreSession;
-	private CrlSession createCrlSession;
+	private CrlStoreSession crlStoreSession;
 
-    public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req, CAAdminSession caAdminSession, CertificateStoreSession certificateStoreSession, CrlSession createCrlSession) {
+    public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req, CaSession caSession, CertificateStoreSession certificateStoreSession, CrlStoreSession crlStoreSession) {
         super(remoteIP);
         this.req = req;
-        this.caAdminSession = caAdminSession;
+        this.caSession = caSession;
         this.certificateStoreSession = certificateStoreSession;
-        this.createCrlSession = createCrlSession;
+        this.crlStoreSession = crlStoreSession;
     }
 
 	/**
@@ -148,19 +150,19 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    protected List<String> getCertKeyUsageSpec(X509Certificate cert) {
 	   ArrayList<String> retval = new ArrayList<String>();
 	   
-	   if(cert.getKeyUsage()[CertificateProfile.DATAENCIPHERMENT]){
+	   if(cert.getKeyUsage()[CertificateConstants.DATAENCIPHERMENT]){
 		   retval.add(XKMSConstants.KEYUSAGE_ENCRYPTION);
 	   }
-	   if(cert.getKeyUsage()[CertificateProfile.DIGITALSIGNATURE] 
-	      || cert.getKeyUsage()[CertificateProfile.KEYENCIPHERMENT]){
+	   if(cert.getKeyUsage()[CertificateConstants.DIGITALSIGNATURE] 
+	      || cert.getKeyUsage()[CertificateConstants.KEYENCIPHERMENT]){
 		   retval.add(XKMSConstants.KEYUSAGE_EXCHANGE);
 	   }
 	   if(XKMSConfig.signatureIsNonRep()){
-		   if(cert.getKeyUsage()[CertificateProfile.NONREPUDIATION]){
+		   if(cert.getKeyUsage()[CertificateConstants.NONREPUDIATION]){
 			   retval.add(XKMSConstants.KEYUSAGE_SIGNATURE);
 		   }
 	   }else{
-		     if(cert.getKeyUsage()[CertificateProfile.DIGITALSIGNATURE]){
+		     if(cert.getKeyUsage()[CertificateConstants.DIGITALSIGNATURE]){
 		    	 retval.add(XKMSConstants.KEYUSAGE_SIGNATURE);
 		     }		   
 	   }
@@ -278,7 +280,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN)){
    			int caid = CertTools.getIssuerDN(cert).hashCode();
    			try {
-   				Iterator<Certificate> iter = caAdminSession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
+   				Iterator<Certificate> iter = caSession.getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
    				while(iter.hasNext()){
    					X509Certificate next = (X509Certificate) iter.next();
    					x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(next.getEncoded()));
@@ -293,7 +295,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CRL)){
    			byte[] crl = null;
    			try {
-   				crl = createCrlSession.getLastCRL(pubAdmin, CertTools.getIssuerDN(cert), false);
+   				crl = crlStoreSession.getLastCRL(CertTools.getIssuerDN(cert), false);
    			} catch (Exception e) {
    				log.error(intres.getLocalizedMessage("xkms.errorfetchinglastcrl"),e);
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
@@ -376,8 +378,10 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         	// Check Issuer Trust
         	try{
         		int caid = CertTools.getIssuerDN(cert).hashCode();
-        		CAInfo cAInfo = caAdminSession.getCAInfo(pubAdmin, caid);
-        		if(cAInfo != null){
+        		CAInfo cAInfo;
+        		boolean noca = false;
+				try {
+					cAInfo = caSession.getCAInfo(pubAdmin, caid);
         			retval.getValidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
 
         			// Check signature	
@@ -394,7 +398,12 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
         				allValid = false;	
         				inValidSet = true;
         			}
-        		}else{
+				} catch (CADoesntExistsException e1) {
+					noca = true;
+				} catch (AuthorizationDeniedException e1) {
+					noca = true;
+				}
+        		if(noca){
         			retval.getInvalidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
         			retval.getIndeterminateReason().add(XKMSConstants.STATUSREASON_SIGNATURE);
         			allValid = false;

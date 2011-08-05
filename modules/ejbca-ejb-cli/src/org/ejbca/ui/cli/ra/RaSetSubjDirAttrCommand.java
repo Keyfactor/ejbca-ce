@@ -14,9 +14,9 @@
 package org.ejbca.ui.cli.ra;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -47,7 +47,7 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subject directory attributes '" + attributes + "' for user " + username);
             try {
-            	UserDataVO uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            	EndEntityInformation uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
             	ExtendedInformation ext = uservo.getExtendedinformation();
             	if (ext == null) {
             		ext = new ExtendedInformation();

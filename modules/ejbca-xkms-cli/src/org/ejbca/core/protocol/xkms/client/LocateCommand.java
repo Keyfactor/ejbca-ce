@@ -27,12 +27,12 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.X509DataType;
 import org.w3._2002._03.xkms_.KeyBindingType;

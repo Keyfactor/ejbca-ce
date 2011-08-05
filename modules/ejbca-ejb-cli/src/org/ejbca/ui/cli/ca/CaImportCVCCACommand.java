@@ -27,6 +27,10 @@ import java.util.Date;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
@@ -35,10 +39,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Imports a PKCS#8 file and created a new CA from it.

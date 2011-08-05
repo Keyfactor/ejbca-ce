@@ -16,10 +16,10 @@ package org.ejbca.ui.web.pub.cluster;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 
 /**
  * EJBCA Health Checker. 

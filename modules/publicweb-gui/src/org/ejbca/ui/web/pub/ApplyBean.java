@@ -21,8 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -234,7 +235,7 @@ public class ApplyBean implements java.io.Serializable {
     }
     
     private boolean initialized;
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private String username = "";
     private UserDataVO useradmindata = null;
     

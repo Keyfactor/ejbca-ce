@@ -28,8 +28,10 @@ import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -44,17 +46,25 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
-import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.keystore.KeyTools;
 
 /** Handles and maintains the CA-part of the CMS message functionality.
  *  The service have it's own certificate used for signing and encryption 
@@ -94,13 +104,14 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";   
 
 	public CmsCAService(final ExtendedCAServiceInfo serviceinfo)  {
+		super(serviceinfo);
 		m_log.debug("CmsCAService : constructor " + serviceinfo.getStatus()); 
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		// Currently only RSA keys are supported
 		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo;	
-		data = new HashMap();   
+		data = new LinkedHashMap<Object, Object>();   
 		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
-		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));	// For current version of EJBCA
+		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE));	// For current version of EJBCA
 		data.put(KEYSPEC, info.getKeySpec());
 		data.put(KEYALGORITHM, info.getKeyAlgorithm());
 		setSubjectDN(info.getSubjectDN());
@@ -109,7 +120,8 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		data.put(VERSION, new Float(LATEST_VERSION));
 	}
 
-	public CmsCAService(final HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
+	public CmsCAService(final HashMap data) throws IllegalArgumentException {
+		super(data);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		loadData(data);
 		if (data.get(KEYSTORE) != null) {    
@@ -125,7 +137,8 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
 				// Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
 				// As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
-				this.certificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
+				Collection<Certificate> coll = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
+				this.certificatechain = new ArrayList<Certificate>(coll);  
 				status = getStatus();
 			} catch (Exception e) {
 				m_log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage());
@@ -133,7 +146,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				this.info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), 
 						(String) data.get(KEYALGORITHM), this.certificatechain);
 			}
-			data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));        
+			data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE));        
 		} 
 	}
 
@@ -148,12 +161,21 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	    final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
 		keystore.load(null, null);                              
 		final KeyPair cmskeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
+		// A simple hard coded certificate profile that works for the CMS CA service
+		CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+		certProfile.setUseKeyUsage(true);
+		certProfile.setKeyUsage(new boolean[9]);
+		certProfile.setKeyUsage(CertificateConstants.DIGITALSIGNATURE,true);
+		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
+		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
+		certProfile.setKeyUsageCritical(true);
+
 		final Certificate certificate =
-			ca.generateCertificate(new UserDataVO("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null),
+			ca.generateCertificate(new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null),
 					cmskeys.getPublic(),
 					-1, // KeyUsage
 					ca.getValidity(),
-					new XKMSCertificateProfile(), // We can use the (simple) XKMS profile, since it uses the same values as we want for CMS
+					certProfile, 
 					null // sequence
 			);
 		certificatechain = new ArrayList<Certificate>();
@@ -170,13 +192,17 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	}
 
 	@Override
-	public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) throws Exception {
+	public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {
 		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo; 
 		m_log.debug("CmsCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
 		if (info.getRenewFlag()) {
 			// Renew The Signers certificate.
-			this.init(ca);
+			try {
+				this.init(ca);
+			} catch (Exception e) {
+				m_log.error("Error initilizing Extended CA service during upgrade: ", e);
+			}
 		}
 		// Only status is updated
 		this.info = new CmsCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), (String) data.get(KEYSPEC), (String) data.get(KEYALGORITHM), certificatechain);							         									    	 									  

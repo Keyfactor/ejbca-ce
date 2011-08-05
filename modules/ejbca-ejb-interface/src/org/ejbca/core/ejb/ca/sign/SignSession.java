@@ -19,26 +19,26 @@ import java.util.Date;
 
 import javax.ejb.ObjectNotFoundException;
 
+import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.IllegalKeyException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
 
 /**
  * @version $Id$
  */
 public interface SignSession {
-
-	/** @return true if there is a database index for unique certificate serial number / issuer DN. */
-    public boolean isUniqueCertificateSerialNumberIndex();
 
     /**
      * Retrieves the certificate chain for the signer. The returned certificate chain MUST have the
@@ -47,8 +47,9 @@ public interface SignSession {
      * @param admin Information about the administrator or admin performing the event.
      * @param caid  is the issuerdn.hashCode()
      * @return Collection of Certificate, the certificate chain, never null.
+     * @throws AuthorizationDeniedException 
      */
-    public java.util.Collection<Certificate> getCertificateChain(Admin admin, int caid);
+    public java.util.Collection<Certificate> getCertificateChain(AuthenticationToken admin, int caid) throws AuthorizationDeniedException;
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain, including the
@@ -60,8 +61,9 @@ public interface SignSession {
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
+     * @throws AuthorizationDeniedException 
      */
-    public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException;
+    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException;
 
     /**
      * Creates a signed PKCS7 message containing the whole certificate chain of the specified CA.
@@ -70,8 +72,9 @@ public interface SignSession {
      * @param caId  CA for which we want a PKCS7 certificate chain.
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
+     * @throws AuthorizationDeniedException 
      */
-    public byte[] createPKCS7(Admin admin, int caId, boolean includeChain) throws CADoesntExistsException;
+    public byte[] createPKCS7(AuthenticationToken admin, int caId, boolean includeChain) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Requests for a certificate to be created for the passed public key with default key usage
@@ -84,11 +87,14 @@ public interface SignSession {
      * @return The newly created certificate or null.
      * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @throws CesecoreException 
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
@@ -109,11 +115,14 @@ public interface SignSession {
      * @return The newly created certificate or null.
      * @throws EjbcaException          if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     * @throws CesecoreException 
      * @throws AuthStatusException     If the users status is incorrect.
      * @throws AuthLoginException      If the password is incorrect.
      * @throws IllegalKeyException     if the public key is of wrong type.
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws EjbcaException, ObjectNotFoundException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws EjbcaException, ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a self-signed
@@ -128,14 +137,16 @@ public interface SignSession {
      *                 Other (requested) parameters in the passed certificate can be used, such as DN,
      *                 Validity, KeyUsage etc. Currently only KeyUsage is considered!
      * @return The newly created certificate or null.
-     * @throws EjbcaException                if EJBCA did not accept any of all input parameters
      * @throws ObjectNotFoundException       if the user does not exist.
+     * @throws CesecoreException                if EJBCA did not accept any of all input parameters
+     * @throws EjbcaException 
+     * @throws AuthorizationDeniedException 
      * @throws AuthStatusException           If the users status is incorrect.
      * @throws AuthLoginException            If the password is incorrect.
      * @throws IllegalKeyException           if the public key is of wrong type.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      */
-    public Certificate createCertificate(Admin admin, String username, String password, Certificate incert) throws EjbcaException, ObjectNotFoundException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert) throws ObjectNotFoundException, CesecoreException, AuthorizationDeniedException, EjbcaException;
 
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
@@ -169,7 +180,7 @@ public interface SignSession {
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass, UserDataVO suppliedUserData) throws EjbcaException;
+    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class responseClass, EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
 
 	/**
 	 * Requests for a certificate to be created for the passed public key with the passed key
@@ -199,14 +210,18 @@ public interface SignSession {
 	 * @return The newly created certificate or null.
 	 * @throws EjbcaException          if EJBCA did not accept any of all input parameters
 	 * @throws ObjectNotFoundException if the user does not exist.
+	 * @throws AuthorizationDeniedException 
+	 * @throws CADoesntExistsException 
+	 * @throws EjbcaException 
+	 * @throws CesecoreException 
 	 * @throws AuthStatusException     If the users status is incorrect.
 	 * @throws AuthLoginException      If the password is incorrect.
 	 * @throws IllegalKeyException     if the public key is of wrong type.
 	 * 
      * @see org.bouncycastle.jce.X509KeyUsage
 	 */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) 
-    	throws EjbcaException, ObjectNotFoundException;
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) 
+    	throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, EjbcaException, CesecoreException;
 
 	/**
      * Method that generates a request failed response message. The request
@@ -215,8 +230,9 @@ public interface SignSession {
      * @param admin         Information about the administrator or admin performing the event.
      * @param req           a Certification Request message, containing the public key to be put in the
      *                      created certificate. Currently no additional parameters in requests are considered!
-
      * @param responseClass The implementation class that will be used as the response message.
+     * @param failInfo the failure info in the failure response, for example FailInfo.BAD_REQUEST
+     * @param failText free text failure message
      * 
      * @return A decrypted and verified IReqeust message
      * @throws AuthStatusException           If the users status is incorrect.
@@ -225,12 +241,13 @@ public interface SignSession {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws IllegalKeyException 
+	 * @throws AuthorizationDeniedException 
      * @see org.ejbca.core.protocol.IRequestMessage
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
-    public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req, Class responseClass) throws AuthLoginException,
-            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CATokenOfflineException;
+    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class responseClass, FailInfo failInfo, String failText) throws AuthLoginException,
+            AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      * Method that just decrypts and verifies a request and should be used in those cases
@@ -247,12 +264,14 @@ public interface SignSession {
      * @throws CADoesntExistsException       if the targeted CA does not exist
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
+     * @throws CryptoTokenOfflineException 
+     * @throws AuthorizationDeniedException 
      * @see org.ejbca.core.protocol.IRequestMessage
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
-    public IRequestMessage decryptAndVerifyRequest(Admin admin, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException,
-    		AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException;
+    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
+    		AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
      * 
@@ -265,7 +284,9 @@ public interface SignSession {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
+     * @throws CryptoTokenOfflineException 
+     * @throws AuthorizationDeniedException 
      */
-    public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException,
-            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException;
+    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException,
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
 }

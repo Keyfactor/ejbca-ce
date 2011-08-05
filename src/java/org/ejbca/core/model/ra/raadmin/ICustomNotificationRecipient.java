@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.ra.raadmin;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
  * Interface for plug-in to retrieve notification recipient addresses. 
@@ -29,5 +29,5 @@ public interface ICustomNotificationRecipient {
 	 * @param user UserDataVO of the user that will be notified
 	 * @return a comma separated list of email addresses
 	 */
-	public String getRecipientEmails(UserDataVO user);
+	public String getRecipientEmails(EndEntityInformation user);
 }

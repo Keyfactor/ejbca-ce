@@ -25,10 +25,10 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.CvcException;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
 
 /**

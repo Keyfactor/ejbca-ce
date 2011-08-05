@@ -25,8 +25,8 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.util.StringTools;
 
 /**
  * Representation of a log entry in the database.

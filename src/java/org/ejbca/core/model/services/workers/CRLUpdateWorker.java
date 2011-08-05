@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
+import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;

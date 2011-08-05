@@ -23,9 +23,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -33,7 +34,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a browser. A new
@@ -69,7 +69,7 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private OldAuthenticationSessionLocal authenticationSession;
 	@EJB
-	private CAAdminSessionLocal caAdminSession;
+	private CaSessionLocal caSession;
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
@@ -114,7 +114,7 @@ public class CertReqServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, caAdminSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
+    	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, caSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
         		raAdminSession, signSession, userAdminSession, globalConfigurationSession).doPost(request, response);
     }
 

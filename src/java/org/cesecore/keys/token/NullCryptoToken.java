@@ -41,7 +41,7 @@ public class NullCryptoToken extends BaseCryptoToken {
 
     private int id;
 
-    public NullCryptoToken() throws InstantiationException {
+    public NullCryptoToken() {
     	super();
     }
 

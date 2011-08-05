@@ -19,23 +19,24 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.crl.CrlCreateSession;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -58,16 +59,17 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CAInterfaceBean caBean;
 	private String authenticationcode;
 	private List<CAWrapper> caInfoList;
-	private Admin administrator;
+	private AuthenticationToken administrator;
 	private CaSession caSession;
 	private CertificateStoreSession certificatesession;
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
 	private EndEntityProfileSession endEntityProfileSession;
-	private AuthorizationSession authorizationsession;
+	private AccessControlSession authorizationsession;
 	private UserAdminSession adminsession;
 	private GlobalConfigurationSession globalconfigurationsession;
 	private CrlCreateSession crlCreateSession;
+	private RevocationSessionLocal revocationSession;
 	private InformationMemory                  informationmemory;
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
@@ -89,16 +91,16 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			certificatesession = ejb.getCertificateStoreSession();
 			caadminsession = ejb.getCaAdminSession();
 			caSession = ejb.getCaSession();
-			authorizationsession = ejb.getAuthorizationSession();
+			authorizationsession = ejb.getAccessControlSession();
 			adminsession = ejb.getUserAdminSession();
 			globalconfigurationsession = ejb.getGlobalConfigurationSession();
 			certificateProfileSession = ejb.getCertificateProfileSession();
 			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			crlCreateSession = ejb.getCrlCreateSession();
+			revocationSession = ejb.getRevocationSession();
 			this.informationmemory = webBean.getInformationMemory();
 
-			new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);
-			cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, globalconfigurationsession, certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, webBean);
+			cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession, certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, revocationSession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){
@@ -155,7 +157,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		return "";
 	}
 
-	public CAInfo activateCAToken(int caid ) throws CATokenAuthenticationFailedException, CATokenOfflineException, AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, Exception {
+	public CAInfo activateCAToken(int caid ) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, Exception {
 		cadatahandler.activateCAToken(caid, authenticationcode);
 		log.debug("Successfully activated token");
 		return caBean.getCAInfo(caid).getCAInfo();

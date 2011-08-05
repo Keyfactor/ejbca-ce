@@ -12,14 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import org.ejbca.core.protocol.IRequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+
 
 /**
  * The {link IRequestMessage} parameter must implement this to when calling {@link CrmfRequestMessage#createResponseMessage(Class, IRequestMessage, java.security.cert.Certificate, java.security.PrivateKey, String)}
  * @author primelars
  * @version $Id$
  */
-public interface ICrmfRequestMessage extends IRequestMessage {
+public interface ICrmfRequestMessage extends RequestMessage {
 
 	int getPbeIterationCount();
 

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 public interface UpgradeSession {
 
@@ -22,5 +22,5 @@ public interface UpgradeSession {
      * @param admin
      * @return true or false if upgrade was done or not
      */
-    public boolean upgrade(Admin admin, String dbtype, String sOldVersion, boolean isPost);
+    public boolean upgrade(AuthenticationToken admin, String dbtype, String sOldVersion, boolean isPost);
 }

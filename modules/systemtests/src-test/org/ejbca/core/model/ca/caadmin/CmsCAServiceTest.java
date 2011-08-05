@@ -28,15 +28,16 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 
 /**

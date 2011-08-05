@@ -15,14 +15,17 @@ package org.ejbca.core.protocol.ws.common;
 import java.security.cert.CertificateExpiredException;
 import java.util.List;
 
+import org.cesecore.CesecoreException;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
@@ -107,10 +110,11 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws IllegalQueryException if query isn't valid
 	 * @throws EjbcaException 
+	 * @throws CesecoreException 
 	 */
 
 	public abstract List<UserDataVOWS> findUser(UserMatch usermatch)
-			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException;
+			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, CesecoreException;
 
 	/**
 	 * Retrieves a collection of certificates generated for a user.
@@ -192,11 +196,12 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 * @throws NotFoundException
 	 * @throws EjbcaException
+	 * @throws CesecoreException 
 	 */
 	public abstract CertificateResponse crmfRequest(String username, String password,
 			String crmf, String hardTokenSN, String responseType)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
-			EjbcaException;
+			EjbcaException, CesecoreException;
 
 	/**
 	 *  Generates a certificate for a user.
@@ -213,11 +218,12 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException
 	 * @throws NotFoundException
 	 * @throws EjbcaException
+	 * @throws CesecoreException 
 	 */
 	public abstract CertificateResponse spkacRequest(String username, String password,
 			String spkac, String hardTokenSN, String responseType)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
-			EjbcaException;
+			EjbcaException, CesecoreException;
 
 	/** 
 	 * Generates a CV certificate for a user.
@@ -241,11 +247,12 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws WaitingForApprovalException
 	 * @throws CertificateExpiredException
+	 * @throws CesecoreException 
 	 * @see org.ejbca.core.ErrorCode 
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
-	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException;
+	EjbcaException, ApprovalException, WaitingForApprovalException, SignRequestException, CertificateExpiredException, CesecoreException;
 	
 
 	/** Generates a certificate request (CSP) from a CA. The CSR can be sent to another CA to be signed, thus making the CA a sub CA of the signing CA.
@@ -298,8 +305,9 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException if the operation requires approval from another CA administrator, in this case an approval request is created for another administrator to approve 
 	 * @throws WaitingForApprovalException if there is already a request waiting for approval
 	 * @throws EjbcaException other errors in which case an org.ejbca.core.ErrorCade is set in the EjbcaException
+	 * @throws CesecoreException 
 	 */
-	public void caCertResponse(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException;
+	public void caCertResponse(String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CesecoreException;
 
 	/**
 	 * Generates a certificate for a user.
@@ -331,11 +339,12 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
 	 * @throws EjbcaException
+	 * @throws CesecoreException 
 	 */
 	public abstract CertificateResponse pkcs10Request(String username, String password,
 			String pkcs10, String hardTokenSN, String responseType)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
-			EjbcaException;
+			EjbcaException, CesecoreException;
 
 	/**
 	 * Creates a server-generated keystore.
@@ -855,9 +864,11 @@ public interface IEjbcaWS {
 	 * @throws ApprovalException
 	 * @throws EjbcaException if an error occured
 	 * @throws ApprovalRequestExpiredException
+	 * @throws CAOfflineException 
+	 * @throws CryptoTokenOfflineException 
 	 */
 	public abstract void createCRL(String caname) 
-			throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException;
+			throws CADoesntExistsException, ApprovalException, EjbcaException, ApprovalRequestExpiredException, CryptoTokenOfflineException, CAOfflineException;
 	
 	/**
 	 * Returns the version of the EJBCA server.

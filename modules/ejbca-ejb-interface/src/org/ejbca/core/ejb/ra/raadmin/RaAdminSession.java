@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /** Session bean to handle RA administration, which means admin preferences, global configuration and such.
@@ -25,33 +25,33 @@ public interface RaAdminSession {
      * Finds the admin preference belonging to a certificate serialnumber.
      * Returns null if admin doesn't exists.
      */
-    AdminPreference getAdminPreference(Admin admin, String certificatefingerprint);
+    AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint);
 
     /**
      * Adds a admin preference to the database. Returns false if admin already
      * exists.
      */
-    boolean addAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference);
+    boolean addAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
      */
-    boolean changeAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference);
+    boolean changeAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * doesn't exists.
      */
-    boolean changeAdminPreferenceNoLog(Admin admin, String certificatefingerprint, AdminPreference adminpreference);
+    boolean changeAdminPreferenceNoLog(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
 
     /** Checks if a admin preference exists in the database. */
-    boolean existsAdminPreference(Admin admin, String certificatefingerprint);
+    boolean existsAdminPreference(AuthenticationToken admin, String certificatefingerprint);
 
     /** Function that returns the default admin preference. */
-    AdminPreference getDefaultAdminPreference(Admin admin);
+    AdminPreference getDefaultAdminPreference(AuthenticationToken admin);
 
     /** Function that saves the default admin preference. */
-    void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference);
+    void saveDefaultAdminPreference(AuthenticationToken admin, AdminPreference defaultadminpreference);
 
 }

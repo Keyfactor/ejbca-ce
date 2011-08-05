@@ -51,28 +51,28 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.keystore.KeyTools;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2000._09.xmldsig_.X509DataType;
 import org.w3._2002._03.xkms_.NotBoundAuthenticationType;
@@ -102,7 +102,7 @@ public class KRSSResponseGenerator extends
 	 
 	 protected Document requestDoc = null;
 
-	 private CAAdminSession caadminsession;
+	 private CaSession casession;
 	 private OldAuthenticationSession authenticationSession;
 	 private CertificateStoreSession certificateStoreSession;
 	 private EndEntityProfileSession endEntityProfileSession;
@@ -112,12 +112,12 @@ public class KRSSResponseGenerator extends
 	 private UserAdminSession userAdminSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
-    		CAAdminSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession casession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
-        super(remoteIP, req, caadminsession, certificateStoreSession, crlSession);
+    		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
+        super(remoteIP, req, casession, certificateStoreSession, crlSession);
         this.requestDoc = requestDoc;
-        this.caadminsession = caadminsession;
+        this.casession = casession;
         this.authenticationSession = authenticationSession;
         this.certificateStoreSession = certificateStoreSession;
         this.endEntityProfileSession = endEntityProfileSession;
@@ -195,7 +195,7 @@ public class KRSSResponseGenerator extends
      * @param revocationCode The code used later by the user to revoke, it it is allowed by the XKMS Service
      * @return the generated certificate or null if generation failed
      */
-    protected X509Certificate registerReissueOrRecover(boolean recover, boolean reissue, ResultType response, UserDataVO userDataVO, String password,  
+    protected X509Certificate registerReissueOrRecover(boolean recover, boolean reissue, ResultType response, EndEntityInformation userDataVO, String password,  
     		                                  PublicKey publicKey, String revocationCode) {
 		X509Certificate retval = null;
     	
@@ -245,7 +245,7 @@ public class KRSSResponseGenerator extends
 				X509Certificate cert = null;
 				if(reusecertificate){
 					cert = (X509Certificate) keyData.getCertificate();	             
-					boolean finishUser = caadminsession.getCAInfo(pubAdmin,CertTools.getIssuerDN(cert).hashCode()).getFinishUser();
+					boolean finishUser = casession.getCAInfo(pubAdmin,CertTools.getIssuerDN(cert).hashCode()).getFinishUser();
 					if(finishUser){	           	  
 					    authenticationSession.finishUser(userDataVO);
 					}
@@ -261,7 +261,7 @@ public class KRSSResponseGenerator extends
 
 				// Save the revocation code
 				if(revocationCode != null && !recover){
-					UserDataVO data = userAdminSession.findUser(pubAdmin, userDataVO.getUsername());
+					EndEntityInformation data = userAdminSession.findUser(pubAdmin, userDataVO.getUsername());
 					ExtendedInformation ei = data.getExtendedinformation();
 					if (ei == null) {
 						ei = new ExtendedInformation();
@@ -343,8 +343,8 @@ public class KRSSResponseGenerator extends
 		return GeneralizedKRSSMessageHelper.getAuthenticationType(req).getKeyBindingAuthentication() != null;
 	}
 	
-	protected UserDataVO findUserData(String subjectDN) {
-		UserDataVO retval = null;
+	protected EndEntityInformation findUserData(String subjectDN) {
+		EndEntityInformation retval = null;
 		
 		if(subjectDN != null){
 			try {
@@ -364,10 +364,10 @@ public class KRSSResponseGenerator extends
 	 * Method finding the userdata of the specified cert or null
 	 * if the user couldn't be foundl
 	 */
-	protected UserDataVO findUserData(X509Certificate cert) {
-		UserDataVO retval = null;
+	protected EndEntityInformation findUserData(X509Certificate cert) {
+		EndEntityInformation retval = null;
 		try {
-			String username = certificateStoreSession.findUsernameByCertSerno(pubAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert));
+			String username = certificateStoreSession.findUsernameByCertSerno(cert.getSerialNumber(), CertTools.getIssuerDN(cert));
 			if (log.isDebugEnabled()) {
 				log.debug("Username for certificate with issuerDN:"+CertTools.getIssuerDN(cert)+", serialNo:"+CertTools.getSerialNumber(cert)+" :"+username);
 			}
@@ -481,7 +481,7 @@ public class KRSSResponseGenerator extends
 		boolean retval = false;
 		
 		try {
-			CAInfo cAInfo = caadminsession.getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
+			CAInfo cAInfo = casession.getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
 			if(cAInfo != null){		
 				Collection caCertChain = cAInfo.getCertificateChain();
 				Iterator iter = caCertChain.iterator();

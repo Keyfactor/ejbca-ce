@@ -1,11 +1,11 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.util.FileTools, org.cesecore.authorization.AuthorizationDeniedException;,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.caadmin.CVCCAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
-               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.protocol.CVCRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
+               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.protocol.IRequestMessage, org.ejbca.core.protocol.CVCRequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CryptoTokenOfflineException, org.ejbca.core.model.ca.catoken.CryptoTokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.cesecore.certificates.certificateprofile.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
                org.ejbca.util.SimpleTime, org.ejbca.util.CombineTime, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.ejbca.util.StringTools, org.ejbca.core.model.AlgorithmConstants" %>
 
 
@@ -709,7 +709,7 @@
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
                     caexists = true; 
-                 }catch(CATokenAuthenticationFailedException catfe){
+                 }catch(CryptoTokenAuthenticationFailedException catfe){
                     catokenauthfailed = true;
                     errormessage = catfe.getMessage();
                     Throwable t = catfe.getCause();
@@ -831,7 +831,7 @@
                        cadatahandler.createCA(cvccainfo);
                      }catch(CAExistsException caee){
                         caexists = true; 
-                     }catch(CATokenAuthenticationFailedException catfe){
+                     }catch(CryptoTokenAuthenticationFailedException catfe){
                         catokenauthfailed = true;
                      }
                      includefile="choosecapage.jspf"; 
@@ -1242,7 +1242,7 @@
                cabean.saveRequestData(certreq);     
                filemode = CERTREQGENMODE;
                includefile = "displayresult.jspf";
-             }catch(CATokenOfflineException e){  
+             }catch(CryptoTokenOfflineException e){  
         	  includefile="choosecapage.jspf"; 
         	  cadatahandler.removeCA(caid); 
               throw e;
@@ -1258,7 +1258,7 @@
            }catch(CAExistsException caee){
               caexists = true; 
            } 
-         }catch(CATokenOfflineException e){  
+         }catch(CryptoTokenOfflineException e){  
           throw e;
       }catch(EjbcaException e){ 
           errormessage = e.getMessage(); 
@@ -1308,7 +1308,7 @@
                 cadatahandler.receiveResponse(caid, activateauthenticationcode, file);   
                 caactivated = true;
             }           
-          }catch(CATokenOfflineException e){  
+          }catch(CryptoTokenOfflineException e){  
               throw e;
           }catch(EjbcaException e){ 
               errormessage = e.getMessage(); 
@@ -1567,7 +1567,7 @@
                
            filemode = CERTREQGENMODE;
            includefile = "displayresult.jspf";
-          }catch(CATokenOfflineException e){  
+          }catch(CryptoTokenOfflineException e){  
         	  includefile="choosecapage.jspf"; 
               throw e;
           }catch(EjbcaException e){ 
@@ -1591,7 +1591,7 @@
               cadatahandler.receiveResponse(caid, activateauthenticationcode, file);   
               carenewed = true;
             }           
-          }catch(CATokenOfflineException e){                       
+          }catch(CryptoTokenOfflineException e){                       
               throw e;
           }catch(EjbcaException e){                       
               errormessage = e.getMessage(); 
@@ -1689,7 +1689,7 @@
 		}
       } // ACTION_IMPORTCACERT
     }
-  }catch(CATokenOfflineException ctoe){
+  }catch(CryptoTokenOfflineException ctoe){
     catokenoffline = true;
     errormessage = ctoe.getMessage();
     includefile="choosecapage.jspf";

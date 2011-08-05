@@ -19,10 +19,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * List certificates that will expire within the given number of days.

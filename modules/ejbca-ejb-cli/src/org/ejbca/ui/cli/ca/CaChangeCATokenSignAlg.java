@@ -14,12 +14,13 @@
 package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
+import java.util.Properties;
 
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Changes the signature algorithm and possible keyspec of a CA token.
@@ -43,20 +44,16 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 
 		try {
 			String caName = args[1];
-			CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caName);
+			CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
 			String signAlg = args[2];
 			getLogger().info("Setting new signature algorithm: " + signAlg);
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo();
 			tokeninfo.setSignatureAlgorithm(signAlg);
 			if (args.length > 3) {
 				String keyspec = args[3];
-				if (tokeninfo instanceof SoftCATokenInfo) {
-					SoftCATokenInfo sinfo = (SoftCATokenInfo) tokeninfo;
-					getLogger().info("Setting new signature keyspec: " + keyspec);
-					sinfo.setSignKeySpec(keyspec);
-				} else {
-					getLogger().info("CA token is not a soft token, not setting keyspec.");
-				}
+				Properties prop = tokeninfo.getProperties();
+				prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
+				tokeninfo.setProperties(prop);
 			}
 			cainfo.setCATokenInfo(tokeninfo);
 			ejb.getCAAdminSession().editCA(getAdmin(), cainfo);
@@ -72,13 +69,13 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <caname> <signature alg> [<keyspec>]");
 		getLogger().info(" Signature alg is one of SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA224WithECDSA, SHA256WithECDSA, or any other string available in the admin-GUI.");
-		getLogger().info(" Keyspec can only be set on soft CA tokens and is 1024, 2048, 4096, 8192 for RSA and a ECC curve name, i.e. prime192v1, secp256r1 etc from User Guide.");
+		getLogger().info(" Keyspec can be set on CA tokens and is 1024, 2048, 4096, 8192 for RSA and a ECC curve name, i.e. prime192v1, secp256r1 etc from User Guide.");
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
 			Collection<Integer> cas = ejb.getCaSession().getAvailableCAs(getAdmin());
 			for (Integer caid : cas) {
-				CAInfo info = ejb.getCAAdminSession().getCAInfo(getAdmin(), caid);
+				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCATokenInfo().getSignatureAlgorithm());				
 			}
 		} catch (Exception e) {

@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -31,8 +32,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 
 
 /**
@@ -65,7 +68,7 @@ public class JKStoPEM {
     public static void main(String[] args) {
 
         // Bouncy Castle security provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
 
         JKStoPEM jks = null;
 

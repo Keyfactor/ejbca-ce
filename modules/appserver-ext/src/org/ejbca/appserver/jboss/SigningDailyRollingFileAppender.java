@@ -28,8 +28,8 @@ import org.bouncycastle.tsp.TimeStampRequest;
 import org.bouncycastle.tsp.TimeStampRequestGenerator;
 import org.bouncycastle.tsp.TimeStampResponse;
 import org.bouncycastle.util.encoders.Base64;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 
 /**
  * A shameless copy of DailyRollingFileAppender from log4j and merged (also shamelessly)

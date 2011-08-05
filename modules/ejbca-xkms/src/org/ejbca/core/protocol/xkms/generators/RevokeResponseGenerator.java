@@ -17,23 +17,23 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.FinderException;
 
-import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
-import org.ejbca.util.CertTools;
 import org.w3._2002._03.xkms_.KeyBindingAbstractType;
 import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.RevokeRequestType;
@@ -54,9 +54,9 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
     private UserAdminSession userAdminSession;
     
     public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc,
-    		CAAdminSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
+    		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
         super(remoteIP, req, requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
         this.userAdminSession = userAdminSession;
@@ -82,7 +82,7 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
 					X509Certificate cert = (X509Certificate) getPublicKeyInfo(req, false);
 					boolean isCertValid = certIsValid(cert);
 					if(isCertValid){						
-						UserDataVO userData = findUserData(cert);
+						EndEntityInformation userData = findUserData(cert);
 						String revocationCodeId = getRevocationCodeFromUserData(userData);
 						if(userData != null && revocationCodeId != null){
 							String revokeCode = getRevocationCode(req);
@@ -119,7 +119,7 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
 	 * @param userData
 	 * @return
 	 */
-	private String getRevocationCodeFromUserData(UserDataVO userData) {
+	private String getRevocationCodeFromUserData(EndEntityInformation userData) {
 		String retval = null;
 		if(userData != null && userData.getExtendedinformation() != null 
 		   && userData.getExtendedinformation().getRevocationCodeIdentifier() != null){

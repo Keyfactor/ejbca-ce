@@ -19,8 +19,8 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 
 /**

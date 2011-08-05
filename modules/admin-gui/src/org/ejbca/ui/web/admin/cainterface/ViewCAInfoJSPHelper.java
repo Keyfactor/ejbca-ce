@@ -15,14 +15,14 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -138,13 +138,13 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&
     	      	 can_activate &&
 				 ( (status == SecConst.CA_OFFLINE) ||
-				   ((status == SecConst.CA_ACTIVE || status == SecConst.CA_WAITING_CERTIFICATE_RESPONSE || status == SecConst.CA_EXPIRED) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) )) {
+				   ((status == SecConst.CA_ACTIVE || status == SecConst.CA_WAITING_CERTIFICATE_RESPONSE || status == SecConst.CA_EXPIRED) && (cainfo.getCAInfo().getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) )) {
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         try {
     	        	 cabean.getCADataHandler().activateCAToken(caid,authorizationcode);
     	        	 activationmessage = "CAACTIVATIONSUCCESSFUL";
-	         	 } catch (CATokenAuthenticationFailedException catafe) {
+	         	 } catch (CryptoTokenAuthenticationFailedException catafe) {
 	         		 activationerrormessage = "AUTHENTICATIONERROR";
 	         		 activationerrorreason = catafe.getMessage();
 	         		 Throwable t = catafe.getCause();
@@ -155,7 +155,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	         			 }
 	         			 t = t.getCause();
 	         		 }
-	         	 } catch (CATokenOfflineException catoe) {
+	         	 } catch (CryptoTokenOfflineException catoe) {
 	         		 activationerrormessage = "ERROR";
 	         		 activationerrorreason = catoe.getMessage();
 	         	 } catch (ApprovalException e) {
@@ -183,7 +183,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	    try{
     	      cainfo = cabean.getCAInfo(caid);
     	      status = cainfo.getCAInfo().getStatus();
-    	      tokenoffline = cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE;
+    	      tokenoffline = cainfo.getCAInfo().getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE;
     	    } catch(AuthorizationDeniedException e){
     	    	generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
     	    }

@@ -22,9 +22,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
@@ -50,7 +50,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     private LogSessionLocal logSession;
 
     @Override
-    public AdminPreference getAdminPreference(Admin admin, String certificatefingerprint) {
+    public AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint) {
         if (log.isTraceEnabled()) {
             log.trace(">getAdminPreference()");
         }
@@ -66,7 +66,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     }
 
     @Override
-    public boolean addAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
+    public boolean addAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">addAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }
@@ -97,7 +97,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     }
 
     @Override
-    public boolean changeAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
+    public boolean changeAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">changeAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }
@@ -105,7 +105,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     }
 
     @Override
-    public boolean changeAdminPreferenceNoLog(Admin admin, String certificatefingerprint, AdminPreference adminpreference) {
+    public boolean changeAdminPreferenceNoLog(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">changeAdminPreferenceNoLog(fingerprint : " + certificatefingerprint + ")");
         }
@@ -114,7 +114,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsAdminPreference(Admin admin, String certificatefingerprint) {
+    public boolean existsAdminPreference(AuthenticationToken admin, String certificatefingerprint) {
         if (log.isTraceEnabled()) {
             log.trace(">existsAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }
@@ -129,7 +129,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     }
 
     @Override
-    public AdminPreference getDefaultAdminPreference(Admin admin) {
+    public AdminPreference getDefaultAdminPreference(AuthenticationToken admin) {
         if (log.isTraceEnabled()) {
             log.trace(">getDefaultAdminPreference()");
         }
@@ -154,7 +154,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     }
 
     @Override
-    public void saveDefaultAdminPreference(Admin admin, AdminPreference defaultadminpreference) {
+    public void saveDefaultAdminPreference(AuthenticationToken admin, AdminPreference defaultadminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">saveDefaultAdminPreference()");
         }
@@ -179,7 +179,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
      * Changes the admin preference in the database. Returns false if admin
      * preference doesn't exist.
      */
-    private boolean updateAdminPreference(Admin admin, String certificatefingerprint, AdminPreference adminpreference, boolean dolog) {
+    private boolean updateAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference, boolean dolog) {
         if (log.isTraceEnabled()) {
             log.trace(">updateAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }

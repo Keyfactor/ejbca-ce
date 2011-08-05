@@ -32,15 +32,19 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -50,10 +54,6 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -61,8 +61,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -204,12 +202,12 @@ public class XKMSKRSSTest extends TestCase {
 
         // Setup with two new Certificate profiles.
         final EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
-        profile1.setKeyUsage(CertificateProfile.DIGITALSIGNATURE, false);
-        profile1.setKeyUsage(CertificateProfile.KEYENCIPHERMENT, false);
-        profile1.setKeyUsage(CertificateProfile.NONREPUDIATION, true);
+        profile1.setKeyUsage(CertificateConstants.DIGITALSIGNATURE, false);
+        profile1.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
+        profile1.setKeyUsage(CertificateConstants.NONREPUDIATION, true);
 
         final EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
-        profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT, true);
+        profile2.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
 
         certificateProfileSession.addCertificateProfile(administrator, certprofilename1, profile1);
         certificateProfileSession.addCertificateProfile(administrator, certprofilename2, profile2);

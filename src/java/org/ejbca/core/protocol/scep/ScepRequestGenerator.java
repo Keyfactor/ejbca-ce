@@ -45,9 +45,9 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.core.model.AlgorithmConstants;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 
 /** Class used to generate SCEP messages. Used for SCEP clients and testing
  * 

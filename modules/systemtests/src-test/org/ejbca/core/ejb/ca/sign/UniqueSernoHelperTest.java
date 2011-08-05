@@ -26,8 +26,9 @@ import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.util.CryptoProviderTools;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.UniqueSernoHelper;
+import org.cesecore.util.CryptoProviderTools;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

@@ -48,38 +48,40 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.authorization.Authorizer;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.SimpleRequestMessage;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
 import org.ejbca.util.RequestMessageUtils;
 
 import com.novosec.pkix.asn1.crmf.CertRequest;
@@ -95,13 +97,16 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertificateRequestSessionBean.class);
-    
+
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+
     @EJB
     private OldAuthenticationSessionLocal authenticationSession;
     @EJB
-    private AuthorizationSessionLocal authorizationSession;
+    private AccessControlSessionLocal authorizationSession;
     @EJB
-    private CAAdminSessionLocal caAdminSession;
+    private CaSessionLocal caSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
@@ -118,12 +123,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private SessionContext sessionContext;
 
     @Override
-	public byte[] processCertReq(Admin admin, UserDataVO userdata, String req, int reqType,
-			String hardTokenSN, int responseType) throws CADoesntExistsException,
-			AuthorizationDeniedException, NotFoundException, InvalidKeyException,
+	public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType,
+			String hardTokenSN, int responseType) throws AuthorizationDeniedException, NotFoundException, InvalidKeyException,
 			NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
 			SignatureException, IOException, ObjectNotFoundException, CertificateException,
-			UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException {
+			UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, CesecoreException {
 		byte[] retval = null;
 
 		// Check tokentype
@@ -136,9 +140,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 		try {
 			String password = userdata.getPassword();
 			String username = userdata.getUsername();
-			IRequestMessage imsg = null;
+			RequestMessage imsg = null;
 			if (reqType == SecConst.CERT_REQ_TYPE_PKCS10) {				
-				IRequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
+				RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
 				PublicKey pubKey = pkcs10req.getRequestPublicKey();
 				imsg = new SimpleRequestMessage(pubKey, username, password);
 			} else if (reqType == SecConst.CERT_REQ_TYPE_SPKAC) {
@@ -237,14 +241,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	}
 
     @Override
-	public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException {
+	public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class responseClass) throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException {
 		// Check tokentype
 		if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
 			throw new WrongTokenTypeException ("Error: Wrong Token Type of user, must be 'USERGENERATED' for PKCS10/SPKAC/CRMF/CVC requests");
 		}
 		// This is the secret sauce, do the end entity handling automagically here before we get the cert
 		addOrEditUser(admin, userdata, false, true);
-		IResponseMessage retval = null;
+		ResponseMessage retval = null;
 		try {
 			retval = signSession.createCertificate(admin, req, responseClass, userdata);
 		} catch (NotFoundException e) {
@@ -260,20 +264,22 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	/**
 	 * @throws CADoesntExistsException if userdata.caId is not a valid caid. This is checked in editUser or addUserFromWS
 	 */
-	private void addOrEditUser(Admin admin, UserDataVO userdata, boolean clearpwd, boolean fromwebservice) throws AuthorizationDeniedException,
+	private void addOrEditUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd, boolean fromwebservice) throws AuthorizationDeniedException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
 			PersistenceException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
 		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
-		    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX +caid, null);
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.CAPREFIX +caid, null);
+	        throw new AuthorizationDeniedException(msg);
 		}
 		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
-		    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+	        throw new AuthorizationDeniedException(msg);
 		}
 		// First we need to fetch the CA configuration to see if we save UserData, if not, we still run addUserFromWS to
 		// get all the proper authentication checks for CA and end entity profile.
-		boolean useUserStorage = caAdminSession.getCAInfo(admin, caid).isUseUserStorage();
+		boolean useUserStorage = caSession.getCAInfo(admin, caid).isUseUserStorage();
 		// Add or edit user
 		try {
 			String username = userdata.getUsername();
@@ -305,12 +311,13 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
+	 * @throws AuthorizationDeniedException 
 	 */
-	private byte[] getCertResponseFromPublicKey(Admin admin, IRequestMessage msg, String hardTokenSN, int responseType, UserDataVO userData)
-	throws EjbcaException, CertificateEncodingException, CertificateException, IOException {
+	private byte[] getCertResponseFromPublicKey(AuthenticationToken admin, RequestMessage msg, String hardTokenSN, int responseType, EndEntityInformation userData)
+	throws EjbcaException, CesecoreException, CertificateEncodingException, CertificateException, IOException, AuthorizationDeniedException {
 		byte[] retval = null;
-		Class respClass = org.ejbca.core.protocol.X509ResponseMessage.class; 
-		IResponseMessage resp =  signSession.createCertificate(admin, msg, respClass, userData);
+		Class respClass = X509ResponseMessage.class; 
+		ResponseMessage resp =  signSession.createCertificate(admin, msg, respClass, userData);
 		java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
 		if(responseType == SecConst.CERT_RES_TYPE_CERTIFICATE){
 			retval = cert.getEncoded();
@@ -329,7 +336,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 	}
 
 	@Override
-	public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
+	public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException,
 	SignatureException, IOException, ObjectNotFoundException, CertificateException,UserDoesntFullfillEndEntityProfile,
 	ApprovalException, EjbcaException, KeyStoreException, NoSuchAlgorithmException,
@@ -365,7 +372,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			String password = userdata.getPassword();
 			String username = userdata.getUsername();
 			int caid = userdata.getCAId();
-		    GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caAdminSession, keyRecoverySession, signSession);
+		    GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caSession, keyRecoverySession, signSession);
 		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			String alias = keyStore.aliases().nextElement();
 		    X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);

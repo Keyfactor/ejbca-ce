@@ -20,15 +20,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
@@ -43,14 +43,14 @@ public class RAAuthorization implements Serializable {
     private TreeMap<String, Integer> authprofilenames = null;
     private TreeMap<String, Integer> authcreateprofilenames = null;
 	private TreeMap<String, Integer> authviewprofilenames = null;
-    private Admin admin;
-    private AuthorizationSession authorizationsession;
+    private AuthenticationToken admin;
+    private AccessControlSessionLocal authorizationsession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(Admin admin, GlobalConfigurationSession globalConfigurationSession, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.globalConfigurationSession = globalConfigurationSession;
     	this.authorizationsession = authorizationsession;
@@ -196,7 +196,7 @@ public class RAAuthorization implements Serializable {
     /**
      * Help function used to check end entity profile authorization.
      */
-    public boolean endEntityAuthorization(Admin admin, int profileid, String rights) {
+    public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights) {
         boolean returnval = false;
         // TODO FIX
         if (admin.getAdminInformation().isSpecialUser()) {

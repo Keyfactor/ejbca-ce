@@ -40,16 +40,19 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>
@@ -100,7 +103,7 @@ public class CertDistServlet extends HttpServlet {
     @EJB
     private CertificateStoreSessionLocal storesession;
     @EJB
-    private CrlSessionLocal createCrlSession;
+    private CrlStoreSessionLocal crlSession;
     @EJB
     private SignSessionLocal signSession;
 
@@ -146,7 +149,8 @@ public class CertDistServlet extends HttpServlet {
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
-        Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+		final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublicWeb: "+remoteAddr));
+        //Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
 
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
@@ -169,9 +173,9 @@ public class CertDistServlet extends HttpServlet {
             try {
                 byte[] crl = null;
                 if (command.equalsIgnoreCase(COMMAND_CRL)) {
-                	crl = createCrlSession.getLastCRL(administrator, issuerdn, false); // CRL
+                	crl = crlSession.getLastCRL(administrator, issuerdn, false); // CRL
                 } else {
-                	crl = createCrlSession.getLastCRL(administrator, issuerdn, true); // deltaCRL
+                	crl = crlSession.getLastCRL(administrator, issuerdn, true); // deltaCRL
                 } 
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);

@@ -26,21 +26,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.StringTools;
 
 /**
  * This is a servlet that is used for creating a user into EJBCA and retrieving her certificate. Supports only POST.
@@ -123,7 +126,8 @@ public class DemoCertReqServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         ServletDebug debug = new ServletDebug(request, response);
 
-        Admin admin = new Admin(Admin.TYPE_RA_USER, request.getRemoteAddr());
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DemoCertReqServlet: "+request.getRemoteAddr()));
+        //Admin admin = new Admin(Admin.TYPE_RA_USER, request.getRemoteAddr());
         RequestHelper.setDefaultCharacterEncoding(request);
 
         String dn = null;
@@ -207,7 +211,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
         int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
         if ((tmp = request.getParameter("certificateprofile")) != null) {
-            cProfileId = certificateProfileSession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
+            cProfileId = certificateProfileSession.getCertificateProfileId(request.getParameter("certificateprofile"));
             if (cProfileId == 0) {
                 throw new ServletException("No such certificate profile: " + tmp);
             }
@@ -311,7 +315,7 @@ public class DemoCertReqServlet extends HttpServlet {
     /**
      * @return true if the username is ok (does not already exist), false otherwise
      */
-    private final boolean checkUsername(Admin admin, String username, UserAdminSessionLocal adminsession) throws ServletException {
+    private final boolean checkUsername(AuthenticationToken admin, String username, UserAdminSessionLocal adminsession) throws ServletException {
         if (username != null) {
             username = username.trim();
         }
@@ -319,7 +323,7 @@ public class DemoCertReqServlet extends HttpServlet {
             throw new ServletException("Username must not be empty.");
         }
 
-        UserDataVO tmpuser = null;
+        EndEntityInformation tmpuser = null;
         try {
             tmpuser = adminsession.findUser(admin, username);
         } catch (Exception e) {

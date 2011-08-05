@@ -30,9 +30,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.util.CertTools;
 
 /** 
  * Servlet implementing server side of the Certificate Store.

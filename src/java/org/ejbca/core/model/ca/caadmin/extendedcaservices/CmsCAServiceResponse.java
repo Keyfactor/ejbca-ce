@@ -15,8 +15,10 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+
 /**
- * Class used when delevering CMS service response from a CA.  
+ * Class used when delivering CMS service response from a CA.  
  *
  * @version $Id$
  */

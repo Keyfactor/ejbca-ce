@@ -29,12 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
@@ -43,9 +45,7 @@ import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.cainterface.CAAuthorization;
@@ -64,12 +64,12 @@ public class InformationMemory implements Serializable {
     
     private static final long serialVersionUID = 1L;
     // Private fields
-    private Admin administrator;
+    private AuthenticationToken administrator;
     // Session Bean interfaces (was *Local originally)
     private AdminGroupSession adminGroupSession;
     private CAAdminSession caadminsession;
     private CaSession caSession;
-    private AuthorizationSession authorizationsession;
+    private AccessControlSessionLocal authorizationsession;
     private EndEntityProfileSession endEntityProfileSession;
     private PublisherSession publishersession;
     private UserDataSourceSession userdatasourcesession = null;
@@ -96,11 +96,11 @@ public class InformationMemory implements Serializable {
     CertificateProfileNameProxy certificateprofilenameproxy = null;
 
     /** Creates a new instance of ProfileNameProxy */
-    public InformationMemory(Admin administrator,
+    public InformationMemory(AuthenticationToken administrator,
                              CAAdminSession caadminsession, CaSession caSession,
                              RaAdminSession raadminsession,
                              AdminGroupSession adminGroupSession,
-                             AuthorizationSession authorizationsession,
+                             AccessControlSessionLocal authorizationsession,
                              EndEntityProfileSession endEntityProfileSession,
                              HardTokenSession hardtokensession,
                              PublisherSession publishersession,
@@ -125,7 +125,7 @@ public class InformationMemory implements Serializable {
     }
 
     public String getCertificateProfileName(int id){
-    	return this.certificateProfileSession.getCertificateProfileName(administrator, id);
+    	return this.certificateProfileSession.getCertificateProfileName(id);
     }
     
     /**
@@ -356,7 +356,7 @@ public class InformationMemory implements Serializable {
              Integer nextcertprofileid = Integer.valueOf(values[i]);
              CertificateProfile certprofile = (CertificateProfile) certproftemp.get(nextcertprofileid);
              if(certprofile == null){
-               certprofile = certificateProfileSession.getCertificateProfile(administrator,nextcertprofileid.intValue());   
+               certprofile = certificateProfileSession.getCertificateProfile(nextcertprofileid.intValue());   
                certproftemp.put(nextcertprofileid,certprofile);
              }
              

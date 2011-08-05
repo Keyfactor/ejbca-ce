@@ -45,12 +45,12 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.Base64;
 import org.ejbca.util.CMS;
-import org.ejbca.util.CertTools;
 
 /**
  * @version $Id$

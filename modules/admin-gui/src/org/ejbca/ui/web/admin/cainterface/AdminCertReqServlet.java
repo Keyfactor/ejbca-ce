@@ -30,22 +30,24 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
-import org.ejbca.util.StringTools;
 
 
 /**
@@ -177,7 +179,7 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException("This servlet requires certificate authentication!");
         }
         
-        Admin admin = userAdminSession.getAdmin(certs[0]);
+        AuthenticationToken admin = userAdminSession.getAdmin(certs[0]);
         
         RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -263,7 +265,7 @@ public class AdminCertReqServlet extends HttpServlet {
         try {
             p10.setUsername(username);
             p10.setPassword(password);
-            IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+            ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             pkcs7 = signSession.createPKCS7(admin, cert, true);
         } catch (EjbcaException e) {

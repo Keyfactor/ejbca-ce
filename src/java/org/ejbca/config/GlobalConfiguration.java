@@ -16,8 +16,8 @@ package org.ejbca.config;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
 /**

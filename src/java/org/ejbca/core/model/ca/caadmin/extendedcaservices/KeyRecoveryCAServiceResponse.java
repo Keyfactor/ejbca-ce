@@ -16,6 +16,8 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 import java.security.KeyPair;
 
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+
 
 /**
  * Class used when delevering key recovery service response from a CA.  

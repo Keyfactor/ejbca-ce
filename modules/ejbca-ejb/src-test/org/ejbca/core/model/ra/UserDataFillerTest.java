@@ -12,11 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.dn.DnComponents;
-
 import junit.framework.Assert;
 import junit.framework.TestCase;
+
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.DnComponents;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /** Tests DN merging
  * 
@@ -24,15 +25,15 @@ import junit.framework.TestCase;
  */
 public class UserDataFillerTest extends TestCase {
 	EndEntityProfile profile;
-	UserDataVO userData = new UserDataVO();
+	EndEntityInformation userData = new EndEntityInformation();
 	public UserDataFillerTest(String testName) {
         super(testName);
     }
 
     public void setUp() throws Exception {
         super.setUp();  
-        userData = new UserDataVO("userName","CN=userName,O=linagora",-1688117755,"",
-        		"user@linagora.com",1,3,1,2,0,new ExtendedInformation());
+        userData = new EndEntityInformation("userName","CN=userName,O=linagora",-1688117755,"",
+        		"user@linagora.com",1,3,1,2,0,new org.cesecore.certificates.endentity.ExtendedInformation());
         profile = new EndEntityProfile();
         profile.addField(EndEntityProfile.USERNAME);//0
         profile.addField(EndEntityProfile.PASSWORD);//1

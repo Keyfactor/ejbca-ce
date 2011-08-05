@@ -16,6 +16,8 @@ package org.ejbca.core.model.log;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+
 /** This interface is used for exporting a number of log entries to 
  * any format defined by the implementing class.
  * 
@@ -28,7 +30,7 @@ public interface ILogExporter extends Serializable {
 	 * @throws Exception if an error occurs during export
 	 * @return byte data or null if no of exported entries are 0.
 	 */
-	public byte[] export(Admin admin, Collection<LogEntry> logentries) throws Exception;
+	public byte[] export(AuthenticationToken admin, Collection<LogEntry> logentries) throws Exception;
 
 }
 

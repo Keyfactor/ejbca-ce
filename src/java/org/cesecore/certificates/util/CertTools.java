@@ -1707,10 +1707,11 @@ public class CertTools {
      *         "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn, directoryName=CN=testDirName|dir|name" or
      *         empty string if no altNames exist. Values in returned String is from CertTools constants. AltNames not supported are simply not shown
      *         in the resulting string.
-     * @throws java.lang.Exception
      */
     public static String getSubjectAlternativeName(Certificate certificate) {
-        log.debug("Search for SubjectAltName");
+    	if (log.isDebugEnabled()) {
+    		log.debug(">getSubjectAlternativeName");
+    	}
         String result = "";
         if (certificate instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) certificate;

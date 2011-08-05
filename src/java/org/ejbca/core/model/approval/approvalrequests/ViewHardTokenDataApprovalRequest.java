@@ -18,12 +18,13 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
 
 /**
  * Approval Request created when an administrator wants
@@ -46,7 +47,7 @@ public class ViewHardTokenDataApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public ViewHardTokenDataApprovalRequest() {}
 
-	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public ViewHardTokenDataApprovalRequest(String username, String userDN, String tokensn, boolean viewPUK, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.username = username;
 		this.dn = userDN;

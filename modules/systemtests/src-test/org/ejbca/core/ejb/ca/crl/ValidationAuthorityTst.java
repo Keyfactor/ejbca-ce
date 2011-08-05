@@ -19,8 +19,7 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.ejbca.core.model.ca.caadmin.CA;
+import org.cesecore.certificates.ca.CA;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.ui.web.protocol.RFC4387URL;

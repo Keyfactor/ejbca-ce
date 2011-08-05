@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -44,7 +45,6 @@ import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.query.BasicMatch;
 
 /**

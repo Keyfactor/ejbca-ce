@@ -12,6 +12,9 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 
 /** Tests base64 encoding and decoding
  * 
@@ -30,7 +33,7 @@ public class HexTest extends TestCase {
 
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
         log.trace("<setUp()");
     }
 

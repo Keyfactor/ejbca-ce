@@ -233,7 +233,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
      * 
      * @param authenticationCode
      *            authentication code for the keystore
-     * @throws CATokenAuthenticationFailedException
+     * @throws CryptoTokenAuthenticationFailedException
      */
     private void checkSoftKeystorePassword(final char[] authenticationCode) throws KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException, CryptoTokenAuthenticationFailedException {

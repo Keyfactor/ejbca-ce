@@ -18,12 +18,12 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.core.protocol.X509ResponseMessage;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.util.RequestMessageUtils;
 
 /**
@@ -50,7 +50,7 @@ public class CreateCert extends BaseCommand {
         String certf = args[4];
         try {
 			byte[] bytes = FileTools.readFiletoBuffer(csr);
-			IRequestMessage req = RequestMessageUtils.parseRequestMessage(bytes);
+			RequestMessage req = RequestMessageUtils.parseRequestMessage(bytes);
 			if (req instanceof PKCS10RequestMessage) {
 				PKCS10RequestMessage p10req = (PKCS10RequestMessage) req;
 				p10req.setUsername(username);
@@ -60,7 +60,7 @@ public class CreateCert extends BaseCommand {
 				return;
 			}
 			// Call signsession to create a certificate
-			IResponseMessage resp = ejb.getSignSession().createCertificate(getAdmin(), req, X509ResponseMessage.class, null);
+			ResponseMessage resp = ejb.getSignSession().createCertificate(getAdmin(), req, X509ResponseMessage.class, null);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);

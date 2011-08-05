@@ -19,14 +19,15 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.AlgorithmConstants;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
@@ -40,6 +41,7 @@ public class CAImportExportTest extends TestCase  {
     private static X509CAInfo cainfo = null;
     
     private CAAdminSessionRemote caadminsession = InterfaceCache.getCAAdminSession();
+    private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
 
     /**
@@ -259,7 +261,7 @@ public class CAImportExportTest extends TestCase  {
 		assertEquals("Could not create CA \"" + caname + "\" for testing.", ret, defaultRetValue);
 		ret = false;
 		try {
-			keyFingerPrint = caadminsession.getKeyFingerPrint(admin, caname);
+			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
 			ret = true;
 		} catch (Exception e) { }
 		assertEquals("Could not get key fingerprint for \"" + caname + "\".", ret, defaultRetValue);
@@ -283,7 +285,7 @@ public class CAImportExportTest extends TestCase  {
 		assertEquals("Could not import CA.", ret, defaultRetValue);
 		ret = false;
 		try {
-			if ( keyFingerPrint.equals(caadminsession.getKeyFingerPrint(admin, caname)) ) {
+			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
 				ret = true;
 			}
 		} catch (Exception e) { }
@@ -320,13 +322,13 @@ public class CAImportExportTest extends TestCase  {
 		assertTrue("Could not create CA \"" + caname + "\" for testing.", ret);
 		ret = false;
 		try {
-			keyFingerPrint = caadminsession.getKeyFingerPrint(admin, caname);
+			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
 			ret = true;
 		} catch (Exception e) {}
 		assertFalse("Could get key fingerprint for \"" + caname + "\".", ret);
 		ret = false;
 		try {
-			keyFingerPrint = caadminsession.getKeyFingerPrint(internalAdmin, caname);
+			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
 			ret = true;
 		} catch (Exception e) { }
 		assertTrue("Could not get key fingerprint for \"" + caname + "\".", ret);
@@ -362,14 +364,14 @@ public class CAImportExportTest extends TestCase  {
 		assertTrue("Could not import CA.", ret);
 		ret = false;
 		try {
-			if ( keyFingerPrint.equals(caadminsession.getKeyFingerPrint(admin, caname)) ) {
+			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
 				ret = true;
 			}
 		} catch (Exception e) { }
 		assertFalse("Fingerprint does match for \"" + caname + "\".", ret);
 		ret = false;
 		try {
-			if ( keyFingerPrint.equals(caadminsession.getKeyFingerPrint(internalAdmin, caname)) ) {
+			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
 				ret = true;
 			}
 		} catch (Exception e) { }

@@ -29,19 +29,21 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 
 /**
@@ -85,7 +87,7 @@ public class ScepServlet extends HttpServlet {
         super.init(config);
         try {
             // Install BouncyCastle provider
-            CertTools.installBCProvider();
+            CryptoProviderTools.installBCProviderIfNotAvailable();
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -168,7 +170,8 @@ public class ScepServlet extends HttpServlet {
                 return;
             }
             
-            Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ScepServlet: "+remoteAddr));
+            //Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
             log.debug("Got request '" + operation + "'");
             log.debug("Message: " + message);
     		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
@@ -284,7 +287,7 @@ public class ScepServlet extends HttpServlet {
             log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
-        } catch (CATokenOfflineException ee) {
+        } catch (CryptoTokenOfflineException ee) {
     		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
             log.error(errMsg, ee);
             // TODO: Send back proper Failure Response

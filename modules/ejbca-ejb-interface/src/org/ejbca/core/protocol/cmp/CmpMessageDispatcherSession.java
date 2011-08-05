@@ -15,12 +15,12 @@ package org.ejbca.core.protocol.cmp;
 
 import java.io.IOException;
 
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.IResponseMessage;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 
 /**
  * @version $Id$
  */
 public interface CmpMessageDispatcherSession {
-	public IResponseMessage dispatch(Admin admin, byte[] derObject) throws IOException;
+	public ResponseMessage dispatch(AuthenticationToken admin, byte[] derObject) throws IOException;
 }

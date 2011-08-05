@@ -44,8 +44,8 @@ import org.apache.batik.transcoder.print.PrintTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.dn.DNFieldExtractor;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -162,7 +162,7 @@ public class SVGImageManipulator {
      * @return A processed notification message.
      *     
      */
-    public Printable print(UserDataVO userdata, 
+    public Printable print(EndEntityInformation userdata, 
                       String[] pincodes, String[] pukcodes,
 	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
       // Initialize
@@ -206,7 +206,7 @@ public class SVGImageManipulator {
       return t;
     }
 
-    private void process(String tagName, UserDataVO userdata,
+    private void process(String tagName, EndEntityInformation userdata,
     		DNFieldExtractor dnfields, String[] pincodes, String[] pukcodes,
     		String hardtokensn, String hardtokensnwithoutprefix,
     		String copyoftokensn, String copyoftokensnwithoutprefix,
@@ -252,7 +252,7 @@ public class SVGImageManipulator {
     }
     
 
-    private String processString(String text, UserDataVO userdata, DNFieldExtractor dnfields,
+    private String processString(String text, EndEntityInformation userdata, DNFieldExtractor dnfields,
                                  String[] pincodes, String[] pukcodes, 
                                  String hardtokensn, String hardtokensnwithoutprefix,
                                  String copyoftokensn, String copyoftokensnwithoutprefix,
@@ -302,7 +302,7 @@ public class SVGImageManipulator {
 
 
     // Private Methods
-    private void insertImage(UserDataVO userdata, SVGOMDocument clone) throws FileNotFoundException, IOException{
+    private void insertImage(EndEntityInformation userdata, SVGOMDocument clone) throws FileNotFoundException, IOException{
     	if (log.isTraceEnabled()) {
     		log.trace(">insertImage("+userdata != null ? userdata.getUsername() : "null"+")");
     	}

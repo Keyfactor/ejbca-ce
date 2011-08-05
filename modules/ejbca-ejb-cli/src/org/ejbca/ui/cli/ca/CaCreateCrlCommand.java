@@ -14,8 +14,8 @@
 package org.ejbca.ui.cli.ca;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Issues a new CRL from the CA.

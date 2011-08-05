@@ -21,7 +21,7 @@ import java.util.TreeMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;

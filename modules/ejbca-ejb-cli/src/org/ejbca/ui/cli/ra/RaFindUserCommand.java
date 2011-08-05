@@ -13,8 +13,8 @@
  
 package org.ejbca.ui.cli.ra;
 
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ra.ExtendedInformation;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 

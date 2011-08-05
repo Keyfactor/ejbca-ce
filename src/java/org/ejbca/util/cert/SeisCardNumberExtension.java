@@ -19,8 +19,8 @@ import java.security.cert.X509Certificate;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERPrintableString;
-import org.ejbca.core.model.ca.certextensions.standard.SeisCardNumber;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.certificate.certextensions.standard.SeisCardNumber;
+import org.cesecore.certificates.util.CertTools;
 
 /**
  * A class for reading values from SeisCardNumber extension.

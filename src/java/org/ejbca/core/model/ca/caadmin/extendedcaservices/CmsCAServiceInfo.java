@@ -47,6 +47,6 @@ public class CmsCAServiceInfo extends BaseSigningCAServiceInfo implements Serial
 
 	@Override
 	public int getType() {
-		return ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE;
+		return ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE;
 	}
 }

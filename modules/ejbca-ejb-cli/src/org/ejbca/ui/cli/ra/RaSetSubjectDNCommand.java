@@ -14,8 +14,8 @@
 package org.ejbca.ui.cli.ra;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -67,7 +67,7 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subjectDN '" + subjectDN + "' for user " + username);
             try {
-            	UserDataVO uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            	EndEntityInformation uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
             	uservo.setDN(subjectDN);
             	ejb.getUserAdminSession().changeUser(getAdmin(), uservo, false);
             } catch (AuthorizationDeniedException e) {

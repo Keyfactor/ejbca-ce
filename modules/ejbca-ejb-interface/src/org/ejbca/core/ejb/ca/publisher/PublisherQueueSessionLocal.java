@@ -16,10 +16,10 @@ import java.security.cert.Certificate;
 
 import javax.ejb.Local;
 
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
 
 /**
  * Local interface for PublisherQueueSession.

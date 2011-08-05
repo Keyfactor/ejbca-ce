@@ -20,27 +20,27 @@ import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
-import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Add a lot of users and a lot of certificates for each user 
@@ -104,7 +104,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             String password = genRandomPwd();
             final String certificateProfileName = "testLotsOfCertsPerUser";
             final String endEntityProfileName = "testLotsOfCertsPerUser";
-            CertificateProfile certificateProfile = new EndUserCertificateProfile();
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             certificateProfile.setAllowValidityOverride(true);
             try {
                 certificateProfileSession.addCertificateProfile(administrator, certificateProfileName, certificateProfile);

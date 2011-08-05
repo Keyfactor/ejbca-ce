@@ -26,8 +26,9 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.core.model.AlgorithmConstants;
-import org.ejbca.util.keystore.KeyTools;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
 
 /**
  * Helpers used by different tests, that does not invoke EJBs.

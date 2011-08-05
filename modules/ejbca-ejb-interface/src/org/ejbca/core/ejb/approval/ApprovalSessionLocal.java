@@ -18,13 +18,13 @@ import java.util.Date;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Local interface for ApprovalSession.
@@ -52,7 +52,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * 
      * @param gc is the GlobalConfiguration used for notification info
      */
-	ApprovalData isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId) throws ApprovalException, AuthorizationDeniedException;
+	ApprovalData isAuthorizedBeforeApproveOrReject(AuthenticationToken admin, int approvalId) throws ApprovalException, AuthorizationDeniedException;
 
     /** Verifies that an administrator can approve an action, i.e. that it is not the same admin approving the request as made the request originally.
      * An admin is not allowed to approve his/her own actions.
@@ -61,12 +61,12 @@ public interface ApprovalSessionLocal extends ApprovalSession {
      * @param adl the action that the administrator tries to approve
      * @throws AdminAlreadyApprovedRequestException if the admin has already approved the action before
      */
-	void checkExecutionPossibility(Admin admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException;
+	void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException;
 
 	/** Method that returns the approval data value object. */
 	ApprovalDataVO getApprovalDataVO(ApprovalData adl);
 
-	void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
+	void sendApprovalNotification(AuthenticationToken admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
             String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest,
             Approval approval);
 

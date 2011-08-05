@@ -21,7 +21,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -33,16 +32,16 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.util.AlgorithmTools;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.cert.QCStatementExtension;
+import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
-import org.ejbca.util.cert.QCStatementExtension;
-import org.ejbca.util.cert.SubjectDirAttrExtension;
-import org.ejbca.util.dn.DNFieldExtractor;
-import org.ejbca.util.keystore.KeyTools;
 
 
 
@@ -198,7 +197,7 @@ public class CertificateView implements Serializable {
 
     public String getSignatureAlgoritm() {
     	// Only used for displaying to user so we can use this value that always works
-    	return CertTools.getCertSignatureAlgorithmAsString(certificate);
+    	return AlgorithmTools.getCertSignatureAlgorithmAsString(certificate);
     }
 
     /** Method that returns if key is allowed for given usage. Usage must be one of this class key usage constants. */
@@ -329,13 +328,7 @@ public class CertificateView implements Serializable {
     
     public String getSubjectAltName() {
     	if(subjectaltnamestring == null){  
-    		try {
-    			subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
-    		} catch (CertificateParsingException e) {
-    			subjectaltnamestring = e.getMessage();		
-    		} catch (IOException e) {
-    			subjectaltnamestring = e.getMessage();		
-			}                  
+    		subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
     	}        
 
       return subjectaltnamestring; 	

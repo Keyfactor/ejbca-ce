@@ -28,12 +28,14 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.util.EjbRemoteHelper;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Base for Commands, contains useful functions
@@ -52,7 +54,8 @@ public abstract class BaseCommand implements CliCommandPlugin {
      * Not static since different object should go to different session beans
      * concurrently
      */
-    private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "cli");
+    //private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "cli");
+    private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CLI"));
 
     protected Logger getLogger() {
         if (log == null) {
@@ -61,7 +64,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
         return log;
     }
 
-    protected Admin getAdmin() {
+    protected AuthenticationToken getAdmin() {
         return admin;
     }
 

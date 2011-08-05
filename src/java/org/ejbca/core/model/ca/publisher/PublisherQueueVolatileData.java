@@ -18,10 +18,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.UserDataVO;
 
 
 /**
@@ -118,7 +118,7 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     	String str = (String)data.get(EXTENDEDINFORMATION);
     	ExtendedInformation ret = null;
     	if (str != null) {
-    		ret = UserDataVO.getExtendedInformation(str);
+    		ret = EndEntityInformation.getExtendedInformation(str);
     	}
     	return ret;
     }
@@ -126,7 +126,7 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     public void setExtendedInformation(ExtendedInformation ei) {
     	String eidata = null;
     	try {
-			eidata = UserDataVO.extendedInformationToStringData(ei);
+			eidata = EndEntityInformation.extendedInformationToStringData(ei);
 		} catch (UnsupportedEncodingException e) {
 			log.error(e);
 		}

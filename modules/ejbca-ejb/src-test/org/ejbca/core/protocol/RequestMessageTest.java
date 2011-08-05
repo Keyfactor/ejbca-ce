@@ -24,8 +24,9 @@ import junit.framework.TestCase;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.keystore.KeyTools;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Testing various aspects of request messages

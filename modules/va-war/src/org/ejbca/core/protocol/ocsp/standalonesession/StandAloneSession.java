@@ -30,20 +30,20 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.keys.token.p11.P11Slot;
+import org.cesecore.keys.token.p11.P11SlotUser;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPData;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
-import org.ejbca.util.keystore.KeyTools;
-import org.ejbca.util.keystore.P11Slot;
-import org.ejbca.util.keystore.P11Slot.P11SlotUser;
 import org.ejbca.util.provider.TLSProvider;
 
 /** 
@@ -330,17 +330,12 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
         thread.interrupt();
         return result;
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#deactivate()
-     */
-    public boolean deactivate() throws Exception {
+    
+    @Override
+    public void deactivate() throws Exception {
         this.sessionData.slot.logoutFromSlotIfNoTokensActive();
-        // should allways be active
-        return true;
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#isActive()
-     */
+    @Override
     public boolean isActive() {
         return this.sessionData.doNotStorePasswordsInMemory; // if not active it is possible to logout from the slot. if logged out you need password to login again.
     }

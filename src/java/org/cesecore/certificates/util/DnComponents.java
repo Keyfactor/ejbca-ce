@@ -201,18 +201,21 @@ public class DnComponents {
     public static ArrayList<String> getAltNameFields() {
     	return altNameFields;
     }
+    public static boolean isAltNameField(String field) {
+        return altNameFieldsHashSet.contains(field);
+    }
     public static ArrayList<String> getAltNameLanguageTexts() {
     	return altNameLanguageTexts;
     }
     public static ArrayList<String> getDirAttrFields() {
     	return dirAttrFields;
     }
+    public static boolean isDirAttrField(String field) {
+    	return dirAttrFieldsHashSet.contains(field);
+    }
     // Used by DNFieldExtractor and EntityProfile, don't USE
     public static ArrayList<Integer> getDirAttrDnIds() {
     	return dirAttrDnIds;
-    }
-    public static boolean isAltNameField(String field) {
-        return altNameFieldsHashSet.contains(field);
     }
     // Used by DNFieldExtractor and EntityProfile, don't USE
     public static ArrayList<Integer> getAltNameDnIds() {

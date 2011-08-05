@@ -22,20 +22,20 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.X509CA;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.dn.DnComponents;
-import org.ejbca.util.keystore.KeyTools;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 

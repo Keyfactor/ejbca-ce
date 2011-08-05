@@ -18,13 +18,13 @@ import java.util.HashSet;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
@@ -41,14 +41,14 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(EndEntityProfileDataHandler.class);    
 
     private EndEntityProfileSession endEntityProfileSession;
-    private Admin administrator;
-    private AuthorizationSession authorizationsession;
+    private AuthenticationToken administrator;
+    private AccessControlSessionLocal authorizationsession;
     private CaSession caSession;
     private InformationMemory info;
 
     public static final String EMPTY_PROFILE        = EndEntityProfileSession.EMPTY_ENDENTITYPROFILENAME;    
     /** Creates a new instance of EndEntityProfileDataHandler */
-    public EndEntityProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, InformationMemory info) {
+    public EndEntityProfileDataHandler(AuthenticationToken administrator, AccessControlSessionLocal authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, InformationMemory info) {
        this.endEntityProfileSession = endEntityProfileSession;        
        this.authorizationsession = authorizationsession;
        this.caSession = caSession;

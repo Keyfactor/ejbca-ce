@@ -24,10 +24,10 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.util.Base64GetHashMap;
-import org.ejbca.util.Base64PutHashMap;
 
 /**
  * Representation of a service configuration used by the monitoring services framework.

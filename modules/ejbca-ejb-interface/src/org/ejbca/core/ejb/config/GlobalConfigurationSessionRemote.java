@@ -14,8 +14,8 @@ package org.ejbca.core.ejb.config;
 
 import javax.ejb.Remote;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Remote interface for RaAdminSession.
@@ -27,7 +27,7 @@ public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSes
     /** 
      * Saves the GlobalConfiguration but not when in production mode. 
      */
-    void saveGlobalConfigurationRemote(Admin admin, GlobalConfiguration globconf);
+    void saveGlobalConfigurationRemote(AuthenticationToken admin, GlobalConfiguration globconf);
 
     /**
      * Sets the value for the setting IssueHardwareTokens. This is used by the 
@@ -36,6 +36,6 @@ public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSes
      * @param admin The administrator.
      * @param value The value to set.
      */
-    void setSettingIssueHardwareTokens(Admin admin, boolean value);
+    void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value);
 	
 }

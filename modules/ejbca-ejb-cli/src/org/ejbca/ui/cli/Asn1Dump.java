@@ -21,8 +21,8 @@ import java.util.Iterator;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.util.ASN1Dump;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Dumps PEM or DER file as readable ASN1'

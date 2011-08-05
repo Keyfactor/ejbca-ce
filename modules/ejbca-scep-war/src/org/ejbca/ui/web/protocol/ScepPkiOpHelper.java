@@ -17,10 +17,11 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
 
@@ -32,7 +33,7 @@ import org.ejbca.core.protocol.scep.ScepRequestMessage;
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
     private ScepRequestMessage reqmsg = null;
-    private Admin admin = null;
+    private AuthenticationToken admin = null;
     private SignSessionLocal signsession;
 
     /**
@@ -41,7 +42,7 @@ public class ScepPkiOpHelper {
      * @param admin administrator performing this
      * @param signsession signsession used to request certificates
      */
-    public ScepPkiOpHelper(Admin admin, SignSessionLocal signsession) {
+    public ScepPkiOpHelper(AuthenticationToken admin, SignSessionLocal signsession) {
     	if (log.isTraceEnabled()) {
     		log.trace(">ScepPkiOpHelper");
     	}
@@ -74,7 +75,7 @@ public class ScepPkiOpHelper {
             }
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
                 // Get the certificate
-                IResponseMessage resp = signsession.createCertificate(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class, null);
+                ResponseMessage resp = signsession.createCertificate(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class, null);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
@@ -82,7 +83,7 @@ public class ScepPkiOpHelper {
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
                 // create the stupid encrypted CRL message, the below can actually only be made 
                 // at the CA, since CAs private key is needed to decrypt
-                IResponseMessage resp = signsession.getCRL(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class);
+                ResponseMessage resp = signsession.getCRL(admin, reqmsg, org.ejbca.core.protocol.scep.ScepResponseMessage.class);
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }

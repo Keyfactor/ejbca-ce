@@ -17,9 +17,9 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.services.intervals.DummyInterval;
 
 /**
@@ -45,7 +45,7 @@ public abstract class BaseWorker implements IWorker {
     private IAction action = null;
     private IInterval interval = null;
     
-    private Admin admin = null;
+    private AuthenticationToken admin = null;
 
 	private transient Collection<Integer> cAIdsToCheck = null;
 	private transient long timeBeforeExpire = -1;
@@ -53,7 +53,7 @@ public abstract class BaseWorker implements IWorker {
 	/**
 	 * @see org.ejbca.core.model.services.IWorker#init(org.ejbca.core.model.services.ServiceConfiguration, java.lang.String)
 	 */
-	public void init(Admin admin, ServiceConfiguration serviceConfiguration,
+	public void init(AuthenticationToken admin, ServiceConfiguration serviceConfiguration,
 			String serviceName, long runTimeStamp, long nextRunTimeStamp) {
 		this.admin = admin;
 		this.serviceName = serviceName;
@@ -114,7 +114,7 @@ public abstract class BaseWorker implements IWorker {
 	/**
 	 * Returns the admin that should be used for other calls.
 	 */
-	protected Admin getAdmin(){
+	protected AuthenticationToken getAdmin(){
 		return admin;
 	}
 	

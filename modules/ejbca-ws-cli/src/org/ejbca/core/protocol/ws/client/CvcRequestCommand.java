@@ -22,6 +22,11 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -36,11 +41,6 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
-import org.ejbca.util.keystore.KeyTools;
 
 
 /**

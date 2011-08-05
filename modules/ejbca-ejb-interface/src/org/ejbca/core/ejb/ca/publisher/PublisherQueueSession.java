@@ -16,10 +16,10 @@ import java.util.Collection;
 
 import javax.ejb.CreateException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * @version $Id$
@@ -104,5 +104,5 @@ public interface PublisherQueueSession {
      * However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
      * Now, the OCSP publisher uses a non-transactional data source so it commits every time so...
 	 */
-    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId, BasePublisher publisher);
+    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 }

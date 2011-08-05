@@ -24,10 +24,10 @@ import java.security.cert.X509Certificate;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.keystore.KeyTools;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 
 
 
@@ -50,7 +50,7 @@ public class MessagesTest extends TestCase {
     public MessagesTest(String name) throws Exception {
         super(name);
         // Install BouncyCastle provider
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
 
         KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
         InputStream is = new ByteArrayInputStream(p12);

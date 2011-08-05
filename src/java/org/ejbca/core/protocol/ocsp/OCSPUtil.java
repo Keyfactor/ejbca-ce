@@ -46,20 +46,21 @@ import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.RespID;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.ocsp.exception.NotSupportedException;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.NotSupportedException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.util.AlgorithmTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
 
 /** Class with common methods used by both Internal and External OCSP responders
  * 
@@ -385,7 +386,7 @@ public class OCSPUtil {
     
     public static Hashtable getCertificatesFromDirectory(String certificateDir) throws IOException {
     	// read all files from trustDir, expect that they are PEM formatted certificates
-    	CertTools.installBCProvider();
+    	CryptoProviderTools.installBCProviderIfNotAvailable();
     	File dir = new File(certificateDir);
     	Hashtable trustedCerts  = new Hashtable();
     	if (dir == null || dir.isDirectory() == false) {

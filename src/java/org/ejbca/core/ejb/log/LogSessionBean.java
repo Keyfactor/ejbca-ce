@@ -35,11 +35,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionRemote;
-import org.ejbca.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
@@ -47,7 +44,6 @@ import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.log.OldLogDevice;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 

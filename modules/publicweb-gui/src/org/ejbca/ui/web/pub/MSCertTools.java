@@ -19,17 +19,18 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.dn.DNFieldExtractor;
-import org.ejbca.util.dn.DnComponents;
 
 /**
  * @version $Id$
@@ -76,13 +77,13 @@ public class MSCertTools {
 
 	private static final int[][] KEYUSAGES = {
 		// "User" Key Usage: Digital signature, Allow key exchange only with key encryption
-		{CertificateProfile.DIGITALSIGNATURE, CertificateProfile.KEYENCIPHERMENT},
+		{CertificateConstants.DIGITALSIGNATURE, CertificateConstants.KEYENCIPHERMENT},
 		// "Machine" Key Usage: Digital signature, Allow key exchange only with key encryption
-		{CertificateProfile.DIGITALSIGNATURE, CertificateProfile.KEYENCIPHERMENT},
+		{CertificateConstants.DIGITALSIGNATURE, CertificateConstants.KEYENCIPHERMENT},
 		// "DomainController" Key Usage: 
-		{CertificateProfile.DIGITALSIGNATURE},
+		{CertificateConstants.DIGITALSIGNATURE},
 		// "SmartcardLogon" Key Usage: 
-		{CertificateProfile.DIGITALSIGNATURE, CertificateProfile.KEYENCIPHERMENT}
+		{CertificateConstants.DIGITALSIGNATURE, CertificateConstants.KEYENCIPHERMENT}
 	};
 
 	private static final String[][] EXTENDEDKEYUSAGES = {
@@ -163,11 +164,11 @@ public class MSCertTools {
 		return false;
 	}
 
-	public static int getOrCreateCertificateProfile(Admin admin, int templateIndex, CertificateProfileSession certificateProfileSession) {
+	public static int getOrCreateCertificateProfile(AuthenticationToken admin, int templateIndex, CertificateProfileSession certificateProfileSession) {
 		String certProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 		// Create certificate profile if neccesary
 		boolean newCertificateProfile = false;
-		CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(admin, certProfileName);
+		CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileName);
 		if (certProfile == null) {
 			certProfile = new CertificateProfile();
 			try {
@@ -204,10 +205,10 @@ public class MSCertTools {
 			}
 		}
 		certificateProfileSession.changeCertificateProfile(admin, certProfileName, certProfile);
-		return certificateProfileSession.getCertificateProfileId(admin, certProfileName);
+		return certificateProfileSession.getCertificateProfileId(certProfileName);
 	}
 
-    public static int getOrCreateEndEndtityProfile(Admin admin, int templateIndex, int certProfileId, int caid, String usernameShort,
+    public static int getOrCreateEndEndtityProfile(AuthenticationToken admin, int templateIndex, int certProfileId, int caid, String usernameShort,
             String fetchedSubjectDN, RaAdminSession raAdminSession, EndEntityProfileSession endEntityProfileSession) {
 		// Create end endity profile if neccesary
 		String endEntityProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];

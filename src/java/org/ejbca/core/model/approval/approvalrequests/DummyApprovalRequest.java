@@ -19,12 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
 
 /**
  * Dummy Approval Request used for testing and demonstration purposes. 
@@ -50,7 +51,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-	public DummyApprovalRequest(Admin requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
+	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId);	
 		this.executable = executable;
 	}  
@@ -58,7 +59,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
     /**
      * Main constructor of an approval request with step functionality
      */
-	public DummyApprovalRequest(Admin requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
+	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
 		this.executable = executable;
 	} 

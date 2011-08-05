@@ -16,6 +16,7 @@ package org.ejbca.core.model.ra.userdatasource;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -40,18 +41,18 @@ public interface ICustomUserDataSource {
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(Admin, String)
 	 */   
-	public Collection fetch(Admin admin, String searchstring) throws UserDataSourceException;
+	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException;
 	
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(Admin, String, boolean)
 	 */   
-	public boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws MultipleMatchException, UserDataSourceException;
+	public boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws MultipleMatchException, UserDataSourceException;
 	
 	
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */    
-	public abstract void testConnection(Admin admin) throws UserDataSourceConnectionException;
+	public abstract void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException;
 	
 
 }

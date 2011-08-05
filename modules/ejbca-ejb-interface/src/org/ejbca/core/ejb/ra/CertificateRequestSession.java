@@ -26,16 +26,17 @@ import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
 import javax.persistence.PersistenceException;
 
+import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
 
 /**
  * @version $Id$
@@ -52,11 +53,12 @@ public interface CertificateRequestSession {
 	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
+	 * @throws CesecoreException 
 	 */
-    public byte[] processCertReq(Admin admin, UserDataVO userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
+    public byte[] processCertReq(AuthenticationToken admin, EndEntityInformation userdata, String req, int reqType, String hardTokenSN, int responseType) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException,
             SignatureException, IOException, ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile,
-            ApprovalException, EjbcaException;
+            ApprovalException, EjbcaException, CesecoreException;
 
 	/**
 	 * Edits or adds a user and generates a certificate for that user in a single transaction.
@@ -69,9 +71,10 @@ public interface CertificateRequestSession {
 	 * @param hardTokenSN is the hard token to associate this or null
 	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
      * @return a encoded certificate of the type specified in responseType 
+	 * @throws CesecoreException 
 	 */
-    public IResponseMessage processCertReq(Admin admin, UserDataVO userdata, IRequestMessage req, Class responseClass) throws PersistenceException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException;
+    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class responseClass) throws PersistenceException,
+            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException;
 
 	/**
 	 * Edits or adds a user and generates a keystore for that user in a single transaction.
@@ -85,7 +88,7 @@ public interface CertificateRequestSession {
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @return an encoded keystore of the type specified in responseType 
      */
-    public byte[] processSoftTokenReq(Admin admin, UserDataVO userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
+    public byte[] processSoftTokenReq(AuthenticationToken admin, EndEntityInformation userdata, String hardTokenSN, String keyspec, String keyalg, boolean createJKS) throws CADoesntExistsException,
             AuthorizationDeniedException, NotFoundException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException, SignatureException, IOException,
             ObjectNotFoundException, CreateException, CertificateException, UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException,
             KeyStoreException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, PersistenceException;

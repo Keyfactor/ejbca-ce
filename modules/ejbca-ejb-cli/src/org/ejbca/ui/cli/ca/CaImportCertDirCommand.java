@@ -21,15 +21,15 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
 
 /**
  * Imports certificate files to the database for a given CA
@@ -93,7 +93,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			}
 			// Fetch Certificate Profile info
 			getLogger().debug("Searching for Certificate Profile " + certificateProfile);
-			int certificateProfileId = ejb.getCertificateProfileSession().getCertificateProfileId(getAdmin(), certificateProfile);
+			int certificateProfileId = ejb.getCertificateProfileSession().getCertificateProfileId(certificateProfile);
 			if (certificateProfileId == SecConst.PROFILE_NO_PROFILE) {
 				getLogger().error("Certificate Profile " + certificateProfile + " doesn't exists.");
 				throw new Exception("Certificate Profile '" + certificateProfile + "' doesn't exists.");
@@ -151,7 +151,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	private int performImport(X509Certificate certificate, int status, int endEntityProfileId, int certificateProfileId,
 			                   X509Certificate cacert, CAInfo caInfo, String filename, String issuer, String username) throws Exception {
 		final String fingerprint = CertTools.getFingerprintAsString(certificate);
-		if (ejb.getCertStoreSession().findCertificateByFingerprint(getAdmin(), fingerprint) != null) {
+		if (ejb.getCertStoreSession().findCertificateByFingerprint(fingerprint) != null) {
 			getLogger ().info("Certificate '" + CertTools.getSerialNumberAsString(certificate) + "' is already present, file: " +filename);
 			return STATUS_REDUNDANT;
 		}
@@ -172,12 +172,12 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 		getLogger().debug("Loading/updating user " + username);
 		// Check if username already exists.
-		UserDataVO userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
+		EndEntityInformation userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
 		if (userdata==null) {
 			// Add a "user" to map this certificate to
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
 			final String email = CertTools.getEMailAddress(certificate);				
-			userdata = new UserDataVO(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
+			userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
 					UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, endEntityProfileId,
 					certificateProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 			userdata.setPassword("foo123");

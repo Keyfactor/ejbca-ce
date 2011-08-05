@@ -12,12 +12,26 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.util.Collection;
+
+import javax.ejb.FinderException;
 import javax.ejb.Local;
+
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
  * Local interface for UserAdminSession.
  */
 @Local
 public interface UserAdminSessionLocal extends UserAdminSession {
+
+    /**
+     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
+     * 
+     * @return Collection of UserDataVO
+     */
+    public Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin) throws FinderException;
+    
 
 }

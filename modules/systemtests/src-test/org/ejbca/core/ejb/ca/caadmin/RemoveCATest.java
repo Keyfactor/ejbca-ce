@@ -14,10 +14,11 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
 
 /**

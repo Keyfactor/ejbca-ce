@@ -15,16 +15,16 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
@@ -38,14 +38,14 @@ public class PublisherDataHandler implements Serializable {
     private static final long serialVersionUID = -5646053740072121787L;
     
     private PublisherSession publishersession; 
-    private AuthorizationSession authorizationsession;
+    private AccessControlSessionLocal authorizationsession;
     private CAAdminSession caadminsession;
     private CertificateProfileSession certificateProfileSession;
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private InformationMemory info;
 
     /** Creates a new instance of PublisherDataHandler */
-    public PublisherDataHandler(Admin administrator, PublisherSession publishersession, AuthorizationSession authorizationsession, 
+    public PublisherDataHandler(AuthenticationToken administrator, PublisherSession publishersession, AccessControlSessionLocal authorizationsession, 
                                 CAAdminSession caadminsession, CertificateProfileSession certificateProfileSession, InformationMemory info) {
        this.publishersession = publishersession;           
        this.authorizationsession = authorizationsession;
@@ -81,7 +81,7 @@ public class PublisherDataHandler implements Serializable {
 
       if(authorizedToEditPublishers()){
       	int publisherid = publishersession.getPublisherId(administrator, name);
-        if(!caadminsession.exitsPublisherInCAs(administrator, publisherid) && !certificateProfileSession.existsPublisherInCertificateProfiles(administrator,publisherid)){      	
+        if(!caadminsession.exitsPublisherInCAs(administrator, publisherid) && !certificateProfileSession.existsPublisherIdInCertificateProfiles(publisherid)){      	
 		  publishersession.removePublisher(administrator, name);
 		  this.info.publishersEdited();
 		  returnval = false;

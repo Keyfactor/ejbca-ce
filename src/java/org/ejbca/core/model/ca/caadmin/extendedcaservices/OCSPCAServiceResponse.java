@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 
 /**
  * Class used when delevering OCSP service response from a CA.  

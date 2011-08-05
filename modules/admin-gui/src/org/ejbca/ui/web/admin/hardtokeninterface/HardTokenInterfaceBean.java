@@ -20,20 +20,20 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
@@ -51,7 +51,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
 	private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
     private HardTokenBatchJobSession hardtokenbatchsession;        
-    private Admin                                          admin;
+    private AuthenticationToken admin;
     private InformationMemory                      informationmemory;
     private boolean                                       initialized=false;
     private HardTokenView[]                          result;

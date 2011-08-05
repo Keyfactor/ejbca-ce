@@ -23,8 +23,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 
-import org.ejbca.util.Base64;
-import org.ejbca.util.keystore.KeyTools;
+import org.cesecore.keys.util.KeyTools;
 
 /**
  * Class containing constants common for unit tests.

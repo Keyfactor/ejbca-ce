@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.TCPTool;
 
 import com.novell.ldap.LDAPConnection;

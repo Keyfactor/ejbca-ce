@@ -1,0 +1,1947 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.cesecore.certificates.certificateprofile;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.Map.Entry;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.config.ExtendedKeyUsageConfiguration;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.internal.UpgradeableDataHashMap;
+
+/**
+ * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
+ * 
+ * Based on EJBCA version: CertificateProfile.java 11141 2011-01-11 13:44:11Z anatom
+ * 
+ * @version $Id: CertificateProfile.java 845 2011-05-20 09:05:46Z mikek $
+ */
+public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
+    private static final Logger log = Logger.getLogger(CertificateProfile.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+
+    // Public Constants
+    public static final float LATEST_VERSION = (float) 35.0;
+
+    public static final String ROOTCAPROFILENAME = "ROOTCA";
+    public static final String SUBCAPROFILENAME = "SUBCA";
+    public static final String ENDUSERPROFILENAME = "ENDUSER";
+    public static final String OCSPSIGNERPROFILENAME = "OCSPSIGNER";
+    public static final String SERVERPROFILENAME = "SERVER";
+    public static final String HARDTOKENAUTHPROFILENAME = "HARDTOKEN_AUTH";
+    public static final String HARDTOKENAUTHENCPROFILENAME = "HARDTOKEN_AUTHENC";
+    public static final String HARDTOKENENCPROFILENAME = "HARDTOKEN_ENC";
+    public static final String HARDTOKENSIGNPROFILENAME = "HARDTOKEN_SIGN";
+
+    public static final List<String> FIXED_PROFILENAMES = new ArrayList<String>();
+    static {
+        FIXED_PROFILENAMES.add(ROOTCAPROFILENAME);
+        FIXED_PROFILENAMES.add(SUBCAPROFILENAME);
+        FIXED_PROFILENAMES.add(ENDUSERPROFILENAME);
+        FIXED_PROFILENAMES.add(OCSPSIGNERPROFILENAME);
+        FIXED_PROFILENAMES.add(SERVERPROFILENAME);
+        FIXED_PROFILENAMES.add(HARDTOKENAUTHPROFILENAME);
+        FIXED_PROFILENAMES.add(HARDTOKENAUTHENCPROFILENAME);
+        FIXED_PROFILENAMES.add(HARDTOKENENCPROFILENAME);
+        FIXED_PROFILENAMES.add(HARDTOKENSIGNPROFILENAME);
+    }
+
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     * 
+     * Maintainers must change this value if and only if the new version of this class is not compatible with old versions. See Sun docs for <a
+     * href=http://java.sun.com/products/jdk/1.1/docs/guide /serialization/spec/version.doc.html> details. </a>
+     * 
+     */
+    private static final long serialVersionUID = -8069608639716545206L;
+
+
+
+    /** Microsoft Template Constants */
+    public static final String MSTEMPL_DOMAINCONTROLLER = "DomainController";
+
+    public static final String[] AVAILABLE_MSTEMPLATES = { MSTEMPL_DOMAINCONTROLLER };
+
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
+
+    /**
+     * Determines the access rights in CV Certificates. CV Certificates is used by EU EAC ePassports and is issued by a CVC CA. DG3 is access to
+     * fingerprints and DG4 access to iris.
+     */
+    public static final int CVC_ACCESS_NONE = 0;
+    public static final int CVC_ACCESS_DG3 = 1;
+    public static final int CVC_ACCESS_DG4 = 2;
+    public static final int CVC_ACCESS_DG3DG4 = 3;
+
+    /** Supported certificate versions. */
+    public static final String VERSION_X509V3 = "X509v3";
+    public static final String CUSTOMPROFILENAME = "CUSTOM";
+
+    /** Constant indicating that any CA can be used with this certificate profile. */
+    public static final int ANYCA = -1;
+
+    /** Constant holding the default available bit lengths for certificate profiles */
+    public static final int[] DEFAULTBITLENGTHS = { 0, 192, 239, 256, 384, 512, 1024, 1536, 2048, 4096, 8192 };
+
+    // Profile fields
+    protected static final String CERTVERSION = "certversion";
+    protected static final String VALIDITY = "validity";
+    protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
+    protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
+    protected static final String ALLOWEXTENSIONOVERRIDE = "allowextensionoverride";
+    protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
+    protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
+    protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
+    protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
+    protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
+    public static final String TYPE = "type";
+    protected static final String AVAILABLECAS = "availablecas";
+    protected static final String USEDPUBLISHERS = "usedpublishers";
+    protected static final String USECNPOSTFIX = "usecnpostfix";
+    protected static final String CNPOSTFIX = "cnpostfix";
+    protected static final String USESUBJECTDNSUBSET = "usesubjectdnsubset";
+    protected static final String SUBJECTDNSUBSET = "subjectdnsubset";
+    protected static final String USESUBJECTALTNAMESUBSET = "usesubjectaltnamesubset";
+    protected static final String SUBJECTALTNAMESUBSET = "subjectaltnamesubset";
+    protected static final String USEDCERTIFICATEEXTENSIONS = "usedcertificateextensions";
+    protected static final String APPROVALSETTINGS = "approvalsettings";
+    protected static final String NUMOFREQAPPROVALS = "numofreqapprovals";
+    protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
+    //
+    // CRL extensions
+    protected static final String USECRLNUMBER = "usecrlnumber";
+    protected static final String CRLNUMBERCRITICAL = "crlnumbercritical";
+    protected static final String USECRLDISTRIBUTIONPOINTONCRL = "usecrldistributionpointoncrl";
+    //
+    // Certificate extensions
+    protected static final String USEBASICCONSTRAINTS = "usebasicconstrants";
+    protected static final String BASICCONSTRAINTSCRITICAL = "basicconstraintscritical";
+    protected static final String USEPATHLENGTHCONSTRAINT = "usepathlengthconstraint";
+    protected static final String PATHLENGTHCONSTRAINT = "pathlengthconstraint";
+    protected static final String USEKEYUSAGE = "usekeyusage";
+    protected static final String KEYUSAGECRITICAL = "keyusagecritical";
+    protected static final String KEYUSAGE = "keyusage";
+    protected static final String USESUBJECTKEYIDENTIFIER = "usesubjectkeyidentifier";
+    protected static final String SUBJECTKEYIDENTIFIERCRITICAL = "subjectkeyidentifiercritical";
+    protected static final String USEAUTHORITYKEYIDENTIFIER = "useauthoritykeyidentifier";
+    protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
+    protected static final String USESUBJECTALTERNATIVENAME = "usesubjectalternativename";
+    protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
+    protected static final String USECRLDISTRIBUTIONPOINT = "usecrldistributionpoint";
+    protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
+    protected static final String CRLDISTRIBUTIONPOINTCRITICAL = "crldistributionpointcritical";
+    protected static final String CRLDISTRIBUTIONPOINTURI = "crldistributionpointuri";
+    protected static final String CRLISSUER = "crlissuer";
+    protected static final String USEFRESHESTCRL = "usefreshestcrl";
+    protected static final String USECADEFINEDFRESHESTCRL = "usecadefinedfreshestcrl";
+    protected static final String FRESHESTCRLURI = "freshestcrluri";
+    protected static final String USECERTIFICATEPOLICIES = "usecertificatepolicies";
+    protected static final String CERTIFICATEPOLICIESCRITICAL = "certificatepoliciescritical";
+    /** Policy containing oid, User Notice and Cps Url */
+    protected static final String CERTIFICATE_POLICIES = "certificatepolicies";
+    protected static final String USEEXTENDEDKEYUSAGE = "useextendedkeyusage";
+    protected static final String EXTENDEDKEYUSAGE = "extendedkeyusage";
+    protected static final String EXTENDEDKEYUSAGECRITICAL = "extendedkeyusagecritical";
+    protected static final String USEOCSPNOCHECK = "useocspnocheck";
+    protected static final String USEAUTHORITYINFORMATIONACCESS = "useauthorityinformationaccess";
+    protected static final String USEOCSPSERVICELOCATOR = "useocspservicelocator";
+    protected static final String USEDEFAULTOCSPSERVICELOCATOR = "usedefaultocspservicelocator";
+    protected static final String OCSPSERVICELOCATORURI = "ocspservicelocatoruri";
+    protected static final String USECAISSUERS = "usecaissuersuri";
+    protected static final String CAISSUERS = "caissuers";
+    protected static final String USELDAPDNORDER = "useldapdnorder";
+    protected static final String USEMICROSOFTTEMPLATE = "usemicrosofttemplate";
+    protected static final String MICROSOFTTEMPLATE = "microsofttemplate";
+    protected static final String USECARDNUMBER = "usecardnumber";
+    protected static final String USEQCSTATEMENT = "useqcstatement";
+    protected static final String USEPKIXQCSYNTAXV2 = "usepkixqcsyntaxv2";
+    protected static final String QCSTATEMENTCRITICAL = "useqcstatementcritical";
+    protected static final String QCSTATEMENTRANAME = "useqcstatementraname";
+    protected static final String QCSSEMANTICSID = "useqcsematicsid";
+    protected static final String USEQCETSIQCCOMPLIANCE = "useqcetsiqccompliance";
+    protected static final String USEQCETSIVALUELIMIT = "useqcetsivaluelimit";
+    protected static final String QCETSIVALUELIMIT = "qcetsivaluelimit";
+    protected static final String QCETSIVALUELIMITEXP = "qcetsivaluelimitexp";
+    protected static final String QCETSIVALUELIMITCURRENCY = "qcetsivaluelimitcurrency";
+    protected static final String USEQCETSIRETENTIONPERIOD = "useqcetsiretentionperiod";
+    protected static final String QCETSIRETENTIONPERIOD = "qcetsiretentionperiod";
+    protected static final String USEQCETSISIGNATUREDEVICE = "useqcetsisignaturedevice";
+    protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
+    protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
+    protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
+    protected static final String USESUBJECTDIRATTRIBUTES = "usesubjectdirattributes";
+    protected static final String CVCACCESSRIGHTS = "cvcaccessrights";
+    protected static final String USEPRIVKEYUSAGEPERIOD          = "useprivkeyusageperiod";
+    protected static final String USEPRIVKEYUSAGEPERIODNOTBEFORE = "useprivkeyusageperiodnotbefore";
+    protected static final String USEPRIVKEYUSAGEPERIODNOTAFTER  = "useprivkeyusageperiodnotafter";
+    protected static final String PRIVKEYUSAGEPERIODSTARTOFFSET  = "privkeyusageperiodstartoffset";
+    protected static final String PRIVKEYUSAGEPERIODLENGTH           = "privkeyusageperiodlength";
+
+    /**
+     * OID for creating Smartcard Number Certificate Extension SEIS Cardnumber Extension according to SS 614330/31
+     */
+    public static final String OID_CARDNUMBER = "1.2.752.34.2.1";
+
+    /** Constants holding the use properties for certificate extensions */
+    protected static final HashMap<String, String> useStandardCertificateExtensions = new HashMap<String, String>();
+    {
+        useStandardCertificateExtensions.put(USEBASICCONSTRAINTS, X509Extensions.BasicConstraints.getId());
+        useStandardCertificateExtensions.put(USEKEYUSAGE, X509Extensions.KeyUsage.getId());
+        useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, X509Extensions.SubjectKeyIdentifier.getId());
+        useStandardCertificateExtensions.put(USEAUTHORITYKEYIDENTIFIER, X509Extensions.AuthorityKeyIdentifier.getId());
+        useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, X509Extensions.SubjectAlternativeName.getId());
+        useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, X509Extensions.CRLDistributionPoints.getId());
+        useStandardCertificateExtensions.put(USEFRESHESTCRL, X509Extensions.FreshestCRL.getId());
+        useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, X509Extensions.CertificatePolicies.getId());
+        useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, X509Extensions.ExtendedKeyUsage.getId());
+        useStandardCertificateExtensions.put(USEQCSTATEMENT, X509Extensions.QCStatements.getId());
+        useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, X509Extensions.SubjectDirectoryAttributes.getId());
+        useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, X509Extensions.AuthorityInfoAccess.getId());
+        useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, X509Extensions.PrivateKeyUsagePeriod.getId());
+        useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
+        useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
+        useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
+    }
+
+    // Old values used to upgrade from v22 to v23
+    protected static final String CERTIFICATEPOLICYID = "certificatepolicyid";
+    /** Policy Notice Url to CPS field alias in the data structure */
+    protected static final String POLICY_NOTICE_CPS_URL = "policynoticecpsurl";
+    /** Policy Notice User Notice field alias in the data structure */
+    protected static final String POLICY_NOTICE_UNOTICE_TEXT = "policynoticeunoticetext";
+
+    // Public Methods
+
+    /**
+     * Creates a new instance of CertificateProfile. The default contructor creates a basic CertificateProfile
+     * that is the same as an End User certificateProfile, except that there are _no_ key usages. this means that a certificate
+     * issued with a default profile should not be usable for anything. Should be used for testing and where you want to create your own
+     * CertificateProfile for specific purposes.
+     * 
+     */
+    public CertificateProfile() {
+        setCommonDefaults();
+    }
+    
+    /**
+     * Creates a new instance of CertificateProfile
+     * 
+     * These settings are general for all sub-profiles, only differing values are overridden in the sub-profiles. If changing any present value here
+     * you must therefore go through all sub-profiles and add an override there. I.e. only add new values here, don't change any present settings.
+     * 
+     * @param type
+     *            one of CertificateProfileConstants.CERTPROFILE_FIXED_XX, for example CertificateConstants.CERTPROFILE_NO_PROFILE, CERTPROFILE_NO_ENDUSER, etc
+     */
+    public CertificateProfile(int type) {
+        setCommonDefaults();
+        setDefaultValues(type);
+    }
+
+    private void setCommonDefaults() {
+        setType(CertificateConstants.CERTTYPE_ENDENTITY);
+        setCertificateVersion(VERSION_X509V3);
+        setValidity(730);
+        setAllowValidityOverride(false);
+
+        setAllowExtensionOverride(false);
+
+        setAllowDNOverride(false);
+
+        setUseBasicConstraints(true);
+        setBasicConstraintsCritical(true);
+
+        setUseSubjectKeyIdentifier(true);
+        setSubjectKeyIdentifierCritical(false);
+
+        setUseAuthorityKeyIdentifier(true);
+        setAuthorityKeyIdentifierCritical(false);
+
+        setUseSubjectAlternativeName(true);
+        setSubjectAlternativeNameCritical(false);
+
+        setUseCRLDistributionPoint(false);
+        setUseDefaultCRLDistributionPoint(false);
+        setCRLDistributionPointCritical(false);
+        setCRLDistributionPointURI("");
+        setUseCRLDistributionPointOnCRL(false);
+        setUseFreshestCRL(false);
+        setUseCADefinedFreshestCRL(false);
+        setFreshestCRLURI("");
+        setCRLIssuer(null);
+
+        setUseCertificatePolicies(false);
+        setCertificatePoliciesCritical(false);
+        ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        setCertificatePolicies(policies);
+
+        setAvailableBitLengths(DEFAULTBITLENGTHS);
+
+        setUseKeyUsage(true);
+        setKeyUsage(new boolean[9]);
+        setAllowKeyUsageOverride(false);
+        setKeyUsageCritical(true);
+
+        setUseExtendedKeyUsage(false);
+        setExtendedKeyUsage(new ArrayList<String>());
+        setExtendedKeyUsageCritical(false);
+
+        ArrayList<Integer> availablecas = new ArrayList<Integer>();
+        availablecas.add(Integer.valueOf(ANYCA));
+        setAvailableCAs(availablecas);
+
+        setPublisherList(new ArrayList<Integer>());
+
+        setUseOcspNoCheck(false);
+
+        setUseLdapDnOrder(true);
+
+        setUseMicrosoftTemplate(false);
+        setMicrosoftTemplate("");
+        setUseCardNumber(false);
+
+        setUseCNPostfix(false);
+        setCNPostfix("");
+
+        setUseSubjectDNSubSet(false);
+        setSubjectDNSubSet(new ArrayList<Integer>());
+        setUseSubjectAltNameSubSet(false);
+        setSubjectAltNameSubSet(new ArrayList<Integer>());
+
+        setUsePathLengthConstraint(false);
+        setPathLengthConstraint(0);
+
+        setUseQCStatement(false);
+        setUsePkixQCSyntaxV2(false);
+        setQCStatementCritical(false);
+        setQCStatementRAName(null);
+        setQCSemanticsId(null);
+        setUseQCEtsiQCCompliance(false);
+        setUseQCEtsiSignatureDevice(false);
+        setUseQCEtsiValueLimit(false);
+        setQCEtsiValueLimit(0);
+        setQCEtsiValueLimitExp(0);
+        setQCEtsiValueLimitCurrency(null);
+        setUseQCEtsiRetentionPeriod(false);
+        setQCEtsiRetentionPeriod(0);
+        setUseQCCustomString(false);
+        setQCCustomStringOid(null);
+        setQCCustomStringText(null);
+
+        setUseSubjectDirAttributes(false);
+        setUseAuthorityInformationAccess(false);
+        setCaIssuers(new ArrayList<String>());
+        setUseDefaultOCSPServiceLocator(false);
+        setOCSPServiceLocatorURI("");
+
+        // Default to have access to fingerprint and iris
+        setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3DG4);
+
+        setUsedCertificateExtensions(new ArrayList<Integer>());
+
+        setNumOfReqApprovals(1);
+        setApprovalSettings(Collections.EMPTY_LIST);
+        
+     // PrivateKeyUsagePeriod extension
+        setUsePrivateKeyUsagePeriodNotBefore(false);
+        setUsePrivateKeyUsagePeriodNotAfter(false);
+        setPrivateKeyUsagePeriodStartOffset(0);
+        setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
+    }
+
+    /**
+     * @param type
+     *            one of CertificateProfileConstants.CERTPROFILE_FIXED_XX, for example CertificateConstants.CERTPROFILE_FIXED_ROOTCA
+     */
+
+    private void setDefaultValues(int type) {
+        if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA) {
+            setType(CertificateConstants.CERTTYPE_ROOTCA);
+            setAllowValidityOverride(true);
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
+            setKeyUsage(CertificateConstants.CRLSIGN, true);
+            setKeyUsageCritical(true);
+            setValidity(25 * 365 + 7); // Default validity for this profile is 25 years including 6 or 7 leap days
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA) {
+            setType(CertificateConstants.CERTTYPE_SUBCA);
+            setAllowValidityOverride(true);
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsage(CertificateConstants.KEYCERTSIGN, true);
+            setKeyUsage(CertificateConstants.CRLSIGN, true);
+            setKeyUsageCritical(true);
+            setValidity(25 * 365 + 7); // Default validity for this profile is 25 years including 6 or 7 leap days
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            // Standard key usages for end users are: digitalSignature | nonRepudiation, and/or (keyEncipherment or keyAgreement)
+            // Default key usage is digitalSignature | nonRepudiation | keyEncipherment
+            // Create an array for KeyUsage according to X509Certificate.getKeyUsage()
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsage(CertificateConstants.NONREPUDIATION, true);
+            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            // Default key usage for an OCSP signer is digitalSignature
+            // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_OCSPSigning.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+            setUseOcspNoCheck(true);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_SERVER) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            // Standard key usages for server are: digitalSignature | (keyEncipherment or keyAgreement)
+            // Default key usage is digitalSignature | keyEncipherment
+            // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_serverAuth.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+            eku.add(KeyPurposeId.id_kp_smartcardlogon.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsage(CertificateConstants.DIGITALSIGNATURE, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_clientAuth.getId());
+            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+            eku.add(KeyPurposeId.id_kp_smartcardlogon.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.KEYENCIPHERMENT, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        } else if (type == CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN) {
+            setType(CertificateConstants.CERTTYPE_ENDENTITY);
+            setUseKeyUsage(true);
+            setKeyUsage(new boolean[9]);
+            setKeyUsage(CertificateConstants.NONREPUDIATION, true);
+            setKeyUsageCritical(true);
+            setUseExtendedKeyUsage(true);
+            ArrayList<String> eku = new ArrayList<String>();
+            eku.add(KeyPurposeId.id_kp_emailProtection.getId());
+            setExtendedKeyUsage(eku);
+            setExtendedKeyUsageCritical(false);
+        }
+    }
+
+    // Public Methods.
+    /** Returns the version of the certificate, should be one of the VERSION_ constants defined in CertificateProfile class. */
+    public String getCertificateVersion() {
+        return (String) data.get(CERTVERSION);
+    }
+
+    /**
+     * Returns the version of the certificate, should be one of the VERSION_ constants defined in CertificateProfile class.
+     */
+    public void setCertificateVersion(String version) {
+        data.put(CERTVERSION, version);
+    }
+
+    public long getValidity() {
+        return ((Long) data.get(VALIDITY)).longValue();
+    }
+
+    public void setValidity(long validity) {
+        data.put(VALIDITY, new Long(validity));
+    }
+
+    /**
+     * If validity override is allowed, a certificate can have a shorter validity than the one specefied in the certificate profile, but never longer.
+     * A certificate created with validity override can hava a starting point in the future.
+     * 
+     * @return true if validity override is allowed
+     */
+    public boolean getAllowValidityOverride() {
+        return ((Boolean) data.get(ALLOWVALIDITYOVERRIDE)).booleanValue();
+    }
+
+    /**
+     * If validity override is allowed, a certificate can have a shorter validity than the one specefied in the certificate profile, but never longer.
+     * A certificate created with validity override can hava a starting point in the future.
+     */
+    public void setAllowValidityOverride(boolean allowvalidityoverride) {
+        data.put(ALLOWVALIDITYOVERRIDE, Boolean.valueOf(allowvalidityoverride));
+    }
+
+    /**
+     * If extension override is allowed, the X509 certificate extension created in a certificate can come from the request sent by the user. If the
+     * request contains an extension than will be used instead of the one defined in the profile. If the request does not contain an extension, the
+     * one defined in the profile will be used.
+     */
+    public boolean getAllowExtensionOverride() {
+        Object d = data.get(ALLOWEXTENSIONOVERRIDE);
+        if (d == null) {
+            return false;
+        }
+        return ((Boolean) d).booleanValue();
+    }
+
+    /** @see #getAllowExtensionOverride() */
+    public void setAllowExtensionOverride(boolean allowextensionoverride) {
+        data.put(ALLOWEXTENSIONOVERRIDE, Boolean.valueOf(allowextensionoverride));
+    }
+
+    /**
+     * If DN override is allowed, the X509 subject DN extension created in a certificate can come directly from the request sent by the user. This is
+     * instead of the normal way where the user's registered DN is used.
+     */
+    public boolean getAllowDNOverride() {
+        Object d = data.get(ALLOWDNOVERRIDE);
+        if (d == null) {
+            return false;
+        }
+        return ((Boolean) d).booleanValue();
+    }
+
+    /** @see #getAllowDNOverride() */
+    public void setAllowDNOverride(boolean allowdnoverride) {
+        data.put(ALLOWDNOVERRIDE, Boolean.valueOf(allowdnoverride));
+    }
+
+    /**
+     * If override is allowed the serial number could be specified.
+     * 
+     * @return true if allowed
+     */
+    public boolean getAllowCertSerialNumberOverride() {
+        Object d = data.get(ALLOWCERTSNOVERIDE);
+        if (d == null) {
+            return false;
+        }
+        return ((Boolean) d).booleanValue();
+    }
+
+    /**
+     * @see #getAllowDNOverride()
+     * @param allowdnoverride
+     *            new value
+     */
+    public void setAllowCertSerialNumberOverride(boolean allowdnoverride) {
+        data.put(ALLOWCERTSNOVERIDE, Boolean.valueOf(allowdnoverride));
+    }
+
+    public boolean getUseBasicConstraints() {
+        return ((Boolean) data.get(USEBASICCONSTRAINTS)).booleanValue();
+    }
+
+    public void setUseBasicConstraints(boolean usebasicconstraints) {
+        data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));
+    }
+
+    public boolean getBasicConstraintsCritical() {
+        return ((Boolean) data.get(BASICCONSTRAINTSCRITICAL)).booleanValue();
+    }
+
+    public void setBasicConstraintsCritical(boolean basicconstraintscritical) {
+        data.put(BASICCONSTRAINTSCRITICAL, Boolean.valueOf(basicconstraintscritical));
+    }
+
+    public boolean getUseKeyUsage() {
+        return ((Boolean) data.get(USEKEYUSAGE)).booleanValue();
+    }
+
+    public void setUseKeyUsage(boolean usekeyusage) {
+        data.put(USEKEYUSAGE, Boolean.valueOf(usekeyusage));
+    }
+
+    public boolean getKeyUsageCritical() {
+        return ((Boolean) data.get(KEYUSAGECRITICAL)).booleanValue();
+    }
+
+    public void setKeyUsageCritical(boolean keyusagecritical) {
+        data.put(KEYUSAGECRITICAL, Boolean.valueOf(keyusagecritical));
+    }
+
+    public boolean getUseSubjectKeyIdentifier() {
+        return ((Boolean) data.get(USESUBJECTKEYIDENTIFIER)).booleanValue();
+    }
+
+    public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) {
+        data.put(USESUBJECTKEYIDENTIFIER, Boolean.valueOf(usesubjectkeyidentifier));
+    }
+
+    public boolean getSubjectKeyIdentifierCritical() {
+        return ((Boolean) data.get(SUBJECTKEYIDENTIFIERCRITICAL)).booleanValue();
+    }
+
+    public void setSubjectKeyIdentifierCritical(boolean subjectkeyidentifiercritical) {
+        data.put(SUBJECTKEYIDENTIFIERCRITICAL, Boolean.valueOf(subjectkeyidentifiercritical));
+    }
+
+    public boolean getUseAuthorityKeyIdentifier() {
+        return ((Boolean) data.get(USEAUTHORITYKEYIDENTIFIER)).booleanValue();
+    }
+
+    public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) {
+        data.put(USEAUTHORITYKEYIDENTIFIER, Boolean.valueOf(useauthoritykeyidentifier));
+    }
+
+    public boolean getAuthorityKeyIdentifierCritical() {
+        return ((Boolean) data.get(AUTHORITYKEYIDENTIFIERCRITICAL)).booleanValue();
+    }
+
+    public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) {
+        data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));
+    }
+
+    public boolean getUseSubjectAlternativeName() {
+        return ((Boolean) data.get(USESUBJECTALTERNATIVENAME)).booleanValue();
+    }
+
+    public void setUseSubjectAlternativeName(boolean usesubjectalternativename) {
+        data.put(USESUBJECTALTERNATIVENAME, Boolean.valueOf(usesubjectalternativename));
+    }
+
+    public boolean getSubjectAlternativeNameCritical() {
+        return ((Boolean) data.get(SUBJECTALTERNATIVENAMECRITICAL)).booleanValue();
+    }
+
+    public void setSubjectAlternativeNameCritical(boolean subjectalternativenamecritical) {
+        data.put(SUBJECTALTERNATIVENAMECRITICAL, Boolean.valueOf(subjectalternativenamecritical));
+    }
+
+    public boolean getUseCRLDistributionPoint() {
+        return ((Boolean) data.get(USECRLDISTRIBUTIONPOINT)).booleanValue();
+    }
+
+    public void setUseCRLDistributionPoint(boolean usecrldistributionpoint) {
+        data.put(USECRLDISTRIBUTIONPOINT, Boolean.valueOf(usecrldistributionpoint));
+    }
+
+    public boolean getUseDefaultCRLDistributionPoint() {
+        return ((Boolean) data.get(USEDEFAULTCRLDISTRIBUTIONPOINT)).booleanValue();
+    }
+
+    public void setUseDefaultCRLDistributionPoint(boolean usedefaultcrldistributionpoint) {
+        data.put(USEDEFAULTCRLDISTRIBUTIONPOINT, Boolean.valueOf(usedefaultcrldistributionpoint));
+    }
+
+    public boolean getCRLDistributionPointCritical() {
+        return ((Boolean) data.get(CRLDISTRIBUTIONPOINTCRITICAL)).booleanValue();
+    }
+
+    public void setCRLDistributionPointCritical(boolean crldistributionpointcritical) {
+        data.put(CRLDISTRIBUTIONPOINTCRITICAL, Boolean.valueOf(crldistributionpointcritical));
+    }
+
+    public String getCRLDistributionPointURI() {
+        return (String) data.get(CRLDISTRIBUTIONPOINTURI);
+    }
+
+    public void setCRLDistributionPointURI(String crldistributionpointuri) {
+        if (crldistributionpointuri == null) {
+            data.put(CRLDISTRIBUTIONPOINTURI, "");
+        } else {
+            data.put(CRLDISTRIBUTIONPOINTURI, crldistributionpointuri);
+        }
+    }
+
+    public String getCRLIssuer() {
+        return (String) data.get(CRLISSUER);
+    }
+
+    public void setCRLIssuer(String crlissuer) {
+        if (crlissuer == null) {
+            data.put(CRLISSUER, "");
+        } else {
+            data.put(CRLISSUER, crlissuer);
+        }
+    }
+
+    public boolean getUseFreshestCRL() {
+        Object obj = data.get(USEFRESHESTCRL);
+        if (obj == null) {
+            return false;
+        } else {
+            return ((Boolean) obj).booleanValue();
+        }
+    }
+
+    public boolean getUseCRLDistributionPointOnCRL() {
+        Object obj = data.get(USECRLDISTRIBUTIONPOINTONCRL);
+        if (obj == null) {
+            return false;
+        } else {
+            return ((Boolean) obj).booleanValue();
+        }
+    }
+
+    public void setUseCRLDistributionPointOnCRL(boolean usecrldistributionpointoncrl) {
+        data.put(USECRLDISTRIBUTIONPOINTONCRL, Boolean.valueOf(usecrldistributionpointoncrl));
+    }
+
+    public void setUseFreshestCRL(boolean usefreshestcrl) {
+        data.put(USEFRESHESTCRL, Boolean.valueOf(usefreshestcrl));
+    }
+
+    public boolean getUseCADefinedFreshestCRL() {
+        Object obj = data.get(USECADEFINEDFRESHESTCRL);
+        if (obj == null) {
+            return false;
+        } else {
+            return ((Boolean) obj).booleanValue();
+        }
+    }
+
+    public void setUseCADefinedFreshestCRL(boolean usecadefinedfreshestcrl) {
+        data.put(USECADEFINEDFRESHESTCRL, Boolean.valueOf(usecadefinedfreshestcrl));
+    }
+
+    public String getFreshestCRLURI() {
+        return ((String) data.get(FRESHESTCRLURI));
+    }
+
+    public void setFreshestCRLURI(String freshestcrluri) {
+        if (freshestcrluri == null) {
+            data.put(FRESHESTCRLURI, "");
+        } else {
+            data.put(FRESHESTCRLURI, freshestcrluri);
+        }
+    }
+
+    public boolean getUseCertificatePolicies() {
+        return ((Boolean) data.get(USECERTIFICATEPOLICIES)).booleanValue();
+    }
+
+    public void setUseCertificatePolicies(boolean usecertificatepolicies) {
+        data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));
+    }
+
+    public boolean getCertificatePoliciesCritical() {
+        return ((Boolean) data.get(CERTIFICATEPOLICIESCRITICAL)).booleanValue();
+    }
+
+    public void setCertificatePoliciesCritical(boolean certificatepoliciescritical) {
+        data.put(CERTIFICATEPOLICIESCRITICAL, Boolean.valueOf(certificatepoliciescritical));
+    }
+
+    public List<CertificatePolicy> getCertificatePolicies() {
+        @SuppressWarnings("unchecked")
+        List<CertificatePolicy> l = (List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES);
+        if (l == null) {
+            l = new ArrayList<CertificatePolicy>();
+        }
+        return l;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void addCertificatePolicy(CertificatePolicy policy) {
+        if (data.get(CERTIFICATE_POLICIES) == null) {
+            setCertificatePolicies(new ArrayList<CertificatePolicy>());
+        }
+        ((List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES)).add(policy);
+    }
+
+    public void setCertificatePolicies(List<CertificatePolicy> policies) {
+        if (policies == null) {
+            data.put(CERTIFICATE_POLICIES, new ArrayList<CertificatePolicy>(0));
+        } else {
+            data.put(CERTIFICATE_POLICIES, policies);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void removeCertificatePolicy(CertificatePolicy policy) {
+        if (data.get(CERTIFICATE_POLICIES) != null) {
+            ((List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES)).remove(policy);
+        }
+    }
+
+    /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity 
+     * @see CertificateConstants.CERTTYPE_ROOTCA etc
+     */
+    public int getType() {
+        return ((Integer) data.get(TYPE)).intValue();
+    }
+
+    /** Type is used when setting BasicConstraints, i.e. to determine if it is a CA or an end entity 
+     * @see CertificateConstants.CERTTYPE_ROOTCA etc
+     */
+    public void setType(int type) {
+        data.put(TYPE, Integer.valueOf(type));
+    }
+
+    public boolean isTypeSubCA() {
+        return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_SUBCA;
+    }
+
+    public boolean isTypeRootCA() {
+        return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_ROOTCA;
+    }
+
+    public boolean isTypeEndEntity() {
+        return ((Integer) data.get(TYPE)).intValue() == CertificateConstants.CERTTYPE_ENDENTITY;
+    }
+
+    @SuppressWarnings("unchecked")
+	public int[] getAvailableBitLengths() {
+        ArrayList<Integer> availablebitlengths = (ArrayList<Integer>) data.get(AVAILABLEBITLENGTHS);
+        int[] returnval = new int[availablebitlengths.size()];
+
+        for (int i = 0; i < availablebitlengths.size(); i++) {
+            returnval[i] = ((Integer) availablebitlengths.get(i)).intValue();
+        }
+
+        return returnval;
+    }
+
+    public void setAvailableBitLengths(int[] availablebitlengths) {
+        ArrayList<Integer> availbitlengths = new ArrayList<Integer>(availablebitlengths.length);
+
+        int minimumavailablebitlength = 99999999;
+        int maximumavailablebitlength = 0;
+
+        for (int i = 0; i < availablebitlengths.length; i++) {
+            if (availablebitlengths[i] > maximumavailablebitlength) {
+                maximumavailablebitlength = availablebitlengths[i];
+            }
+            if (availablebitlengths[i] < minimumavailablebitlength) {
+                minimumavailablebitlength = availablebitlengths[i];
+            }
+            availbitlengths.add(Integer.valueOf(availablebitlengths[i]));
+        }
+        data.put(AVAILABLEBITLENGTHS, availbitlengths);
+        data.put(MINIMUMAVAILABLEBITLENGTH, Integer.valueOf(minimumavailablebitlength));
+        data.put(MAXIMUMAVAILABLEBITLENGTH, Integer.valueOf(maximumavailablebitlength));
+    }
+
+    public int getMinimumAvailableBitLength() {
+        return ((Integer) data.get(MINIMUMAVAILABLEBITLENGTH)).intValue();
+    }
+
+    public int getMaximumAvailableBitLength() {
+        return ((Integer) data.get(MAXIMUMAVAILABLEBITLENGTH)).intValue();
+    }
+
+    /**
+     * Returns the chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
+     * algorithm used to sign the CA certificate).
+     * 
+     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
+     *         sign the CA certificate).
+     */
+    public String getSignatureAlgorithm() {
+        // If it's null, it is inherited from issuing CA.
+        return (String) data.get(SIGNATUREALGORITHM);
+    }
+
+    /**
+     * Sets the algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
+     * (i.e., it is the same as the algorithm used to sign the CA certificate).
+     * 
+     * @param signAlg
+     *            JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
+     *            to sign the CA certificate).
+     * @see org.cesecore.certificates.util.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     */
+    public void setSignatureAlgorithm(String signAlg) {
+        data.put(SIGNATUREALGORITHM, signAlg);
+    }
+
+    public boolean[] getKeyUsage() {
+        ArrayList<Boolean> keyusage = (ArrayList<Boolean>) data.get(KEYUSAGE);
+        boolean[] returnval = new boolean[keyusage.size()];
+        for (int i = 0; i < keyusage.size(); i++) {
+            returnval[i] = keyusage.get(i).booleanValue();
+        }
+        return returnval;
+    }
+
+    /**
+     * @param keyusageconstant
+     *            from CertificateConstants.DIGITALSIGNATURE etc
+     * @return true or false if the key usage is set or not.
+     */
+    public boolean getKeyUsage(int keyusageconstant) {
+        return ((ArrayList<Boolean>) data.get(KEYUSAGE)).get(keyusageconstant).booleanValue();
+    }
+
+    public void setKeyUsage(boolean[] keyusage) {
+        ArrayList<Boolean> keyuse = new ArrayList<Boolean>(keyusage.length);
+
+        for (int i = 0; i < keyusage.length; i++) {
+            keyuse.add(Boolean.valueOf(keyusage[i]));
+        }
+        data.put(KEYUSAGE, keyuse);
+    }
+
+    /**
+     * @param keyusageconstant
+     *            from CertificateConstants.DIGITALSIGNATURE etc
+     * @param value
+     *            true or false if the key usage is set or not.
+     */
+    public void setKeyUsage(int keyusageconstant, boolean value) {
+        ((ArrayList<Boolean>) data.get(KEYUSAGE)).set(keyusageconstant, Boolean.valueOf(value));
+    }
+
+    public void setAllowKeyUsageOverride(boolean override) {
+        data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.valueOf(override));
+    }
+
+    public boolean getAllowKeyUsageOverride() {
+        return ((Boolean) data.get(ALLOWKEYUSAGEOVERRIDE)).booleanValue();
+    }
+
+    public void setUseExtendedKeyUsage(boolean use) {
+        data.put(USEEXTENDEDKEYUSAGE, Boolean.valueOf(use));
+    }
+
+    public boolean getUseExtendedKeyUsage() {
+        return ((Boolean) data.get(USEEXTENDEDKEYUSAGE)).booleanValue();
+    }
+
+    public void setExtendedKeyUsageCritical(boolean critical) {
+        data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.valueOf(critical));
+    }
+
+    public boolean getExtendedKeyUsageCritical() {
+        return ((Boolean) data.get(EXTENDEDKEYUSAGECRITICAL)).booleanValue();
+    }
+
+    /** Returns a List<String> of all extended key usage oids, as strings */
+    public static List<String> getAllExtendedKeyUsageOIDStrings() {
+        return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOids();
+    }
+
+    /** Returns a Map<String, String> that maps oid string to displayable/translatable text strings */
+    public static Map<String, String> getAllExtendedKeyUsageTexts() {
+        return ExtendedKeyUsageConfiguration.getExtendedKeyUsageOidsAndNames();
+    }
+    
+    /**
+     * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC. Keep the unchecked java stuff for now, since we
+     * have the fallback conversion below in getExtendedKeyUsageAsOIDStrings
+     */
+    public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
+        data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
+    }
+
+    /**
+     * Only used for JUnit testing Keep the unchecked java stuff for now, since we have the fallback conversion below in
+     * getExtendedKeyUsageAsOIDStrings
+     */
+    protected ArrayList getExtendedKeyUsageArray() {
+        return (ArrayList) data.get(EXTENDEDKEYUSAGE);
+    }
+
+    /**
+     * Extended Key Usage is an arraylist of Strings with eku oids.
+     */
+    public ArrayList<String> getExtendedKeyUsageOids() {
+        return getExtendedKeyUsageAsOIDStrings(false);
+    }
+
+    private ArrayList<String> getExtendedKeyUsageAsOIDStrings(boolean fromupgrade) {
+        ArrayList<String> returnval = new ArrayList<String>();
+        // Keep the unchecked java stuff for now, since we have the fallback conversion below
+        ArrayList eku = (ArrayList) data.get(EXTENDEDKEYUSAGE);
+        if ((eku != null) && (eku.size() > 0)) {
+            Object o = eku.get(0);
+            // This is a test for backwards compatibility for the older type of extended key usage
+            if (o instanceof String) {
+                // This is the new extended key usage in the profile, simply return the array with oids
+                returnval = eku;
+            } else {
+                Iterator<Integer> i = eku.iterator();
+                List<String> oids = getAllExtendedKeyUsageOIDStrings();
+                while (i.hasNext()) {
+                    // We fell through to this conversion from Integer to String, which we should not have to
+                    // if upgrade() had done it's job. This is an error!
+                    if (!fromupgrade) {
+                        log.warn("We're forced to convert between old extended key usage format and new. This is an error that we handle so it should work for now. It should be reported as we can not guarantee that it will work in the future. "
+                                + getVersion());
+                    }
+                    int index = (i.next()).intValue();
+                    returnval.add(oids.get(index));
+                }
+            }
+        }
+        return returnval;
+    }
+
+    public boolean getUseLdapDnOrder() {
+        boolean ret = true; // Default value is true here
+        Object o = data.get(USELDAPDNORDER);
+        if (o != null) {
+            ret = ((Boolean) o).booleanValue();
+        }
+        return ret;
+    }
+
+    public void setUseLdapDnOrder(boolean use) {
+        data.put(USELDAPDNORDER, Boolean.valueOf(use));
+    }
+
+    public boolean getUseMicrosoftTemplate() {
+        return ((Boolean) data.get(USEMICROSOFTTEMPLATE)).booleanValue();
+    }
+
+    public void setUseMicrosoftTemplate(boolean use) {
+        data.put(USEMICROSOFTTEMPLATE, Boolean.valueOf(use));
+    }
+
+    public String getMicrosoftTemplate() {
+        return (String) data.get(MICROSOFTTEMPLATE);
+    }
+
+    public void setMicrosoftTemplate(String mstemplate) {
+        data.put(MICROSOFTTEMPLATE, mstemplate);
+    }
+
+    public boolean getUseCardNumber() {
+        return ((Boolean) data.get(USECARDNUMBER)).booleanValue();
+    }
+
+    public void setUseCardNumber(boolean use) {
+        data.put(USECARDNUMBER, Boolean.valueOf(use));
+    }
+
+    public boolean getUseCNPostfix() {
+        return ((Boolean) data.get(USECNPOSTFIX)).booleanValue();
+    }
+
+    public void setUseCNPostfix(boolean use) {
+        data.put(USECNPOSTFIX, Boolean.valueOf(use));
+    }
+
+    public String getCNPostfix() {
+        return (String) data.get(CNPOSTFIX);
+    }
+
+    public void setCNPostfix(String cnpostfix) {
+        data.put(CNPOSTFIX, cnpostfix);
+
+    }
+
+    public boolean getUseSubjectDNSubSet() {
+        return ((Boolean) data.get(USESUBJECTDNSUBSET)).booleanValue();
+    }
+
+    public void setUseSubjectDNSubSet(boolean use) {
+        data.put(USESUBJECTDNSUBSET, Boolean.valueOf(use));
+    }
+
+    /**
+     * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
+     * 
+     */
+    public Collection<Integer> getSubjectDNSubSet() {
+        return (Collection<Integer>) data.get(SUBJECTDNSUBSET);
+    }
+
+    /**
+     * Should contain a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
+     * 
+     */
+    public void setSubjectDNSubSet(Collection<Integer> subjectdns) {
+        data.put(SUBJECTDNSUBSET, subjectdns);
+
+    }
+
+    /**
+     * Method taking a full user dn and returns a DN only containing the DN fields specified in the subjectdn sub set array.
+     * 
+     * @param dn
+     * @return a subset of original DN
+     */
+
+    public String createSubjectDNSubSet(String dn) {
+        DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
+        return constructUserData(extractor, getSubjectDNSubSet(), true);
+    }
+
+    public boolean getUseSubjectAltNameSubSet() {
+        return ((Boolean) data.get(USESUBJECTALTNAMESUBSET)).booleanValue();
+    }
+
+    public void setUseSubjectAltNameSubSet(boolean use) {
+        data.put(USESUBJECTALTNAMESUBSET, Boolean.valueOf(use));
+    }
+
+    /**
+     * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
+     * 
+     */
+    public Collection<Integer> getSubjectAltNameSubSet() {
+        return (Collection<Integer>) data.get(SUBJECTALTNAMESUBSET);
+    }
+
+    /**
+     * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
+     * 
+     */
+    public void setSubjectAltNameSubSet(Collection<Integer> subjectaltnames) {
+        data.put(SUBJECTALTNAMESUBSET, subjectaltnames);
+
+    }
+
+    /**
+     * Method taking a full user dn and returns a AltName only containing the AltName fields specified in the subjectaltname sub set array.
+     * 
+     * @param dn
+     * @return a subset of original DN
+     */
+    public String createSubjectAltNameSubSet(String subjectaltname) {
+        DNFieldExtractor extractor = new DNFieldExtractor(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+        return constructUserData(extractor, getSubjectAltNameSubSet(), false);
+    }
+
+    /**
+     * Help method converting a full DN or Subject Alt Name to one usng only specified fields
+     * 
+     * @param extractor
+     * @param usefields
+     * @return
+     */
+    protected String constructUserData(DNFieldExtractor extractor, Collection<Integer> usefields, boolean subjectdn) {
+        String retval = "";
+
+        if (usefields instanceof List<?>) {
+            Collections.sort((List<Integer>) usefields);
+        }
+        Iterator<Integer> iter = usefields.iterator();
+        String dnField = null;
+        while (iter.hasNext()) {
+            Integer next = iter.next();
+            dnField = extractor.getFieldString(next.intValue());
+            if (StringUtils.isNotEmpty(dnField)) {
+                if (retval.length() == 0) {
+                    retval += dnField; // first item, don't start with a comma
+                } else {
+                    retval += "," + dnField;
+                }
+            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("CertificateProfile: constructed DN or AltName: " + retval);
+        }
+        return retval;
+    }
+
+    /**
+     * Returns a Collections of caids (Integer), indicating which CAs the profile should be applicable to.
+     * 
+     * If it contains the constant ANYCA then the profile is applicable to all CAs
+     */
+    public Collection<Integer> getAvailableCAs() {
+        return (Collection<Integer>) data.get(AVAILABLECAS);
+    }
+
+    /**
+     * Saves the CertificateProfile's list of CAs the cert profile is applicable to.
+     * 
+     * @param availablecas
+     *            a Collection of caids (Integer)
+     */
+
+    public void setAvailableCAs(Collection<Integer> availablecas) {
+        data.put(AVAILABLECAS, availablecas);
+    }
+
+    public boolean isApplicableToAnyCA() {
+        return ((Collection<Integer>) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
+    }
+
+    /**
+     * Returns a Collection of publisher id's (Integer) indicating which publishers a certificate created with this profile should be published to.
+     * Never returns null.
+     */
+    public Collection<Integer> getPublisherList() {
+        Object o = data.get(USEDPUBLISHERS);
+        if (o == null) {
+            o = new ArrayList<Integer>();
+        }
+        return (Collection<Integer>) o;
+    }
+
+    /**
+     * Saves the CertificateProfile's list of publishers that certificates created with this profile should be published to.
+     * 
+     * @param publishers
+     *            a Collection<Integer> of publisher Ids
+     */
+
+    public void setPublisherList(Collection<Integer> publisher) {
+        data.put(USEDPUBLISHERS, publisher);
+    }
+
+    /**
+     * Method indicating that Path Length Constraint should be used in the BasicConstaint
+     */
+    public boolean getUsePathLengthConstraint() {
+        return ((Boolean) data.get(USEPATHLENGTHCONSTRAINT)).booleanValue();
+    }
+
+    /**
+     * Method indicating that Path Length Constraint should be used in the BasicConstaint
+     */
+    public void setUsePathLengthConstraint(boolean use) {
+        data.put(USEPATHLENGTHCONSTRAINT, Boolean.valueOf(use));
+    }
+
+    public int getPathLengthConstraint() {
+        return ((Integer) data.get(PATHLENGTHCONSTRAINT)).intValue();
+    }
+
+    public void setPathLengthConstraint(int pathlength) {
+        data.put(PATHLENGTHCONSTRAINT, Integer.valueOf(pathlength));
+    }
+
+    public void setCaIssuers(List<String> caIssuers) {
+        data.put(CAISSUERS, caIssuers);
+    }
+
+    public void addCaIssuer(String caIssuer) {
+        caIssuer = caIssuer.trim();
+        if (caIssuer.length() < 1) {
+            return;
+        }
+        if (data.get(CAISSUERS) == null) {
+            List<String> caIssuers = new ArrayList<String>();
+            caIssuers.add(caIssuer);
+            this.setCaIssuers(caIssuers);
+        } else {
+            ((List<String>) data.get(CAISSUERS)).add(caIssuer);
+        }
+    }
+
+    public List<String> getCaIssuers() {
+        if (data.get(CAISSUERS) == null) {
+            return new ArrayList<String>();
+        } else {
+            return (List<String>) data.get(CAISSUERS);
+        }
+    }
+
+    public void removeCaIssuer(String caIssuer) {
+        if (data.get(CAISSUERS) != null) {
+            ((List<String>) data.get(CAISSUERS)).remove(caIssuer);
+        }
+    }
+
+    public boolean getUseOcspNoCheck() {
+        if (data.get(USEOCSPNOCHECK) == null) {
+            return false;
+        } else {
+            return ((Boolean) data.get(USEOCSPNOCHECK)).booleanValue();
+        }
+    }
+
+    public void setUseOcspNoCheck(boolean useocspnocheck) {
+        data.put(USEOCSPNOCHECK, Boolean.valueOf(useocspnocheck));
+    }
+
+    public boolean getUseAuthorityInformationAccess() {
+        return ((Boolean) data.get(USEAUTHORITYINFORMATIONACCESS)).booleanValue();
+    }
+
+    public void setUseAuthorityInformationAccess(boolean useauthorityinformationaccess) {
+        data.put(USEAUTHORITYINFORMATIONACCESS, Boolean.valueOf(useauthorityinformationaccess));
+    }
+
+    public boolean getUseDefaultOCSPServiceLocator() {
+        return ((Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR)).booleanValue();
+    }
+
+    public void setUseDefaultOCSPServiceLocator(boolean usedefaultocspservicelocator) {
+        data.put(USEDEFAULTOCSPSERVICELOCATOR, Boolean.valueOf(usedefaultocspservicelocator));
+    }
+
+    public String getOCSPServiceLocatorURI() {
+        return (String) data.get(OCSPSERVICELOCATORURI);
+    }
+
+    public void setOCSPServiceLocatorURI(String ocspservicelocatoruri) {
+        if (ocspservicelocatoruri == null) {
+            data.put(OCSPSERVICELOCATORURI, "");
+        } else {
+            data.put(OCSPSERVICELOCATORURI, ocspservicelocatoruri);
+        }
+    }
+
+    public boolean getUseQCStatement() {
+        return ((Boolean) data.get(USEQCSTATEMENT)).booleanValue();
+    }
+
+    public void setUseQCStatement(boolean useqcstatement) {
+        data.put(USEQCSTATEMENT, Boolean.valueOf(useqcstatement));
+    }
+
+    public boolean getUsePkixQCSyntaxV2() {
+        return ((Boolean) data.get(USEPKIXQCSYNTAXV2)).booleanValue();
+    }
+
+    public void setUsePkixQCSyntaxV2(boolean pkixqcsyntaxv2) {
+        data.put(USEPKIXQCSYNTAXV2, Boolean.valueOf(pkixqcsyntaxv2));
+    }
+
+    public boolean getQCStatementCritical() {
+        return ((Boolean) data.get(QCSTATEMENTCRITICAL)).booleanValue();
+    }
+
+    public void setQCStatementCritical(boolean qcstatementcritical) {
+        data.put(QCSTATEMENTCRITICAL, Boolean.valueOf(qcstatementcritical));
+    }
+
+    /** @return String with RAName or empty string */
+    public String getQCStatementRAName() {
+        return (String) data.get(QCSTATEMENTRANAME);
+    }
+
+    public void setQCStatementRAName(String qcstatementraname) {
+        if (qcstatementraname == null) {
+            data.put(QCSTATEMENTRANAME, "");
+        } else {
+            data.put(QCSTATEMENTRANAME, qcstatementraname);
+        }
+    }
+
+    /** @return String with SemanticsId or empty string */
+    public String getQCSemanticsId() {
+        return (String) data.get(QCSSEMANTICSID);
+    }
+
+    public void setQCSemanticsId(String qcsemanticsid) {
+        if (qcsemanticsid == null) {
+            data.put(QCSSEMANTICSID, "");
+        } else {
+            data.put(QCSSEMANTICSID, qcsemanticsid);
+        }
+    }
+
+    public boolean getUseQCEtsiQCCompliance() {
+        return ((Boolean) data.get(USEQCETSIQCCOMPLIANCE)).booleanValue();
+    }
+
+    public void setUseQCEtsiQCCompliance(boolean useqcetsiqccompliance) {
+        data.put(USEQCETSIQCCOMPLIANCE, Boolean.valueOf(useqcetsiqccompliance));
+    }
+
+    public boolean getUseQCEtsiValueLimit() {
+        return ((Boolean) data.get(USEQCETSIVALUELIMIT)).booleanValue();
+    }
+
+    public void setUseQCEtsiValueLimit(boolean useqcetsivaluelimit) {
+        data.put(USEQCETSIVALUELIMIT, Boolean.valueOf(useqcetsivaluelimit));
+    }
+
+    public int getQCEtsiValueLimit() {
+        return ((Integer) data.get(QCETSIVALUELIMIT)).intValue();
+    }
+
+    public void setQCEtsiValueLimit(int qcetsivaluelimit) {
+        data.put(QCETSIVALUELIMIT, Integer.valueOf(qcetsivaluelimit));
+    }
+
+    public int getQCEtsiValueLimitExp() {
+        return ((Integer) data.get(QCETSIVALUELIMITEXP)).intValue();
+    }
+
+    public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp) {
+        data.put(QCETSIVALUELIMITEXP, Integer.valueOf(qcetsivaluelimitexp));
+    }
+
+    /** @return String with Currency or empty string */
+    public String getQCEtsiValueLimitCurrency() {
+        return (String) data.get(QCETSIVALUELIMITCURRENCY);
+    }
+
+    public void setQCEtsiValueLimitCurrency(String qcetsicaluelimitcurrency) {
+        if (qcetsicaluelimitcurrency == null) {
+            data.put(QCETSIVALUELIMITCURRENCY, "");
+        } else {
+            data.put(QCETSIVALUELIMITCURRENCY, qcetsicaluelimitcurrency);
+        }
+    }
+
+    public boolean getUseQCEtsiRetentionPeriod() {
+        return ((Boolean) data.get(USEQCETSIRETENTIONPERIOD)).booleanValue();
+    }
+
+    public void setUseQCEtsiRetentionPeriod(boolean useqcetsiretentionperiod) {
+        data.put(USEQCETSIRETENTIONPERIOD, Boolean.valueOf(useqcetsiretentionperiod));
+    }
+
+    public int getQCEtsiRetentionPeriod() {
+        return ((Integer) data.get(QCETSIRETENTIONPERIOD)).intValue();
+    }
+
+    public void setQCEtsiRetentionPeriod(int qcetsiretentionperiod) {
+        data.put(QCETSIRETENTIONPERIOD, Integer.valueOf(qcetsiretentionperiod));
+    }
+
+    public boolean getUseQCEtsiSignatureDevice() {
+        return ((Boolean) data.get(USEQCETSISIGNATUREDEVICE)).booleanValue();
+    }
+
+    public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) {
+        data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));
+    }
+
+    public boolean getUseQCCustomString() {
+        return ((Boolean) data.get(USEQCCUSTOMSTRING)).booleanValue();
+    }
+
+    public void setUseQCCustomString(boolean useqccustomstring) {
+        data.put(USEQCCUSTOMSTRING, Boolean.valueOf(useqccustomstring));
+    }
+
+    /** @return String with oid or empty string */
+    public String getQCCustomStringOid() {
+        return (String) data.get(QCCUSTOMSTRINGOID);
+    }
+
+    public void setQCCustomStringOid(String qccustomstringoid) {
+        if (qccustomstringoid == null) {
+            data.put(QCCUSTOMSTRINGOID, "");
+        } else {
+            data.put(QCCUSTOMSTRINGOID, qccustomstringoid);
+        }
+    }
+
+    /** @return String with custom text or empty string */
+    public String getQCCustomStringText() {
+        return (String) data.get(QCCUSTOMSTRINGTEXT);
+    }
+
+    public void setQCCustomStringText(String qccustomstringtext) {
+        if (qccustomstringtext == null) {
+            data.put(QCCUSTOMSTRINGTEXT, "");
+        } else {
+            data.put(QCCUSTOMSTRINGTEXT, qccustomstringtext);
+        }
+    }
+
+    public boolean getUseSubjectDirAttributes() {
+        return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue();
+    }
+
+    public void setUseSubjectDirAttributes(boolean use) {
+        data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));
+    }
+
+    public int getCVCAccessRights() {
+        if (data.get(CVCACCESSRIGHTS) == null) {
+            return CertificateProfile.CVC_ACCESS_NONE;
+        }
+        return ((Integer) data.get(CVCACCESSRIGHTS)).intValue();
+    }
+
+    public void setCVCAccessRights(int access) {
+        data.put(CVCACCESSRIGHTS, Integer.valueOf(access));
+    }
+
+    /**
+     * Method returning a list of (Integers) of ids of used CUSTOM certificate extensions. I.e. those custom certificate extensions selected for this
+     * profile. Never null.
+     * 
+     * Autoupgradable method
+     */
+    public List<Integer> getUsedCertificateExtensions() {
+        if (data.get(USEDCERTIFICATEEXTENSIONS) == null) {
+            return new ArrayList<Integer>();
+        }
+        return (List<Integer>) data.get(USEDCERTIFICATEEXTENSIONS);
+    }
+
+    /**
+     * Method setting a list of used certificate extensions a list of Integers containing CertificateExtension Id is expected
+     * 
+     * @param usedCertificateExtensions
+     */
+    public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
+        if (usedCertificateExtensions == null) {
+            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<Integer>());
+        } else {
+            data.put(USEDCERTIFICATEEXTENSIONS, usedCertificateExtensions);
+        }
+    }
+
+    /**
+     * Function that looks up in the profile all certificate extensions that we should use if the value si that we should use it, the oid for this
+     * extension is returned in the list
+     * 
+     * @return List of oid Strings for standard certificate extensions that should be used
+     */
+    public List<String> getUsedStandardCertificateExtensions() {
+        ArrayList<String> ret = new ArrayList<String>();
+        Iterator<String> iter = useStandardCertificateExtensions.keySet().iterator();
+        while (iter.hasNext()) {
+            String s = iter.next();
+            if ((data.get(s) != null) && ((Boolean) data.get(s)).booleanValue()) {
+                ret.add(useStandardCertificateExtensions.get(s));
+                if (log.isDebugEnabled()) {
+                    log.debug("Using standard certificate extension: " + s);
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not using standard certificate extensions: " + s);
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none
+     * 
+     * Never null
+     */
+    @SuppressWarnings("unchecked")
+    public Collection<Integer> getApprovalSettings() {
+        return (Collection<Integer>) data.get(APPROVALSETTINGS);
+    }
+
+    /**
+     * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals
+     */
+    public void setApprovalSettings(Collection<Integer> approvalSettings) {
+        data.put(APPROVALSETTINGS, approvalSettings);
+    }
+
+    /**
+     * Returns the number of different administrators that needs to approve an action, default 1.
+     */
+    public int getNumOfReqApprovals() {
+        return ((Integer) data.get(NUMOFREQAPPROVALS)).intValue();
+    }
+
+    /**
+     * The number of different administrators that needs to approve
+     */
+    public void setNumOfReqApprovals(int numOfReqApprovals) {
+        data.put(NUMOFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
+    }
+
+    /**
+     * Returns true if the action requires approvals.
+     * 
+     * @param action
+     *            , on of the CAInfo.REQ_APPROVAL_ constants
+     */
+    @SuppressWarnings("unchecked")
+    public boolean isApprovalRequired(int action) {
+        Collection<Integer> approvalSettings = (Collection<Integer>) data.get(APPROVALSETTINGS);
+        return approvalSettings.contains(Integer.valueOf(action));
+    }
+
+    /**
+     * @return If the PrivateKeyUsagePeriod extension should be used and with the notBefore component.
+     */
+    public boolean isUsePrivateKeyUsagePeriodNotBefore() {
+        if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) {
+            return false;
+        }
+        return ((Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTBEFORE)).booleanValue();
+    }
+
+    /**
+     * Sets if the PrivateKeyUsagePeriod extension should be used and with 
+     * the notBefore component.
+     * Setting this to true means that there will be an PrivateKeyUsagePeriod 
+     * extension and that it also at least will contain an notBefore component.
+     * Setting this to false means that the extension will not contain an
+     * notBefore component. In that case if there will be an extension depends 
+     * on if {@link #isUsePrivateKeyUsagePeriodNotAfter()} is true.
+     * 
+     * @param use True if the notBefore component should be used.
+     */
+    public void setUsePrivateKeyUsagePeriodNotBefore(final boolean use) {
+            data.put(USEPRIVKEYUSAGEPERIODNOTBEFORE, use);
+            data.put(USEPRIVKEYUSAGEPERIOD, use || isUsePrivateKeyUsagePeriodNotAfter());
+    }
+    
+    /**
+     * @return If the PrivateKeyUsagePeriod extension should be used and with the notAfter component.
+     */
+    public boolean isUsePrivateKeyUsagePeriodNotAfter() {
+        if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) {
+            return false;
+        }
+        return ((Boolean) data.get(USEPRIVKEYUSAGEPERIODNOTAFTER)).booleanValue();
+    }
+    
+    /**
+     * Sets if the PrivateKeyUsagePeriod extension should be used and with 
+     * the notAfter component.
+     * Setting this to true means that there will be an PrivateKeyUsagePeriod 
+     * extension and that it also at least will contain an notAfter component.
+     * Setting this to false means that the extension will not contain an
+     * notAfter component. In that case if there will be an extension depends 
+     * on if {@link #isUsePrivateKeyUsagePeriodNotBefore()} is true.
+     * 
+     * @param use True if the notAfter component should be used.
+     */
+    public void setUsePrivateKeyUsagePeriodNotAfter(final boolean use) {
+            data.put(USEPRIVKEYUSAGEPERIODNOTAFTER, use);
+            data.put(USEPRIVKEYUSAGEPERIOD, use || isUsePrivateKeyUsagePeriodNotBefore());
+    }
+    
+    /**
+     * @return How long (in seconds) after the certificate's notBefore date the 
+     * PrivateKeyUsagePeriod's notBefore date should be.
+     */
+    public long getPrivateKeyUsagePeriodStartOffset() {
+            return ((Long) data.get(PRIVKEYUSAGEPERIODSTARTOFFSET)).longValue();
+    }
+    
+    /**
+     * Sets how long (in seconds) after the certificate's notBefore date the PrivateKeyUsagePeriod's notBefore date should be.
+     * 
+     * @param start Offset from certificate issuance.
+     */
+    public void setPrivateKeyUsagePeriodStartOffset(final long start) {
+        data.put(PRIVKEYUSAGEPERIODSTARTOFFSET, start);
+    }
+
+    /**
+     * @return The private key usage period (private key validity) length (in seconds).
+     */
+    public long getPrivateKeyUsagePeriodLength() {
+        return ((Long) data.get(PRIVKEYUSAGEPERIODLENGTH)).longValue();
+    }
+
+    /**
+     * Sets the private key usage period (private key validity) length (in seconds).
+     * 
+     * @param validity The length.
+     */
+    public void setPrivateKeyUsagePeriodLength(final long validity) {
+        data.put(PRIVKEYUSAGEPERIODLENGTH, validity);
+    }
+    
+    public Object clone() throws CloneNotSupportedException {
+        final CertificateProfile clone = new CertificateProfile(0);
+        // We need to make a deep copy of the hashmap here
+        clone.data = new LinkedHashMap<Object,Object>(data.size());
+        for (final Entry<Object,Object> entry : data.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof ArrayList<?>) {
+                        // We need to make a clone of this object, but the stored immutables can still be referenced
+                        value = ((ArrayList<?>)value).clone();
+                }
+                clone.data.put(entry.getKey(), value);
+        }
+        return clone;
+    }
+
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
+    public float getLatestVersion() {
+        return LATEST_VERSION;
+    }
+
+    /**
+     * Function setting the current version of the class data. Used for JUnit testing
+     */
+    protected void setVersion(float version) {
+        data.put(VERSION, Float.valueOf(version));
+    }
+
+    /**
+     * Implementation of UpgradableDataHashMap function upgrade.
+     */
+    public void upgrade() {
+        if (log.isTraceEnabled()) {
+            log.trace(">upgrade: " + getLatestVersion() + ", " + getVersion());
+        }
+        if (Float.compare(getLatestVersion(), getVersion()) != 0) {
+            // New version of the class, upgrade
+            String msg = intres.getLocalizedMessage("certprofile.upgrade", new Float(getVersion()));
+            log.info(msg);
+
+            if (data.get(ALLOWKEYUSAGEOVERRIDE) == null) {
+                data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+            }
+            if (data.get(USEEXTENDEDKEYUSAGE) == null) {
+                data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+            }
+            if (data.get(EXTENDEDKEYUSAGE) == null) {
+                data.put(EXTENDEDKEYUSAGE, new ArrayList());
+            }
+            if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
+                data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
+            }
+            if (data.get(AVAILABLECAS) == null) {
+                ArrayList<Integer> availablecas = new ArrayList<Integer>();
+                availablecas.add(Integer.valueOf(ANYCA));
+                data.put(AVAILABLECAS, availablecas);
+            }
+            if (data.get(USEDPUBLISHERS) == null) {
+                data.put(USEDPUBLISHERS, new ArrayList<Integer>());
+            }
+            if (data.get(USEOCSPSERVICELOCATOR) == null) {
+                // setUseOCSPServiceLocator(false);
+                data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(false));
+                setOCSPServiceLocatorURI("");
+            }
+
+            if (data.get(USEMICROSOFTTEMPLATE) == null) {
+                setUseMicrosoftTemplate(false);
+                setMicrosoftTemplate("");
+            }
+
+            if (data.get(USECNPOSTFIX) == null) {
+                setUseCNPostfix(false);
+                setCNPostfix("");
+            }
+
+            if (data.get(USESUBJECTDNSUBSET) == null) {
+                setUseSubjectDNSubSet(false);
+                setSubjectDNSubSet(new ArrayList<Integer>());
+                setUseSubjectAltNameSubSet(false);
+                setSubjectAltNameSubSet(new ArrayList<Integer>());
+            }
+
+            if (data.get(USEPATHLENGTHCONSTRAINT) == null) {
+                setUsePathLengthConstraint(false);
+                setPathLengthConstraint(0);
+            }
+
+            if (data.get(USEQCSTATEMENT) == null) {
+                setUseQCStatement(false);
+                setUsePkixQCSyntaxV2(false);
+                setQCStatementCritical(false);
+                setQCStatementRAName(null);
+                setQCSemanticsId(null);
+                setUseQCEtsiQCCompliance(false);
+                setUseQCEtsiSignatureDevice(false);
+                setUseQCEtsiValueLimit(false);
+                setUseQCEtsiRetentionPeriod(false);
+                setQCEtsiRetentionPeriod(0);
+                setQCEtsiValueLimit(0);
+                setQCEtsiValueLimitExp(0);
+                setQCEtsiValueLimitCurrency(null);
+            }
+
+            if (data.get(USEDEFAULTCRLDISTRIBUTIONPOINT) == null) {
+                setUseDefaultCRLDistributionPoint(false);
+                setUseDefaultOCSPServiceLocator(false);
+            }
+
+            if (data.get(USEQCCUSTOMSTRING) == null) {
+                setUseQCCustomString(false);
+                setQCCustomStringOid(null);
+                setQCCustomStringText(null);
+            }
+            if (data.get(USESUBJECTDIRATTRIBUTES) == null) {
+                setUseSubjectDirAttributes(false);
+            }
+            if (data.get(ALLOWVALIDITYOVERRIDE) == null) {
+                setAllowValidityOverride(false);
+            }
+
+            if (data.get(CRLISSUER) == null) {
+                setCRLIssuer(null); // v20
+            }
+
+            if (data.get(USEOCSPNOCHECK) == null) {
+                setUseOcspNoCheck(false); // v21
+            }
+            if (data.get(USEFRESHESTCRL) == null) {
+                setUseFreshestCRL(false); // v22
+                setUseCADefinedFreshestCRL(false);
+                setFreshestCRLURI(null);
+            }
+
+            if (data.get(CERTIFICATE_POLICIES) == null) { // v23
+                if (data.get(CERTIFICATEPOLICYID) != null) {
+                    String ids = (String) data.get(CERTIFICATEPOLICYID);
+                    String unotice = null;
+                    String cpsuri = null;
+                    if (data.get(POLICY_NOTICE_UNOTICE_TEXT) != null) {
+                        unotice = (String) data.get(POLICY_NOTICE_UNOTICE_TEXT);
+                    }
+                    if (data.get(POLICY_NOTICE_CPS_URL) != null) {
+                        cpsuri = (String) data.get(POLICY_NOTICE_CPS_URL);
+                    }
+                    // Only the first policy could have user notice and cpsuri in the old scheme
+                    StringTokenizer tokenizer = new StringTokenizer(ids, ";", false);
+                    if (tokenizer.hasMoreTokens()) {
+                        String id = tokenizer.nextToken();
+                        CertificatePolicy newpolicy = null;
+                        if (StringUtils.isNotEmpty(unotice)) {
+                            newpolicy = new CertificatePolicy(id, CertificatePolicy.id_qt_unotice, unotice);
+                            addCertificatePolicy(newpolicy);
+                        }
+                        if (StringUtils.isNotEmpty(cpsuri)) {
+                            newpolicy = new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsuri);
+                            addCertificatePolicy(newpolicy);
+                        }
+                        // If it was a lonely policy id
+                        if (newpolicy == null) {
+                            newpolicy = new CertificatePolicy(id, null, null);
+                            addCertificatePolicy(newpolicy);
+                        }
+                    }
+                    while (tokenizer.hasMoreTokens()) {
+                        String id = tokenizer.nextToken();
+                        CertificatePolicy newpolicy = new CertificatePolicy(id, null, null);
+                        addCertificatePolicy(newpolicy);
+                    }
+                }
+            }
+
+            if (data.get(USECRLDISTRIBUTIONPOINTONCRL) == null) {
+                setUseCRLDistributionPointOnCRL(false); // v24
+            }
+            if (data.get(USECAISSUERS) == null) {
+                // setUseCaIssuers(false); // v24
+                data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
+                setCaIssuers(new ArrayList<String>());
+            }
+            if ((data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null)) {
+                boolean ocsp = false;
+                if ((data.get(USEOCSPSERVICELOCATOR) != null)) {
+                    ocsp = ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue();
+                }
+                boolean caissuers = false;
+                if ((data.get(USECAISSUERS) != null)) {
+                    caissuers = ((Boolean) data.get(USECAISSUERS)).booleanValue();
+                }
+                if (ocsp || caissuers) {
+                    setUseAuthorityInformationAccess(true); // v25
+                } else {
+                    setUseAuthorityInformationAccess(false); // v25
+                }
+            } else {
+                setUseAuthorityInformationAccess(false);
+            }
+
+            if (data.get(ALLOWEXTENSIONOVERRIDE) == null) {
+                setAllowExtensionOverride(false); // v26
+            }
+
+            if (data.get(USEQCETSIRETENTIONPERIOD) == null) {
+                setUseQCEtsiRetentionPeriod(false); // v27
+                setQCEtsiRetentionPeriod(0);
+            }
+
+            if (data.get(CVCACCESSRIGHTS) == null) {
+                setCVCAccessRights(CertificateProfile.CVC_ACCESS_NONE); // v28
+            }
+
+            if (data.get(USELDAPDNORDER) == null) {
+                setUseLdapDnOrder(true); // v29, default value is true
+            }
+
+            if (data.get(USECARDNUMBER) == null) { // v30, default value is false
+                setUseCardNumber(false);
+            }
+
+            if (data.get(ALLOWDNOVERRIDE) == null) {
+                setAllowDNOverride(false); // v31
+            }
+
+            if (Float.compare((float) 32.0, getVersion()) > 0) { // v32
+                // Extended key usage storage changed from ArrayList of Integers to an ArrayList of Strings.
+                setExtendedKeyUsage(getExtendedKeyUsageAsOIDStrings(true));
+            }
+
+            if (data.get(NUMOFREQAPPROVALS) == null) { // v 33
+                setNumOfReqApprovals(1);
+            }
+            if (data.get(APPROVALSETTINGS) == null) { // v 33
+                setApprovalSettings(new ArrayList<Integer>());
+            }
+
+            if (data.get(SIGNATUREALGORITHM) == null) { // v 34
+                setSignatureAlgorithm(null);
+            }
+
+            if (data.get(USEPRIVKEYUSAGEPERIODNOTBEFORE) == null) { // v 35
+                setUsePrivateKeyUsagePeriodNotBefore(false);
+            }
+            if (data.get(USEPRIVKEYUSAGEPERIODNOTAFTER) == null) { // v 35
+                setUsePrivateKeyUsagePeriodNotAfter(false);
+            }
+            if (data.get(PRIVKEYUSAGEPERIODSTARTOFFSET) == null) { // v 35
+                setPrivateKeyUsagePeriodStartOffset(0);
+            }
+            if (data.get(PRIVKEYUSAGEPERIODLENGTH) == null) { // v 35
+                setPrivateKeyUsagePeriodLength(getValidity() * 24 * 3600);
+            }
+            
+            data.put(VERSION, new Float(LATEST_VERSION));
+        }
+        log.trace("<upgrade");
+    }
+
+}

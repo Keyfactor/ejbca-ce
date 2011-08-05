@@ -20,8 +20,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
 
 
 
@@ -94,14 +95,14 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
+	public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
 		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, userDN, cafp,status,type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);		
 	}
 	
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
+	public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		return this.getCustomPublisher().storeCRL(admin,incrl,cafp,number,userDN);		
 	}
     

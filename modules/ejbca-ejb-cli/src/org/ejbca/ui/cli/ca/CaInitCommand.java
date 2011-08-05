@@ -20,29 +20,29 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.model.AlgorithmConstants;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.token.PKCS11CryptoToken;
+import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
-import org.ejbca.core.model.ca.catoken.ICAToken;
-import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
 import org.ejbca.util.SimpleTime;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Create a CA and its first CRL. Publishes the CRL and CA certificate
@@ -157,14 +157,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     profileId = SecConst.CERTPROFILE_FIXED_SUBCA;
             	}
             } else {                
-                profileId = ejb.getCertificateProfileSession().getCertificateProfileId(getAdmin(), profileName);
+                profileId = ejb.getCertificateProfileSession().getCertificateProfileId(profileName);
             	if (profileId == 0) {
             		getLogger().info("Error: Certificate profile with name '"+profileName+"' does not exist.");
             		return;
             	}
             	
-                CertificateProfile certificateProfile  = ejb.getCertificateProfileSession().getCertificateProfile(getAdmin(), profileName);
-                if(certificateProfile.getType() != CertificateProfile.TYPE_ROOTCA && certificateProfile.getType() != CertificateProfile.TYPE_SUBCA) {
+                CertificateProfile certificateProfile  = ejb.getCertificateProfileSession().getCertificateProfile(profileName);
+                if(certificateProfile.getType() != CertificateConstants.CERTTYPE_ROOTCA && certificateProfile.getType() != CertificateConstants.CERTTYPE_SUBCA) {
                     getLogger().info("Error: Certificate profile " + profileName + " is not of type ROOTCA or SUBCA.");
                     return;
                 }
@@ -198,7 +198,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("CA token properties: "+catokenproperties);
             getLogger().info("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
-            	CAInfo signedBy = ejb.getCAAdminSession().getCAInfo(getAdmin(), signedByCAId);
+            	CAInfo signedBy = ejb.getCaSession().getCAInfo(getAdmin(), signedByCAId);
             	if (signedBy == null) {
                 	throw new IllegalArgumentException("CA with id "+signedByCAId+" does not exist.");            		
             	}
@@ -206,28 +206,17 @@ public class CaInitCommand extends BaseCaAdminCommand {
                             
             initAuthorizationModule(dn.hashCode(), superAdminCN);
             // Define CAToken type (soft token or hsm).
-            CATokenInfo catokeninfo = null;
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setSignatureAlgorithm(signAlg);
+            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        	catokeninfo.setProperties(catokenproperties);
+            if (!catokenpassword.equalsIgnoreCase("null")) {
+	        	catokeninfo.setAuthenticationCode(catokenpassword);	            	
+            }
             if ( catokentype.equals("soft")) {
-	            SoftCATokenInfo softcatokeninfo = new SoftCATokenInfo();
-	            if (!catokenpassword.equalsIgnoreCase("null")) {
-		        	softcatokeninfo.setAuthenticationCode(catokenpassword);	            	
-	            }
-	            softcatokeninfo.setSignKeySpec(keyspec);
-	            softcatokeninfo.setSignKeyAlgorithm(keytype);
-	            softcatokeninfo.setSignatureAlgorithm(signAlg);
-	            softcatokeninfo.setEncKeySpec("2048");
-	            softcatokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-	            softcatokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-	            catokeninfo = softcatokeninfo;
+            	catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             } else {
-            	HardCATokenInfo hardcatokeninfo = new HardCATokenInfo();
-            	hardcatokeninfo.setAuthenticationCode(catokenpassword);
-            	hardcatokeninfo.setCATokenStatus(ICAToken.STATUS_ACTIVE);
-            	hardcatokeninfo.setClassPath(catokentype);
-            	hardcatokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            	hardcatokeninfo.setProperties(catokenproperties);
-            	hardcatokeninfo.setSignatureAlgorithm(signAlg);
-            	catokeninfo = hardcatokeninfo;
+            	catokeninfo.setClassPath(PKCS11CryptoToken.class.getName());
             }
             
             // Create and active OSCP CA Service.
@@ -302,7 +291,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("Creating CA...");
             ejb.getCAAdminSession().createCA(getAdmin(), cainfo);
             
-            CAInfo newInfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+            CAInfo newInfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
             int caid = newInfo.getCAId();
             getLogger().info("CAId for created CA: " + caid);
             getLogger().info("-Created and published initial CRL.");

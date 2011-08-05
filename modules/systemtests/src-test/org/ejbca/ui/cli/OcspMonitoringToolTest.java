@@ -23,7 +23,7 @@ import javax.persistence.Query;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateData;
+import org.cesecore.certificates.certificate.CertificateData;
 
 /**
  * Injects different kind of errors in the OCSP responder "ocsp1" and tries to detect them

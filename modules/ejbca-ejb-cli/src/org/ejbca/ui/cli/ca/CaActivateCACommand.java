@@ -15,14 +15,14 @@ package org.ejbca.ui.cli.ca;
 
 import javax.security.auth.login.FailedLoginException;
 
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
-import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Activates the specified HSM CA.
@@ -63,18 +63,18 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
             if (cainfo == null) {
                 getLogger().error("Error: CA " + caname + " cannot be found");
                 return;
             }
             // Check that CA has correct status.
-            if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE)) {
+            if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
                 try {
                     ejb.getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin()));
                     getLogger().info("CA token activated.");
 
-                } catch (CATokenAuthenticationFailedException e) {
+                } catch (CryptoTokenAuthenticationFailedException e) {
                     getLogger().error("CA Token authentication failed.");
                     getLogger().error(e.getMessage());
                     Throwable t = e.getCause();

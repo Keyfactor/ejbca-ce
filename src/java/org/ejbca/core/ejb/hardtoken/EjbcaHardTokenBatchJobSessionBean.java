@@ -27,12 +27,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -61,7 +61,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     private LogSessionLocal logSession;
 
     @Override
-    public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
+    public UserDataVO getNextHardTokenToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException{
     	log.trace(">getNextHardTokenToGenerate()");
     	UserDataVO returnval = null;
     	if (log.isDebugEnabled()) {
@@ -92,7 +92,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     }
 
     @Override
-    public Collection<UserDataVO> getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException {
+    public Collection<UserDataVO> getNextHardTokensToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException {
     	log.trace(">getNextHardTokensToGenerate()");
     	List<UserDataVO> returnval = new ArrayList<UserDataVO>();
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
@@ -121,7 +121,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
 
     // TODO: Since there is no guarantee that the database query always will return entries in the same order, this functionality might be broken!
     @Override
-    public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException {
+    public UserDataVO getNextHardTokenToGenerateInQueue(AuthenticationToken admin, String alias, int index) throws UnavailableTokenException {
     	log.trace(">getNextHardTokenToGenerateInQueue()");
     	UserDataVO returnval=null;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
@@ -145,7 +145,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     }
 
     @Override
-    public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
+    public int getNumberOfHardTokensToGenerate(AuthenticationToken admin, String alias){
     	log.trace(">getNumberOfHardTokensToGenerate()");
     	int count = 0;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
@@ -157,7 +157,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     }
 
     @Override
-    public boolean checkForHardTokenIssuerId(Admin admin, int hardtokenissuerid){
+    public boolean checkForHardTokenIssuerId(AuthenticationToken admin, int hardtokenissuerid){
     	if (log.isTraceEnabled()) {
             log.trace(">checkForHardTokenIssuerId(id: " + hardtokenissuerid + ")");
     	}

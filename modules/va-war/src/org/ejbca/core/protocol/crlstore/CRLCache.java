@@ -20,12 +20,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
-import org.ejbca.core.model.ca.store.CRLInfo;
+import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
-import org.ejbca.util.CertTools;
 
 /**
  * See {@link ICRLCache} to see what this is.
@@ -35,7 +35,7 @@ import org.ejbca.util.CertTools;
 class CRLCache implements ICRLCache {
 	private static final Logger log = Logger.getLogger(CRLCache.class);
 	
-	private final CrlSessionLocal crlSession;
+	private final CrlStoreSessionLocal crlSession;
 	private final ICertificateCache certCache;
 	final private Map<Integer, CRLEntity> crls = new HashMap<Integer, CRLEntity>();
 	final private Map<Integer, CRLEntity> deltaCrls = new HashMap<Integer, CRLEntity>();
@@ -64,7 +64,7 @@ class CRLCache implements ICRLCache {
 	 * @param crlSession DB connections
 	 * @param certStore references to needed CA certificates.
 	 */
-	CRLCache(CrlSessionLocal crlSession, ICertificateCache certCache) {
+	CRLCache(CrlStoreSessionLocal crlSession, ICertificateCache certCache) {
 		super();
 		this.crlSession = crlSession;
 		this.certCache = certCache;

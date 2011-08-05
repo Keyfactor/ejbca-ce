@@ -26,18 +26,18 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.x509.X509V3CertificateGenerator;
-import org.ejbca.core.model.AlgorithmConstants;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.cert.CrlExtensions;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Imports a CRL file to the database.
@@ -92,7 +92,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        for (final X509CRLEntry entry : (Set<X509CRLEntry>) x509crl.getRevokedCertificates()) {
 	        	final BigInteger serialNr = entry.getSerialNumber();
 	        	final String serialHex = serialNr.toString(16).toUpperCase();
-	        	final String username = ejb.getCertStoreSession().findUsernameByCertSerno(getAdmin(), serialNr, issuer);
+	        	final String username = ejb.getCertStoreSession().findUsernameByCertSerno(serialNr, issuer);
 	        	// If this certificate exists and has an assigned username, we keep using that. Otherwise we create this coupling to a user.
 	        	if (username == null) {
 	        		getLogger().info ("Certificate '"+ serialHex +"' missing in the database");
@@ -117,11 +117,11 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        		final X509Certificate certificate = certGen.generate(key_pair.getPrivate(), "BC");
 	        		final String fingerprint = CertTools.getFingerprintAsString(certificate);
 	        		// We add all certificates that does not have a user already to "missing_user_name"
-	        		final UserDataVO missingUserDataVO = ejb.getUserAdminSession().findUser(getAdmin(), missing_user_name);
+	        		final EndEntityInformation missingUserDataVO = ejb.getUserAdminSession().findUser(getAdmin(), missing_user_name);
 	        		if (missingUserDataVO == null) {
 	        			// Add the user and change status to REVOKED
 		        		getLogger().debug("Loading/updating user " + missing_user_name);
-		        		final UserDataVO userdataNew = new UserDataVO(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
+		        		final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
 		        				UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
 		        				SecConst.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 		        		userdataNew.setPassword("foo123");
@@ -149,8 +149,8 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 		        	getLogger().warn("Failed to revoke '" + serialHex +"'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
 	        	}
 	        }
-	        if (ejb.getCrlSession().getLastCRLNumber(getAdmin(), issuer, false) < crl_no) {
-	        	ejb.getCrlSession().storeCRL(getAdmin(), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
+	        if (ejb.getCrlStoreSession().getLastCRLNumber(issuer, false) < crl_no) {
+	        	ejb.getCrlStoreSession().storeCRL(getAdmin(), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
 	        } else {
 	        	if (strict) {
 	        		throw new IOException("CRL #" + crl_no + " or higher is already in the database");

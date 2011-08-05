@@ -19,8 +19,8 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 

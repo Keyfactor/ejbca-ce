@@ -34,10 +34,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bouncycastle.ocsp.OCSPRespGenerator;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
@@ -203,7 +204,7 @@ public class Ocsp extends ClientToolBox {
     @Override
 	protected void execute(String[] args) {
         try {
-            CertTools.installBCProvider();
+            CryptoProviderTools.installBCProvider();
 
             final String ksfilename;
             final String kspwd;

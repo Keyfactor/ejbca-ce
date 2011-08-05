@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 
 
@@ -38,7 +38,7 @@ public class UsersView implements java.io.Serializable {
       sortby = new SortBy();
     }
     
-    public UsersView(UserDataVO importuser, HashMap caidtonamemap){
+    public UsersView(EndEntityInformation importuser, HashMap caidtonamemap){
       users = new ArrayList();
       sortby = new SortBy();        
       users.add(new UserView(importuser, caidtonamemap)); 
@@ -106,7 +106,7 @@ public class UsersView implements java.io.Serializable {
       Collections.sort(this.users);
     }
     
-    public void setUsers(UserDataVO[] users, Map caidtonamemap) {
+    public void setUsers(EndEntityInformation[] users, Map caidtonamemap) {
       UserView user;  
       this.users.clear();
       if(users !=null && users.length > 0){ 
@@ -127,7 +127,7 @@ public class UsersView implements java.io.Serializable {
       if(importusers!=null && importusers.size() > 0){
         i=importusers.iterator();
         while(i.hasNext()){
-          UserDataVO nextuser = (UserDataVO) i.next();  
+        	EndEntityInformation nextuser = (EndEntityInformation) i.next();  
           user = new UserView(nextuser, caidtonamemap); 
           user.setSortBy(this.sortby);
           users.add(user);

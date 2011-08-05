@@ -27,26 +27,28 @@ import java.util.Random;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -54,9 +56,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests approvals which are required by the certificate profile and not only by
@@ -124,15 +124,15 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 SecConst.CERTPROFILE_FIXED_ROOTCA);
 
         // Create certificate profiles
-        certProfileIdNoApprovals = createCertificateProfile(admin1, CERTPROFILE1, new Integer[] {}, CertificateProfile.TYPE_ENDENTITY);
+        certProfileIdNoApprovals = createCertificateProfile(admin1, CERTPROFILE1, new Integer[] {}, CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdEndEntityApprovals = createCertificateProfile(admin1, CERTPROFILE2, new Integer[] { CAInfo.REQ_APPROVAL_ADDEDITENDENTITY },
-                CertificateProfile.TYPE_ENDENTITY);
+        		CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdActivateCATokensApprovals = createCertificateProfile(admin1, CERTPROFILE3, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN },
-                CertificateProfile.TYPE_ROOTCA);
+        		CertificateConstants.CERTTYPE_ROOTCA);
         certProfileIdKeyRecoveryApprovals = createCertificateProfile(admin1, CERTPROFILE4, new Integer[] { CAInfo.REQ_APPROVAL_KEYRECOVER },
-                CertificateProfile.TYPE_ENDENTITY);
+        		CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdAllApprovals = createCertificateProfile(admin1, CERTPROFILE5, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN,
-                CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, CAInfo.REQ_APPROVAL_KEYRECOVER, CAInfo.REQ_APPROVAL_REVOCATION }, CertificateProfile.TYPE_ENDENTITY);
+                CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, CAInfo.REQ_APPROVAL_KEYRECOVER, CAInfo.REQ_APPROVAL_REVOCATION }, CertificateConstants.CERTTYPE_ENDENTITY);
         // Other CAs
         anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {}, caAdminSession, caSession,
                 SecConst.CERTPROFILE_FIXED_ROOTCA);

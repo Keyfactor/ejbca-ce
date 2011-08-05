@@ -18,8 +18,8 @@ import java.io.InputStream;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.MalformedRequestException;
 
 /** Helper class used all bytes for the first ASN.1 object in the stream. 
  * Limits the size that is ever read to MAX_REQUEST_SIZE. This class is used for example to read requests from POSTs to servlets, 

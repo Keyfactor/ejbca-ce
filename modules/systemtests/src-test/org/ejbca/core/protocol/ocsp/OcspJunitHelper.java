@@ -21,7 +21,6 @@ import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.SingleResp;
-import org.ejbca.util.Base64;
 
 public class OcspJunitHelper extends TestCase {
 	

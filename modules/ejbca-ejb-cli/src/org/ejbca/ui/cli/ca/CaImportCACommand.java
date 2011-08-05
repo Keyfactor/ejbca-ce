@@ -19,10 +19,10 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.FileTools;
 
 /**
  * Imports a keystore and creates a new X509 CA from it

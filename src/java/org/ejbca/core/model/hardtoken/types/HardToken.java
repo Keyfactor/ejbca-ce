@@ -15,7 +15,7 @@ package org.ejbca.core.model.hardtoken.types;
 
 import java.io.Serializable;
 
-import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 

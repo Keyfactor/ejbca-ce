@@ -24,8 +24,8 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.util.ValidityDate;
 
 
@@ -33,6 +33,9 @@ import org.ejbca.util.ValidityDate;
  * The model representation of Exended Information about a user. It's used for non-searchable data about a user, 
  * like a image, in an effort to minimize the need for database alterations
  *
+ * NOTE! This class is not to be extended anymore. It is kept for backwards serialization compatibility only.
+ * use class org.cesecore.certificates.endentity.ExtendedInformation instead.
+ * 
  * @author  Philip Vendil
  * @version $Id$
  */
@@ -62,44 +65,36 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     // protected fields.
     /** Used to store subject directory attributes, which are put in an extension in the certificate.
      * SubjectDirectoryAttributes are standard attributes, see rfc3280 */
-    public static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
+    private static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
     /**  the revocation code identifier primarily used in the XKMS protocol to let the end user revoke his certificate
      * see the XKMS specification */
-    public  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
+    private  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed  */
-    public static final String CUSTOMDATA = "customdata_";
+    private static final String CUSTOMDATA = "customdata_";
     
-    /** Identifier for Custom data holding a base64 encoded PKCS10 request
-     * extInfo.setCustomData("PKCS10", new String(Base64.encode(pkcs10.getEncoded())));
-     */
-    public static final String CUSTOM_PKCS10 = "PKCS10";
     /** Identifier for Custom data holding a end time when the users certificate should be valid
      * extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
      */
-    public static final String CUSTOM_STARTTIME = "STARTTIME";	//EndEntityProfile.STARTTIME;
+    private static final String CUSTOM_STARTTIME = "STARTTIME";	//EndEntityProfile.STARTTIME;
     /** Identifier for Custom data holding a end time when the users certificate should be valid
      * extInfo.setCustomData(EndEntityProfile.ENDTIME, "");
      */
-    public static final String CUSTOM_ENDTIME = "ENDTIME";	//EndEntityProfile.ENDTIME;
-    /** The (optional) counter is the counter how many request have been received, will decrease for every request until 0. */
-    public static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER";
-    /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
-    public static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
-    
+    private static final String CUSTOM_ENDTIME = "ENDTIME";	//EndEntityProfile.ENDTIME;
+
     /** The counter is a counter for how many failed login attempts that can be performed before the userstatus is changed to GENERATED */
-    public static final String REMAININGLOGINATTEMPTS 			= "remainingloginattempts";
+    private static final String REMAININGLOGINATTEMPTS 			= "remainingloginattempts";
     
     /** The maximum number of login attempts before the user is locked by setting its status to GENERATED */
-    public static final String MAXFAILEDLOGINATTEMPTS 			= "maxfailedloginattempts";
+    private static final String MAXFAILEDLOGINATTEMPTS 			= "maxfailedloginattempts";
     
     /** Default value for how many failed login attempts are allow = -1 (unlimited) */
-	public static final int DEFAULT_MAXLOGINATTEMPTS 			= -1;
+    private static final int DEFAULT_MAXLOGINATTEMPTS 			= -1;
 	
 	/** Default value for how many of the allowed failed login attempts that are remaining = -1 (unlimited) */
 	private static final int DEFAULT_REMAININGLOGINATTEMPTS 		= -1;
 
 	/** Map key for certificate serial number */
-	public static final Object CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
+	private static final Object CERTIFICATESERIALNUMBER = "CERTIFICATESERIALNUMBER";
     
     // Public constants
 

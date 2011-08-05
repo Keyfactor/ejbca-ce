@@ -32,28 +32,30 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.MSPKCS10RequestMessage;
-import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.ActiveDirectoryTools;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
@@ -98,7 +100,8 @@ public class AutoEnrollServlet extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		log.trace(">doPost");
-		Admin internalAdmin = Admin.getInternalAdmin();
+		AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AutoEnrollServlet: "+request.getRemoteAddr()));
+		//Admin internalAdmin = Admin.getInternalAdmin();
 		GlobalConfiguration globalConfiguration = globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin);
 		// Make sure we allow use of this Servlet
 		if ( !globalConfiguration.getAutoEnrollUse() ) {
@@ -115,7 +118,6 @@ public class AutoEnrollServlet extends HttpServlet {
 		boolean debugRequest = "true".equalsIgnoreCase(request.getParameter("debug"));
 		String debugInfo = "";
 
-		Admin admin = new Admin(Admin.TYPE_RA_USER, request.getRemoteAddr());
 		RequestHelper.setDefaultCharacterEncoding(request);
 
 		if (debugRequest) {
@@ -176,8 +178,8 @@ public class AutoEnrollServlet extends HttpServlet {
 		if (MSCertTools.isRequired(templateIndex, MSCertTools.GET_SUBJECTDN_FROM_AD, 0)) {
 			fetchedSubjectDN = ActiveDirectoryTools.getUserDNFromActiveDirectory(globalConfiguration, usernameShort);
 		}
-		int certProfileId = MSCertTools.getOrCreateCertificateProfile(admin, templateIndex, certificateProfileSession);
-        int endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(admin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN,
+		int certProfileId = MSCertTools.getOrCreateCertificateProfile(internalAdmin, templateIndex, certificateProfileSession);
+        int endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(internalAdmin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN,
                 raAdminSession, endEntityProfileSession);
 		if (endEntityProfileId == -1) {
 			String msg = "Could not retrieve required information from AD.";
@@ -209,15 +211,15 @@ public class AutoEnrollServlet extends HttpServlet {
 		}
 		log.info("sdn=" + subjectDN + ", san=" + subjectAN);
 		debugInfo += "\nsdn=" + subjectDN + ", san=" + subjectAN + "\n";
-		UserDataVO userData = new UserDataVO(username, subjectDN, caid, subjectAN, null, UserDataConstants.STATUS_NEW, 1,endEntityProfileId, certProfileId,
+		EndEntityInformation userData = new EndEntityInformation(username, subjectDN, caid, subjectAN, null, UserDataConstants.STATUS_NEW, 1,endEntityProfileId, certProfileId,
 				new Date(), new Date(), SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);
 		userData.setPassword(password);
 		try {
-			if (userAdminSession.existsUser(admin, username)) {
-				userAdminSession.changeUser(admin, userData, true);
+			if (userAdminSession.existsUser(internalAdmin, username)) {
+				userAdminSession.changeUser(internalAdmin, userData, true);
 			} else {
-				userAdminSession.addUser(admin, userData, true);
+				userAdminSession.addUser(internalAdmin, userData, true);
 			}
 		} catch (Exception e) {
 			log.error("Could not add user "+username, e);
@@ -226,11 +228,11 @@ public class AutoEnrollServlet extends HttpServlet {
 		debugInfo += "Request: " + requestData + "\n";
 		req.setUsername(username);
 		req.setPassword(password);
-		IResponseMessage resp;
+		ResponseMessage resp;
 		try {
-			resp = signSession.createCertificate(admin, req, X509ResponseMessage.class, null);
+			resp = signSession.createCertificate(internalAdmin, req, X509ResponseMessage.class, null);
 			cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-			result = signSession.createPKCS7(admin, cert, true);
+			result = signSession.createPKCS7(internalAdmin, cert, true);
 			debugInfo += "Resulting cert: " + new String(Base64.encode(result, true)) + "\n"; 
 		} catch (Exception e) {
 			log.error("Noooo!!! ", e);
@@ -260,11 +262,11 @@ public class AutoEnrollServlet extends HttpServlet {
 	/**
 	 * Return "OK" if renewal isn't needed.
 	 */
-	private String returnStatus(Admin admin, String username) {
+	private String returnStatus(AuthenticationToken admin, String username) {
 		if (!userAdminSession.existsUser(admin, username)) {
 			return "NO_SUCH_USER";
 		}
-		Collection<Certificate> certificates = certificateStoreSession.findCertificatesByUsername(admin, username);
+		Collection<Certificate> certificates = certificateStoreSession.findCertificatesByUsername(username);
 		Iterator<Certificate> iter = certificates.iterator();
 		if (!iter.hasNext()) {
 			return "NO_CERTIFICATES";

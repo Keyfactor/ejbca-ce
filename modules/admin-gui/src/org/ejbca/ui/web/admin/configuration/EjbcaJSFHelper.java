@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Class used to integrate the old jsp framework with the new JSF one.
@@ -126,7 +126,7 @@ public class EjbcaJSFHelper {
     	 return ejbcawebbean;
      }
 
-     public Admin getAdmin() {
+     public AuthenticationToken getAdmin() {
     	 return getEjbcaWebBean().getAdminObject();
      }
 

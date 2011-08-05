@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.FileOutputStream;
 import java.util.List;
 
+import org.cesecore.util.Base64;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.cvc.CVCObject;
@@ -24,7 +25,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.Base64;
 
 
 /**

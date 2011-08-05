@@ -15,12 +15,12 @@ package org.ejbca.core.protocol.ocsp;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
-import org.ejbca.util.CertTools;
 
 /**
  * Data to be used both in servlet and session object.

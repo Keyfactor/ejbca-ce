@@ -8,11 +8,11 @@ import java.util.List;
 
 import javax.ejb.CreateException;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Imports a PEM file and creates a new external CA representation from it.

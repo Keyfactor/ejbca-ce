@@ -24,12 +24,14 @@ import javax.ejb.EJBException;
 import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
 
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
@@ -41,7 +43,7 @@ public abstract class CertificateDataUtil {
     private static final InternalResources intres = InternalResources.getInstance();
     private static final Logger LOG = Logger.getLogger(CertificateDataUtil.class);
     
-    protected Certificate findCertificateByFingerprint(Admin admin, String fingerprint, EntityManager entityManager) {
+    protected Certificate findCertificateByFingerprint(AuthenticationToken admin, String fingerprint, EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
         	LOG.trace(">findCertificateByFingerprint()");
         }
@@ -61,7 +63,7 @@ public abstract class CertificateDataUtil {
         return ret;
     }
 
-    protected Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, EntityManager entityManager) {
+    protected Certificate findCertificateByIssuerAndSerno(AuthenticationToken admin, String issuerDN, BigInteger serno, EntityManager entityManager) {
         if (LOG.isTraceEnabled()) {
         	LOG.trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -97,7 +99,7 @@ public abstract class CertificateDataUtil {
         return ret;
     }
 
-    protected Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN, EntityManager entityManager) throws IllegalArgumentException {
+    protected Collection<Certificate> findCertificatesByType(AuthenticationToken admin, int type, String issuerDN, EntityManager entityManager) throws IllegalArgumentException {
         if (LOG.isTraceEnabled()) {
         	LOG.trace(">findCertificatesByType()");
         }
@@ -134,7 +136,7 @@ public abstract class CertificateDataUtil {
         return ret;
     }
     
-    protected Collection<Certificate> findCertificatesByUsername(Admin admin, String username, EntityManager entityManager) {
+    protected Collection<Certificate> findCertificatesByUsername(AuthenticationToken admin, String username, EntityManager entityManager) {
     	if (LOG.isTraceEnabled()) {
     		LOG.trace(">findCertificatesByUsername(),  username=" + username);
     	}

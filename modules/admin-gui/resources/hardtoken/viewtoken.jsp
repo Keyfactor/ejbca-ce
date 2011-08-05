@@ -145,7 +145,7 @@
       if(globalconfiguration.getEnableEndEntityProfileLimitations()){
     	  try{
     	    includePUK = rabean.authorizedToViewHardToken(username);
-    	  }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException e){
+    	  }catch(org.cesecore.authorization.AuthorizationDeniedException; e){
     		  authorized = false;
     	  }
       }
@@ -167,7 +167,7 @@
        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
     	   try{
              includePUK = rabean.authorizedToViewHardToken(username);
- 	       }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException e){
+ 	       }catch(org.cesecore.authorization.AuthorizationDeniedException; e){
 		     authorized = false;
 	       }
        }
@@ -376,7 +376,7 @@ function viewcopies(link){
         <A style="cursor:pointer;" onclick='viewcert()'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <%   }
-         }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException ade){}
+         }catch(org.cesecore.authorization.AuthorizationDeniedException; ade){}
         %>&nbsp; 
        </td>
      </tr> 

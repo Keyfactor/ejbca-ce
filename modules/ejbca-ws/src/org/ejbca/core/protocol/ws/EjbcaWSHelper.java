@@ -44,14 +44,27 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -61,21 +74,14 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.Authorizer;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.ExtendedInformationWS;
@@ -84,7 +90,6 @@ import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.PinDataWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.ValidityDate;
 import org.ejbca.util.query.Query;
@@ -101,20 +106,22 @@ public class EjbcaWSHelper {
     private static final InternalResources intres = InternalResources.getInstance();
 
     private WebServiceContext wsContext;
-    private AuthorizationSession authorizationSession;
+    private AccessControlSessionLocal authorizationSession;
     private CAAdminSession caAdminSession;
+    private CaSession caSession;
     private CertificateStoreSession certificateStoreSession;
     private CertificateProfileSession certificateProfileSession;
     private HardTokenSession hardTokenSession;
     private EndEntityProfileSession endEntityProfileSession;
     private UserAdminSession userAdminSession;
 
-    protected EjbcaWSHelper(WebServiceContext wsContext, AuthorizationSession authorizationSession, CAAdminSession caAdminSession,
+    protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSession caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession,
             EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, UserAdminSession userAdminSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;
+		this.caSession = caSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.certificateStoreSession = certificateStoreSession;
 		this.hardTokenSession = hardTokenSession;
@@ -135,7 +142,7 @@ public class EjbcaWSHelper {
 	 * @param wsContext web service context that contains the SSL information
 	 * @return Admin object based on the SSL client certificate
 	 */
-	protected Admin getAdmin() throws AuthorizationDeniedException, EjbcaException{		  
+	protected AuthenticationToken getAdmin() throws AuthorizationDeniedException, EjbcaException{		  
 		  return getAdmin(false);
 	}
 	
@@ -149,8 +156,8 @@ public class EjbcaWSHelper {
 	 * @param wsContext web service context that contains the SSL information
 	 * @return Admin object based on the SSL client certificate
 	 */
-	protected Admin getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
-		Admin admin = null;
+	protected AuthenticationToken getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
+		AuthenticationToken admin = null;
 		try {
 			MessageContext msgContext = wsContext.getMessageContext();
 			HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
@@ -166,7 +173,8 @@ public class EjbcaWSHelper {
 			if(!allowNonAdmins){
 				userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+			        throw new AuthorizationDeniedException(msg);
 				}
 			}
 
@@ -205,10 +213,11 @@ public class EjbcaWSHelper {
 		}
 
 		try{
-			Admin admin = userAdminSession.getAdmin(certificates[0]);
+			AuthenticationToken admin = userAdminSession.getAdmin(certificates[0]);
 			userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
 			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
+		        throw new AuthorizationDeniedException(msg);
 			}
 			retval = true;
 		}catch(AuthorizationDeniedException e){
@@ -219,21 +228,24 @@ public class EjbcaWSHelper {
 		return retval;
 	}
 
-	protected void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
+	protected void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
 		try {
 			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
+		        throw new AuthorizationDeniedException(msg);
 			}
-			UserDataVO userdata = userAdminSession.findUser(admin, username);
+			EndEntityInformation userdata = userAdminSession.findUser(admin, username);
 			if(userdata == null){
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS)) {
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS, null);
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS, null);
+		        throw new AuthorizationDeniedException(msg);
 			}
 			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid )){
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.CAPREFIX + caid, null);
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.CAPREFIX + caid, null);
+		        throw new AuthorizationDeniedException(msg);
 			}
 
 		} catch (EJBException e) {
@@ -243,33 +255,34 @@ public class EjbcaWSHelper {
 	}
 	
 	
-	protected void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
+	protected void isAuthorizedToHardTokenData(AuthenticationToken admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
 		try {
 			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
+		        throw new AuthorizationDeniedException(msg);
 			}
-			UserDataVO userdata = userAdminSession.findUser(admin, username);
+			EndEntityInformation userdata = userAdminSession.findUser(admin, username);
 			if(userdata == null){
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
 
-			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
-			    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
-			}
 			if(viewPUKData){
 				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWPUKS)) {
-				    Authorizer.throwAuthorizationException(admin, AccessRulesConstants.REGULAR_VIEWPUKS, null);
+		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWPUKS, null);
+			        throw new AuthorizationDeniedException(msg);
 				}
 			}
 
 			if(userdata != null){
 			    if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS)) {
-			        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS, null);
+		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS, null);
+			        throw new AuthorizationDeniedException(msg);
 			    }
 				if(viewPUKData){
 				    if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {	
-				        Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, null);
+			            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, null);
+				        throw new AuthorizationDeniedException(msg);
 				    }
 				}
 			}
@@ -279,8 +292,8 @@ public class EjbcaWSHelper {
 		}		
 	}
 	
-	protected UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException {
-		final CAInfo cainfo = caAdminSession.getCAInfoOrThrowException(admin,userdata.getCaName());
+	protected EndEntityInformation convertUserDataVOWS(AuthenticationToken admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, AuthorizationDeniedException {
+		final CAInfo cainfo = caSession.getCAInfo(admin,userdata.getCaName());
 		final int caid = cainfo.getCAId();
 		if (caid == 0) {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
@@ -292,7 +305,7 @@ public class EjbcaWSHelper {
                 "Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
 		}
 
-		final int certificateprofileid = certificateProfileSession.getCertificateProfileId(admin,userdata.getCertificateProfileName());
+		final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
                 "Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
@@ -389,7 +402,7 @@ public class EjbcaWSHelper {
     		}
         }
 
-        final UserDataVO userdatavo = new UserDataVO(userdata.getUsername(),
+        final EndEntityInformation userdatavo = new EndEntityInformation(userdata.getUsername(),
         		userdata.getSubjectDN(),
 				caid,
 				userdata.getSubjectAltName(),
@@ -411,10 +424,10 @@ public class EjbcaWSHelper {
 	
 	
 	
-	protected UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException {
+	protected UserDataVOWS convertUserDataVO(AuthenticationToken admin, EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
 	    UserDataVOWS dataWS = new UserDataVOWS();
 		String username = userdata.getUsername();
-		String caname = caAdminSession.getCAInfo(admin,userdata.getCAId()).getName();
+		String caname = caSession.getCAInfo(admin,userdata.getCAId()).getName();
 
 		dataWS.setUsername(username);
 
@@ -433,7 +446,7 @@ public class EjbcaWSHelper {
 		}
         dataWS.setEndEntityProfileName(endentityprofilename);
 
-		String certificateprofilename = certificateProfileSession.getCertificateProfileName(admin,userdata.getCertificateProfileId());
+		String certificateprofilename = certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
 			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " doesn't exists. User: "+username;
 			log.error(message);
@@ -588,8 +601,10 @@ public class EjbcaWSHelper {
 	 * @param usermatch a usermatch containing names of profiles
 	 * @return a query containing id's of profiles.
 	 * @throws NumberFormatException
+	 * @throws AuthorizationDeniedException 
+	 * @throws CADoesntExistsException 
 	 */
-	protected Query convertUserMatch(Admin admin, UserMatch usermatch) throws NumberFormatException {
+	protected Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
@@ -597,11 +612,11 @@ public class EjbcaWSHelper {
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),endentityprofilename);
 			  break;
 		  case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:
-			  String certificateprofilename = Integer.toString(certificateProfileSession.getCertificateProfileId(admin,usermatch.getMatchvalue()));
+			  String certificateprofilename = Integer.toString(certificateProfileSession.getCertificateProfileId(usermatch.getMatchvalue()));
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),certificateprofilename);
 			  break;			  
 		  case UserMatch.MATCH_WITH_CA:
-			  String caname = Integer.toString(caAdminSession.getCAInfo(admin,usermatch.getMatchvalue()).getCAId());
+			  String caname = Integer.toString(caSession.getCAInfo(admin,usermatch.getMatchvalue()).getCAId());
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),caname);
 			  break;	
 		  case UserMatch.MATCH_WITH_TOKEN:
@@ -620,7 +635,7 @@ public class EjbcaWSHelper {
 	 * expiredate and revocation status is checked.
 	 * @throws ClassCastException 
 	 */
-	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(Admin admin, Collection<java.security.cert.Certificate> certs) {
+	protected Collection<java.security.cert.Certificate> returnOnlyValidCertificates(AuthenticationToken admin, Collection<java.security.cert.Certificate> certs) {
      ArrayList<java.security.cert.Certificate> retval = new ArrayList<java.security.cert.Certificate>();
      Iterator<java.security.cert.Certificate> iter = certs.iterator();
      while(iter.hasNext()){
@@ -647,7 +662,7 @@ public class EjbcaWSHelper {
 	 * @param validate set to true to perform validation of each certificate
 	 * @return a List of valid and authorized certificates
 	 */
-	protected List<Certificate> returnAuthorizedCertificates(final Admin admin, final Collection<java.security.cert.Certificate> certs, final boolean validate) {
+	protected List<Certificate> returnAuthorizedCertificates(final AuthenticationToken admin, final Collection<java.security.cert.Certificate> certs, final boolean validate) {
 		final List<Certificate> retval = new ArrayList<Certificate>();
 		final Map<Integer, Boolean> authorizationCache = new HashMap<Integer, Boolean>();
 		final Date now = new Date();
@@ -682,7 +697,7 @@ public class EjbcaWSHelper {
 	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
 			SecConst.TOKEN_SOFT_P12, SecConst.TOKEN_SOFT_JKS, SecConst.TOKEN_SOFT_PEM};
 	
-	private int getTokenId(Admin admin, String tokenname) {
+	private int getTokenId(AuthenticationToken admin, String tokenname) {
       int returnval = 0;
       
       // First check for soft token type
@@ -699,7 +714,7 @@ public class EjbcaWSHelper {
       return returnval;
 	}
 	
-	private String getTokenName(Admin admin, int tokenid) {
+	private String getTokenName(AuthenticationToken admin, int tokenid) {
       String returnval = null;
       
       // First check for soft token type
@@ -737,7 +752,7 @@ public class EjbcaWSHelper {
 		return ret;
 	}
 
-	protected void resetUserPasswordAndStatus(Admin admin, String username, int status) {
+	protected void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
 		try {
 			userAdminSession.setPassword(admin, username, null);
 			userAdminSession.setUserStatus(admin, username, status);	
@@ -748,7 +763,7 @@ public class EjbcaWSHelper {
 		}
 	}
 
-	protected boolean checkValidityAndSetUserPassword(Admin admin, java.security.cert.Certificate cert, String username, String password) 
+	protected boolean checkValidityAndSetUserPassword(AuthenticationToken admin, java.security.cert.Certificate cert, String username, String password) 
 	throws ServiceLocatorException, CertificateNotYetValidException, CertificateExpiredException, UserDoesntFullfillEndEntityProfile, AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
 		boolean ret = false;
 		try {
@@ -774,12 +789,13 @@ public class EjbcaWSHelper {
 	}
 
 	/**
+	 * @throws CesecoreException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
 	 */
-	protected void caCertResponse(EjbcaWSHelper ejbhelper, Admin admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) 
-		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException {
+	protected void caCertResponse(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname, byte[] cert, List<byte[]> cachain, String keystorepwd) 
+		throws AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CesecoreException {
 		try {
-			CAInfo cainfo = caAdminSession.getCAInfo(admin, caname);
+			CAInfo cainfo = caSession.getCAInfo(admin, caname);
 			// create response messages, for CVC certificates we use a regular X509ResponseMessage
 			X509ResponseMessage msg = new X509ResponseMessage();
 			msg.setCertificate(CertTools.getCertfromByteArray(cert));
@@ -790,11 +806,13 @@ public class EjbcaWSHelper {
 	}
 
 	/**
+	 * @throws CryptoTokenAuthenticationFailedException 
+	 * @throws CryptoTokenOfflineException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#caRenewCertRequest 
 	 */
-	protected byte[] caRenewCertRequest(EjbcaWSHelper ejbhelper, Admin admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
-		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException {
-		CAInfo cainfo = caAdminSession.getCAInfoOrThrowException(admin, caname);
+	protected byte[] caRenewCertRequest(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
+		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+		CAInfo cainfo = caSession.getCAInfo(admin, caname);
 		return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, regenerateKeys, usenextkey, activatekey, keystorepwd);				
 	}
 

@@ -13,8 +13,8 @@
 package org.cesecore.authentication;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 
 /**
  * An identified subject needs to be authenticated in order to perform access control decisions.

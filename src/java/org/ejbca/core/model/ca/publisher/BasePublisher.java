@@ -16,9 +16,9 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.Serializable;
 import java.security.cert.Certificate;
 
-import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.internal.UpgradeableDataHashMap;
 
 
 
@@ -153,7 +153,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @throws PublisherException if a communication or other error occurs.
      */    
-    public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
+    public abstract boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException;
 
     /**
      * Published a CRL to a CRL store.
@@ -167,7 +167,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      *
      * @throws PublisherException if a communication or other error occurs.
      */    
-    public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
+    public abstract boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.
@@ -175,7 +175,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param admin the administrator performing the test
      * @throws PublisherConnectionException when couldn't be set up correctly in any way.
      */
-    public abstract void testConnection(Admin admin) throws PublisherConnectionException;
+    public abstract void testConnection(AuthenticationToken admin) throws PublisherConnectionException;
     
 
     public abstract Object clone() throws CloneNotSupportedException;

@@ -16,7 +16,7 @@ package org.ejbca.core.model.hardtoken.profiles;
 import java.io.Serializable;
 import java.util.List;
 
-import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.cesecore.internal.UpgradeableDataHashMap;
 
 
 /**

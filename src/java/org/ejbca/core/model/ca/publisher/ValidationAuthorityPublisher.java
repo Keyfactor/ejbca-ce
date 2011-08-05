@@ -25,13 +25,12 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.jce.X509Principal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
 
@@ -209,7 +208,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate
 	 */
     @Override
-	public boolean storeCertificate(Admin admin, Certificate incert,
+	public boolean storeCertificate(AuthenticationToken admin, Certificate incert,
 	                                String username, String password,
 	                                String userDN,
 	                                String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
@@ -302,7 +301,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL(org.ejbca.core.model.log.Admin, byte[], java.lang.String, int)
 	 */
 	@Override
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
+	public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
 		if (!getStoreCRL() ) {
 			if (log.isDebugEnabled()) {
 				log.debug("No CRL published. The VA publisher is not configured to do it.");
@@ -347,7 +346,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	/* (non-Javadoc)
 	 * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#testConnection(se.anatom.ejbca.log.Admin)
 	 */
-	public void testConnection(Admin admin) throws PublisherConnectionException {
+	public void testConnection(AuthenticationToken admin) throws PublisherConnectionException {
 		try {
 			JDBCUtil.execute("select 1 from CertificateData where fingerprint='XX'", new DoNothingPreparer(), getDataSource());
 		} catch (Exception e) {

@@ -21,14 +21,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
@@ -58,7 +59,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      */
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">CertificateExpirationNotifierWorker.work started");
-        final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
+        final CaSessionLocal caSession = ((CaSessionLocal)ejbs.get(CaSessionLocal.class));
         certificateStoreSession = ((CertificateStoreSessionLocal)ejbs.get(CertificateStoreSessionLocal.class));
         final UserAdminSessionLocal userAdminSession = ((UserAdminSessionLocal)ejbs.get(UserAdminSessionLocal.class));
 
@@ -72,12 +73,18 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             Iterator<Integer> iter = ids.iterator();
             while (iter.hasNext()) {
                 Integer caid = iter.next();
-                CAInfo caInfo = caAdminSession.getCAInfo(getAdmin(), caid);
-                if (caInfo == null) {
+                CAInfo caInfo;
+				try {
+					caInfo = caSession.getCAInfo(getAdmin(), caid);
+				} catch (CADoesntExistsException e) {
                     String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
                     log.info(msg);
                     continue;
-                }
+				} catch (AuthorizationDeniedException e) {
+                    String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", caid, "CAId");
+                    log.info(msg);
+                    continue;
+				}
                 String cadn = caInfo.getSubjectDN();
                 if (cASelectString.equals("")) {
                     cASelectString = "issuerDN='" + cadn + "' ";
@@ -138,8 +145,8 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         String username = (String) next[1];
                         // Get the certificate through a session bean
                         log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
-                        Certificate cert = certificateStoreSession.findCertificateByFingerprint(new Admin(Admin.TYPE_INTERNALUSER), fingerprint);
-                        UserDataVO userData = userAdminSession.findUser(getAdmin(), username);
+                        Certificate cert = certificateStoreSession.findCertificateByFingerprint(fingerprint);
+                        EndEntityInformation userData = userAdminSession.findUser(getAdmin(), username);
                         if (userData != null) {
                             if (isSendToEndUsers()) {
                                 if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {
@@ -160,7 +167,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         if (isSendToAdmins()) {
                             // If we did not have any user for this, we will simply use empty values for substitution
                             if (userData == null) {
-                                userData = new UserDataVO();
+                                userData = new EndEntityInformation();
                                 userData.setUsername(username);
                             }
                             // Populate admin message

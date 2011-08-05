@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -41,19 +43,26 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.util.CertTools;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.util.Base64GetHashMap;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceResponse;
 import org.ejbca.core.model.hardtoken.HardTokenData;
@@ -73,12 +82,9 @@ import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.Base64GetHashMap;
-import org.ejbca.util.CertTools;
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as
@@ -100,7 +106,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @EJB
     private AdminGroupSessionLocal adminGroupSession;
     @EJB
-    private AuthorizationSessionLocal authorizationSession;
+    private AccessControlSessionLocal authorizationSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
@@ -110,9 +116,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private RaAdminSessionLocal raAdminSession;
-    @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
@@ -121,7 +125,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addHardTokenProfile(Admin admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
+    public void addHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ")");
         }
@@ -131,7 +135,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addHardTokenProfile(Admin admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
+    public void addHardTokenProfile(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ", id: " + profileid + ")");
         }
@@ -139,12 +143,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (HardTokenProfileData.findByName(entityManager, name) == null && HardTokenProfileData.findByPK(entityManager, profileid) == null) {
             entityManager.persist(new HardTokenProfileData(profileid, name, profile));
             String msg = intres.getLocalizedMessage("hardtoken.addedprofile", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), String.valueOf(profileid), null, details);
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.erroraddprofile", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), String.valueOf(profileid), null, details);
             throw new HardTokenProfileExistsException();
         }
         log.trace("<addHardTokenProfile()");
@@ -152,7 +158,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void changeHardTokenProfile(Admin admin, String name, HardTokenProfile profile) {
+    public void changeHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardTokenProfile(name: " + name + ")");
         }
@@ -160,19 +166,21 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (htp != null) {
             htp.setHardTokenProfile(profile);
             String msg = intres.getLocalizedMessage("hardtoken.editedprofile", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.erroreditprofile", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         }
         log.trace("<changeHardTokenProfile()");
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void cloneHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException {
+    public void cloneHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">cloneHardTokenProfile(name: " + oldname + ")");
         }
@@ -182,12 +190,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 addHardTokenProfile(admin, newname, profiledata);
                 String msg = intres.getLocalizedMessage("hardtoken.clonedprofile", newname, oldname);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
             } catch (HardTokenProfileExistsException f) {
                 String msg = intres.getLocalizedMessage("hardtoken.errorcloneprofile", newname, oldname);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
                 throw f;
             }
         } catch (CloneNotSupportedException e) {
@@ -198,7 +208,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeHardTokenProfile(Admin admin, String name) {
+    public void removeHardTokenProfile(AuthenticationToken admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenProfile(name: " + name + ")");
         }
@@ -211,20 +221,22 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             } else {
             	entityManager.remove(htp);
                 String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg, e);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         }
         log.trace("<removeHardTokenProfile()");
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void renameHardTokenProfile(Admin admin, String oldname, String newname) throws HardTokenProfileExistsException {
+    public void renameHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">renameHardTokenProfile(from " + oldname + " to " + newname + ")");
         }
@@ -238,22 +250,23 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (success) {
             String msg = intres.getLocalizedMessage("hardtoken.renamedprofile", oldname, newname);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENPROFILEDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENPROFILEDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
             throw new HardTokenProfileExistsException();
         }
         log.trace("<renameHardTokenProfile()");
     }
 
     @Override
-    public Collection<Integer> getAuthorizedHardTokenProfileIds(Admin admin) {
+    public Collection<Integer> getAuthorizedHardTokenProfileIds(AuthenticationToken admin) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
-        HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(admin,
-                SecConst.CERTTYPE_HARDTOKEN, caSession.getAvailableCAs(admin)));
+        HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_HARDTOKEN, caSession.getAvailableCAs(admin)));
         HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
         Iterator<HardTokenProfileData> i = result.iterator();
@@ -273,7 +286,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HashMap<Integer, String> getHardTokenProfileIdToNameMap(Admin admin) {
+    public HashMap<Integer, String> getHardTokenProfileIdToNameMap(AuthenticationToken admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
         Iterator<HardTokenProfileData> i = result.iterator();
@@ -285,7 +298,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenProfile getHardTokenProfile(Admin admin, String name) {
+    public HardTokenProfile getHardTokenProfile(AuthenticationToken admin, String name) {
         HardTokenProfile returnval = null;
         HardTokenProfileData htpd = HardTokenProfileData.findByName(entityManager, name);
         if (htpd != null) {
@@ -295,7 +308,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenProfile getHardTokenProfile(Admin admin, int id) {
+    public HardTokenProfile getHardTokenProfile(AuthenticationToken admin, int id) {
         HardTokenProfile returnval = null;
         HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id));
         if (htpd != null) {
@@ -305,7 +318,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getHardTokenProfileUpdateCount(Admin admin, int hardtokenprofileid) {
+    public int getHardTokenProfileUpdateCount(AuthenticationToken admin, int hardtokenprofileid) {
         int returnval = 0;
         HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(hardtokenprofileid));
         if (htpd != null) {
@@ -315,7 +328,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getHardTokenProfileId(Admin admin, String name) {
+    public int getHardTokenProfileId(AuthenticationToken admin, String name) {
         int returnval = 0;
         HardTokenProfileData htpd = HardTokenProfileData.findByName(entityManager, name);
         if (htpd != null) {
@@ -325,7 +338,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public String getHardTokenProfileName(Admin admin, int id) {
+    public String getHardTokenProfileName(AuthenticationToken admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenProfileName(id: " + id + ")");
         }
@@ -340,7 +353,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean addHardTokenIssuer(Admin admin, String alias, int admingroupid, HardTokenIssuer issuerdata) {
+    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int admingroupid, HardTokenIssuer issuerdata) {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenIssuer(alias: " + alias + ")");
         }
@@ -354,12 +367,15 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (returnval) {
             String msg = intres.getLocalizedMessage("hardtoken.addedissuer", alias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         } else {
+        	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.erroraddissuer", alias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         }
         log.trace("<addHardTokenIssuer()");
         return returnval;
@@ -367,7 +383,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean changeHardTokenIssuer(Admin admin, String alias, HardTokenIssuer issuerdata) {
+    public boolean changeHardTokenIssuer(AuthenticationToken admin, String alias, HardTokenIssuer issuerdata) {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardTokenIssuer(alias: " + alias + ")");
         }
@@ -376,13 +392,16 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (htih != null) {
             htih.setHardTokenIssuer(issuerdata);
             String msg = intres.getLocalizedMessage("hardtoken.editedissuer", alias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
             returnvalue = true;
         } else {
+        	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.erroreditissuer", alias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         }
         log.trace("<changeHardTokenIssuer()");
         return returnvalue;
@@ -390,7 +409,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean cloneHardTokenIssuer(Admin admin, String oldalias, String newalias, int admingroupid) {
+    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int admingroupid) {
         if (log.isTraceEnabled()) {
             log.trace(">cloneHardTokenIssuer(alias: " + oldalias + ")");
         }
@@ -405,12 +424,15 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (returnval) {
             String msg = intres.getLocalizedMessage("hardtoken.clonedissuer", newalias, oldalias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newalias, null, details);
         } else {
+        	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.errorcloneissuer", newalias, oldalias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newalias, null, details);
         }
         log.trace("<cloneHardTokenIssuer()");
         return returnval;
@@ -418,7 +440,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeHardTokenIssuer(Admin admin, String alias) {
+    public void removeHardTokenIssuer(AuthenticationToken admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenIssuer(alias: " + alias + ")");
         }
@@ -431,20 +453,23 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             } else {
             	entityManager.remove(htih);
             	String msg = intres.getLocalizedMessage("hardtoken.removedissuer", alias);
-            	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-            			LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveissuer", alias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA, msg, e);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         }
         log.trace("<removeHardTokenIssuer()");
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean renameHardTokenIssuer(Admin admin, String oldalias, String newalias, int newadmingroupid) {
+    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int newadmingroupid) {
         if (log.isTraceEnabled()) {
             log.trace(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
         }
@@ -459,19 +484,22 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (returnvalue) {
             String msg = intres.getLocalizedMessage("hardtoken.renameissuer", oldalias, newalias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldalias, null, details);
         } else {
+        	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameissuer", oldalias, newalias);
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_HARDTOKENISSUERDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldalias, null, details);
         }
         log.trace("<renameHardTokenIssuer()");
         return returnvalue;
     }
 
     @Override
-    public boolean getAuthorizedToHardTokenIssuer(Admin admin, String alias) {
+    public boolean getAuthorizedToHardTokenIssuer(AuthenticationToken admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getAuthorizedToHardTokenIssuer(" + alias + ")");
         }
@@ -488,7 +516,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(Admin admin) {
+    public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuerDatas()");
         ArrayList<HardTokenIssuerData> returnval = new ArrayList<HardTokenIssuerData>();
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
@@ -506,7 +534,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<String> getHardTokenIssuerAliases(Admin admin) {
+    public Collection<String> getHardTokenIssuerAliases(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuerAliases()");
         ArrayList<String> returnval = new ArrayList<String>();
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
@@ -524,7 +552,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(Admin admin) {
+    public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuers()");
         Collection<Integer> authorizedhardtokenprofiles = getAuthorizedHardTokenProfileIds(admin);
         TreeMap<String, HardTokenIssuerData> returnval = new TreeMap<String, HardTokenIssuerData>();
@@ -542,7 +570,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenIssuerData getHardTokenIssuerData(Admin admin, String alias) {
+    public HardTokenIssuerData getHardTokenIssuerData(AuthenticationToken admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(alias: " + alias + ")");
         }
@@ -556,7 +584,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenIssuerData getHardTokenIssuerData(Admin admin, int id) {
+    public HardTokenIssuerData getHardTokenIssuerData(AuthenticationToken admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(id: " + id + ")");
         }
@@ -570,7 +598,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getNumberOfHardTokenIssuers(Admin admin) {
+    public int getNumberOfHardTokenIssuers(AuthenticationToken admin) {
         log.trace(">getNumberOfHardTokenIssuers()");
         int returnval = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findAll(entityManager).size();
         log.trace("<getNumberOfHardTokenIssuers()");
@@ -578,7 +606,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getHardTokenIssuerId(Admin admin, String alias) {
+    public int getHardTokenIssuerId(AuthenticationToken admin, String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerId(alias: " + alias + ")");
         }
@@ -592,7 +620,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public String getHardTokenIssuerAlias(Admin admin, int id) {
+    public String getHardTokenIssuerAlias(AuthenticationToken admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerAlias(id: " + id + ")");
         }
@@ -606,7 +634,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException {
+    public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException {
         if (log.isTraceEnabled()) {
             log.trace(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType() + ")");
         }
@@ -626,7 +654,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata,
+    public void addHardToken(AuthenticationToken admin, String tokensn, String username, String significantissuerdn, int tokentype, HardToken hardtokendata,
             Collection<Certificate> certificates, String copyof) throws HardTokenExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardToken(tokensn : " + tokensn + ")");
@@ -648,18 +676,17 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                     entityManager.persist(new HardTokenPropertyData(tokensn, HardTokenPropertyData.PROPERTY_COPYOF, copyof));
                 }
                 String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);
-                logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), username, null,
-                        LogConstants.EVENT_INFO_HARDTOKENDATA, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);
-                logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), username, null,
-                        LogConstants.EVENT_ERROR_HARDTOKENDATA, msg);
+                log.info(msg);
                 throw new HardTokenExistsException("Tokensn : " + tokensn);
             }
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);
-            logSession.log(admin, bcdn.hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_HARDTOKENDATA,
-                    msg);
+            log.info(msg);
             throw new HardTokenExistsException("Tokensn : " + tokensn);
         }
         log.trace("<addHardToken()");
@@ -667,11 +694,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void changeHardToken(Admin admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException {
+    public void changeHardToken(AuthenticationToken admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardToken(tokensn : " + tokensn + ")");
         }
-        int caid = LogConstants.INTERNALCAID;
         try {
             org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
             if (htd == null) {
@@ -680,13 +706,17 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             htd.setTokenType(tokentype);
             htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(), hardtokendata));
             htd.setModifyTime(new java.util.Date());
-            caid = htd.getSignificantIssuerDN().hashCode();
+            int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKENDATA,
-                    msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, tokensn, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorchangetoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
         }
         log.trace("<changeHardToken()");
@@ -694,7 +724,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeHardToken(Admin admin, String tokensn) throws HardTokenDoesntExistsException {
+    public void removeHardToken(AuthenticationToken admin, String tokensn) throws HardTokenDoesntExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardToken(tokensn : " + tokensn + ")");
         }
@@ -703,7 +733,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
         if (htd == null) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENDATA, msg);
+            log.info(msg);
             throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
         }
         caid = htd.getSignificantIssuerDN().hashCode();
@@ -721,13 +751,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             entityManager.remove(hardTokenPropertyData);
         }
         String msg = intres.getLocalizedMessage("hardtoken.removedtoken", tokensn);
-        logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENDATA, msg);
-
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, tokensn, details);
         log.trace("<removeHardToken()");
     }
 
     @Override
-    public boolean existsHardToken(Admin admin, String tokensn) {
+    public boolean existsHardToken(AuthenticationToken admin, String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace(">existsHardToken(tokensn : " + tokensn + ")");
         }
@@ -740,7 +771,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenData getHardToken(Admin admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
+    public HardTokenData getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(tokensn :" + tokensn + ")");
         }
@@ -770,13 +801,16 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 returnval = new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
                         .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                         includePUK, htd.getData()), copyof, copies);
+                int caid = htd.getSignificantIssuerDN().hashCode();
                 String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);
-                logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,
-                        LogConstants.EVENT_INFO_HARDTOKENVIEWED, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWED, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), tokensn, details);
                 if (includePUK) {
                     msg = intres.getLocalizedMessage("hardtoken.viewedpuk", tokensn);
-                    logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(),
-                            null, LogConstants.EVENT_INFO_PUKVIEWED, msg);
+                    Map<String, Object> detailspuk = new LinkedHashMap<String, Object>();
+                    detailspuk.put("msg", msg);
+                    auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWEDPUK, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), tokensn, detailspuk);
                 }
             }
         }
@@ -785,7 +819,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<HardTokenData> getHardTokens(Admin admin, String username, boolean includePUK) {
+    public Collection<HardTokenData> getHardTokens(AuthenticationToken admin, String username, boolean includePUK) {
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(username :" + username + ")");
         }
@@ -816,13 +850,16 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             returnval.add(new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
                     .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
                     includePUK, htd.getData()), copyof, copies));
+            int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());
-            logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,
-                    LogConstants.EVENT_INFO_HARDTOKENVIEWED, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWED, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), htd.getTokenSN(), details);
             if (includePUK) {
                 msg = intres.getLocalizedMessage("hardtoken.viewedpuk", htd.getTokenSN());
-                logSession.log(admin, htd.getSignificantIssuerDN().hashCode(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(), htd.getUsername(), null,
-                        LogConstants.EVENT_INFO_PUKVIEWED, msg);
+                Map<String, Object> detailspuk = new LinkedHashMap<String, Object>();
+                detailspuk.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWEDPUK, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), htd.getTokenSN(), detailspuk);
             }
         }
         log.trace("<getHardToken()");
@@ -830,14 +867,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<String> matchHardTokenByTokenSerialNumber(Admin admin, String searchpattern) {
+    public Collection<String> matchHardTokenByTokenSerialNumber(AuthenticationToken admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
         return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addHardTokenCertificateMapping(Admin admin, String tokensn, Certificate certificate) {
+    public void addHardTokenCertificateMapping(AuthenticationToken admin, String tokensn, Certificate certificate) {
         String certificatesn = CertTools.getSerialNumberAsString(certificate);
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenCertificateMapping(certificatesn : " + certificatesn + ", tokensn : " + tokensn + ")");
@@ -848,23 +885,26 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 entityManager.persist(new HardTokenCertificateMap(fp, tokensn));
                 String msg = intres.getLocalizedMessage("hardtoken.addedtokencertmapping", certificatesn, tokensn);
-                logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP,
-                        msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDCERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
-                logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,
-                        msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDCERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             }
         } else {
+        	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
+            log.info(msg);
         }
         log.trace("<addHardTokenCertificateMapping()");
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeHardTokenCertificateMapping(Admin admin, Certificate certificate) {
+    public void removeHardTokenCertificateMapping(AuthenticationToken admin, Certificate certificate) {
         String certificatesn = CertTools.getSerialNumberAsString(certificate);
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
@@ -877,13 +917,18 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             		log.debug("Trying to remove HardTokenCertificateMap that does not exist: "+CertTools.getFingerprintAsString(certificate));                		
             	}
             } else {
+            	String tokensn = htcm.getTokenSN();
             	entityManager.remove(htcm);
             	String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
-            	logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingcert", certificatesn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         }
         log.trace("<removeHardTokenCertificateMapping()");
     }
@@ -894,11 +939,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
      * @param admin the administrator calling the function
      * @param tokensn the serial number to remove.
      */
-    private void removeHardTokenCertificateMappings(Admin admin, String tokensn) {
+    private void removeHardTokenCertificateMappings(AuthenticationToken admin, String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenCertificateMappings(tokensn: " + tokensn + ")");
         }
-        int caid = admin.getCaId();
         try {
             Iterator<HardTokenCertificateMap> result = HardTokenCertificateMap.findByTokenSN(entityManager, tokensn).iterator();
             while (result.hasNext()) {
@@ -906,16 +950,20 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 entityManager.remove(htcm);
             }
             String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingtoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_INFO_HARDTOKENCERTIFICATEMAP, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingtoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_HARDTOKENCERTIFICATEMAP, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
         }
         log.trace("<removeHardTokenCertificateMappings()");
     }
 
     @Override
-    public Collection<Certificate> findCertificatesInHardToken(Admin admin, String tokensn) {
+    public Collection<Certificate> findCertificatesInHardToken(AuthenticationToken admin, String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesInHardToken(username :" + tokensn + ")");
         }
@@ -924,7 +972,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             Iterator<HardTokenCertificateMap> i = HardTokenCertificateMap.findByTokenSN(entityManager, tokensn).iterator();
             while (i.hasNext()) {
                 HardTokenCertificateMap htcm = i.next();
-                Certificate cert = certificateStoreSession.findCertificateByFingerprint(admin, htcm.getCertificateFingerprint());
+                Certificate cert = certificateStoreSession.findCertificateByFingerprint(htcm.getCertificateFingerprint());
                 if (cert != null) {
                     returnval.add(cert);
                 }
@@ -937,12 +985,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public String findHardTokenByCertificateSNIssuerDN(Admin admin, BigInteger certificatesn, String issuerdn) {
+    public String findHardTokenByCertificateSNIssuerDN(AuthenticationToken admin, BigInteger certificatesn, String issuerdn) {
         if (log.isTraceEnabled()) {
             log.trace("<findHardTokenByCertificateSNIssuerDN(certificatesn :" + certificatesn + ", issuerdn :" + issuerdn + ")");
         }
         String returnval = null;
-        X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(admin, issuerdn, certificatesn);
+        X509Certificate cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(issuerdn, certificatesn);
         if (cert != null) {
             HardTokenCertificateMap htcm = HardTokenCertificateMap.findByCertificateFingerprint(entityManager, CertTools.getFingerprintAsString(cert));
             if (htcm != null) {
@@ -955,11 +1003,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void tokenGenerated(Admin admin, String tokensn, String username, String significantissuerdn) {
+    public void tokenGenerated(AuthenticationToken admin, String tokensn, String username, String significantissuerdn) {
         int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
         try {
             String msg = intres.getLocalizedMessage("hardtoken.generatedtoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), username, null, LogConstants.EVENT_INFO_HARDTOKENGENERATED, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_GENERATE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), username, tokensn, details);
         } catch (Exception e) {
             throw new EJBException(e);
         }
@@ -967,18 +1017,20 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void errorWhenGeneratingToken(Admin admin, String tokensn, String username, String significantissuerdn) {
+    public void errorWhenGeneratingToken(AuthenticationToken admin, String tokensn, String username, String significantissuerdn) {
         int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
         try {
             String msg = intres.getLocalizedMessage("hardtoken.errorgeneratetoken", tokensn);
-            logSession.log(admin, caid, LogConstants.MODULE_HARDTOKEN, new java.util.Date(), username, null, LogConstants.EVENT_ERROR_HARDTOKENGENERATED, msg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.HARDTOKEN_GENERATE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), username, tokensn, details);
         } catch (Exception e) {
             throw new EJBException(e);
         }
     }
 
     @Override
-    public boolean existsCertificateProfileInHardTokenProfiles(Admin admin, int id) {
+    public boolean existsCertificateProfileInHardTokenProfiles(AuthenticationToken admin, int id) {
         HardTokenProfile profile = null;
         Collection<Integer> certprofiles = null;
         boolean exists = false;
@@ -997,7 +1049,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public boolean existsHardTokenProfileInHardTokenIssuer(Admin admin, int id) {
+    public boolean existsHardTokenProfileInHardTokenIssuer(AuthenticationToken admin, int id) {
         HardTokenIssuer issuer = null;
         Collection<Integer> hardtokenissuers = null;
         boolean exists = false;
@@ -1044,7 +1096,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     /** Method that returns the hard token data from a hashmap and updates it if necessary. */
-    private HardToken getHardToken(Admin admin, int encryptcaid, boolean includePUK, HashMap data) {
+    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, HashMap data) {
         HardToken returnval = null;
 
         if (data.get(ENCRYPTEDDATA) != null) {
@@ -1089,7 +1141,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
      * Method that saves the hard token issuer data to a HashMap that can be
      * saved to database.
      */
-	private HashMap<String,byte[]> setHardToken(Admin admin, int encryptcaid, HardToken tokendata) {
+	private HashMap<String,byte[]> setHardToken(AuthenticationToken admin, int encryptcaid, HardToken tokendata) {
         HashMap<String,byte[]> retval = null;
         if (encryptcaid != 0) {
             try {

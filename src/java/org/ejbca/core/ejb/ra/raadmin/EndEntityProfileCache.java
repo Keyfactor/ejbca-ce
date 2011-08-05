@@ -21,7 +21,6 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;

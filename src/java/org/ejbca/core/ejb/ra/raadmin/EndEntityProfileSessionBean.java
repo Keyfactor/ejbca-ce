@@ -29,13 +29,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -70,12 +69,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private LogSessionLocal logSession;
     
     @Override
-    public void addEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
+    public void addEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
         addEndEntityProfile(admin, findFreeEndEntityProfileId(), profilename, profile);
     }
 
     @Override
-    public void addEndEntityProfile(final Admin admin, final int profileid, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
+    public void addEndEntityProfile(final AuthenticationToken admin, final int profileid, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
             final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new Date(), null, null,
@@ -114,13 +113,13 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void changeEndEntityProfile(final Admin admin, final String profilename, final EndEntityProfile profile) {
+    public void changeEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) {
         internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
         flushProfileCache();
     }
 
     @Override
-    public void cloneEndEntityProfile(final Admin admin, final String orgname, final String newname) throws EndEntityProfileExistsException {
+    public void cloneEndEntityProfile(final AuthenticationToken admin, final String orgname, final String newname) throws EndEntityProfileExistsException {
         if (newname.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new Date(), null, null,
@@ -156,7 +155,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsCertificateProfileInEndEntityProfiles(final Admin admin, final int profileid) {
+    public boolean existsCertificateProfileInEndEntityProfiles(final AuthenticationToken admin, final int profileid) {
         String[] availprofiles = null;
         boolean exists = false;
         final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -175,7 +174,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsCAInEndEntityProfiles(final Admin admin, final int caid) {
+    public boolean existsCAInEndEntityProfiles(final AuthenticationToken admin, final int caid) {
         String[] availablecas = null;
         boolean exists = false;
         final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -219,7 +218,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityProfile getEndEntityProfile(final Admin admin, final String profilename) {
+    public EndEntityProfile getEndEntityProfile(final AuthenticationToken admin, final String profilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + profilename + ")");
         }
@@ -240,7 +239,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<Integer> getAuthorizedEndEntityProfileIds(final Admin admin) {
+    public Collection<Integer> getAuthorizedEndEntityProfileIds(final AuthenticationToken admin) {
     	final ArrayList<Integer> returnval = new ArrayList<Integer>();
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
 		// If this is the special value ALLCAs we are authorized
@@ -276,7 +275,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityProfile getEndEntityProfile(final Admin admin, final int id) {
+    public EndEntityProfile getEndEntityProfile(final AuthenticationToken admin, final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + id + ")");
         }
@@ -303,7 +302,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getEndEntityProfileId(final Admin admin, final String profilename) {
+    public int getEndEntityProfileId(final AuthenticationToken admin, final String profilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
         }
@@ -320,7 +319,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getEndEntityProfileName(final Admin admin, final int id) {
+    public String getEndEntityProfileName(final AuthenticationToken admin, final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfilename(" + id + ")");
         }
@@ -333,7 +332,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<Integer, String> getEndEntityProfileIdToNameMap(final Admin admin) {
+    public Map<Integer, String> getEndEntityProfileIdToNameMap(final AuthenticationToken admin) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getEndEntityProfileIdToNameMap");
         }
@@ -341,7 +340,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void initializeAndUpgradeProfiles(final Admin admin) {
+    public void initializeAndUpgradeProfiles(final AuthenticationToken admin) {
     	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
     	final Iterator<EndEntityProfileData> iter = result.iterator();
         while (iter.hasNext()) {
@@ -356,7 +355,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void internalChangeEndEntityProfileNoFlushCache(final Admin admin, final String profilename, final EndEntityProfile profile) {
+    public void internalChangeEndEntityProfileNoFlushCache(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) {
     	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         if (pdl == null) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorchangeprofile", profilename);
@@ -371,7 +370,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void removeEndEntityProfile(final Admin admin, final String profilename) {
+    public void removeEndEntityProfile(final AuthenticationToken admin, final String profilename) {
         try {
         	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         	if (pdl == null) {
@@ -393,7 +392,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void renameEndEntityProfile(final Admin admin, final String oldprofilename, final String newprofilename) throws EndEntityProfileExistsException {
+    public void renameEndEntityProfile(final AuthenticationToken admin, final String oldprofilename, final String newprofilename) throws EndEntityProfileExistsException {
         if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
             logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new Date(), null, null,

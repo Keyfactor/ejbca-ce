@@ -42,18 +42,19 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -152,7 +153,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
         			
     @Override
-    public void addService(Admin admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
+    public void addService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ")");
         }
@@ -161,7 +162,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
 
     @Override
-    public void addService(Admin admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
+    public void addService(AuthenticationToken admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ", id: " + id + ")");
         }
@@ -193,7 +194,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
 
     @Override
-    public void cloneService(Admin admin, String oldname, String newname) throws ServiceExistsException {
+    public void cloneService(AuthenticationToken admin, String oldname, String newname) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">cloneService(name: " + oldname + ")");
         }
@@ -229,7 +230,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean removeService(Admin admin, String name) {
+    public boolean removeService(AuthenticationToken admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">removeService(name: " + name + ")");
         }
@@ -262,7 +263,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
 
     @Override
-    public void renameService(Admin admin, String oldname, String newname) throws ServiceExistsException {
+    public void renameService(AuthenticationToken admin, String oldname, String newname) throws ServiceExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">renameService(from " + oldname + " to " + newname + ")");
         }
@@ -291,7 +292,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     }
 
     @Override
-    public Collection<Integer> getAuthorizedVisibleServiceIds(Admin admin) {
+    public Collection<Integer> getAuthorizedVisibleServiceIds(AuthenticationToken admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
         if(authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
@@ -312,7 +313,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ServiceConfiguration getService(Admin admin, String name) {
+    public ServiceConfiguration getService(AuthenticationToken admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">getService: " + name);
         }
@@ -329,7 +330,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getServiceId(Admin admin, String name) {
+    public int getServiceId(AuthenticationToken admin, String name) {
         int returnval = 0;
         ServiceData serviceData = serviceDataSession.findByName(name);
         if (serviceData != null) {
@@ -340,7 +341,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void activateServiceTimer(Admin admin, String name) {
+    public void activateServiceTimer(AuthenticationToken admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">activateServiceTimer(name: " + name + ")");
         }
@@ -382,7 +383,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getServiceName(Admin admin, int id) {
+    public String getServiceName(AuthenticationToken admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getServiceName(id: " + id + ")");
         }
@@ -590,7 +591,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void changeService(Admin admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
+    public void changeService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
         if (log.isTraceEnabled()) {
             log.trace(">changeService(name: " + name + ")");
         }
@@ -803,7 +804,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ServiceConfiguration getServiceConfiguration(Admin admin, int id) {
+    public ServiceConfiguration getServiceConfiguration(AuthenticationToken admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getServiceConfiguration: " + id);
         }
@@ -835,7 +836,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer, String> getServiceIdToNameMap(Admin admin) {
+    public HashMap<Integer, String> getServiceIdToNameMap(AuthenticationToken admin) {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<ServiceData> result = serviceDataSession.findAll();
         Iterator<ServiceData> i = result.iterator();
@@ -855,7 +856,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @return true if the administrator is authorized
      */
-    private boolean isAuthorizedToEditService(Admin admin, ServiceConfiguration serviceConfiguraion) {
+    private boolean isAuthorizedToEditService(AuthenticationToken admin, ServiceConfiguration serviceConfiguraion) {
         
         if (serviceConfiguraion.isHidden() && admin.getAdminType() != Admin.TYPE_INTERNALUSER) {
             return false;

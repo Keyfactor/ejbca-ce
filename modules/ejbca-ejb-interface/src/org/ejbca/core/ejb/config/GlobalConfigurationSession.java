@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.log.Admin;
 
 /** 
  * Session bean to handle global configuration and such.
@@ -40,7 +40,7 @@ public interface GlobalConfigurationSession {
      * 
      * @return the cached GlobalConfiguration value.
      */
-    GlobalConfiguration getCachedGlobalConfiguration(Admin admin);
+    GlobalConfiguration getCachedGlobalConfiguration(AuthenticationToken admin);
 
     /** Clear and load global configuration cache. */
     void flushGlobalConfigurationCache();

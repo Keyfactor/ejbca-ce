@@ -24,9 +24,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.ejb.QueryResultWrapper;
-import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**

@@ -17,10 +17,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
@@ -35,12 +35,12 @@ public class LogAuthorization implements Serializable {
     private String querystring = null;
     private String caidstring = null;
     private Collection<Integer> authorizedmodules = null;
-    private AuthorizationSession authorizationsession;
+    private AccessControlSessionLocal authorizationsession;
     private CaSession caSession;
-    private Admin administrator;
+    private AuthenticationToken administrator;
     
     /** Creates a new instance of LogAuthorization. */
-    public LogAuthorization(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession) {
+    public LogAuthorization(AuthenticationToken administrator, AccessControlSessionLocal authorizationsession, CaSession caSession) {
        this.administrator = administrator;
        this.authorizationsession = authorizationsession;
        this.caSession = caSession;

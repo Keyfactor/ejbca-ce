@@ -29,16 +29,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ca.store.CertificateInfo;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
@@ -78,17 +81,17 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
     }
 
 	@Override
-    public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
+    public Certificate findCertificateByIssuerAndSerno(AuthenticationToken admin, String issuerDN, BigInteger serno) {
     	return findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager);
     }
 
 	@Override
-    public Collection<Certificate> findCertificatesByType(Admin admin, int type, String issuerDN) {
+    public Collection<Certificate> findCertificatesByType(AuthenticationToken admin, int type, String issuerDN) {
         return findCertificatesByType(admin, type, issuerDN, entityManager);
     }
 
 	@Override
-    public Collection<Certificate> findCertificatesByUsername(Admin admin, String username) {
+    public Collection<Certificate> findCertificatesByUsername(AuthenticationToken admin, String username) {
     	return findCertificatesByUsername(admin, username, entityManager);
     }
 
@@ -97,7 +100,7 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	 *********************************************************************/
 	
 	@Override
-	public void addCertReqHistoryData(Admin admin, Certificate cert, UserDataVO useradmindata) {
+	public void addCertReqHistoryData(AuthenticationToken admin, Certificate cert, UserDataVO useradmindata) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -107,42 +110,42 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
-	public boolean checkIfAllRevoked(Admin admin, String username) {
+	public boolean checkIfAllRevoked(AuthenticationToken admin, String username) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) {
+	public Certificate findCertificateByFingerprint(AuthenticationToken admin, String fingerprint) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesByExpireTimeWithLimit(Admin admin, Date expireTime) {
+	public Collection<Certificate> findCertificatesByExpireTimeWithLimit(AuthenticationToken admin, Date expireTime) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesByIssuerAndSernos(Admin admin, String issuerDN, Collection<BigInteger> sernos) {
+	public Collection<Certificate> findCertificatesByIssuerAndSernos(AuthenticationToken admin, String issuerDN, Collection<BigInteger> sernos) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesBySerno(Admin admin, BigInteger serno) {
+	public Collection<Certificate> findCertificatesBySerno(AuthenticationToken admin, BigInteger serno) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesBySubject(Admin admin, String subjectDN) {
+	public Collection<Certificate> findCertificatesBySubject(AuthenticationToken admin, String subjectDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesBySubjectAndIssuer(Admin admin, String subjectDN, String issuerDN) {
+	public Collection<Certificate> findCertificatesBySubjectAndIssuer(AuthenticationToken admin, String subjectDN, String issuerDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesByUsernameAndStatus(Admin admin, String username, int status) {
+	public Collection<Certificate> findCertificatesByUsernameAndStatus(AuthenticationToken admin, String username, int status) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -152,37 +155,37 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
-	public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
+	public String findUsernameByCertSerno(AuthenticationToken admin, BigInteger serno, String issuerdn) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<String> findUsernamesByExpireTimeWithLimit(Admin admin, Date expiretime) {
+	public Collection<String> findUsernamesByExpireTimeWithLimit(AuthenticationToken admin, Date expiretime) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Set<String> findUsernamesByIssuerDNAndSubjectDN(Admin admin, String issuerDN, String subjectDN) {
+	public Set<String> findUsernamesByIssuerDNAndSubjectDN(AuthenticationToken admin, String issuerDN, String subjectDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(Admin admin, String issuerDN, byte[] subjectKeyId) {
+	public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(AuthenticationToken admin, String issuerDN, byte[] subjectKeyId) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public CertReqHistory getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN) {
+	public CertReqHistory getCertReqHistory(AuthenticationToken admin, BigInteger certificateSN, String issuerDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public List<CertReqHistory> getCertReqHistory(Admin admin, String username) {
+	public List<CertReqHistory> getCertReqHistory(AuthenticationToken admin, String username) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public CertificateInfo getCertificateInfo(Admin admin, String fingerprint) {
+	public CertificateInfo getCertificateInfo(AuthenticationToken admin, String fingerprint) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -192,42 +195,42 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
-	public Collection<String> listAllCertificates(Admin admin, String issuerdn) {
+	public Collection<String> listAllCertificates(AuthenticationToken admin, String issuerdn) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<RevokedCertInfo> listRevokedCertInfo(Admin admin, String issuerdn, long lastbasecrldate) {
+	public Collection<RevokedCertInfo> listRevokedCertInfo(AuthenticationToken admin, String issuerdn, long lastbasecrldate) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void removeCertReqHistoryData(Admin admin, String certFingerprint) {
+	public void removeCertReqHistoryData(AuthenticationToken admin, String certFingerprint) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void revokeAllCertByCA(Admin admin, String issuerdn, int reason) {
+	public void revokeAllCertByCA(AuthenticationToken admin, String issuerdn, int reason) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void revokeCertificate(Admin admin, Certificate cert, Collection<Integer> publishers, int reason, String userDataDN) {
+	public void revokeCertificate(AuthenticationToken admin, Certificate cert, Collection<Integer> publishers, int reason, String userDataDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void setArchivedStatus(Admin admin, String fingerprint) throws AuthorizationDeniedException {
+	public void setArchivedStatus(AuthenticationToken admin, String fingerprint) throws AuthorizationDeniedException {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN) {
+	public void setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Date revokeDate, Collection<Integer> publishers, int reason, String userDataDN) {
+	public void setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokeDate, Collection<Integer> publishers, int reason, String userDataDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -237,7 +240,7 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException {
+	public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, String tag, long updateTime) throws CreateException {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 

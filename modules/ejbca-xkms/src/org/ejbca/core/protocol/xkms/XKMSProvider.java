@@ -60,20 +60,24 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.generators.LocateResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.RecoverResponseGenerator;
@@ -82,7 +86,6 @@ import org.ejbca.core.protocol.xkms.generators.ReissueResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.RevokeResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.ValidateResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.XKMSConfig;
-import org.ejbca.util.CertTools;
 import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
 import org.w3._2002._03.xkms_.MessageAbstractType;
@@ -122,7 +125,7 @@ public class XKMSProvider implements Provider<Source> {
 	
 	private static final InternalResources intres = InternalResources.getInstance();
 	
-	protected Admin intAdmin = Admin.getInternalAdmin();
+	protected AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSService"));
 	
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
 	
@@ -131,6 +134,8 @@ public class XKMSProvider implements Provider<Source> {
     private Unmarshaller unmarshaller = null;
     private DocumentBuilderFactory dbf = null;
     
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -148,7 +153,7 @@ public class XKMSProvider implements Provider<Source> {
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
-    private CrlSessionLocal crlSession;
+    private CrlStoreSessionLocal crlSession;
     
 	@PostConstruct
 	public void postConstruct() {
@@ -246,40 +251,40 @@ public class XKMSProvider implements Provider<Source> {
 	}
 
 	private JAXBElement validate(String remoteIP, ValidateRequestType value, boolean requestVerifies) {
-		ValidateResponseGenerator gen = new ValidateResponseGenerator(remoteIP, value, certificateStoreSession, userAdminSession, crlSession, caAdminSession);
+		ValidateResponseGenerator gen = new ValidateResponseGenerator(remoteIP, value, certificateStoreSession, userAdminSession, crlSession, caSession);
 		JAXBElement<ValidateResultType> validateresult = xKMSObjectFactory.createValidateResult(gen.getResponse(requestVerifies));
 		return validateresult;
 	}
 	
 	private JAXBElement locate(String remoteIP, LocateRequestType value, boolean requestVerifies) {
-		LocateResponseGenerator gen = new LocateResponseGenerator(remoteIP, value, certificateStoreSession, userAdminSession, crlSession, caAdminSession);
+		LocateResponseGenerator gen = new LocateResponseGenerator(remoteIP, value, certificateStoreSession, userAdminSession, crlSession, caSession);
 		JAXBElement<LocateResultType> locateresult = xKMSObjectFactory.createLocateResult(gen.getResponse(requestVerifies));
 		return locateresult;
 	}
 	
 	private JAXBElement register(String remoteIP, RegisterRequestType value, boolean requestVerifies, Document requestDoc) {
-		RegisterResponseGenerator gen = new RegisterResponseGenerator(remoteIP, value,requestDoc, caAdminSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		RegisterResponseGenerator gen = new RegisterResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RegisterResultType> registerresult = xKMSObjectFactory.createRegisterResult(gen.getResponse(requestVerifies));
 		return registerresult;
 	}
 	
 	private JAXBElement reissue(String remoteIP, ReissueRequestType value, boolean requestVerifies, Document requestDoc) {
-		ReissueResponseGenerator gen = new ReissueResponseGenerator(remoteIP, value,requestDoc, caAdminSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		ReissueResponseGenerator gen = new ReissueResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<ReissueResultType> reissueresult = xKMSObjectFactory.createReissueResult(gen.getResponse(requestVerifies));
 		return reissueresult;
 	}
 	
 	private JAXBElement recover(String remoteIP, RecoverRequestType value, boolean requestVerifies, Document requestDoc) {
-		RecoverResponseGenerator gen = new RecoverResponseGenerator(remoteIP, value,requestDoc, caAdminSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		RecoverResponseGenerator gen = new RecoverResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RecoverResultType> recoverresult = xKMSObjectFactory.createRecoverResult(gen.getResponse(requestVerifies));
 		return recoverresult;
 	}
 	
 	private JAXBElement revoke(String remoteIP, RevokeRequestType value, boolean requestVerifies, Document requestDoc) {
-		RevokeResponseGenerator gen = new RevokeResponseGenerator(remoteIP, value,requestDoc, caAdminSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		RevokeResponseGenerator gen = new RevokeResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RevokeResultType> recoverresult = xKMSObjectFactory.createRevokeResult(gen.getResponse(requestVerifies));
 		return recoverresult;
@@ -327,12 +332,12 @@ public class XKMSProvider implements Provider<Source> {
 							// Check that the issuer is among accepted issuers
 							int cAId = CertTools.getIssuerDN(verCert).hashCode();
 
-							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, caAdminSession);
+							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, caSession);
 							if(!acceptedCAIds.contains(Integer.valueOf(cAId))){
 								throw new Exception("Error XKMS request signature certificate isn't among the list of accepted CA certificates");
 							}
 
-							CAInfo cAInfo = caAdminSession.getCAInfo(intAdmin, cAId);
+							CAInfo cAInfo = caSession.getCAInfo(intAdmin, cAId);
 							Collection cACertChain = cAInfo.getCertificateChain();
 							// Check issuer and validity						
 							X509Certificate rootCert = null;
@@ -400,7 +405,7 @@ public class XKMSProvider implements Provider<Source> {
 	 * @param admin 
 	 * @return the document signed or null of the signature failed;
 	 */
-	private Document signResponseIfNeeded(Document result, String id, boolean respMecSign, Admin admin){
+	private Document signResponseIfNeeded(Document result, String id, boolean respMecSign, AuthenticationToken admin){
 		Document retval = result;
 
 		if(XKMSConfig.alwaysSignResponses() || (XKMSConfig.acceptSignRequests() && respMecSign)){
@@ -417,7 +422,7 @@ public class XKMSProvider implements Provider<Source> {
 
 				XKMSCAServiceRequest cAReq = new XKMSCAServiceRequest(result, id,true,false);
 
-				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) caAdminSession.extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, caAdminSession), cAReq);
+				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) caAdminSession.extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, caSession), cAReq);
 
 				retval = resp.getSignedDocument();
 				if (log.isDebugEnabled()) {

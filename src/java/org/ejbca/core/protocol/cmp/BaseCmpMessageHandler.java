@@ -18,12 +18,14 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -49,17 +51,17 @@ public class BaseCmpMessageHandler {
 	protected static final int CMP_GET_CA_FROM_EEP     = -1;
 	protected static final int CMP_GET_CA_FROM_KEYID   = -2;
 
-	protected Admin admin;
-	protected CAAdminSession caAdminSession;
+	protected AuthenticationToken admin;
+	protected CaSession caSession;
 	protected EndEntityProfileSession endEntityProfileSession;
 	protected CertificateProfileSession certificateProfileSession;
 
 	protected BaseCmpMessageHandler() {
 	}
 
-	protected BaseCmpMessageHandler(final Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+	protected BaseCmpMessageHandler(final AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
 		this.admin = admin;
-		this.caAdminSession = caAdminSession;
+		this.caSession = caSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.certificateProfileSession = certificateProfileSession;
 	}
@@ -104,8 +106,10 @@ public class BaseCmpMessageHandler {
 		return ret;
 	}
 
-	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. */
-	protected int getUsedCaId(String keyId, int eeProfileId) throws NotFoundException {
+	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. 
+	 * @throws AuthorizationDeniedException 
+	 * @throws CADoesntExistsException */
+	protected int getUsedCaId(String keyId, int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
 		int ret = 0;
 		final String caName = CmpConfiguration.getRACAName();
 		if (StringUtils.equals(caName, "ProfileDefault")) {
@@ -127,21 +131,13 @@ public class BaseCmpMessageHandler {
 				LOG.debug("Using keyId as CA name when adding users in RA mode.");
 			}
 			// Use keyId as CA name
-			final CAInfo info = caAdminSession.getCAInfo(admin, keyId);
-			if (info == null) {
-				LOG.info("No CA found matching keyId: "+keyId);
-				throw new NotFoundException("CA with name '"+keyId+"' not found");
-			}
+			final CAInfo info = caSession.getCAInfo(admin, keyId);
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using CA: "+info.getName());
 			}
 			ret = info.getCAId();																	
 		} else {
-			final CAInfo info = caAdminSession.getCAInfo(admin, caName);
-			if (info == null) {
-				LOG.info("No CA found matching caName: "+caName);
-				throw new NotFoundException("CA with name '"+caName+"' not found");
-			}
+			final CAInfo info = caSession.getCAInfo(admin, caName);
 			ret = info.getCAId();					
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using fixed caName when adding users in RA mode: "+caName+"("+ret+")");
@@ -163,7 +159,7 @@ public class BaseCmpMessageHandler {
 	}
 	/** @return the certificate profile to use for a request based on the current configuration and keyId. */
 	protected int getUsedCertProfileId(final String certificateProfile) throws NotFoundException {
-		final int ret = this.certificateProfileSession.getCertificateProfileId(this.admin, certificateProfile);					
+		final int ret = this.certificateProfileSession.getCertificateProfileId(certificateProfile);					
 		if (ret == 0) {
 			final String msg = "No certificate profile found with name: "+certificateProfile;
 			LOG.info(msg);

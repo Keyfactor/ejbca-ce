@@ -23,7 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.log.LogSessionLocal;

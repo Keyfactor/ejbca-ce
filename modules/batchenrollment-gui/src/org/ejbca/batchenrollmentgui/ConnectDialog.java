@@ -33,6 +33,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Properties;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -48,10 +49,12 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.namespace.QName;
+
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
-import org.ejbca.util.CertTools;
+
 import sun.security.pkcs11.SunPKCS11;
 
 /**

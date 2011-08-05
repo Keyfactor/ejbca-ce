@@ -16,7 +16,11 @@ import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.internal.CACacheManager;
 
 /**
  * @author tomas

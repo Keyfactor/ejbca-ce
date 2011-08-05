@@ -17,12 +17,20 @@ import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
-import org.ejbca.util.CryptoProviderTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
@@ -51,16 +59,18 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     private static final String KEYSIZE        = "keysize";
             
     public OCSPCAService(final ExtendedCAServiceInfo serviceinfo)  {
+    	super(serviceinfo);
     	log.debug("OCSPCAService : constructor " + serviceinfo.getStatus());
     	CryptoProviderTools.installBCProviderIfNotAvailable();
-    	data = new HashMap();
+    	data = new LinkedHashMap<Object, Object>();
 		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
-		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));	// For current version of EJBCA
+		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE));	// For current version of EJBCA
     	setStatus(serviceinfo.getStatus());
     	data.put(VERSION, new Float(LATEST_VERSION));
     }
 
     public OCSPCAService(final HashMap data) {
+    	super(data);
     	loadData(data);
     }
 
@@ -72,7 +82,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     }   
 
     @Override
-    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) throws Exception {		   
+    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
     	log.debug("OCSPCAService : update " + serviceinfo.getStatus());
     	setStatus(serviceinfo.getStatus());
     	// Only status is updated

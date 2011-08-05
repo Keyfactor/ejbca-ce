@@ -18,17 +18,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.core.ejb.authorization.AdminEntitySession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.Authorizer;
-import org.ejbca.core.model.log.Admin;
 
 
 /**
@@ -42,18 +43,20 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     
     private static final Logger log = Logger.getLogger(AuthorizationDataHandler.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
     
     private CaSession caSession;
-    private AuthorizationSession authorizationsession;
+    private AccessControlSessionLocal authorizationsession;
     private AdminEntitySession adminEntitySession;
     private AdminGroupSession adminGroupSession;
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private Collection<AdminGroup> authorizedadmingroups;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, AdminEntitySession adminEntitySession,
-            AdminGroupSession adminGroupSession, AuthorizationSession authorizationsession, CaSession caSession) {
+    public AuthorizationDataHandler(AuthenticationToken administrator, InformationMemory informationmemory, AdminEntitySession adminEntitySession,
+            AdminGroupSession adminGroupSession, AccessControlSessionLocal authorizationsession, CaSession caSession) {
         this.adminEntitySession = adminEntitySession;
         this.adminGroupSession = adminGroupSession;
         this.authorizationsession = authorizationsession;
@@ -70,7 +73,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorized(Admin admin, String resource) {
+    public boolean isAuthorized(AuthenticationToken admin, String resource) {
       return authorizationsession.isAuthorized(admin, resource);  
     }
 
@@ -82,7 +85,7 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorizedNoLog(Admin admin, String resource) {
+    public boolean isAuthorizedNoLog(AuthenticationToken admin, String resource) {
       return authorizationsession.isAuthorizedNoLog(admin, resource);
     }
 
@@ -91,7 +94,8 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException {
         // Authorized to edit administrative priviledges
         if (!authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
-            Authorizer.throwAuthorizationException(administrator, "/system_functionality/edit_administrator_privileges", null);
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", "/system_functionality/edit_administrator_privileges", null);
+	        throw new AuthorizationDeniedException(msg);
         }
         adminGroupSession.addAdminGroup(administrator, name);
         informationmemory.administrativePriviledgesEdited();

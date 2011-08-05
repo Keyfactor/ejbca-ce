@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.ra;
 
+import org.cesecore.certificates.endentity.EndEntityInformation;
+
 
 /**
  * This class should be used to define rules to validate fields' values when adding and updating end entities.
@@ -35,6 +37,6 @@ public class FieldValidator {
 	 * @param profilename of the end entity profile
 	 * @throws CustomFieldException when the value of a field does not match a specific rule.
 	 */
-	public static void validate(UserDataVO userdata, int profileid, String profilename) throws CustomFieldException{}
+	public static void validate(EndEntityInformation userdata, int profileid, String profilename) throws CustomFieldException{}
 
 }

@@ -22,29 +22,28 @@ import javax.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.util.Base64;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenContainer;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Message handler for certificate request confirmation message.
@@ -70,21 +69,21 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	/** CA Session used to sign the response */
-	private CaSession caSession;
+	private CaSessionLocal caSession;
 	
 //	public ConfirmationMessageHandler(Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
-	public ConfirmationMessageHandler(Admin admin, CAAdminSession caAdminSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
-		super(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
+	public ConfirmationMessageHandler(AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
 		this.caSession = caSession;
 	}
-	public IResponseMessage handleMessage(BaseCmpMessage msg) {
+	public ResponseMessage handleMessage(BaseCmpMessage msg) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
 		int version = msg.getHeader().getPvno().getValue().intValue();
-		IResponseMessage resp = null;
+		ResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		if (version > 1) {
 			// Try to find a HMAC/SHA1 protection key
@@ -113,7 +112,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 						try {
 							int eeProfileId = getUsedEndEntityProfileId(keyId);
 							int caId = getUsedCaId(keyId, eeProfileId);
-							caInfo = caAdminSession.getCAInfo(admin, caId);
+							caInfo = caSession.getCAInfo(admin, caId);
 						} catch (NotFoundException e) {
 							LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
 							return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
@@ -142,6 +141,12 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 					LOG.error("Exception calculating protection: ", e);
 					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 				} catch (InvalidKeyException e) {
+					LOG.error("Exception calculating protection: ", e);
+					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+				} catch (AuthorizationDeniedException e) {
+					LOG.error("Exception calculating protection: ", e);
+					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
+				} catch (CADoesntExistsException e) {
 					LOG.error("Exception calculating protection: ", e);
 					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 				}
@@ -178,8 +183,8 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 						ca = caSession.getCA(admin, cadn.hashCode());
 					}
 					if (ca != null) {
-						CATokenContainer catoken = ca.getCAToken();
-						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());						
+						CAToken catoken = ca.getCAToken();
+						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());						
 					} else {
 						if (LOG.isDebugEnabled()) {
 							LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA()+"). Not signing Certificate Confirm.");
@@ -187,10 +192,12 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 					}
 				} catch (CADoesntExistsException e) {
 					LOG.error("Exception during CMP response signing: ", e);			
-				} catch (IllegalKeyStoreException e) {
+				} catch (IllegalCryptoTokenException e) {
 					LOG.error("Exception during CMP response signing: ", e);			
-				} catch (CATokenOfflineException e) {
+				} catch (CryptoTokenOfflineException e) {
 					LOG.error("Exception during CMP response signing: ", e);			
+				} catch (AuthorizationDeniedException e) {
+					LOG.error("Exception during CMP response signing: ", e);
 				}
 			}
 			resp = cresp;
@@ -203,8 +210,6 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			} catch (NoSuchProviderException e) {
 				LOG.error("Exception during CMP processing: ", e);			
 			} catch (SignRequestException e) {
-				LOG.error("Exception during CMP processing: ", e);			
-			} catch (NotFoundException e) {
 				LOG.error("Exception during CMP processing: ", e);			
 			} catch (IOException e) {
 				LOG.error("Exception during CMP processing: ", e);			

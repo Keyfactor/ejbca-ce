@@ -30,20 +30,20 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
@@ -70,7 +70,7 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private ServiceSessionLocal serviceSession;
     @EJB
-    private SignSessionLocal signSession;
+    private CertificateCreateSessionLocal certCreateSession;
     
     // Since timers are reloaded at server startup, we can leave them in the database. This was a workaround for WebLogic.
     // By skipping this we don't need application server (read JBoss) specific config for what this module depends on.
@@ -159,14 +159,14 @@ public class StartServicesServlet extends HttpServlet {
 
         // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
         
-		log.trace(">init CATokenManager");
-		CATokenManager.instance();
+		log.trace(">init CryptoTokenFactory just to load those classes that are available");
+		CryptoTokenFactory.instance();
 		
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
         log.trace(">init loading CAs into cache");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	caAdminSession.initializeAndUpgradeCAs(admin);
+        	caAdminSession.initializeAndUpgradeCAs();
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
@@ -187,7 +187,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init loading CertificateProfile to check for upgrades");
         try {
         	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	certificateProfileSession.initializeAndUpgradeProfiles(admin);
+        	certificateProfileSession.initializeAndUpgradeProfiles();
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
@@ -217,7 +217,7 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
-        signSession.isUniqueCertificateSerialNumberIndex();
+        certCreateSession.isUniqueCertificateSerialNumberIndex();
     }
     
     /**

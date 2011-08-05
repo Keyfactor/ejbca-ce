@@ -7,16 +7,16 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.keystore.KeyTools;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
  * Generating tokens can often depend on the ejb services (local interfaces), for example for key recovery.
@@ -29,14 +29,14 @@ public class GenerateToken {
 
 	private OldAuthenticationSession authenticationSession;
 	private UserAdminSession userAdminSession;
-	private CAAdminSession caAdminSession;
+	private CaSession caSession;
 	private KeyRecoverySession keyRecoverySession;
 	private SignSession signSession;
 	
-    public GenerateToken(OldAuthenticationSession authenticationSession, UserAdminSession useradminsession, CAAdminSession caAdminSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
+    public GenerateToken(OldAuthenticationSession authenticationSession, UserAdminSession useradminsession, CaSession caSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
     	this.authenticationSession = authenticationSession;
     	this.userAdminSession = useradminsession;
-    	this.caAdminSession = caAdminSession;
+    	this.caSession = caSession;
     	this.keyRecoverySession = keyRecoverySession;
     	this.signSession = signSession;
     }
@@ -58,7 +58,7 @@ public class GenerateToken {
      * @return KeyStore
      * @throws Exception if something goes wrong...
      */
-    public KeyStore generateOrKeyRecoverToken(Admin administrator, String username, String password, int caid, String keyspec, 
+    public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec, 
     		String keyalg, boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
     throws Exception {
     	log.trace(">generateOrKeyRecoverToken");
@@ -86,9 +86,9 @@ public class GenerateToken {
     	if ((reusecertificate) && (keyData != null)) {
     		cert = (X509Certificate) keyData.getCertificate();
     		boolean finishUser = true;
-			finishUser = caAdminSession.getCAInfo(administrator,caid).getFinishUser();
+			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
     		if (finishUser) {
-    			UserDataVO userdata = userAdminSession.findUser(administrator, username);
+    			EndEntityInformation userdata = userAdminSession.findUser(administrator, username);
 				authenticationSession.finishUser(userdata);    				
     		}
     	} else {

@@ -52,14 +52,14 @@ import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertRepMessage;
@@ -271,7 +271,7 @@ public class CmpMessageHelper {
 	 * @param failText
 	 * @return IResponseMessage that can be sent to user
 	 */
-	public static IResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, ResponseStatus status, FailInfo failInfo, String failText) {
+	public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, ResponseStatus status, FailInfo failInfo, String failText) {
 		// Create a failure message
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating an unprotected error message with status="+status.getValue()+", failInfo="+failInfo+", failText="+failText);

@@ -15,8 +15,8 @@ package org.ejbca.core.model.ra.userdatasource;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.dn.DNFieldExtractor;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.DNFieldExtractor;
 
 /**
  * UserDataSourceVO is a value object returned from the fetch method
@@ -59,14 +59,14 @@ public class UserDataSourceVO implements Serializable {
     	DNFieldExtractor.COUNTRYOFRESIDENCE 
     };
 
-    private UserDataVO userDataVO = null;
+    private EndEntityInformation userDataVO = null;
     private Set<Integer> isModifyableSet = null;
 	
     /**
 	 * Constuctor that should be used from the User Data Source Implementations
 	 * @param userDataVO
 	 */
-	public UserDataSourceVO(UserDataVO userDataVO) {
+	public UserDataSourceVO(EndEntityInformation userDataVO) {
 		super();
 		this.userDataVO = userDataVO;
 	}
@@ -82,7 +82,7 @@ public class UserDataSourceVO implements Serializable {
 	/**
 	 * Method that returns the users userdatavo.
 	 */
-	public UserDataVO getUserDataVO(){
+	public EndEntityInformation getUserDataVO(){
 		return userDataVO;
 	}
 	

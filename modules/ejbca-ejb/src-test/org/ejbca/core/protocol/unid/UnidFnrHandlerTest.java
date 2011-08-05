@@ -28,8 +28,8 @@ import junit.framework.TestCase;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
@@ -45,9 +45,9 @@ public class UnidFnrHandlerTest extends TestCase {
     	final String fnr = "90123456789";
     	final String lra = "01234";
     	final MyStorage storage = new MyStorage(unidPrefix, fnr, lra);
-    	final IRequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
+    	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
     	final UnidFnrHandler handler = new UnidFnrHandler(storage);
-    	final IRequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
+    	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
     	assertEquals(storage.unid, reqOut.getRequestX509Name().getValues(X509Name.SN).firstElement());
     }
 	private static class MyStorage implements Storage {
@@ -182,8 +182,8 @@ public class UnidFnrHandlerTest extends TestCase {
 			return 0;
 		}
 		@Override
-		public IResponseMessage createResponseMessage(Class responseClass,
-				IRequestMessage req, Certificate cert, PrivateKey signPriv,
+		public ResponseMessage createResponseMessage(Class responseClass,
+				RequestMessage req, Certificate cert, PrivateKey signPriv,
 				String provider) {
 			return null;
 		}

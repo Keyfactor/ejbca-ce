@@ -21,7 +21,10 @@ import org.cesecore.audit.enums.ModuleType;
  * 
  */
 public enum EjbcaModuleTypes implements ModuleType {
-    ;
+    RA,
+    HARDTOKEN,
+    KEYRECOVERY,
+    CUSTOM;
 
     @Override
     public boolean equals(ModuleType value) {

@@ -36,11 +36,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
 import org.ejbca.util.JDBCUtil;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
@@ -90,7 +91,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
             throw new IllegalArgumentException(errMsg);
         }
         // read all files from trustDir, expect that they are PEM formatted certificates
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         File dir = new File(trustDir);
         try {
             if (dir == null || dir.isDirectory() == false) {

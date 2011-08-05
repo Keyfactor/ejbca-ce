@@ -17,9 +17,9 @@ import java.security.cert.X509Certificate;
 import java.util.Iterator;
 import java.util.List;
 
-import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.KeyBindingType;
@@ -35,8 +35,8 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  */
 public class ValidateResponseGenerator extends KISSResponseGenerator {
 
-	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlSession crlSession, CAAdminSession caAdminSession) {
-		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caAdminSession);
+	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
+		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caSession);
 	}
 	
 	/**

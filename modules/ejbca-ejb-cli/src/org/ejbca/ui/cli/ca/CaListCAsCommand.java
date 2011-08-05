@@ -17,10 +17,10 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Lists the names of all available CAs.

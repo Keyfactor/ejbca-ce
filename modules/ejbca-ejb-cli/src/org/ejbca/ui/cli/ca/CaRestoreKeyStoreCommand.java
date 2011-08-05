@@ -17,8 +17,8 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
+import org.cesecore.util.FileTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.FileTools;
 
 /**
  * Restore a CA token keystore from a PKCS12 file.

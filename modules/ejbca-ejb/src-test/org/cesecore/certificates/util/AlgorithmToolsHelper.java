@@ -25,10 +25,7 @@ import java.security.spec.ECPoint;
 /**
  * Classes used by TestAlgorithmTools.
  * 
- * Based on EJBCA version: 
- *      AlgorithmToolsHelper.java 10833 2010-12-13 14:00:06Z anatom
- * Based on cesecore version:
- *      AlgorithmToolsHelper.java 377 2011-02-28 16:57:17Z mikek
+ * Based on EJBCA version: AlgorithmToolsHelper.java 10833 2010-12-13 14:00:06Z anatom
  * 
  * @version $Id$
  */

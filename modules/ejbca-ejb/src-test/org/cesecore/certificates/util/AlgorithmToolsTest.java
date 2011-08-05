@@ -42,10 +42,7 @@ import org.junit.Test;
 /**
  * Tests for AlgorithmTools. Mostly tests border cases.
  * 
- * Based on EJBCA version: 
- *      AlgorithmToolsTest.java 10833 2010-12-13 14:00:06Z anatom
- * Based on cesecore version:
- *      AlgorithmToolsTest.java 194 2011-01-28 16:23:52Z tomas 
+ * Based on EJBCA version: AlgorithmToolsTest.java 10833 2010-12-13 14:00:06Z anatom
  * 
  * @version $Id$
  */

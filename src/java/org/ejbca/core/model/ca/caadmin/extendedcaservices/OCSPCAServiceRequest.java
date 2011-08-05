@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.OCSPReq;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.ejbca.config.OcspConfiguration;
 
 /**
@@ -108,4 +109,9 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
 	public void setRespIdType(int respIdType) {
 		this.respIdType = respIdType;
 	}
+	@Override
+	public int getServiceType() {
+		return ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE;
+	}
+
 }

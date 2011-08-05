@@ -25,10 +25,26 @@ import javax.persistence.PersistenceException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
@@ -36,28 +52,12 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.IllegalKeyException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -112,16 +112,16 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	/**
 	 * Construct the message handler.
 	 * @param admin
-	 * @param caAdminSession
+	 * @param caSession
 	 * @param certificateProfileSession
 	 * @param certificateRequestSession
 	 * @param endEntityProfileSession
 	 * @param signSession
 	 * @param userAdminSession
 	 */
-	public CrmfMessageHandler(final Admin admin, CAAdminSession caAdminSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
+	public CrmfMessageHandler(final AuthenticationToken admin, CaSession caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
 			EndEntityProfileSession endEntityProfileSession, SignSession signSession, UserAdminSession userAdminSession) {
-		super(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
+		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
@@ -170,11 +170,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		}
 	}
 
-	public IResponseMessage handleMessage(final BaseCmpMessage msg) {
+	public ResponseMessage handleMessage(final BaseCmpMessage msg) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
-		IResponseMessage resp = null;
+		ResponseMessage resp = null;
 		try {
 			CrmfRequestMessage crmfreq = null;
 			if (msg instanceof CrmfRequestMessage) {
@@ -189,7 +189,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
-					final UserDataVO data;
+					final EndEntityInformation data;
 					/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 					final String usernameComp = CmpConfiguration.getExtractUsernameComponent();
 					if (LOG.isDebugEnabled()) {
@@ -248,6 +248,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
+        } catch (CesecoreException e) {
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.info(errMsg, e);           
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (EjbcaException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
@@ -276,8 +280,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @throws AuthorizationDeniedException
 	 * @throws EjbcaException
 	 * @throws ClassNotFoundException
+	 * @throws CesecoreException 
 	 */
-	private IResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException {
+	private ResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException, CesecoreException {
 		final int eeProfileId;        // The endEntityProfile to be used when adding users in RA mode.
 		final int caId;           // The CA to user when adding users in RA mode
 		final String certProfileName;  // The certificate profile to use when adding users in RA mode.
@@ -285,7 +290,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		// Try to find a HMAC/SHA1 protection key
 		final int requestId = crmfreq.getRequestId();
 		final int requestType = crmfreq.getRequestType();
-		IResponseMessage resp = null; // The CMP response message to be sent back to the client
+		ResponseMessage resp = null; // The CMP response message to be sent back to the client
 		final String keyId = getSenderKeyId(crmfreq.getHeader());
 		if (keyId == null) {			// No keyId found in message so we can not authenticate it.
 			final String errMsg = INTRES.getLocalizedMessage("cmp.errorunauthmessagera");
@@ -308,7 +313,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				caId = getUsedCaId(keyId, eeProfileId);
 				certProfileName = getUsedCertProfileName(keyId);
 				certProfileId = getUsedCertProfileId(certProfileName);
-			} catch (NotFoundException e) {
+			} catch (CADoesntExistsException e) {
 				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
 				if (this.raAuthSecret == null) {
 					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
@@ -317,29 +322,33 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			}
 			// Now we know which CA the request is for, if we didn't use a global shared secret we can check it now!
 			if (this.raAuthSecret == null) {
-				CAInfo caInfo = this.caAdminSession.getCAInfo(this.admin, caId);
-				String cmpRaAuthSecret = null;  
-				if (caInfo instanceof X509CAInfo) {
-					cmpRaAuthSecret = ((X509CAInfo) caInfo).getCmpRaAuthSecret();
-				}
-				if (StringUtils.isEmpty(cmpRaAuthSecret) || !verifyer.verify(cmpRaAuthSecret)) {
-					String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CAId="+caId);
-					if (StringUtils.isEmpty(cmpRaAuthSecret)) {
-						errMsg += " Secret is empty";
-					} else {
-						errMsg += " Secret fails verify";
+				try {
+					CAInfo caInfo = this.caSession.getCAInfo(this.admin, caId);
+					String cmpRaAuthSecret = null;  
+					if (caInfo instanceof X509CAInfo) {
+						cmpRaAuthSecret = ((X509CAInfo) caInfo).getCmpRaAuthSecret();
 					}
-					LOG.info(errMsg); // info because this is something we should expect and we handle it
-					if (verifyer.getErrMsg() != null) {
-						errMsg = verifyer.getErrMsg();
-					}
-					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+					if (StringUtils.isEmpty(cmpRaAuthSecret) || !verifyer.verify(cmpRaAuthSecret)) {
+						String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CAId="+caId);
+						if (StringUtils.isEmpty(cmpRaAuthSecret)) {
+							errMsg += " Secret is empty";
+						} else {
+							errMsg += " Secret fails verify";
+						}
+						LOG.info(errMsg); // info because this is something we should expect and we handle it
+						if (verifyer.getErrMsg() != null) {
+							errMsg = verifyer.getErrMsg();
+						}
+						return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+					}					
+				} catch (CADoesntExistsException e) {
+					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
 				}
 			}
 			// Create a username and password and register the new user in EJBCA
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
-			final IRequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName) : crmfreq;
+			final RequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName) : crmfreq;
 			final X509Name dnname = req.getRequestX509Name();
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating username from base dn: "+dnname.toString());
@@ -385,7 +394,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			} else {
 				ei = null;
 			}
-			final UserDataVO userdata = new UserDataVO(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
+			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
 			userdata.setPassword(pwd);
 			// Set so we have the right params in the call to processCertReq. 
 			// Username and pwd in the UserDataVO and the IRequestMessage must match

@@ -17,19 +17,19 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
-import org.ejbca.util.Base64PutHashMap;
 
 /**
  * A class handling the hardtoken profile data.
@@ -46,11 +46,11 @@ public class HardTokenProfileDataHandler implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private UserAdminSession useradminsession;
     private CaSession caSession; 
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
-    public HardTokenProfileDataHandler(Admin administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AuthorizationSession authorizationsession, 
+    public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AuthorizationSession authorizationsession, 
                                        UserAdminSession useradminsession, CaSession caSession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
