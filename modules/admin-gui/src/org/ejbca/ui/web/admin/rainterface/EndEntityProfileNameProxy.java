@@ -21,8 +21,8 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.HashMap;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class used to improve performance by proxying end entity profileid to profilename mappings by minimizing the number of needed lockups over rmi.
@@ -34,10 +34,10 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
     
     private HashMap profilenamestore;
     private EndEntityProfileSession endEntityProfileSession;
-    private Admin   administrator;
+    private AuthenticationToken   administrator;
 
     /** Creates a new instance of ProfileNameProxy */
-    public EndEntityProfileNameProxy(Admin administrator, EndEntityProfileSession endEntityProfileSession){
+    public EndEntityProfileNameProxy(AuthenticationToken administrator, EndEntityProfileSession endEntityProfileSession){
               // Get the RaAdminSession instance.
       this.endEntityProfileSession = endEntityProfileSession;
       

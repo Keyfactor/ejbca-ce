@@ -23,10 +23,10 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Test to externalize an approval

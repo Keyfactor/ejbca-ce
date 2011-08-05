@@ -18,10 +18,11 @@ import java.security.cert.Certificate;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
 
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.
@@ -34,10 +35,10 @@ public class SubjectDNProxy implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 	private HashMap<String,String> subjectdnstore;
     private CertificateStoreSession certificatesession;
-    private Admin admin;
+    private AuthenticationToken admin;
 
     /** Creates a new instance of SubjectDNProxy with remote access to CA part */
-    public SubjectDNProxy(Admin admin, CertificateStoreSession certificatesession){
+    public SubjectDNProxy(AuthenticationToken admin, CertificateStoreSession certificatesession){
     	// Get the RaAdminSession instance.
     	this.certificatesession = certificatesession;
     	this.subjectdnstore = new HashMap<String,String>();
@@ -58,7 +59,7 @@ public class SubjectDNProxy implements java.io.Serializable {
     	if(returnval==null){
     		String certdata[] = StringTools.parseCertData(admindata);
     		if(certdata != null){
-    			result = certificatesession.findCertificateByIssuerAndSerno(admin, certdata[1], new BigInteger(certdata[0], 16));
+    			result = certificatesession.findCertificateByIssuerAndSerno(certdata[1], new BigInteger(certdata[0], 16));
     			if(result != null){
     				returnval = CertTools.getSubjectDN(result);
     				subjectdnstore.put(admindata,returnval);

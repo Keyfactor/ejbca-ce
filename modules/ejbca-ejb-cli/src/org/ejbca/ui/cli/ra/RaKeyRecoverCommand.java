@@ -45,12 +45,12 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	return;                   
             }   
             X509Certificate cert = (X509Certificate) ejb.getCertStoreSession().
-            	findCertificateByIssuerAndSerno(getAdmin(), issuerdn, certificatesn);
+            	findCertificateByIssuerAndSerno(issuerdn, certificatesn);
             if(cert == null){
             	getLogger().error("Certificate couldn't be found in database.");
             	return;              
             }
-            String username = ejb.getCertStoreSession().findUsernameByCertSerno(getAdmin(), certificatesn, issuerdn);
+            String username = ejb.getCertStoreSession().findUsernameByCertSerno(certificatesn, issuerdn);
             if(!ejb.getKeyRecoverySession().existsKeys(getAdmin(),cert)){
             	getLogger().error("Specified keys doesn't exist in database.");
             	return;                  
@@ -59,7 +59,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	getLogger().error("User is already marked for recovery.");
             	return;                     
             }
-            UserDataVO userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            UserDataVO userdata = ejb.getUserAdminSession().findUser(username);
             if(userdata == null){
             	getLogger().error("The user doesn't exist.");
             	return;

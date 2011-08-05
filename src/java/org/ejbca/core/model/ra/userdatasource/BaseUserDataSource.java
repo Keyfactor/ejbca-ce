@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.internal.UpgradeableDataHashMap;
 
 
 
@@ -134,7 +134,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * Method that returns the fetched UserDataSourceVOs with the isModifyableset set.
      * This method should be used by external UserDataSource callers
      */    
-    public  Collection<UserDataSourceVO> fetchUserDataSourceVOs(Admin admin, String searchstring) throws UserDataSourceException{
+    public  Collection<UserDataSourceVO> fetchUserDataSourceVOs(AuthenticationToken admin, String searchstring) throws UserDataSourceException{
     	Collection<UserDataSourceVO> result = fetch(admin,searchstring);
     	
     	Set<Integer> isModifyable = getModifiableFields();
@@ -157,7 +157,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      *
      * @throws UserDataSourceException if a communication or other error occurs.
      */    
-    protected abstract Collection<UserDataSourceVO> fetch(Admin admin, String searchstring) throws UserDataSourceException;
+    protected abstract Collection<UserDataSourceVO> fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException;
 	
     /**
      * Optional method used to remove user data from a user data source.
@@ -174,7 +174,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      *
      * @throws UserDataSourceException if a communication or other error occurs.
      */   
-    public abstract boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws MultipleMatchException, UserDataSourceException;
+    public abstract boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws MultipleMatchException, UserDataSourceException;
     
     /**
      * Method used to test the connection to a user data source.
@@ -182,7 +182,7 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      * @param admin the administrator perfoming the test
      * @throws UserDataSourceConnectionException when a connection couldn't be set up correctly in any way.
      */
-    public abstract void testConnection(Admin admin) throws UserDataSourceConnectionException;
+    public abstract void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException;
     
 
     public abstract Object clone() throws CloneNotSupportedException;

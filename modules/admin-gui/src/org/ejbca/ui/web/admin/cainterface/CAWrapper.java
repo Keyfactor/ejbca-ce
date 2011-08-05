@@ -15,15 +15,15 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /** Web bean for displaying CA status in a dataTable
@@ -92,10 +92,10 @@ public class CAWrapper implements Serializable {
 		if ((caStatus == SecConst.CA_EXPIRED) || (caStatus == SecConst.CA_REVOKED)) {
 			//If CA status is expired of revoked, status should be to not change anything
 			activateoption = CAActivationMBean.KEEPCURRENT;
-		} else if ((tokenStatus != ICAToken.STATUS_OFFLINE) && (caStatus != SecConst.CA_ACTIVE)) {
+		} else if ((tokenStatus != CryptoToken.STATUS_OFFLINE) && (caStatus != SecConst.CA_ACTIVE)) {
 			//If CA status is off line and Token is online default should be 'Make off line'
 			activateoption = CAActivationMBean.MAKEOFFLINE;
-		} else if ((tokenStatus == ICAToken.STATUS_OFFLINE) && (caStatus == SecConst.CA_ACTIVE)) {
+		} else if ((tokenStatus == CryptoToken.STATUS_OFFLINE) && (caStatus == SecConst.CA_ACTIVE)) {
 			//If CA status is active and Token is off line default should be 'Activate'
 			activateoption = CAActivationMBean.ACTIVATE;
 		}
@@ -107,9 +107,9 @@ public class CAWrapper implements Serializable {
 			try {
 				this.cainfo=mbean.activateCAToken(cainfo.getCAId());
 				setCAActivationMessage(webBean.getText("CAACTIVATIONSUCCESSFUL"));
-			} catch (CATokenAuthenticationFailedException catafe) {
+			} catch (CryptoTokenAuthenticationFailedException catafe) {
 				setCAActivationMessage(webBean.getText("AUTHENTICATIONERROR"));
-			} catch (CATokenOfflineException catoe) {
+			} catch (CryptoTokenOfflineException catoe) {
 				log.error(catoe);
 				String msg = catoe.getMessage();
 				setCAActivationMessage(webBean.getText("ERROR")+": "+msg==null?"":msg);
@@ -169,15 +169,15 @@ public class CAWrapper implements Serializable {
 	
 	public String getTokenStatus()
 	{
-		tokenStatus = cainfo.getCATokenInfo().getCATokenStatus();
-		if (tokenStatus == ICAToken.STATUS_OFFLINE) {
+		tokenStatus = cainfo.getCATokenInfo().getTokenStatus();
+		if (tokenStatus == CryptoToken.STATUS_OFFLINE) {
 			return(webBean.getText("OFFLINE"));
 		}
 		return (webBean.getText("ACTIVE"));
 	}
 	public String getTokenStatusImg() {
-		tokenStatus = cainfo.getCATokenInfo().getCATokenStatus();
-		if (tokenStatus == ICAToken.STATUS_OFFLINE) {
+		tokenStatus = cainfo.getCATokenInfo().getTokenStatus();
+		if (tokenStatus == CryptoToken.STATUS_OFFLINE) {
 			return webBean.getImagefileInfix("status-ca-offline.png");
 		}		
 		return webBean.getImagefileInfix("status-ca-active.png");

@@ -16,10 +16,11 @@ package org.ejbca.ui.web.admin.rainterface;
 import java.util.Date;
 import java.util.Map;
 
-import org.ejbca.core.model.ra.ExtendedInformation;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.dn.DNFieldExtractor;
 
 
 
@@ -33,7 +34,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
 
    public UserView(){
-      userdata = new UserDataVO();
+      userdata = new EndEntityInformation();
       userdata.setType(1);
       subjectdnfields = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTALTNAME);
@@ -41,7 +42,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
    }
 
 
-    public UserView(UserDataVO newuserdata, Map caidtonamemap){
+    public UserView(EndEntityInformation newuserdata, Map caidtonamemap){
       userdata = newuserdata;
       this.caname = (String) caidtonamemap.get(Integer.valueOf(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
@@ -214,7 +215,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
 
     // Private methods.
     private SortBy sortby;
-    private UserDataVO userdata;
+    private EndEntityInformation userdata;
     private DNFieldExtractor subjectdnfields;
     private DNFieldExtractor subjectaltnames;
     private DNFieldExtractor subjectdirattrs;

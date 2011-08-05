@@ -24,9 +24,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -113,10 +115,11 @@ public class CmpServlet extends HttpServlet {
     private void service(byte[] ba, String remoteAddr, HttpServletResponse response) throws IOException {
         try {
             // We must use an administrator with rights to create users
-            final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
+			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpServlet: "+remoteAddr));
+            //final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
             log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr));
             long startTime = System.currentTimeMillis();
-            final IResponseMessage resp;
+            final ResponseMessage resp;
             try {
                 resp = cmpMessageDispatcherLocal.dispatch(administrator, ba);
             } catch (IOException e) {

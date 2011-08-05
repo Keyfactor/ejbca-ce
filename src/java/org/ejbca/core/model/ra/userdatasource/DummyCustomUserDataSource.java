@@ -18,9 +18,9 @@ import java.util.Collection;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 
 
 /**
@@ -54,11 +54,11 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	 * 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */
-	public Collection fetch(Admin admin, String searchstring) throws UserDataSourceException {
+	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {
 
 		ArrayList result = new ArrayList();
 		if(searchstring.equalsIgnoreCase("per")){
-			UserDataVO userDataVO = new UserDataVO("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,1,1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
+			EndEntityInformation userDataVO = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,1,1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
 			result.add(new UserDataSourceVO(userDataVO));
 		}
 		
@@ -68,7 +68,7 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */
-	public void testConnection(Admin admin) throws UserDataSourceConnectionException {
+	public void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException {
         log.debug("DummyCustomUserDataSource, Testing connection");			
 	}
 
@@ -80,7 +80,7 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 		super.finalize(); 
 	}
 
-	public boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException {
+	public boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException {
 		log.debug("DummyCustomUserDataSource, remove User Data  called with searchstring : " + searchstring);
 		return true;
 	}

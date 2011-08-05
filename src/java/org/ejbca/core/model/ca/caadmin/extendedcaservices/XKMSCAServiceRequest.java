@@ -16,10 +16,11 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.w3c.dom.Document;
 
 /**
- * Class used when requesting XMKS related services from a CA.  
+ * Class used when requesting XKMS related services from a CA.  
  *
  * @author Philip Vendil
  * @version $Id$
@@ -54,6 +55,10 @@ public class XKMSCAServiceRequest extends ExtendedCAServiceRequest implements Se
     public boolean isEncrypt() {
     	return encrypt;
     }
+	@Override
+	public int getServiceType() {
+		return ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE;
+	}
 
 
 

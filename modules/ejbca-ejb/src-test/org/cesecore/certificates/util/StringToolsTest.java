@@ -35,7 +35,7 @@ public class StringToolsTest {
     private static Logger log = Logger.getLogger(StringToolsTest.class);
 
     /**
-     * tests stripping whitespace
+     * tests stipping whitespace
      * 
      * @throws Exception
      *             error

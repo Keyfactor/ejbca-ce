@@ -22,9 +22,10 @@ import junit.framework.TestCase;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.dn.DnComponents;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
 
 
 
@@ -949,7 +950,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         } catch (UserDoesntFullfillEndEntityProfile e) {
         	assertTrue("Error: Allowedrequests not checked correctly, should be allowed.", false);
         } 
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "2");
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "2");
         try { 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith", "","","",SecConst.CERTPROFILE_FIXED_ENDUSER,
         			false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, 0, testca1, ei);

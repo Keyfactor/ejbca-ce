@@ -22,6 +22,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.log.LogSessionLocal;
@@ -120,7 +121,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
     
     @Override
-    public void saveGlobalConfiguration(Admin admin, GlobalConfiguration globconf) {
+    public void saveGlobalConfiguration(AuthenticationToken admin, GlobalConfiguration globconf) {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }
@@ -167,7 +168,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void setSettingIssueHardwareTokens(Admin admin, boolean value) {
+    public void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value) {
     	final GlobalConfiguration config = flushCache();
     	config.setIssueHardwareTokens(value);
     	saveGlobalConfiguration(admin, config);

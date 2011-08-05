@@ -26,8 +26,8 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.hardtoken.profiles.SVGImageManipulator;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Class managing EJBCA print functionality, such as listing printers
@@ -105,7 +105,7 @@ public class PrinterManager {
 	 */
 	public static void print(String printerName, String svtTemplateName, 
 			String sVGData, int copies,
-			int visualVaildity,  UserDataVO userDataVO, 
+			int visualVaildity,  EndEntityInformation userDataVO, 
 			String[] pINs, String[] pUKs, String hardTokenSerialPrefix,
 			String hardTokenSN, String copyOfHardTokenSN) throws PrinterException{
 		if(currentService == null 

@@ -14,7 +14,9 @@
 package org.ejbca.core.protocol.xkms.generators;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 
 /**
  * 
@@ -31,15 +33,17 @@ public abstract class BaseResponseGenerator {
     @SuppressWarnings("unused")
     private static Logger log = Logger.getLogger(BaseResponseGenerator.class);
 
-    protected Admin raAdmin = null;
-    protected Admin pubAdmin = null;
+    protected AuthenticationToken raAdmin = null;
+    protected AuthenticationToken pubAdmin = null;
 
     protected String remoteIP = null;
 
     public BaseResponseGenerator(String remoteIP) {
         this.remoteIP = remoteIP;
-        raAdmin = new Admin(Admin.TYPE_RA_USER, remoteIP);
-        pubAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteIP);
+        raAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMS RA: "+remoteIP));
+        pubAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMS USER: "+remoteIP));
+        //raAdmin = new Admin(Admin.TYPE_RA_USER, remoteIP);
+        //pubAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteIP);
     }
 
 }

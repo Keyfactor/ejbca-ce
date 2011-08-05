@@ -25,6 +25,7 @@ import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.DnComponents;
 
 /** This class aims to be DN representation.
  * It offers facilities to merge two DN.

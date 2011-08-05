@@ -56,17 +56,20 @@ import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.MalformedRequestException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.log.Admin;
@@ -84,8 +87,6 @@ import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.DummyPatternLogger;
 import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.IPatternLogger;
@@ -476,7 +477,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						}
 					}
 					try {
-						ret = org.ejbca.util.Base64.decode(decodedRequest.getBytes());
+						ret = Base64.decode(decodedRequest.getBytes());
 					} catch (Exception e) {
 						String msg = intres.getLocalizedMessage("ocsp.badurlenc");
 						m_log.info(msg);
@@ -802,7 +803,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 								if (extObj != null) {
 									// Find the certificate from the certId
 									X509Certificate cert = null;
-									cert = (X509Certificate)this.data.certificateStoreSession.findCertificateByIssuerAndSerno(this.data.m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+									cert = (X509Certificate)this.data.certificateStoreSession.findCertificateByIssuerAndSerno(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 									if (cert != null) {
 										// Call the OCSP extension
 										Hashtable retext = extObj.process(request, cert, certStatus);

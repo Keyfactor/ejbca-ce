@@ -1928,7 +1928,7 @@ as type and enter it's classpath and properties (using the same semantics as a r
 </li>
 <li>
 Now it is possible to fetch userdata from the userdata source from custom implemented webpages using the 
-UserDataSourceSessionBean.fetch(Admin admin, Collection&lt;Integer&gt; userdatasourceids, String searchstring) method. 
+UserDataSourceSessionBean.fetch(AuthenticationToken admin, Collection&lt;Integer&gt; userdatasourceids, String searchstring) method. 
 </li>
 </ol>
 </p>

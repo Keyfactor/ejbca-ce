@@ -23,10 +23,11 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
@@ -34,7 +35,6 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
@@ -416,7 +416,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     public String userdatasourcename = null;
     private TreeMap modifyableFieldTexts = null;
     private UserDataSourceSession userdatasourcesession = null;
-	private Admin admin = null;
+	private AuthenticationToken admin = null;
 	private EjbcaWebBean ejbcawebbean = null;
 
 

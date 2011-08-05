@@ -27,16 +27,16 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CertificateInfo;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
@@ -64,8 +64,8 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 	 private CertificateStoreSession certificateStoreSession;
 	 private UserAdminSession userAdminSession;
 	 
-    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlSession crlSession, CAAdminSession caAdminSession) {
-        super(remoteIP, req, caAdminSession, certificateStoreSession, crlSession);
+    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
+        super(remoteIP, req, caSession, certificateStoreSession, crlSession);
         this.certificateStoreSession = certificateStoreSession;
         this.userAdminSession = userAdminSession;
     }
@@ -140,16 +140,16 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 				Query query = genQueryFromUseKeyWith(queryKeyBindingType.getUseKeyWith());
                 
 				try {            		
-					Collection<UserDataVO> userDatas = userAdminSession.query(pubAdmin, query, null, null, resSize);
+					Collection<EndEntityInformation> userDatas = userAdminSession.query(pubAdmin, query, null, null, resSize);
 					if (log.isDebugEnabled()) {
 						log.debug("userAdminSession.query returned " + userDatas.size() + " results for query \"" + query.getQueryString() + "\"");
 					}
-					Iterator<UserDataVO> userIter = userDatas.iterator();
+					Iterator<EndEntityInformation> userIter = userDatas.iterator();
 					while(userIter.hasNext() && retval.size() <= resSize){
-						UserDataVO nextUser = userIter.next();
+						EndEntityInformation nextUser = userIter.next();
 						// Find all the certificates of the matching users
 						try {
-							Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(pubAdmin, nextUser.getUsername());
+							Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(nextUser.getUsername());
 							if (log.isDebugEnabled()) {
 								log.debug("certificateStoreSession.findCertificatesByUsername " + userCerts.size() + " results for user \"" + nextUser.getUsername() + "\"");
 							}
@@ -161,7 +161,7 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 									// Check that the certificate is valid 
 									nextCert.checkValidity(new Date());								
 									// and not revoked	
-									CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(nextCert));
+									CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(nextCert));
 									if(certInfo.getRevocationReason() == RevokedCertInfo.NOT_REVOKED){
 										if(fulfillsKeyUsageAndUseKeyWith(queryKeyBindingType,nextCert)){
 											retval.add(nextCert);											

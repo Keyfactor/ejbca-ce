@@ -14,8 +14,12 @@ package org.ejbca.util.dn;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.naming.ldap.Rdn;
+
 import junit.framework.TestCase;
+
+import org.cesecore.certificates.util.DnComponents;
 
 /** Tests for DistinguishedName class.
  * 

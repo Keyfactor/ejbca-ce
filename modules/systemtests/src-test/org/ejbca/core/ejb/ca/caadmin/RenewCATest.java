@@ -17,8 +17,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 

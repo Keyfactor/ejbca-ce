@@ -135,7 +135,7 @@ public class P11Slot {
      * @param token Token that should use this object.
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return a new P11Slot instance
-     * @throws CATokenOfflineException
+     * @throws CryptoTokenOfflineException
      */
     static public P11Slot getInstance(String configFileName, P11SlotUser token, int id) throws CryptoTokenOfflineException {
         return getInstance(new SlotDataConfigFile(configFileName), token, id);
@@ -264,14 +264,14 @@ public class P11Slot {
     }
     /**
      * @return  the provider of the slot.
-     * @throws CATokenOfflineException
+     * @throws CryptoTokenOfflineException
      */
     public Provider getProvider() {
         return this.provider;
     }
     /**
      * @return  the provider of the slot.
-     * @throws CATokenOfflineException
+     * @throws CryptoTokenOfflineException
      */
     private synchronized Provider createProvider() throws CryptoTokenOfflineException {
         final Provider tmpProvider;

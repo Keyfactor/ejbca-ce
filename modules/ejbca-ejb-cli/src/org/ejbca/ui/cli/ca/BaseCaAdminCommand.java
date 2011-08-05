@@ -28,13 +28,13 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.BaseCommand;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Base for CA commands, contains common functions for CA operations
@@ -61,7 +61,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">getCertChain()");
         Collection<Certificate> returnval = new ArrayList<Certificate>();
         try {
-            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
             if (cainfo != null) {
                 returnval = cainfo.getCertificateChain();
             }
@@ -114,20 +114,20 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">createCRL()");
         try {
             if (issuerdn != null) {
-                CA ca = ejb.getCaSession().getCA(getAdmin(), issuerdn.hashCode());
+                CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), issuerdn.hashCode());
                 if (!deltaCRL) {
-                    ejb.getCrlStoreSession().run(getAdmin(), ca);
-                    int number = ejb.getCrlSession().getLastCRLNumber(getAdmin(), issuerdn, false);
+                    ejb.getCrlCreateSession().forceCRL(getAdmin(), cainfo.getCAId());
+                    int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    ejb.getCrlStoreSession().runDeltaCRL(getAdmin(), ca, -1, -1);
-                    int number = ejb.getCrlSession().getLastCRLNumber(getAdmin(), issuerdn, true);
+                    ejb.getCrlCreateSession().forceDeltaCRL(getAdmin(), cainfo.getCAId());
+                    int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = ejb.getCrlStoreSession().createCRLs(getAdmin());
+                int createdcrls = ejb.getCrlCreateSession().createCRLs(getAdmin());
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = ejb.getCrlStoreSession().createDeltaCRLs(getAdmin());
+                int createddeltacrls = ejb.getCrlCreateSession().createDeltaCRLs(getAdmin());
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {
@@ -137,14 +137,14 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     }
 
     protected String getIssuerDN(String caname) throws Exception {
-        CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+        CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
         return cainfo != null ? cainfo.getSubjectDN() : null;
     }
 
     protected CAInfo getCAInfo(String caname) throws Exception {
         CAInfo result;
         try {
-            result = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+            result = ejb.getCaSession().getCAInfo(getAdmin(), caname);
         } catch (Exception e) {
             getLogger().debug("Error retriving CA " + caname + " info.", e);
             throw new Exception("Error retriving CA " + caname + " info.");
@@ -166,7 +166,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		final StringBuilder existingCas = new StringBuilder();
 		try {
 			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin())) {
-				final String caName = ejb.getCAAdminSession().getCAInfo(getAdmin(), nextId.intValue()).getName();
+				final String caName = ejb.getCaSession().getCAInfo(getAdmin(), nextId.intValue()).getName();
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -200,7 +200,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		final StringBuilder existingCas = new StringBuilder();
 		try {
 			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin()))) {
-				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(getAdmin(), nextId.intValue());
+				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}

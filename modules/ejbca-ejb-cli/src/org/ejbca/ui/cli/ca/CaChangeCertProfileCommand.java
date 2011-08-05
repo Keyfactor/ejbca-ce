@@ -18,10 +18,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Changes the certificate profile of a CA.

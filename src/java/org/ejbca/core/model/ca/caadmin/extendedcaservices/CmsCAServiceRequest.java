@@ -16,6 +16,7 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 
 /**
  * Class used when requesting CMS related services from a CA.  
@@ -59,6 +60,10 @@ public class CmsCAServiceRequest extends ExtendedCAServiceRequest implements Ser
     public int getMode() {
     	return mode;
     }
+	@Override
+	public int getServiceType() {
+		return ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE;
+	}
     
     
 }

@@ -18,10 +18,10 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Export root CA certificate.

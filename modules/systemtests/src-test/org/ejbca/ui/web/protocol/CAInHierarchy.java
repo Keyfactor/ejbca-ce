@@ -22,8 +22,8 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 

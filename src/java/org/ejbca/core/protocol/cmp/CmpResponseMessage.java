@@ -32,10 +32,10 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 
 import com.novosec.pkix.asn1.cmp.CertOrEncCert;
 import com.novosec.pkix.asn1.cmp.CertRepMessage;
@@ -53,7 +53,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
  * @author tomas
  * @version $Id$
  */
-public class CmpResponseMessage implements IResponseMessage {
+public class CmpResponseMessage implements ResponseMessage {
 	
 	/**
 	 * Determines if a de-serialized file is compatible with this class.
@@ -114,47 +114,59 @@ public class CmpResponseMessage implements IResponseMessage {
 	private transient String pbeKeyId = null;
 	private transient String pbeKey = null;
 	
+	@Override
 	public void setCertificate(Certificate cert) {
 		this.cert = cert;
 	}
 	
-	public void setCrl(CRL crl) {
-		
+	@Override
+	public void setCrl(CRL crl) {		
 	}
 	
+	@Override
 	public void setIncludeCACert(boolean incCACert) {
 	}
+	
+	@Override
 	public void setCACert(Certificate cACert) {
 	}
 	
+	@Override
 	public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
         return responseMessage;
 	}
 	
+	@Override
 	public void setStatus(ResponseStatus status) {
         this.status = status;
 	}
 	
+	@Override
 	public ResponseStatus getStatus() {
         return status;
 	}
 	
+	@Override
 	public void setFailInfo(FailInfo failInfo) {
         this.failInfo = failInfo;
 	}
 	
+	@Override
 	public FailInfo getFailInfo() {
         return failInfo;
 	}
 	
+	@Override
     public void setFailText(String failText) {
     	this.failText = failText;
     }
 
+	@Override
     public String getFailText() {
     	return this.failText;
     }
 
+	@Override
     public boolean create() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
 		// Some general stuff, common for all types of messages
@@ -264,10 +276,12 @@ public class CmpResponseMessage implements IResponseMessage {
 		return ret;
 	}
 	
+	@Override
 	public boolean requireSignKeyInfo() {
 		return true;
 	}
 	
+	@Override
 	public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider) {
 		this.signCert = cert;
 		this.signKey = key;
@@ -276,39 +290,42 @@ public class CmpResponseMessage implements IResponseMessage {
 		}
 	}
 	
+	@Override
 	public void setSenderNonce(String senderNonce) {
 		this.senderNonce = senderNonce;
 	}
 	
+	@Override
 	public void setRecipientNonce(String recipientNonce) {
 		this.recipientNonce = recipientNonce;
 	}
 	
+	@Override
 	public void setTransactionId(String transactionId) {
 		this.transactionId = transactionId;
 	}
 	
+	@Override
 	public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
 	}
 	
+	@Override
 	public void setPreferredDigestAlg(String digest) {
 		this.digestAlg = digest;
 	}
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
+	@Override
 	public void setRequestType(int reqtype) {
 		this.requestType = reqtype;
 	}
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
+	@Override
     public void setRequestId(int reqid) {
     	this.requestId = reqid;
     }
     
     @Override
-	public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
+	public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
     	if (reqMsg instanceof ICrmfRequestMessage) {
     		ICrmfRequestMessage crmf = (ICrmfRequestMessage) reqMsg;
 			this.pbeIterationCount = crmf.getPbeIterationCount();

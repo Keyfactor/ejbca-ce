@@ -28,10 +28,10 @@ import java.util.Date;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
-import org.ejbca.util.CertTools;
 
 /**
  * Changes the DN in an IRequestMessage
@@ -52,7 +52,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		final byte b[] = (byte[])stream.readObject();
 		this.dn = new X509Principal(b);
 	}
-	RequestMessageSubjectDnAdapter(IRequestMessage req, X509Name _dn) {
+	RequestMessageSubjectDnAdapter(RequestMessage req, X509Name _dn) {
 		this.original = (ICrmfRequestMessage)req;
 		this.dn = new X509Principal(_dn);
 	}
@@ -163,8 +163,8 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		return this.original.getRequestId();
 	}
 	@Override
-	public IResponseMessage createResponseMessage(Class responseClass,
-			IRequestMessage req, Certificate cert, PrivateKey signPriv,
+	public ResponseMessage createResponseMessage(Class responseClass,
+			RequestMessage req, Certificate cert, PrivateKey signPriv,
 			String provider) {
 		return this.original.createResponseMessage(responseClass, req, cert, signPriv, provider);
 	}

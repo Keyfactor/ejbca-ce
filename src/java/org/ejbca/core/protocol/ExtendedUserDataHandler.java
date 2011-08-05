@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol;
 
+import org.cesecore.certificates.certificate.request.RequestMessage;
+
 
 /**
  * To be implemented by classes that is extending the handling of the user data.
@@ -28,7 +30,7 @@ public interface ExtendedUserDataHandler {
 	 * @return the modified request
 	 * @throws HandlerException The handle may throw this exception if some error occurs. Throwing it prevents the certificate creation.
 	 */
-	IRequestMessage processRequestMessage( IRequestMessage req, String otherData ) throws HandlerException;
+	RequestMessage processRequestMessage( RequestMessage req, String otherData ) throws HandlerException;
 	/**
 	 * Exception thrown by handler. No certificate should be created if this exception is thrown.
 	 *

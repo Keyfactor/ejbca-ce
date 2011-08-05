@@ -31,14 +31,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.util.Base64GetHashMap;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
@@ -47,7 +48,6 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
-import org.ejbca.util.Base64GetHashMap;
 
 /**
  * Stores data used by web server clients.
@@ -73,7 +73,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     private LogSessionLocal logSession;
 
     @Override
-    public Collection<UserDataSourceVO> fetch(Admin admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
+    public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
     	Iterator<Integer> iter = userdatasourceids.iterator();
     	ArrayList<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
     	while (iter.hasNext()) {
@@ -108,7 +108,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public boolean removeUserData(Admin admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
+    public boolean removeUserData(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
     	boolean retval = false;
     	Iterator<Integer> iter = userdatasourceids.iterator();
     	while (iter.hasNext()) {
@@ -144,7 +144,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void testConnection(Admin admin, int userdatasourceid) throws UserDataSourceConnectionException {
+    public void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException {
     	if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + userdatasourceid + ")");
     	}
@@ -178,7 +178,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void addUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
+    public void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ")");
     	}
@@ -187,7 +187,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void addUserDataSource(Admin admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
+    public void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ", id: " + id + ")");
     	}
@@ -219,7 +219,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void changeUserDataSource(Admin admin, String name, BaseUserDataSource userdatasource) {
+    public void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) {
     	if (log.isTraceEnabled()) {
             log.trace(">changeUserDataSource(name: " + name + ")");
     	}
@@ -245,7 +245,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void cloneUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
+    public void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">cloneUserDataSource(name: " + oldname + ")");
     	}
@@ -281,7 +281,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public boolean removeUserDataSource(Admin admin, String name) {
+    public boolean removeUserDataSource(AuthenticationToken admin, String name) {
     	if (log.isTraceEnabled()) {
     		log.trace(">removeUserDataSource(name: " + name + ")");
     	}
@@ -310,7 +310,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void renameUserDataSource(Admin admin, String oldname, String newname) throws UserDataSourceExistsException {
+    public void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException {
     	if (log.isTraceEnabled()) {
             log.trace(">renameUserDataSource(from " + oldname + " to " + newname + ")");
     	}
@@ -339,7 +339,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public Collection<Integer> getAuthorizedUserDataSourceIds(Admin admin, boolean includeAnyCA) {
+    public Collection<Integer> getAuthorizedUserDataSourceIds(AuthenticationToken admin, boolean includeAnyCA) {
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
@@ -368,7 +368,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer,String> getUserDataSourceIdToNameMap(Admin admin) {
+    public HashMap<Integer,String> getUserDataSourceIdToNameMap(AuthenticationToken admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Collection<UserDataSourceData> result = UserDataSourceData.findAll(entityManager);
         Iterator<UserDataSourceData> i = result.iterator();
@@ -381,7 +381,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BaseUserDataSource getUserDataSource(Admin admin, String name) {
+    public BaseUserDataSource getUserDataSource(AuthenticationToken admin, String name) {
         BaseUserDataSource returnval = null;
         UserDataSourceData udsd = UserDataSourceData.findByName(entityManager, name);
         if (udsd != null) {
@@ -398,7 +398,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BaseUserDataSource getUserDataSource(Admin admin, int id) {
+    public BaseUserDataSource getUserDataSource(AuthenticationToken admin, int id) {
         BaseUserDataSource returnval = null;
         UserDataSourceData udsd = UserDataSourceData.findById(entityManager, id);
         if (udsd != null) {
@@ -415,7 +415,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getUserDataSourceUpdateCount(Admin admin, int userdatasourceid) {
+    public int getUserDataSourceUpdateCount(AuthenticationToken admin, int userdatasourceid) {
         int returnval = 0;
         UserDataSourceData udsd = UserDataSourceData.findById(entityManager, userdatasourceid);
         if (udsd != null) {
@@ -426,7 +426,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getUserDataSourceId(Admin admin, String name) {
+    public int getUserDataSourceId(AuthenticationToken admin, String name) {
         int returnval = 0;
         UserDataSourceData udsd = UserDataSourceData.findByName(entityManager, name);
         if (udsd != null) {
@@ -437,7 +437,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getUserDataSourceName(Admin admin, int id) {
+    public String getUserDataSourceName(AuthenticationToken admin, int id) {
     	if (log.isTraceEnabled()) {
             log.trace(">getUserDataSourceName(id: " + id + ")");
     	}
@@ -462,7 +462,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * @param if the call is aremove call, othervise fetch authorization is used.
      * @return true if the administrator is authorized
      */
-    private boolean isAuthorizedToUserDataSource(Admin admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
+    private boolean isAuthorizedToUserDataSource(AuthenticationToken admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
     	if(authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     		return true;
         }
@@ -498,7 +498,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * 
      * @return true if the administrator is authorized
      */
-    private boolean isAuthorizedToEditUserDataSource(Admin admin, BaseUserDataSource userdatasource) {
+    private boolean isAuthorizedToEditUserDataSource(AuthenticationToken admin, BaseUserDataSource userdatasource) {
 
         if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             return true;

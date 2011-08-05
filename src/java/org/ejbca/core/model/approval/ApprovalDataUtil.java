@@ -21,7 +21,7 @@ import java.util.Collection;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.Base64;
+import org.cesecore.util.Base64;
 
 /**
  * Class containing utils for extracting data from the approvaldata table.

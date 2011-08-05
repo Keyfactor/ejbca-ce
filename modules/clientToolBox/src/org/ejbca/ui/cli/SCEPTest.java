@@ -65,11 +65,11 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Base64;
-import org.ejbca.core.protocol.ResponseStatus;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.scep.ScepRequestGenerator;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
@@ -435,7 +435,7 @@ class SCEPTest extends ClientToolBox {
             	}
             	str = DERPrintableString.getInstance((values.getObjectAt(0)));
             	String responsestatus =  str.getString();
-            	if ( !StringUtils.equals(expectedResponseStatus.getValue(), responsestatus) ) {
+            	if ( !StringUtils.equals(expectedResponseStatus.getStringValue(), responsestatus) ) {
             		StressTest.this.performanceTest.getLog().error("ResponseStatus should be "+expectedResponseStatus.getValue()+" but was: "+responsestatus);
             		return false;
             	}
@@ -626,7 +626,7 @@ class SCEPTest extends ClientToolBox {
                 ASN1Set values = attr.getAttrValues();
                 DERString str = DERPrintableString.getInstance((values.getObjectAt(0)));
                 String responsestatus =  str.getString();
-                if (extectedResponseStatus.getValue().equals(responsestatus)) {
+                if (extectedResponseStatus.getStringValue().equals(responsestatus)) {
                 	return true;
                 }
                 return false;

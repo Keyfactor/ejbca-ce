@@ -17,14 +17,16 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
@@ -38,16 +40,16 @@ public class CertificateProfileDataHandler implements Serializable {
 
     private static final long serialVersionUID = 6293364591292667934L;
 
-    private AuthorizationSession authorizationsession;
+    private AccessControlSessionLocal authorizationsession;
     private CaSession caSession;
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private InformationMemory info;
     private CertificateProfileSession certificateProfileSession;
 
     public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY = SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY;
 
     /** Creates a new instance of CertificateProfileDataHandler */
-    public CertificateProfileDataHandler(Admin administrator, AuthorizationSession authorizationsession, CaSession caSession,
+    public CertificateProfileDataHandler(AuthenticationToken administrator, AccessControlSessionLocal authorizationsession, CaSession caSession,
             CertificateProfileSession certificateProfileSession, InformationMemory info) {
         this.authorizationsession = authorizationsession;
         this.caSession = caSession;
@@ -101,8 +103,12 @@ public class CertificateProfileDataHandler implements Serializable {
 
     public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException {
         if (authorizedToProfileName(originalname, false)) {
-            certificateProfileSession.cloneCertificateProfile(administrator, originalname, newname, caSession.getAvailableCAs(administrator));
-            this.info.certificateProfilesEdited();
+            try {
+            	certificateProfileSession.cloneCertificateProfile(administrator, originalname, newname, caSession.getAvailableCAs(administrator));
+            	this.info.certificateProfilesEdited();
+			} catch (CertificateProfileDoesNotExistException e) {
+				// NOPMD: ignore do nothing
+			}
         } else {
             throw new AuthorizationDeniedException("Not authorized to clone certificate profile");
         }
@@ -113,18 +119,18 @@ public class CertificateProfileDataHandler implements Serializable {
         if (!authorizedToProfileId(id, false)) {
             throw new AuthorizationDeniedException("Not authorized to certificate profile");
         }
-        return certificateProfileSession.getCertificateProfile(administrator, id);
+        return certificateProfileSession.getCertificateProfile(id);
     }
 
     public CertificateProfile getCertificateProfile(String profilename) throws AuthorizationDeniedException {
         if (!authorizedToProfileName(profilename, false)) {
             throw new AuthorizationDeniedException("Not authorized to certificate profile");
         }
-        return certificateProfileSession.getCertificateProfile(administrator, profilename);
+        return certificateProfileSession.getCertificateProfile(profilename);
     }
 
     public int getCertificateProfileId(String profilename) {
-        return certificateProfileSession.getCertificateProfileId(administrator, profilename);
+        return certificateProfileSession.getCertificateProfileId(profilename);
     }
 
     /**
@@ -132,7 +138,7 @@ public class CertificateProfileDataHandler implements Serializable {
      * with given name.
      */
     private boolean authorizedToProfileName(String profilename, boolean editcheck) {
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(administrator, profilename);
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(profilename);
         return authorizedToProfile(profile, editcheck);
     }
 
@@ -141,7 +147,7 @@ public class CertificateProfileDataHandler implements Serializable {
      * with given name.
      */
     private boolean authorizedToProfileId(int profileid, boolean editcheck) {
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(administrator, profileid);
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileid);
         return authorizedToProfile(profile, editcheck);
     }
 
@@ -160,7 +166,7 @@ public class CertificateProfileDataHandler implements Serializable {
         if (editauth) {
             HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
             if (profile != null) {
-                if (!issuperadministrator && profile.getType() != CertificateProfile.TYPE_ENDENTITY) {
+                if (!issuperadministrator && profile.getType() != CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER) {
                     returnval = false;
                 } else {
                     Collection<Integer> availablecas = profile.getAvailableCAs();

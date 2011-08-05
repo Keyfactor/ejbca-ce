@@ -18,8 +18,8 @@ import java.util.HashMap;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.util.CertTools;
 
 
 /**

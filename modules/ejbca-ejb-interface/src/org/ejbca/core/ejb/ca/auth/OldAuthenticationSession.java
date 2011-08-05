@@ -14,10 +14,10 @@ package org.ejbca.core.ejb.ca.auth;
 
 import javax.ejb.ObjectNotFoundException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Provides access to authentication system.
@@ -31,13 +31,13 @@ public interface OldAuthenticationSession {
      * @param username unique username within the instance
      * @param password password for the user
      *
-     * @return UserDataVO, never returns null
+     * @return EndEntityInformation, never returns null
      *
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthStatusException If the users status is incorrect.
      * @throws AuthLoginException If the password is incorrect.
      */
-    public UserDataVO authenticateUser(Admin admin, String username, String password)
+    public EndEntityInformation authenticateUser(AuthenticationToken admin, String username, String password)
             throws ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
     /**
@@ -51,6 +51,6 @@ public interface OldAuthenticationSession {
      * 
      * @throws ObjectNotFoundException if the user does not exist.
      */
-    public void finishUser(UserDataVO data) throws ObjectNotFoundException;
+    public void finishUser(EndEntityInformation data) throws ObjectNotFoundException;
 
 }

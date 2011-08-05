@@ -21,7 +21,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateData;
+import org.cesecore.certificates.certificate.CertificateData;
 
 /**
  * Simple and dirty tool for moving database tables from one database to another.

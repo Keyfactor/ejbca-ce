@@ -21,8 +21,8 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.util.encoders.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.keystore.KeyTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
 
 /**
  * An object of this class is identifying one or several certificates or a CRL.

@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import javax.ejb.EJBException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -142,7 +143,7 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	/** 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(Admin, String)
 	 */
-	public Collection fetch(Admin admin, String searchstring) throws UserDataSourceException {		
+	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {		
 		return getCustomUserDataSource().fetch(admin,searchstring);
 	}
 	
@@ -151,14 +152,14 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(Admin, String, boolean)
 	 */
 	
-	public boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException, MultipleMatchException {
+	public boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException, MultipleMatchException {
 		return getCustomUserDataSource().removeUserData(admin, searchstring, removeMultipleMatch);		
 	}
 	
 	/** 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */
-	public void testConnection(Admin admin) throws UserDataSourceConnectionException {
+	public void testConnection(AuthenticationToken admin) throws UserDataSourceConnectionException {
 		getCustomUserDataSource().testConnection(admin);		
 	}
 	

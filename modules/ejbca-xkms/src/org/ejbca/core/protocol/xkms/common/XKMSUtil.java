@@ -48,7 +48,7 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.EncryptionConstants;
-import org.ejbca.util.CryptoProviderTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.w3._2001._04.xmlenc_.EncryptedDataType;
 import org.w3._2002._03.xkms_.ObjectFactory;
 import org.w3._2002._03.xkms_.PrivateKeyType;

@@ -25,8 +25,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.ejb.JBossUnmarshaller;
-import org.ejbca.util.StringTools;
 
 /**
  * Representation of a hard token.

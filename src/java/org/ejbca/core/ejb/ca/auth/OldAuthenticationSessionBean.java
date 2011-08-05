@@ -26,6 +26,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
@@ -33,13 +38,11 @@ import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Authenticates users towards a user database.
@@ -65,7 +68,7 @@ public class OldAuthenticationSessionBean implements OldAuthenticationSessionLoc
     private static final InternalResources intres = InternalResources.getInstance();
     
     @Override
-    public UserDataVO authenticateUser(final Admin admin, final String username, final String password)
+    public EndEntityInformation authenticateUser(final AuthenticationToken admin, final String username, final String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
     	if (log.isTraceEnabled()) {
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
@@ -116,13 +119,14 @@ public class OldAuthenticationSessionBean implements OldAuthenticationSessionLoc
     }
 
     @Override
-	public void finishUser(UserDataVO data) throws ObjectNotFoundException {
+	public void finishUser(EndEntityInformation data) throws ObjectNotFoundException {
 		if (log.isTraceEnabled()) {
 			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
 		}
 		// This admin can be the public web user, which may not be allowed to change status,
 		// this is a bit ugly, but what can a man do...
-		Admin statusadmin = Admin.getInternalAdmin();
+		AuthenticationToken statusadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("finishUser"));
+		//Admin statusadmin = Admin.getInternalAdmin();
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter

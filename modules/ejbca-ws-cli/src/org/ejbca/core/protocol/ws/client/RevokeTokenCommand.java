@@ -13,7 +13,7 @@
  
 package org.ejbca.core.protocol.ws.client;
 
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;

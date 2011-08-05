@@ -56,10 +56,10 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 
 
 /**
@@ -68,7 +68,7 @@ import org.ejbca.util.CertTools;
  *
  * @version $Id$
  */
-public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
+public class ScepRequestMessage extends PKCS10RequestMessage implements RequestMessage {
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -169,16 +169,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * @throws IOException if the request can not be parsed.
      */
     public ScepRequestMessage(byte[] msg, boolean incCACert) throws IOException {
-        log.trace(">ScepRequestMessage");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">ScepRequestMessage");
+    	}
         this.scepmsg = msg;
         this.includeCACert = incCACert;
         init();
-        log.trace("<ScepRequestMessage");
+        if (log.isTraceEnabled()) {
+        	log.trace("<ScepRequestMessage");
+        }
     }
 
     private void init() throws IOException {
-        log.trace(">init");
-
+    	if (log.isTraceEnabled()) {
+    		log.trace(">init");
+    	}
         try {
             CMSSignedData csd = new CMSSignedData(scepmsg);
             SignerInformationStore infoStore = csd.getSignerInfos();
@@ -242,26 +247,32 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
                 while (attr.hasMoreElements()) {
                     Attribute a = new Attribute((ASN1Sequence) attr.nextElement());
-
-                    log.debug("Found attribute: " + a.getAttrType().getId());
-
+                    if (log.isDebugEnabled()) {
+                    	log.debug("Found attribute: " + a.getAttrType().getId());
+                    }
                     if (a.getAttrType().getId().equals(id_senderNonce)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         ASN1OctetString str = ASN1OctetString.getInstance(values.nextElement());
                         senderNonce = new String(Base64.encode(str.getOctets(), false));
-                        log.debug("senderNonce = " + senderNonce);
+                        if (log.isDebugEnabled()) {
+                        	log.debug("senderNonce = " + senderNonce);
+                        }
                     }
                     if (a.getAttrType().getId().equals(id_transId)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         transactionId = str.getString();
-                        log.debug("transactionId = " + transactionId);
+                        if (log.isDebugEnabled()) {
+                        	log.debug("transactionId = " + transactionId);
+                        }
                     }
                     if (a.getAttrType().getId().equals(id_messageType)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         messageType = Integer.parseInt(str.getString());
-                        log.debug("messagetype = " + messageType);
+                        if (log.isDebugEnabled()) {
+                        	log.debug("messagetype = " + messageType);
+                        }
                     }
                 }
             }
@@ -276,8 +287,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
                 if (ctoid.equals(CMSObjectIdentifiers.data.getId())) {
                     DEROctetString content = (DEROctetString) ci.getContent();
-                    log.debug("envelopedData is " + content.getOctets().length + " bytes.");
-
+                    if (log.isDebugEnabled()) {
+                    	log.debug("envelopedData is " + content.getOctets().length + " bytes.");
+                    }
                     ASN1Sequence seq1 = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(content.getOctets())).readObject();
                     envEncData = new ContentInfo(seq1);
                     ctoid = envEncData.getContentType().getId();
@@ -293,8 +305,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                             IssuerAndSerialNumber iasn = IssuerAndSerialNumber.getInstance(rid.getId());
                             issuerDN = iasn.getName().toString();
                             serialNo = iasn.getSerialNumber().getValue();
-                            log.debug("IssuerDN: " + issuerDN);
-                            log.debug("SerialNumber: " + iasn.getSerialNumber().getValue().toString(16));
+                            if (log.isDebugEnabled()) {
+                            	log.debug("IssuerDN: " + issuerDN);
+                            	log.debug("SerialNumber: " + iasn.getSerialNumber().getValue().toString(16));
+                            }
                         }
                     } else {
                         errorText = "EncapsulatedContentInfo does not contain PKCS7 envelopedData: ";
@@ -321,8 +335,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     } // init
 
     private void decrypt() throws CMSException, NoSuchProviderException, GeneralSecurityException, IOException {
-        log.trace(">decrypt");
-
+        if (log.isTraceEnabled()) {
+        	log.trace(">decrypt");
+        }
         // Now we are getting somewhere (pheew),
         // Now we just have to get the damn key...to decrypt the PKCS10
         if (privateKey == null) {
@@ -347,7 +362,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
         while (it.hasNext()) {
             RecipientInformation recipient = (RecipientInformation) it.next();
-            log.debug("Privatekey : " + privateKey.getAlgorithm());
+            if (log.isDebugEnabled()) {
+            	log.debug("Privatekey : " + privateKey.getAlgorithm());
+            }
             decBytes = recipient.getContent(privateKey, jceProvider);
             break;
         }
@@ -364,16 +381,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             issuerAndSerno = IssuerAndSerialNumber.getInstance(derobj);
             log.debug("Successfully extracted IssuerAndSerialNumber.");
         }
-        log.trace("<decrypt");
+        if (log.isTraceEnabled()) {
+        	log.trace("<decrypt");
+        }
     } // decrypt
 
-    /**
-     * Returns the public key from the certification request.
-     *
-     * @return public key from certification request.
-     */
+    @Override
     public PublicKey getRequestPublicKey() {
-        log.trace(">getRequestPublicKey()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getRequestPublicKey()");
+        }
         PublicKey ret = null;
         try {
             if (envData == null) {
@@ -388,12 +405,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getRequestPublicKey()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<getRequestPublicKey()");
+        }
         return ret;
     }
 
+    @Override
     public String getRequestAltNames() {
-        log.trace(">getRequestAltNames()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getRequestAltNames()");
+        }
         String ret = null;
         try {
             if (envData == null) {
@@ -408,19 +430,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getRequestAltNames()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<getRequestAltNames()");
+        }
         return ret;
     }
 
-    /**
-     * Verifies signatures, popo etc on the request message. If verification fails the request
-     * should be considered invalid.
-     *
-     * @return True if verification was successful, false if it failed.
-     *
-     */
+    @Override
     public boolean verify() {
-        log.trace(">verify()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">verify()");
+        }
         boolean ret = false;
         try {
             if (pkcs10 == null) {
@@ -435,17 +455,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<verify()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<verify()");
+        }
         return ret;
     }
 
-    /**
-     * Returns the challenge password from the certificattion request.
-     *
-     * @return challenge password from certification request.
-     */
+    @Override
     public String getPassword() {
-        log.trace(">getPassword()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getPassword()");
+        }
         String ret = null;
         try {
             if (pkcs10 == null) {
@@ -460,18 +480,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getPassword()");
+        if (log.isTraceEnabled()) {
+        	log.trace("<getPassword()");
+        }
         return ret;
     }
 
-    /**
-     * Returns the string representation of the CN field from the DN of the certification request,
-     * to be used as username.
-     *
-     * @return username, which is the CN field from the subject DN in certification request.
-     */
+    @Override
     public String getUsername() {
-        log.trace(">getUsername()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getUsername()");
+        }
         String ret = null;
         try {
             if (pkcs10 == null) {
@@ -508,17 +527,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getUsername(): " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getUsername(): " + ret);
+        }
         return ret;
     }
 
-    /**
-     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
-     *
-     * @return issuerDN of receiving CA or null.
-     */
+    @Override
     public String getIssuerDN() {
-        log.trace(">getIssuerDN()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getIssuerDN()");
+        }
         String ret = null;
         try {
             if (envData == null) {
@@ -528,29 +547,27 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
         }
-        log.trace("<getIssuerDN(): " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getIssuerDN(): " + ret);
+        }
         return ret;
     }
 
-    /**
-     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
-     *
-     * @return issuerDN of receiving CA or null.
-     */
+    @Override
     public BigInteger getSerialNo() {
-        log.trace(">getSerialNo()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getSerialNo()");
+        }
         // Use another method to do the decryption etc...
         getIssuerDN();
         return serialNo;
     }
     
-    /**
-     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return issuerDN of CA issuing CRL.
-     */
+    @Override
     public String getCRLIssuerDN() {
-        log.trace(">getCRLIssuerDN()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getCRLIssuerDN()");
+        }
         String ret = null;
         try {
             if (issuerAndSerno == null) {
@@ -565,17 +582,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getCRLIssuerDN(): " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getCRLIssuerDN(): " + ret);
+        }
         return ret;
     }
 
-    /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return serial number of CA certificate for CA issuing CRL.
-     */
+    @Override
     public BigInteger getCRLSerialNo() {
-        log.trace(">getCRLSerialNo()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getCRLSerialNo()");
+        }
         BigInteger ret = null;
         try {
             if (issuerAndSerno == null) {
@@ -590,17 +607,17 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getCRLSerialNo(): " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getCRLSerialNo(): " + ret);
+        }
         return ret;
     }
 
-    /**
-     * Returns the string representation of the subject DN from the certification request.
-     *
-     * @return subject DN from certification request.
-     */
+    @Override
     public String getRequestDN() {
-        log.trace(">getRequestDN()");
+        if (log.isTraceEnabled()) {
+        	log.trace(">getRequestDN()");
+        }
         String ret = null;
         try {
             if (pkcs10 == null) {
@@ -615,30 +632,18 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         } catch (CMSException e) {
             log.error("Error in PKCS7:", e);
         }
-        log.trace("<getRequestDN(): " + ret);
+        if (log.isTraceEnabled()) {
+        	log.trace("<getRequestDN(): " + ret);
+        }
         return ret;
     }
 
-    /**
-     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
-     * this returns true, setKeyInfo() should be called.
-     *
-     * @return True if public and private key is needed.
-     */
+    @Override
     public boolean requireKeyInfo() {
         return true;
     }
 
-    /**
-     * Sets the public and private key needed to decrypt/verify the message. Must be set if
-     * requireKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
-     *
-     * @see #requireKeyInfo()
-     */
+    @Override
     public void setKeyInfo(Certificate cert, PrivateKey key, String provider) {
         // We don't need the public key 
         // this.cert = cert;
@@ -650,71 +655,43 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         }
     }
 
-    /**
-     * Returns an error number after an error has occured processing the request
-     *
-     * @return class specific error number
-     */
+    @Override
     public int getErrorNo() {
         return error;
     }
 
-    /**
-     * Returns an error message after an error has occured processing the request
-     *
-     * @return class specific error message
-     */
+    @Override
     public String getErrorText() {
         return errorText;
     }
 
-    /**
-     * Returns a senderNonce if present in the request
-     *
-     * @return senderNonce as a string of base64 encoded bytes
-     */
+    @Override
     public String getSenderNonce() {
         return senderNonce;
     }
 
-    /**
-     * Returns a transaction identifier if present in the request
-     *
-     * @return transaction id
-     */
+    @Override
     public String getTransactionId() {
         return transactionId;
     }
 
-    /**
-     * Returns requesters key info, key id or similar
-     *
-     * @return request key info
-     */
+    @Override
     public byte[] getRequestKeyInfo() {
         return requestKeyInfo;
     }
 
-    /** Returns the type of SCEP message it is
-     * 
-     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT  
-     */
+    @Override
     public int getMessageType() {
         return messageType;
 
     }
 
-    /** @see org.ejbca.core.protocol.IRequestMessage
-     */
+    @Override
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
     
-    /**
-     * Method returning the certificate used to sign the SCEP_TYPE_PKCSREQ pkcs7 request.
-     * 
-     * @return The certificate used for signing or null if it doesn't exist or not been initialized.
-     */
+    @Override
     public Certificate getSignerCert(){
     	return signercert;
     }

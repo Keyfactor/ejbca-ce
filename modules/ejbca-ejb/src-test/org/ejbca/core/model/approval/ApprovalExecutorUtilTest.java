@@ -15,8 +15,10 @@ package org.ejbca.core.model.approval;
 
 import junit.framework.TestCase;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -24,7 +26,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  */
 public class ApprovalExecutorUtilTest extends TestCase {
 
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalExecutorUtilTest"));
     
 	public void setUp() throws Exception {
 		super.setUp();

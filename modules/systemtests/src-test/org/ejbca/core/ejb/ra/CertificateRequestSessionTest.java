@@ -19,13 +19,12 @@ import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.NonEjbTestTools;
 

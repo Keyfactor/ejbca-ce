@@ -24,10 +24,14 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Abstract Base class representing one approval request created when
@@ -60,7 +64,7 @@ public abstract class ApprovalRequest implements Externalizable {
 	 */
 	public static final int REQUESTTYPE_COMPARING = 2;
 	
-    private Admin requestAdmin = null; // Base64 encoding of x509certificate   
+    private AuthenticationToken requestAdmin = null; // Base64 encoding of x509certificate?
     private String requestSignature = null;        
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
     private int numOfRequiredApprovals = 0;
@@ -77,7 +81,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-	protected ApprovalRequest(Admin requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
+	protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
 		super();
    	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
@@ -97,7 +101,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      * @param numberOfSteps that this type approval request supports.
      */
-	protected ApprovalRequest(Admin requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
+	protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
 		super();
    	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
@@ -145,7 +149,7 @@ public abstract class ApprovalRequest implements Externalizable {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public abstract List<ApprovalDataText> getNewRequestDataAsText(Admin admin);
+	public abstract List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin);
 	
 	/**
 	 * This method should return the original request data in text representation.
@@ -157,7 +161,7 @@ public abstract class ApprovalRequest implements Externalizable {
 	 * 
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public abstract List<ApprovalDataText> getOldRequestDataAsText(Admin admin);
+	public abstract List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin);
 		
 	/**
 	 * This method is used to check if this is an allowed transition between
@@ -239,7 +243,7 @@ public abstract class ApprovalRequest implements Externalizable {
     /**
      * NOTE: This method should never be used publicly except from UpgradeSessionBean 
      */
-	public void setRequestAdmin(Admin requestAdmin) {				
+	public void setRequestAdmin(AuthenticationToken requestAdmin) {				
 		this.requestAdmin = requestAdmin; 				
 	}
 	
@@ -247,10 +251,10 @@ public abstract class ApprovalRequest implements Externalizable {
 	 * Returns the certificate of the request admin.
 	 */
 	public Certificate getRequestAdminCert() {			      
-      return requestAdmin.getAdminInformation().getX509Certificate();
+      return (X509Certificate)requestAdmin.getCredentials().iterator().next();
 	}
 
-	public Admin getRequestAdmin() {		
+	public AuthenticationToken getRequestAdmin() {		
 		return requestAdmin;
 	}
 	
@@ -304,6 +308,7 @@ public abstract class ApprovalRequest implements Externalizable {
 		      } catch (CertificateException e) {
 		    	  log.error(e);
 		      }
+
 		    this.requestAdmin = new Admin(x509cert, null, null); 
 			this.requestSignature = (String) in.readObject();
 			this.approvalRequestType = in.readInt();
@@ -335,4 +340,22 @@ public abstract class ApprovalRequest implements Externalizable {
 			}
 		}
 	}
+	
+	/**
+	 * @param admin
+	 * @param caSession
+	 * @return
+	 */
+	protected static final String findCAName(AuthenticationToken admin, int caid, CaSession caSession) {
+		String caname;
+		try {
+			caname = caSession.getCAInfo(admin, caid).getName();
+		} catch (CADoesntExistsException e) {
+			caname = "CA does not exist: "+caid;
+		} catch (AuthorizationDeniedException e) {
+			caname = "Unauthorized to CA: "+caid;			
+		}
+		return caname;
+	}
+
 }

@@ -16,9 +16,9 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
 
 /**
  * Revokes a certificate in the database.
@@ -54,7 +54,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
             	getLogger().error("Reason must be an integer between 0 and 10 except 7.");
             } else {
-                Certificate cert = ejb.getCertStoreSession().findCertificateByIssuerAndSerno(getAdmin(), issuerDN, serno);
+                Certificate cert = ejb.getCertStoreSession().findCertificateByIssuerAndSerno(issuerDN, serno);
                 if (cert != null) {
                     getLogger().info("Found certificate:");
                     getLogger().info("Subject DN=" + CertTools.getSubjectDN(cert));

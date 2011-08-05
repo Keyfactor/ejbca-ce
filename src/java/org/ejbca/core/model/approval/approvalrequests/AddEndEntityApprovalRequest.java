@@ -23,9 +23,14 @@ import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -36,12 +41,8 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.util.CertTools;
 
 /**
  * Approval Request created when trying to add an end entity.
@@ -55,13 +56,13 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	private static final Logger log = Logger.getLogger(AddEndEntityApprovalRequest.class);
 	private static final int LATEST_VERSION = 1;	
 	
-	private UserDataVO userdata;
+	private EndEntityInformation userdata;
 	private boolean clearpwd;
 
 	/** Constructor used in externalization only */
 	public AddEndEntityApprovalRequest() {}
 
-	public AddEndEntityApprovalRequest(UserDataVO userdata, boolean clearpwd, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public AddEndEntityApprovalRequest(EndEntityInformation userdata, boolean clearpwd, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.userdata = userdata;
 		this.clearpwd = clearpwd;
@@ -109,7 +110,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This getNewRequestDataAsText requires additional bean references.");
 	}
 	
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession,
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession,
 			CertificateProfileSession certificateProfileSession, HardTokenSession hardTokenSession) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
@@ -118,9 +119,10 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
-		retval.add(new ApprovalDataText("CA", caAdminSession.getCAInfo(admin, userdata.getCAId()).getName(),true,false));
+		String caname = findCAName(admin,  userdata.getCAId(), caSession);
+		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()),true,false));		
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(admin, userdata.getCertificateProfileId()),true,false));
+		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));
 		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, admin,userdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(admin, userdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",userdata.getKeyRecoverable() ? "YES" : "NO",true,true));
@@ -155,7 +157,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		super.readExternal(in);
         int version = in.readInt();
         if(version == 1){
-    		userdata = (UserDataVO) in.readObject();
+    		userdata = (EndEntityInformation) in.readObject();
     		clearpwd = in.readBoolean();
         }
 	}

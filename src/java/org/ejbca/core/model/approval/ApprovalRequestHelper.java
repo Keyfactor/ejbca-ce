@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Helper class containing static methods for RMI lookups
@@ -24,7 +24,7 @@ import org.ejbca.core.model.log.Admin;
  */
 public class ApprovalRequestHelper { 
 
-    public static ApprovalDataText getTokenName(HardTokenSession hardTokenSession, Admin admin, int tokenid) {
+    public static ApprovalDataText getTokenName(HardTokenSession hardTokenSession, AuthenticationToken admin, int tokenid) {
         ApprovalDataText retval;
         if (tokenid <= SecConst.TOKEN_SOFT) {
             int tokenindex = 0;

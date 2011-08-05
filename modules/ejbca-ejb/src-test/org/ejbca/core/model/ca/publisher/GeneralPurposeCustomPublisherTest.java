@@ -20,8 +20,10 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.util.Base64;
 
 /**
  * Was doing some unit testing when I realized that these run without a running
@@ -58,14 +60,15 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
             + "mEKtsJS7MiZjcM3JHAzcg35AvPew16yh4IEzEJSvRumgUz+9KMN568VUmRBMsQny" + "DFNrNKoDPLzM28Bqnw7J2+plSuW/bjfytyysSRK7AMjGGgHpfByL2sm10rjNVWyo"
             + "SBLQ/yq6MvqpNaM96U3Uwp0TyMo=").getBytes());
 
-    private Admin admin;
+    private AuthenticationToken admin;
     private GeneralPurposeCustomPublisher gpcPublisher;
     private String command;
     private String invalidOption;
     private String commandFailsafe;
 
     public void setUp() {
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
+    	admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
+        //admin = new Admin(Admin.TYPE_INTERNALUSER);
         gpcPublisher = new GeneralPurposeCustomPublisher();
 
         // Make sure an external command exists for testing purposes

@@ -16,8 +16,8 @@ package org.ejbca.core.model.ra.raadmin;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
 /**

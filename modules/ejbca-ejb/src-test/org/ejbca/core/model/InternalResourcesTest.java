@@ -18,9 +18,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.log4j.Logger;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 /**
  * @version $Id$

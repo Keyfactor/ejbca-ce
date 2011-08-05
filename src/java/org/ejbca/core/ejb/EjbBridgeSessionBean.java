@@ -21,22 +21,22 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSessionLocal;
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -78,7 +78,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CertificateProfileSessionLocal certificateProfileSession;
 	@EJB CertificateStoreSessionLocal certificateStoreSession;
 	@EJB CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
-	@EJB CrlSessionLocal crlSession;
+	@EJB CrlStoreSessionLocal crlStoreSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -112,7 +112,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CertificateProfileSessionLocal getCertificateProfileSession() { return certificateProfileSession; }
 	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return certificateStoreSession; }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
-	@Override public CrlSessionLocal getCrlSession() { return crlSession; }
+	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }

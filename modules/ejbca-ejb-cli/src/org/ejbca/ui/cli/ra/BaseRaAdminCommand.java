@@ -13,7 +13,9 @@
  
 package org.ejbca.ui.cli.ra;
 
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -25,8 +27,8 @@ public abstract class BaseRaAdminCommand extends BaseCommand {
 
 	public static final String MAINCOMMAND = "ra";
 	
-	private Admin admin = new Admin(Admin.TYPE_RA_USER, "cli");
-
+	//private Admin admin = new Admin(Admin.TYPE_RA_USER, "cli");
+	private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("cli"));
 	@Override
-	protected Admin getAdmin() { return admin; }
+	protected AuthenticationToken getAdmin() { return admin; }
 }

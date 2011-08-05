@@ -31,10 +31,12 @@ import java.net.SocketTimeoutException;
 import java.security.cert.CertificateEncodingException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.core.protocol.IResponseMessage;
 import org.quickserver.net.server.ClientBinaryHandler;
 import org.quickserver.net.server.ClientEventHandler;
 import org.quickserver.net.server.ClientHandler;
@@ -84,8 +86,9 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			handler.closeConnection();
 		} else {
 			// We must use an administrator with rights to create users
-			final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
-			final IResponseMessage resp;
+			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpTcp: "+handler.getHostAddress()));
+			//final Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
+			final ResponseMessage resp;
 			try {
 				 resp = getEjb().getCmpMessageDispatcherSession().dispatch(administrator, cmpTcpMessage.message);
 			} catch (IOException e) {

@@ -22,15 +22,18 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
-import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * Tests the certificate profile entity bean.
@@ -508,10 +511,10 @@ public class CertificateProfileTest extends TestCase {
         	} catch (CertificateProfileExistsException pee) {
         		log.warn("Failed to add Certificate Profile " + NAME + ". Assuming this is caused from a previous failed test..");
         	}
-        	assertTrue("Unable to detect that Publisher Id was present in Certificate Profile.", certificateProfileSession.existsPublisherInCertificateProfiles(admin, fakePublisherIds.get(0).intValue()));
-        	assertFalse("Unable to detect that Publisher Id was present in Certificate Profile.", certificateProfileSession.existsPublisherInCertificateProfiles(admin, 7331));
-        	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", certificateProfileSession.existsCAInCertificateProfiles(admin, fakeCaIds.get(0).intValue()));
-        	assertFalse("Unable to detect that CA Id was present in Certificate Profile.", certificateProfileSession.existsCAInCertificateProfiles(admin, 8331));
+        	assertTrue("Unable to detect that Publisher Id was present in Certificate Profile.", certificateProfileSession.existsPublisherIdInCertificateProfiles(fakePublisherIds.get(0).intValue()));
+        	assertFalse("Unable to detect that Publisher Id was present in Certificate Profile.", certificateProfileSession.existsPublisherIdInCertificateProfiles(7331));
+        	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", certificateProfileSession.existsCAIdInCertificateProfiles(fakeCaIds.get(0).intValue()));
+        	assertFalse("Unable to detect that CA Id was present in Certificate Profile.", certificateProfileSession.existsCAIdInCertificateProfiles(8331));
         } finally {
         	certificateProfileSession.removeCertificateProfile(admin, NAME);
         }

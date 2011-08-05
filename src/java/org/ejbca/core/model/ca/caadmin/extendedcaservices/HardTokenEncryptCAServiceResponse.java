@@ -15,6 +15,8 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+
 
 /**
  * Class used when delevering hard token encrypt service response from a CA.  

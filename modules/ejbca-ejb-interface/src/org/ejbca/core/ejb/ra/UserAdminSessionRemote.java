@@ -14,19 +14,10 @@ package org.ejbca.core.ejb.ra;
 
 import javax.ejb.Remote;
 
-import org.ejbca.core.model.ra.UserDataVO;
-
 /**
  * Remote interface for UserAdminSession.
  */
 @Remote
 public interface UserAdminSessionRemote extends UserAdminSession {
-
-    /**
-     * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
-     * 
-     * @return Collection of UserDataVO
-     */
-    public java.util.Collection<UserDataVO> findAllUsersWithLimit(org.ejbca.core.model.log.Admin admin);
 
 }

@@ -21,6 +21,10 @@ import java.util.List;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -28,9 +32,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -63,7 +64,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * @param endEntityProfileId
 	 */
 	public ActivateCATokenApprovalRequest(String cAName, String authenticationCode,
-			Admin requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+			AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.cAName = cAName;
 		this.authenticationCode = authenticationCode;
@@ -85,11 +86,11 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		try {
 			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
 			caAdminSession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode, null);
-		} catch (CATokenAuthenticationFailedException e) {
+		} catch (CryptoTokenAuthenticationFailedException e) {
 			throw new ApprovalRequestExecutionException("CA Token Authentication Failed :" + e.getMessage(), e);
 		} catch (AuthorizationDeniedException e) {
 			throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
-		} catch (CATokenOfflineException e) {
+		} catch (CryptoTokenOfflineException e) {
 			throw new ApprovalRequestExecutionException("CA Token still off-line :" + e.getMessage(), e);
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);

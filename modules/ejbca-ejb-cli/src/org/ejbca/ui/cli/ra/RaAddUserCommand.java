@@ -18,13 +18,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -283,7 +283,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
      * Returns the tokenid type of the user, returns 0 if invalid tokenname.
      */
-    private int getTokenId(Admin administrator, String tokenname, boolean usehardtokens, HardTokenSessionRemote hardtokensession) {
+    private int getTokenId(AuthenticationToken administrator, String tokenname, boolean usehardtokens, HardTokenSessionRemote hardtokensession) {
         int returnval = 0;
         // First check for soft token type
         for (int i = 0; i < softtokennames.length; i++) {

@@ -15,7 +15,7 @@ package org.ejbca.core.model.ca.store;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 
 
@@ -35,7 +35,7 @@ public class CertReqHistory implements Serializable{
     private String issuerDN;
     private String username;
     private Date timestamp;
-    private UserDataVO userDataVO;
+    private EndEntityInformation userDataVO;
     
     /**
      * @param fingerprint the PK of the certificate in the CertificateDataBean
@@ -47,7 +47,7 @@ public class CertReqHistory implements Serializable{
      */
     public CertReqHistory(String fingerprint, String serialNumber,
             String issuerDN, String username, Date timestamp,
-            UserDataVO userDataVO) {
+            EndEntityInformation userDataVO) {
         super();
         this.fingerprint = fingerprint;
         this.serialNumber = serialNumber;
@@ -83,7 +83,7 @@ public class CertReqHistory implements Serializable{
     /**
      * @return Returns the userAdminData.
      */
-    public UserDataVO getUserDataVO() {
+    public EndEntityInformation getUserDataVO() {
         return userDataVO;
     }
     /**

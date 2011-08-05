@@ -46,21 +46,20 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 
 /**
  * A response message for scep (pkcs7).
  *
  * @version $Id$
  */
-public class ScepResponseMessage implements IResponseMessage {
+public class ScepResponseMessage implements ResponseMessage {
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -120,107 +119,65 @@ public class ScepResponseMessage implements IResponseMessage {
 
     /** Default digest algorithm for SCEP response message, can be overridden */
     private transient String digestAlg = CMSSignedGenerator.DIGEST_MD5;
-    /**
-     * Sets the complete certificate in the response message.
-     *
-     * @param cert certificate in the response message.
-     */
+
+    @Override
     public void setCertificate(Certificate cert) {
         this.cert = cert;
     }
 
-    /**
-     * Sets the CRL (if present) in the response message.
-     *
-     * @param crl crl in the response message.
-     */
+    @Override
     public void setCrl(CRL crl) {
         this.crl = crl;
     }
 
-    /** @see org.ejbca.core.protocol.IResponseMessage#setIncludeCACert
-     * 
-     */
+    @Override
     public void setIncludeCACert(boolean incCACert) {
     	this.includeCACert = incCACert;
     }
 
+    @Override
     public void setCACert(Certificate caCert) {
     	this.caCert = caCert;
     }
 
-    /**
-     * Gets the response message in the default encoding format.
-     *
-     * @return the response message in the default encoding format.
-     */
+    @Override
     public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
         return responseMessage;
     }
 
-    /**
-     * Sets the status of the response message.
-     *
-     * @param status status of the response.
-     */
+    @Override
     public void setStatus(ResponseStatus status) {
         this.status = status;
     }
 
-    /**
-     * Gets the status of the response message.
-     *
-     * @return status status of the response.
-     */
+    @Override
     public ResponseStatus getStatus() {
         return status;
     }
 
-    /**
-     * Sets info about reason for failure.
-     *
-     * @param failInfo reason for failure.
-     */
+    @Override
     public void setFailInfo(FailInfo failInfo) {
         this.failInfo = failInfo;
     }
 
-    /**
-     * Gets info about reason for failure.
-     *
-     * @return failInfo reason for failure.
-     */
+    @Override
     public FailInfo getFailInfo() {
         return failInfo;
     }
 
+    @Override
     public void setFailText(String failText) {
     	this.failText = failText;
     }
 
+    @Override
     public String getFailText() {
     	return this.failText;
     }
 
-    /**
-     * Create encrypts and creates signatures as needed to produce a complete response message.  If
-     * needed setSignKeyInfo must be called before this method. After this is
-     * called the response message can be retrieved with getResponseMessage();
-     *
-     * @return True if signature/encryption was successful, false if it failed, request should not
-     *         be sent back i failed.
-     *
-     * @throws IOException If input/output or encoding failed.
-     * @throws InvalidKeyException If the key used for signing/encryption is invalid.
-     * @throws NoSuchProviderException if there is an error with the Provider.
-     * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
-     *         algorithm.
-     * @throws NotFoundException 
-     *
-     * @see #setSignKeyInfo
-     */
+    @Override
     public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException, NotFoundException {
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException {
         boolean ret = false;
 
         try {
@@ -234,7 +191,7 @@ public class ScepResponseMessage implements IResponseMessage {
                     	throw new SignRequestException(failText);            
                     }
                     if (failInfo.equals(FailInfo.INCORRECT_DATA)) {
-                    	throw new NotFoundException(failText);
+                    	throw new SignRequestException(failText);
                     }
 
                 } else {
@@ -350,7 +307,7 @@ public class ScepResponseMessage implements IResponseMessage {
 
             // status
             oid = new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus);
-            value = new DERSet(new DERPrintableString(status.getValue()));
+            value = new DERSet(new DERPrintableString(status.getStringValue()));
             attr = new Attribute(oid, value);
             attributes.put(attr.getAttrType(), attr);
 
@@ -399,26 +356,12 @@ public class ScepResponseMessage implements IResponseMessage {
         return ret;
     }
 
-    /**
-     * indicates if this message needs recipients public and private key to sign. If this returns
-     * true, setSignKeyInfo() should be called.
-     *
-     * @return True if public and private key is needed.
-     */
+    @Override
     public boolean requireSignKeyInfo() {
         return true;
     }
 
-    /**
-     * Sets the public and private key needed to sign the message. Must be set if
-     * requireSignKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
-     *
-     * @see #requireSignKeyInfo()
-     */
+    @Override
     public void setSignKeyInfo(Certificate cert, PrivateKey key, String prov) {
         this.signCert = cert;
         this.signKey = key;
@@ -427,60 +370,40 @@ public class ScepResponseMessage implements IResponseMessage {
         }
     }
 
-    /**
-     * Sets a senderNonce if it should be present in the response
-     *
-     * @param senderNonce a string of base64 encoded bytes
-     */
+    @Override
     public void setSenderNonce(String senderNonce) {
         this.senderNonce = senderNonce;
     }
 
-    /**
-     * Sets a recipient if it should be present in the response
-     *
-     * @param recipientNonce a string of base64 encoded bytes
-     */
+    @Override
     public void setRecipientNonce(String recipientNonce) {
         this.recipientNonce = recipientNonce;
     }
 
-    /**
-     * Sets a transaction identifier if it should be present in the response
-     *
-     * @param transactionId transaction id
-     */
+    @Override
     public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
-    /**
-     * Sets recipient key info, key id or similar. This is the requestors self-signed cert from the request message.
-     *
-     * @param recipientKeyInfo key info
-     */
+    @Override
     public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
         this.recipientKeyInfo = recipientKeyInfo;
     }
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
+    @Override
     public void setPreferredDigestAlg(String digest) {
     	this.digestAlg = digest;
     }
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
+    @Override
     public void setRequestType(int reqtype) {
 	}
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
+    @Override
     public void setRequestId(int reqid) {
     }
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
-    public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
+    @Override
+    public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
     }
 }

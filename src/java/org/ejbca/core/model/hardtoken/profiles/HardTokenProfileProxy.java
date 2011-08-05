@@ -15,6 +15,7 @@ package org.ejbca.core.model.hardtoken.profiles;
 
 import java.util.HashMap;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.log.Admin;
 
@@ -41,7 +42,7 @@ public class HardTokenProfileProxy {
     private Admin admin;
 
     /** Creates a new instance of HardTokenProfileProxy */
-    public HardTokenProfileProxy(Admin admin, HardTokenSessionRemote hardtokensession){
+    public HardTokenProfileProxy(AuthenticationToken admin, HardTokenSessionRemote hardtokensession){
     	this.hardTokenSession = hardtokensession;
     	this.profilestore = new HashMap<Integer,HardTokenProfile>();
     	this.updatecount = new HashMap<Integer,Integer>();

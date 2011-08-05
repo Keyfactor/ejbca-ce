@@ -30,12 +30,12 @@ import java.util.Set;
 
 import javax.crypto.Cipher;
 
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.keystore.KeyStoreContainer;
 import org.ejbca.util.keystore.KeyStoreContainerFactory;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * 

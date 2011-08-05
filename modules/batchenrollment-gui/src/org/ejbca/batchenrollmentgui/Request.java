@@ -15,6 +15,7 @@ package org.ejbca.batchenrollmentgui;
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.List;
+
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 
 /**

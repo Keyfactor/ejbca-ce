@@ -25,17 +25,17 @@ import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.keystore.KeyTools;
 
 /** This is a performance test:
  * - 10 threads generates 1000 certificates each with 1024 bit public key

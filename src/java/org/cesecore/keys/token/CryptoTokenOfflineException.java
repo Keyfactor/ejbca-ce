@@ -20,7 +20,7 @@ import org.cesecore.ErrorCode;
  * An exception thrown when someone tries to use a CA Token that isn't available
  *
  * Based on EJBCA version: 
- *      CATokenOfflineException.java 8373 2009-11-30 14:07:00Z jeklund
+ *      CryptoTokenOfflineException.java 8373 2009-11-30 14:07:00Z jeklund
  * CESeCore version:
  *      CryptoTokenOfflineException.java 922 2011-07-04 09:01:47Z mikek
  * 
@@ -32,7 +32,7 @@ public class CryptoTokenOfflineException extends CesecoreException {
 
 
     /**
-     * Creates a new instance of <code>CATokenOfflineException</code> without detail message.
+     * Creates a new instance of <code>CryptoTokenOfflineException</code> without detail message.
      */
     public CryptoTokenOfflineException() {
         super();
@@ -41,7 +41,7 @@ public class CryptoTokenOfflineException extends CesecoreException {
     
     
     /**
-     * Constructs an instance of <code>CATokenOfflineException</code> with the specified detail message.
+     * Constructs an instance of <code>CryptoTokenOfflineException</code> with the specified detail message.
      * @param msg the detail message.
      */
     public CryptoTokenOfflineException(String msg) {

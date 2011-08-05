@@ -43,12 +43,10 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Tests HTTP pages of a stand-alone OCSP To run this test you must create a

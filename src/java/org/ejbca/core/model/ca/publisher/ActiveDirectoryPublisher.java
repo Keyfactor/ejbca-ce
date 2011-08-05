@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.dn.DNFieldExtractor;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
 
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;

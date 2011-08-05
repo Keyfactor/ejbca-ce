@@ -28,7 +28,7 @@
 							int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
 							boolean caservice = true;
 							if (castatus != SecConst.CA_EXTERNAL) {
-								if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != ICAToken.STATUS_ACTIVE) ) {
+								if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != CryptoToken.STATUS_ACTIVE) ) {
 									caservice = false;
 								}						
 							}

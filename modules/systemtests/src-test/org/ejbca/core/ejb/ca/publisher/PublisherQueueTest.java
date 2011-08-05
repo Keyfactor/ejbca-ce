@@ -23,21 +23,20 @@ import java.util.Iterator;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
-import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
+import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.util.InterfaceCache;
 
 /**

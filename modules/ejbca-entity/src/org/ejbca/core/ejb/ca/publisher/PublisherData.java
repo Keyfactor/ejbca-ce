@@ -25,9 +25,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
-import org.ejbca.util.Base64PutHashMap;
 
 /**
  * Representation of a publisher.

@@ -30,14 +30,15 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.TCPTool;
-import org.ejbca.util.dn.DNFieldExtractor;
 
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
@@ -168,7 +169,7 @@ public class LdapPublisher extends BasePublisher {
 	 * 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
+	public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException{
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCertificate(username="+username+")");
 		}
@@ -442,7 +443,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
 	 */    
-	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
+	public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException{
 		if (log.isTraceEnabled()) {
 			log.trace(">storeCRL");
 		}
@@ -568,7 +569,7 @@ public class LdapPublisher extends BasePublisher {
      * @param reason reason for revocation from RevokedCertInfo, RevokedCertInfo.NOT_REVOKED if not revoked.
      * @param userDN if an DN object is not found in the certificate use object from user data instead.
 	 */    
-	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason, String userDN) throws PublisherException {
+	public void revokeCertificate(AuthenticationToken admin, Certificate cert, String username, int reason, String userDN) throws PublisherException {
 		if (log.isTraceEnabled()) {
 			log.trace(">revokeCertificate()");
 		}

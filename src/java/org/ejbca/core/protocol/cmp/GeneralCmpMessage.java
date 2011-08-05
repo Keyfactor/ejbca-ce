@@ -16,8 +16,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.util.Base64;
 
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
 import com.novosec.pkix.asn1.cmp.PKIBody;

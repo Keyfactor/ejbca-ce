@@ -37,20 +37,20 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.request.CVCRequestMessage;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.CVCRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.cvc.CAReferenceField;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
 
 /**
@@ -60,7 +60,7 @@ import org.ejbca.util.RequestMessageUtils;
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private ServletDebug debug;
     private static final Pattern CLASSID = Pattern.compile("\\$CLASSID");
 
@@ -87,7 +87,7 @@ public class RequestHelper {
      * @param administrator Admin doing the request
      * @param debug object to send debug to or null to disable
      */
-    public RequestHelper(Admin administrator, ServletDebug debug) {
+    public RequestHelper(AuthenticationToken administrator, ServletDebug debug) {
         this.administrator = administrator;
         this.debug = debug;
     }
@@ -185,7 +185,7 @@ public class RequestHelper {
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        IResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
+        ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         if(resulttype == ENCODED_CERTIFICATE) {
           result = cert.getEncoded();
@@ -214,7 +214,7 @@ public class RequestHelper {
     		req.setUsername(username);
             req.setPassword(password);
             // Yes it says X509ResponseMessage, but for CVC it means it just contains the binary certificate blob
-            IResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
+            ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             byte[] result = cert.getEncoded();
             log.debug("Created CV certificate for " + username);

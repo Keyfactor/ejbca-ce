@@ -43,7 +43,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
-
 import org.cesecore.util.Base64;
 
 /**

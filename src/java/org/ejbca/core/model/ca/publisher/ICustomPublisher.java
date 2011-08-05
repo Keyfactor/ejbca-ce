@@ -16,8 +16,8 @@ package org.ejbca.core.model.ca.publisher;
 import java.security.cert.Certificate;
 import java.util.Properties;
 
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 
 
 
@@ -41,17 +41,17 @@ public interface ICustomPublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCertificate
 	 */    
-	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation)throws PublisherException;
+	public abstract boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation)throws PublisherException;
 	
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#storeCRL
 	 */ 
-	public abstract boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN)throws PublisherException;
+	public abstract boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN)throws PublisherException;
 	
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
 	 */    
-	public abstract void testConnection(Admin admin) throws PublisherConnectionException;
+	public abstract void testConnection(AuthenticationToken admin) throws PublisherConnectionException;
 	
 
 }

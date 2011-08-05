@@ -19,10 +19,13 @@ import java.security.cert.Certificate;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.protocol.CVCRequestMessage;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.CVCRequestMessage;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.FileTools;
 
 
 
@@ -50,8 +53,8 @@ public class RequestMessageUtils {
 	 * 
 	 * @return IRequestMessage
 	 */
-	public static IRequestMessage parseRequestMessage(byte[] request) throws IOException {
-		IRequestMessage ret = null;
+	public static RequestMessage parseRequestMessage(byte[] request) throws IOException {
+		RequestMessage ret = null;
 		try {
 			ret = genPKCS10RequestMessage(request);			
 		} catch (IllegalArgumentException e) {
@@ -61,11 +64,11 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
-		IResponseMessage ret = null;
+	public static ResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
+		ResponseMessage ret = null;
 		// Create the response message and set all required fields
 		try {
-			ret = (IResponseMessage) responseClass.newInstance();
+			ret = (ResponseMessage) responseClass.newInstance();
 		} catch (InstantiationException e) {
 			//TODO : do something with these exceptions
 			log.error("Error creating response message", e);

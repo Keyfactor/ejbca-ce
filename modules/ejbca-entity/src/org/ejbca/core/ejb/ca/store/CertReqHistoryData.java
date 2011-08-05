@@ -32,11 +32,11 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.FixEndOfBrokenXML;
-import org.ejbca.util.StringTools;
 
 /**
  * Representation of historical information about the data user to create a certificate.
@@ -70,7 +70,7 @@ public class CertReqHistoryData implements Serializable {
 	 * @param issuerDN should be the same as CertTools.getIssuerDN(incert)
 	 * @param UserDataVO, the data used to issue the certificate. 
 	 */
-	public CertReqHistoryData(Certificate incert, String issuerDN, UserDataVO useradmindata) {
+	public CertReqHistoryData(Certificate incert, String issuerDN, EndEntityInformation useradmindata) {
 		// Exctract fields to store with the certificate.
 		setFingerprint(CertTools.getFingerprintAsString(incert));
         setIssuerDN(issuerDN);
@@ -82,7 +82,7 @@ public class CertReqHistoryData implements Serializable {
 		setUsername(useradmindata.getUsername());
 		storeUserDataVO(useradmindata);
 	}
-	private void storeUserDataVO(UserDataVO useradmindata) {
+	private void storeUserDataVO(EndEntityInformation useradmindata) {
 		try {
 			// Save the user admin data in xml encoding.
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -235,7 +235,7 @@ public class CertReqHistoryData implements Serializable {
 	 * internationalized characters. This seemed to truncate the XML somehow, and here we try to handle that
 	 * in a nice way.  
 	 */
-	private UserDataVO decodeXML(final String sXML, final boolean lastTry) {
+	private EndEntityInformation decodeXML(final String sXML, final boolean lastTry) {
 		final byte baXML[];
 		try {
 			baXML = sXML.getBytes("UTF-8");
@@ -243,9 +243,9 @@ public class CertReqHistoryData implements Serializable {
 			throw new RuntimeException(e);
 		}
 		final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baXML));
-		final UserDataVO useradmindata;
+		final EndEntityInformation useradmindata;
 		try {
-			useradmindata  = (UserDataVO) decoder.readObject();
+			useradmindata  = (EndEntityInformation) decoder.readObject();
 		} catch( Throwable t ) {
 			// try to repair the end of the XML string.
 			// this will only succeed if a limited number of chars is lost in the end of the string
@@ -259,7 +259,7 @@ public class CertReqHistoryData implements Serializable {
 				if ( sFixedXML==null ) {
 					throw new NotPossibleToFixXML();					
 				}
-				final UserDataVO userDataVO = decodeXML(sFixedXML, true);
+				final EndEntityInformation userDataVO = decodeXML(sFixedXML, true);
 				if ( userDataVO==null ) {
 					throw new NotPossibleToFixXML();
 				}

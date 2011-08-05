@@ -18,11 +18,11 @@ import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Shows info about a CA.

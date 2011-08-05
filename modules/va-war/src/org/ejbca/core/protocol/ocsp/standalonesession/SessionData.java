@@ -17,9 +17,9 @@ import java.security.KeyStore.PasswordProtection;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.token.p11.P11Slot;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.protocol.ocsp.OCSPData;
-import org.ejbca.util.keystore.P11Slot;
 
 /**
  * The data of the session.

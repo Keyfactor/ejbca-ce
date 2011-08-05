@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.ra;
 
 import javax.ejb.FinderException;
 
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 

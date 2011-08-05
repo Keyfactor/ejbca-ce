@@ -29,11 +29,11 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.CertTools;
 
 /**
  * This class is used for publishing to user defined script or command.
@@ -114,7 +114,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      *      java.security.cert.Certificate, java.lang.String, java.lang.String,
      *      int, int)
      */
-    public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
+    public boolean storeCertificate(AuthenticationToken admin, Certificate incert, String username, String password, String userDN, String cafp, int status, int type, long revocationDate,
             int revocationReason, String tag, int certificateProfileId, long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificate, Storing Certificate for user: " + username);
@@ -160,7 +160,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin,
      *      byte[], java.lang.String, int)
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
+    public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
         if (log.isTraceEnabled()) {
         	log.trace(">storeCRL, Storing CRL");
         }
@@ -202,7 +202,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      *            The certificate
      * 
      */
-    public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
+    public void revokeCertificate(AuthenticationToken admin, Certificate cert, int reason) throws PublisherException {
         if (log.isTraceEnabled()) {
         	log.trace(">revokeCertificate, Rekoving Certificate");
         }
@@ -238,7 +238,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      * 
      * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
      */
-    public void testConnection(Admin admin) throws PublisherConnectionException {
+    public void testConnection(AuthenticationToken admin) throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
         	log.trace("testConnection, Testing connection");
         }

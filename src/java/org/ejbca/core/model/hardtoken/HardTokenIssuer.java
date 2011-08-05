@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.cesecore.internal.UpgradeableDataHashMap;
 
 /**
  * HardTokenIssuer V3 is a class representing the data saved for each HardTokenIssuer.

@@ -20,10 +20,7 @@ import org.junit.Test;
 /**
  * Tests the DnComponents class.
  * 
- * Based on EJBCA version: 
- *      DnComponentsTest.java 10947 2010-12-22 09:48:10Z anatom
- * Based on cesecore version:
- *      DnComponentsTest.java 81 2011-01-10 16:11:52Z mikek
+ * Based on EJBCA version: DnComponentsTest.java 10947 2010-12-22 09:48:10Z anatom
  * 
  * @version $Id$
  */

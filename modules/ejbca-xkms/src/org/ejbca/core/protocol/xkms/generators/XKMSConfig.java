@@ -18,10 +18,12 @@ import java.util.Collection;
 
 import javax.ejb.EJBException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.XkmsConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Class that parses the property file for the 
@@ -75,35 +77,40 @@ public class XKMSConfig {
      * Method that returns the parameter in the property file
      * xkms.response.causedforsigning on which CA that should
      * be used for signing XKMS requests
+     * @throws AuthorizationDeniedException  
      */
-    public static synchronized int cAIdUsedForSigning(Admin admin, CAAdminSession cAAdminSession){
+    public static synchronized int cAIdUsedForSigning(AuthenticationToken admin, CaSession caSession) throws AuthorizationDeniedException {
     	if(cAIdUsedForSigning == null){
-    		CAInfo info = cAAdminSession.getCAInfo(admin, XkmsConfiguration.getResponseCaUsedForSigning());
-    		if(info == null){    		
+    		CAInfo info;
+			try {
+				info = caSession.getCAInfo(admin, XkmsConfiguration.getResponseCaUsedForSigning());
+			} catch (CADoesntExistsException e) {
     			throw new EJBException("Property parameter xkms.response.causedforsigning ("+XkmsConfiguration.getResponseCaUsedForSigning()+") is missconfigured, should contain a existing CA name.");
-    		}    	    
-    		
+			} 
     		cAIdUsedForSigning = Integer.valueOf(info.getCAId());    		
     	}
     	return cAIdUsedForSigning.intValue();
     }
     
 
-    private static Collection acceptedCAs = null;
+    private static Collection<Integer> acceptedCAs = null;
     /**
      * Method that returns the parameter in the property file
      * xkms.request.acceptedcas on which CA that should
      * be accepted for signing XKMS requests
+     * @throws AuthorizationDeniedException 
      */
-    public static synchronized Collection getAcceptedCA(Admin admin,CAAdminSession cAAdminSession){
+    public static synchronized Collection<Integer> getAcceptedCA(AuthenticationToken admin,CaSession caSession) throws AuthorizationDeniedException{
     	if(acceptedCAs == null){
-    		acceptedCAs = new ArrayList();
+    		acceptedCAs = new ArrayList<Integer>();
     		String[] cANames = XkmsConfiguration.getRequestAcceptedCas();
     		for(int i=0; i < cANames.length;i++){
-    			CAInfo info = cAAdminSession.getCAInfo(admin, cANames[i]);
-    			if(info == null){    		
+    			CAInfo info;
+				try {
+					info = caSession.getCAInfo(admin, cANames[i]);
+				} catch (CADoesntExistsException e) {
     				throw new EJBException("Property parameter xkms.request.acceptedcas is missconfigured, should contain a ';' separated string of existing CA names.");
-    			}
+				} 
     			acceptedCAs.add(Integer.valueOf(info.getCAId()));
     		}
     	}

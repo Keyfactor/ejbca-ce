@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 
 /** View of certificate revocation status
  *

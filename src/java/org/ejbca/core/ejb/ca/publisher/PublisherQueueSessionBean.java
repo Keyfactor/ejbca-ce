@@ -35,9 +35,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.store.CRLData;
-import org.ejbca.core.ejb.ca.store.CertificateData;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -47,7 +49,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.ExtendedInformation;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
@@ -217,7 +218,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     }
     
     @Override
-	public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(Admin admin, int publisherId, BasePublisher publisher) {
+	public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
 		int successcount = 0;
 		// Repeat this process as long as we actually manage to publish something
 		// this is because when publishing starts to work we want to publish everything in one go, if possible.
@@ -232,7 +233,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 	}
 
     /** @return how many publishes that succeeded */
-    private int doPublish(Admin admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
+    private int doPublish(AuthenticationToken admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {
         if (log.isDebugEnabled()) {
             log.debug("Found " + c.size() + " certificates to republish for publisher " + publisherId);
         }

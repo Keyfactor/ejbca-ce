@@ -23,19 +23,21 @@ import java.util.Iterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
-import org.ejbca.util.CertTools;
 
 /**
  * This bean performs a number of certificate searches for the public web.
@@ -57,7 +59,7 @@ public class CertificateFinderBean {
 	private CertificateStoreSession mStoreSession = ejb.getCertificateStoreSession();
 
 	private boolean mInitialized = false;
-	private Admin mAdmin;
+	private AuthenticationToken mAdmin;
 	
 	/** This member is used by the JSP pages to indicate which CA they are interested in. 
 	 * It is used by getCAInfo().
@@ -80,7 +82,8 @@ public class CertificateFinderBean {
 	 */
 	public void initialize(String remoteAddress) {
 		log.trace(">initialize()");
-	    mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
+	    //mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
+	    mAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateFinderBean: "+remoteAddress));
 	    mInitialized = true;
 	}
 
@@ -214,7 +217,7 @@ public class CertificateFinderBean {
 		if (subject == null || mInitialized == false) {
 			return; // We can't lookup any certificates, so return with an empty result.
 		}
-		Collection<Certificate> certificates = mStoreSession.findCertificatesBySubject(mAdmin, subject);
+		Collection<Certificate> certificates = mStoreSession.findCertificatesBySubject(subject);
 		if (certificates != null) {
 			Iterator<Certificate> i = certificates.iterator();
 			while (i.hasNext()) {

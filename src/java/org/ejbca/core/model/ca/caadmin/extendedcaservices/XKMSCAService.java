@@ -23,7 +23,9 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -33,17 +35,25 @@ import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transforms;
 import org.apache.xml.security.utils.Constants;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
-import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.keystore.KeyTools;
 import org.w3c.dom.Document;
 
 /** Handles and maintains the CA-part of the XKMS functionality.
@@ -76,13 +86,16 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 	private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";   
 
 	public XKMSCAService(final ExtendedCAServiceInfo serviceinfo) {
-		m_log.debug("XKMSCAService : constructor " + serviceinfo.getStatus());
+    	super(serviceinfo);
+    	if (m_log.isDebugEnabled()) {
+    		m_log.debug("XKMSCAService : constructor " + serviceinfo.getStatus());
+    	}
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		// Currently only RSA keys are supported
 		final XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;
-		data = new HashMap();
+		data = new LinkedHashMap<Object, Object>();
 		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());	// For integration with CESeCore
-		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));	// For current version of EJBCA
+		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE));	// For current version of EJBCA
 		data.put(KEYSPEC, info.getKeySpec());
 		data.put(KEYALGORITHM, info.getKeyAlgorithm());
 		setSubjectDN(info.getSubjectDN());
@@ -91,7 +104,8 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 		data.put(VERSION, new Float(LATEST_VERSION));
     }
     
-    public XKMSCAService(final HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
+    public XKMSCAService(final HashMap data) throws IllegalArgumentException {
+    	super(data);
     	CryptoProviderTools.installBCProviderIfNotAvailable();
     	loadData(data);
     	if (data.get(XKMSKEYSTORE) != null) {
@@ -107,7 +121,8 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     			// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
     			// Array were of SUNs own provider, using CertTools.SYSTEM_SECURITY_PROVIDER.
     			// As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
-    			this.xKMScertificatechain = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
+				Collection<Certificate> coll = CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), null);
+				this.xKMScertificatechain = new ArrayList<Certificate>(coll);  
     			status = getStatus();
     			try {
     				if (!keystore.getCertificate(PRIVATESIGNKEYALIAS).getPublicKey().equals(((Certificate)this.xKMScertificatechain.get(0)).getPublicKey())) {
@@ -122,7 +137,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     			this.info = new XKMSCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), 
     					(String) data.get(KEYALGORITHM), this.xKMScertificatechain);
     		}
-    		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));        
+    		data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE));        
     	} 
     }
     
@@ -137,10 +152,18 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     	final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
     	keystore.load(null, null);                              
     	final KeyPair xKMSkeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
-    	final UserDataVO user = new UserDataVO("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null);
+    	final EndEntityInformation user = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null);
+		// A simple hard coded certificate profile that works for the XKMS CA service
+		CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+		certProfile.setUseKeyUsage(true);
+		certProfile.setKeyUsage(new boolean[9]);
+		certProfile.setKeyUsage(CertificateConstants.DIGITALSIGNATURE,true);
+		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
+		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
+		certProfile.setKeyUsageCritical(true);
     	final Certificate xKMSCertificate = ca.generateCertificate(user, xKMSkeys.getPublic(),
     			-1, // KeyUsage
-    			ca.getValidity(), new XKMSCertificateProfile(),
+    			ca.getValidity(), certProfile,
     			null // sequence
     	);
     	xKMScertificatechain = new ArrayList<Certificate>();
@@ -158,13 +181,17 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     }   
 
     @Override
-    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) throws Exception {
+    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {
     	final XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;
     	m_log.trace(">update: " + serviceinfo.getStatus());
     	setStatus(serviceinfo.getStatus());
     	if (info.getRenewFlag()) {
     		// Renew The XKMS Signers certificate.
-    		this.init(ca);
+    		try {
+				this.init(ca);
+			} catch (Exception e) {
+				m_log.error("Error updating the XKMS service: ", e);
+			}
     	}
     	// Only status is updated
     	this.info = new XKMSCAServiceInfo(serviceinfo.getStatus(), getSubjectDN(), getSubjectAltName(), (String) data.get(KEYSPEC), (String) data.get(KEYALGORITHM), xKMScertificatechain);										         									    	 									  

@@ -14,8 +14,8 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.util.Collection;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 
 /**
@@ -29,7 +29,7 @@ public interface HardTokenBatchJobSession {
      * @param admin the administrator performing the actions
      * @return The next user to generate or NULL if there are no users i queue.
      */
-    public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException;
+    public UserDataVO getNextHardTokenToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException;
 
     /**
      * Returns a Collection of users scheduled for batch generation for the given issuer.
@@ -40,7 +40,7 @@ public interface HardTokenBatchJobSession {
      * @return A Collection of users to generate or NULL if there are no users i queue.
      * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
-    public Collection<UserDataVO> getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException;
+    public Collection<UserDataVO> getNextHardTokensToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException;
 
     /**
      * Returns the indexed user in queue scheduled for batch generation for the given issuer.
@@ -50,7 +50,7 @@ public interface HardTokenBatchJobSession {
      * @return The next token to generate or NULL if the given user doesn't exist in queue.
      * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
-    public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException;
+    public UserDataVO getNextHardTokenToGenerateInQueue(AuthenticationToken admin, String alias, int index) throws UnavailableTokenException;
 
     /**
      * Returns the number of users scheduled for batch generation for the given issuer.
@@ -60,7 +60,7 @@ public interface HardTokenBatchJobSession {
      * @return the number of users to generate.
      * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
-    public int getNumberOfHardTokensToGenerate(org.ejbca.core.model.log.Admin admin, java.lang.String alias);
+    public int getNumberOfHardTokensToGenerate(AuthenticationToken admin, java.lang.String alias);
 
     /**
      * Methods that checks if a user exists in the database having the given
@@ -70,5 +70,5 @@ public interface HardTokenBatchJobSession {
      * @param hardtokenissuerid the id of hard token issuer to look for.
      * @return true if hardtokenissuerid exists in user database.
      */
-    public boolean checkForHardTokenIssuerId(Admin admin, int hardtokenissuerid);
+    public boolean checkForHardTokenIssuerId(AuthenticationToken admin, int hardtokenissuerid);
 }

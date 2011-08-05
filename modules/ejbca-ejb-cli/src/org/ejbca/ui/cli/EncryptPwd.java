@@ -13,8 +13,8 @@
  
 package org.ejbca.ui.cli;
 
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.StringTools;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Implements the password encryption mechanism

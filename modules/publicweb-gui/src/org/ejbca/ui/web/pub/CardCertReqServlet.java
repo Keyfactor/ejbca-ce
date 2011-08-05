@@ -36,12 +36,29 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -49,22 +66,10 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.IllegalKeyException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.RequestMessageUtils;
 
 /**
@@ -97,7 +102,7 @@ public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
 
 	@EJB
-	private CAAdminSessionLocal caAdminSession;
+	private CaSessionLocal caSession;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
 	@EJB
@@ -140,7 +145,8 @@ public class CardCertReqServlet extends HttpServlet {
         final ServletDebug debug = new ServletDebug(request, response);
         boolean usekeyrecovery = false;
         try {
-            Admin administrator = new Admin(Admin.TYPE_RA_USER);
+			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CardCertReqServlet: "+request.getRemoteAddr()));
+            //Admin administrator = new Admin(Admin.TYPE_RA_USER);
             final String username; {
                 Object o = request.getAttribute("javax.servlet.request.X509Certificate");
                 final X509Certificate[] certs;
@@ -154,7 +160,7 @@ public class CardCertReqServlet extends HttpServlet {
                 if (isRevoked) {
                     throw new UserCertificateRevokedException(certs[0]);
                 }
-                username = certificateStoreSession.findUsernameByCertSerno(administrator, certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
+                username = certificateStoreSession.findUsernameByCertSerno(certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
                 if ( username==null || username.length()==0 ) {
                     throw new ObjectNotFoundException("Not possible to retrieve user name");
                 }
@@ -162,10 +168,10 @@ public class CardCertReqServlet extends HttpServlet {
             log.debug("Got request for " + username + ".");
             debug.print("<h3>username: " + username + "</h3>");
             
-            final UserDataVO data = userAdminSession.findUser(administrator, username);
+            final EndEntityInformation data = userAdminSession.findUser(administrator, username);
             final X509Certificate notRevokedCerts[]; {
                 Set<X509Certificate> set = new HashSet<X509Certificate>();
-                for( Iterator<java.security.cert.Certificate> i = certificateStoreSession.findCertificatesByUsername(administrator, username).iterator(); i.hasNext(); ) {
+                for( Iterator<java.security.cert.Certificate> i = certificateStoreSession.findCertificatesByUsername(username).iterator(); i.hasNext(); ) {
                     Object o = i.next();
                     if ( o instanceof X509Certificate ) {
                         X509Certificate cert = (X509Certificate)o;
@@ -195,7 +201,7 @@ public class CardCertReqServlet extends HttpServlet {
                 final int authCA;
                 final int signCA;
                 {
-                    CAID caid = new CAID(data,administrator, hardTokenProfile, caAdminSession);
+                    CAID caid = new CAID(data,administrator, hardTokenProfile, caSession);
                     authCA = caid.getProfileID("authCA", SwedishEIDProfile.CERTUSAGE_AUTHENC);
                     signCA = caid.getProfileID("signCA", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
@@ -317,18 +323,22 @@ public class CardCertReqServlet extends HttpServlet {
         }
     }
     private class CAID extends BaseID {
-        final private CAAdminSession caAdminSession;
-        CAID(UserDataVO d, Admin a, HardTokenProfile hardTokenProfile, CAAdminSession caAdminSession) {
+        final private CaSession caSession;
+        CAID(EndEntityInformation d, AuthenticationToken a, HardTokenProfile hardTokenProfile, CaSession caSession) {
             super(d, a, hardTokenProfile);
-            this.caAdminSession = caAdminSession;                       
+            this.caSession = caSession;                       
         }
         protected int getFromName(String name) {
-            CAInfo caInfo = caAdminSession.getCAInfo(administrator, name);
-            if ( caInfo!=null ) {
-                return caInfo.getCAId();
-            } else {
-                return 0;
-            }
+        	int ret = 0;
+			try {
+				CAInfo caInfo = caSession.getCAInfo(administrator, name);
+				ret = caInfo.getCAId();
+			} catch (CADoesntExistsException e) {
+				log.debug("CA does not exist: "+name);
+			} catch (AuthorizationDeniedException e) {
+				log.debug("Not authorized to CA: "+name);
+			}
+			return ret;
         }
         protected int getFromOldData() {
             return data.getCAId();
@@ -343,12 +353,12 @@ public class CardCertReqServlet extends HttpServlet {
         }
     }
     private class CertProfileID extends BaseID {
-        CertProfileID(UserDataVO d, Admin a,
+        CertProfileID(EndEntityInformation d, AuthenticationToken a,
                       HardTokenProfile hardTokenProfile) {
             super(d, a, hardTokenProfile);
         }
         protected int getFromName(String name) {
-            return certificateProfileSession.getCertificateProfileId(administrator, name);
+            return certificateProfileSession.getCertificateProfileId(name);
         }
         protected int getFromOldData() {
             return data.getCertificateProfileId();
@@ -358,14 +368,14 @@ public class CardCertReqServlet extends HttpServlet {
         }
     }
     private abstract class BaseID {
-        final UserDataVO data;
-        final Admin administrator;
+        final EndEntityInformation data;
+        final AuthenticationToken administrator;
         final EIDProfile hardTokenProfile;
         
         protected abstract int getFromHardToken(int keyType);
         protected abstract int getFromName(String name);
         protected abstract int getFromOldData();
-        BaseID(UserDataVO d, Admin a, HardTokenProfile htp) {
+        BaseID(EndEntityInformation d, AuthenticationToken a, HardTokenProfile htp) {
             data = d;
             administrator = a;
             if ( htp!=null && htp instanceof EIDProfile ) {
@@ -483,14 +493,14 @@ public class CardCertReqServlet extends HttpServlet {
      *
      * @return Base64 encoded byte[] 
      */
-    private byte[] pkcs10CertRequest(Admin administrator, SignSession signsession, byte[] b64Encoded,
+    private byte[] pkcs10CertRequest(AuthenticationToken administrator, SignSession signsession, byte[] b64Encoded,
         String username, String password) throws Exception {
         byte[] result = null;	
         Certificate cert=null;
 		PKCS10RequestMessage req = RequestMessageUtils.genPKCS10RequestMessage(b64Encoded);
 		req.setUsername(username);
         req.setPassword(password);
-        IResponseMessage resp = signsession.createCertificate(administrator, req, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signsession.createCertificate(administrator, req, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         result = cert.getEncoded();
         return Base64.encode(result, false);

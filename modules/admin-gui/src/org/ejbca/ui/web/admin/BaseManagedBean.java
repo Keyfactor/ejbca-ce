@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -57,7 +57,7 @@ public abstract class BaseManagedBean implements Serializable{
 		ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
 	}
 
-	protected Admin getAdmin(){
+	protected AuthenticationToken getAdmin(){
 		return EjbcaJSFHelper.getBean().getAdmin();
 	}
 

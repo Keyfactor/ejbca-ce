@@ -36,16 +36,22 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.StringTools;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
@@ -54,17 +60,12 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
-import org.ejbca.util.StringTools;
 import org.ejbca.util.ValidityDate;
-import org.ejbca.util.dn.DNFieldExtractor;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
@@ -99,7 +100,7 @@ public class EjbcaWebBean implements Serializable {
     private final EjbLocalHelper ejb = new EjbLocalHelper();
     private final AdminEntitySessionLocal adminEntitySession = ejb.getAdminEntitySession();
     private final AdminGroupSessionLocal adminGroupSession = ejb.getAdminGroupSession();
-    private final AuthorizationSessionLocal authorizationSession = ejb.getAuthorizationSession();
+    private final AccessControlSessionLocal authorizationSession = ejb.getAccessControlSession();
     private final CAAdminSessionLocal caAdminSession = ejb.getCaAdminSession();
     private final CaSessionLocal caSession = ejb.getCaSession();
     private final CertificateProfileSessionLocal certificateProfileSession = ejb.getCertificateProfileSession();
@@ -128,7 +129,7 @@ public class EjbcaWebBean implements Serializable {
     private boolean                        initialized=false;
     private boolean                        errorpage_initialized=false;
     private Boolean[]                      raauthorized;
-    private Admin                          administrator;
+    private AuthenticationToken            administrator;
     private String                         requestServerName;
 
     /*
@@ -191,7 +192,7 @@ public class EjbcaWebBean implements Serializable {
     		}
     		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
     		String comment = "";
-    		if(certificateStoreSession.findCertificateByIssuerAndSerno(administrator, CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0])) == null){
+    		if(certificateStoreSession.findCertificateByIssuerAndSerno(CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0])) == null){
     			comment = "Logging in : Administrator Certificate is issued by external CA";
     		}
     		logSession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN, comment);
@@ -712,7 +713,7 @@ public class EjbcaWebBean implements Serializable {
       return this.informationmemory;   
     }
     
-    public Admin getAdminObject(){
+    public AuthenticationToken getAdminObject(){
     	return this.administrator;    
     }
     

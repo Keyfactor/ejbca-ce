@@ -18,8 +18,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.util.Base64;
 
 /**
  * Decodes a TCP messages from a client.

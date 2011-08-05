@@ -13,8 +13,8 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -30,10 +30,10 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private RaAdminSession raadminsession;
-	private Admin administrator;
+	private AuthenticationToken administrator;
 
 	/** Creates a new instance of AdminPreferences */
-	public AdminPreferenceDataHandler(Admin administrator) {
+	public AdminPreferenceDataHandler(AuthenticationToken administrator) {
 		raadminsession = new EjbLocalHelper().getRaAdminSession();
 		this.administrator = administrator;
 	}

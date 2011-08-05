@@ -39,8 +39,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.impl.ExampleClassEventTypes;
-import org.cesecore.audit.impl.ExampleEnumEventTypes;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;

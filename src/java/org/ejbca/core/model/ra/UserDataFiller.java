@@ -22,11 +22,12 @@ import javax.naming.ldap.Rdn;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DistinguishedName;
-import org.ejbca.util.dn.DnComponents;
 
 /** This class gives facilities to populate user data with default values from profile.
  *
@@ -44,7 +45,7 @@ public class UserDataFiller {
      * @param profile user associated profile.
      * @return update user.
      */
-    public static UserDataVO fillUserDataWithDefaultValues(UserDataVO userData, EndEntityProfile profile) {
+    public static EndEntityInformation fillUserDataWithDefaultValues(EndEntityInformation userData, EndEntityProfile profile) {
 
     	
     	if (StringUtils.isEmpty(userData.getUsername())) {

@@ -23,8 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.cesecore.core.ejb.ca.crl.CrlSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.crlstore.CRLCacheFactory;
 import org.ejbca.core.protocol.crlstore.ICRLCache;
@@ -41,7 +41,7 @@ public class CRLStoreServlet extends StoreServletBase {
 	private static final long serialVersionUID = 1L;
 
 	@EJB
-	private CrlSessionLocal crlSession;
+	private CrlStoreSessionLocal crlSession;
 	@EJB
 	private CertificateStoreSessionLocal certificateStoreSession;
 	

@@ -33,17 +33,19 @@ import javax.ejb.CreateException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.AlgorithmConstants;
+import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.keystore.KeyTools;
 
 /**
  * Tests certificate store.
@@ -301,7 +303,7 @@ public class CertificateDataTest extends TestCase {
         assertNotNull("Failed to find cert", data3);
 
         log.debug("Looking for cert with DN:" + CertTools.getIssuerDN(cert) + " and serno " + cert.getSerialNumber());
-        Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(admin, issuerDN, cert.getSerialNumber());
+        Certificate fcert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
 
         // log.debug(fcert.toString());

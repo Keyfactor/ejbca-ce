@@ -37,6 +37,6 @@ public class OCSPCAServiceInfo extends BaseSigningCAServiceInfo implements Seria
 
 	@Override
 	public int getType() {
-		return ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE;
+		return ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE;
 	}
 }

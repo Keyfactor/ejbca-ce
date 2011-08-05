@@ -24,6 +24,10 @@ import java.util.List;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -31,10 +35,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Approval Request created when an administrator wants
@@ -57,7 +58,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public KeyRecoveryApprovalRequest() {}
 
-	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public KeyRecoveryApprovalRequest(Certificate cert, String username, boolean recoverNewestCert, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
 				numOfReqApprovals, cAId, endEntityProfileId);
 		this.username = username;

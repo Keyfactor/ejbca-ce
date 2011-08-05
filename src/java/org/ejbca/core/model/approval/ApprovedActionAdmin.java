@@ -15,9 +15,9 @@ package org.ejbca.core.model.approval;
 
 import java.security.cert.Certificate;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminInformation;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.ejbca.core.model.log.Admin;
  *
  * @version $Id$
  */
-public class ApprovedActionAdmin extends Admin {
+public class ApprovedActionAdmin extends AuthenticationToken {
 	
 	public ApprovedActionAdmin(Certificate certificate, String username, String email) {
 		super(certificate, username, email);

@@ -20,12 +20,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.FileTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.FileTools;
 
 
 /**
@@ -84,7 +85,7 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			getPrintStream().println("CA chain filename: "+cachainfile);
 			//getPrintStream().println("CA token password: "+keystorepwd);                        
 
-			CertTools.installBCProvider();
+			CryptoProviderTools.installBCProvider();
 
 			Certificate incert = null;
 			try {

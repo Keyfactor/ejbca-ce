@@ -15,8 +15,8 @@ package org.ejbca.core.model.approval;
 
 import java.util.Date;
 
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.util.NotificationParamGen;
-import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * Variables that can be parsed for approvals.

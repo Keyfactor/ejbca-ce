@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.ws.client.gen;
 
 import java.security.cert.CertificateEncodingException;
 
-import org.ejbca.util.Base64;
+import org.cesecore.util.Base64;
 
 /**
  * Holds certificate WS elements

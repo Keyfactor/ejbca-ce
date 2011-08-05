@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -41,7 +41,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
                 return;
             }
             int status = Integer.parseInt(args[1]);
-            Collection<UserDataVO> coll = null;
+            Collection<EndEntityInformation> coll = null;
             if (status==0) {
                 coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 10);
                 coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), 11));
@@ -52,9 +52,9 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             } else {
                 coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), status);
             }
-            Iterator<UserDataVO> iter = coll.iterator();
+            Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
-                UserDataVO data = iter.next();
+                EndEntityInformation data = iter.next();
                 getLogger().info("User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId());

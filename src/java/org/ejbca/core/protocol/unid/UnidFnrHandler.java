@@ -19,9 +19,9 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
-import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
@@ -53,7 +53,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	}
 	
 	@Override
-	public IRequestMessage processRequestMessage(IRequestMessage req, String certificateProfileName) throws HandlerException {
+	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName) throws HandlerException {
 		final X509Name dn = req.getRequestX509Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");

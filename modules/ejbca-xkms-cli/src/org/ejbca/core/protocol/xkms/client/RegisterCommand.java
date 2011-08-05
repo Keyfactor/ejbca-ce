@@ -25,13 +25,13 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.keystore.KeyTools;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2002._03.xkms_.KeyBindingType;

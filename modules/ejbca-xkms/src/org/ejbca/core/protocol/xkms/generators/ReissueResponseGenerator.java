@@ -16,18 +16,18 @@ package org.ejbca.core.protocol.xkms.generators;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -54,9 +54,9 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 	private UserAdminSession userAdminSession;
 	
 	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc,
-    		CAAdminSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
+    		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
 		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		this.userAdminSession = userAdminSession;
@@ -71,7 +71,7 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 		ReissueRequestType req = (ReissueRequestType) this.req;
 		// Variables defined here for debug reasons
 		boolean isCertValid=false;
-		UserDataVO userData = null;
+		EndEntityInformation userData = null;
 		String password = "";
 		X509Certificate newCert = null;
 		if(resultMajor == null){ 		
@@ -124,7 +124,7 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
      * @param the userdata of the user
      * @return the new password or null of operation failed.
      */
-	private String setUserStatusToNew(UserDataVO userdata) {
+	private String setUserStatusToNew(EndEntityInformation userdata) {
 		String retval = null;
 		try {
 			IPasswordGenerator passwordGenerator = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS);

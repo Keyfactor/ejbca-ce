@@ -20,12 +20,12 @@ import java.util.Iterator;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
-import org.ejbca.util.CryptoProviderTools;
 import org.ejbca.util.InterfaceCache;
 
 /**

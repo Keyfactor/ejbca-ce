@@ -20,13 +20,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.core.ejb.authorization.AdminGroupSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class that looks up the which Hard Token Issuers the administrator is authorized to view and edit
@@ -42,15 +42,15 @@ public class HardTokenAuthorization implements Serializable {
     private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
     private ArrayList<AdminGroup> authissueingadmgrps = null;
 
-    private Admin admin;
+    private AuthenticationToken admin;
     private AdminGroupSession adminGroupSession;
     private HardTokenSession hardtokensession;
-    private AuthorizationSession authorizationsession;    
+    private AccessControlSessionLocal authorizationsession;    
     private CaSession caSession;
 
     /** Creates a new instance of CAAuthorization. */
-    public HardTokenAuthorization(Admin admin, AdminGroupSession adminGroupSession, HardTokenSession hardtokensession, 
-    		AuthorizationSession authorizationsession, CaSession caSession) {
+    public HardTokenAuthorization(AuthenticationToken admin, AdminGroupSession adminGroupSession, HardTokenSession hardtokensession, 
+    		AccessControlSessionLocal authorizationsession, CaSession caSession) {
       this.admin=admin;
       this.adminGroupSession = adminGroupSession;
       this.hardtokensession=hardtokensession;            

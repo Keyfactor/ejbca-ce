@@ -13,6 +13,7 @@
 package org.ejbca.batchenrollmentgui;
 
 import java.io.IOException;
+
 import org.apache.log4j.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;

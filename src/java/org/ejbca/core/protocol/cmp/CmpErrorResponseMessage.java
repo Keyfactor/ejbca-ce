@@ -25,12 +25,11 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IRequestMessage;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 
 import com.novosec.pkix.asn1.cmp.ErrorMsgContent;
 import com.novosec.pkix.asn1.cmp.PKIBody;
@@ -45,7 +44,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
  * @author tomas
  * @version $Id$
  */
-public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponseMessage {
+public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
 	private static Logger log = Logger.getLogger(CmpErrorResponseMessage.class);
 	/**
@@ -67,49 +66,62 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
     private int requestId = 0;
 	private int requestType = 23; // 23 is general error message
 
+	@Override
     public void setCertificate(Certificate cert) {
 	}
 
+	@Override
 	public void setCrl(CRL crl) {
 	}
 
+	@Override
 	public void setIncludeCACert(boolean incCACert) {
 	}
+	
+	@Override
 	public void setCACert(Certificate cACert) {
 	}
 
+	@Override
 	public byte[] getResponseMessage() throws IOException,
 			CertificateEncodingException {
         return responseMessage;
 	}
 
+	@Override
 	public void setStatus(ResponseStatus status) {
 		this.status = status;
 	}
 
+	@Override
 	public ResponseStatus getStatus() {
 		return status;
 	}
 
+	@Override
 	public void setFailInfo(FailInfo failInfo) {
 		this.failInfo = failInfo;
 	}
 
+	@Override
 	public FailInfo getFailInfo() {
 		return failInfo;
 	}
 
+	@Override
 	public void setFailText(String failText) {
 		this.failText = failText;
 	}
 
+	@Override
 	public String getFailText() {
 		return failText;
 	}
 
+	@Override
 	public boolean create() throws IOException, InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchProviderException,
-			SignRequestException, NotFoundException {
+			SignRequestException {
 		X509Name sender = X509Name.getInstance(getSender().getName());
 		X509Name recipient = X509Name.getInstance(getRecipient().getName());
 		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(sender, recipient, getSenderNonce(), getRecipientNonce(), getTransactionId());
@@ -137,42 +149,50 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
 		return true;		
 	}
 
+	@Override
 	public boolean requireSignKeyInfo() {
 		return false;
 	}
 
+	@Override
 	public void setSignKeyInfo(Certificate cert, PrivateKey key,
 			String provider) {
 	}
 
+	@Override
 	public void setSenderNonce(String senderNonce) {
 		super.setSenderNonce(senderNonce);
 	}
 
+	@Override
 	public void setRecipientNonce(String recipientNonce) {
 		super.setRecipientNonce(recipientNonce);
 	}
 
+	@Override
 	public void setTransactionId(String transactionId) {
 		super.setTransactionId(transactionId);
 	}
 
+	@Override
 	public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
 	}
 
+	@Override
 	public void setPreferredDigestAlg(String digest) {
 	}
 
+	@Override
 	public void setRequestType(int reqtype) {
 		this.requestType = reqtype;
 	}
 
+	@Override
 	public void setRequestId(int reqid) {
 		this.requestId = reqid;
 	}
 
-    /** @see org.ejca.core.protocol.IResponseMessage
-     */
-    public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
+	@Override
+    public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
     }
 }

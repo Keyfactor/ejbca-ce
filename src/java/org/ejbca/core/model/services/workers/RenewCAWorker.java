@@ -19,16 +19,17 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
@@ -57,6 +58,7 @@ public class RenewCAWorker extends BaseWorker {
 	public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
 		log.trace(">Worker started");
         final CAAdminSessionLocal caAdminSession = ((CAAdminSessionLocal)ejbs.get(CAAdminSessionLocal.class));
+        final CaSessionLocal caSession = ((CaSessionLocal)ejbs.get(CaSessionLocal.class));
 		
 		// Find CAs with expire date that is less than configured number of days 
 		// ahead in the future		
@@ -71,39 +73,39 @@ public class RenewCAWorker extends BaseWorker {
 		Iterator<Integer> iter = caids.iterator();
 		while (iter.hasNext()) {
 			Integer caid = iter.next();
-			CAInfo info = caAdminSession.getCAInfo(getAdmin(), caid.intValue());
-			String caname = null;
-			if (info != null) {
-				caname = info.getName();
-				Date expire = info.getExpireTime(); 
-				log.debug("CA "+caname+" expires on "+expire);
-				if (expire.before(new Date(expiretime))) {
-					try {
+			try {
+				CAInfo info = caSession.getCAInfo(getAdmin(), caid.intValue());
+				String caname = null;
+				if (info != null) {
+					caname = info.getName();
+					Date expire = info.getExpireTime(); 
+					log.debug("CA "+caname+" expires on "+expire);
+					if (expire.before(new Date(expiretime))) {
 						// Only try to renew active CAs
 						// There should be other monitoring available to check if CAs that should not be off-line are off-line (HealthCheck)
 						CATokenInfo tokeninfo = info.getCATokenInfo();
-						log.debug("CA status is "+info.getStatus()+", CA token status is "+tokeninfo.getCATokenStatus());
-						if ( (info.getStatus() == SecConst.CA_ACTIVE) && (tokeninfo.getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) {
+						log.debug("CA status is "+info.getStatus()+", CA token status is "+tokeninfo.getTokenStatus());
+						if ( (info.getStatus() == SecConst.CA_ACTIVE) && (tokeninfo.getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) {
 							caAdminSession.renewCA(getAdmin(), info.getCAId(), null, isRenewKeys());					
 						} else {
 							log.debug("Not trying to renew CA because CA and token status are not on-line.");
 						}
-					} catch (CADoesntExistsException e) {
-						log.error("Error renewing CA: ", e);
-					} catch (CATokenAuthenticationFailedException e) {
-						log.error("Error renewing CA: ", e);
-					} catch (CertPathValidatorException e) {
-						log.error("Error renewing CA: ", e);
-					} catch (CATokenOfflineException e) {
-						log.error("Error renewing CA: ", e);
-					} catch (AuthorizationDeniedException e) {
-						log.error("Error renewing CA: ", e);
 					}				
-				}				
-			} else {
-				String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, caname);
-				log.error(msg);
-			}
+				} else {
+					String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, caname);
+					log.error(msg);
+				}
+			} catch (CADoesntExistsException e) {
+				log.error("Error renewing CA: ", e);
+			} catch (CryptoTokenAuthenticationFailedException e) {
+				log.error("Error renewing CA: ", e);
+			} catch (CertPathValidatorException e) {
+				log.error("Error renewing CA: ", e);
+			} catch (CryptoTokenOfflineException e) {
+				log.error("Error renewing CA: ", e);
+			} catch (AuthorizationDeniedException e) {
+				log.error("Error renewing CA: ", e);
+			}				
 		}
 		log.trace("<Worker ended");
 	}

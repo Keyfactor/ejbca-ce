@@ -36,15 +36,15 @@ import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.RespID;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockDSAPublicKey;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockECDSAPublicKey;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockRSAPublicKey;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * 

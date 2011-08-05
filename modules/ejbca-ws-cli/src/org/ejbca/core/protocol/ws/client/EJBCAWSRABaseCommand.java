@@ -17,11 +17,12 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.namespace.QName;
 
+import org.cesecore.keys.token.p11.P11Slot;
+import org.cesecore.keys.token.p11.P11SlotUser;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
-import org.ejbca.util.CryptoProviderTools;
-import org.ejbca.util.keystore.P11Slot;
 import org.ejbca.util.provider.TLSProvider;
 
 /**
@@ -32,7 +33,7 @@ import org.ejbca.util.provider.TLSProvider;
  * $Id$
  */
 
-public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
+public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
     
     final protected String[] args;
     private org.ejbca.core.protocol.ws.client.gen.EjbcaWS ejbcaraws = null;
@@ -251,15 +252,11 @@ public abstract class EJBCAWSRABaseCommand implements P11Slot.P11SlotUser {
      * Print usage information.
      */
     protected abstract void usage();
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#deactivate()
-     */
-    public boolean deactivate() {
-        return true;
+
+    @Override
+    public void deactivate() {
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.P11Slot.P11SlotUser#isActive()
-     */
+    @Override
     public boolean isActive() {
         return true;
     }

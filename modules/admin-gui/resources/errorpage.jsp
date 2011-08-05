@@ -1,8 +1,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html;" %>
-<%@ page isErrorPage="true" import="org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-                                   org.ejbca.core.model.authorization.AuthenticationFailedException, org.ejbca.core.model.ca.catoken.CATokenOfflineException,
+<%@ page isErrorPage="true" import="org.ejbca.config.GlobalConfiguration, org.cesecore.authorization.AuthorizationDeniedException;,
+                                   org.ejbca.core.model.authorization.AuthenticationFailedException, org.ejbca.core.model.ca.catoken.CryptoTokenOfflineException,
                                    org.ejbca.ui.web.ParameterError, org.ejbca.config.WebConfiguration"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -25,8 +25,8 @@
         <H2><c:out value='<%= ejbcawebbean.getText(\"AUTHORIZATIONDENIED\") %>' /></H2>
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);
-    } else if (exception instanceof CATokenOfflineException) {
-        // Print CATokenOfflineException. %>
+    } else if (exception instanceof CryptoTokenOfflineException) {
+        // Print CryptoTokenOfflineException. %>
         <H2><c:out value='<%= ejbcawebbean.getText(\"CATOKENISOFFLINE\") %>' /></H2>
         <H4><c:out value='<%= ejbcawebbean.getText(\"CAUSE\") + \" : \" + exception.getMessage() %>' /></H4><%
         response.setStatus(HttpServletResponse.SC_OK);

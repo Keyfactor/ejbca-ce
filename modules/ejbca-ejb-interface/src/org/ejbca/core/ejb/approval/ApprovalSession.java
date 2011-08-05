@@ -15,6 +15,8 @@ package org.ejbca.core.ejb.approval;
 import java.util.Collection;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -22,8 +24,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.query.IllegalQueryException;
 
 /** Session bean to manage approval requests, i.e. add and find.
@@ -46,7 +46,7 @@ public interface ApprovalSession {
      * @throws ApprovalException
      *             if an approval already exists for this request.
      */
-    public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException;
+    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -69,7 +69,7 @@ public interface ApprovalSession {
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      */
-    public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
+    public int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -95,7 +95,7 @@ public interface ApprovalSession {
      *             request is multiple steps and user have already performed
      *             that step, the Exception will always be thrown.
      */
-    public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
+    public int isApproved(AuthenticationToken admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method that marks a certain step of a a non-executable approval as done.
@@ -106,14 +106,14 @@ public interface ApprovalSession {
      * @param step in approval to mark
      * @throws ApprovalException if approvalId doesn't exists,
      */
-    public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
+    public void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 
     /**
      * Method used to remove an approval from database.
      * 
      * @param id the unique id of the approvalrequest, not the same as approvalId
      */
-    public void removeApprovalRequest(Admin admin, int id) throws ApprovalException;
+    public void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException;
 
     /**
      * Method used to reject an approval requests.
@@ -135,14 +135,14 @@ public interface ApprovalSession {
      * 
      * @param gc is the GlobalConfiguration used for notification info
      */
-    public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
 
     /**
      * Method returning an approval requests with status 'waiting', 'Approved'
      * or 'Reject' returns null if no non expired exists
      */
-    public ApprovalDataVO findNonExpiredApprovalRequest(org.ejbca.core.model.log.Admin admin, int approvalId);
+    public ApprovalDataVO findNonExpiredApprovalRequest(AuthenticationToken admin, int approvalId);
 
     /**
      * Method that takes an approvalId and returns all approval requests for this.
@@ -151,7 +151,7 @@ public interface ApprovalSession {
      * @param approvalId
      * @return and collection of ApprovalDataVO, empty if no approvals exists.
      */
-    public Collection<ApprovalDataVO> findApprovalDataVO(Admin admin, int approvalId);
+    public Collection<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId);
 
     /**
      * Method returning a list of approvals from the give query
@@ -170,7 +170,7 @@ public interface ApprovalSession {
      * @throws AuthorizationDeniedException
      * @throws IllegalQueryException
      */
-    public List<ApprovalDataVO> query(org.ejbca.core.model.log.Admin admin, org.ejbca.util.query.Query query, int index, int numberofrows,
+    public List<ApprovalDataVO> query(AuthenticationToken admin, org.ejbca.util.query.Query query, int index, int numberofrows,
             java.lang.String caAuthorizationString, java.lang.String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException;
 }

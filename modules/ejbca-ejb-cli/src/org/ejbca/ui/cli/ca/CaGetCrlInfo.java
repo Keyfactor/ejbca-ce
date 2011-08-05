@@ -15,8 +15,8 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.store.CRLInfo;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.crl.CRLInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.ValidityDate;
 
@@ -39,7 +39,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         		final CA ca = ejb.getCaSession().getCA(getAdmin(), caId);
         		final StringBuilder sb = new StringBuilder();
         		sb.append("\"").append(ca.getName()).append("\" \"").append(ca.getSubjectDN()).append("\"");
-        		final CRLInfo crlInfo = ejb.getCrlSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), false);
+        		final CRLInfo crlInfo = ejb.getCrlStoreSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), false);
         		if (crlInfo != null) {
             		sb.append(" CRL# ").append(crlInfo.getLastCRLNumber());
             		sb.append(" issued ").append(ValidityDate.formatAsUTC(crlInfo.getCreateDate()));
@@ -47,7 +47,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         		} else {
         			sb.append(" NO_CRL_ISSUED");
         		}
-        		final CRLInfo deltaCrlInfo = ejb.getCrlSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), true);
+        		final CRLInfo deltaCrlInfo = ejb.getCrlStoreSession().getLastCRLInfo(getAdmin(), ca.getSubjectDN(), true);
         		if (deltaCrlInfo!=null) {
             		sb.append(" DELTACRL# ").append(deltaCrlInfo.getLastCRLNumber());
             		sb.append(" issued ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getCreateDate()));

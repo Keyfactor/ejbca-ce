@@ -16,16 +16,16 @@ package org.ejbca.core.protocol.xkms.generators;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
-import org.cesecore.core.ejb.ca.crl.CrlSession;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.KeyBindingAbstractType;
 import org.w3._2002._03.xkms_.KeyBindingType;
@@ -46,10 +46,10 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
 	//private static Logger log = Logger.getLogger(RegisterResponseGenerator.class);
 
 	public RegisterResponseGenerator(String remoteIP, RegisterRequestType req, Document requestDoc,
-    		CAAdminSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession casession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, UserAdminSession userAdminSession, CrlSession crlSession) {
-		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+    		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
+		super(remoteIP, req,requestDoc, casession, authenticationSession, certificateStoreSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 	}
 	
@@ -71,7 +71,7 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
 					PublicKey publicKey = getPublicKey(req);					
 					if(confirmPOP(publicKey)){
 						String subjectDN = getSubjectDN(req);
-						UserDataVO userData = findUserData(subjectDN);
+						EndEntityInformation userData = findUserData(subjectDN);
 						if(userData != null){
 							String password = "";	
 							boolean encryptedPassword = isPasswordEncrypted(req);

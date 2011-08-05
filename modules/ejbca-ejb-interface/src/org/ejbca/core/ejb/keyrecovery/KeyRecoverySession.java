@@ -16,11 +16,11 @@ import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * @version $Id$
@@ -37,7 +37,7 @@ public interface KeyRecoverySession {
      *
      * @return false if the certificates keyrecovery data already exists.
      */
-    public boolean addKeyRecoveryData(Admin admin, Certificate certificate, String username, KeyPair keypair);
+    public boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair);
 
     /**
      * Updates keyrecovery data
@@ -51,7 +51,7 @@ public interface KeyRecoverySession {
      *
      * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
-    public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair);
+    public boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair);
 
     /**
      * Removes a certificates keyrecovery data from the database.
@@ -59,10 +59,10 @@ public interface KeyRecoverySession {
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
      */
-    public void removeKeyRecoveryData(Admin admin, Certificate certificate);
+    public void removeKeyRecoveryData(AuthenticationToken admin, Certificate certificate);
 
     /** Removes a all keyrecovery data saved for a user from the database. */
-    public void removeAllKeyRecoveryData(Admin admin, String username);
+    public void removeAllKeyRecoveryData(AuthenticationToken admin, String username);
 
     /**
      * Returns the keyrecovery data for a user. Observe only one certificates
@@ -71,7 +71,7 @@ public interface KeyRecoverySession {
      * @param endentityprofileid the end entity profile id the user belongs to.
      * @return the marked keyrecovery data or null if none can be found.
      */
-    public org.ejbca.core.model.keyrecovery.KeyRecoveryData keyRecovery(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException;
+    public org.ejbca.core.model.keyrecovery.KeyRecoveryData keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException;
 
     /**
      * Marks a users newest certificate for key recovery. Newest means certificate with latest not
@@ -84,7 +84,7 @@ public interface KeyRecoverySession {
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
      */
-    public boolean markNewestAsRecoverable(Admin admin, String username, int endEntityProfileId, GlobalConfiguration gc)
+    public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId, GlobalConfiguration gc)
     		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
 
     /**
@@ -95,19 +95,19 @@ public interface KeyRecoverySession {
      * @param gc The GlobalConfiguration used to extract approval information
      * @return true if operation went successful or false if  certificate couldn't be found.
      */
-    public boolean markAsRecoverable(Admin admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc)
+    public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc)
     		throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException;
 
     /** Resets keyrecovery mark for a user. */
-    public void unmarkUser(Admin admin, String username);
+    public void unmarkUser(AuthenticationToken admin, String username);
 
     /** @return true if user is already marked for key recovery. */
-    public boolean isUserMarked(Admin admin, String username);
+    public boolean isUserMarked(AuthenticationToken admin, String username);
 
     /**
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
      * @return true if specified certificates keys exists in database.
      */
-    public boolean existsKeys(Admin admin, Certificate certificate);
+    public boolean existsKeys(AuthenticationToken admin, Certificate certificate);
 }

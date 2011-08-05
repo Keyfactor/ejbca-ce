@@ -29,14 +29,14 @@ import javax.persistence.Transient;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
 
 /**
  * Representation of a User.
@@ -367,14 +367,14 @@ public class UserData implements Serializable {
      */
     @Transient
     public ExtendedInformation getExtendedInformation() {
-        return UserDataVO.getExtendedInformation(getExtendedInformationData());
+        return EndEntityInformation.getExtendedInformation(getExtendedInformationData());
     }
     /**
      * Non-searchable information about a user.
      */
     public void setExtendedInformation(ExtendedInformation extendedinformation) {
 		try {
-	    	String eidata = UserDataVO.extendedInformationToStringData(extendedinformation);
+	    	String eidata = EndEntityInformation.extendedInformationToStringData(extendedinformation);
 			setExtendedInformationData(eidata);
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException("Problems storing extended information for user :" + getUsername(), e);
@@ -384,8 +384,8 @@ public class UserData implements Serializable {
     /**
      * Non-searchable information about a user. 
      */
-    public UserDataVO toUserDataVO() {
-        final UserDataVO data = new UserDataVO();
+    public EndEntityInformation toUserDataVO() {
+        final EndEntityInformation data = new EndEntityInformation();
         data.setUsername(getUsername());
         data.setCAId(getCaId());
         data.setCertificateProfileId(getCertificateProfileId());

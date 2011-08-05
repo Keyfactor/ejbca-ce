@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web.pub.cluster;
 
-import org.apache.log4j.Logger;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author mikek

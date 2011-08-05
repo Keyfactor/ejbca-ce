@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -31,17 +32,18 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.util.Base64;
-import org.ejbca.util.StringTools;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.util.ValidityDate;
-import org.ejbca.util.dn.DNFieldExtractor;
-import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
@@ -783,7 +785,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return (String) data.get(key);
     }
 
-    public void doesUserFullfillEndEntityProfile(final UserDataVO userdata, final boolean clearpwd) throws UserDoesntFullfillEndEntityProfile {
+    public void doesUserFullfillEndEntityProfile(final EndEntityInformation userdata, final boolean clearpwd) throws UserDoesntFullfillEndEntityProfile {
     	doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), userdata.getDN(), userdata.getSubjectAltName(), "", userdata.getEmail(), 
     											userdata.getCertificateProfileId(), clearpwd, userdata.getKeyRecoverable(), userdata.getSendNotification(), 
     											userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
@@ -1091,7 +1093,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	// Check number of allowed requests
     	String allowedRequests = null;
     	if ( ei != null ) {
-    		allowedRequests = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+    		allowedRequests = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
     	}
     	if ( (allowedRequests != null) && !getUse(ALLOWEDREQUESTS, 0) ) {
     		throw new UserDoesntFullfillEndEntityProfile("Allowed requests used, but not permitted by profile.");
@@ -1268,7 +1270,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public Object clone() throws CloneNotSupportedException {
     	final EndEntityProfile clone = new EndEntityProfile(0);
     	// We need to make a deep copy of the hashmap here
-    	clone.data = new HashMap<Object,Object>(data.size());
+    	clone.data = new LinkedHashMap<Object,Object>(data.size());
     	for (final Entry<Object,Object> entry : data.entrySet()) {
     		Object value = entry.getValue();
     		if (value instanceof ArrayList<?>) {

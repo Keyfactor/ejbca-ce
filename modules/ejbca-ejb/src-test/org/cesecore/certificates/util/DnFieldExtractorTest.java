@@ -25,17 +25,14 @@ import org.junit.Test;
 /**
  * Tests the DNFieldExtractor class.
  *
- * Based on EJBCA version: 
- *      DnFieldExtractorTest.java 11095 2011-01-07 15:07:39Z anatom
- * Based on cesecore version:
- *      DnFieldExtractorTest.java 94 2011-01-14 11:44:38Z tomas
+ * Based on EJBCA version: DnFieldExtractorTest.java 11095 2011-01-07 15:07:39Z anatom
  * 
  * @version $Id$
  */
 public class DnFieldExtractorTest {
  
     @Test
-    public void testCheckDnFields() throws Exception {
+    public void test01CheckDnFields() throws Exception {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
     	String dn = "name=tomas,street=a street, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
@@ -94,7 +91,7 @@ public class DnFieldExtractorTest {
      * @throws Exception error
      */
     @Test
-    public void testCheckAltNameFields() throws Exception {
+    public void test01CheckAltNameFields() throws Exception {
     	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se,krb5principal=foo/bar@P.COM";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
@@ -166,7 +163,7 @@ public class DnFieldExtractorTest {
      * @throws Exception error
      */
     @Test
-    public void testCheckDirAttrFields() throws Exception {
+    public void test01CheckDirAttrFields() throws Exception {
     	final String dn = "PlaceOfBirth=Stockholm,DateOfBirth=10660911";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
     	HashMap<Integer, Integer> i = extractor.getNumberOfFields();

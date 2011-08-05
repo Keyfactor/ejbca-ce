@@ -25,9 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -37,7 +39,6 @@ import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
 
 /**
@@ -187,7 +188,7 @@ public class CACertReqServlet extends HttpServlet {
             			begin = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
             			end = RequestHelper.END_CERTIFICATE_WITH_NL;
             		}
-    				byte[] b64certreq = org.ejbca.util.Base64.encode(request);
+    				byte[] b64certreq = Base64.encode(request);
     				String out = begin;
     				out += new String(b64certreq);
     				out += end;
@@ -223,7 +224,7 @@ public class CACertReqServlet extends HttpServlet {
 			 try {
 			 	Certificate cert = cabean.getProcessedCertificate();
             	if (!StringUtils.equals(format, "binary")) {
-    				byte[] b64cert = org.ejbca.util.Base64.encode(cert.getEncoded());	
+    				byte[] b64cert = Base64.encode(cert.getEncoded());	
     				RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);							
             	} else {
             		RequestHelper.sendBinaryBytes(cert.getEncoded(), res, "application/octet-stream", "cert.crt");
@@ -239,7 +240,7 @@ public class CACertReqServlet extends HttpServlet {
 			 try {
 				Certificate cert = cabean.getProcessedCertificate();		
 		        byte[] pkcs7 = signSession.createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
-			    byte[] b64cert = org.ejbca.util.Base64.encode(pkcs7);	
+			    byte[] b64cert = Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {
 				 String errMsg = intres.getLocalizedMessage("certreq.errorsendcert", remoteAddr, e.getMessage());

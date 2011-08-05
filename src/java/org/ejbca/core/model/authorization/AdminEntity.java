@@ -13,15 +13,13 @@
  
 package org.ejbca.core.model.authorization;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
 import java.util.regex.Pattern;
 
-import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.dn.DNFieldExtractor;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.certificates.util.StringTools;
 
 
 /**
@@ -112,13 +110,6 @@ public class AdminEntity implements Serializable, Comparable<AdminEntity> {
         //String serialnumber = certificate.getSerialNumber().toString(16);
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
 
-        String anString = null;
-        try {
-			anString = CertTools.getSubjectAlternativeName(certificate);
-		} catch (CertificateParsingException e) { // Ignore
-		} catch (IOException e) { // Ignore
-		}
-
         int parameter;
         int size=0;
         String[] clientstrings=null;
@@ -127,6 +118,7 @@ public class AdminEntity implements Serializable, Comparable<AdminEntity> {
         if(this.caid == admincaid){
           // Determine part of certificate to match with.
           DNFieldExtractor dn = new DNFieldExtractor(certstring,DNFieldExtractor.TYPE_SUBJECTDN);
+          String anString = CertTools.getSubjectAlternativeName(certificate);
           DNFieldExtractor an = new DNFieldExtractor(anString,DNFieldExtractor.TYPE_SUBJECTALTNAME);
           DNFieldExtractor usedExtractor = dn; 
           if(matchwith == WITH_SERIALNUMBER){

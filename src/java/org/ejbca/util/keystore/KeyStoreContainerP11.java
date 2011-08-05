@@ -23,6 +23,7 @@ import java.security.cert.Certificate;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.log4j.Logger;
+import org.cesecore.keys.util.KeyTools;
 
 /** A keystore container for PCKS#11 keystores i.e. the java PKCS#11 wrapper
  * 

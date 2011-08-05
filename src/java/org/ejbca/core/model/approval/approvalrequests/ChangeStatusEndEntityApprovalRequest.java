@@ -22,6 +22,8 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -29,7 +31,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 
@@ -52,7 +53,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public ChangeStatusEndEntityApprovalRequest() {}
 
-	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING, numOfReqApprovals, cAId, endEntityProfileId);
 		this.username = username;
 		this.oldstatus = oldstatus;

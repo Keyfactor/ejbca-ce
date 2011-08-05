@@ -18,7 +18,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -93,7 +92,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      */
     private void runSetup(String caname) throws Exception {
         getLogger().info("Adding Hard Token Super Administrator .....\n\n");
-        int caid = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname).getCAId();
+        int caid = ejb.getCaSession().getCAInfo(getAdmin(), caname).getCAId();
         int admingroupid = ejb.getAdminGroupSession().getAdminGroup(getAdmin(), AdminGroup.TEMPSUPERADMINGROUP).getAdminGroupId();
 
         configureGlobalConfiguration();

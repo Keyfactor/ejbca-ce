@@ -12,6 +12,9 @@ import javax.ejb.FinderException;
 import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -20,8 +23,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -45,7 +46,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * Construct an ApprovalRequest for the revocation of a certificate.
 	 */
 	public RevocationApprovalRequest(BigInteger certificateSerialNumber, String issuerDN, String username,
-			int reason, Admin requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+			int reason, AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE;
 		this.username = username;
@@ -58,7 +59,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * Constructs an ApprovalRequest for the revocation and optional removal of an end entity.
 	 */
 	public RevocationApprovalRequest(boolean deleteAfterRevoke, String username,
-			int reason, Admin requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+			int reason, AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		if (deleteAfterRevoke) {
 			this.approvalType = ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY;

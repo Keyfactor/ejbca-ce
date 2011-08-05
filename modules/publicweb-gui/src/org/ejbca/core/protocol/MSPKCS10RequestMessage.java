@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 
 /** Extends the PKCS10RequestMessgae and contains a few function to parse MS specific information like GUID, DNS, Template etc..
  *

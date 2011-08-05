@@ -31,28 +31,29 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.protocol.FailInfo;
-import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -77,20 +78,20 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	private String responseProtection = null;
 	
 	private UserAdminSession userAdminSession;
-	private CertificateStoreSession certificateStoreSession;
 	
-	public RevocationMessageHandler(Admin admin, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CAAdminSession caAdminSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
-		super(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
+	public RevocationMessageHandler(AuthenticationToken admin, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		this.userAdminSession = userAdminSession;
-		this.certificateStoreSession = certificateStoreSession;
 
 	}
-	public IResponseMessage handleMessage(BaseCmpMessage msg) {
-		LOG.trace(">handleMessage");
-		IResponseMessage resp = null;
+	public ResponseMessage handleMessage(BaseCmpMessage msg) {
+		if (LOG.isTraceEnabled()) {
+			LOG.trace(">handleMessage");
+		}
+		ResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		// Try to find a HMAC/SHA1 protection key
 		String owfAlg = null;
@@ -119,10 +120,17 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					try {
 						int eeProfileId = getUsedEndEntityProfileId(keyId);
 						int caId = getUsedCaId(keyId, eeProfileId);
-						caInfo = caAdminSession.getCAInfo(admin, caId);
+						caInfo = caSession.getCAInfo(admin, caId);
+					} catch (CADoesntExistsException e) {
+						LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+						return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
 					} catch (NotFoundException e) {
 						LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
 						return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+					} catch (AuthorizationDeniedException e) {
+						final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
+						LOG.error(errMsg, e);                   
+						return null;    // Fatal error
 					} catch (EJBException e) {
 						final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
 						LOG.error(errMsg, e);                   
@@ -151,10 +159,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
 					DERBitString reasonbits = rd.getRevocationReason();
 					if (reasonbits != null) {
-						reason = CertTools.bitStringToRevokedCertInfo(reasonbits);						
-						LOG.debug("CMPv1 revocation reason: "+reason);
+						reason = CertTools.bitStringToRevokedCertInfo(reasonbits);
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("CMPv1 revocation reason: "+reason);
+						}
 					} else {
-						LOG.debug("CMPv1 revocation reason is null");
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("CMPv1 revocation reason is null");
+						}
 					}
 					X509Extensions crlExt = rd.getCrlEntryDetails();
 					if (crlExt != null) {
@@ -166,15 +178,21 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 								DEREnumerated crlreason = DEREnumerated.getInstance(obj);
 								// RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code
 								reason = crlreason.getValue().intValue();
-								LOG.debug("CRLReason extension: "+reason);
+								if (LOG.isDebugEnabled()) {
+									LOG.debug("CRLReason extension: "+reason);
+								}
 							} catch (IOException e) {
 								LOG.info("Exception parsin CRL reason extension: ", e);
 							}
 						} else {
-							LOG.debug("No CRL reason code extension present.");
+							if (LOG.isDebugEnabled()) {
+								LOG.debug("No CRL reason code extension present.");
+							}
 						}
 					} else {
-						LOG.debug("No CRL entry extensions present");
+						if (LOG.isDebugEnabled()) {
+							LOG.debug("No CRL entry extensions present");
+						}
 					}
 					
 					if ( (serno != null) && (issuer != null) ) {
@@ -220,7 +238,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 						failText = verifyer.getErrMsg();
 					}
 				}
-				LOG.debug("Creating a PKI revocation message response");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Creating a PKI revocation message response");
+				}
 				CmpRevokeResponseMessage rresp = new CmpRevokeResponseMessage();
 				rresp.setRecipientNonce(msg.getSenderNonce());
 				rresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
@@ -231,7 +251,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				rresp.setFailText(failText);
 				rresp.setStatus(status);
 	    		// Set all protection parameters
-				LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+				if (LOG.isDebugEnabled()) {
+					LOG.debug(responseProtection+", "+owfAlg+", "+macAlg+", "+keyId+", "+cmpRaAuthSecret);
+				}
 	    		if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
 	    			rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
 	    		}
@@ -248,9 +270,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
 					LOG.error(errMsg, e);			
 				} catch (SignRequestException e) {
-					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
-					LOG.error(errMsg, e);			
-				} catch (NotFoundException e) {
 					String errMsg = INTRES.getLocalizedMessage("cmp.errorgeneral");
 					LOG.error(errMsg, e);			
 				} catch (IOException e) {

@@ -27,10 +27,10 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
-import org.ejbca.util.Base64GetHashMap;
-import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.ValueExtractor;
 

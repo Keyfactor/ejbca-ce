@@ -27,42 +27,47 @@ import java.util.TreeMap;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.util.encoders.Base64;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSession;
-import org.cesecore.core.ejb.ca.crl.CrlSession;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlCreateSession;
+import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CaSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSession;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.caadmin.CA;
-import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ca.store.CertificateInfo;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
-import org.ejbca.util.CertTools;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -78,14 +83,16 @@ public class CAInterfaceBean implements Serializable {
 
     // Private fields
     private CertificateStoreSession certificatesession;
+    private CertReqHistorySession certreqhistorysession;
     private CAAdminSession caadminsession;
     private CaSession caSession;
-    private CrlSession crlSession;
+    private CrlStoreSession crlStoreSession;
     private CrlCreateSession crlCreateSession;
-    private AuthorizationSession authorizationsession;
+    private AccessControlSessionLocal authorizationsession;
     private UserAdminSession adminsession;
     private GlobalConfigurationSession globalconfigurationsession;
     private SignSession signsession;
+    private CertificateCreateSessionLocal certcreatesession;
     private HardTokenSession hardtokensession;
     private PublisherSession publishersession;
     private PublisherQueueSession publisherqueuesession;
@@ -94,8 +101,9 @@ public class CAInterfaceBean implements Serializable {
     private PublisherDataHandler publisherdatahandler;
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
+    private RevocationSessionLocal revocationSession;
     private boolean initialized;
-    private Admin administrator;
+    private AuthenticationToken administrator;
     private InformationMemory informationmemory;
     private CAInfo cainfo;
     /** The certification request in binary format */
@@ -112,26 +120,29 @@ public class CAInterfaceBean implements Serializable {
         if(!initialized){
           caSession = ejb.getCaSession();
           certificatesession = ejb.getCertificateStoreSession();
-          crlSession = ejb.getCrlSession();
+          certreqhistorysession = ejb.getCertReqHistorySession();
+          crlStoreSession = ejb.getCrlStoreSession();
           crlCreateSession = ejb.getCrlCreateSession();
           caadminsession = ejb.getCaAdminSession();
-          authorizationsession = ejb.getAuthorizationSession();
+          authorizationsession = ejb.getAccessControlSession();
           adminsession = ejb.getUserAdminSession();
           globalconfigurationsession = ejb.getGlobalConfigurationSession();               
           signsession = ejb.getSignSession();
+          certcreatesession = ejb.getCertificateCreateSession();
           hardtokensession = ejb.getHardTokenSession();               
           publishersession = ejb.getPublisherSession();               
           publisherqueuesession = ejb.getPublisherQueueSession();
           certificateProfileSession = ejb.getCertificateProfileSession();
-          endEntityProfileSession = ejb.getEndEntityProfileSession();    	    
+          endEntityProfileSession = ejb.getEndEntityProfileSession(); 
+          revocationSession = ejb.getRevocationSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
-            cadatahandler = new CADataHandler(administrator, caadminsession, ejb.getCaSession(), endEntityProfileSession, adminsession, globalconfigurationsession,
-                    certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, ejbcawebbean);
+            cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
+                    certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, revocationSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
-          isUniqueIndex = signsession.isUniqueCertificateSerialNumberIndex();
+          isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
     }
@@ -141,21 +152,25 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public CertificateView[] getCACertificates(int caid) {
-    	final Collection<Certificate> chain = signsession.getCertificateChain(administrator, caid);
-    	final CertificateView[] returnval = new CertificateView[chain.size()];
-    	final Iterator<Certificate> iter = chain.iterator();
-    	int i=0;
-    	while(iter.hasNext()){
-    		final Certificate next = iter.next();  
-    		RevokedInfoView revokedinfo = null;
-    		CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
-    		if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
-    			revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
+    	try {
+    		final Collection<Certificate> chain = signsession.getCertificateChain(administrator, caid);
+    		final CertificateView[] returnval = new CertificateView[chain.size()];
+    		final Iterator<Certificate> iter = chain.iterator();
+    		int i=0;
+    		while(iter.hasNext()){
+    			final Certificate next = iter.next();  
+    			RevokedInfoView revokedinfo = null;
+    			CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(next), CertTools.getSerialNumber(next));
+    			if(revinfo != null && revinfo.revocationReason != RevokedCertInfo.NOT_REVOKED) {
+    				revokedinfo = new RevokedInfoView(revinfo, CertTools.getSerialNumber(next));
+    			}
+    			returnval[i] = new CertificateView(next, revokedinfo, null);
+    			i++;
     		}
-    		returnval[i] = new CertificateView(next, revokedinfo, null);
-    		i++;
+    		return returnval;
+    	} catch (AuthorizationDeniedException e) {
+    		throw new RuntimeException(e);
     	}
-    	return returnval;
     }
     
     /**
@@ -200,7 +215,7 @@ public class CAInterfaceBean implements Serializable {
     }
 
     public void addCertificateProfile(String name) throws CertificateProfileExistsException, AuthorizationDeniedException {
-       CertificateProfile profile = new CertificateProfile();
+       CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
        profile.setAvailableCAs(informationmemory.getAuthorizedCAIds());
        certificateprofiles.addCertificateProfile(name, profile);
     }
@@ -213,16 +228,16 @@ public class CAInterfaceBean implements Serializable {
     public boolean removeCertificateProfile(String name) throws Exception{
 
         boolean certificateprofileused = false;
-        int certificateprofileid = certificateProfileSession.getCertificateProfileId(administrator, name);        
-        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(administrator, name);
+        int certificateprofileid = certificateProfileSession.getCertificateProfileId(name);        
+        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(name);
         
-        if(certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){
+        if(certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY){
           // Check if any users or profiles use the certificate id.
           certificateprofileused = adminsession.checkForCertificateProfileId(administrator, certificateprofileid)
                                 || endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid)
 								|| hardtokensession.existsCertificateProfileInHardTokenProfiles(administrator, certificateprofileid);
         }else{
-           certificateprofileused = caadminsession.exitsCertificateProfileInCAs(administrator, certificateprofileid);
+           certificateprofileused = caadminsession.existsCertificateProfileInCAs(certificateprofileid);
         }
             
           
@@ -241,28 +256,30 @@ public class CAInterfaceBean implements Serializable {
     	certificateprofiles.cloneCertificateProfile(originalname, newname);
     }    
       
-    public void createCRL(String issuerdn) throws CATokenOfflineException  {      
-        CA ca;
+    public void createCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException  {      
         try {
-            ca = caSession.getCA(administrator, issuerdn.hashCode());
+            CAInfo cainfo = caSession.getCAInfo(administrator, issuerdn.hashCode());
+            crlCreateSession.forceCRL(administrator, cainfo.getCAId());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
-        }
-        crlCreateSession.run(administrator, ca);
+        } catch (AuthorizationDeniedException e) {
+            throw new RuntimeException(e);
+		}
     }
 
-    public void createDeltaCRL(String issuerdn) throws CATokenOfflineException {      
-        CA ca;
+    public void createDeltaCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException {      
         try {
-            ca = caSession.getCA(administrator, issuerdn.hashCode());
+            CAInfo cainfo = caSession.getCAInfo(administrator, issuerdn.hashCode());
+            crlCreateSession.forceDeltaCRL(administrator, cainfo.getCAId());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
-        }
-        crlCreateSession.runDeltaCRL(administrator, ca, -1, -1);
+        } catch (AuthorizationDeniedException e) {
+            throw new RuntimeException(e);
+		}
     }
 
     public int getLastCRLNumber(String  issuerdn) {
-    	return crlSession.getLastCRLNumber(administrator, issuerdn, false);      
+    	return crlStoreSession.getLastCRLNumber(issuerdn, false);      
     }
 
     /**
@@ -277,7 +294,7 @@ public class CAInterfaceBean implements Serializable {
 			final Certificate cacert = !certs.isEmpty() ? (Certificate)certs.iterator().next(): null;
 			issuerdn = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
 		}
-		return crlSession.getLastCRLInfo(administrator,  issuerdn, deltaCRL);          
+		return crlStoreSession.getLastCRLInfo(issuerdn, deltaCRL);          
 	}
 
     /* Returns certificate profiles as a CertificateProfiles object */
@@ -366,7 +383,7 @@ public class CAInterfaceBean implements Serializable {
 		String dn = null;
 		ExtendedInformation ei = null;
 		final Certificate certificate = certificatedata.getCertificate();
-		final CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
+		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
 			// We need this since the certificate subjectDN might be a subset of the subjectDN in the template
@@ -376,7 +393,7 @@ public class CAInterfaceBean implements Serializable {
 			dn = certreqhist.getUserDataVO().getDN();
 			ei = certreqhist.getUserDataVO().getExtendedinformation();
 		}
-		final CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificate));
+		final CertificateInfo certinfo = certificatesession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
 		if (certinfo != null) {
 			// If we are missing Certificate Request History for this certificate, we can at least recover some of this info
 			if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
@@ -393,7 +410,7 @@ public class CAInterfaceBean implements Serializable {
 			// If there is no cert req history and the cert profile was not defined in the CertificateData row, so we can't do anything about it..
 			returnval = "CERTREQREPUBLISHFAILED";
 		} else {
-			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(administrator, certificateProfileId);
+			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
 					if (publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), username, password, dn,
@@ -423,7 +440,7 @@ public class CAInterfaceBean implements Serializable {
 	 * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
 	 */
 	public List<CertReqHistory> getCertReqUserDatas(String username){
-		List<CertReqHistory> history = this.certificatesession.getCertReqHistory(administrator, username);
+		List<CertReqHistory> history = this.certreqhistorysession.retrieveCertReqHistory(administrator, username);
 		// Sort it by timestamp, newest first;
 		Collections.sort(history, new CertReqUserCreateComparator());
 		return history;

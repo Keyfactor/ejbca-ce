@@ -22,9 +22,8 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-
-import org.ejbca.core.ejb.ca.store.CertificateStatus;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 
 /**
  * Class used when checking the revocation status of a certificate.

@@ -19,7 +19,7 @@ import java.io.InputStream;
 import junit.framework.TestCase;
 
 import org.bouncycastle.asn1.DERTags;
-import org.ejbca.core.model.ca.MalformedRequestException;
+import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 
 /**
  * Series of unit tests for LimitLengthASN1Reader

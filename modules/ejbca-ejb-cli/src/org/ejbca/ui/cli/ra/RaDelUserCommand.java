@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.ra;
 
 import java.util.List;
 
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;

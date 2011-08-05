@@ -16,10 +16,10 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileOutputStream;
 import java.util.List;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.CliTools;
-import org.ejbca.util.CryptoProviderTools;
 
 /**
  * Retrieves the latest CRL from a CA.
@@ -52,7 +52,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			String caname = args[1];
 			String outfile = args[2];
 			String issuerdn = getIssuerDN(caname);
-			byte[] crl = ejb.getCrlSession().getLastCRL(getAdmin(), issuerdn, deltaSelector);
+			byte[] crl = ejb.getCrlStoreSession().getLastCRL(getAdmin(), issuerdn, deltaSelector);
 			if (crl != null) {
 				FileOutputStream fos = new FileOutputStream(outfile);
 				if (pem) {		

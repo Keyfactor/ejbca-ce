@@ -19,10 +19,11 @@ import java.security.cert.Certificate;
 
 import junit.framework.TestCase;
 
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * @version $Id$
@@ -80,7 +81,7 @@ public class ApprovalRequestTest extends TestCase {
 
 	public void setUp() throws Exception {		
 		super.setUp();
-		CertTools.installBCProvider();
+		CryptoProviderTools.installBCProviderIfNotAvailable();
 	}
 
 }

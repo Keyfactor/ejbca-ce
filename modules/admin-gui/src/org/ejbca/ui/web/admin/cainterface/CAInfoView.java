@@ -17,16 +17,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CVCCAInfo;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.NullCryptoToken;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.caadmin.CVCCAInfo;
-import org.ejbca.core.model.ca.caadmin.X509CAInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
-import org.ejbca.core.model.ca.catoken.ICAToken;
-import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.SimpleTime;
 
@@ -179,17 +179,17 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         } 
 
         String tokentext = ejbcawebbean.getText("SOFT");
-        if(cainfo.getCATokenInfo() instanceof HardCATokenInfo){
+        if(cainfo.getCATokenInfo().getClassPath().equals(PKCS11CryptoToken.class.getName())) {
         	tokentext = ejbcawebbean.getText("HARDTOKEN");
         }
-        if(cainfo.getCATokenInfo() instanceof NullCATokenInfo){
+        if(cainfo.getCATokenInfo().getClassPath().equals(NullCryptoToken.class.getName())) {
         	tokentext = ejbcawebbean.getText("EXTERNALCA");
         }
-        switch(cainfo.getCATokenInfo().getCATokenStatus()) {
-        case ICAToken.STATUS_ACTIVE :
+        switch(cainfo.getCATokenInfo().getTokenStatus()) {
+        case CryptoToken.STATUS_ACTIVE :
         	cainfodata[CATOKEN_STATUS]     =  tokentext + ", " + ejbcawebbean.getText("ACTIVE");     
         	break;
-        case ICAToken.STATUS_OFFLINE :
+        case CryptoToken.STATUS_OFFLINE :
         	cainfodata[CATOKEN_STATUS]     = tokentext +", " + ejbcawebbean.getText("OFFLINE");
         	break;
         }

@@ -32,13 +32,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64GetHashMap;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -53,9 +57,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.util.Base64GetHashMap;
-import org.ejbca.util.CertTools;
 
 /**
  * Handles management of Publishers.
@@ -82,7 +83,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private LogSessionLocal logSession;
 
     @Override
-    public boolean storeCertificate(Admin admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
+    public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
             int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation) {
         return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username,
@@ -90,7 +91,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void revokeCertificate(Admin admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
+    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
             long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
         storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, userDN, cafp,
                 SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
@@ -100,7 +101,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
      * The same basic method is be used for both store and revoke
      * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
      */
-    private boolean storeCertificate(Admin admin, int logInfoEvent, int logErrorEvent, Collection<Integer> publisherids, Certificate cert, String username,
+    private boolean storeCertificate(AuthenticationToken admin, int logInfoEvent, int logErrorEvent, Collection<Integer> publisherids, Certificate cert, String username,
             String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
             long lastUpdate, ExtendedInformation extendedinformation) {
     	if (publisherids == null) {
@@ -173,7 +174,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
     
     @Override
-    public boolean storeCRL(Admin admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String userDN) {
+    public boolean storeCRL(AuthenticationToken admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String userDN) {
         log.trace(">storeCRL");
         Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
@@ -231,7 +232,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void testConnection(Admin admin, int publisherid) throws PublisherConnectionException {
+    public void testConnection(AuthenticationToken admin, int publisherid) throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
         }
@@ -259,7 +260,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void addPublisher(Admin admin, String name, BasePublisher publisher) throws PublisherExistsException {
+    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ")");
         }
@@ -268,7 +269,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void addPublisher(Admin admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
+    public void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
         }
@@ -296,7 +297,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void changePublisher(Admin admin, String name, BasePublisher publisher) {
+    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) {
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
         }
@@ -313,7 +314,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void clonePublisher(Admin admin, String oldname, String newname) {
+    public void clonePublisher(AuthenticationToken admin, String oldname, String newname) {
         if (log.isTraceEnabled()) {
             log.trace(">clonePublisher(name: " + oldname + ")");
         }
@@ -342,7 +343,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void removePublisher(Admin admin, String name) {
+    public void removePublisher(AuthenticationToken admin, String name) {
         if (log.isTraceEnabled()) {
             log.trace(">removePublisher(name: " + name + ")");
         }
@@ -365,7 +366,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void renamePublisher(Admin admin, String oldname, String newname) throws PublisherExistsException {
+    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
         }
@@ -389,7 +390,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public Collection<Integer> getAllPublisherIds(Admin admin) throws AuthorizationDeniedException {
+    public Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
         if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             Authorizer.throwAuthorizationException(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
@@ -403,7 +404,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer,String> getPublisherIdToNameMap(Admin admin) {
+    public HashMap<Integer,String> getPublisherIdToNameMap(AuthenticationToken admin) {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -415,7 +416,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BasePublisher getPublisher(Admin admin, String name) {
+    public BasePublisher getPublisher(AuthenticationToken admin, String name) {
         BasePublisher returnval = null;
         PublisherData pd = PublisherData.findByName(entityManager, name);
         if (pd != null) {
@@ -426,7 +427,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BasePublisher getPublisher(Admin admin, int id) {
+    public BasePublisher getPublisher(AuthenticationToken admin, int id) {
         BasePublisher returnval = null;
         PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(id));
         if (pd != null) {
@@ -437,7 +438,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getPublisherUpdateCount(Admin admin, int publisherid) {
+    public int getPublisherUpdateCount(AuthenticationToken admin, int publisherid) {
         int returnval = 0;
         PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
         if (pd != null) {
@@ -448,7 +449,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getPublisherId(Admin admin, String name) {
+    public int getPublisherId(AuthenticationToken admin, String name) {
         int returnval = 0;
         PublisherData pd = PublisherData.findByName(entityManager, name);
         if (pd != null) {
@@ -459,7 +460,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getPublisherName(Admin admin, int id) {
+    public String getPublisherName(AuthenticationToken admin, int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherName(id: " + id + ")");
         }

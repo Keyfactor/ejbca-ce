@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**

@@ -35,6 +35,10 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.JndiHelper;
@@ -51,12 +55,9 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.ApprovedActionAdmin;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.Authorizer;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 import org.ejbca.util.mail.MailSender;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -86,7 +87,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private LogSessionLocal logSession;
 
     @Override
-    public void addApprovalRequest(Admin admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException {
+    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException {
         log.trace(">addApprovalRequest");
         int approvalId = approvalRequest.generateApprovalId();
 
@@ -131,7 +132,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void removeApprovalRequest(Admin admin, int id) throws ApprovalException {
+    public void removeApprovalRequest(AuthenticationToken admin, int id) throws ApprovalException {
         log.trace(">removeApprovalRequest");
         try {
         	ApprovalData ad = ApprovalData.findById(entityManager, Integer.valueOf(id));
@@ -153,7 +154,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void reject(Admin admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
         log.trace(">reject");
         ApprovalData adl;
@@ -188,7 +189,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
     
     @Override
-    public void checkExecutionPossibility(Admin admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
+    public void checkExecutionPossibility(AuthenticationToken admin, ApprovalData adl) throws AdminAlreadyApprovedRequestException{
         // Check that the approvers username doesn't exists among the existing
         // usernames.
         ApprovalDataVO data = getApprovalDataVO(adl);
@@ -227,7 +228,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public ApprovalData isAuthorizedBeforeApproveOrReject(Admin admin, int approvalId) throws ApprovalException, AuthorizationDeniedException {
+    public ApprovalData isAuthorizedBeforeApproveOrReject(AuthenticationToken admin, int approvalId) throws ApprovalException, AuthorizationDeniedException {
         ApprovalData retval = findNonExpiredApprovalDataLocal(approvalId);
         if (retval != null) {
             if (retval.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
@@ -256,7 +257,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
+    public int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">isApproved, approvalId" + approvalId);
         }
@@ -281,12 +282,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException {
+    public int isApproved(AuthenticationToken admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException {
         return isApproved(admin, approvalId, 0);
     }
 
     @Override
-    public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
+    public void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
             log.trace(">markAsStepDone, approvalId" + approvalId + ", step " + step);
         }
@@ -304,7 +305,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ApprovalDataVO findNonExpiredApprovalRequest(Admin admin, int approvalId) {
+    public ApprovalDataVO findNonExpiredApprovalRequest(AuthenticationToken admin, int approvalId) {
         ApprovalDataVO retval = null;
         ApprovalData data = findNonExpiredApprovalDataLocal(approvalId);
         if (data != null) {
@@ -331,7 +332,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<ApprovalDataVO> findApprovalDataVO(Admin admin, int approvalId) {
+    public Collection<ApprovalDataVO> findApprovalDataVO(AuthenticationToken admin, int approvalId) {
         log.trace(">findApprovalDataVO");
         ArrayList<ApprovalDataVO> retval = new ArrayList<ApprovalDataVO>();
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
@@ -346,7 +347,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public List<ApprovalDataVO> query(Admin admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
+    public List<ApprovalDataVO> query(AuthenticationToken admin, Query query, int index, int numberofrows, String caAuthorizationString, String endEntityProfileAuthorizationString)
             throws AuthorizationDeniedException, IllegalQueryException {
         log.trace(">query()");
         String customQuery = "";
@@ -379,7 +380,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void sendApprovalNotification(Admin admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
+    public void sendApprovalNotification(AuthenticationToken admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
             String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest,
             Approval approval) {
         if (log.isTraceEnabled()) {

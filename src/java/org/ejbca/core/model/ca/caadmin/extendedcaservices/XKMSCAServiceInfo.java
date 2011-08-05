@@ -19,13 +19,13 @@ import java.util.List;
 
 /**
  * Class used mostly when creating service. Also used when info about the services 
- * is neesed
+ * is needed
  * 
  * @author Philip Vendil
  * @version $Id$
  */
 public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
-                  
+              
     /** Used when creating new service. */
     public XKMSCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm) {
       super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
@@ -50,6 +50,6 @@ public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Seria
 
 	@Override
 	public int getType() {
-		return ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE;
+		return ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE;
 	}
 }

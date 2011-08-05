@@ -12,22 +12,22 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.CrlCreateSessionRemote;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote;
-import org.cesecore.core.ejb.ca.crl.CrlSessionRemote;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CaSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -64,7 +64,7 @@ public class EjbRemoteHelper {
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
     private ConfigurationSessionRemote configurationSession = null;
-    private CrlSessionRemote crlSession = null;
+    private CrlStoreSessionRemote crlSession = null;
     private CrlCreateSessionRemote crlStoreSession = null;
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
     private HardTokenSessionRemote hardTokenSession = null;
@@ -124,7 +124,7 @@ public class EjbRemoteHelper {
         return cmpMessageDispatcherSession;
 	}
 
-    public CrlCreateSessionRemote getCrlStoreSession() {
+    public CrlCreateSessionRemote getCrlCreateSession() {
         if (crlStoreSession == null) {
             crlStoreSession = JndiHelper.getRemoteSession(CrlCreateSessionRemote.class);
         }
@@ -243,9 +243,9 @@ public class EjbRemoteHelper {
         return publisherSession;
     }
 
-    public CrlSessionRemote getCrlSession() {
+    public CrlStoreSessionRemote getCrlStoreSession() {
         if (crlSession == null) {
-            crlSession = JndiHelper.getRemoteSession(CrlSessionRemote.class);
+            crlSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
         }
         return crlSession;
     }

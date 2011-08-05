@@ -45,8 +45,7 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.SingleResp;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
+import org.cesecore.certificates.util.CertTools;
 
 /** Tests http pages of a standalone ocsp
  * To run this test you must create a user named ocspTest that has at least two certificates and

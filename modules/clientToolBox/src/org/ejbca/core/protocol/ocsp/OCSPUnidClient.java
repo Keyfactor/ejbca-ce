@@ -62,9 +62,10 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.RespID;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.keystore.KeyTools;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 
 /** A simple OCSP lookup client used to query the OCSPUnidExtension. Attributes needed to call the client is a keystore
  * issued from the same CA as has issued the TLS server certificate of the OCSP/Lookup server.
@@ -121,7 +122,7 @@ public class OCSPUnidClient {
 	        }
 	        extensions = new X509Extensions(exts);
 	    }
-	    CertTools.installBCProvider();
+	    CryptoProviderTools.installBCProvider();
 	}
 	
 	/**

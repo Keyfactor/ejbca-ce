@@ -17,10 +17,10 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;

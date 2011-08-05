@@ -27,6 +27,11 @@ import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -38,8 +43,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.LinkView;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
 
 /**
  * Class representing the view of one ApprovalDataVO data
@@ -95,7 +98,14 @@ public class ApprovalDataVOView implements Serializable {
         if (data.getCAId() == ApprovalDataVO.ANY_CA) {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
         }
-        return ejb.getCaAdminSession().getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
+        try {
+			return ejb.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
+		} catch (CADoesntExistsException e) {
+			log.error("Can not get CA with id: "+data.getCAId(), e);
+		} catch (AuthorizationDeniedException e) {
+			log.error("Can not get CA with id: "+data.getCAId(), e);
+		}
+		return "Error";
     }
 
     public String getEndEntityProfileName() {
@@ -366,12 +376,12 @@ public class ApprovalDataVOView implements Serializable {
     
     private List<ApprovalDataText> getNewRequestDataAsText() {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
-    	Admin admin = EjbcaJSFHelper.getBean().getAdmin();
+    	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejb.getCaAdminSession(),
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejb.getCaSession(),
     				ejb.getEndEntityProfileSession(), ejb.getCertificateProfileSession(), ejb.getHardTokenSession());
     	} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejb.getCaAdminSession(),
+    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejb.getCaSession(),
     				ejb.getEndEntityProfileSession(), ejb.getCertificateProfileSession(), ejb.getHardTokenSession());
     	} else {
     		return approvalRequest.getNewRequestDataAsText(admin);
@@ -380,9 +390,9 @@ public class ApprovalDataVOView implements Serializable {
 
     private List<ApprovalDataText> getOldRequestDataAsText() {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
-    	Admin admin = EjbcaJSFHelper.getBean().getAdmin();
+    	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, ejb.getCaAdminSession(),
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, ejb.getCaSession(),
     				ejb.getEndEntityProfileSession(), ejb.getCertificateProfileSession(), ejb.getHardTokenSession());
     	} else {
     		return approvalRequest.getOldRequestDataAsText(admin);

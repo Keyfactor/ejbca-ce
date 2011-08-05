@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.ra.raadmin;
 import java.util.Collection;
 import java.util.Map;
 
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
@@ -35,7 +35,7 @@ public interface EndEntityProfileSession {
      * @param profilename readable profile name
      * @param profile profile to be added
      */
-    void addEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException;
+    void addEndEntityProfile(AuthenticationToken admin, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException;
 
     /**
      * Adds a profile to the database.
@@ -46,13 +46,13 @@ public interface EndEntityProfileSession {
      * @param profilename readable profile name
      * @param profile profile to be added
      */
-    void addEndEntityProfile(Admin admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException;
+    void addEndEntityProfile(AuthenticationToken admin, int profileid, String profilename, EndEntityProfile profile) throws EndEntityProfileExistsException;
 
     /**
      * Adds a end entity profile to a group with the same content as the
      * original profile.
      */
-    void cloneEndEntityProfile(Admin admin, String originalprofilename, String newprofilename) throws EndEntityProfileExistsException;
+    void cloneEndEntityProfile(AuthenticationToken admin, String originalprofilename, String newprofilename) throws EndEntityProfileExistsException;
 
     /** @return an unused end id number. */
     int findFreeEndEntityProfileId();
@@ -61,25 +61,25 @@ public interface EndEntityProfileSession {
      * Removes an end entity profile from the database, does not throw any
      * errors if the profile does not exist.
      */
-    void removeEndEntityProfile(Admin admin, String profilename);
+    void removeEndEntityProfile(AuthenticationToken admin, String profilename);
 
     /** Renames a end entity profile. */
-    void renameEndEntityProfile(Admin admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException;
+    void renameEndEntityProfile(AuthenticationToken admin, String oldprofilename, String newprofilename) throws EndEntityProfileExistsException;
 
     /** Updates profile data. */
-    void changeEndEntityProfile(Admin admin, String profilename, EndEntityProfile profile);
+    void changeEndEntityProfile(AuthenticationToken admin, String profilename, EndEntityProfile profile);
 
     /**
      * Do NOT use, use changeEndEntityProfile instead. Used internally for
      * testing only. Updates a profile without flushing caches.
      */
-    void internalChangeEndEntityProfileNoFlushCache(Admin admin, String profilename, EndEntityProfile profile);
+    void internalChangeEndEntityProfileNoFlushCache(AuthenticationToken admin, String profilename, EndEntityProfile profile);
 
     /** Retrieves a Collection of id:s (Integer) to authorized profiles. */
-    Collection<Integer> getAuthorizedEndEntityProfileIds(Admin admin);
+    Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin);
 
     /** @return mapping of profile id (Integer) to profile name (String). */
-    Map<Integer, String> getEndEntityProfileIdToNameMap(Admin admin);
+    Map<Integer, String> getEndEntityProfileIdToNameMap(AuthenticationToken admin);
 
     /** Clear and reload end entity profile caches. */
     void flushProfileCache();
@@ -88,25 +88,25 @@ public interface EndEntityProfileSession {
      * Finds a end entity profile by id.
      * @return EndEntityProfile (cloned) or null if it does not exist
      */
-    EndEntityProfile getEndEntityProfile(Admin admin, int id);
+    EndEntityProfile getEndEntityProfile(AuthenticationToken admin, int id);
 
     /**
      * Get a copy of an EndEntityProfile.
      * @return EndEntityProfile (cloned) or null if it does not exist
      */
-    EndEntityProfile getEndEntityProfile(Admin admin, java.lang.String profilename);
+    EndEntityProfile getEndEntityProfile(AuthenticationToken admin, java.lang.String profilename);
 
     /**
      * Returns a end entity profiles id, given it's profilename
      * @return the id or 0 if profile cannot be found.
      */
-    int getEndEntityProfileId(Admin admin, java.lang.String profilename);
+    int getEndEntityProfileId(AuthenticationToken admin, java.lang.String profilename);
 
     /**
      * Returns a end entity profiles name given it's id.
      * @return profile's name or null if profile id doesn't exists.
      */
-    String getEndEntityProfileName(Admin admin, int id);
+    String getEndEntityProfileName(AuthenticationToken admin, int id);
 
     /**
      * Method to check if a CertificateProfile exists in any of the end entity
@@ -115,7 +115,7 @@ public interface EndEntityProfileSession {
      * @param certificateprofileid the CertificateProfile's id to search for.
      * @return true if CertificateProfile exists in any EndEntityProfile.
      */
-    boolean existsCertificateProfileInEndEntityProfiles(Admin admin, int certificateprofileid);
+    boolean existsCertificateProfileInEndEntityProfiles(AuthenticationToken admin, int certificateprofileid);
 
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
@@ -124,7 +124,7 @@ public interface EndEntityProfileSession {
      * @param caid the caid to search for.
      * @return true if CA exists in any of the end entity profiles.
      */
-    boolean existsCAInEndEntityProfiles(Admin admin, int caid);
+    boolean existsCAInEndEntityProfiles(AuthenticationToken admin, int caid);
 
     /**
      * A method designed to be called at startup time to (possibly) upgrade end
@@ -135,6 +135,6 @@ public interface EndEntityProfileSession {
      * 
      * @param admin administrator calling the method
      */
-    void initializeAndUpgradeProfiles(Admin admin);
+    void initializeAndUpgradeProfiles(AuthenticationToken admin);
 
 }

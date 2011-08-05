@@ -15,9 +15,10 @@ package org.ejbca.core.model.ra;
 
 import java.security.cert.Certificate;
 
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.CertTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * Variables used with userdata
@@ -42,16 +43,16 @@ import org.ejbca.util.dn.DNFieldExtractor;
  */
 public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 
-	public UserNotificationParamGen(UserDataVO userData) {
+	public UserNotificationParamGen(EndEntityInformation userData) {
 		populateWithUserData(userData);
 	}
 
-	public UserNotificationParamGen(UserDataVO userData, Certificate expiringCert) {
+	public UserNotificationParamGen(EndEntityInformation userData, Certificate expiringCert) {
 		populateWithUserData(userData);
 		populateWithExpiringCert(expiringCert);
 	}
 
-	public UserNotificationParamGen(UserDataVO userData, String approvalAdminDN, UserDataVO admin) {
+	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, UserDataVO admin) {
 		populateWithUserData(userData);
 		populateWithApprovalAdminDN(approvalAdminDN);
 		populateWithEmailAddresses(userData, admin);
@@ -66,7 +67,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		}
 	}
 
-	protected void populateWithUserData(UserDataVO userData) {
+	protected void populateWithUserData(EndEntityInformation userData) {
 		if (userData != null) {
 			paramPut("USERNAME", userData.getUsername());
 			paramPut("user.USERNAME", userData.getUsername());
@@ -100,7 +101,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		}
 	}
 	
-	protected void populateWithEmailAddresses(UserDataVO userdata, UserDataVO admin) {
+	protected void populateWithEmailAddresses(EndEntityInformation userdata, UserDataVO admin) {
 		if(userdata != null) {
 			paramPut("user.EE.EMAIL", userdata.getEmail());
 			final DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);

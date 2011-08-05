@@ -17,12 +17,12 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class handling the saving and loading of global configuration data.
@@ -36,11 +36,11 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
 	private static final long serialVersionUID = 2L;
     private static InitialContext initialContext;	// Expensive to create
 	private GlobalConfigurationSessionLocal globalconfigurationsession;
-    private AuthorizationSessionLocal authorizationsession;
-    private Admin administrator;
+    private AccessControlSessionLocal authorizationsession;
+    private AuthenticationToken administrator;
 
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler(Admin administrator, GlobalConfigurationSessionLocal globalconfigurationsession, AuthorizationSessionLocal authorizationsession){
+    public GlobalConfigurationDataHandler(AuthenticationToken administrator, GlobalConfigurationSessionLocal globalconfigurationsession, AccessControlSessionLocal authorizationsession){
         this.globalconfigurationsession = globalconfigurationsession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;

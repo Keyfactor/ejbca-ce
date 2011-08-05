@@ -22,7 +22,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.store.CertificateData;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.ejbca.util.CliTools;
 
 /**

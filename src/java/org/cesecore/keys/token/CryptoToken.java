@@ -41,7 +41,7 @@ import javax.crypto.NoSuchPaddingException;
  * CESeCore version:
  *      CryptoToken.java 933 2011-07-07 18:53:11Z mikek
  * 
- * @version $Id $
+ * @version $Id$
  */
 public interface CryptoToken extends Serializable {
 

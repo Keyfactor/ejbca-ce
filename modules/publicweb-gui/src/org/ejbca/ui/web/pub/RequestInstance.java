@@ -32,27 +32,32 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.core.ejb.ca.store.CertificateProfileSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.FileTools;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
-import org.ejbca.core.model.AlgorithmConstants;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ca.SignRequestException;
-import org.ejbca.core.model.ca.SignRequestSignatureException;
-import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
 import org.ejbca.cvc.CAReferenceField;
@@ -60,9 +65,6 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.util.Base64;
-import org.ejbca.util.FileTools;
-import org.ejbca.util.keystore.KeyTools;
 
 public class RequestInstance {
 
@@ -72,7 +74,7 @@ public class RequestInstance {
 	private ServletContext servletContext;
 	private ServletConfig servletConfig;
 	private OldAuthenticationSessionLocal authenticationSession;
-	private CAAdminSessionLocal caAdminSession;
+	private CaSessionLocal caSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
 	private KeyRecoverySessionLocal keyRecoverySession;
@@ -80,13 +82,13 @@ public class RequestInstance {
 	private UserAdminSessionLocal userAdminSession;
 	private GlobalConfigurationSession globalConfigurationSession;
 	
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, OldAuthenticationSessionLocal authenticationSession, CAAdminSessionLocal caAdminSession,
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, OldAuthenticationSessionLocal authenticationSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;
 		this.servletConfig = servletConfig;
 		this.authenticationSession = authenticationSession;
-		this.caAdminSession = caAdminSession;
+		this.caSession = caSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.keyRecoverySession = keyRecoverySession;
@@ -133,7 +135,8 @@ public class RequestInstance {
 				keyalg = keyalgstring;
 			}
 
-			Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RequestInstance: "+request.getRemoteAddr()));
+			//Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
 			RequestHelper helper = new RequestHelper(administrator, debug);
 
@@ -145,7 +148,7 @@ public class RequestInstance {
 
 			usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration(administrator).getEnableKeyRecovery();
 
-			UserDataVO data = userAdminSession.findUser(administrator, username);
+			EndEntityInformation data = userAdminSession.findUser(administrator, username);
 
 			if (data == null) {
 				throw new ObjectNotFoundException();
@@ -161,7 +164,7 @@ public class RequestInstance {
 			// Set a new certificate profile, if we have requested one specific
 			if (StringUtils.isNotEmpty(certprofile)) {
 				boolean clearpwd = StringUtils.isNotEmpty(data.getPassword());
-				int id = certificateProfileSession.getCertificateProfileId(administrator, certprofile);
+				int id = certificateProfileSession.getCertificateProfileId(certprofile);
 				// Change the value if there exists a certprofile with the requested name, and it is not the same as 
 				// the one already registered to be used by default
 				if ( (id > 0) ) {
@@ -172,22 +175,22 @@ public class RequestInstance {
 							data.setCertificateProfileId(id);
 							// This admin can be the public web user, which may not be allowed to change status,
 							// this is a bit ugly, but what can a man do...
-							Admin tempadmin = Admin.getInternalAdmin();
+							AuthenticationToken tempadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RequestInstance"+request.getRemoteAddr()));
 							userAdminSession.changeUser(tempadmin, data, clearpwd);            		            			
 						} else {
-							String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(administrator, certificateProfileId);
+							String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
 							log.info(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));
 						}
 					}
 				} else {
-					String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(administrator, certificateProfileId);
+					String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
 					log.info(intres.getLocalizedMessage("certreq.nosuchcertprofile", certprofile, defaultCertificateProfileName));
 				}
 			}
 
 			// get users Token Type.
 			tokentype = data.getTokenType();
-			GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caAdminSession, keyRecoverySession, signSession);
+			GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caSession, keyRecoverySession, signSession);
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {            	  
@@ -328,11 +331,11 @@ public class RequestInstance {
 			return;
 		} catch (ArrayIndexOutOfBoundsException ae) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq");
-		} catch (org.ejbca.core.model.ca.IllegalKeyException e) {
+		} catch (org.cesecore.certificates.certificate.IllegalKeyException e) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidkey", e.getMessage());
 		} catch (Exception e) {
 			Throwable e1 = e.getCause();
-			if (e1 instanceof CATokenOfflineException) {
+			if (e1 instanceof CryptoTokenOfflineException) {
 				String iMsg = intres.getLocalizedMessage("certreq.catokenoffline", e1.getMessage());
 				// this is already logged as an error, so no need to log it one more time
 				debug.printMessage(iMsg);

@@ -57,18 +57,20 @@ public class CmpPbeVerifyer {
 		protectedBytes = msg.getProtectedBytes();
 		protection = msg.getProtection();
 		pAlg = head.getProtectionAlg();
-		LOG.debug("Protection type is: "+pAlg.getObjectId().getId());
 		PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
 		iterationCount = pp.getIterationCount().getPositiveValue().intValue();
-		LOG.debug("Iteration count is: "+iterationCount);
 		AlgorithmIdentifier owfAlg = pp.getOwf();
 		// Normal OWF alg is 1.3.14.3.2.26 - SHA1
 		owfOid = owfAlg.getObjectId().getId();
-		LOG.debug("Owf type is: "+owfOid);
 		AlgorithmIdentifier macAlg = pp.getMac();
 		// Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
 		macOid = macAlg.getObjectId().getId();
-		LOG.debug("Mac type is: "+macOid);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Protection type is: "+pAlg.getObjectId().getId());
+			LOG.debug("Iteration count is: "+iterationCount);
+			LOG.debug("Owf type is: "+owfOid);
+			LOG.debug("Mac type is: "+macOid);
+		}
 		salt = pp.getSalt().getOctets();
 		//log.info("Salt: "+new String(salt));
 	}

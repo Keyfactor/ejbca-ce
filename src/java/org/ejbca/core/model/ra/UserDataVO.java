@@ -18,15 +18,18 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
+import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.util.Base64GetHashMap;
-import org.ejbca.util.Base64PutHashMap;
-import org.ejbca.util.StringTools;
-import org.ejbca.util.dn.DNFieldsUtil;
 
 
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
+ *
+ * NOTE! This class is not to be extended anymore. It is kept for backwards serialization compatibility only.
+ * use class EndEntityInformation instead.
  *
  * @version $Id$
  */
