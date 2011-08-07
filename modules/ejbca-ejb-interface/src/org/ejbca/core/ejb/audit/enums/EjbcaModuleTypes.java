@@ -24,6 +24,9 @@ public enum EjbcaModuleTypes implements ModuleType {
     RA,
     HARDTOKEN,
     KEYRECOVERY,
+    APPROVAL,
+    PUBLISHER,
+    GLOBALCONF,
     CUSTOM;
 
     @Override

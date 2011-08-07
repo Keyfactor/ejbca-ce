@@ -19,6 +19,7 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.Date;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.authorization.AdminInformation;
 import org.ejbca.core.model.log.Admin;
 
@@ -45,7 +46,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	
 	private static final int LATEST_VERSION = 2;
 
-	private Admin admin = null;
+	private AuthenticationToken admin = null;
     private String adminCertIssuerDN = null;
     private String adminCertSerialNumber = null;
     private boolean approved = false;
@@ -115,14 +116,14 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	/**
 	 * @return the Admin that approved this Approval
 	 */
-	public Admin getAdmin() { return admin; }
+	public AuthenticationToken getAdmin() { return admin; }
 
 	/**
 	 * Used specify rejection or approval
 	 * @param approved true for approved, flase for rejected
 	 * @param admin is the Admin that approved or rejected the current Approval
 	 */
-	public void setApprovalAdmin(boolean approved, Admin admin) {
+	public void setApprovalAdmin(boolean approved, AuthenticationToken admin) {
 		this.approved = approved;
 		this.admin = admin;
 	}

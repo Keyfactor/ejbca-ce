@@ -13,7 +13,8 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
-import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -26,13 +27,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
@@ -40,8 +45,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -62,7 +65,7 @@ public class OldAuthenticationSessionBean implements OldAuthenticationSessionLoc
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
     
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
@@ -88,25 +91,29 @@ public class OldAuthenticationSessionBean implements OldAuthenticationSessionLoc
             	}
                 if (!data.comparePassword(password)) {
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
-                	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), username, null, details);
                 	throw new AuthLoginException(msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
                 userAdminSession.resetRemainingLoginAttempts(admin, username);
             	// Log formal message that authentication was successful
                 final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
-                logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), username, null, details);
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}
                 return data.toUserDataVO();
             }
-        	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);            	
-        	logSession.log(admin, data.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
+        	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);
+        	log.info(msg);
             throw new AuthStatusException(msg);
         } catch (ObjectNotFoundException oe) {
-        	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
-        	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_CA, new Date(),username, null, LogConstants.EVENT_INFO_USERAUTHENTICATION, msg);
+        	final String msg = intres.getLocalizedMessage("authentication.usernotfound", username);
+        	log.info(msg);
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
@@ -133,14 +140,14 @@ public class OldAuthenticationSessionBean implements OldAuthenticationSessionLoc
 			int counter = userAdminSession.decRequestCounter(statusadmin, data.getUsername());
 			if (counter <= 0) {
 				String msg = intres.getLocalizedMessage("authentication.statuschanged", data.getUsername());
-				logSession.log(statusadmin, data.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_INFO_CHANGEDENDENTITY,msg);
+				log.info(msg);
 			} 
 			if (log.isTraceEnabled()) {
 				log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
 			}
 		} catch (FinderException e) {
 			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
-			logSession.log(statusadmin, statusadmin.getCaId(), LogConstants.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogConstants.EVENT_ERROR_USERAUTHENTICATION,msg);
+			log.info(msg);
 			throw new ObjectNotFoundException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			// Should never happen

@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.config;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -22,13 +25,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
@@ -56,7 +65,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     private EntityManager entityManager;
 
     @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
    
     @Override
     public GlobalConfiguration flushCache() {
@@ -71,7 +80,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public GlobalConfiguration getCachedGlobalConfiguration(Admin admin) {
+    public GlobalConfiguration getCachedGlobalConfiguration(AuthenticationToken admin) {
         GlobalConfiguration result;
         try {
             if (log.isTraceEnabled()) {
@@ -106,7 +115,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void saveGlobalConfigurationRemote(final Admin admin, final GlobalConfiguration globconf) {
+    public void saveGlobalConfigurationRemote(final AuthenticationToken admin, final GlobalConfiguration globconf) {
     	if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfigurationRemote()");
         }
@@ -129,21 +138,34 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         String pk = "0";
         GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
         if (gcdata != null) {
+        	// Save object and create a diff over what has changed
+            Map<Object, Object> orgmap = (Map<Object, Object>)gcdata.getGlobalConfiguration().saveData(); 
             gcdata.setGlobalConfiguration(globconf);
+            Map<Object, Object> newmap = (Map<Object, Object>)globconf.saveData();             
+			// Get the diff of what changed
+			Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
+			// Make security audit log record
             String msg = intres.getLocalizedMessage("ra.savedconf", gcdata.getConfigurationId());
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_EDITSYSTEMCONFIGURATION,
-                    msg);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+			for (Map.Entry<Object,Object> entry : diff.entrySet()) {
+				details.put(entry.getKey().toString(), entry.getValue().toString());				
+			}
+            auditSession.log(EjbcaEventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         } else {
             // Global configuration doesn't yet exists.
             try {
                 entityManager.persist(new GlobalConfigurationData(pk, globconf));
                 String msg = intres.getLocalizedMessage("ra.createdconf", pk);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_EDITSYSTEMCONFIGURATION, msg);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("ra.errorcreateconf");
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_EDITSYSTEMCONFIGURATION, msg);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                details.put("error", e.getMessage());
+                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
             }
         }
         globalconfigurationCache.setGlobalconfiguration(globconf);
@@ -158,7 +180,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     		log.trace(">flushGlobalConfigurationCache()");
     	}
     	globalconfigurationCache.clearCache();
-    	getCachedGlobalConfiguration(Admin.getInternalAdmin());
+    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("flushGlobalConfigurationCache"));
+    	getCachedGlobalConfiguration(admin);
     	if (log.isDebugEnabled()) {
     		log.debug("Flushed global configuration cache.");
     	}
