@@ -157,8 +157,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private CaSessionLocal caSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
-    @EJB
-    private LogSessionLocal logSession;
 
     /** Columns in the database used in select. */
     private static final String USERDATA_CREATED_COL = "timeCreated";

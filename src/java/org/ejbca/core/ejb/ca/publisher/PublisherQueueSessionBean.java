@@ -19,7 +19,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -35,19 +37,22 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
@@ -70,7 +75,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     private SessionContext sessionContext;
 
     @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
 
     @PostConstruct
@@ -310,10 +316,11 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                     log.error(msg);
                 }
             } catch (FinderException e) {
-
                 String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), username, null,
-                        LogConstants.EVENT_INFO_STORECERTIFICATE, msg, e);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                details.put("error", e.getMessage());
+                auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), username, String.valueOf(publisherId), details);
             } catch (PublisherException e) {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log
@@ -357,7 +364,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean storeCertificateNonTransactional(BasePublisher publisher, Admin admin, Certificate cert, String username, String password, String userDN,
+    public boolean storeCertificateNonTransactional(BasePublisher publisher, AuthenticationToken admin, Certificate cert, String username, String password, String userDN,
     		String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
     		long lastUpdate, ExtendedInformation extendedinformation) throws PublisherException {
     	return publisher.storeCertificate(admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
@@ -367,7 +374,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean storeCRLNonTransactional(BasePublisher publisher, Admin admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
+    public boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
     	return publisher.storeCRL(admin, incrl, cafp, number, userDN);
     }
 }
