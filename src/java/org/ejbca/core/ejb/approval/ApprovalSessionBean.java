@@ -421,10 +421,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 requestAdminDN = "CN=" + requestAdminUsername;
             }
             if (approvalAdminsEmail.equals("") || approvalNotificationFromAddress.equals("")) {
-                logSession
-                        .log(sendAdmin, approvalRequest.getCAId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null,
-                                LogConstants.EVENT_ERROR_NOTIFICATION,
-                                "Error sending approval notification. The email-addresses, either to approval administrators or from-address isn't configured properly");
+	            final String msg = intres.getLocalizedMessage("approval.errornotificationemail", id);
+	            log.info(msg);
             } else {
                 String approvalTypeText = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
 
