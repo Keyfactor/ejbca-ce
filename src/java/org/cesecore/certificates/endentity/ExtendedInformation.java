@@ -57,13 +57,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * Used to store subject directory attributes, which are put in an extension in the certificate. SubjectDirectoryAttributes are standard
      * attributes, see rfc3280
      */
-    private  static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
+    public  static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
     /**
      * the revocation code identifier primarily used in the XKMS protocol to let the end user revoke his certificate see the XKMS specification
      */
-    private  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
+    public  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed */
-    private  static final String CUSTOMDATA = "customdata_";
+    public  static final String CUSTOMDATA = "customdata_";
 
     /**
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
