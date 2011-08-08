@@ -42,7 +42,7 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            ejb.getAdminGroupSession().addAdminGroup(getAdmin(), groupName);
+            ejb.getRoleAccessSession().addAdminGroup(getAdmin(), groupName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

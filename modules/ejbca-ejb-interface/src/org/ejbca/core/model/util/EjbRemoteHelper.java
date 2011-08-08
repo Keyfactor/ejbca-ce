@@ -18,7 +18,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
@@ -52,7 +52,6 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote;
 public class EjbRemoteHelper {
 
     private AdminEntitySessionRemote adminEntitySession = null;
-    private AdminGroupSessionRemote adminGroupSession = null;
     private ApprovalSessionRemote approvalSession = null;
     private ApprovalExecutionSessionRemote approvalExecutionSession = null;
     private OldAuthenticationSessionRemote authenticationSession = null;
@@ -75,6 +74,7 @@ public class EjbRemoteHelper {
     private PublisherSessionRemote publisherSession = null;
     private RaAdminSessionRemote raAdminSession = null;
     private GlobalConfigurationSessionRemote globalConfigurationSession;
+    private RoleAccessSessionRemote roleAccessSession = null;
     private ServiceDataSessionRemote serviceDataSession = null;
     private ServiceSessionRemote serviceSession = null;
     private SignSessionRemote signSession = null;
@@ -89,11 +89,11 @@ public class EjbRemoteHelper {
         return adminEntitySession;
     }
     
-    public AdminGroupSessionRemote getAdminGroupSession() {
-        if(adminGroupSession == null) {
-            adminGroupSession = JndiHelper.getRemoteSession(AdminGroupSessionRemote.class);
+    public RoleAccessSessionRemote getRoleAccessSession() {
+        if(roleAccessSession == null) {
+            roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
         }
-        return adminGroupSession;
+        return roleAccessSession;
     }
     
     public CaSessionRemote getCaSession() {

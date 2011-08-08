@@ -38,7 +38,7 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName);
+            AdminGroup adminGroup = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName);
             if (adminGroup == null) {
             	getLogger().error("No such group \"" + groupName + "\" .");
                 return;

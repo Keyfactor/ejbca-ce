@@ -32,11 +32,11 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            if (ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName) == null) {
+            if (ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName) == null) {
             	getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
-            ejb.getAdminGroupSession().removeAdminGroup(getAdmin(), groupName);
+            ejb.getRoleAccessSession().removeAdminGroup(getAdmin(), groupName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

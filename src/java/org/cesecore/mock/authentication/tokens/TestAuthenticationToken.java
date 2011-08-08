@@ -28,4 +28,14 @@ public class TestAuthenticationToken extends AuthenticationToken {
 	public boolean matches(AccessUserAspect accessUser) {
 		return true;
 	}
+
+    @Override
+    public boolean equals(Object authenticationToken) {
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
 }

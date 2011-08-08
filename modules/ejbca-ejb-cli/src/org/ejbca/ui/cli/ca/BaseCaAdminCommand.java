@@ -28,12 +28,10 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -156,9 +154,9 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         return result;
     }
 
-    protected void initAuthorizationModule(int caid, String superAdminCN) throws AdminGroupExistsException {
+    protected void initAuthorizationModule(int caid, String superAdminCN) {
         getLogger().info("Initalizing Temporary Authorization Module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
-        ejb.getAdminGroupSession().init(getAdmin(), caid, superAdminCN);     
+        ejb.getRoleAccessSession().init(getAdmin(), caid, superAdminCN);     
     } // initAuthorizationModule
     
     protected String getAvailableCasString() {

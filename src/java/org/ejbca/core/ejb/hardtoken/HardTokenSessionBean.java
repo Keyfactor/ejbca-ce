@@ -48,13 +48,14 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
+import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -103,8 +104,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
-    @EJB
-    private AdminGroupSessionLocal adminGroupSession;
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
@@ -507,14 +506,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
             int admingroupid = htih.getAdminGroupId();
-            returnval = authorizationSession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens")
-                    && adminGroupSession.existsAdministratorInGroup(admin, admingroupid);
+            
+            returnval = authorizationSession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
 
         }
         log.trace("<getAuthorizedToHardTokenIssuer(" + returnval + ")");
         return returnval;
     }
-
+    
     @Override
     public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuerDatas()");

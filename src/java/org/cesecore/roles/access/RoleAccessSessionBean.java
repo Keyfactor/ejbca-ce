@@ -14,6 +14,9 @@ package org.cesecore.roles.access;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -22,10 +25,16 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
 import org.cesecore.util.QueryResultWrapper;
+import org.ejbca.core.ejb.authorization.AdminGroupData;
+import org.ejbca.core.model.authorization.AccessRule;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.authorization.AdminEntity;
+import org.ejbca.core.model.authorization.AdminGroup;
 
 /**
  * @version $Id: RoleAccessSessionBean.java 854 2011-05-24 12:57:17Z johane $
@@ -38,11 +47,6 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
     
-    /**
-     * Returns all roles.
-     * 
-     * @see org.cesecore.roles.management.RoleManagementSession#getAllRoles()
-     */
     @SuppressWarnings("unchecked")
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -51,17 +55,7 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
         return (query.getResultList() != null ? query.getResultList() : new ArrayList<RoleData>());
     }
 
-    /**
-     * Finds a specific role by name.
-     * 
-     * @see org.cesecore.roles.management.RoleManagementSession#getRole(java.lang.String)
-     * 
-     * @param token
-     *            An authentication token.
-     * @param roleName
-     *            Name of the sought role.
-     * @return The sought roll, null otherwise.
-     */
+
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public RoleData findRole(final String roleName) {
@@ -70,13 +64,6 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
         return (RoleData) QueryResultWrapper.getSingleResult(query);
     }
 
-    /**
-     * Finds a RoleData object by its primary key.
-     * 
-     * @param primaryKey
-     *            The primary key.
-     * @return the found entity instance or null if the entity does not exist.
-     */
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public RoleData findRole(final Integer primaryKey) {
@@ -85,4 +72,5 @@ public class RoleAccessSessionBean implements RoleAccessSessionLocal, RoleAccess
 
         return (RoleData) QueryResultWrapper.getSingleResult(query);
     }
+    
 }
