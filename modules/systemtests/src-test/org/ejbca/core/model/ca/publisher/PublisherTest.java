@@ -20,17 +20,20 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 
@@ -89,7 +92,7 @@ public class PublisherTest extends TestCase {
     
     private static final Logger log = Logger.getLogger(PublisherTest.class);
 
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
@@ -330,7 +333,7 @@ public class PublisherTest extends TestCase {
         ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        CertificateInfo info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         assertEquals(SecConst.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
         assertEquals("foo", info.getTag());
         assertEquals(date, info.getUpdateTime().getTime());
@@ -338,7 +341,7 @@ public class PublisherTest extends TestCase {
         date = date + 12345;
         publisherSession.revokeCertificate(admin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
 
-        info = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         assertEquals(12345, info.getCertificateProfileId());
         assertEquals("foobar", info.getTag());
         assertEquals(date, info.getUpdateTime().getTime());

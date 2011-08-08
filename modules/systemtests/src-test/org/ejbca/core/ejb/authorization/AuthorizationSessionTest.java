@@ -21,7 +21,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -33,9 +38,7 @@ import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AdminGroupDoesNotExistException;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 
@@ -158,11 +161,11 @@ public class AuthorizationSessionTest extends CaTestCase {
     public void testIsAuthorizedCertUserRegularApproveIdentity() throws Exception {
 
         String adminusername = genRandomUserName();
-        Admin intadmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken intadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         int caid = getTestCAId();
 
-        UserDataVO userdata = new UserDataVO(adminusername, "CN=" + adminusername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(adminusername, "CN=" + adminusername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
 
@@ -179,7 +182,7 @@ public class AuthorizationSessionTest extends CaTestCase {
         adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
         authorizationSession.forceRuleUpdate(intadmin);
 
-        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername).iterator().next();
+        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername).iterator().next();
         Admin admin = new Admin(admincert, adminusername, null);
 
         assertTrue("Could not authorize certificate user with AccessRulesConstants.REGULAR_APPROVEENDENTITY",
@@ -195,7 +198,7 @@ public class AuthorizationSessionTest extends CaTestCase {
      */
     public void testIsAuthorizedWithSuperAdminFromX509Certificate() throws AuthorizationDeniedException {
         Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
-        Admin superadmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, SUPER_ADMIN).iterator().next(),
+        Admin superadmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(SUPER_ADMIN).iterator().next(),
                 SUPER_ADMIN, null);
         assertTrue("Authorization for superadmin user failed. This probably means that your SuperAdmin user isn't feeling very well.",
                 authorizationSession.isAuthorized(superadmin, AccessRulesConstants.REGULAR_APPROVEENDENTITY));

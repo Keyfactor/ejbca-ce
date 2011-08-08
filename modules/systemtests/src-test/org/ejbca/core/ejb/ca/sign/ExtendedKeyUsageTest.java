@@ -19,6 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -31,8 +36,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -51,7 +54,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     
     private static KeyPair rsakeys=null;
     private static int rsacaid = 0;    
-    private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
@@ -95,7 +98,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         list.add("1.3.6.1.4.1.311.2.1.22"); // MS commercial code signing
         certprof.setExtendedKeyUsage(list);
         certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
-        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin,"EXTKEYUSAGECERTPROFILE");
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId("EXTKEYUSAGECERTPROFILE");
 
         endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
@@ -123,7 +126,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
         certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
-        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin,"EXTKEYUSAGECERTPROFILE");
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId("EXTKEYUSAGECERTPROFILE");
 
         endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);

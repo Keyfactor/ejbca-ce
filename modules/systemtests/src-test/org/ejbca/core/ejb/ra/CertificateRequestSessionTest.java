@@ -19,12 +19,15 @@ import java.util.Enumeration;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.NonEjbTestTools;
 
@@ -35,13 +38,12 @@ import org.ejbca.util.NonEjbTestTools;
  * Note that the rollback tests requires a transactional database, if using
  * MySQL this means InnoDB and not MyISAM.
  * 
- * @version $Id: CertificateRequestSessionTest.java 9435 2010-07-14 15:18:39Z
- *          mikekushner $
+ * @version $Id$
  */
 public class CertificateRequestSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CertificateRequestSessionTest.class);
-    private final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private final Random random = new Random();
 
     private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
@@ -58,7 +60,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         // First try a successful request and validate the returned KeyStore
         String username = "softTokenRequestTest-" + random.nextInt();
         String password = "foo123";
-        UserDataVO userdata = new UserDataVO(username, "CN=" + username, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_JKS, 0, null);
         userdata.setPassword(password);
         byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, null, "1024",
@@ -103,7 +105,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         // First try a successful request and validate the returned KeyStore
         String username = "certificateRequestTest-" + random.nextInt();
         String password = "foo123";
-        UserDataVO userdata = new UserDataVO(username, "CN=" + username, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
@@ -138,7 +140,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         String password = "foo123";
     	final String suppliedDn = "CN=" + username + ",Name=removed,SN=removed,GIVENNAME= ,GIVENNAME=,SURNAME= ,SURNAME=,O=removed,C=SE";
     	final String expectedDn = "CN=" + username + ",Name=removed,SN=removed,O=removed,C=SE";
-        UserDataVO userdata = new UserDataVO(username, suppliedDn, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));

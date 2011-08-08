@@ -43,8 +43,10 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.SecConst;
 
@@ -352,7 +354,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
 
     private X509Certificate getTestCert(boolean isRevoked) throws Exception {
         try {
-            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername(admin, "ocspTest");
+            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername("ocspTest");
             Iterator<Certificate> i = certs.iterator();
             while (i.hasNext()) {
                 X509Certificate cert = (X509Certificate) i.next();
@@ -369,7 +371,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
 
     private X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(admin, SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
+        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
         return (X509Certificate) certs.iterator().next();
     }

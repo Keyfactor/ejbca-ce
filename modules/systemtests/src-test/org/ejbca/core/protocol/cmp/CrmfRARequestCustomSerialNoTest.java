@@ -27,6 +27,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -64,7 +67,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     final private String issuerDN;
 
     final private int caid;
-    final private Admin admin;
+    final private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     final private X509Certificate cacert;
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
@@ -77,7 +80,6 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     public CrmfRARequestCustomSerialNoTest(String arg0) throws CertificateEncodingException, CertificateException {
         super(arg0);
 
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         // Configure CMP for this test, we allow custom certificate serial numbers
     	CertificateProfile profile = new EndUserCertificateProfile();
     	//profile.setAllowCertSerialNumberOverride(true);
@@ -86,7 +88,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
 		} catch (CertificateProfileExistsException e) {
 			log.error("Could not create certificate profile.", e);
 		}
-        int cpId = certProfileSession.getCertificateProfileId(admin, "CMPTESTPROFILE");
+        int cpId = certProfileSession.getCertificateProfileId("CMPTESTPROFILE");
         EndEntityProfile eep = new EndEntityProfile(true);
         eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE,0, "" + cpId);
         eep.setValue(EndEntityProfile.AVAILCERTPROFILES,0, "" + cpId);
@@ -118,7 +120,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         // Try to use AdminCA1 if it exists
         final CAInfo adminca1;
 
-        adminca1 = caAdminSessionRemote.getCAInfo(admin, "AdminCA1");
+        adminca1 = caSession.getCAInfo(admin, "AdminCA1");
 
         if (adminca1 == null) {
             final Collection<Integer> caids;
@@ -139,7 +141,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         }
         final CAInfo cainfo;
 
-        cainfo = caAdminSessionRemote.getCAInfo(admin, caid);
+        cainfo = caSession.getCAInfo(admin, caid);
 
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -230,7 +232,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     		// check that several certificates could be created for one user and one key.
     		long serno = RandomUtils.nextLong();
     		BigInteger bint = BigInteger.valueOf(serno);
-            int cpId = certProfileSession.getCertificateProfileId(admin, "CMPTESTPROFILE");
+            int cpId = certProfileSession.getCertificateProfileId("CMPTESTPROFILE");
             // First it should fail because the CMP RA does not even look for, or parse, requested custom certificate serial numbers
             // Actually it does not fail here, but returns good answer
     		X509Certificate cert = crmfHttpUserTest(userDN1, key1, null, null);
@@ -241,7 +243,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+cpId+"') is not allowing certificate serial number override.", bint);
     		// Third it should succeed and we should get our custom requested serialnumber
             updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "true");
-    		CertificateProfile cp = certProfileSession.getCertificateProfile(admin, "CMPTESTPROFILE");
+    		CertificateProfile cp = certProfileSession.getCertificateProfile("CMPTESTPROFILE");
     		cp.setAllowCertSerialNumberOverride(true);
     		// Now when the profile allows serial number override it should work
     		certProfileSession.changeCertificateProfile(admin, "CMPTESTPROFILE", cp);

@@ -24,6 +24,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 
 /**
  * Class containing constants common for unit tests.

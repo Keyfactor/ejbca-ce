@@ -34,6 +34,10 @@ import javax.ejb.RemoveException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -41,13 +45,12 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -78,7 +81,7 @@ import org.ejbca.util.InterfaceCache;
 public class CertificateRequestThrowAwayTest extends CaTestCase {
 
 	private static final Logger LOG = Logger.getLogger(CertificateRequestThrowAwayTest.class);
-	private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+	private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 	private static final Random random= new SecureRandom();
 
 	private static final String TESTCA_NAME = "ThrowAwayTestCA";
@@ -185,7 +188,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 			PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(rawPkcs10req);
 			pkcs10req.setUsername(userData.getUsername());
 			pkcs10req.setPassword(userData.getPassword());
-			ret = ((X509ResponseMessage) certificateRequestSession.processCertReq(admin, userData, pkcs10req, org.ejbca.core.protocol.X509ResponseMessage.class)).getCertificate();
+			ret = ((X509ResponseMessage) certificateRequestSession.processCertReq(admin, userData, pkcs10req, X509ResponseMessage.class)).getCertificate();
 		}
 		return ret;
 

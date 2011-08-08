@@ -18,13 +18,15 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -35,7 +37,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class EndEntityProfileTest extends TestCase {
     private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     
@@ -294,7 +296,7 @@ public class EndEntityProfileTest extends TestCase {
             
         profile = endEntityProfileSession.getEndEntityProfile(admin, "TESTCARDNUMBER");
             
-        UserDataVO userdata = new UserDataVO("foo", "CN=foo", caid, "", "", SecConst.USER_ENDUSER, endEntityProfileSession.getEndEntityProfileId(admin, "TESTCARDNUMBER"), SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", caid, "", "", SecConst.USER_ENDUSER, endEntityProfileSession.getEndEntityProfileId(admin, "TESTCARDNUMBER"), SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userdata.setPassword("foo123");
         try {
 			profile.doesUserFullfillEndEntityProfile(userdata, false);

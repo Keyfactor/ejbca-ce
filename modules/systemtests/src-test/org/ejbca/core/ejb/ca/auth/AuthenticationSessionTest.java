@@ -19,6 +19,12 @@ import java.security.cert.X509Certificate;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -31,13 +37,9 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.log.Admin;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 
@@ -48,7 +50,7 @@ import org.ejbca.util.InterfaceCache;
  */
 public class AuthenticationSessionTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AuthenticationSessionTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private int caid = getTestCAId();
 
     private static final int MAXFAILEDLOGINS = 4;
@@ -79,11 +81,11 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void tearDown() throws Exception {
     }
 
-    private void createUser(Admin admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
+    private void createUser(AuthenticationToken admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
             throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
                 null);
         ExtendedInformation ei = new ExtendedInformation();
         ei.setMaxLoginAttempts(maxFailedLogins);
@@ -91,7 +93,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         userdata.setExtendedinformation(ei);
         userdata.setPassword(password);
         userAdminSession.addUser(admin, userdata, true);
-        UserDataVO userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
+        EndEntityInformation userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
 
@@ -121,7 +123,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         log.trace(">test02AuthenticateUser()");
         // user that we know exists...
         log.debug("Username:" + username1 + "\npwd:" + pwd1);
-        UserDataVO data = authenticationSessionRemote.authenticateUser(admin, username1, pwd1);
+        EndEntityInformation data = authenticationSessionRemote.authenticateUser(admin, username1, pwd1);
 
         log.debug("DN: " + data.getDN());
         assertTrue("DN is wrong", data.getDN().indexOf(username1) != -1);
@@ -142,7 +144,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         userAdminSession.setUserStatus(admin, username1, UserDataConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
-            UserDataVO auth = authenticationSessionRemote.authenticateUser(admin, username1, pwd1);
+            EndEntityInformation auth = authenticationSessionRemote.authenticateUser(admin, username1, pwd1);
             log.debug("Authenticated user: " + auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
@@ -157,7 +159,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         // user that we know exists... but we issue wrong password
         boolean authfailed = false;
         try {
-            UserDataVO auth = authenticationSessionRemote.authenticateUser(admin, username1, "abc123");
+            EndEntityInformation auth = authenticationSessionRemote.authenticateUser(admin, username1, "abc123");
             log.debug("Authenticated user: " + auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
@@ -191,7 +193,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(admin, username1));
 
         // Now finish the user (The actual test)
-        UserDataVO userdata = userAdminSession.findUser(admin, username1);
+        EndEntityInformation userdata = userAdminSession.findUser(admin, username1);
         authenticationSessionRemote.finishUser(userdata);
         // And se if the user is still marked
 

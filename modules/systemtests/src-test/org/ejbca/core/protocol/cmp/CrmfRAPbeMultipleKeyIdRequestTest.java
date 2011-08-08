@@ -39,15 +39,19 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -103,26 +107,25 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
     private static int caid1 = 0;
     private static int caid2 = 0;
-    private static Admin admin;
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static Certificate cacert1 = null;
     private static Certificate cacert2 = null;
     
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
 
-    public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws CertificateEncodingException, CertificateException {
+    public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
         super(arg0);
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         CryptoProviderTools.installBCProvider();
         // Try to get caIds
-        CAInfo adminca1 = caAdminSession.getCAInfo(admin, "CmpCA1");
+        CAInfo adminca1 = caSession.getCAInfo(admin, "CmpCA1");
         caid1 = adminca1.getCAId();
-        CAInfo adminca2 = caAdminSession.getCAInfo(admin, "CmpCA2");
+        CAInfo adminca2 = caSession.getCAInfo(admin, "CmpCA2");
         caid2 = adminca2.getCAId();
         if ((caid1 == 0) || (caid2 == 0)) {
             assertTrue("No active CA! Must have CmpCA1 and CmpCA2 to run tests!", false);
         }
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, caid1);
+        CAInfo cainfo = caSession.getCAInfo(admin, caid1);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -135,7 +138,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         } else {
             log.error("NO CACERT for CmpCA1: " + caid1);
         }
-        cainfo = caAdminSession.getCAInfo(admin, caid2);
+        cainfo = caSession.getCAInfo(admin, caid2);
         certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();

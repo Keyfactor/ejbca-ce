@@ -18,13 +18,15 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -39,7 +41,7 @@ public class HardTokenProfileTest extends TestCase {
 
     private static int SVGFILESIZE = 512 * 1024; // 1/2 Mega char
 
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     public HardTokenProfileTest(String name) {
         super(name);

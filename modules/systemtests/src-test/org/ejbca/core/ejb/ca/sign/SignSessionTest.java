@@ -58,19 +58,30 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -79,10 +90,7 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.log.Admin;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -158,9 +166,11 @@ public class SignSessionTest extends CaTestCase {
     private Certificate cvcdveccert = null;
     private Certificate cvcaeccert = null;
     private X509Certificate dsacacert = null;
-    private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+    
+    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -209,28 +219,28 @@ public class SignSessionTest extends CaTestCase {
         // Add this again since it will be removed by the other tests in the
         // batch..
         assertTrue("Could not create TestCA.", createTestCA());
-        inforsa = caAdminSession.getCAInfo(admin, "TEST");
+        inforsa = caSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
-        CAInfo inforsareverse = caAdminSession.getCAInfo(admin, "TESTRSAREVERSE");
+        CAInfo inforsareverse = caSession.getCAInfo(admin, "TESTRSAREVERSE");
         assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", inforsareverse != null);
         rsareversecaid = inforsareverse.getCAId();
-        CAInfo infoecdsa = caAdminSession.getCAInfo(admin, "TESTECDSA");
+        CAInfo infoecdsa = caSession.getCAInfo(admin, "TESTECDSA");
         assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", infoecdsa != null);
         ecdsacaid = infoecdsa.getCAId();
-        CAInfo infoecdsaimplicitlyca = caAdminSession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+        CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
         assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", infoecdsaimplicitlyca != null);
         ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        CAInfo inforsamgf1ca = caAdminSession.getCAInfo(admin, "TESTSha256WithMGF1");
+        CAInfo inforsamgf1ca = caSession.getCAInfo(admin, "TESTSha256WithMGF1");
         assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", inforsamgf1ca != null);
         rsamgf1cacaid = inforsamgf1ca.getCAId();
-        CAInfo infocvcca = caAdminSession.getCAInfo(admin, "TESTDV-D");
+        CAInfo infocvcca = caSession.getCAInfo(admin, "TESTDV-D");
         assertTrue("No active CVC CA! Must have at least one active CA to run tests!", infocvcca != null);
         cvccaid = infocvcca.getCAId();
-        CAInfo infocvccaec = caAdminSession.getCAInfo(admin, "TESTDVECC-D");
+        CAInfo infocvccaec = caSession.getCAInfo(admin, "TESTDVECC-D");
         assertTrue("No active CVC EC CA! Must have at least one active CA to run tests!", infocvccaec != null);
         cvccaecid = infocvccaec.getCAId();
-        CAInfo infodsa = caAdminSession.getCAInfo(admin, "TESTDSA");
+        CAInfo infodsa = caSession.getCAInfo(admin, "TESTDSA");
         assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
         dsacaid = infodsa.getCAId();
         Collection<Certificate> coll = inforsa.getCertificateChain();
@@ -273,7 +283,7 @@ public class SignSessionTest extends CaTestCase {
         final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowKeyUsageOverride(true);
         certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
-        final int fooCertProfile = certificateProfileSession.getCertificateProfileId(admin, "FOOCERTPROFILE");
+        final int fooCertProfile = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
 
         endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
@@ -700,7 +710,7 @@ public class SignSessionTest extends CaTestCase {
         certprof.setQCEtsiValueLimit(50000);
         certprof.setQCEtsiValueLimitCurrency("SEK");
         certificateProfileSession.addCertificateProfile(admin, "TESTQC", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTQC");
+        int cprofile = certificateProfileSession.getCertificateProfileId( "TESTQC");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -755,7 +765,7 @@ public class SignSessionTest extends CaTestCase {
         certprof.setValidity(298);
         certprof.setUseCardNumber(true);
         certificateProfileSession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTVALOVERRIDE");
+        int cprofile = certificateProfileSession.getCertificateProfileId("TESTVALOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1437,7 +1447,7 @@ public class SignSessionTest extends CaTestCase {
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certificateProfileSession.addCertificateProfile(admin, "TESTDNORDER", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTDNORDER");
+        int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNORDER");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1703,7 +1713,7 @@ public class SignSessionTest extends CaTestCase {
         // Default profile does not allow DN override
         certprof.setValidity(298);
         certificateProfileSession.addCertificateProfile(admin, "TESTDNOVERRIDE", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTDNOVERRIDE");
+        int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1767,7 +1777,7 @@ public class SignSessionTest extends CaTestCase {
         // Default profile does not allow Extension override
         certprof.setValidity(298);
         certificateProfileSession.addCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTEXTENSIONOVERRIDE");
+        int cprofile = certificateProfileSession.getCertificateProfileId("TESTEXTENSIONOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -1867,7 +1877,7 @@ public class SignSessionTest extends CaTestCase {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Set CA to offline
-        CAInfo inforsa = caAdminSession.getCAInfo(admin, rsacaid);
+        CAInfo inforsa = caSession.getCAInfo(admin, rsacaid);
         inforsa.setStatus(SecConst.CA_OFFLINE);
         caAdminSession.editCA(admin, inforsa);
 
@@ -1890,7 +1900,7 @@ public class SignSessionTest extends CaTestCase {
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         // Default profile uses "inherit from CA"
         certificateProfileSession.addCertificateProfile(admin, "TESTSIGALG", certprof);
-        int cprofile = certificateProfileSession.getCertificateProfileId(admin, "TESTSIGALG");
+        int cprofile = certificateProfileSession.getCertificateProfileId("TESTSIGALG");
 
         // Create a good end entity profile (good enough)
         endEntityProfileSession.removeEndEntityProfile(admin, "TESTSIGALG");
@@ -1925,7 +1935,7 @@ public class SignSessionTest extends CaTestCase {
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
-        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
+        assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
 
         // Change so that we can override signature algorithm
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
@@ -1937,13 +1947,13 @@ public class SignSessionTest extends CaTestCase {
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
-        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.getSignatureAlgorithm(cert));
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
     } // test31TestProfileSignatureAlgorithm
 
     public void test32TestCertReqHistory() throws Exception {
 
         // Configure CA not to store certreq history
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, rsacaid);
+        CAInfo cainfo = caSession.getCAInfo(admin, rsacaid);
         cainfo.setUseCertReqHistory(true);
         cainfo.setDoEnforceUniquePublicKeys(false);
         caAdminSession.editCA(admin, cainfo);
@@ -2142,7 +2152,7 @@ public class SignSessionTest extends CaTestCase {
     	certProfile.setUsePrivateKeyUsagePeriodNotAfter(usePeriod);
     	certProfile.setPrivateKeyUsagePeriodLength(period);
     	certificateProfileSession.addCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD, certProfile);
-    	final int certProfileId = certificateProfileSession.getCertificateProfileId(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
+    	final int certProfileId = certificateProfileSession.getCertificateProfileId(CERTPROFILE_PRIVKEYUSAGEPERIOD);
     	endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
         final EndEntityProfile eeProfile = new EndEntityProfile();
         eeProfile.addField(DnComponents.COUNTRY);

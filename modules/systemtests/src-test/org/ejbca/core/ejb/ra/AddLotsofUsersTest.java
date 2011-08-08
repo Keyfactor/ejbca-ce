@@ -16,13 +16,15 @@ package org.ejbca.core.ejb.ra;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -68,7 +70,7 @@ public class AddLotsofUsersTest extends CaTestCase {
      */
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
-        final Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         final String baseUsername = "lotsausers" + System.currentTimeMillis() + "-";
         for (int i = 0; i < 2000; i++) {
             String username = genUserName(baseUsername);
@@ -98,7 +100,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
-    	List<UserDataVO> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(UserDataConstants.STATUS_NEW);
+    	List<EndEntityInformation> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(UserDataConstants.STATUS_NEW);
     	assertEquals("Did not returned the maximum hardcoded limit in query.", UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
         log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }

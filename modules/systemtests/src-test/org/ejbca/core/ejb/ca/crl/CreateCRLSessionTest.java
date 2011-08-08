@@ -40,7 +40,11 @@ import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -51,6 +55,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -63,8 +68,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -80,7 +83,7 @@ import org.ejbca.util.InterfaceCache;
 public class CreateCRLSessionTest extends CaTestCase {
 
     private final static Logger log = Logger.getLogger(CreateCRLSessionTest.class);
-    private final static Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private final static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private static int caid;
     private static CA ca;
@@ -91,7 +94,7 @@ public class CreateCRLSessionTest extends CaTestCase {
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    private CrlSessionRemote crlSession = InterfaceCache.getCrlSession();
+    private CrlSessionRemote crlSession = InterfaceCache.getCrlStoreSession();
     private CrlCreateSessionRemote crlCreateSession = InterfaceCache.getCrlStoreSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -345,7 +348,7 @@ public class CreateCRLSessionTest extends CaTestCase {
                     certificateProfileSession.addCertificateProfile(admin, TESTPROFILE, certProfile);
                 } catch (CertificateProfileExistsException cpeee) {
                 }
-                certprofileid = certificateProfileSession.getCertificateProfileId(admin, TESTPROFILE);
+                certprofileid = certificateProfileSession.getCertificateProfileId(TESTPROFILE);
                 assertTrue(certprofileid != 0);
                 // add End Entity Profile with validity limitations
                 EndEntityProfile profile;

@@ -24,10 +24,14 @@ import java.util.Random;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -147,14 +151,14 @@ public abstract class CaTestCase extends TestCase {
 	 */
 	public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection certificateChain) {
         log.trace(">createTestCA");
-        final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     	try {
 			 this.adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 		} catch (AdminGroupExistsException e) {
 			log.error("",e);
 		}
 		// Search for requested CA
-		CAInfo caInfo = this.caAdminSessionRemote.getCAInfo(admin, caName);
+		CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
 		if (caInfo != null) {
 			return true;
 		}
@@ -231,7 +235,7 @@ public abstract class CaTestCase extends TestCase {
 			log.error("", e);
 			return false;
 		}
-        final CAInfo info = this.caAdminSessionRemote.getCAInfo(admin, caName);
+        final CAInfo info = this.caSession.getCAInfo(admin, caName);
 		final String normalizedDN = CertTools.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
@@ -243,7 +247,7 @@ public abstract class CaTestCase extends TestCase {
         	log.error("Creating CA failed!");
 			return false;
         }
-        if ( this.certificateStoreSession.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null) {
+        if ( this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
         	log.error("CA certificate not available in database!!");
         	return false;
         }
@@ -270,8 +274,8 @@ public abstract class CaTestCase extends TestCase {
      */
     public Certificate getTestCACert(String caName) {
         Certificate cacert = null;
-        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
-        CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, getTestCAId(caName));
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        CAInfo cainfo = caSession.getCAInfo(admin, getTestCAId(caName));
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
@@ -313,9 +317,9 @@ public abstract class CaTestCase extends TestCase {
      */
     public boolean removeTestCA(String caName) {
         // Search for requested CA
-        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         try {
-            final CAInfo caInfo = this.caAdminSessionRemote.getCAInfo(admin, caName);
+            final CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
             if (caInfo == null) {
                 return true;
             }
@@ -357,7 +361,7 @@ public abstract class CaTestCase extends TestCase {
     protected int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
             CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
     	log.debug("approvingAdmin=" + approvingAdmin.getAdminType() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType + " approvalCAID=" + approvalCAID);
-        Collection userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
+        Collection userCerts = certificateStoreSession.findCertificatesByUsername(username);
         Iterator i = userCerts.iterator();
         int approvedRevocations = 0;
         while (i.hasNext()) {
@@ -389,7 +393,7 @@ public abstract class CaTestCase extends TestCase {
         return approvedRevocations;
     }
 
-	public CAInfo getCAInfo(Admin admin, String name) {
-		return this.caAdminSessionRemote.getCAInfo(admin, name);
+	public CAInfo getCAInfo(AuthenticationToken admin, String name) {
+		return this.caSession.getCAInfo(admin, name);
 	}
 }

@@ -20,8 +20,10 @@ import java.util.Iterator;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
@@ -36,7 +38,7 @@ import org.ejbca.util.InterfaceCache;
 public class UserDataSourceTest extends TestCase {
         
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     
     private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
     

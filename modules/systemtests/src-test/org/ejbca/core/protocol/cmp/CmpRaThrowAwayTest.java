@@ -22,6 +22,11 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -29,8 +34,6 @@ import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -44,7 +47,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 public class CmpRaThrowAwayTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationTest.class);
-    private static final Admin ADMIN = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken ADMIN = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static final Random RND = new SecureRandom();
 
     private static final String TESTCA_NAME = "CmpRaThrowAwayTestCA";
@@ -61,7 +64,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     public void test000Setup() throws Exception {
         LOG.trace(">test000Setup");
         createTestCA(TESTCA_NAME); // Create test CA
-        caCertificate = (X509Certificate) InterfaceCache.getCaSession().getCA(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
+        caCertificate = (X509Certificate) InterfaceCache.getCaSession().getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
                 .next();
         assertCAConfig(true, true, true);
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
@@ -124,11 +127,11 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET);
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
-        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, InterfaceCache.getCertificateStoreSession()
-                .getCertReqHistory(ADMIN, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
+        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, InterfaceCache.getCertReqHistorySession()
+                .retrieveCertReqHistory(ADMIN, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
         assertEquals("User data was or wasn't stored: ", useUserStorage, InterfaceCache.getUserAdminSession().existsUser(ADMIN, username));
         assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, InterfaceCache.getCertificateStoreSession()
-                .findCertificateByFingerprint(ADMIN, CertTools.getFingerprintAsString(cert)) != null);
+                .findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null);
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -161,22 +164,25 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             InterfaceCache.getUserAdminSession().deleteUser(ADMIN, username);
         }
         if (useCertReqHistory) {
-            InterfaceCache.getCertificateStoreSession().removeCertReqHistoryData(ADMIN, CertTools.getFingerprintAsString(cert));
+            InterfaceCache.getCertReqHistorySession().removeCertReqHistoryData(ADMIN, CertTools.getFingerprintAsString(cert));
         }
         LOG.trace("<testIssueConfirmRevoke");
     }
 
-    /** Assert that the CA is configured to store things as expected. */
-    private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) {
-        CAInfo caInfo = InterfaceCache.getCAAdminSession().getCAInfo(ADMIN, TESTCA_NAME);
+    /** Assert that the CA is configured to store things as expected. 
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException */
+    private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws CADoesntExistsException, AuthorizationDeniedException {
+        CAInfo caInfo = InterfaceCache.getCaSession().getCAInfo(ADMIN, TESTCA_NAME);
         assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
         assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
         assertEquals("CA has wrong useCertificateStorage setting: ", useCertificateStorage, caInfo.isUseCertificateStorage());
     }
 
-    /** Change CA configuration for what to store and assert that the changes were made. */
-    private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException {
-        CAInfo caInfo = InterfaceCache.getCAAdminSession().getCAInfo(ADMIN, TESTCA_NAME);
+    /** Change CA configuration for what to store and assert that the changes were made. 
+     * @throws CADoesntExistsException */
+    private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException {
+        CAInfo caInfo = InterfaceCache.getCaSession().getCAInfo(ADMIN, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);
         caInfo.setUseCertificateStorage(useCertificateStorage);

@@ -24,6 +24,9 @@ import java.util.Iterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -40,7 +43,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -74,7 +76,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private KeyPair keys = null;  
 
     private static int caid = 0;
-    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
     
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
@@ -90,7 +92,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 		super(arg0);
 		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caAdminSessionRemote.getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
@@ -103,7 +105,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         if (caid == 0) {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
-        CAInfo cainfo = caAdminSessionRemote.getCAInfo(admin, caid);
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -134,7 +136,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 				e.printStackTrace();
 			}
         }
-        int cpId = certificateProfileSession.getCertificateProfileId(admin, CPNAME);
+        int cpId = certificateProfileSession.getCertificateProfileId(CPNAME);
         if (endEntityProfileSession.getEndEntityProfile(admin, EEPNAME) == null) {
             // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check 'Modifyable'), MS UPN in altNames in the end entity profile.
             EndEntityProfile eep = new EndEntityProfile(true);

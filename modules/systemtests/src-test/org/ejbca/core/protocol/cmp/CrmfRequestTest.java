@@ -32,24 +32,27 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 
@@ -72,20 +75,18 @@ public class CrmfRequestTest extends CmpTestCase {
     private KeyPair keys = null;  
 
     private static int caid = 0;
-    private static Admin admin;
+    private static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
     
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-	public CrmfRequestTest(String arg0) throws CertificateEncodingException, CertificateException {
+	public CrmfRequestTest(String arg0) throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
 		super(arg0);
-        admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
         CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caAdminSession.getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
@@ -98,7 +99,7 @@ public class CrmfRequestTest extends CmpTestCase {
         if (caid == 0) {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -355,11 +356,11 @@ public class CrmfRequestTest extends CmpTestCase {
     // Private helper methods
     //
     private void createCmpUser() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
-            EjbcaException, FinderException {
+            EjbcaException, FinderException, CADoesntExistsException {
         // Make user that we know...
         boolean userExists = false;
         userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        UserDataVO user = new UserDataVO("cmptest", userDN, caid, null, "cmptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {

@@ -25,11 +25,15 @@ import java.util.Vector;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -84,7 +88,7 @@ public class CertificateRetrivalTest extends TestCase {
     private String rootCaFp = null;
     private String subCaFp = null;
     private String endEntityFp = null;
-    private Admin admin;
+    private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
@@ -113,7 +117,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
         Certificate cert;
-        Admin adm = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken adm = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         m_certs = new HashSet<Certificate>();
         m_certfps = new HashSet<String>();
         cert = CertTools.getCertfromByteArray(testrootcert);
@@ -122,7 +126,7 @@ public class CertificateRetrivalTest extends TestCase {
         // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
         rootCaFp = CertTools.getFingerprintAsString(cert);
         try {
-            if (certificateStoreSession.findCertificateByFingerprint(adm, rootCaFp) == null) {
+            if (certificateStoreSession.findCertificateByFingerprint(rootCaFp) == null) {
                 certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", rootCaFp, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ROOTCA,
                         SecConst.CERTPROFILE_FIXED_ROOTCA, null, new Date().getTime());
             }
@@ -131,7 +135,7 @@ public class CertificateRetrivalTest extends TestCase {
             m_certfps.add(CertTools.getFingerprintAsString(cert));
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             subCaFp = CertTools.getFingerprintAsString(cert);
-            if (certificateStoreSession.findCertificateByFingerprint(adm, subCaFp) == null) {
+            if (certificateStoreSession.findCertificateByFingerprint(subCaFp) == null) {
                 certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", subCaFp, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_SUBCA,
                         SecConst.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
             }
@@ -140,7 +144,7 @@ public class CertificateRetrivalTest extends TestCase {
             m_certfps.add(CertTools.getFingerprintAsString(cert));
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             endEntityFp = CertTools.getFingerprintAsString(cert);
-            if (certificateStoreSession.findCertificateByFingerprint(adm, endEntityFp) == null) {
+            if (certificateStoreSession.findCertificateByFingerprint(endEntityFp) == null) {
                 certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", endEntityFp, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY,
                         SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
             }
@@ -148,7 +152,6 @@ public class CertificateRetrivalTest extends TestCase {
             log.error("Error: ", e);
             assertTrue("Error seting up tests: " + e.getMessage(), false);
         }
-        admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
         log.trace("<setUp()");
     }
 
@@ -163,7 +166,7 @@ public class CertificateRetrivalTest extends TestCase {
     public void test02FindCACertificates() throws Exception {
         log.trace(">test02FindCACertificates()");
         // List all certificates to see
-        Collection certfps = certificateStoreSession.findCertificatesByType(admin, SecConst.CERTTYPE_SUBCA, null);
+        Collection certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_SUBCA, null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -196,7 +199,7 @@ public class CertificateRetrivalTest extends TestCase {
         // List all certificates to see, but only from our test certificates
         // issuer, or we might get OutOfMemmory if there are plenty of certs
         Collection certfps = certificateStoreSession
-                .findCertificatesByType(admin, SecConst.CERTTYPE_ENDENTITY, "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
+                .findCertificatesByType(SecConst.CERTTYPE_ENDENTITY, "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -228,7 +231,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace(">test04FindRootCertificates()");
 
         // List all certificates to see
-        Collection certfps = certificateStoreSession.findCertificatesByType(admin, SecConst.CERTTYPE_ROOTCA, null);
+        Collection certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -272,7 +275,7 @@ public class CertificateRetrivalTest extends TestCase {
         sernos = new Vector<BigInteger>();
         sernos.add(CertTools.getSerialNumber(subcacert));
         sernos.add(CertTools.getSerialNumber(rootcacert));
-        certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(admin, CertTools.getSubjectDN(rootcacert), sernos);
+        certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(CertTools.getSubjectDN(rootcacert), sernos);
         assertNotNull("failed to list certs", certfps);
         // we expect two certificates cause the rootca certificate is
         // self signed and so the issuer is identical with the subject
@@ -282,7 +285,7 @@ public class CertificateRetrivalTest extends TestCase {
 
         sernos = new Vector<BigInteger>();
         sernos.add(CertTools.getSerialNumber(cert));
-        certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(admin, CertTools.getSubjectDN(subcacert), sernos);
+        certfps = certificateStoreSession.findCertificatesByIssuerAndSernos(CertTools.getSubjectDN(subcacert), sernos);
         assertNotNull("failed to list certs", certfps);
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 1);
@@ -326,7 +329,7 @@ public class CertificateRetrivalTest extends TestCase {
         Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
 
         // List all certificates to see
-        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(admin, SecConst.CERTTYPE_SUBCA, CertTools.getSubjectDN(rootcacert));
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_SUBCA, CertTools.getSubjectDN(rootcacert));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
         Iterator<Certificate> iter = certfps.iterator();

@@ -19,6 +19,9 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -245,12 +248,10 @@ public class CAImportExportTest extends TestCase  {
         String capassword = "foo123";
         String keyFingerPrint = null;
         cainfo = getNewCAInfo(caname, catokeninfo);
-    	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
-    	boolean defaultRetValue = false;
-        if ( admin.getAdminType() == Admin.TYPE_CACOMMANDLINE_USER ) {
-        	defaultRetValue = true;
-        }
-		try {
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    	boolean defaultRetValue = true;
+
+    	try {
 		    caSession.removeCA(admin, cainfo.getCAId());
 		} catch (Exception e) { }
 		boolean ret = false;
@@ -304,13 +305,13 @@ public class CAImportExportTest extends TestCase  {
      * @param catokeninfo The tokeninfo for this CA-info
      * @param admin The unathorized administrator 
      */
-	private void subTestPublicAccess(CATokenInfo catokeninfo, Admin admin) throws Exception {
+	private void subTestPublicAccess(CATokenInfo catokeninfo, AuthenticationToken admin) throws Exception {
 		byte[] keystorebytes = null;
         String caname = "DummyTestCA";
         String capassword = "foo123";
         String keyFingerPrint = null;
         cainfo = getNewCAInfo(caname, catokeninfo);
-        Admin internalAdmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 		try {
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 		} catch (Exception e) { }

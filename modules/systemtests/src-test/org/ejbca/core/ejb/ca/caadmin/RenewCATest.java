@@ -17,9 +17,11 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -27,7 +29,7 @@ import org.ejbca.util.InterfaceCache;
  */
 public class RenewCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(RenewCATest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     

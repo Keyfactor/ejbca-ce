@@ -23,11 +23,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.actions.NoAction;
@@ -45,7 +47,7 @@ import org.ejbca.util.InterfaceCache;
 public class ServiceServiceTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ServiceServiceTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     
     private static final String NOT_THIS_HOST1 = "notthishost.nodomain";
     private static final String NOT_THIS_HOST2 = "notthishost2.nodomain";

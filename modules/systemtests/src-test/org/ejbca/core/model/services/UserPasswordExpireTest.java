@@ -16,13 +16,15 @@ package org.ejbca.core.model.services;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
@@ -36,7 +38,7 @@ import org.ejbca.util.InterfaceCache;
 public class UserPasswordExpireTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserPasswordExpireTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private int caid = getTestCAId();
 
     private static final String USERNAME = "UserPasswordExpireTestUser";
@@ -103,7 +105,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         // The service will run...
 
         // Now the user will not have been expired
-        UserDataVO data = userAdminSession.findUser(admin, USERNAME);
+        EndEntityInformation data = userAdminSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_NEW, data.getStatus());
 

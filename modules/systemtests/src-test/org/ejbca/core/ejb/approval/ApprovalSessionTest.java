@@ -28,7 +28,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
@@ -50,9 +55,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
@@ -65,7 +68,7 @@ import org.ejbca.util.query.Query;
 public class ApprovalSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
-    private static final Admin intadmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken intadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private static String reqadminusername = null;
     private static String adminusername1 = null;
@@ -76,10 +79,10 @@ public class ApprovalSessionTest extends CaTestCase {
     private static X509Certificate admincert2 = null;
     private static X509Certificate externalcert = null;
 
-    private static Admin reqadmin = null;
-    private static Admin admin1 = null;
-    private static Admin admin2 = null;
-    private static Admin externaladmin = null;
+    private static AuthenticationToken reqadmin = null;
+    private static AuthenticationToken admin1 = null;
+    private static AuthenticationToken admin2 = null;
+    private static AuthenticationToken externaladmin = null;
 
     private static ArrayList<AdminEntity> adminentities;
     private static GlobalConfiguration gc = null;
@@ -112,17 +115,17 @@ public class ApprovalSessionTest extends CaTestCase {
             adminusername2 = adminusername1 + "2";
             reqadminusername = "req" + adminusername1;
 
-            UserDataVO userdata = new UserDataVO(adminusername1, "CN=" + adminusername1, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+            EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userAdminSession.addUser(intadmin, userdata, true);
 
-            UserDataVO userdata2 = new UserDataVO(adminusername2, "CN=" + adminusername2, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+            EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
             userAdminSession.addUser(intadmin, userdata2, true);
 
-            UserDataVO userdata3 = new UserDataVO(reqadminusername, "CN=" + reqadminusername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+            EndEntityInformation userdata3 = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata3.setPassword("foo123");
             userAdminSession.addUser(intadmin, userdata3, true);
@@ -145,9 +148,9 @@ public class ApprovalSessionTest extends CaTestCase {
             adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
             authorizationSession.forceRuleUpdate(intadmin);
 
-            admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername1).iterator().next();
-            admincert2 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername2).iterator().next();
-            reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, reqadminusername).iterator().next();
+            admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername1).iterator().next();
+            admincert2 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername2).iterator().next();
+            reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(reqadminusername).iterator().next();
 
             admin1 = new Admin(admincert1, adminusername1, null);
             admin2 = new Admin(admincert2, adminusername2, null);

@@ -31,11 +31,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -45,8 +51,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -74,7 +78,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private KeyPair keys = null;  
 
     private static int caid = 0;
-    private static final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
@@ -82,11 +86,11 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
-	public CrmfRATcpRequestTest(String arg0) throws CertificateEncodingException, CertificateException {
+	public CrmfRATcpRequestTest(String arg0) throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
 		super(arg0);
 		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
-        CAInfo adminca1 = caAdminSession.getCAInfo(admin, "AdminCA1");
+        CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
@@ -99,7 +103,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         if (caid == 0) {
         	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
         }        	
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, caid);
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
             Iterator<Certificate> certiter = certs.iterator();
@@ -310,7 +314,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     // Private helper methods
     //
     private void createCmpUser(String username, String userDN) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            ApprovalException, WaitingForApprovalException, EjbcaException, FinderException {
+            ApprovalException, WaitingForApprovalException, EjbcaException, FinderException, PersistenceException, CADoesntExistsException {
         // Make user that we know...
         boolean userExists = false;
         try {
