@@ -43,6 +43,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -50,7 +51,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 
@@ -173,9 +173,9 @@ public class CertDistServlet extends HttpServlet {
             try {
                 byte[] crl = null;
                 if (command.equalsIgnoreCase(COMMAND_CRL)) {
-                	crl = crlSession.getLastCRL(administrator, issuerdn, false); // CRL
+                	crl = crlSession.getLastCRL(issuerdn, false); // CRL
                 } else {
-                	crl = crlSession.getLastCRL(administrator, issuerdn, true); // deltaCRL
+                	crl = crlSession.getLastCRL(issuerdn, true); // deltaCRL
                 } 
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
@@ -211,7 +211,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 log.debug("Looking for certificates for '"+dn+"'.");
-                Collection<Certificate> certcoll = storesession.findCertificatesBySubject(administrator, dn);
+                Collection<Certificate> certcoll = storesession.findCertificatesBySubject(dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
                 if (command.equalsIgnoreCase(COMMAND_CERT)) {
@@ -410,8 +410,8 @@ public class CertDistServlet extends HttpServlet {
 
     } // doGet
 
-	private Certificate[] getCertificateChain(Admin administrator,
-			int caid, String issuerdn) {
+	private Certificate[] getCertificateChain(AuthenticationToken administrator,
+			int caid, String issuerdn) throws AuthorizationDeniedException {
 		Certificate[] chain;
 		if(caid != 0) {
 		    chain = (Certificate[]) signSession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
@@ -422,7 +422,7 @@ public class CertDistServlet extends HttpServlet {
 		return chain;
 	}
 
-	private void handleCaChainCommands(Admin administrator, String issuerdn, int caid, String format, HttpServletResponse res) throws IOException {
+	private void handleCaChainCommands(AuthenticationToken administrator, String issuerdn, int caid, String format, HttpServletResponse res) throws IOException {
 			try {
 				Certificate[] chain = getCertificateChain(administrator, caid, issuerdn);
 				// This one gets it in the wrong order for a chain file...so reverse it
@@ -483,6 +483,9 @@ public class CertDistServlet extends HttpServlet {
 			} catch (EJBException e) {
                 log.debug("CA does not exist: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "CA does not exist: "+e.getMessage());
+			} catch (AuthorizationDeniedException e) {
+                log.debug("Authotization denied: ", e);
+                res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization denied: "+e.getMessage());
 			}
 	}
     

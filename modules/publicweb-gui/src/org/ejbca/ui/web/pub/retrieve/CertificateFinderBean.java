@@ -26,6 +26,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -33,7 +35,6 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -54,7 +55,7 @@ public class CertificateFinderBean {
 
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
-	private CAAdminSession mCaAdminSession = ejb.getCaAdminSession();
+	private CaSession mCaSession = ejb.getCaSession();
 	private CaSession caSession = ejb.getCaSession();
 	private CertificateStoreSession mStoreSession = ejb.getCertificateStoreSession();
 
@@ -109,7 +110,15 @@ public class CertificateFinderBean {
 		if (log.isTraceEnabled()) {
 			log.trace(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
 		}
-		return mInitialized ? mCaAdminSession.getCAInfo(mAdmin, mCurrentCA) : null;
+		CAInfo cainfo = null;
+		try {
+			cainfo = mCaSession.getCAInfo(mAdmin, mCurrentCA);
+		} catch (CADoesntExistsException e) {
+			log.info("CA does not exist : "+mCurrentCA, e);
+		} catch (AuthorizationDeniedException e) {
+			log.info("Unauthorized to CA : "+mCurrentCA, e);
+		}
+		return mInitialized ?  cainfo : null;
 	}
 
 	public Collection<CertificateWrapper> getCACertificateChain() {
@@ -121,21 +130,31 @@ public class CertificateFinderBean {
 		}
 		// Make a collection of CertificateWrapper instead of the real certificate
 		ArrayList<CertificateWrapper> ret = new ArrayList<CertificateWrapper>();
-		Collection<Certificate> certs = mSignSession.getCertificateChain(mAdmin, mCurrentCA);
-		for (Iterator<Certificate> it = certs.iterator(); it.hasNext();) {
-			Certificate cert = (Certificate)it.next();
-			ret.add(new CertificateWrapper(cert));
+		try {
+			Collection<Certificate> certs = mSignSession.getCertificateChain(mAdmin, mCurrentCA);
+			for (Iterator<Certificate> it = certs.iterator(); it.hasNext();) {
+				Certificate cert = (Certificate)it.next();
+				ret.add(new CertificateWrapper(cert));
+			}
+		} catch (AuthorizationDeniedException e) {
+			log.error("Authorization denied getting certificate chain: ", e);
 		}
 		return ret;
 	}
 
 	public String getCADN() {
-		final Collection<Certificate> certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
-		if ( certs==null || certs.isEmpty() ) {
-			return "";
+		String ret = "Unauthorized";
+		try {
+			final Collection<Certificate> certs = this.mSignSession.getCertificateChain(this.mAdmin, this.mCurrentCA);
+			if ( certs==null || certs.isEmpty() ) {
+				return "";
+			}
+			final Certificate cert = (Certificate)certs.iterator().next();
+			ret = CertTools.getSubjectDN(cert);
+		} catch (AuthorizationDeniedException e) {
+			log.error("Authorization denied getting CA DN: ", e);
 		}
-		final Certificate cert = (Certificate)certs.iterator().next();
-		return CertTools.getSubjectDN(cert);
+		return ret;
 	}
 
 	public Collection<CertificateWrapper> getCACertificateChainReversed() {

@@ -38,7 +38,7 @@ public class RaGetUserCertCommand extends BaseRaAdminCommand {
                 return;
             }
             final String username = args[1];
-            final Collection<Certificate> data = ejb.getCertStoreSession().findCertificatesByUsername(getAdmin(), username);
+            final Collection<Certificate> data = ejb.getCertStoreSession().findCertificatesByUsername(username);
             if (data != null) {
             	getLogger().info(new String(CertTools.getPEMFromCerts(data)));
             } else {

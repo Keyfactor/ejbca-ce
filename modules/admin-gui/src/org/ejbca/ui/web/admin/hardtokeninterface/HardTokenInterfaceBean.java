@@ -22,8 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.ejb.authorization.AuthorizationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -71,7 +71,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     		EjbLocalHelper ejb = new EjbLocalHelper();    
     		hardtokensession = ejb.getHardTokenSession();
     		hardtokenbatchsession = ejb.getHardTokenBatchJobSession();
-    		AuthorizationSession authorizationsession = ejb.getAuthorizationSession();
+    		AccessControlSessionLocal authorizationsession = ejb.getAccessControlSession();
     		UserAdminSession useradminsession = ejb.getUserAdminSession();
     		CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
     		keyrecoverysession = ejb.getKeyRecoverySession();

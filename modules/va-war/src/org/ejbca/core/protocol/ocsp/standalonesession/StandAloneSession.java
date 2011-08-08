@@ -30,6 +30,9 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
@@ -40,7 +43,6 @@ import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPData;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
@@ -70,6 +72,9 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
      * The data of the session.
      */
     final private SessionData sessionData;
+    
+	private final AuthenticationToken m_internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("OCSP ServletBase"));
+
     /**
      * Called when a servlet is initialized. This should only occur once.
      * 
@@ -194,7 +199,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
             }
             this.sessionData = new SessionData(slot, tmpData, webURL, renewTimeBeforeCertExpiresInSeconds, storePassword, cardPassword, keystoreDirectoryName, keyAlias, doNotStorePasswordsInMemory, p11Password);
             this.signEntitycontainer = new SigningEntityContainer(this.sessionData);
-            loadPrivateKeys(tmpData.m_adm, null);
+            loadPrivateKeys(m_internalAdmin, null);
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -271,7 +276,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.IStandAloneSession#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    public void loadPrivateKeys(Admin adm, String password) throws Exception {
+    public void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception {
         if ( this.sessionData.doNotStorePasswordsInMemory ) {
             if ( password==null ) {
                 return; // can not load without password.

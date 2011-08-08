@@ -126,8 +126,6 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
         	ejb.getCAAdminSession().importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
-        } catch (ErrorAdminCommandException e) {
-        	throw e;
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

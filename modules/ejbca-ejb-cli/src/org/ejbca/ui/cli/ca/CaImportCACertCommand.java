@@ -6,9 +6,10 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.CreateException;
-
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -66,9 +67,13 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			getLogger().error(e.getMessage());
 		} catch (IOException e) {
 			getLogger().error(e.getMessage());
-		} catch (CreateException e) {
+		} catch (CAExistsException e) {
+			getLogger().error(e.getMessage());
+		} catch (IllegalCryptoTokenException e) {
 			getLogger().error(e.getMessage());
 		} catch (AdminGroupExistsException e) {
+			getLogger().error(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
 			getLogger().error(e.getMessage());
 		}
 	}

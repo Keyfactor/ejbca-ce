@@ -420,6 +420,17 @@ public interface CAAdminSession {
      */
     public void publishCACertificate(AuthenticationToken admin, Collection<Certificate> certificatechain, Collection<Integer> usedpublishers, String caDataDN) throws AuthorizationDeniedException;
 
+    /**
+     * (Re-)Publish the last CRLs for a CA.
+     *
+     * @param admin            Information about the administrator performing the event.
+     * @param caCert           The certificate for the CA to publish CRLs for
+     * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
+     * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
+     * @param doPublishDeltaCRL should delta CRLs be published?
+     */
+    public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL);
+
     /** @return a Collection of id:s (Integer) to authorized publishers. */
     public Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);
 

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.services.BaseWorker;
@@ -56,6 +57,9 @@ public class CRLUpdateWorker extends BaseWorker {
 			    Collection<Integer> caids = getCAIdsToCheck(true); 
 			    crlCreateSession.createCRLs(getAdmin(), caids, polltime*1000);
 			    crlCreateSession.createDeltaCRLs(getAdmin(), caids, polltime*1000);
+			} catch (AuthorizationDeniedException e) {
+				log.info("Authorization denied executing service: ", e);
+				throw new ServiceExecutionFailedException(e);
 			} finally {
 				running = false;
 			}			

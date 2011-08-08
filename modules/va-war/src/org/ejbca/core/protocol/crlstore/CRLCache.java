@@ -23,7 +23,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.util.CertTools;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
@@ -58,8 +57,6 @@ class CRLCache implements ICRLCache {
 	 */
 	final private Lock rebuildlock = new ReentrantLock();
 
-	/** Admin for calling session beans in EJBCA */
-	final private Admin admin = Admin.getInternalAdmin();
 	/**
 	 * @param crlSession DB connections
 	 * @param certStore references to needed CA certificates.
@@ -91,7 +88,7 @@ class CRLCache implements ICRLCache {
 		final String issuerDN = CertTools.getSubjectDN(caCert);
 		this.rebuildlock.lock();
 		try {
-			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(this.admin, issuerDN, isDelta);
+			final CRLInfo crlInfo = this.crlSession.getLastCRLInfo(issuerDN, isDelta);
 			if ( crlInfo==null ) {
 				if (log.isDebugEnabled()) {
 					log.debug("No CRL found with issuerDN '"+issuerDN+"', returning null.");
@@ -106,7 +103,7 @@ class CRLCache implements ICRLCache {
 				}
 				return cachedCRL.encoded;
 			}
-			final CRLEntity entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(this.admin, issuerDN, isDelta) );
+			final CRLEntity entry = new CRLEntity( crlInfo, this.crlSession.getLastCRL(issuerDN, isDelta) );
 			usedCrls.put(id.key, entry);
 			if (log.isDebugEnabled()) {
 				log.debug("Retrieved CRL (not from cache) with issuerDN '"+issuerDN+"', with CRL number "+crlInfo.getLastCRLNumber());

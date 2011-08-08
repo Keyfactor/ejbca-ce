@@ -47,7 +47,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection<Integer> certprofids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(),0, ejb.getCaSession().getAvailableCAs(getAdmin()));                                               
+            Collection<Integer> certprofids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(0, ejb.getCaSession().getAvailableCAs(getAdmin()));                                               
 			Collection<Integer> endentityprofids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin());
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
@@ -59,8 +59,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (SecConst.isFixedCertificateProfile(profileid)) {
                     //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
-					String profilename = ejb.getCertificateProfileSession().getCertificateProfileName(getAdmin(), profileid);									
-                    CertificateProfile profile = ejb.getCertificateProfileSession().getCertificateProfile(getAdmin(),profileid);
+					String profilename = ejb.getCertificateProfileSession().getCertificateProfileName(profileid);									
+                    CertificateProfile profile = ejb.getCertificateProfileSession().getCertificateProfile(profileid);
                     if (profile == null) {
                     	getLogger().error("Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

@@ -19,10 +19,10 @@ import java.util.Iterator;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -45,7 +45,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
                 return;
             }
             String username = args[1];
-            UserDataVO data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            EndEntityInformation data = ejb.getUserAdminSession().findUser(getAdmin(), username);
             getLogger().info("Found user:");
             getLogger().info("username=" + data.getUsername());
             getLogger().info("dn=\"" + data.getDN() + "\"");
@@ -54,7 +54,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             try {
             	boolean foundCertificateOnHold = false;
             	// Find all user certs
-            	Iterator<Certificate> i = ejb.getCertStoreSession().findCertificatesByUsername(getAdmin(), username).iterator();
+            	Iterator<Certificate> i = ejb.getCertStoreSession().findCertificatesByUsername(username).iterator();
             	while (i.hasNext()) {
             		X509Certificate cert = (X509Certificate) i.next();
             		if (ejb.getCertStoreSession().getStatus(cert.getIssuerDN().toString(),

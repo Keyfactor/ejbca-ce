@@ -28,6 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
@@ -35,7 +38,6 @@ import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Servlet used to clear all caches (Global Configuration Cache, End Entity Profile Cache, 
@@ -131,7 +133,8 @@ public class ClearCacheServlet extends HttpServlet {
 			log.trace(">acceptedHost: "+remotehost);
 		}    	
 		boolean ret = false;
-		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration(Admin.getInternalAdmin());
+		AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ClearCacheServlet: "+remotehost));
+		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration(admin);
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
 		String nodename = null;

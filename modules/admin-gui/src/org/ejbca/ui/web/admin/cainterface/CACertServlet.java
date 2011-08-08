@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.Base64;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -119,7 +119,7 @@ public class CACertServlet extends HttpServlet {
             }
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                Admin admin = ejbcawebbean.getAdminObject();
+                AuthenticationToken admin = ejbcawebbean.getAdminObject();
                 Certificate[] chain = (Certificate[]) signSession.getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             
                 // chain.length-1 is last cert in chain (root CA)

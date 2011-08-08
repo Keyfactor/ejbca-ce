@@ -18,6 +18,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
@@ -25,7 +26,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.OCSPData;
@@ -69,7 +69,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
          * @param password Password for activation. If null then ust key loading.
          * @throws Exception
          */
-        void loadPrivateKeys(Admin adm, String password) throws Exception;
+        void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception;
         /**
          * Answers the OCSP request. The answer is assembled in a separate thread by an object of the class {@link SignerThread}.
          * @param caid EJBCA id for the CA.
@@ -115,13 +115,13 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    protected void loadPrivateKeys(Admin adm, String password) throws Exception {
+    protected void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception {
         this.session.loadPrivateKeys(adm, password);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#extendedService(org.ejbca.core.model.log.Admin, int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
      */
-    protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
+    protected OCSPCAServiceResponse extendedService(AuthenticationToken adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         return this.session.extendedService(caid, request);
     }

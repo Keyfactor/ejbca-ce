@@ -37,12 +37,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 
@@ -130,12 +130,12 @@ class  SigningEntityContainer {
     }
     /**
      * Test if all criterias for key loading is fulfilled.
-     * If it is {@link #loadPrivateKeys2(Admin, String)} is called after calculating time fot new update.
+     * If it is {@link #loadPrivateKeys2(AuthenticationToken, String)} is called after calculating time fot new update.
      * @param adm Administrator to be used when getting the certificate chain from the DB.
      * @param password This password is only set if passwords should not be stored in memory.
      * @throws Exception
      */
-    void loadPrivateKeys(final Admin adm, final String password ) throws Exception {
+    void loadPrivateKeys(final AuthenticationToken adm, final String password ) throws Exception {
         try {
             this.mutex.getMutex();
             final long currentTime = new Date().getTime();
@@ -173,7 +173,7 @@ class  SigningEntityContainer {
      * @param password This password is only set if passwords should not be stored in memory.
      * @throws Exception
      */
-    private void loadPrivateKeys2(Admin adm, String password ) throws Exception {
+    private void loadPrivateKeys2(AuthenticationToken adm, String password ) throws Exception {
         if ( this.signEntityMap!=null ){
             Collection<SigningEntity> values=this.signEntityMap.values();
             if ( values!=null ) {
@@ -269,7 +269,7 @@ class  SigningEntityContainer {
      * @return true if keys where found on the HSM
      * @throws Exception
      */
-    private boolean loadFromP11HSM(Admin adm, Map<Integer, SigningEntity> newSignEntity,
+    private boolean loadFromP11HSM(AuthenticationToken adm, Map<Integer, SigningEntity> newSignEntity,
                                    String password) {
         final PasswordProtection pwp = this.sessionData.getP11Pwd(password);
         if ( !checkPassword( pwp, OcspConfiguration.P11_PASSWORD) ) {
@@ -312,7 +312,7 @@ class  SigningEntityContainer {
      * @param newSignEntity The map where the signing entity should be stored for the key if the certificate is a valid OCSP certificate.
      * @return true if the key in the SW java keystore was valid.
      */
-    private boolean loadFromSWKeyStore(Admin adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity,
+    private boolean loadFromSWKeyStore(AuthenticationToken adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity,
                                        String password) {
         try {
             final String storePassword = this.sessionData.mStorePassword!=null ? this.sessionData.mStorePassword : password;
@@ -364,7 +364,7 @@ class  SigningEntityContainer {
      * @param fileName Name of the keystore file. Use null for P11
      * @throws KeyStoreException
      */
-    private void loadFromKeyStore(Admin adm, KeyStore keyStore, String keyPassword,
+    private void loadFromKeyStore(AuthenticationToken adm, KeyStore keyStore, String keyPassword,
                                   String errorComment, ProviderHandler providerHandler,
                                   Map<Integer, SigningEntity> newSignEntity, String fileName) throws KeyStoreException {
         final Enumeration<String> eAlias = keyStore.aliases();
@@ -414,7 +414,7 @@ class  SigningEntityContainer {
      * @param adm  Administrator performing the operation. 
      * @return The chain of the certificate. Null if the certificate is not valid.
      */
-    private List<X509Certificate> getCertificateChain(X509Certificate cert, Admin adm) {
+    private List<X509Certificate> getCertificateChain(X509Certificate cert, AuthenticationToken adm) {
         String issuerDN = CertTools.getIssuerDN(cert);
         final CertificateStatus status = this.sessionData.data.certificateStoreSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
         if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
@@ -453,7 +453,7 @@ class  SigningEntityContainer {
      * @param newSignEntitys The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
      * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
      */
-    private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, Admin adm, ProviderHandler providerHandler,
+    private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, AuthenticationToken adm, ProviderHandler providerHandler,
                                    final Map<Integer, SigningEntity> newSignEntitys) {
         if ( keyContainer==null || cert==null ) {
             return false;
@@ -483,7 +483,7 @@ class  SigningEntityContainer {
      * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
      * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
      */
-    private boolean putSignEntityCard( Certificate cert, Admin adm,
+    private boolean putSignEntityCard( Certificate cert, AuthenticationToken adm,
                                        Map<Integer, SigningEntity> newSignEntity) {
         if ( cert!=null &&  cert instanceof X509Certificate) {
             final X509Certificate x509cert = (X509Certificate)cert;
@@ -498,7 +498,7 @@ class  SigningEntityContainer {
      * @param fileName The name of the file where the certificates are stored.
      * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
      */
-    private void loadFromKeyCards(Admin adm, String fileName, Map<Integer, SigningEntity> newSignEntity) {
+    private void loadFromKeyCards(AuthenticationToken adm, String fileName, Map<Integer, SigningEntity> newSignEntity) {
         m_log.trace(">loadFromKeyCards");
         final CertificateFactory cf;
         try {

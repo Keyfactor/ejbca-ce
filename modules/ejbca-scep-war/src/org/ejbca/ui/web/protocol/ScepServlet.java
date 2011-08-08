@@ -35,10 +35,10 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -74,7 +74,7 @@ public class ScepServlet extends HttpServlet {
     @EJB
     private SignSessionLocal signsession;
     @EJB
-    private CAAdminSessionLocal casession;
+    private CaSessionLocal casession;
 
     /**
      * Inits the SCEP servlet

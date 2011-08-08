@@ -27,16 +27,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -50,6 +57,9 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -107,7 +117,7 @@ public class EjbcaWebBean implements Serializable {
     private final CertificateStoreSessionLocal certificateStoreSession = ejb.getCertificateStoreSession();   
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejb.getEndEntityProfileSession();
     private final HardTokenSessionLocal hardTokenSession = ejb.getHardTokenSession();
-    private final LogSessionLocal logSession = ejb.getLogSession();
+    private final SecurityEventsLoggerSessionLocal auditSession = ejb.getSecurityEventsLoggerSession();
     private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
     private final RaAdminSessionLocal raAdminSession = ejb.getRaAdminSession();
     private final UserAdminSessionLocal userAdminSession = ejb.getUserAdminSession();  
@@ -190,12 +200,16 @@ public class EjbcaWebBean implements Serializable {
     		if (log.isDebugEnabled()) {
     			log.debug("Verifying authorization of '"+userdn+"'");
     		}
-    		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
+    		final String issuerDN = CertTools.getIssuerDN(certificates[0]);
+    		final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
+    		userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), issuerDN);
     		String comment = "";
-    		if(certificateStoreSession.findCertificateByIssuerAndSerno(CertTools.getIssuerDN(certificates[0]), CertTools.getSerialNumber(certificates[0])) == null){
+    		if(certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(certificates[0])) == null){
     			comment = "Logging in : Administrator Certificate is issued by external CA";
     		}
-    		logSession.log(administrator, certificates[0], LogConstants.MODULE_ADMINWEB, new java.util.Date(), null, null, LogConstants.EVENT_INFO_ADMINISTRATORLOGGEDIN, comment);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", comment);
+            auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, administrator.toString(), String.valueOf(issuerDN.hashCode()), null, sernostr, details);
     	}
 
     	try {
@@ -266,7 +280,7 @@ public class EjbcaWebBean implements Serializable {
               
         if(administrator == null){
           String remoteAddr = request.getRemoteAddr();
-          administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+          administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public web user: "+remoteAddr));
         }
         commonInit(); 
         
@@ -415,7 +429,8 @@ public class EjbcaWebBean implements Serializable {
     	if(certificates != null){
     		if(raauthorized[resource] == null) {
     			// We don't bother to lookup the admin's username and email for this check..
-    			raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(new Admin(certificates[0], null, null),AUTHORIZED_RA_RESOURCES[resource]));
+    			Admin admin = new Admin(certificates[0], null, null);
+    			raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(admin, AUTHORIZED_RA_RESOURCES[resource]));
     		}
     		returnval = raauthorized[resource].booleanValue();
     	} else{

@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -59,7 +59,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	getLogger().error("User is already marked for recovery.");
             	return;                     
             }
-            UserDataVO userdata = ejb.getUserAdminSession().findUser(username);
+            EndEntityInformation userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
             if(userdata == null){
             	getLogger().error("The user doesn't exist.");
             	return;

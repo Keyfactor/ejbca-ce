@@ -781,7 +781,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection(Admin)
 	 */    
-	public void testConnection(Admin admin) throws PublisherConnectionException {
+	public void testConnection(AuthenticationToken admin) throws PublisherConnectionException {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
 		// Try all the listed servers

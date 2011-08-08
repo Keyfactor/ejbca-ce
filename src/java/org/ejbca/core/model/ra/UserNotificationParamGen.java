@@ -52,7 +52,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		populateWithExpiringCert(expiringCert);
 	}
 
-	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, UserDataVO admin) {
+	public UserNotificationParamGen(EndEntityInformation userData, String approvalAdminDN, EndEntityInformation admin) {
 		populateWithUserData(userData);
 		populateWithApprovalAdminDN(approvalAdminDN);
 		populateWithEmailAddresses(userData, admin);
@@ -101,7 +101,7 @@ public class UserNotificationParamGen extends ApprovalNotificationParamGen {
 		}
 	}
 	
-	protected void populateWithEmailAddresses(EndEntityInformation userdata, UserDataVO admin) {
+	protected void populateWithEmailAddresses(EndEntityInformation userdata, EndEntityInformation admin) {
 		if(userdata != null) {
 			paramPut("user.EE.EMAIL", userdata.getEmail());
 			final DNFieldExtractor sanfields = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);

@@ -17,7 +17,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 
 
@@ -93,7 +93,7 @@ public interface IAdressLabelSettings {
     * Method that parses the template, replaces the userdata
     * and returning a printable byte array 
     */	
-	public abstract Printable printVisualValidity(UserDataVO userdata, 
+	public abstract Printable printVisualValidity(EndEntityInformation userdata, 
 	                                        String[] pincodes, String[] pukcodes,
 	                                        String hardtokensn, String copyoftokensn)
 	                                          throws IOException, PrinterException;

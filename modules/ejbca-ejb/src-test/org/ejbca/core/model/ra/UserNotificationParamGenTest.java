@@ -4,6 +4,7 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.SecConst;
 
 /** Tests some substitution variables for user notifications
@@ -20,9 +21,9 @@ public class UserNotificationParamGenTest extends TestCase {
 		Date now = new Date();
 		int caid = 123;
 		String approvalAdminDN = "CN=approvaluser,O=Org,C=SE";
-		UserDataVO userdata = new UserDataVO("foo", "CN=foo,O=Org,C=SE", caid, "rfc822Name=fooalt@foo.se", "fooee@foo.se", UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+		EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo,O=Org,C=SE", caid, "rfc822Name=fooalt@foo.se", "fooee@foo.se", UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
 		userdata.setPassword("foo123");
-		UserDataVO admindata = new UserDataVO("admin", "CN=Test Admin,C=NO", caid, "rfc822Name=adminalt@foo.se", "adminee@foo.se", UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+		EndEntityInformation admindata = new EndEntityInformation("admin", "CN=Test Admin,C=NO", caid, "rfc822Name=adminalt@foo.se", "adminee@foo.se", UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
         UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, approvalAdminDN, admindata);
         assertNotNull("paramGen is null", paramGen);
         

@@ -23,10 +23,10 @@ import java.util.List;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
@@ -65,7 +65,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
             if (cainfo == null) {
                 getLogger().info("CA with name '" + caname + "' does not exist.");
                 return;
@@ -103,10 +103,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
 
             // Get all users for this CA
-            Collection<UserDataVO> coll = ejb.getUserAdminSession().findAllUsersByCaId(getAdmin(), cainfo.getCAId());
-            Iterator<UserDataVO> iter = coll.iterator();
+            Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByCaId(getAdmin(), cainfo.getCAId());
+            Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
-                UserDataVO data = iter.next();
+            	EndEntityInformation data = iter.next();
                 getLogger().info(
                         "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", "
                                 + data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId() + ", "
@@ -163,7 +163,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
         }
     }
 
-    private void publishCert(UserDataVO data, CertificateProfile certProfile, X509Certificate cert) {
+    private void publishCert(EndEntityInformation data, CertificateProfile certProfile, X509Certificate cert) {
         try {
             String fingerprint = CertTools.getFingerprintAsString(cert);
             CertificateInfo certinfo = ejb.getCertStoreSession().getCertificateInfo(fingerprint);

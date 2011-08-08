@@ -140,7 +140,7 @@ public class CAInterfaceBean implements Serializable {
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
             cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
-                    certificatesession, certificateProfileSession, crlCreateSession, authorizationsession, revocationSession, ejbcawebbean);
+                    certificateProfileSession, authorizationsession, revocationSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;

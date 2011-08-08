@@ -56,6 +56,10 @@ import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -72,7 +76,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
@@ -154,6 +157,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private static final String PROBEABLE_ERRORHANDLER_CLASS = "org.ejbca.appserver.jboss.ProbeableErrorHandler";
 	private static final String SAFER_LOG4JAPPENDER_CLASS = "org.ejbca.appserver.jboss.SaferDailyRollingFileAppender";
 
+	private final AuthenticationToken m_internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("OCSP ServletBase"));
+	
 	OCSPData data;	// Data to be used also by the standalone session.
 
 	synchronized void loadTrustDir() throws Exception {
@@ -180,21 +185,21 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 	}
 
-	abstract void loadPrivateKeys(Admin adm, String password) throws Exception;
+	abstract void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception;
 
-	abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
+	abstract OCSPCAServiceResponse extendedService(AuthenticationToken m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, AuthorizationDeniedException;
 
 	/** returns a CertificateCache of appropriate type */
 	abstract ICertificateCache createCertificateCache();
 
 
 	private BasicOCSPResp signOCSPResponse(OCSPReq req, ArrayList responseList, X509Extensions exts, X509Certificate cacert)
-	throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
+	throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException, AuthorizationDeniedException {
 
 	    // Call extended CA services to get our OCSP stuff
 	    OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_includeChain);
 	    ocspservicerequest.setRespIdType(m_respIdType);
-	    OCSPCAServiceResponse caserviceresp = extendedService(this.data.m_adm, this.data.getCaid(cacert), ocspservicerequest);
+	    OCSPCAServiceResponse caserviceresp = extendedService(this.m_internalAdmin, this.data.getCaid(cacert), ocspservicerequest);
 	    // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
 	    if (m_log.isDebugEnabled()) {
 	        Collection coll = caserviceresp.getOCSPSigningCertificateChain();
@@ -369,7 +374,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
             // Also reload signing keys
             this.data.mKeysValidTo = 0;
             try {
-                loadPrivateKeys(this.data.m_adm, password);
+                loadPrivateKeys(this.m_internalAdmin, password);
             } catch (Exception e) {
                 m_log.error("Problem loading keys.", e);
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
@@ -394,7 +399,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				try {
 					// Also reload signing keys
 					this.data.mKeysValidTo = 0;
-					loadPrivateKeys(this.data.m_adm, null);
+					loadPrivateKeys(this.m_internalAdmin, null);
 				} catch (Exception e) {
                     m_log.error("Problem loading keys.", e);
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
@@ -577,7 +582,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				// Make sure our signature keys are updated
-				loadPrivateKeys(this.data.m_adm, null);
+				loadPrivateKeys(this.m_internalAdmin, null);
 
 				/**
 				 * check the signature if contained in request.

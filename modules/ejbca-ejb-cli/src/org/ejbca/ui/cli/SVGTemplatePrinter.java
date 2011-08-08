@@ -17,7 +17,7 @@ import java.io.FileInputStream;
 import java.util.Date;
 import java.util.Properties;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.util.PrinterManager;
 
 /**
@@ -50,7 +50,7 @@ public class SVGTemplatePrinter extends BaseCommand {
 				String printername = args[3];
 				Properties data = new Properties();
 				data.load(new FileInputStream(USERDATAFILENAME));
-				UserDataVO userdata = new UserDataVO("", data.getProperty("DN"),0,"", data.getProperty("EMAIL"), 
+				EndEntityInformation userdata = new EndEntityInformation("", data.getProperty("DN"),0,"", data.getProperty("EMAIL"), 
 						                                           0,0,0,0, (Date) null, (Date) null,0,0 ,null);
 				String[] pins = new String[2];
 				String[] puks = new String[2];

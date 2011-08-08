@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.RequestHelper;
@@ -28,6 +29,8 @@ public class CAExportServlet extends HttpServlet {
 	
 	@EJB
 	private CAAdminSessionLocal caAdminSession;
+	@EJB
+	private CaSessionLocal caSession;
 
 	/**
 	 * Initialize.
@@ -84,7 +87,7 @@ public class CAExportServlet extends HttpServlet {
 	    log.info("Got request from "+req.getRemoteAddr()+" to export "+caname);
   		try{
     		byte[] keystorebytes = null;
-        	CAInfo cainfo = caAdminSession.getCAInfo(ejbcawebbean.getAdminObject(), caname);
+        	CAInfo cainfo = caSession.getCAInfo(ejbcawebbean.getAdminObject(), caname);
         	String ext = "p12"; // Default for X.509 CAs
         	if (cainfo.getCAType() == CAInfo.CATYPE_CVC) {
         		ext = "pkcs8";

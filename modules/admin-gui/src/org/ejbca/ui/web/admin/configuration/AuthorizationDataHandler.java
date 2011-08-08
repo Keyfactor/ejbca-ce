@@ -215,7 +215,8 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     private void authorizedToEditAdministratorPrivileges(String admingroup) throws AuthorizationDeniedException{
        // Authorized to edit administrative privileges     
         if (!authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES)) {
-            Authorizer.throwAuthorizationException(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, null);
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, null);
+	        throw new AuthorizationDeniedException(msg);
         }
         // Authorized to group
         if (!authorizationsession.isAuthorizedToGroup(administrator, admingroup)) {
