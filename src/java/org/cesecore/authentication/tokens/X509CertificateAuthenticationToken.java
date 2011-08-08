@@ -226,4 +226,38 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
     public String toString() {
     	return CertTools.getSubjectDN(certificate);
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 4711;
+        int result = 1;
+        result = prime * result + ((certificate == null) ? 0 : certificate.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        X509CertificateAuthenticationToken other = (X509CertificateAuthenticationToken) obj;
+        if (certificate == null) {
+            if (other.certificate != null)
+                return false;
+        } else if (!certificate.equals(other.certificate))
+            return false;
+        return true;
+    }
+
+    /**
+     * @return the certificate
+     */
+    public X509Certificate getCertificate() {
+        return certificate;
+    }
+
+
 }

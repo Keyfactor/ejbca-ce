@@ -57,6 +57,12 @@ public abstract class AuthenticationToken implements Serializable {
      * @return <code>true</code> if matching.
      */
     public abstract boolean matches(AccessUserAspect accessUser);
+    
+    @Override
+    public abstract boolean equals(Object authenticationToken);
+    
+    @Override
+    public abstract int hashCode();
 
     /**
      * Default way of returning the user information of the user(s) this authentication token belongs to.

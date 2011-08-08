@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.ejbca.core.model.authorization.AdminInformation;
 import org.ejbca.core.model.log.Admin;
 
@@ -46,7 +47,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	
 	private static final int LATEST_VERSION = 2;
 
-	private AuthenticationToken admin = null;
+	private X509CertificateAuthenticationToken admin = null;
     private String adminCertIssuerDN = null;
     private String adminCertSerialNumber = null;
     private boolean approved = false;
@@ -116,14 +117,14 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	/**
 	 * @return the Admin that approved this Approval
 	 */
-	public AuthenticationToken getAdmin() { return admin; }
+	public X509CertificateAuthenticationToken getAdmin() { return admin; }
 
 	/**
 	 * Used specify rejection or approval
 	 * @param approved true for approved, flase for rejected
 	 * @param admin is the Admin that approved or rejected the current Approval
 	 */
-	public void setApprovalAdmin(boolean approved, AuthenticationToken admin) {
+	public void setApprovalAdmin(boolean approved, X509CertificateAuthenticationToken admin) {
 		this.approved = approved;
 		this.admin = admin;
 	}
@@ -155,7 +156,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 			this.approvalSignature = (String) in.readObject();
 			//this.username = (String) in.readObject(); This information is now available through the Admin object
 		} else if (version == 2) {
-			this.admin = (Admin) in.readObject();
+			this.admin = (X509CertificateAuthenticationToken) in.readObject();
 			if (this.admin != null) {
 				// We trust this admin as if it were created internal to EJBCA and 
 				// fill in the auth token
