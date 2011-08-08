@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSession;
@@ -64,7 +65,7 @@ public abstract class ApprovalRequest implements Externalizable {
 	 */
 	public static final int REQUESTTYPE_COMPARING = 2;
 	
-    private AuthenticationToken requestAdmin = null; // Base64 encoding of x509certificate?
+    private X509CertificateAuthenticationToken requestAdmin = null; // Base64 encoding of x509certificate?
     private String requestSignature = null;        
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
     private int numOfRequiredApprovals = 0;
@@ -81,7 +82,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-	protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
+	protected ApprovalRequest(X509CertificateAuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
 		super();
    	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
@@ -101,7 +102,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      * @param numberOfSteps that this type approval request supports.
      */
-	protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
+	protected ApprovalRequest(X509CertificateAuthenticationToken requestAdmin, String requestSignature, int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
 		super();
    	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
@@ -243,7 +244,7 @@ public abstract class ApprovalRequest implements Externalizable {
     /**
      * NOTE: This method should never be used publicly except from UpgradeSessionBean 
      */
-	public void setRequestAdmin(AuthenticationToken requestAdmin) {				
+	public void setRequestAdmin(X509CertificateAuthenticationToken requestAdmin) {				
 		this.requestAdmin = requestAdmin; 				
 	}
 	
@@ -251,7 +252,7 @@ public abstract class ApprovalRequest implements Externalizable {
 	 * Returns the certificate of the request admin.
 	 */
 	public Certificate getRequestAdminCert() {			      
-      return (X509Certificate)requestAdmin.getCredentials().iterator().next();
+      return requestAdmin.getCertificate();
 	}
 
 	public AuthenticationToken getRequestAdmin() {		
