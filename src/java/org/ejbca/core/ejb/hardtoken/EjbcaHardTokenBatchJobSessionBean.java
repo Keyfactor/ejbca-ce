@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import javax.ejb.EJB;
@@ -27,14 +26,13 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
-import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Used by hardtoken batch clients to retrieve users to generate from EJBCA RA.
@@ -57,13 +55,11 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
 
     @EJB
     private HardTokenSessionLocal hardTokenSession;
-    @EJB
-    private LogSessionLocal logSession;
 
     @Override
-    public UserDataVO getNextHardTokenToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException{
+    public EndEntityInformation getNextHardTokenToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException{
     	log.trace(">getNextHardTokenToGenerate()");
-    	UserDataVO returnval = null;
+    	EndEntityInformation returnval = null;
     	if (log.isDebugEnabled()) {
     		log.debug("alias=" + alias);
     	}
@@ -76,14 +72,16 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, 0);
     			if (!userDataList.isEmpty()) {
     				returnval = userDataList.get(0).toUserDataVO();
-    				log.debug("found user" + returnval.getUsername());
+    				if (log.isDebugEnabled()) {    					
+    					log.debug("found user" + returnval.getUsername());
+    				}
     				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(admin, hardTokenIssuerId, returnval);
-    				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);            	
-    				logSession.log(admin, returnval.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
+    				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
+    				log.info(msg);
     			}
     		} catch(Exception e) {
-    			String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);            	
-    			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
+    			String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);   
+    			log.info(msg, e);
     			throw new EJBException(e);
     		}
     	}
@@ -92,23 +90,23 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     }
 
     @Override
-    public Collection<UserDataVO> getNextHardTokensToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException {
+    public Collection<EndEntityInformation> getNextHardTokensToGenerate(AuthenticationToken admin, String alias) throws UnavailableTokenException {
     	log.trace(">getNextHardTokensToGenerate()");
-    	List<UserDataVO> returnval = new ArrayList<UserDataVO>();
+    	List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
     			List<UserData> userDataList = UserData.findNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId, MAX_RETURNED_QUEUE_SIZE);
     			for (UserData userData : userDataList) {
-    				UserDataVO userDataVO = userData.toUserDataVO();
+    				EndEntityInformation userDataVO = userData.toUserDataVO();
     				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(admin, hardTokenIssuerId, userDataVO);
     				returnval.add(userDataVO);
-    				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);            	
-    				logSession.log(admin, userDataVO.getCAId(), LogConstants.MODULE_HARDTOKEN, new Date(), userDataVO.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
+    				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
+    				log.info(msg);
     			}
     		} catch(Exception e) {
-    			String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);            	
-    			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
+    			String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);
+    			log.info(msg, e);
     			throw new EJBException(e);
     		}
     	}
@@ -121,9 +119,9 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
 
     // TODO: Since there is no guarantee that the database query always will return entries in the same order, this functionality might be broken!
     @Override
-    public UserDataVO getNextHardTokenToGenerateInQueue(AuthenticationToken admin, String alias, int index) throws UnavailableTokenException {
+    public EndEntityInformation getNextHardTokenToGenerateInQueue(AuthenticationToken admin, String alias, int index) throws UnavailableTokenException {
     	log.trace(">getNextHardTokenToGenerateInQueue()");
-    	UserDataVO returnval=null;
+    	EndEntityInformation returnval = null;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
     		try {
@@ -131,12 +129,12 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     			if (userDataList.size()>(index-1)) {
     				returnval = userDataList.get(index-1).toUserDataVO();
     				hardTokenSession.getIsHardTokenProfileAvailableToIssuer(admin, hardTokenIssuerId, returnval);
-    				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);            	
-    				logSession.log(admin, returnval.getCAId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),returnval.getUsername(), null, LogConstants.EVENT_INFO_HARDTOKEN_USERDATASENT, msg);
+    				String msg = intres.getLocalizedMessage("hardtoken.userdatasent", alias);
+    				log.info(msg);
     			}
     		} catch(Exception e) {
-    			String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);            	
-    			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_HARDTOKEN_USERDATASENT, msg);
+    			String msg = intres.getLocalizedMessage("hardtoken.errorsenduserdata", alias);
+    			log.info(msg, e);
     			throw new EJBException(e);
     		}
     	}

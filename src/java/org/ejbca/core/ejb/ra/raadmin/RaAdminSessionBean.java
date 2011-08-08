@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.Stateless;
@@ -22,8 +25,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -47,7 +54,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     private EntityManager entityManager;
 
     @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint) {
@@ -79,18 +86,17 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
                 AdminPreferencesData apdata = new AdminPreferencesData(certificatefingerprint, adminpreference);
                 entityManager.persist(apdata);
                 String msg = intres.getLocalizedMessage("ra.adminprefadded", apdata.getId());
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED, msg);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.RA_ADDADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
                 ret = true;
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("ra.adminprefexists");
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED, msg);
+                log.info(msg, e);
             }
         } else {
             String msg = intres.getLocalizedMessage("ra.adminprefexists");
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED, msg);
+            log.info(msg);
         }
         log.trace("<addAdminPreference()");
         return ret;
@@ -162,12 +168,14 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
         if (apdata != null) {
             apdata.setAdminPreference(defaultadminpreference);
             String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                    LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED, msg);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         } else {
             String msg = intres.getLocalizedMessage("ra.errorsavedefaultadminpref");
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED, msg);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
             throw new EJBException(msg);
         }
         if (log.isTraceEnabled()) {
@@ -208,16 +216,18 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
              */
             if (dolog) {
                 String msg = intres.getLocalizedMessage("ra.changedadminpref", certificatefingerprint);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED, msg);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.RA_EDITADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
             }
             ret = true;
         } else {
             ret = false;
             if (dolog) {
                 String msg = intres.getLocalizedMessage("ra.adminprefnotfound", certificatefingerprint);
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                        LogConstants.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED, msg);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.RA_EDITADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
             }
         }
         if (log.isTraceEnabled()) {

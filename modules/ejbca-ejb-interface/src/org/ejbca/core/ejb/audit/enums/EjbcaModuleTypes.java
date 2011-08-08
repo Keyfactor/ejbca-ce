@@ -26,6 +26,7 @@ public enum EjbcaModuleTypes implements ModuleType {
     KEYRECOVERY,
     APPROVAL,
     PUBLISHER,
+    SERVICE,
     GLOBALCONF,
     CUSTOM;
 

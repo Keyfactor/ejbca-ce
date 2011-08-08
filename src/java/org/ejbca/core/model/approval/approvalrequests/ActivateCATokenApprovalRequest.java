@@ -23,6 +23,7 @@ import javax.ejb.EJBException;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
@@ -32,7 +33,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Approval Request created when trying to activate a CA Token.
@@ -92,6 +92,8 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 			throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
 		} catch (CryptoTokenOfflineException e) {
 			throw new ApprovalRequestExecutionException("CA Token still off-line :" + e.getMessage(), e);
+		} catch (CADoesntExistsException e) {
+			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
@@ -123,7 +125,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
 	@Override
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( cAName != null ) {
 			retval.add(new ApprovalDataText("CANAME",cAName,true,false));
@@ -142,7 +144,7 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
 	@Override
-	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		return null;
 	}
 

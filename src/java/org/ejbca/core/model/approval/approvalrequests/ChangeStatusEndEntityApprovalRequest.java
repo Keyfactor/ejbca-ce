@@ -31,7 +31,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -179,7 +178,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(newstatus),true,true));		
@@ -187,7 +186,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	}
 	
 	@Override
-	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(oldstatus),true,true));		

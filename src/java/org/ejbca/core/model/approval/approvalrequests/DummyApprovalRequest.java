@@ -25,7 +25,6 @@ import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Dummy Approval Request used for testing and demonstration purposes. 
@@ -103,7 +102,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin){
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin){
 		ArrayList<ApprovalDataText> newText = new ArrayList<ApprovalDataText>();
 		newText.add(new ApprovalDataText("DUMMYDATAROW1: ", "YES" , false, false));
 		newText.add(new ApprovalDataText("DUMMYDATAROW2: ", "YES" , false, false));
@@ -111,7 +110,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin){
+	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin){
 		return null;
 	}
 
