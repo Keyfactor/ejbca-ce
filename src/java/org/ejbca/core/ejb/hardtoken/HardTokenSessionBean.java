@@ -52,6 +52,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
@@ -84,7 +85,6 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserAdminConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as
@@ -143,12 +143,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (HardTokenProfileData.findByName(entityManager, name) == null && HardTokenProfileData.findByPK(entityManager, profileid) == null) {
             entityManager.persist(new HardTokenProfileData(profileid, name, profile));
             String msg = intres.getLocalizedMessage("hardtoken.addedprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), String.valueOf(profileid), null, details);
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.erroraddprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), String.valueOf(profileid), null, details);
             throw new HardTokenProfileExistsException();
@@ -166,12 +166,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (htp != null) {
             htp.setHardTokenProfile(profile);
             String msg = intres.getLocalizedMessage("hardtoken.editedprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.erroreditprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         }
@@ -190,12 +190,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 addHardTokenProfile(admin, newname, profiledata);
                 String msg = intres.getLocalizedMessage("hardtoken.clonedprofile", newname, oldname);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
             } catch (HardTokenProfileExistsException f) {
                 String msg = intres.getLocalizedMessage("hardtoken.errorcloneprofile", newname, oldname);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
                 throw f;
@@ -221,13 +221,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             } else {
             	entityManager.remove(htp);
                 String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         }
@@ -250,12 +250,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (success) {
             String msg = intres.getLocalizedMessage("hardtoken.renamedprofile", oldname, newname);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
         } else {
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
             throw new HardTokenProfileExistsException();
@@ -367,13 +367,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (returnval) {
             String msg = intres.getLocalizedMessage("hardtoken.addedissuer", alias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.erroraddissuer", alias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         }
@@ -392,14 +392,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (htih != null) {
             htih.setHardTokenIssuer(issuerdata);
             String msg = intres.getLocalizedMessage("hardtoken.editedissuer", alias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
             returnvalue = true;
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.erroreditissuer", alias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
         }
@@ -424,13 +424,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (returnval) {
             String msg = intres.getLocalizedMessage("hardtoken.clonedissuer", newalias, oldalias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newalias, null, details);
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.errorcloneissuer", newalias, oldalias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newalias, null, details);
         }
@@ -453,13 +453,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             } else {
             	entityManager.remove(htih);
             	String msg = intres.getLocalizedMessage("hardtoken.removedissuer", alias);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveissuer", alias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), alias, null, details);
@@ -484,13 +484,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         if (returnvalue) {
             String msg = intres.getLocalizedMessage("hardtoken.renameissuer", oldalias, newalias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldalias, null, details);
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameissuer", oldalias, newalias);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldalias, null, details);
         }
@@ -634,7 +634,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException {
+    public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, EndEntityInformation userdata) throws UnavailableTokenException {
         if (log.isTraceEnabled()) {
             log.trace(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType() + ")");
         }
@@ -676,7 +676,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                     entityManager.persist(new HardTokenPropertyData(tokensn, HardTokenPropertyData.PROPERTY_COPYOF, copyof));
                 }
                 String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             } catch (Exception e) {
@@ -708,12 +708,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             htd.setModifyTime(new java.util.Date());
             int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, tokensn, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorchangetoken", tokensn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
@@ -751,7 +751,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             entityManager.remove(hardTokenPropertyData);
         }
         String msg = intres.getLocalizedMessage("hardtoken.removedtoken", tokensn);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, tokensn, details);
         log.trace("<removeHardToken()");
@@ -803,12 +803,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                         includePUK, htd.getData()), copyof, copies);
                 int caid = htd.getSignificantIssuerDN().hashCode();
                 String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWED, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), tokensn, details);
                 if (includePUK) {
                     msg = intres.getLocalizedMessage("hardtoken.viewedpuk", tokensn);
-                    Map<String, Object> detailspuk = new LinkedHashMap<String, Object>();
+                    final Map<String, Object> detailspuk = new LinkedHashMap<String, Object>();
                     detailspuk.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWEDPUK, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), tokensn, detailspuk);
                 }
@@ -852,12 +852,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                     includePUK, htd.getData()), copyof, copies));
             int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWED, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), htd.getTokenSN(), details);
             if (includePUK) {
                 msg = intres.getLocalizedMessage("hardtoken.viewedpuk", htd.getTokenSN());
-                Map<String, Object> detailspuk = new LinkedHashMap<String, Object>();
+                final Map<String, Object> detailspuk = new LinkedHashMap<String, Object>();
                 detailspuk.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWEDPUK, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), htd.getUsername(), htd.getTokenSN(), detailspuk);
             }
@@ -885,12 +885,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 entityManager.persist(new HardTokenCertificateMap(fp, tokensn));
                 String msg = intres.getLocalizedMessage("hardtoken.addedtokencertmapping", certificatesn, tokensn);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDCERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDCERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             }
@@ -920,13 +920,13 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             	String tokensn = htcm.getTokenSN();
             	entityManager.remove(htcm);
             	String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingcert", certificatesn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         }
@@ -950,12 +950,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 entityManager.remove(htcm);
             }
             String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingtoken", tokensn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingtoken", tokensn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, tokensn, details);
         }
@@ -1007,7 +1007,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
         try {
             String msg = intres.getLocalizedMessage("hardtoken.generatedtoken", tokensn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_GENERATE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), username, tokensn, details);
         } catch (Exception e) {
@@ -1021,7 +1021,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         int caid = CertTools.stringToBCDNString(significantissuerdn).hashCode();
         try {
             String msg = intres.getLocalizedMessage("hardtoken.errorgeneratetoken", tokensn);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_GENERATE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), username, tokensn, details);
         } catch (Exception e) {
