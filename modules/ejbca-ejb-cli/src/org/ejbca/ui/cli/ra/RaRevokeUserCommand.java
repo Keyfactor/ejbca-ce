@@ -14,10 +14,10 @@
 package org.ejbca.ui.cli.ra;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -46,7 +46,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
             	getLogger().error("Reason must be an integer between 0 and 10 except 7.");
             } else {
-                UserDataVO data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            	EndEntityInformation data = ejb.getUserAdminSession().findUser(getAdmin(), username);
                 if (data==null) {
                 	getLogger().error("User not found.");
                 	return;

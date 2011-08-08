@@ -17,6 +17,8 @@ import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
@@ -25,7 +27,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.OCSPData;
@@ -51,7 +52,7 @@ public class OCSPServlet extends OCSPServletBase {
     }
     
     @Override
-	protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+	protected OCSPCAServiceResponse extendedService(AuthenticationToken adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, AuthorizationDeniedException {
         return (OCSPCAServiceResponse)this.caAdminSessionLocal.extendedService(adm, caid, request);
     }
 
@@ -61,7 +62,7 @@ public class OCSPServlet extends OCSPServletBase {
 	}
 
     @Override
-	protected void loadPrivateKeys(Admin adm, String password) {
+	protected void loadPrivateKeys(AuthenticationToken adm, String password) {
         // not used by this servlet
     }
 }

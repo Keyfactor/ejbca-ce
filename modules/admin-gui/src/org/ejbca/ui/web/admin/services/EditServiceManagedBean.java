@@ -25,6 +25,8 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
@@ -276,7 +278,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		Iterator<Integer> iter = cAIds.iterator();
 		while(iter.hasNext()){
 			int next = iter.next().intValue();
-			availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getCaAdminSession().getCAInfo(getAdmin(), next).getName()));
+			try {
+				availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getCaSession().getCAInfo(getAdmin(), next).getName()));
+			} catch (CADoesntExistsException e) {
+				log.debug("CA does not exist: "+next);
+			} catch (AuthorizationDeniedException e) {
+				log.debug("Not authorized to CA: "+next);
+			}
 		}
 		if (includeAllCAs) {
 			String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");

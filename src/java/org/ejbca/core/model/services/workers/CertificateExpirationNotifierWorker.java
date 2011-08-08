@@ -213,8 +213,14 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      */
 	@Override
     protected void updateStatus(String pk, int status) {
-    	if (!certificateStoreSession.setStatus(pk, status)) {
-            log.error("Error updating certificate status for certificate with fingerprint: " + pk);
-    	}
+    	try {
+			if (!certificateStoreSession.setStatus(getAdmin(), pk, status)) {
+			    log.error("Error updating certificate status for certificate with fingerprint: " + pk);
+			}
+		} catch (AuthorizationDeniedException e) {
+			// Should not be possible...
+			log.error("Internal admin not authorized: ", e);
+			throw new RuntimeException(e);
+		}
     }
 }

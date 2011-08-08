@@ -40,7 +40,7 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
-                CAInfo ca = ejb.getCAAdminSession().getCAInfo(getAdmin(),caid);
+                CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(),caid);
                 Collection<Certificate> certs = ca.getCertificateChain();
                 Iterator<Certificate> ci = certs.iterator();
                 Certificate cacert = null;

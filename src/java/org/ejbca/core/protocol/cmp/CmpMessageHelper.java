@@ -59,7 +59,6 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ra.NotFoundException;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertRepMessage;
@@ -301,8 +300,6 @@ public class CmpMessageHelper {
 			LOG.error("Exception during CMP processing: ", e);			
 		} catch (SignRequestException e) {
 			LOG.error("Exception during CMP processing: ", e);			
-		} catch (NotFoundException e) {
-			LOG.error("Exception during CMP processing: ", e);			
 		} catch (IOException e) {
 			LOG.error("Exception during CMP processing: ", e);			
 		}
@@ -347,8 +344,6 @@ public class CmpMessageHelper {
 		} catch (NoSuchProviderException e) {
 			LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
 		} catch (SignRequestException e) {
-			LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-		} catch (NotFoundException e) {
 			LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
 		} catch (IOException e) {
 			LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);

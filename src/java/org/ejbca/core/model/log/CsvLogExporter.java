@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
@@ -49,7 +50,7 @@ public class CsvLogExporter implements ILogExporter {
 
 	/** @see org.ejbca.core.model.log.ILogExporter */
 	@Override
-	public byte[] export(final Admin admin, final Collection<LogEntry> logentries) throws Exception {
+	public byte[] export(final AuthenticationToken admin, final Collection<LogEntry> logentries) throws Exception {
 		log.trace(">export");
 		byte[] ret = null;		
 		if (logentries != null) {

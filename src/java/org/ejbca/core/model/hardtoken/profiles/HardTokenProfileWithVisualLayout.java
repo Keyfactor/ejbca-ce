@@ -18,7 +18,7 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 
 
@@ -99,7 +99,7 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
 	/**
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IVisualLayoutSettings#printVisualValidity(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printVisualValidity(UserDataVO userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
+	public Printable printVisualValidity(EndEntityInformation userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
 
 		if(getVisualLayoutData() != null){

@@ -15,6 +15,8 @@ package org.ejbca.ui.cli.admins;
 
 import java.util.Map;
 
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.BaseCommand;
 
@@ -68,7 +70,7 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         return resource;
     }
 
-    protected String getOriginalAccessRule(String resource) throws NumberFormatException {
+    protected String getOriginalAccessRule(String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
@@ -86,10 +88,10 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
                 return AccessRulesConstants.CAPREFIX
-                        + ejb.getCAAdminSession().getCAInfo(getAdmin(), resource.substring(AccessRulesConstants.CAPREFIX.length())).getCAId();
+                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(AccessRulesConstants.CAPREFIX.length())).getCAId();
             } else {
                 return AccessRulesConstants.CAPREFIX
-                        + ejb.getCAAdminSession().getCAInfo(getAdmin(), resource.substring(AccessRulesConstants.CAPREFIX.length(), resource.lastIndexOf('/'))).getCAId()
+                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(AccessRulesConstants.CAPREFIX.length(), resource.lastIndexOf('/'))).getCAId()
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }

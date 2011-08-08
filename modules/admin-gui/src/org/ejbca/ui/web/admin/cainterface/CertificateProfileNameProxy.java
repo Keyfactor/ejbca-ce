@@ -18,7 +18,6 @@ import java.util.HashMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class used to improve performance by proxying certificateprofile id to certificate name mappings by minimizing the number of needed lockups over rmi.
@@ -51,7 +50,7 @@ public class CertificateProfileNameProxy implements java.io.Serializable {
       
       if(returnval==null){
         // Retreive profilename 
-        returnval = certificateProfileSession.getCertificateProfileName(admin, certificateprofileid);
+        returnval = certificateProfileSession.getCertificateProfileName(certificateprofileid);
         if(returnval != null) {
           certificateprofilenamestore.put(Integer.valueOf(certificateprofileid),returnval);
         }

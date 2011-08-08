@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
@@ -33,8 +32,6 @@ public class OCSPData {
     final public CertificateStoreSessionLocal certificateStoreSession;
 
     private static final Logger m_log = Logger.getLogger(OCSPData.class);
-
-    public final Admin m_adm = Admin.getInternalAdmin();
 
     /** Cache time counter, set and used by loadPrivateKeys (external responder) */
     public long mKeysValidTo = 0;

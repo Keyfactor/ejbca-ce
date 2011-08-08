@@ -19,7 +19,7 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 
 
@@ -102,7 +102,7 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
 	/* (non-Javadoc)
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IReceiptSettings#printReceipt(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printReceipt(UserDataVO userdata, String[] pincodes,
+	public Printable printReceipt(EndEntityInformation userdata, String[] pincodes,
 			String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
 		Printable returnval = null;
 

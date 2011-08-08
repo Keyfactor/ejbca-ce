@@ -84,10 +84,8 @@ public class CADataHandler implements Serializable {
     private InformationMemory info;
     private UserAdminSession adminsession;
     private GlobalConfigurationSession globalconfigurationsession; 
-    private CertificateStoreSession certificatesession;
     private RevocationSessionLocal revocationSession;
     private CertificateProfileSession certificateProfileSession;
-    private CrlCreateSession crlCreateSession;
     private EndEntityProfileSession endEntityProfileSession;
     private EjbcaWebBean ejbcawebbean;
     
@@ -96,9 +94,8 @@ public class CADataHandler implements Serializable {
                          CAAdminSession caadminsession, CaSession caSession,
                          EndEntityProfileSession endEntityProfileSession,
                          UserAdminSession adminsession, 
-                         GlobalConfigurationSession globalconfigurationsession, 
-                         CertificateStoreSession certificatesession,
-                         CertificateProfileSession certificateProfileSession, CrlCreateSession crlCreateSession,
+                         GlobalConfigurationSession globalconfigurationsession,
+                         CertificateProfileSession certificateProfileSession,
                          AccessControlSession authorizationsession, RevocationSessionLocal revocationSession,
                          EjbcaWebBean ejbcawebbean) {
                             
@@ -106,11 +103,9 @@ public class CADataHandler implements Serializable {
        this.caSession = caSession;
        this.authorizationsession = authorizationsession;
        this.adminsession = adminsession;
-       this.certificatesession = certificatesession;
        this.certificateProfileSession = certificateProfileSession;
        this.endEntityProfileSession = endEntityProfileSession;
        this.globalconfigurationsession = globalconfigurationsession;
-       this.crlCreateSession = crlCreateSession;
        this.revocationSession = revocationSession;
        this.administrator = administrator;          
        this.info = ejbcawebbean.getInformationMemory();       
@@ -310,9 +305,10 @@ public class CADataHandler implements Serializable {
   }
       
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdmiSessionBean
+   *  @throws CADoesntExistsException 
+ * @see org.ejbca.core.ejb.ca.caadmin.CAAdmiSessionBean
    */  
- public void publishCA(int caid){
+ public void publishCA(int caid) throws AuthorizationDeniedException, CADoesntExistsException {
  	CAInfo cainfo = caSession.getCAInfo(administrator, caid);
  	Collection<Integer> publishers = cainfo.getCRLPublishers();
  	// Publish ExtendedCAServices certificates as well
@@ -341,7 +337,7 @@ public class CADataHandler implements Serializable {
     // (which there is probably not) 
     publishers.addAll(certprofile.getPublisherList());
     caadminsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, cainfo.getSubjectDN());
-    crlCreateSession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
+    caadminsession.publishCRL(administrator, (Certificate) cainfo.getCertificateChain().iterator().next(), publishers, cainfo.getSubjectDN(), cainfo.getDeltaCRLPeriod()>0);
  }
  
  public void renewAndRevokeXKMSCertificate(int caid) throws CryptoTokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, AuthorizationDeniedException, CertificateRevokeException, IllegalCryptoTokenException, CAOfflineException{

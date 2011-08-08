@@ -52,7 +52,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			String caname = args[1];
 			String outfile = args[2];
 			String issuerdn = getIssuerDN(caname);
-			byte[] crl = ejb.getCrlStoreSession().getLastCRL(getAdmin(), issuerdn, deltaSelector);
+			byte[] crl = ejb.getCrlStoreSession().getLastCRL(issuerdn, deltaSelector);
 			if (crl != null) {
 				FileOutputStream fos = new FileOutputStream(outfile);
 				if (pem) {		

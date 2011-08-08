@@ -30,7 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -277,10 +279,16 @@ public class AdminCertReqServlet extends HttpServlet {
         } catch (CertificateException e) {
             // Error in cert
             throw new ServletException(e);
+        } catch (CesecoreException e) {
+            // EJBCA did not accept any of all parameters in the request.
+            throw new ServletException(e);
+		} catch (AuthorizationDeniedException e) {
+            // Weird authorization error.
+            throw new ServletException(e);
+		}
+        if (log.isDebugEnabled()) {
+        	log.debug("Created certificate (PKCS7) for " + username);
         }
-        
-        log.debug("Created certificate (PKCS7) for " + username);
-        
         sendNewB64Cert(Base64.encode(pkcs7), response);
         
     }

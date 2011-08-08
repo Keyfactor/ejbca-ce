@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.ejbca.core.model.log.Admin;
 
 
 
@@ -109,7 +108,7 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public void testConnection(Admin admin) throws PublisherConnectionException{
+	public void testConnection(AuthenticationToken admin) throws PublisherConnectionException{
         this.getCustomPublisher().testConnection(admin);
 	} 
     

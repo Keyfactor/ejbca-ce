@@ -197,7 +197,7 @@ public class CertificateView implements Serializable {
 
     public String getSignatureAlgoritm() {
     	// Only used for displaying to user so we can use this value that always works
-    	return AlgorithmTools.getCertSignatureAlgorithmAsString(certificate);
+    	return AlgorithmTools.getCertSignatureAlgorithmNameAsString(certificate);
     }
 
     /** Method that returns if key is allowed for given usage. Usage must be one of this class key usage constants. */

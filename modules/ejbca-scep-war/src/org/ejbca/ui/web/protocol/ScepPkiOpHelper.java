@@ -17,11 +17,12 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.scep.ScepRequestMessage;
 
 
@@ -59,9 +60,11 @@ public class ScepPkiOpHelper {
      * @param msg buffer holding the SCEP-request (DER encoded).
      *
      * @return byte[] containing response to be sent to client.
+     * @throws AuthorizationDeniedException 
+     * @throws CesecoreException 
      */
     public byte[] scepCertRequest(byte[] msg, boolean includeCACert)
-            throws EjbcaException {
+            throws EjbcaException, CesecoreException, AuthorizationDeniedException {
         byte[] ret = null;
         if (log.isTraceEnabled()) {
         	log.trace(">getRequestMessage(" + msg.length + " bytes)");

@@ -20,6 +20,7 @@ import javax.ejb.EJBException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -176,6 +177,8 @@ public class MSCertTools {
 				newCertificateProfile = true;
 			} catch (CertificateProfileExistsException e) {
 				throw new EJBException(e);	// We just checked for this so this cannot happen
+			} catch (AuthorizationDeniedException e) {
+				throw new EJBException(e);
 			}
 		}
 		// Add User-specifics to profiles if nessesary
@@ -204,7 +207,11 @@ public class MSCertTools {
 				certProfile.setMicrosoftTemplate(MS_TEMPLATE_VALUE[templateIndex]);
 			}
 		}
-		certificateProfileSession.changeCertificateProfile(admin, certProfileName, certProfile);
+		try {
+			certificateProfileSession.changeCertificateProfile(admin, certProfileName, certProfile);
+		} catch (AuthorizationDeniedException e) {
+			throw new EJBException(e);
+		}
 		return certificateProfileSession.getCertificateProfileId(certProfileName);
 	}
 

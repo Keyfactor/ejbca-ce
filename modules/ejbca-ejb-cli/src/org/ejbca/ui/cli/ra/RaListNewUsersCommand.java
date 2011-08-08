@@ -16,8 +16,8 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -35,10 +35,10 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            Collection<UserDataVO> coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), UserDataConstants.STATUS_NEW);
-            Iterator<UserDataVO> iter = coll.iterator();
+            Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), UserDataConstants.STATUS_NEW);
+            Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
-                UserDataVO data = iter.next();
+            	EndEntityInformation data = iter.next();
                 getLogger().info("New User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType());

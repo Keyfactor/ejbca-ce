@@ -28,7 +28,8 @@ public enum EjbcaModuleTypes implements ModuleType {
     PUBLISHER,
     SERVICE,
     GLOBALCONF,
-    CUSTOM;
+    CUSTOM,
+    ADMINWEB;
 
     @Override
     public boolean equals(ModuleType value) {

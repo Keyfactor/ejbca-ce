@@ -21,11 +21,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -58,7 +59,7 @@ public class ApplyBean implements java.io.Serializable {
     public void initialize(HttpServletRequest request)
         throws Exception {
         if (!initialized) {
-        	administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
+        	administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public Web: "+request.getRemoteAddr()));
         	ejb = new EjbLocalHelper();
             initialized = true;
         }
@@ -138,7 +139,7 @@ public class ApplyBean implements java.io.Serializable {
             int certprofile = useradmindata.getCertificateProfileId();
 
             if (certprofile != SecConst.PROFILE_NO_PROFILE) {
-                CertificateProfile p = ejb.getCertificateProfileSession().getCertificateProfile(administrator, certprofile);
+                CertificateProfile p = ejb.getCertificateProfileSession().getCertificateProfile(certprofile);
                 returnval = p.getAvailableBitLengths();
             }
         }
@@ -183,7 +184,7 @@ public class ApplyBean implements java.io.Serializable {
             	ArrayList<String> names = new ArrayList<String>();
                 for (Iterator<String> i = c.iterator(); i.hasNext(); ) {
                 	int id = Integer.valueOf(i.next());
-                    String name = ejb.getCertificateProfileSession().getCertificateProfileName(administrator, id);
+                    String name = ejb.getCertificateProfileSession().getCertificateProfileName(id);
                 	names.add(name);
                 }
                 returnval = (String[])names.toArray(new String[0]);            	
@@ -224,7 +225,7 @@ public class ApplyBean implements java.io.Serializable {
         }  
 
         if (useradmindata != null) {
-            returnval = ejb.getCertificateProfileSession().getCertificateProfileName(administrator, useradmindata.getCertificateProfileId());
+            returnval = ejb.getCertificateProfileSession().getCertificateProfileName(useradmindata.getCertificateProfileId());
         }
         this.username = username;
 
@@ -237,7 +238,7 @@ public class ApplyBean implements java.io.Serializable {
     private boolean initialized;
     private AuthenticationToken administrator;
     private String username = "";
-    private UserDataVO useradmindata = null;
+    private EndEntityInformation useradmindata = null;
     
     //--------------------------------------------------------------
     // Convenience methods used from JSTL.

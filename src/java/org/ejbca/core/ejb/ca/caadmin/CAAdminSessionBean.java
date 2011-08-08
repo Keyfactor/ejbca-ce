@@ -100,6 +100,7 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
+import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -175,6 +176,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CrlStoreSessionLocal crlStoreSession;
     @EJB
     private RevocationSessionLocal revocationSession;
     @EJB
@@ -2333,6 +2336,32 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);
+        }
+    }
+
+    @Override
+    public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) {
+        if ( usedpublishers==null ) {
+                return;
+        }
+        // Store crl in ca CRL publishers.
+        if (log.isDebugEnabled()) {
+                log.debug("Storing CRL in publishers");
+        }
+        final String issuerDN = CertTools.getSubjectDN(caCert);
+        final String caCertFingerprint = CertTools.getFingerprintAsString(caCert);
+        final byte crl[] = crlStoreSession.getLastCRL(issuerDN, false);
+        if ( crl!=null ) {
+                final int nr = crlStoreSession.getLastCRLInfo(issuerDN, false).getLastCRLNumber();
+                publisherSession.storeCRL(admin, usedpublishers, crl, caCertFingerprint, nr, caDataDN);
+        }
+        if ( !doPublishDeltaCRL ) {
+                return;
+        }
+        final byte deltaCrl[] = crlStoreSession.getLastCRL(issuerDN, true);
+        if ( deltaCrl!=null ) {
+                final int nr = crlStoreSession.getLastCRLInfo(issuerDN, true).getLastCRLNumber();
+                publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
         }
     }
 

@@ -681,17 +681,24 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
     }
 
     @Override
+    public String getPreferredDigestAlg() {
+    	return preferredDigestAlg;
+    }
+    
+    /** Returns the type of SCEP message it is
+     * 
+     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT  
+     */
     public int getMessageType() {
         return messageType;
 
     }
 
-    @Override
-    public String getPreferredDigestAlg() {
-    	return preferredDigestAlg;
-    }
-    
-    @Override
+    /**
+     * Method returning the certificate used to sign the SCEP_TYPE_PKCSREQ pkcs7 request.
+     * 
+     * @return The certificate used for signing or null if it doesn't exist or not been initialized.
+     */
     public Certificate getSignerCert(){
     	return signercert;
     }

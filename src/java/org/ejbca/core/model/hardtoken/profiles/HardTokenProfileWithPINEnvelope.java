@@ -19,7 +19,7 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.ejbca.core.model.ra.UserDataVO;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 
 
 
@@ -138,7 +138,7 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 	/**
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#printPINEnvelope(org.ejbca.core.model.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printPINEnvelope(UserDataVO userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
+	public Printable printPINEnvelope(EndEntityInformation userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
 
 		if(getPINEnvelopeData() != null){

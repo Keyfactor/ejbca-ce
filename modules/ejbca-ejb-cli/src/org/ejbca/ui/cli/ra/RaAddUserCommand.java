@@ -81,8 +81,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin());
                 HashMap<Integer, String> caidtonamemap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
 
-                Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, caids);
-                Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap(getAdmin());
+                Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, caids);
+                Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap();
 
                 Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin());
                 Map<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());
@@ -170,13 +170,13 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             int caid = 0;
             try {
-                caid = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname).getCAId();
+                caid = ejb.getCaSession().getCAInfo(getAdmin(), caname).getCAId();
             } catch (Exception e) {
             }
 
             if (args.length > 9) {
                 // Use certificate type, no end entity profile.
-                certificatetypeid = ejb.getCertificateProfileSession().getCertificateProfileId(getAdmin(), args[9]);
+                certificatetypeid = ejb.getCertificateProfileSession().getCertificateProfileId(args[9]);
                 getLogger().info("Using certificate profile: " + args[9] + ", with id: " + certificatetypeid);
             }
 

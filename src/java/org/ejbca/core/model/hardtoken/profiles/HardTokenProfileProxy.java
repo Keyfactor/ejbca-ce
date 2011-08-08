@@ -17,7 +17,6 @@ import java.util.HashMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class used by PrimeCard clients to improve performance by caching hard token 
@@ -39,7 +38,7 @@ public class HardTokenProfileProxy {
     private HashMap<Integer,HardTokenProfile> profilestore;
 	private HashMap<Integer,Integer> updatecount;
     private HardTokenSessionRemote hardTokenSession;    
-    private Admin admin;
+    private AuthenticationToken admin;
 
     /** Creates a new instance of HardTokenProfileProxy */
     public HardTokenProfileProxy(AuthenticationToken admin, HardTokenSessionRemote hardtokensession){

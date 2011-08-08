@@ -73,7 +73,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
     private Collection<Certificate> getExpiredCerts(Date findDate) {
         try {
         	getLogger().debug("Looking for cert with expireDate=" + findDate);
-            Collection<Certificate> certs = ejb.getCertStoreSession().findCertificatesByExpireTimeWithLimit(getAdmin(), findDate);
+            Collection<Certificate> certs = ejb.getCertStoreSession().findCertificatesByExpireTimeWithLimit(findDate);
             getLogger().debug("Found " + certs.size() + " certs.");
             return certs;
         } catch (Exception e) {

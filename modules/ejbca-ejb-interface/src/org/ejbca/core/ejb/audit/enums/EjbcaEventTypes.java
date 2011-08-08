@@ -87,7 +87,8 @@ public enum EjbcaEventTypes implements EventType {
     SERVICE_REMOVE,
     SERVICE_EDIT,
     SERVICE_RENAME,
-    SERVICE_EXECUTED
+    SERVICE_EXECUTED,
+    ADMINWEB_ADMINISTRATORLOGGEDIN
     ;
 
     @Override

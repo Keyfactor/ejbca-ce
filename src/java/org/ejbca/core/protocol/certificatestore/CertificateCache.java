@@ -39,7 +39,6 @@ import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 
 
 /**
@@ -76,9 +75,6 @@ class CertificateCache implements ICertificateCache {
 
 	/** Cache time counter, set and used by loadCertificates */
 	private long m_certValidTo = 0;
-
-	/** Admin for calling session beans in EJBCA */
-	final private Admin admin = Admin.getInternalAdmin();
 
 	/** We need an object to synchronize around when rebuilding and reading the cache. When rebuilding the cache no thread
 	 * can be allowed to read the cache, since the cache will be in an inconsistent state. In the normal case we want to use
@@ -234,7 +230,7 @@ class CertificateCache implements ICertificateCache {
 				// The other HashMaps are always created as well, if this one is created
 				return;
 			}
-			final Collection<Certificate> certs = findCertificatesByType(this.admin, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+			final Collection<Certificate> certs = findCertificatesByType(SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
 			if (log.isDebugEnabled()) {
 				log.debug("Loaded "+(certs == null ? "0":Integer.toString(certs.size()))+" ca certificates");
 			}
@@ -347,11 +343,11 @@ class CertificateCache implements ICertificateCache {
 	 * @param issuerDN
 	 * @return Collection of Certificate never null
 	 */
-	private Collection<Certificate> findCertificatesByType(Admin adm, int type, String issuerDN) {
+	private Collection<Certificate> findCertificatesByType(int type, String issuerDN) {
 		if ( this.certificateStoreSession==null ) {
 			// Use classes CertificateCacheStandalone or CertificateCacheInternal for non-test caches
 			return this.testcerts;
 		}
-		return this.certificateStoreSession.findCertificatesByType(adm, type, issuerDN);
+		return this.certificateStoreSession.findCertificatesByType(type, issuerDN);
 	}
 }

@@ -199,7 +199,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(getAdmin(), SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin()))) {
+			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin()))) {
 				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");

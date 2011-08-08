@@ -39,7 +39,7 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
             if(cainfo == null){
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	

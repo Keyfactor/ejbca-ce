@@ -82,7 +82,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = ejb.getCAAdminSession().getCAInfo(getAdmin(), caName);
+            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
