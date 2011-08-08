@@ -15,13 +15,16 @@ package org.ejbca.core.ejb.config;
 
 import java.util.Collection;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
@@ -48,7 +51,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 	private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
 
-    private Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+	private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private GlobalConfiguration original = null;
 
     /**
@@ -183,7 +186,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      *  is not authorized.
      * @param admin To perform the operation with.
      */
-    private void operationGetAvailabeCAs(final Admin admin) {
+    private void operationGetAvailabeCAs(final AuthenticationToken admin) {
     	// Get some CA ids: should be empty now
     	final Collection<Integer> emptyCaids = caSession.getAvailableCAs(admin);
     	assertTrue("Should not have got any CAs as admin of type "
@@ -196,10 +199,10 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * @param admin to perform the operation with.
      * @param knownCaids IDs to test with.
      */
-    private void operationGetCAInfo(final Admin admin, final Collection<Integer> knownCaids) {
+    private void operationGetCAInfo(final AuthenticationToken admin, final Collection<Integer> knownCaids) {
     	// Get CA infos: We should not get any CA infos even if we know the IDs
     	for (int caid : knownCaids)  {
-    		final CAInfo ca = caAdminSession.getCAInfo(admin, caid);
+    		final CAInfo ca = caSession.getCAInfo(admin, caid);
     		assertNull("Got CA " + caid + " as admin of type " + admin.getAdminType(), ca);
     	}
     }

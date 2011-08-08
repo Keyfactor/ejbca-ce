@@ -22,7 +22,9 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -32,7 +34,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.InterfaceCache;
@@ -47,7 +48,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 public class CmpRAAuthenticationTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationTest.class);
-    private static final Admin ADMIN = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken ADMIN = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static final Random RND = new SecureRandom();
 
     private static final String CA_NAME_1 = "CmpRAAuthenticationTestCA1";
@@ -85,12 +86,11 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private X509Certificate setupCA(String caName, String pbeSecret) throws Exception {
         LOG.trace(">setupCA");
         assertTrue("Failed to create " + caName, createTestCA(caName, 512));
-        X509CA x509Ca = (X509CA) InterfaceCache.getCaSession().getCA(ADMIN, getTestCAId(caName));
-        X509CAInfo x509CaInfo = (X509CAInfo) x509Ca.getCAInfo();
+        X509CAInfo x509CaInfo = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(ADMIN, getTestCAId(caName));
         x509CaInfo.setCmpRaAuthSecret(pbeSecret);
         x509CaInfo.setUseCertReqHistory(false); // Disable storage of certificate history, to save some clean up
         InterfaceCache.getCAAdminSession().editCA(ADMIN, x509CaInfo);
-        X509Certificate ret = (X509Certificate) x509Ca.getCertificateChain().iterator().next();
+        X509Certificate ret = (X509Certificate) x509CaInfo.getCertificateChain().iterator().next();
         assertNotNull("CA certificate was null.", ret);
         LOG.trace("<setupCA");
         return ret;

@@ -22,9 +22,11 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.certificatestore.HashID;
 
 /**
@@ -36,7 +38,7 @@ import org.ejbca.core.protocol.certificatestore.HashID;
  * @version $Id$
  */
 class CAInHierarchy {
-	private final static Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+	private final static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 	final String name;
 	final Set<CAInHierarchy> subs;
 	final CaTestCase testCase;

@@ -28,6 +28,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -81,6 +82,7 @@ public class EjbRemoteHelper {
     private UpgradeSessionRemote upgradeSession = null;
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
+    private CertReqHistorySessionRemote certReqHistorySession = null;
 
     public AdminEntitySessionRemote getAdminEntitySession() {
         if(adminEntitySession == null) {
@@ -291,4 +293,12 @@ public class EjbRemoteHelper {
         }
         return approvalExecutionSession;
 	}
+	
+	public CertReqHistorySessionRemote getCertReqHistorySession() {
+        if (certReqHistorySession == null) {
+        	certReqHistorySession = JndiHelper.getRemoteSession(CertReqHistorySessionRemote.class);
+        }
+        return certReqHistorySession;
+	}
+
 }

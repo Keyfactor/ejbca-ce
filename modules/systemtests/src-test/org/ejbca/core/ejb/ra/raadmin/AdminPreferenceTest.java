@@ -14,8 +14,10 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.util.InterfaceCache;
 
@@ -59,7 +61,7 @@ public class AdminPreferenceTest extends CaTestCase {
      */
     public void test01AddAdminPreference() throws Exception {
         log.trace(">test01AddAdminPreference()");
-        Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
@@ -78,7 +80,7 @@ public class AdminPreferenceTest extends CaTestCase {
      */
     public void test02ModifyAdminPreference() throws Exception {
         log.trace(">test02ModifyAdminPreference()");
-        Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         AdminPreference pref = this.raAdminSession.getAdminPreference(administrator, user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));

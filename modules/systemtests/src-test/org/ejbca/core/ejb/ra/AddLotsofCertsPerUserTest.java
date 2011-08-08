@@ -20,13 +20,19 @@ import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -36,7 +42,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -56,11 +61,12 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
 
     private int userNo = 0;
     private KeyPair keys;
 
-    final Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     /**
      * Creates a new TestAddLotsofUsers object.
@@ -73,7 +79,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
 
     public void setUp() throws Exception {
         createTestCA();
-        final CAInfo cainfo = caAdminSession.getCAInfo(administrator, getTestCAName());
+        final CAInfo cainfo = caSession.getCAInfo(administrator, getTestCAName());
         cainfo.setDoEnforceUniquePublicKeys(false);
         caAdminSession.editCA(administrator, cainfo);
     }
@@ -119,7 +125,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            UserDataVO userdata = new UserDataVO(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, email,
+            EndEntityInformation userdata = new EndEntityInformation(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, email,
                     UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, hardtokenissuerid, null);
             userdata.setPassword(password);
             if (userAdminSession.findUser(administrator, username) != null) {
@@ -142,7 +148,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             }
 
-            int cid = certificateProfileSession.getCertificateProfileId(administrator, certificateProfileName);
+            int cid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
             int eid = endEntityProfileSession.getEndEntityProfileId(administrator, endEntityProfileName);
             if (eid == 0) {
                 EndEntityProfile endEntityProfile = new EndEntityProfile(true);
@@ -174,7 +180,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                storeSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(certificate));
+                storeSession.setArchivedStatus(administrator, CertTools.getFingerprintAsString(certificate));
             }
             endEntityProfileSession.removeEndEntityProfile(administrator, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(administrator, certificateProfileName);

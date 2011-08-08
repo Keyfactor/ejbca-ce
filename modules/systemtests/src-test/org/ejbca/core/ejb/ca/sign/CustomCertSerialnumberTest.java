@@ -17,6 +17,10 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -24,6 +28,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
@@ -36,9 +41,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.log.Admin;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -53,7 +55,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(CustomCertSerialnumberTest.class);
 
-	private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+	private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 	private static int rsacaid = 0;
 
 	int fooCertProfileId;
@@ -87,7 +89,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		certprof.setAllowKeyUsageOverride(true);
 		certprof.setAllowCertSerialNumberOverride(true);
 		certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
-		fooCertProfileId = certificateProfileSession.getCertificateProfileId(admin,"FOOCERTPROFILE");
+		fooCertProfileId = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
 
 		final EndEntityProfile profile = new EndEntityProfile(true);
 		profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.toString(fooCertProfileId));

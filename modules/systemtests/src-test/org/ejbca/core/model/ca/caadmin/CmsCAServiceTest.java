@@ -28,7 +28,11 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.util.CryptoProviderTools;
@@ -37,7 +41,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -50,9 +53,10 @@ public class CmsCAServiceTest extends CaTestCase {
 
     private byte[] doc = "foo123".getBytes();
 
-    private final Admin admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);;
+    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     
     /**
      * Creates a new TestCertTools object.
@@ -93,7 +97,7 @@ public class CmsCAServiceTest extends CaTestCase {
 	 */
     public void test02ActivateCmsCAService() throws Exception {
         // Activate the CMS service in the CA
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, "TEST");
+        CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
         ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
         newlist.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, false));
         cainfo.setExtendedCAServiceInfos(newlist);
@@ -187,7 +191,7 @@ public class CmsCAServiceTest extends CaTestCase {
 	 */
     public void test04DeActivateCmsCAService() throws Exception {
         // Deactivate the CMS service in the CA
-        CAInfo cainfo = caAdminSession.getCAInfo(admin, "TEST");
+        CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
         ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
         newlist.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, false));
         cainfo.setExtendedCAServiceInfos(newlist);

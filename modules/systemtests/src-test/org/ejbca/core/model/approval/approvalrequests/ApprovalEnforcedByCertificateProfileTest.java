@@ -27,6 +27,10 @@ import java.util.Random;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -35,6 +39,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -48,10 +53,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -90,7 +92,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private static int anotherCAID1;
     private static int anotherCAID2;
 
-    private static final Admin admin1 = new Admin(Admin.TYPE_RA_USER);
+    private static final AuthenticationToken admin1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private static String adminUsername;
 
@@ -322,7 +324,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
-    public void test99RemoveCreated() {
+    public void test99RemoveCreated() throws AuthorizationDeniedException {
         log.info("test99RemoveCreated");
 
         // Remove users
@@ -360,7 +362,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
-    private void removeCertificateProfile(String certProfileName) {
+    private void removeCertificateProfile(String certProfileName) throws AuthorizationDeniedException {
         certificateProfileSession.removeCertificateProfile(admin1, certProfileName);
     }
 
@@ -368,7 +370,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return usernameBase + (Integer.valueOf((new Random(new Date().getTime() + 4711)).nextInt(999999))).toString();
     }
 
-    private int createCertificateProfile(Admin admin, String certProfileName, Integer[] reqApprovals, int type) throws Exception {
+    private int createCertificateProfile(AuthenticationToken admin, String certProfileName, Integer[] reqApprovals, int type) throws Exception {
         certificateProfileSession.removeCertificateProfile(admin, certProfileName);
 
         CertificateProfile certProfile = new CertificateProfile();
@@ -376,17 +378,17 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         certProfile.setApprovalSettings(Arrays.asList(reqApprovals));
 
         certificateProfileSession.addCertificateProfile(admin, certProfileName, certProfile);
-        int certProfileId = certificateProfileSession.getCertificateProfileId(admin1, certProfileName);
+        int certProfileId = certificateProfileSession.getCertificateProfileId(certProfileName);
         assertTrue(certProfileId != 0);
 
-        CertificateProfile profile2 = certificateProfileSession.getCertificateProfile(admin, certProfileId);
+        CertificateProfile profile2 = certificateProfileSession.getCertificateProfile(certProfileId);
         assertNotNull(profile2.getApprovalSettings());
         assertEquals(reqApprovals.length, profile2.getApprovalSettings().size());
 
         return certProfileId;
     }
 
-    public static int createCA(Admin internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId)
+    public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId)
             throws Exception {
         SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -410,7 +412,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         } catch (Exception e) {
         }
         caAdminSession.createCA(internalAdmin, cainfo);
-        cainfo = (X509CAInfo) caAdminSession.getCAInfo(internalAdmin, caID);
+        cainfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, caID);
         assertNotNull(cainfo);
 
         log.info("cainfo has " + cainfo.getApprovalSettings() + "  and with  " + cainfo.getNumOfReqApprovals());
@@ -418,48 +420,48 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return caID;
     }
 
-    private void createUser(Admin admin, String username, int caID, int endEntityProfileId, int certProfileId) throws PersistenceException,
+    private void createUser(AuthenticationToken admin, String username, int caID, int endEntityProfileId, int certProfileId) throws PersistenceException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
                 null);
         userdata.setPassword("foo123");
         // userdata.setKeyRecoverable(true);
         createUser(admin, userdata);
     }
 
-    private void createUser(Admin admin, UserDataVO userdata) throws PersistenceException, AuthorizationDeniedException,
+    private void createUser(AuthenticationToken admin, EndEntityInformation userdata) throws PersistenceException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         userAdminSession.addUser(admin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        UserDataVO userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
+        EndEntityInformation userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
         createdUsers.add(userdata.getUsername());
         log.info("created: " + userdata.getUsername());
     }
 
-    private void changeUserDN(Admin admin, String username, String newDN) throws AuthorizationDeniedException,
+    private void changeUserDN(AuthenticationToken admin, String username, String newDN) throws AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
 
-        UserDataVO userdata = userAdminSession.findUser(admin, username);
+        EndEntityInformation userdata = userAdminSession.findUser(admin, username);
         assertNotNull(userdata);
         userdata.setDN(newDN);
         log.debug("changeUser: username=" + username + ", DN="+userdata.getDN()+", password="+userdata.getPassword()+", certProfileId=" + userdata.getCertificateProfileId());
         userAdminSession.changeUser(admin, userdata, true);
     }
 
-    private void changeUserCertProfile(Admin admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
+    private void changeUserCertProfile(AuthenticationToken admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
     UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
-        UserDataVO userdata = userAdminSession.findUser(admin, username);
+        EndEntityInformation userdata = userAdminSession.findUser(admin, username);
         assertNotNull("findUser: " + username, userdata);
         userdata.setCertificateProfileId(newCertProfileId);
         userAdminSession.changeUser(admin, userdata, true);
     }
 
-    private int createEndEntityProfile(Admin admin, String endEntityProfileName, int[] certProfiles) throws EndEntityProfileExistsException {
+    private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, int[] certProfiles) throws EndEntityProfileExistsException {
         EndEntityProfile profile;
         endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
 

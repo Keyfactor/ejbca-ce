@@ -32,9 +32,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -106,7 +110,7 @@ public class XKMSKRSSTest extends TestCase {
 
     private final static String baseUsername;
 
-    private final static Admin administrator = new Admin(Admin.TYPE_RA_USER);
+    private final static AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private final static String username1;
     private final static String username2;
@@ -212,8 +216,8 @@ public class XKMSKRSSTest extends TestCase {
         certificateProfileSession.addCertificateProfile(administrator, certprofilename1, profile1);
         certificateProfileSession.addCertificateProfile(administrator, certprofilename2, profile2);
 
-        final int profile1Id = certificateProfileSession.getCertificateProfileId(administrator, certprofilename1);
-        final int profile2Id = certificateProfileSession.getCertificateProfileId(administrator, certprofilename2);
+        final int profile1Id = certificateProfileSession.getCertificateProfileId(certprofilename1);
+        final int profile2Id = certificateProfileSession.getCertificateProfileId(certprofilename2);
 
         final EndEntityProfile endentityprofile = new EndEntityProfile(true);
 
@@ -1132,7 +1136,7 @@ public class XKMSKRSSTest extends TestCase {
     }
 
     public void test99CleanDatabase() throws Exception {
-        Admin administrator = new Admin(Admin.TYPE_RA_USER);
+    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         userAdminSession.deleteUser(administrator, username2);
         userAdminSession.deleteUser(administrator, username3);
 

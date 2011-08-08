@@ -17,6 +17,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlCreateSessionRemote;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -27,6 +28,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -79,8 +81,8 @@ public class InterfaceCache {
 	    return getEjb().getCertificateProfileSession();
 	}
 	
-	public static CrlCreateSessionRemote getCrlStoreSession() {
-	    return getEjb().getCrlStoreSession();
+	public static CrlCreateSessionRemote getCrlCreateSession() {
+	    return getEjb().getCrlCreateSession();
 	}
 	
 	public static RaAdminSessionRemote getRAAdminSession() {
@@ -143,7 +145,7 @@ public class InterfaceCache {
 		return getEjb().getPublisherSession();
     }
     
-	public static CrlSessionRemote getCrlSession() {
+	public static CrlStoreSessionRemote getCrlStoreSession() {
 		return getEjb().getCrlStoreSession();
 	}
 
@@ -173,5 +175,9 @@ public class InterfaceCache {
 	
 	public static GlobalConfigurationSessionRemote getGlobalConfigurationSession() {
 		return getEjb().getGlobalConfigurationSession();
+	}
+	
+	public static CertReqHistorySessionRemote getCertReqHistorySession() {
+		return getEjb().getCertReqHistorySession();
 	}
 }

@@ -29,12 +29,16 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -111,7 +115,7 @@ public class AutoEnrollServletTest extends TestCase {
 		"k/yUS9D7wZQ+vMw1zbz/mnAX3F38eMmurUKMayRNmORXvJwq" +
 		"-----END NEW CERTIFICATE REQUEST-----";
 
-	private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+	private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
 	public AutoEnrollServletTest(String name) {
 		super(name);
@@ -276,7 +280,7 @@ public class AutoEnrollServletTest extends TestCase {
 		return response;
 	}
 
-	private void cleanUp(String username, String profileName) {
+	private void cleanUp(String username, String profileName) throws AuthorizationDeniedException {
 		try {
 			userAdminSession.revokeAndDeleteUser(admin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		} catch (Exception e) {

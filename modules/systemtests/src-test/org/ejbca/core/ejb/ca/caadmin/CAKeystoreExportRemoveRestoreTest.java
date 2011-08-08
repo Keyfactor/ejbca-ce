@@ -19,6 +19,9 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -26,6 +29,7 @@ import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.JndiHelper;
@@ -169,7 +173,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
     public void test05RestoreWrong() throws Exception {
         log.trace(">test05RestoreWrong()");
 
-        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         String capassword = "foo123";
         byte[] keystorebytes1 = null;
         byte[] keystorebytes2 = null;
@@ -324,7 +328,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
     public void test06RestoreNotRemoved() throws Exception {
         log.trace(">test06RestoreNotRemoved()");
 
-        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         String capassword = "foo123";
         byte[] keystorebytes1 = null;
 
@@ -362,8 +366,8 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
         }
 
         // Just created CA should be active
-        CAInfo info = caAdminSession.getCAInfo(admin, caname1);
-        assertEquals("active token", ICAToken.STATUS_ACTIVE, info.getCATokenInfo().getCATokenStatus());
+        CAInfo info = caSession.getCAInfo(admin, caname1);
+        assertEquals("active token", CryptoToken.STATUS_ACTIVE, info.getCATokenInfo().getTokenStatus());
 
         // Try to restore the first CA even do it has not been removed
         try {
@@ -398,7 +402,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
         String keyFingerPrint = null;
 
         X509CAInfo cainfo = getNewCAInfo(caname, catokeninfo);
-        Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Remove if it already exists
         try {
@@ -438,13 +442,13 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
         }
 
         // The token should now be offline
-        CAInfo info = caAdminSession.getCAInfo(admin, caname);
-        assertEquals("offline token", ICAToken.STATUS_OFFLINE, info.getCATokenInfo().getCATokenStatus());
+        CAInfo info = caSession.getCAInfo(admin, caname);
+        assertEquals("offline token", CryptoToken.STATUS_OFFLINE, info.getCATokenInfo().getTokenStatus());
 
         // Should not be possible to activate
         caAdminSession.activateCAToken(admin, cainfo.getCAId(), capassword, globalConfigurationSession.getCachedGlobalConfiguration(admin));
-        info = caAdminSession.getCAInfo(admin, caname);
-        assertEquals("offline token", ICAToken.STATUS_OFFLINE, info.getCATokenInfo().getCATokenStatus());
+        info = caSession.getCAInfo(admin, caname);
+        assertEquals("offline token", CryptoToken.STATUS_OFFLINE, info.getCATokenInfo().getTokenStatus());
 
         // Should not be possible to export
         try {

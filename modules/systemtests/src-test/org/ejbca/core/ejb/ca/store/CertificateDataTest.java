@@ -33,6 +33,10 @@ import javax.ejb.CreateException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -43,7 +47,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 
@@ -55,7 +58,7 @@ import org.ejbca.util.InterfaceCache;
 public class CertificateDataTest extends TestCase {
 
     private static final Logger log = Logger.getLogger(CertificateDataTest.class);
-    private static final Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cert;
     private static X509Certificate cert1;
     private static X509Certificate cert2;
@@ -452,7 +455,7 @@ public class CertificateDataTest extends TestCase {
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return OK (see
         // ECA-1527).
-        certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
@@ -477,7 +480,7 @@ public class CertificateDataTest extends TestCase {
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return REVOKED.
-        certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
@@ -502,7 +505,7 @@ public class CertificateDataTest extends TestCase {
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return OK.
-        certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
@@ -523,7 +526,7 @@ public class CertificateDataTest extends TestCase {
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return REVOKED.
-        certificateStoreSession.setArchivedStatus(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);
@@ -531,14 +534,14 @@ public class CertificateDataTest extends TestCase {
     }
 
     private X509Certificate generateCert(int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            SignatureException, InvalidKeyException, CertificateEncodingException, CreateException {
+            SignatureException, InvalidKeyException, CertificateEncodingException, CreateException, AuthorizationDeniedException {
         // create a key pair and a new self signed certificate
         log.info("Generating a small key pair, might take a few seconds...");
         X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keyPair.getPrivate(), keyPair
                 .getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         String fp = CertTools.getFingerprintAsString(xcert);
 
-        Certificate ce = certificateStoreSession.findCertificateByFingerprint(admin, fp);
+        Certificate ce = certificateStoreSession.findCertificateByFingerprint(fp);
         if (ce != null) {
             assertTrue("Certificate with fp=" + fp + " already exists in db, very strange since I just generated it.", false);
         }

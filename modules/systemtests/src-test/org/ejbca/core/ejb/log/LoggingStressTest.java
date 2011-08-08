@@ -19,7 +19,9 @@ import java.util.Date;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.util.InterfaceCache;
 
@@ -63,7 +65,7 @@ public class LoggingStressTest extends TestCase {
     		this.runTime = runTime;
     	}
     	
-    	Admin internalAdmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    	AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     	public void run() {
             try {
             	int i = 0;

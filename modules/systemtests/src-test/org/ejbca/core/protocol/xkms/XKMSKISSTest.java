@@ -33,12 +33,16 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -129,7 +133,7 @@ public class XKMSKISSTest extends TestCase {
     }
 
     public void test00SetupDatabase() throws Exception {
-        Admin administrator = new Admin(Admin.TYPE_RA_USER);
+    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Setup with two new Certificate profiles.
         EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
@@ -151,8 +155,8 @@ public class XKMSKISSTest extends TestCase {
             log.info("Certificateprofile XKMSTESTSIGN already exists.");
         }
 
-        int profile1Id = certificateProfileSession.getCertificateProfileId(administrator, "XKMSTESTSIGN");
-        int profile2Id = certificateProfileSession.getCertificateProfileId(administrator, "XKMSTESTEXCHANDENC");
+        int profile1Id = certificateProfileSession.getCertificateProfileId("XKMSTESTSIGN");
+        int profile2Id = certificateProfileSession.getCertificateProfileId("XKMSTESTEXCHANDENC");
 
         EndEntityProfile endentityprofile = new EndEntityProfile(true);
         endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
@@ -1099,7 +1103,7 @@ public class XKMSKISSTest extends TestCase {
         assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOMATCH));
 
         // Revoke certificate
-        Admin administrator = new Admin(Admin.TYPE_RA_USER);
+        AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         certificateStoreSession.revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         // Validate with revoked certificate
         validateRequestType = xKMSObjectFactory.createValidateRequestType();
@@ -1131,7 +1135,7 @@ public class XKMSKISSTest extends TestCase {
     }
 
     public void test99CleanDatabase() throws Exception {
-        Admin administrator = new Admin(Admin.TYPE_RA_USER);
+    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         userAdminSession.deleteUser(administrator, username1);
         userAdminSession.deleteUser(administrator, username2);
         userAdminSession.deleteUser(administrator, username3);

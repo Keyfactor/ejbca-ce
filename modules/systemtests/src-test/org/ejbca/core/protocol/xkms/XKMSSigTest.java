@@ -37,6 +37,9 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
@@ -128,7 +131,7 @@ public class XKMSSigTest extends TestCase {
 
     public void test00SetupAccessRights() throws Exception {
     	log.trace(">test00SetupAccessRights");
-        Admin administrator = new Admin(Admin.TYPE_RA_USER);
+    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         username = baseUsername + "1";
         try {
             userAdminSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
@@ -544,7 +547,7 @@ public class XKMSSigTest extends TestCase {
     }
 
     public void test99RemoveUser() throws Exception {
-        Admin administrator = new Admin(Admin.TYPE_RA_USER);
+    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         userAdminSession.deleteUser(administrator, username);
         keystorefile.deleteOnExit();
     }

@@ -46,6 +46,8 @@ import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.SingleResp;
 import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CryptoProviderTools;
 
 /** Tests http pages of a standalone ocsp
  * To run this test you must create a user named ocspTest that has at least two certificates and
@@ -120,7 +122,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     
     public ProtocolOcspHttpPerfTest(String name) throws Exception {
         super(name);
-        CertTools.installBCProvider();
+        CryptoProviderTools.installBCProvider();
     	cacert = CertTools.getCertfromByteArray(cacertbytes);
     	tomastest = CertTools.getCertfromByteArray(tomastestbytes);
     	

@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -52,7 +55,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private static String requestingAdminUsername = null;
     private static String adminUsername = null;
 
-    private static final Admin internalAdmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
+    private static final AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static Admin reuestingAdmin = null;
     private static Admin approvingAdmin = null;
     private static ArrayList<AdminEntity> adminentities;
