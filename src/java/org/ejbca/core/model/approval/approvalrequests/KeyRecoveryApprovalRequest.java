@@ -35,7 +35,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Approval Request created when an administrator wants
@@ -100,7 +99,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumberAsString(cert),true,false));
@@ -110,7 +109,7 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 	}
 	
 	@Override
-	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		return null;
 	}
 

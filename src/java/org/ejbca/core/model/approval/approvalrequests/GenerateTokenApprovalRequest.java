@@ -24,7 +24,6 @@ import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Special Approval Request created when an adminsitrator wants
@@ -78,7 +77,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	}
 
 	@Override
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));		
 		retval.add(new ApprovalDataText("SUBJECTDN",dn,true,false));
@@ -87,7 +86,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	}
 	
 	@Override
-	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		return null;
 	}
 

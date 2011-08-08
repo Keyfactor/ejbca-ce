@@ -23,7 +23,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 
@@ -147,7 +146,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * Should return a List of ApprovalDataText, one for each row
 	 */
 	@Override
-	public List<ApprovalDataText> getNewRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		if ( username != null ) {
 			retval.add(new ApprovalDataText("USERNAME",username,true,false));
@@ -175,7 +174,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 	 * Should return a Collection of ApprovalDataText, one for each row
 	 */
 	@Override
-	public List<ApprovalDataText> getOldRequestDataAsText(Admin admin) {
+	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		return null;
 	}
 

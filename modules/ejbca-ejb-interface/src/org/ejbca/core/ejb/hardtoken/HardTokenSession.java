@@ -20,6 +20,7 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
@@ -29,7 +30,6 @@ import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.types.HardToken;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /** Session bean for managing hard tokens, hard token profiles and hard token issuers. 
  * A hard token is a smart card, usb token and similar. A generic thing actually.
@@ -187,7 +187,7 @@ public interface HardTokenSession {
      *             if users tokentype isn't among hard token issuers available
      *             tokentypes.
      */
-    public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException;
+    public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, EndEntityInformation userdata) throws UnavailableTokenException;
 
     /**
      * Adds a hard token to the database

@@ -30,7 +30,6 @@ import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -70,7 +69,6 @@ public interface EjbBridgeSessionLocal {
 	AdminGroupSessionLocal getAdminGroupSession();
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
-	AuthorizationSessionLocal getAuthorizationSession();
 	AuthenticationSessionLocal getAuthenticationSession();
 	AccessControlSessionLocal getAccessControlSession();
 	@Deprecated OldAuthenticationSessionLocal getOldAuthenticationSession(); //TODO: This will be removed.

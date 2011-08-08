@@ -15,6 +15,8 @@ package org.ejbca.core.ejb.approval;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -22,13 +24,17 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -44,7 +50,6 @@ import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityAppro
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.KeyRecoveryApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
-import org.ejbca.core.model.log.LogConstants;
 
 /**
  * Handles execution of approved tasks. Separated from ApprovealSessionBean to avoid
@@ -60,10 +65,14 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 	static final Logger log = Logger.getLogger(ApprovalExecutionSessionBean.class);
     static final InternalResources intres = InternalResources.getInstance();
 
-    @EJB UserAdminSessionLocal userAdminSession;
-    @EJB CAAdminSessionLocal caAdminSession;
-    @EJB ApprovalSessionLocal approvalSession;
-    @EJB LogSessionLocal logSession;
+    @EJB
+    private UserAdminSessionLocal userAdminSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
@@ -73,8 +82,8 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
         try {
             adl = approvalSession.isAuthorizedBeforeApproveOrReject(admin, approvalId);
         } catch (ApprovalException e) {
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALAPPROVED,
-                    "Approval request with id : " + approvalId + " doesn't exists.");
+            String msg = intres.getLocalizedMessage("approval.notexist", approvalId);            	
+        	log.info(msg, e);
             throw e;
         }
         approvalSession.checkExecutionPossibility(admin, adl);
@@ -95,15 +104,22 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
                             adl.getId(), approvalDataVO.getRemainingApprovals(), approvalDataVO.getRequestDate(), approvalDataVO.getApprovalRequest(), approval);
                 }
             }
-            logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_INFO_APPROVALAPPROVED,
-                    "Approval request with id : " + approvalId + " have been approved.");
+            String msg = intres.getLocalizedMessage("approval.approved", approvalId);            	
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(approval.getAdminCertIssuerDN().hashCode()), null, String.valueOf(approvalId), details);
         } catch (ApprovalRequestExpiredException e) {
-            logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALAPPROVED,
-                    "Approval request with id : " + approvalId + " have expired.");
+            String msg = intres.getLocalizedMessage("approval.expired", approvalId);            	
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(approval.getAdminCertIssuerDN().hashCode()), null, String.valueOf(approvalId), details);
             throw e;
         } catch (ApprovalRequestExecutionException e) {
-            logSession.log(admin, adl.getCaid(), LogConstants.MODULE_APPROVAL, new Date(), null, null, LogConstants.EVENT_ERROR_APPROVALAPPROVED,
-                    "Approval with id : " + approvalId + " couldn't execute properly");
+            String msg = intres.getLocalizedMessage("approval.errorexecuting", approvalId);            	
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(approval.getAdminCertIssuerDN().hashCode()), null, String.valueOf(approvalId), details);
             throw e;
         }
         log.trace("<approve");

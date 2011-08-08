@@ -13,12 +13,13 @@
 package org.ejbca.core.model.services;
 
 /**
- * Execption throw when adding a service that already exists
+ * Exception throw when adding a service that already exists
  * 
- * @author Philip Vendil 2006 sep 27
- *
  * @version $Id$
  */
 public class ServiceExistsException extends Exception {
 
+	public ServiceExistsException(String msg) {
+		super(msg);
+	}
 }

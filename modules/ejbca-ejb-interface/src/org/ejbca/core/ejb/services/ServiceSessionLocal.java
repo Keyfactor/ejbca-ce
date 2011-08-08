@@ -19,7 +19,7 @@ import java.util.Map;
 
 import javax.ejb.Local;
 
-import org.ejbca.core.model.log.Admin;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.services.IWorker;
 
 /**
@@ -30,7 +30,7 @@ import org.ejbca.core.model.services.IWorker;
 public interface ServiceSessionLocal extends ServiceSession {
 
     /** @return HashMap mapping service id (Integer) to service name (String). */
-    public HashMap<Integer, String> getServiceIdToNameMap(Admin admin);
+    public HashMap<Integer, String> getServiceIdToNameMap(AuthenticationToken admin);
 
     /**
      * Internal method used from load() to separate timer access from database

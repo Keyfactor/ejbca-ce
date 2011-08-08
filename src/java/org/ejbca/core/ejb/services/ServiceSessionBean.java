@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -42,13 +43,21 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -58,7 +67,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -101,11 +109,12 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private TimerService timerService;	// When the sessionContext is injected, the timerService should be looked up.
     
     @EJB
-    private AuthorizationSessionLocal authorizationSession;
+    private AccessControlSessionLocal authorizationSession;
     @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private ServiceDataSessionLocal serviceDataSession;
+    @EJB
     private ServiceSessionLocal serviceSession;
 
     // Additional dependencies from the services we executeServiceInTransaction
@@ -144,7 +153,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private CertificateRequestSessionLocal certificateRequestSession;
     
-    private Admin intAdmin = Admin.getInternalAdmin();	// The administrator that the services should be run as.
+    private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));	// The administrator that the services should be run as.
 
     @PostConstruct
     public void ejbCreate() {
@@ -179,16 +188,18 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 }
             }
             if (success) {
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED,
-                        intres.getLocalizedMessage("services.serviceadded", name));
+            	final String msg = intres.getLocalizedMessage("services.serviceadded", name);
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
             } else {
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED,
-                        intres.getLocalizedMessage("services.erroraddingservice", name));
-                throw new ServiceExistsException();
+            	final String msg = intres.getLocalizedMessage("services.erroraddingservice", name);
+            	log.info(msg);
+                throw new ServiceExistsException(msg);
             }
         } else {
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                    intres.getLocalizedMessage("services.notauthorizedtoadd", name));
+        	final String msg = intres.getLocalizedMessage("services.notauthorizedtoadd", name);
+        	log.info(msg);
         }
         log.trace("<addService()");
     }
@@ -208,18 +219,14 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         try {
             servicedata = (ServiceConfiguration) htp.getServiceConfiguration().clone();
             if (isAuthorizedToEditService(admin, servicedata)) {
-                try {
-                    addService(admin, newname, servicedata);
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                            LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.servicecloned", newname, oldname));
-                } catch (ServiceExistsException f) {
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                            LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorcloningservice", newname, oldname));
-                    throw f;
-                }
+            	addService(admin, newname, servicedata);
+            	final String msg = intres.getLocalizedMessage("services.servicecloned", newname, oldname);
+            	final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            	details.put("msg", msg);
+            	auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
             } else {
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                        intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+            	final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", oldname);
+            	log.info(msg);
             }
         } catch (CloneNotSupportedException e) {
             log.error("Error cloning service: ", e);
@@ -247,16 +254,21 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     serviceSession.cancelTimer(htp.getId());
                 }
                 serviceDataSession.removeServiceData(htp.getId());
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
+                final String msg = intres.getLocalizedMessage("services.serviceremoved", name); 
+            	final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            	details.put("msg", msg);
+            	auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
                 retval = true;
             } else {
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
-                        LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+            	final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
+            	log.info(msg);
             }
         } catch (Exception e) {
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_SERVICESEDITED, intres.getLocalizedMessage("services.errorremovingservice", name), e);
+        	final String msg = intres.getLocalizedMessage("services.errorremovingservice", name);
+        	final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        	details.put("msg", msg);
+        	details.put("error", e.getMessage());
+        	auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
         }
         log.trace("<removeService)");
         return retval;
@@ -275,18 +287,20 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     htp.setName(newname);
                     success = true;
                 } else {
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
-                            LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, intres.getLocalizedMessage("services.notauthorizedtoedit", oldname));
+                	final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", oldname);
+                	log.info(msg);
                 }
             }
         }
         if (success) {
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_INFO_SERVICESEDITED,
-                    intres.getLocalizedMessage("services.servicerenamed", oldname, newname));
+        	final String msg = intres.getLocalizedMessage("services.servicerenamed", oldname, newname);
+        	final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        	details.put("msg", msg);
+        	auditSession.log(EjbcaEventTypes.SERVICE_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
         } else {
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_SERVICESEDITED,
-                    intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname));
-            throw new ServiceExistsException();
+        	final String msg = intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname);
+        	log.info(msg);
+            throw new ServiceExistsException(msg);
         }
         log.trace("<renameService()");
     }
@@ -357,8 +371,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     }
                 }
             } else {
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                        intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+            	final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
+            	log.info(msg);
             }
         } else {
             log.error("Can not find service: " + name);
@@ -432,8 +446,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 addTimer(30 * 1000, timerInfo);
         	}
         	if (serviceName == null) {
-                logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
-                        LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
+        		final String msg = intres.getLocalizedMessage("services.servicenotfound", timerInfo);
+        		log.info(msg);
         	} else {
             	// Get interval of worker
             	try {
@@ -476,8 +490,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     	if (serviceName != null) {
                     		o = serviceName;
                     	}
-                    	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
-                    			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", o));
+                    	final String msg = intres.getLocalizedMessage("services.servicerunonothernode", o);
+                    	log.info(msg);
                     }
                     if (new Date().getTime() - startOfTimeOut > serviceInterval * 1000) {
                     	log.warn("Service '" + serviceName + "' took longer than it's configured service interval."
@@ -571,7 +585,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         	ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
         	ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
         	ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
-        	ejbs.put(LogSessionLocal.class, logSession);
+        	ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);
         	ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
         	ejbs.put(RaAdminSessionLocal.class, raAdminSession);
         	ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
@@ -581,11 +595,16 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         	ejbs.put(PublisherSessionLocal.class, publisherSession);
         	ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
             worker.work(ejbs);
-        	logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-        			LogConstants.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
+            final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.SERVICE_EXECUTED, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), serviceName, null, details);
         } catch (ServiceExecutionFailedException e) {
-            logSession.log(intAdmin, intAdmin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
+            final String msg = intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("error", e.getMessage());
+            auditSession.log(EjbcaEventTypes.SERVICE_EXECUTED, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), serviceName, null, details);
         }
     }
 
@@ -605,29 +624,25 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (success) {
                 String msg = intres.getLocalizedMessage("services.serviceedited", name);
                 if (!noLogging) {
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                            LogConstants.EVENT_INFO_SERVICESEDITED, msg);
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);                	
                 } else {
                     log.info(msg);
                 }
             } else {
                 String msg = intres.getLocalizedMessage("services.serviceedited", name);
-                log.error(msg);
                 if (!noLogging) {
-                    logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new java.util.Date(), null, null,
-                            LogConstants.EVENT_ERROR_SERVICESEDITED, msg);
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);                	
                 } else {
                     log.error(msg);
                 }
             }
         } else {
             String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
-            if (!noLogging) {
-                logSession.log(admin, admin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                        msg);
-            } else {
-                log.error(msg);
-            }
+            log.info(msg);
         }
         log.trace("<changeService()");
     }

@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Random;
 
 import javax.ejb.EJB;
@@ -31,13 +33,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.Base64GetHashMap;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.log.LogConstants;
@@ -66,11 +72,11 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     private EntityManager entityManager;
 
     @EJB
-    private AuthorizationSessionLocal authorizationSession;
+    private AccessControlSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private LogSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
@@ -84,23 +90,22 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     			if(isAuthorizedToUserDataSource(admin,id.intValue(),userdatasource,false)){
     				try {
     					result.addAll(getUserDataSource(pdl).fetchUserDataSourceVOs(admin,searchstring));
-    					String msg = intres.getLocalizedMessage("userdatasource.fetcheduserdatasource", pdl.getName());            	
-    					logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
-    							null, LogConstants.EVENT_INFO_USERDATAFETCHED,msg);
+    					String msg = intres.getLocalizedMessage("userdatasource.fetcheduserdatasource", pdl.getName()); 
+    		            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+    		            details.put("msg", msg);
+    		            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEFETCHDATA, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
     				} catch (UserDataSourceException pe) {
-    					String msg = intres.getLocalizedMessage("userdatasource.errorfetchuserdatasource", pdl.getName());            	
-    					logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
-    							null, LogConstants.EVENT_ERROR_USERDATAFETCHED,msg);
+    					String msg = intres.getLocalizedMessage("userdatasource.errorfetchuserdatasource", pdl.getName());
+    					log.info(msg, pe);
     					throw pe;
     				}
     			}else{
     				String msg = intres.getLocalizedMessage("userdatasource.errornotauth", pdl.getName());
-    				logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    				log.info(msg);
     			}
     		} else {
-    			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);            	
-    			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-    					LogConstants.EVENT_ERROR_USERDATAFETCHED, msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);
+    			log.info(msg);
     			throw new UserDataSourceException(msg);
     		}
     	}
@@ -120,23 +125,22 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     				try {
     					retval = retval || getUserDataSource(pdl).removeUserData(admin, searchstring, removeMultipleMatch);
     					String msg = intres.getLocalizedMessage("userdatasource.removeduserdata", pdl.getName());            	
-    					logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
-    							null, LogConstants.EVENT_INFO_USERDATAREMOVED,msg);
+    		            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+    		            details.put("msg", msg);
+    		            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVEDATA, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
     				} catch (UserDataSourceException pe) {
-    					String msg = intres.getLocalizedMessage("userdatasource.errorremovinguserdatasource", pdl.getName());            	
-    					logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
-    							null, LogConstants.EVENT_ERROR_USERDATAREMOVED,msg);
+    					String msg = intres.getLocalizedMessage("userdatasource.errorremovinguserdatasource", pdl.getName());
+    					log.info(msg);
     					throw pe;
 
     				}
     			}else{
     				String msg = intres.getLocalizedMessage("userdatasource.errornotauth", pdl.getName());
-    				logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    				log.info(msg);
     			}
     		} else {
-    			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);            	
-    			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-    					LogConstants.EVENT_ERROR_USERDATAREMOVED, msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);
+    			log.info(msg);
     			throw new UserDataSourceException(msg);
     		}
     	}
@@ -154,23 +158,20 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
         		try {
         			userdatasource.testConnection(admin);
-        			String msg = intres.getLocalizedMessage("userdatasource.testedcon", pdl.getName());            	
-        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null,
-        					null, LogConstants.EVENT_INFO_USERDATASOURCEDATA,msg);
+        			String msg = intres.getLocalizedMessage("userdatasource.testedcon", pdl.getName());
+        			log.info(msg);
         		} catch (UserDataSourceConnectionException pe) {
-        			String msg = intres.getLocalizedMessage("userdatasource.errortestcon", pdl.getName());            	
-        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-        					LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg, pe);        			
+        			String msg = intres.getLocalizedMessage("userdatasource.errortestcon", pdl.getName());
+        			log.info(msg);
         			throw pe;
         		}
         	}else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errortestconauth", pdl.getName());            	
-            	logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.errortestconauth", pdl.getName());
+    			log.info(msg);
         	}
     	} else {
-			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));            	
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null,
-                    LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
+			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));
+			log.info(msg);
         }
     	if (log.isTraceEnabled()) {
             log.trace("<testConnection(id: " + userdatasourceid + ")");
@@ -205,15 +206,17 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	}
         	if (success) {
     			String msg = intres.getLocalizedMessage("userdatasource.addedsource", name);            	
-        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_USERDATASOURCEDATA, msg);
+	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+	            details.put("msg", msg);
+	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         	} else {
-    			String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);            	
-        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);
+    			log.info(msg);
         		throw new UserDataSourceExistsException();
         	}
         } else {
-			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
-        	logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
+			log.info(msg);
         }
         log.trace("<addUserDataSource()");
     }
@@ -232,14 +235,16 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	}
         	if (success) {
     			String msg = intres.getLocalizedMessage("userdatasource.changedsource", name);            	
-        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_USERDATASOURCEDATA, msg);
+	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+	            details.put("msg", msg);
+	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEEDIT, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         	} else {
-    			String msg = intres.getLocalizedMessage("userdatasource.errorchangesource", name);            	
-        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.errorchangesource", name);
+    			log.info(msg);
         	}
         }else{
-			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
-        	logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
+			log.info(msg);
         }
         log.trace("<changeUserDataSource()");
     }
@@ -262,15 +267,17 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         		try {
         			addUserDataSource(admin, newname, userdatasourcedata);
         			String msg = intres.getLocalizedMessage("userdatasource.clonedsource", newname, oldname);            	
-        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_USERDATASOURCEDATA, msg);
+    	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+    	            details.put("msg", msg);
+    	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         		} catch (UserDataSourceExistsException f) {
-        			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);            	
-        			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
+        			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);
+        			log.info(msg, f);
         			throw f;
         		}        		
         	}else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);            	
-        		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);
+    			log.info(msg);
         	}            
         } catch (CloneNotSupportedException e) {
 			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);            	
@@ -295,15 +302,17 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     		if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
     			entityManager.remove(htp);
     			String msg = intres.getLocalizedMessage("userdatasource.removedsource", name);            	
-    			logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_USERDATASOURCEDATA, msg);
+	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+	            details.put("msg", msg);
+	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
     			retval = true;
     		}else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
-    			logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name); 
+    			log.info(msg);
     		}
     	} catch (Exception e) {
-    		String msg = intres.getLocalizedMessage("userdatasource.errorremovesource", name);            	
-    		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg, e);
+    		String msg = intres.getLocalizedMessage("userdatasource.errorremovesource", name);
+    		log.info(msg, e);
     	}
     	log.trace("<removeUserDataSource()");
     	return retval;
@@ -322,17 +331,19 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
                   htp.setName(newname);
                   success = true;
             	}else{
-        			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);            	
-            		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
+        			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);    
+        			log.info(msg);
             	}
             }
         }
         if (success) {
         	String msg = intres.getLocalizedMessage("userdatasource.renamedsource", oldname, newname);            	
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_INFO_USERDATASOURCEDATA, msg);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCERENAME, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
         } else {
-            String msg = intres.getLocalizedMessage("userdatasource.errorrenamesource", oldname, newname);            	
-            logSession.log(admin, admin.getCaId(), LogConstants.MODULE_RA, new java.util.Date(), null, null, LogConstants.EVENT_ERROR_USERDATASOURCEDATA, msg);
+            String msg = intres.getLocalizedMessage("userdatasource.errorrenamesource", oldname, newname);   
+            log.info(msg);
             throw new UserDataSourceExistsException();
         }
         log.trace("<renameUserDataSource()");
@@ -389,8 +400,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
-        		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
+    			log.info(msg);
             }
         }
         return returnval;
@@ -406,8 +417,8 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", Integer.valueOf(id));            	
-        		logSession.log(admin, admin.getCaId(),LogConstants.MODULE_RA,new Date(),null,null,LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", Integer.valueOf(id)); 
+    			log.info(msg);
             }
         }
         return returnval;
