@@ -29,8 +29,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionLocal;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
+import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
@@ -69,8 +69,7 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 
-	@EJB AdminEntitySessionLocal adminEntitySession;
-	@EJB AdminGroupSessionLocal adminGroupSession;
+	@EJB AdminEntitySessionLocal adminEntitySession;	
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalSessionLocal approvalSession;
 	@EJB AccessControlSessionLocal authorizationSession;
@@ -96,6 +95,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB RaAdminSessionLocal raSession;
+	@EJB RoleAccessSessionLocal roleAccessSession;
 	@EJB SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
 	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 	@EJB ServiceSessionLocal serviceSession;
@@ -106,8 +106,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	
 	@EJB SimpleAuthenticationProviderLocal simpleAuthenticationProvider;
 
-	@Override public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }
-	@Override public AdminGroupSessionLocal getAdminGroupSession() { return adminGroupSession; }
+	@Override public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }	
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
 	@Override public AccessControlSessionLocal getAccessControlSession() { return authorizationSession; }
@@ -123,6 +122,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
 	@Override public CertificateCreateSessionLocal getCertificateCreateSession() { return certificateCreateSession; }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
+	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
 	@Override public HardTokenSessionLocal getHardTokenSession() { return hardTokenSession; }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
@@ -131,6 +131,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
 	@Override public RaAdminSessionLocal getRaAdminSession() { return raSession; }
+	@Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
+	@Override public RoleAccessSessionLocal getRoleAccessSession() { return roleAccessSession; }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return securityEventsAuditorSession; }
 	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
@@ -138,8 +140,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
 	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return logConfigurationSession; }
-	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
-	@Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
+	
+	
 
     @Override
     public SimpleAuthenticationProviderLocal getSimpleAuthenticationProvider() { return simpleAuthenticationProvider; }

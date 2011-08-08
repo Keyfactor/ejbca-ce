@@ -86,6 +86,19 @@ public interface RoleManagementSession {
      * Renames a role.
      * 
      * @param role
+     *            The name of the old role to change.
+     * @param newName
+     *            The new name of the role.
+     * @throws RoleExistsException
+     *             If the new role name already exists.
+     * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+     */
+    RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException, AuthorizationDeniedException;
+    
+    /**
+     * Renames a role.
+     * 
+     * @param role
      *            The role to change.
      * @param newName
      *            The new name of the role.

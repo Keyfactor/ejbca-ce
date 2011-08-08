@@ -34,7 +34,6 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.cesecore.core.ejb.authorization.AdminGroupSession;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -66,7 +65,6 @@ public class InformationMemory implements Serializable {
     // Private fields
     private AuthenticationToken administrator;
     // Session Bean interfaces (was *Local originally)
-    private AdminGroupSession adminGroupSession;
     private CAAdminSession caadminsession;
     private CaSession caSession;
     private AccessControlSessionLocal authorizationsession;
@@ -99,7 +97,6 @@ public class InformationMemory implements Serializable {
     public InformationMemory(AuthenticationToken administrator,
                              CAAdminSession caadminsession, CaSession caSession,
                              RaAdminSession raadminsession,
-                             AdminGroupSession adminGroupSession,
                              AccessControlSessionLocal authorizationsession,
                              EndEntityProfileSession endEntityProfileSession,
                              HardTokenSession hardtokensession,
@@ -108,7 +105,6 @@ public class InformationMemory implements Serializable {
                              CertificateProfileSession certificateProfileSession,
                              GlobalConfigurationSession globalConfigurationSession,
                              GlobalConfiguration globalconfiguration){
-      this.adminGroupSession = adminGroupSession;
         this.caadminsession = caadminsession;                           
       this.administrator = administrator;
       this.authorizationsession = authorizationsession;

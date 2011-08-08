@@ -13,32 +13,35 @@
  
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CaSession;
-import org.cesecore.core.ejb.authorization.AdminEntitySession;
-import org.cesecore.core.ejb.authorization.AdminGroupSession;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.access.RoleAccessSession;
+import org.cesecore.roles.management.RoleManagementSession;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AdminGroupExistsException;
-import org.ejbca.core.model.authorization.Authorizer;
 
 
 /**
  * A class handling the authorization data. 
  *
- * @author  Philip Vendil
+ * FIXME: Rename the methods in this class to fit what they actually do
+ *
  * @version $Id$
  */
-public class AuthorizationDataHandler implements java.io.Serializable {
+public class AuthorizationDataHandler implements Serializable {
 	
     private static final long serialVersionUID = 1L;
     
@@ -48,17 +51,17 @@ public class AuthorizationDataHandler implements java.io.Serializable {
     
     private CaSession caSession;
     private AccessControlSessionLocal authorizationsession;
-    private AdminEntitySession adminEntitySession;
-    private AdminGroupSession adminGroupSession;
+    private RoleAccessSession roleAccessSession;
+    private RoleManagementSession roleManagementSession;
     private AuthenticationToken administrator;
     private Collection<AdminGroup> authorizedadmingroups;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
-    public AuthorizationDataHandler(AuthenticationToken administrator, InformationMemory informationmemory, AdminEntitySession adminEntitySession,
-            AdminGroupSession adminGroupSession, AccessControlSessionLocal authorizationsession, CaSession caSession) {
-        this.adminEntitySession = adminEntitySession;
-        this.adminGroupSession = adminGroupSession;
+    public AuthorizationDataHandler(AuthenticationToken administrator, InformationMemory informationmemory, RoleAccessSession roleAccessSession,
+            RoleManagementSession roleManagementSession, AccessControlSessionLocal authorizationsession, CaSession caSession) {
+        this.roleManagementSession = roleManagementSession;
+        this.roleAccessSession = roleAccessSession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;
         this.informationmemory = informationmemory;
@@ -89,31 +92,34 @@ public class AuthorizationDataHandler implements java.io.Serializable {
       return authorizationsession.isAuthorizedNoLog(admin, resource);
     }
 
-    // Methods used with admingroup data
-    /** Method to add a new admingroup to the administrator privileges data. */
-    public void addAdminGroup(String name) throws AdminGroupExistsException, AuthorizationDeniedException {
-        // Authorized to edit administrative priviledges
+
+    /** Method to add a new role to the administrator privileges data. 
+     * @throws RoleExistsException */
+    public void addAdminGroup(String name) throws AuthorizationDeniedException, RoleExistsException {
+        // Authorized to edit administrative privileges
         if (!authorizationsession.isAuthorized(administrator, "/system_functionality/edit_administrator_privileges")) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", "/system_functionality/edit_administrator_privileges", null);
 	        throw new AuthorizationDeniedException(msg);
         }
-        adminGroupSession.addAdminGroup(administrator, name);
+        roleManagementSession.create(administrator, name);
         informationmemory.administrativePriviledgesEdited();
         this.authorizedadmingroups = null;
     }
 
-    /** Method to remove a admingroup.*/
-    public void removeAdminGroup(String name) throws AuthorizationDeniedException{
+    /** Method to remove a role.
+     * @throws RoleNotFoundException */
+    public void removeAdminGroup(String name) throws AuthorizationDeniedException, RoleNotFoundException{
       authorizedToEditAdministratorPrivileges(name);
-      adminGroupSession.removeAdminGroup(administrator, name);
+      roleManagementSession.remove(administrator, name);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
 
-    /** Method to rename a admingroup. */
-    public void renameAdminGroup(String oldname, String newname) throws AdminGroupExistsException, AuthorizationDeniedException{
+    /** Method to rename a role. 
+     * @throws RoleExistsException */
+    public void renameAdminGroup(String oldname, String newname) throws AuthorizationDeniedException, RoleExistsException{
       authorizedToEditAdministratorPrivileges(oldname);
-      adminGroupSession.renameAdminGroup(administrator, oldname, newname);
+      roleManagementSession.renameRole(administrator, oldname, newname);
       informationmemory.administrativePriviledgesEdited();
 	  this.authorizedadmingroups = null;
     }
@@ -124,7 +130,8 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      */
     public Collection<AdminGroup> getAdminGroupNames(){ 
       if (this.authorizedadmingroups==null) {
-        this.authorizedadmingroups = adminGroupSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator));    
+          //FIXME: This method should be amended to access control
+        this.authorizedadmingroups = roleDataSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator));    
       }
       return this.authorizedadmingroups;
     }
@@ -135,32 +142,35 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @throws AuthorizationDeniedException if administrator isn't authorized to 
      * access admingroup.
      */
-    public AdminGroup getAdminGroup(String admingroupname) throws AuthorizationDeniedException {
-      authorizedToEditAdministratorPrivileges(admingroupname);
-      return adminGroupSession.getAdminGroup(administrator, admingroupname);
+    public RoleData getAdminGroup(String roleName) throws AuthorizationDeniedException {
+      authorizedToEditAdministratorPrivileges(roleName);
+      return roleAccessSession.findRole(roleName);
     }
 
     /** 
-     * Method to add a Collection of AccessRule to an admingroup.
+     * Method to add a Collection of AccessRule to an role.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA
-     * or when administrator tries to add accessrules he isn't authorized to.
+     * or when administrator tries to add access rules she isn't authorized to.
+     * @throws RoleNotFoundException 
+     * @throws AccessRuleNotFoundException 
      */
-    public void addAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(admingroupname);
-      authorizedToAddAccessRules(accessrules);
-      adminGroupSession.addAccessRules(administrator, admingroupname, accessrules);
+    public void addAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException{
+      authorizedToEditAdministratorPrivileges(roleName);
+      authorizedToAddAccessRules(accessRules);
+      roleManagementSession.addAccessRulesToRole(administrator, roleAccessSession.findRole(roleName), accessRules);
       informationmemory.administrativePriviledgesEdited();
     }
 
     /** 
-     * Method to remove an collection of access rules from a admingroup.
+     * Method to remove an collection of access rules from a role.
      * 
-     * @param accessrules a Collection of String containing accesssrules to remove.
+     * @param accessrules a Collection of AccessRuleData containing accesss rules to remove.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
+     * @throws RoleNotFoundException 
      */
-    public void removeAccessRules(String admingroupname, List<String> accessrules) throws AuthorizationDeniedException {
-      authorizedToEditAdministratorPrivileges(admingroupname);
-      adminGroupSession.removeAccessRules(administrator, admingroupname, accessrules);
+    public void removeAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
+      authorizedToEditAdministratorPrivileges(roleName);
+      roleManagementSession.removeAccessRulesFromRole(administrator, roleAccessSession.findRole(roleName), accessRules);
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -170,9 +180,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
      * @param accessrules a Collection of String containing accesssrules to replace.
      * @throws AuthorizationDeniedException when administrator is't authorized to edit this CA.
      */
-    public void replaceAccessRules(String admingroupname, Collection accessrules) throws AuthorizationDeniedException {
+    public void replaceAccessRules(String admingroupname, Collection<AccessRuleData> accessrules) throws AuthorizationDeniedException {
     	authorizedToEditAdministratorPrivileges(admingroupname);
-    	adminGroupSession.replaceAccessRules(administrator, admingroupname, accessrules);
+    	roleDataSession.replaceAccessRules(administrator, admingroupname, accessrules);
     	informationmemory.administrativePriviledgesEdited();
     }
     
@@ -192,9 +202,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs 
        * administrative privileges.
        */
-    public void addAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
-      authorizedToEditAdministratorPrivileges(admingroupname);	  
-      adminEntitySession.addAdminEntities(administrator, admingroupname, adminentities);    
+    public void addAdminEntities(RoleData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException{
+      authorizedToEditAdministratorPrivileges(roleName);	  
+      roleManagementSession.addSubjectsToRole(administrator, role, subjects); 
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -205,9 +215,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
        * @throws AuthorizationDeniedException if administrator isn't authorized to edit CAs 
        * administrative privileges.
        */
-    public void removeAdminEntities(String admingroupname, Collection adminentities) throws AuthorizationDeniedException{
+    public void removeAdminEntities(RoleData role, Collection<AccessUserAspectData> subjects) throws AuthorizationDeniedException{
       authorizedToEditAdministratorPrivileges(admingroupname);
-      adminEntitySession.removeAdminEntities(administrator, admingroupname, adminentities);     
+      roleManagementSession.removeSubjectsFromRole(administrator, role, subjects);
       informationmemory.administrativePriviledgesEdited();
     }
 
@@ -238,10 +248,9 @@ public class AuthorizationDataHandler implements java.io.Serializable {
       }
     }
     
-    private void authorizedToAddAccessRules(Collection<AccessRule> accessrules) throws AuthorizationDeniedException{
-      Iterator<AccessRule> iter = accessrules.iterator();
-      while (iter.hasNext()) {
-        if (!this.informationmemory.getAuthorizedAccessRules().contains(iter.next().getAccessRule())) {  
+    private void authorizedToAddAccessRules(Collection<AccessRuleData> accessrules) throws AuthorizationDeniedException{
+      for(AccessRuleData accessRule : accessrules) {
+        if (!this.informationmemory.getAuthorizedAccessRules().contains(accessRule.getAccessRuleName())) {  
           throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules");
         }
       }

@@ -49,7 +49,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             if (args.length < 6) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<AdminGroup> adminGroups = ejb.getAdminGroupSession().getAuthorizedAdminGroupNames(getAdmin(),
+                Collection<AdminGroup> adminGroups = ejb.getRoleAccessSession().getAuthorizedAdminGroupNames(getAdmin(),
                         ejb.getCaSession().getAvailableCAs(getAdmin()));
                 Collections.sort((List<AdminGroup>) adminGroups);
                 String availableGroups = "";
@@ -77,7 +77,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            if (ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName) == null) {
+            if (ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName) == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }

@@ -40,10 +40,10 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            Collection<AdminGroup> adminGroups = ejb.getAdminGroupSession().getAuthorizedAdminGroupNames(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()));
+            Collection<AdminGroup> adminGroups = ejb.getRoleAccessSession().getAuthorizedAdminGroupNames(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()));
             Collections.sort((List<AdminGroup>) adminGroups);
             for (AdminGroup adminGroupRep : adminGroups) {
-                AdminGroup adminGroup = ejb.getAdminGroupSession().getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
+                AdminGroup adminGroup = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
                 int numberOfAdmins = adminGroup.getNumberAdminEntities();
                 getLogger().info(adminGroup.getAdminGroupName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
             }

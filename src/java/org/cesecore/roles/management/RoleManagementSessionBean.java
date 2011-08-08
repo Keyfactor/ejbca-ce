@@ -192,6 +192,11 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     @Override
+    public RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException, AuthorizationDeniedException {
+        return renameRole(authenticationToken, roleAccessSession.findRole(role), newName);
+    }
+    
+    @Override
     public RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException, AuthorizationDeniedException {
         RoleData result = null;
         if (roleAccessSession.findRole(newName) == null) {

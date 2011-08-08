@@ -38,7 +38,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 			if (args.length < 5) {
     			getLogger().info("Description: " + getDescription());
 				getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
-				Collection<AdminGroup> adminGroups = ejb.getAdminGroupSession().getAuthorizedAdminGroupNames(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()));
+				Collection<AdminGroup> adminGroups = ejb.getRoleAccessSession().getAuthorizedAdminGroupNames(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()));
 				Collections.sort((List<AdminGroup>) adminGroups);
 				String availableGroups = "";
 				for (AdminGroup adminGroup : adminGroups) {
@@ -61,7 +61,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 				return;
 			}
 			String groupName = args[1];
-            if (ejb.getAdminGroupSession().getAdminGroup(getAdmin(), groupName) == null) {
+            if (ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName) == null) {
             	getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
@@ -82,13 +82,13 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
 			List<String> accessRuleStrings = new ArrayList<String>();
 			accessRuleStrings.add(accessRule);
 			if (rule == AccessRule.RULE_NOTUSED) {
-			    ejb.getAdminGroupSession().removeAccessRules(getAdmin(), groupName, accessRuleStrings);
+			    ejb.getRoleAccessSession().removeAccessRules(getAdmin(), groupName, accessRuleStrings);
 			} else {
-			    ejb.getAdminGroupSession().removeAccessRules(getAdmin(), groupName, accessRuleStrings);
+			    ejb.getRoleAccessSession().removeAccessRules(getAdmin(), groupName, accessRuleStrings);
 				AccessRule accessRuleObject = new AccessRule(accessRule, rule, recursive);
 				Collection<AccessRule> accessRules = new ArrayList<AccessRule>();
 				accessRules.add(accessRuleObject);
-				ejb.getAdminGroupSession().addAccessRules(getAdmin(), groupName, accessRules);
+				ejb.getRoleAccessSession().addAccessRules(getAdmin(), groupName, accessRules);
 			}
 		} catch (Exception e) {
 			getLogger().error("",e);

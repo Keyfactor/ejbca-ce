@@ -43,16 +43,14 @@ public class HardTokenAuthorization implements Serializable {
     private ArrayList<AdminGroup> authissueingadmgrps = null;
 
     private AuthenticationToken admin;
-    private AdminGroupSession adminGroupSession;
     private HardTokenSession hardtokensession;
     private AccessControlSessionLocal authorizationsession;    
     private CaSession caSession;
 
     /** Creates a new instance of CAAuthorization. */
-    public HardTokenAuthorization(AuthenticationToken admin, AdminGroupSession adminGroupSession, HardTokenSession hardtokensession, 
+    public HardTokenAuthorization(AuthenticationToken admin, HardTokenSession hardtokensession, 
     		AccessControlSessionLocal authorizationsession, CaSession caSession) {
       this.admin=admin;
-      this.adminGroupSession = adminGroupSession;
       this.hardtokensession=hardtokensession;            
       this.authorizationsession = authorizationsession;
       this.caSession = caSession;

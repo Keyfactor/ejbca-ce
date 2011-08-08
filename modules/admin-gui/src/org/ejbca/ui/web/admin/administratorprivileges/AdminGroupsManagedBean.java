@@ -26,12 +26,12 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.roles.RoleExistsException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.authorization.BasicAccessRuleSet;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetDecoder;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetEncoder;
@@ -78,7 +78,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		try {
 			getAuthorizationDataHandler().renameAdminGroup(getCurrentAdminGroup(), newGroupName);
 			setCurrentAdminGroup(newGroupName);
-		} catch (AdminGroupExistsException e) {
+		} catch (RoleExistsException e) {
 			addErrorMessage("ADMINGROUPEXISTS");
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
@@ -98,7 +98,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	public void addGroup() {
 		try {
 			getAuthorizationDataHandler().addAdminGroup(getNewAdminGroupName());
-		} catch (AdminGroupExistsException e) {
+		} catch (RoleExistsException e) {
 			addErrorMessage("ADMINGROUPEXISTS");
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
