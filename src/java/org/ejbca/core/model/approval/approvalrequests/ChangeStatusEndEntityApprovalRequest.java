@@ -23,6 +23,7 @@ import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;

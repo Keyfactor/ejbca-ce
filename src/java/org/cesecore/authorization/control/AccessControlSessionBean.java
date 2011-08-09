@@ -12,7 +12,10 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -29,13 +32,15 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 
 /**
- * Based on cesecore version:
- *       AccessControlSessionBean.java 897 2011-06-20 11:17:25Z johane
- *  
+ * Based on cesecore version: AccessControlSessionBean.java 897 2011-06-20 11:17:25Z johane
+ * 
  * @version $Id$
  * 
  */
@@ -56,9 +61,38 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
 
     /** Cache for authorization data */
     private static AccessTreeCache accessTreeCache;
+    
+    public Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken) {
+        List<RoleData> result = new ArrayList<RoleData>();
+        
+        return result;
+    }
+
+    private boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+        // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
+        for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
+            if (!isAuthorizedNoLog(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
+                return false;
+            }
+        }
+        // Secondly, examine all resources in this role and establish access rights
+        for (AccessRuleData accessRule : role.getAccessRules().values()) {
+            String rule = accessRule.getAccessRuleName();
+            // Check only CA rules
+            if (rule.startsWith(StandardRules.CAACCESS.resource())) {
+                if (!isAuthorizedNoLog(authenticationToken, rule)) {
+                    return false;
+                }
+            }
+        }
+
+        // Everything's A-OK, role is good.
+        return true;
+
+    }
 
     @Override
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) { 
+    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) {
         if (isAuthorizedNoLog(authenticationToken, resource)) {
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("resource", resource);
@@ -69,8 +103,8 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             return false;
         }
     }
-    
-    @Override 
+
+    @Override
     public boolean isAuthorizedNoLog(AuthenticationToken authenticationToken, String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree(authenticationToken);

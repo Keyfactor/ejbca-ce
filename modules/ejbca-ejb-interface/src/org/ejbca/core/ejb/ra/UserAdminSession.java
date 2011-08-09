@@ -24,6 +24,7 @@ import javax.ejb.RemoveException;
 import javax.persistence.PersistenceException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -70,7 +71,7 @@ public interface UserAdminSession {
      * @param caid the CA the user should be issued from.
      * @throws CADoesntExistsException if the caid of the user does not exist
      */
-    public void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
+    public void addUser(X509CertificateAuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
     		boolean clearpwd, int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid)
     		throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
     		CADoesntExistsException, EjbcaException;
@@ -100,7 +101,7 @@ public interface UserAdminSession {
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      */
-    public void addUserFromWS(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    public void addUserFromWS(X509CertificateAuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**
@@ -126,7 +127,7 @@ public interface UserAdminSession {
      *             the CA that it should be unique.
      * @throws WaitingForApprovalException
      */
-    public void addUser(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    public void addUser(X509CertificateAuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**

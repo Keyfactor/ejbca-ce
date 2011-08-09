@@ -120,6 +120,7 @@ import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.RoleData;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
@@ -2107,7 +2108,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void activateCAToken(X509CertificateAuthenticationToken admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
+    public void activateCAToken(AuthenticationToken admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
             CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
         // Authorize
         if(!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA)) {
@@ -2365,7 +2366,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 publisherSession.storeCRL(admin, usedpublishers, deltaCrl, caCertFingerprint, nr, caDataDN);
         }
     }
-
+    
     @Override
     public Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin) {
     	HashSet<Integer> returnval = new HashSet<Integer>();

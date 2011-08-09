@@ -14,9 +14,6 @@ package org.cesecore.roles.access;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -25,16 +22,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
 import org.cesecore.util.QueryResultWrapper;
-import org.ejbca.core.ejb.authorization.AdminGroupData;
-import org.ejbca.core.model.authorization.AccessRule;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
 
 /**
  * @version $Id: RoleAccessSessionBean.java 854 2011-05-24 12:57:17Z johane $

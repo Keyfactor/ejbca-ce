@@ -25,6 +25,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;

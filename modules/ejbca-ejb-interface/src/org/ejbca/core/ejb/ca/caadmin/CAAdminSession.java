@@ -306,7 +306,7 @@ public interface CAAdminSession {
      *             if approval is required and the action have been added in the
      *             approval queue.
      */
-    public void activateCAToken(X509CertificateAuthenticationToken admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
+    public void activateCAToken(AuthenticationToken admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
             CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException, WaitingForApprovalException, CADoesntExistsException;
 
     /**
