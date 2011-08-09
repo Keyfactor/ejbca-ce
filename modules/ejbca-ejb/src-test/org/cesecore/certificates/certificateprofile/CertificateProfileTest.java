@@ -27,6 +27,7 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.junit.Test;
@@ -525,5 +526,42 @@ public class CertificateProfileTest {
         assertFalse(profile.isApprovalRequired(CAInfo.REQ_APPROVAL_KEYRECOVER));
     }
 
+    @Test
+    public void test10CertificateProfileValues() throws Exception {
+        CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        List<CertificatePolicy> l = ep.getCertificatePolicies();
+        assertEquals(0, l.size());
+        ep.addCertificatePolicy(new CertificatePolicy(CertificatePolicy.ANY_POLICY_OID, null, null));
+        l = ep.getCertificatePolicies();
+        assertEquals(1, l.size());
+        CertificatePolicy pol = l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID() );
+        assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
+        String qcId = ep.getQCSemanticsId();
+        assertEquals("", qcId);
+        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+        l = cp.getCertificatePolicies();
+        assertEquals(0, l.size());
+        cp.addCertificatePolicy(new CertificatePolicy(CertificatePolicy.ANY_POLICY_OID, null, null));
+        l = cp.getCertificatePolicies();
+        assertEquals(1, l.size());
+        pol = l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID());
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.1.1", null, null));
+        l = cp.getCertificatePolicies();
+        assertEquals(2, l.size());
+        pol = l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID());
+        pol = l.get(1);
+        assertEquals("1.1.1.1.1", pol.getPolicyID());
+        assertEquals(CertificateProfile.LATEST_VERSION, cp.getLatestVersion(),0);
+        assertEquals("", cp.getQCSemanticsId());
+        cp.setQCSemanticsId("1.1.1.2");
+        assertEquals("1.1.1.2", cp.getQCSemanticsId());
+        
+        assertNull(cp.getSignatureAlgorithm()); // default value null = inherit from CA
+        cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
+    } 
 
 }

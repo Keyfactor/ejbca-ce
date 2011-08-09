@@ -361,7 +361,7 @@
     <% if(viewendentityhelper.profile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0)){ %>
     <% 
         ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
-        String counter = ei!=null ? ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER) : null;
+        String counter = ei!=null ? ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER) : null;
       %>
     <tr  id="Row<%=(viewendentityhelper.row++)%2%>"> 
       <td  align="right" width="<%=ViewEndEntityHelper.columnwidth%>"> 

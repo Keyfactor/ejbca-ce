@@ -19,7 +19,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
@@ -27,6 +26,7 @@ import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -92,7 +92,11 @@ public class InterfaceCache {
 	public static CertificateStoreSessionRemote getCertificateStoreSession() {
 		return getEjb().getCertStoreSession();
 	}
-	
+
+	public static RevocationSessionRemote getRevocationSession() {
+		return getEjb().getRevocationSession();
+	}
+
 	public static EndEntityProfileSessionRemote getEndEntityProfileSession() {
 	    return getEjb().getEndEntityProfileSession();
 	}

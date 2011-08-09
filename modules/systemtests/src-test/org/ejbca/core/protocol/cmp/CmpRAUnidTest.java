@@ -41,6 +41,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -100,7 +101,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 		super(arg0);
 		CryptoProviderTools.installBCProvider();
 		// Try to use AdminCA1 if it exists
-		final CAInfo adminca1 = this.caAdminSession.getCAInfo(this.admin, "AdminCA1");
+		final CAInfo adminca1 = this.caSession.getCAInfo(this.admin, "AdminCA1");
 		if (adminca1 == null) {
 			final Collection<Integer> caids = this.caSession.getAvailableCAs(this.admin);
 			final Iterator<Integer> iter = caids.iterator();
@@ -118,7 +119,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 		if (this.caid == 0) {
 			assertTrue("No active CA! Must have at least one active CA to run tests!", false);
 		}
-		final CAInfo cainfo = this.caAdminSession.getCAInfo(this.admin, this.caid);
+		final CAInfo cainfo = this.caSession.getCAInfo(this.admin, this.caid);
 		final Collection<Certificate> certs = cainfo.getCertificateChain();
 		if (certs.size() > 0) {
 			final Iterator<Certificate> certiter = certs.iterator();
@@ -145,15 +146,15 @@ public class CmpRAUnidTest extends CmpTestCase {
 		updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
 		updatePropertyOnServer(CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS, UnidFnrHandler.class.getName());
 		// Configure a Certificate profile (CmpRA) using ENDUSER as template
-		if (this.certificateProfileSession.getCertificateProfile(this.admin, CPNAME) == null) {
-			final CertificateProfile cp = new EndUserCertificateProfile();
+		if (this.certificateProfileSession.getCertificateProfile(CPNAME) == null) {
+			final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 			try { // TODO: Fix this better
 				this.certificateProfileSession.addCertificateProfile(this.admin, CPNAME, cp);
 			} catch (CertificateProfileExistsException e) {
 				log.error("Certificate profile exists: ", e);
 			}
 		}
-		final int cpId = this.certificateProfileSession.getCertificateProfileId(this.admin, CPNAME);
+		final int cpId = this.certificateProfileSession.getCertificateProfileId(CPNAME);
 		if (this.endEntityProfileSession.getEndEntityProfile(this.admin, EEPNAME) == null) {
 			final EndEntityProfile eep = new EndEntityProfile(true);
 			eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);

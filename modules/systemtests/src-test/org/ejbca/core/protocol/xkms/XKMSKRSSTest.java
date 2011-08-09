@@ -35,11 +35,15 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
@@ -186,14 +190,14 @@ public class XKMSKRSSTest extends TestCase {
         }
     }
 
-    public XKMSKRSSTest() {
+    public XKMSKRSSTest() throws CADoesntExistsException, AuthorizationDeniedException {
         orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
-        orgCaInfo = caAdminSession.getCAInfo(administrator, "AdminCA1");
+        orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
     }
     
     public void test00SetupDatabase() throws Exception {
 
-        final CAInfo caInfo = caAdminSession.getCAInfo(administrator, "AdminCA1");
+        final CAInfo caInfo = caSession.getCAInfo(administrator, "AdminCA1");
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
         // make sure same DN for different users is prevented
@@ -205,12 +209,12 @@ public class XKMSKRSSTest extends TestCase {
         globalConfigurationSession.saveGlobalConfigurationRemote(administrator, newGlobalConfig);
 
         // Setup with two new Certificate profiles.
-        final EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
+        CertificateProfile profile1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile1.setKeyUsage(CertificateConstants.DIGITALSIGNATURE, false);
         profile1.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
         profile1.setKeyUsage(CertificateConstants.NONREPUDIATION, true);
 
-        final EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
+        CertificateProfile profile2 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile2.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
 
         certificateProfileSession.addCertificateProfile(administrator, certprofilename1, profile1);
@@ -1040,9 +1044,9 @@ public class XKMSKRSSTest extends TestCase {
         int caID = -1;
         try {
             caID = RevocationApprovalTest.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
-            X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(administrator, APPROVINGADMINNAME).iterator()
+            X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator()
                     .next();
-            Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
+            AuthenticationToken approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 // Create new user
                 UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
@@ -1067,7 +1071,7 @@ public class XKMSKRSSTest extends TestCase {
                 RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", null, prototypeKeyBindingType.getId());
                 assertTrue(registerResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS));
                 // Get user's certificate
-                Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(administrator, username);
+                Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
                 assertTrue(userCerts.size() == 1);
                 Certificate cert = userCerts.iterator().next();
                 // Revoke via XKMS and verify response
@@ -1162,9 +1166,9 @@ public class XKMSKRSSTest extends TestCase {
     /**
      *      Find all certificates for a user and approve any outstanding revocation. 
      */
-    public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
+    public int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason, int approvalType,
                     CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, int approvalCAID) throws Exception {
-        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(internalAdmin, username);
+        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         Iterator<Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while ( i.hasNext() ) {
@@ -1184,7 +1188,7 @@ public class XKMSKRSSTest extends TestCase {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin));
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

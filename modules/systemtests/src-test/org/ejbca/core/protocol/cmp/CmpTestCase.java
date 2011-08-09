@@ -69,8 +69,10 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.WebConfiguration;
@@ -737,7 +739,7 @@ public class CmpTestCase extends CaTestCase {
             assertNotNull(c);
             info = c.getPKIStatus();
             assertNotNull(info);
-            assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
+            assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().getValue().intValue());
             int i = info.getFailInfo().intValue();
             assertEquals(i, 1 << err);
         } else if (exptag == CmpPKIBodyConstants.REVOCATIONRESPONSE) {
@@ -745,7 +747,7 @@ public class CmpTestCase extends CaTestCase {
             assertNotNull(rrc);
             info = rrc.getPKIStatusInfo(0);
             assertNotNull(info);
-            assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
+            assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().getValue().intValue());
             assertEquals(FailInfo.BAD_REQUEST.getAsBitString(), info.getFailInfo());
         } else {
             CertRepMessage c = null;
@@ -761,7 +763,7 @@ public class CmpTestCase extends CaTestCase {
             info = resp.getStatus();
             assertNotNull(info);
             int error = info.getStatus().getValue().intValue();
-            assertEquals(ResponseStatus.FAILURE.getIntValue(), error); // 2 is
+            assertEquals(ResponseStatus.FAILURE.getValue(), error); // 2 is
                                                                        // rejection
             assertEquals(FailInfo.INCORRECT_DATA.getAsBitString(), info.getFailInfo());
         }

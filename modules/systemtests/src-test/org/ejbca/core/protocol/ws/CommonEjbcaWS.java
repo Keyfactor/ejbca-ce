@@ -42,6 +42,8 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -53,8 +55,9 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.certificates.util.StringTools;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.ejbca.config.GlobalConfiguration;
@@ -2467,20 +2470,19 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      */
     private void createCVCCA(String rootcadn, String rootcaname, String subcadn, String subcaname, String keyspec, String keyalg, String signalg)
             throws Exception {
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec(keyspec);
-        catokeninfo.setEncKeySpec("1024");
-        catokeninfo.setSignKeyAlgorithm(keyalg);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(signalg);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         // No CA Services.
         List extendedcaservices = new ArrayList();
 
         java.security.cert.Certificate cvcacert = null;
         int cvcaid = rootcadn.hashCode();
         try {
-            adminGroupSession.init(intAdmin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);          
+            //adminGroupSession.init(intAdmin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);          
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod
@@ -2553,13 +2555,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      */
     private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic,
             final String keyspec, final String keyalg, final String signalg) throws Exception {
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec(keyspec);
-        catokeninfo.setEncKeySpec(keyspec);
-        catokeninfo.setSignKeyAlgorithm(keyalg);
-        catokeninfo.setEncKeyAlgorithm(keyalg);
+        CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(signalg);
         catokeninfo.setEncryptionAlgorithm(signalg);
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 

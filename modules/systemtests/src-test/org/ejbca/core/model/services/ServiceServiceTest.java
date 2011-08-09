@@ -26,12 +26,12 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
@@ -226,7 +226,7 @@ public class ServiceServiceTest extends CaTestCase {
     private boolean hasServiceRun(final String username) throws Exception {
     	// Now the user will be expired
     	final boolean result;
-        final UserDataVO data = getUserAdminSession().findUser(admin, username);
+        final EndEntityInformation data = getUserAdminSession().findUser(admin, username);
         final int status;
         if (data == null) {
         	throw new Exception("User we have added can not be found");

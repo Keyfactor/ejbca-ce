@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.config.EjbcaConfiguration;
@@ -28,8 +29,8 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -94,7 +95,7 @@ public class UserDataTest extends CaTestCase {
         log.trace(">test02LookupAndChangeUser()");
 
         log.debug("username=" + username);
-        UserDataVO data2 = userAdminSession.findUser(admin,username);
+        EndEntityInformation data2 = userAdminSession.findUser(admin,username);
         log.debug("found by key! =" + data2);
         log.debug("username=" + data2.getUsername());
         assertTrue("wrong username", data2.getUsername().equals(username));
@@ -118,7 +119,7 @@ public class UserDataTest extends CaTestCase {
     public void test03LookupChangedUser() throws Exception {
         log.trace(">test03LookupChangedUser()");
 
-        UserDataVO data = userAdminSession.findUser(admin,username);
+        EndEntityInformation data = userAdminSession.findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -143,7 +144,7 @@ public class UserDataTest extends CaTestCase {
     public void test03LookupChangedUser2() throws Exception {
         log.trace(">test03LookupChangedUser2()");
 
-        UserDataVO data = userAdminSession.findUser(admin,username);
+        EndEntityInformation data = userAdminSession.findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -177,16 +178,16 @@ public class UserDataTest extends CaTestCase {
     public void test05ListNewUser() throws Exception {
         log.trace(">test05ListNewUser()");
 
-        Collection<UserDataVO> coll = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
-        Iterator<UserDataVO> iter = coll.iterator();
+        Collection<EndEntityInformation> coll = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
+        Iterator<EndEntityInformation> iter = coll.iterator();
         while (iter.hasNext()) {
 
-            UserDataVO data = iter.next();
+            EndEntityInformation data = iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
             userAdminSession.setUserStatus(admin, data.getUsername(), UserDataConstants.STATUS_GENERATED);
         }
 
-        Collection<UserDataVO> coll1 = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
+        Collection<EndEntityInformation> coll1 = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.trace("<test05ListNewUser()");
     }
@@ -195,7 +196,7 @@ public class UserDataTest extends CaTestCase {
         log.trace(">test06RequestCounter()");
 
         // Change already existing user to add extended information with counter
-        UserDataVO user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setStatus(UserDataConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user, false);
         
@@ -209,8 +210,8 @@ public class UserDataTest extends CaTestCase {
         // Now add extended information with allowed requests 2
         ExtendedInformation ei = new ExtendedInformation();
         int allowedrequests = 2;
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
         boolean thrown = false;
         try {
             userAdminSession.changeUser(admin, user, false);        	
@@ -241,8 +242,8 @@ public class UserDataTest extends CaTestCase {
         // Now add extended information with allowed requests 2
         ei = new ExtendedInformation();
         allowedrequests = 2;
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
-        user = new UserDataVO(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));        
+        user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN="+username, caid, null, null, SecConst.USER_INVALID, pid, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
         thrown = false;
         try {
             userAdminSession.changeUser(admin, user, false);        	
@@ -282,7 +283,7 @@ public class UserDataTest extends CaTestCase {
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedinformation();
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, null);
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, null);
         user.setExtendedinformation(ei);
         userAdminSession.changeUser(admin, user, false);        	
         // decrease the value        
@@ -295,7 +296,7 @@ public class UserDataTest extends CaTestCase {
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS,0,"2");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedinformation();
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
         user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
@@ -344,7 +345,7 @@ public class UserDataTest extends CaTestCase {
 
         // Also changeUser to new from something else will re-set status, if ei value is 0
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");        
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");        
         user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
@@ -355,79 +356,79 @@ public class UserDataTest extends CaTestCase {
         // Test set and re-set logic
         
         // The profile has 3 as default value, if I change user with status to generated and value 2 it should be set as that
-        UserDataVO user1 = userAdminSession.findUser(admin, user.getUsername());
+        EndEntityInformation user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = new ExtendedInformation();
         allowedrequests = 2;
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user1, false);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        String value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        String value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("2", value);
         // If I change user with status to new and value 1 it should be set as that
         ei = new ExtendedInformation();
         allowedrequests = 1;
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I set status to new again, with noting changed, nothing should change
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // The same when I change the user
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to generated, nothing should happen
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to new from generated the default value should be used
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
         // It should be possible to simply set the value to 0
         ei = new ExtendedInformation();
         allowedrequests = 0;
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user1, false);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Changing again to new, with 0 passed in will set the default value
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
         // Set back to 0
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, "0");
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
         user1.setExtendedinformation(ei);
         userAdminSession.changeUser(admin, user1, false);
         user1 = userAdminSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
-        value = ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER);
+        value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Setting with null value will always remove the request counter (the whole extendedinformatin actually)
         user1.setExtendedinformation(null);
@@ -559,8 +560,8 @@ public class UserDataTest extends CaTestCase {
             userAdminSession.deleteUser(admin, username1);
             assertTrue("Database (mapping) is not case sensitive!", false);
         }
-        UserDataVO userDataVO1 = userAdminSession.findUser(admin, username1);
-        UserDataVO userDataVO2 = userAdminSession.findUser(admin, username2);
+        EndEntityInformation userDataVO1 = userAdminSession.findUser(admin, username1);
+        EndEntityInformation userDataVO2 = userAdminSession.findUser(admin, username2);
         assertFalse("Returned the same user object for different usernames.", userDataVO1.getUsername().equals(userDataVO2.getUsername()));
         userAdminSession.deleteUser(admin, username1);
         userAdminSession.deleteUser(admin, username2);

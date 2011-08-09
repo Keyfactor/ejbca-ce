@@ -15,7 +15,9 @@ import javax.ejb.CreateException;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -51,7 +53,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 		}
 	}
 
-	public void test01CreateCertWithCustomSN() throws CreateException, CertificateProfileExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, IOException {
+	public void test01CreateCertWithCustomSN() throws CreateException, CertificateProfileExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, IOException, AuthorizationDeniedException {
 
 		log.debug(">test01CreateCertWithCustomSN");
 
@@ -75,11 +77,11 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 		BigInteger serno = SernoGenerator.instance().getSerno();
 		log.debug("serno: " + serno);
 
-		if (certificateProfileSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
+		if (certificateProfileSession.getCertificateProfileId("WSTESTPROFILE") != 0) {
 			certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
 		}
 
-		CertificateProfile profile = new EndUserCertificateProfile();
+		CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 		profile.setAllowCertSerialNumberOverride(true);
 		certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
 

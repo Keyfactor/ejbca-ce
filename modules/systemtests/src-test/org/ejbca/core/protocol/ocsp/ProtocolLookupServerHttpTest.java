@@ -63,6 +63,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -105,6 +106,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     
     public ProtocolLookupServerHttpTest(String name)  throws Exception {
@@ -179,7 +181,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
      * @throws Exception error
      */
     public void test02OcspBadWithFnr() throws Exception {
-        certificateStoreSession.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        revocationSession.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
 
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();

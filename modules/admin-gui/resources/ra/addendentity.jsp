@@ -452,7 +452,7 @@
         	 if (ei == null) {
         		 ei = new ExtendedInformation();
         	 }
-           	 ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
+           	 ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, value);
            	 newuser.setExtendedInformation(ei);
            }
            value = request.getParameter(CHECKBOX_KEYRECOVERABLE);

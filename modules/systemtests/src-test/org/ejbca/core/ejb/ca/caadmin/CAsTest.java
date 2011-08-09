@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -25,15 +26,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -41,6 +47,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -50,12 +57,14 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
@@ -95,6 +104,8 @@ public class CAsTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
+    private AuthenticationToken adminTokenNoAuth;
+
     /**
      * Creates a new CAsTest object.
      * 
@@ -104,6 +115,16 @@ public class CAsTest extends CaTestCase {
     public CAsTest(String name) {
         super(name);
         CryptoProviderTools.installBCProvider();
+        
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certificate);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(certificate.getSubjectX500Principal());
+
+        adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
     }
 
     public void setUp() throws Exception {
@@ -128,14 +149,14 @@ public class CAsTest extends CaTestCase {
         try {
             removeTestCA(); // We cant be sure this CA was not left over from
             // some other failed test
-            adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("1024");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            // TODO: do we need init here? We should run the system tests on a "base installed" system
+            //adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+            CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -264,13 +285,13 @@ public class CAsTest extends CaTestCase {
 
         boolean ret = false;
         try {
-            adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
+        	// TODO: is init needed? We should run the system tests on a base installed system
+            //adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("prime192v1");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -361,13 +382,13 @@ public class CAsTest extends CaTestCase {
         removeOldCa("TESTECDSAImplicitlyCA");
         
         try {
-            adminGroupSession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
+        	// TODO: do we need init here? we should run the system tests on a base installed system
+            //adminGroupSession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("implicitlyCA");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -456,13 +477,12 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         try {
             String cadn = "CN=TESTSha256WithMGF1";
-            adminGroupSession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("1024");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
             // Create and active OSCP CA Service.
@@ -538,13 +558,12 @@ public class CAsTest extends CaTestCase {
         try {
             String dn = CertTools
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("4096");
-            catokeninfo.setEncKeySpec("2048");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -637,13 +656,12 @@ public class CAsTest extends CaTestCase {
         try {
             String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
             String name = "TESTRSAREVERSE";
-            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("1024");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -732,11 +750,10 @@ public class CAsTest extends CaTestCase {
         certificateProfileSession.removeCertificateProfile(admin, "TESTCVCDV");
         
         boolean ret = false;
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec("1024");
-        catokeninfo.setEncKeySpec("1024");
-        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // No CA Services.
@@ -754,7 +771,7 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -813,10 +830,9 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             // Create a Certificate profile
-            CertificateProfile profile = new CACertificateProfile();
-            profile.setType(CertificateProfile.TYPE_SUBCA);
+            CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
             certificateProfileSession.addCertificateProfile(admin, "TESTCVCDV", profile);
             int profileid = certificateProfileSession.getCertificateProfileId("TESTCVCDV");
 
@@ -878,7 +894,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -934,7 +950,7 @@ public class CAsTest extends CaTestCase {
         assertTrue("Creating CVC CAs failed", ret);
 
         // Test to renew a CVC CA using a different access right
-        CertificateProfile profile = certificateProfileSession.getCertificateProfile(admin, "TESTCVCDV");
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile("TESTCVCDV");
         profile.setCVCAccessRights(CertificateProfile.CVC_ACCESS_DG3);
         certificateProfileSession.changeCertificateProfile(admin, "TESTCVCDV", profile);
 
@@ -1042,11 +1058,11 @@ public class CAsTest extends CaTestCase {
         removeOldCa("TESTDVECC-F");
         
         boolean ret = false;
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec("secp256r1");
-        catokeninfo.setEncKeySpec("1024");
-        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        CATokenInfo catokeninfo = new CATokenInfo();
+        //catokeninfo.setSignKeySpec("secp256r1");
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         // No CA Services.
@@ -1064,7 +1080,7 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1122,7 +1138,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1181,7 +1197,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1240,7 +1256,7 @@ public class CAsTest extends CaTestCase {
         dvdcainfo = caSession.getCAInfo(admin, dvdcaname);
         Certificate cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
         // Verify that fingerprint and CA fingerprint is handled correctly
-        CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         assertFalse(certInfo.getFingerprint().equals(certInfo.getCAFingerprint()));
         int caid = dvdcainfo.getCAId();
         caAdminSession.renewCA(admin, caid, null, false);
@@ -1252,7 +1268,7 @@ public class CAsTest extends CaTestCase {
         assertEquals(CertTools.getIssuerDN(cert), rootcadn);
         assertEquals(dvdcainfo.getSubjectDN(), dvddn);
         // Verify that fingerprint and CA fingerprint is handled correctly
-        certInfo = certificateStoreSession.getCertificateInfo(admin, CertTools.getFingerprintAsString(cert));
+        certInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         assertFalse(certInfo.getFingerprint().equals(certInfo.getCAFingerprint()));
         // It's not possible to check the time for renewal of a CVC CA since the
         // resolution of validity is only days.
@@ -1368,13 +1384,12 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         CAInfo info = null;
         try {
-            adminGroupSession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("1024");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -1438,7 +1453,7 @@ public class CAsTest extends CaTestCase {
 
             // Receive the certificate request on the TEST CA
             info.setSignedBy("CN=TEST".hashCode());
-            IResponseMessage resp = caAdminSession.processRequest(admin, info, msg);
+            ResponseMessage resp = caAdminSession.processRequest(admin, info, msg);
 
             // Receive the signed certificate back on our SubCA
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
@@ -1496,12 +1511,11 @@ public class CAsTest extends CaTestCase {
         try {
             removeTestCA("TESTDSA"); // We cant be sure this CA was not left
             // over from some other failed test
-            adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("1024");
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_DSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            //adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+            CATokenInfo catokeninfo = new CATokenInfo();
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
@@ -1702,12 +1716,11 @@ public class CAsTest extends CaTestCase {
         log.trace(">test16InvalidCreateCaActions()");
         removeTestCA("TESTFAIL"); // We cant be sure this CA was not left over from
         // some other failed test
-        adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec("1024");
-        catokeninfo.setEncKeySpec("1024");
-        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        //adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active OSCP CA Service.
@@ -1749,7 +1762,7 @@ public class CAsTest extends CaTestCase {
 
         // Try to create the CA as an unprivileged user
         try {
-        	caAdminSession.createCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), cainfo);
+        	caAdminSession.createCA(adminTokenNoAuth, cainfo);
         	assertTrue("Was able to create CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected
@@ -1779,7 +1792,7 @@ public class CAsTest extends CaTestCase {
         CAInfo caInfoTest = caSession.getCAInfo(admin, "TEST");
         // Try to edit the CA as an unprivileged user
         try {
-            caAdminSession.editCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfoTest);
+            caAdminSession.editCA(adminTokenNoAuth, caInfoTest);
         	assertTrue("Was able to edit CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected
@@ -1789,7 +1802,7 @@ public class CAsTest extends CaTestCase {
         caTokenInfoTest.setAuthenticationCode(null);
         caInfoTest.setCATokenInfo(caTokenInfoTest);
         try {
-            caAdminSession.editCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfoTest);
+            caAdminSession.editCA(adminTokenNoAuth, caInfoTest);
         	assertTrue("Was able to edit CA with null authentication code.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected
@@ -1798,7 +1811,7 @@ public class CAsTest extends CaTestCase {
         caInfoTest.getCATokenInfo().setAuthenticationCode("wrong code");
         caInfoTest.setCATokenInfo(caTokenInfoTest);
         try {
-            caAdminSession.editCA(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfoTest);
+            caAdminSession.editCA(adminTokenNoAuth, caInfoTest);
         	assertTrue("Was able to edit CA with null authentication code.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected
@@ -1811,27 +1824,27 @@ public class CAsTest extends CaTestCase {
         log.trace(">test18PublicWebCaInfoFetch()");
         // Try to get CAInfo as an unprivileged user using remote EJB
         try {
-            caSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "TEST");
+            caSession.getCAInfo(adminTokenNoAuth, "TEST");
             fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
         } catch (CADoesntExistsException ignored) {
         	// OK
         }
         try {
-            caSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_PUBLIC_WEB_USER), "CN=TEST".hashCode());
+            caSession.getCAInfo(adminTokenNoAuth, "CN=TEST".hashCode());
             fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
         } catch (CADoesntExistsException ignored) {
         	// OK
         }
         // Try to get CAInfo pretending to be an privileged user using remote EJB
         try {
-            CAInfo info = caSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_INTERNALUSER), "TEST");
+            CAInfo info = caSession.getCAInfo(admin, "TEST");
             System.out.println("info: " + info);
             fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
         } catch (CADoesntExistsException ignored) {
         	// OK
         }
         try {
-            caSession.getCAInfoOrThrowException(new Admin(Admin.TYPE_INTERNALUSER), "CN=TEST".hashCode());
+            caSession.getCAInfo(admin, "CN=TEST".hashCode());
             fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
         } catch (CADoesntExistsException ignored) {
         	// OK
@@ -1842,7 +1855,7 @@ public class CAsTest extends CaTestCase {
     public void test19UnprivilegedCaMakeRequest() throws Exception {
         log.trace(">test19UnprivilegedCaMakeRequest()");
         try {
-            caAdminSession.makeRequest(new Admin(Admin.TYPE_PUBLIC_WEB_USER), 0, null, false, false, false, null);
+            caAdminSession.makeRequest(adminTokenNoAuth, 0, null, false, false, false, null);
         	assertTrue("Was able to make request to CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected
@@ -1853,7 +1866,7 @@ public class CAsTest extends CaTestCase {
     public void test20BadCaReceiveResponse() throws Exception {
         log.trace(">test20BadCaReceiveResponse()");
         try {
-            caAdminSession.receiveResponse(new Admin(Admin.TYPE_PUBLIC_WEB_USER), 0, null, null, null);
+            caAdminSession.receiveResponse(adminTokenNoAuth, 0, null, null, null);
         	assertTrue("Was able to receiveResponse for a CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected
@@ -1886,7 +1899,7 @@ public class CAsTest extends CaTestCase {
         CAInfo caInfo = caSession.getCAInfo(admin, "TEST");
         try {
             // Try to process a request for a CA with an unprivileged user.
-            caAdminSession.processRequest(new Admin(Admin.TYPE_PUBLIC_WEB_USER), caInfo, null);
+            caAdminSession.processRequest(adminTokenNoAuth, caInfo, null);
         	assertTrue("Was able to process request to CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
         	// Expected

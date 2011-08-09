@@ -25,13 +25,15 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -56,7 +58,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     private static int rsacaid = 0;    
     private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -79,7 +81,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         }
         // Add this again since it will be removed by the other tests in the batch..
         assertTrue("Could not create TestCA.", createTestCA());
-        CAInfo inforsa = caAdminSession.getCAInfo(admin, "TEST");
+        CAInfo inforsa = caSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
     }
@@ -92,7 +94,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
      */
     public void test01CodeSigning() throws Exception {
         certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGECERTPROFILE");
-        final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
         list.add("1.3.6.1.4.1.311.2.1.22"); // MS commercial code signing
@@ -122,7 +124,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
      */
     public void test02SSH() throws Exception {
         certificateProfileSession.removeCertificateProfile(admin,"EXTKEYUSAGECERTPROFILE");
-        final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
         certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);

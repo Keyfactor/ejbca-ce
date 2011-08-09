@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.util.KeyTools;
@@ -51,7 +52,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
@@ -274,7 +274,7 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     public void test03FindUser() throws Exception {
         log.trace(">test03FindUser()");
-        UserDataVO data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = userAdminSession.findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
         boolean exists = userAdminSession.existsUser(admin, username);
@@ -300,7 +300,7 @@ public class UserAdminSessionTest extends CaTestCase {
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         String caauthstring = null;
         String eeprofilestr = null;
-        Collection<UserDataVO> col = userAdminSession.query(admin, query, caauthstring, eeprofilestr,0);
+        Collection<EndEntityInformation> col = userAdminSession.query(admin, query, caauthstring, eeprofilestr,0);
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");
@@ -314,7 +314,7 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     public void test04ChangeUser() throws Exception {
         log.trace(">test04ChangeUser()");
-        UserDataVO data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = userAdminSession.findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
         assertNull(data.getCardNumber());
@@ -329,7 +329,7 @@ public class UserAdminSessionTest extends CaTestCase {
         data.setSubjectAltName("dnsName=a.b.se, rfc822name=" + email);
 
         userAdminSession.changeUser(admin, data, true);
-        UserDataVO data1 = userAdminSession.findUser(admin, username);
+        EndEntityInformation data1 = userAdminSession.findUser(admin, username);
         assertNotNull(data1);
         assertEquals(username, data1.getUsername());
         assertEquals("123456", data1.getCardNumber());
@@ -342,7 +342,7 @@ public class UserAdminSessionTest extends CaTestCase {
     public void test05RevokeCert() throws Exception {
     	KeyPair keypair = KeyTools.genKeys("512", "RSA");
 
-        UserDataVO data1 = userAdminSession.findUser(admin, username);
+        EndEntityInformation data1 = userAdminSession.findUser(admin, username);
         assertNotNull(data1);
         data1.setPassword("foo123");
         userAdminSession.changeUser(admin, data1, true);
@@ -426,11 +426,11 @@ public class UserAdminSessionTest extends CaTestCase {
         endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
         int profileId = endEntityProfileSession.getEndEntityProfileId(admin, "TESTMERGEWITHWS");
 
-        UserDataVO addUser = new UserDataVO(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER,
+        EndEntityInformation addUser = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER,
                 profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
         addUser.setPassword("foo123");
         userAdminSession.addUserFromWS(admin, addUser, false);
-        UserDataVO data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = userAdminSession.findUser(admin, username);
         assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
         addUser.setDN("EMAIL=foo@bar.com, OU=hoho");

@@ -27,9 +27,12 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -87,8 +90,10 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /** This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
      */
-	public CrmfRAPbeTcpRequestTest(String arg0) throws CertificateException {
+	public CrmfRAPbeTcpRequestTest(String arg0) throws CertificateException, AuthorizationDeniedException, CADoesntExistsException {
 		super(arg0);
 		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
@@ -127,8 +132,8 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
-        if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
-            CertificateProfile cp = new EndUserCertificateProfile();
+        if (certificateProfileSession.getCertificateProfile(CPNAME) == null) {
+            CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowValidityOverride(true);
             try {	// TODO: Fix this better
 				certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);

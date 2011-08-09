@@ -36,8 +36,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -45,11 +47,11 @@ import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
@@ -113,7 +115,7 @@ public class XKMSKISSTest extends TestCase {
     private static String dn2;
     private static String dn3;
 
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -136,13 +138,13 @@ public class XKMSKISSTest extends TestCase {
     	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Setup with two new Certificate profiles.
-        EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
-        profile1.setKeyUsage(CertificateProfile.DIGITALSIGNATURE, false);
-        profile1.setKeyUsage(CertificateProfile.KEYENCIPHERMENT, false);
-        profile1.setKeyUsage(CertificateProfile.NONREPUDIATION, true);
+        CertificateProfile profile1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile1.setKeyUsage(CertificateConstants.DIGITALSIGNATURE, false);
+        profile1.setKeyUsage(CertificateConstants.KEYENCIPHERMENT, false);
+        profile1.setKeyUsage(CertificateConstants.NONREPUDIATION, true);
 
-        EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
-        profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT, true);
+        CertificateProfile profile2 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile2.setKeyUsage(CertificateConstants.DATAENCIPHERMENT, true);
 
         try {
             certificateProfileSession.addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
@@ -1104,7 +1106,7 @@ public class XKMSKISSTest extends TestCase {
 
         // Revoke certificate
         AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        certificateStoreSession.revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
+        revocationSession.revokeCertificate(administrator, cert1, new ArrayList<Integer>(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         // Validate with revoked certificate
         validateRequestType = xKMSObjectFactory.createValidateRequestType();
         validateRequestType.setId("203");

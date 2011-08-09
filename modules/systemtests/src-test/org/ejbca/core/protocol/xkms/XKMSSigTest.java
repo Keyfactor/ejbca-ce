@@ -98,6 +98,8 @@ public class XKMSSigTest extends TestCase {
 
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
+	private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
     static {
         try {
         	CryptoProviderTools.installBCProvider();
@@ -131,7 +133,6 @@ public class XKMSSigTest extends TestCase {
 
     public void test00SetupAccessRights() throws Exception {
     	log.trace(">test00SetupAccessRights");
-    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         username = baseUsername + "1";
         try {
             userAdminSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
@@ -315,7 +316,7 @@ public class XKMSSigTest extends TestCase {
 
     public void test04SendRevokedRequest() throws Exception {
     	log.trace(">test04SendRevokedRequest");
-        userAdminSession.revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        userAdminSession.revokeUser(administrator, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         KeyStore clientKeyStore = KeyStore.getInstance("JKS");
         keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");

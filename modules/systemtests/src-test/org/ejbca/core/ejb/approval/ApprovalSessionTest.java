@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb.approval;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -24,13 +26,18 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -107,6 +114,15 @@ public class ApprovalSessionTest extends CaTestCase {
 
     }
 
+    private AuthenticationToken createX509AuthenticationToken(X509Certificate certificate) {
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certificate);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(certificate.getSubjectX500Principal());
+        X509CertificateAuthenticationToken authenticationToken = new X509CertificateAuthenticationToken(principals, credentials);
+        return authenticationToken;
+    }
+
     public void setUp() throws Exception {
         super.setUp();
 
@@ -132,7 +148,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
            	KeyPair rsakey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         	externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, rsakey.getPrivate(), rsakey.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        	externaladmin = new Admin(externalcert, null, null);
+        	externaladmin = createX509AuthenticationToken(externalcert);
             
             File tmpfile = File.createTempFile("ejbca", "p12");
             BatchMakeP12 makep12 = new BatchMakeP12();
@@ -152,9 +168,13 @@ public class ApprovalSessionTest extends CaTestCase {
             admincert2 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername2).iterator().next();
             reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(reqadminusername).iterator().next();
 
-            admin1 = new Admin(admincert1, adminusername1, null);
-            admin2 = new Admin(admincert2, adminusername2, null);
-            reqadmin = new Admin(reqadmincert, reqadminusername, null);
+        	admin1 = createX509AuthenticationToken(admincert1);
+        	admin2 = createX509AuthenticationToken(admincert2);
+        	reqadmin = createX509AuthenticationToken(reqadmincert);
+        	// TODO: before is had both a cert and username input?
+            //admin1 = new Admin(admincert1, adminusername1, null);
+            //admin2 = new Admin(admincert2, adminusername2, null);
+            //reqadmin = new Admin(reqadmincert, reqadminusername, null);
 
             gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
         }

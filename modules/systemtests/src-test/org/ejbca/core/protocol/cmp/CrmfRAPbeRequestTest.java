@@ -32,6 +32,8 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -39,6 +41,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -117,7 +120,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    public CrmfRAPbeRequestTest(String arg0) throws CertificateException {
+    public CrmfRAPbeRequestTest(String arg0) throws CertificateException, AuthorizationDeniedException, CADoesntExistsException {
         super(arg0);
         CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
@@ -158,8 +161,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
-        if (certificateProfileSession.getCertificateProfile(admin, CPNAME) == null) {
-            CertificateProfile cp = new EndUserCertificateProfile();
+        if (certificateProfileSession.getCertificateProfile(CPNAME) == null) {
+            CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowValidityOverride(true);
             try { // TODO: Fix this better
                 certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);
@@ -360,7 +363,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD);
             checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE
-                    .getIntValue());
+                    .getValue());
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
             // Approve revocation and verify success
@@ -382,7 +385,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD);
-            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getIntValue());
+            checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue());
         } finally {
             // Delete user
             userAdminSession.deleteUser(admin, username);
@@ -417,7 +420,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     /**
      *      Find all certificates for a user and approve any outstanding revocation. 
      */
-    public int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
+    public int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason, int approvalType,
                     CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
         Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         Iterator<java.security.cert.Certificate> i = userCerts.iterator();
@@ -439,7 +442,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(internalAdmin));
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

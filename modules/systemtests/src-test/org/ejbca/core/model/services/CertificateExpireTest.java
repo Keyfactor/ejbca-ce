@@ -104,9 +104,9 @@ public class CertificateExpireTest extends CaTestCase {
         assertNotNull("Failed to create certificate", cert);
 
         String fp = CertTools.getFingerprintAsString(cert);
-        X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(admin, fp);
+        X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(fp);
         assertNotNull("Cannot find certificate with fp=" + fp, ce);
-        CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, fp);
+        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
         // log.info("Got certificate info for cert with fp="+fp);
         assertEquals("fingerprint does not match.", fp, info.getFingerprint());
         assertEquals("serialnumber does not match.", cert.getSerialNumber(), info.getSerialNumber());
@@ -146,7 +146,7 @@ public class CertificateExpireTest extends CaTestCase {
 
         // The service will run... the cert should still be active after 5 seconds..
         Thread.sleep(5000);
-        info = certificateStoreSession.getCertificateInfo(admin, fp);
+        info = certificateStoreSession.getCertificateInfo(fp);
         assertEquals("status dotes not match.", SecConst.CERT_ACTIVE, info.getStatus());
   
         // The service will run...We need some tolerance since timers cannot
@@ -155,10 +155,10 @@ public class CertificateExpireTest extends CaTestCase {
         int tries = 0;
         while (info.getStatus() != SecConst.CERT_NOTIFIEDABOUTEXPIRATION && tries<5) {
         	Thread.sleep(1000);
-        	info = certificateStoreSession.getCertificateInfo(admin, fp);
+        	info = certificateStoreSession.getCertificateInfo(fp);
         	tries++;
         }
-        info = certificateStoreSession.getCertificateInfo(admin, fp);
+        info = certificateStoreSession.getCertificateInfo(fp);
         assertEquals("Status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
     	log.debug("It took >" + (9+tries) + " seconds before the certificate was expired!");
 

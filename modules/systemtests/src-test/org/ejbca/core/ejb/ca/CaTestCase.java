@@ -30,13 +30,16 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -45,7 +48,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
-import org.ejbca.core.model.authorization.AdminGroupExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.log.Admin;
@@ -163,13 +165,12 @@ public abstract class CaTestCase extends TestCase {
 			return true;
 		}
 		// Create request CA, if necessary
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-        catokeninfo.setSignKeySpec(""+keyStrength);
-        catokeninfo.setEncKeySpec(""+keyStrength);
-        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+        CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         // Create and active OSCP CA Service.
         ArrayList extendedcaservices = new ArrayList();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -358,9 +359,9 @@ public abstract class CaTestCase extends TestCase {
     /**
      * Find all certificates for a user and approve any outstanding revocation.
      */
-    protected int approveRevocation(Admin internalAdmin, Admin approvingAdmin, String username, int reason, int approvalType,
+    protected int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason, int approvalType,
             CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
-    	log.debug("approvingAdmin=" + approvingAdmin.getAdminType() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType + " approvalCAID=" + approvalCAID);
+    	log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType + " approvalCAID=" + approvalCAID);
         Collection userCerts = certificateStoreSession.findCertificatesByUsername(username);
         Iterator i = userCerts.iterator();
         int approvedRevocations = 0;
@@ -381,7 +382,7 @@ public abstract class CaTestCase extends TestCase {
                 ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID, "(endEntityProfileId="
                         + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.");
-                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(new Admin(Admin.INTERNALCAID)));
+                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin));
                 approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                 assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

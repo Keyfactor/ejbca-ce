@@ -176,9 +176,9 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
      * @see org.ejbca.core.ejb.ca.store.CertificateDataBean
-     * @see org.ejbca.core.protocol.IRequestMessage
-     * @see org.ejbca.core.protocol.IResponseMessage
-     * @see org.ejbca.core.protocol.X509ResponseMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
+     * @see org.cesecore.certificates.certificate.request.ResponseMessage
+     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
     public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class responseClass, EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
 
@@ -242,9 +242,9 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws IllegalKeyException 
 	 * @throws AuthorizationDeniedException 
-     * @see org.ejbca.core.protocol.IRequestMessage
-     * @see org.ejbca.core.protocol.IResponseMessage
-     * @see org.ejbca.core.protocol.X509ResponseMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
+     * @see org.cesecore.certificates.certificate.request.ResponseMessage
+     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
     public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class responseClass, FailInfo failInfo, String failText) throws AuthLoginException,
             AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException;
@@ -266,9 +266,9 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the the request couldn't be verified.
      * @throws CryptoTokenOfflineException 
      * @throws AuthorizationDeniedException 
-     * @see org.ejbca.core.protocol.IRequestMessage
-     * @see org.ejbca.core.protocol.IResponseMessage
-     * @see org.ejbca.core.protocol.X509ResponseMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
+     * @see org.cesecore.certificates.certificate.request.ResponseMessage
+     * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
     public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
     		AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException;
