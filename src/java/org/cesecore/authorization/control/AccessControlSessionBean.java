@@ -61,10 +61,19 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
 
     /** Cache for authorization data */
     private static AccessTreeCache accessTreeCache;
-    
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    /*
+     * FIXME: Test this method! 
+     */
     public Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken) {
         List<RoleData> result = new ArrayList<RoleData>();
-        
+        for (RoleData role : roleAccessSession.getAllRoles()) {
+            if (isAuthorizedToEditRole(authenticationToken, role)) {
+                result.add(role);
+            }
+        }
         return result;
     }
 
@@ -85,10 +94,8 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
                 }
             }
         }
-
         // Everything's A-OK, role is good.
         return true;
-
     }
 
     @Override
