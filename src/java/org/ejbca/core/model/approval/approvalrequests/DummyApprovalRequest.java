@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -58,7 +59,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
     /**
      * Main constructor of an approval request with step functionality
      */
-	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
+	public DummyApprovalRequest(X509CertificateAuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
 		this.executable = executable;
 	} 

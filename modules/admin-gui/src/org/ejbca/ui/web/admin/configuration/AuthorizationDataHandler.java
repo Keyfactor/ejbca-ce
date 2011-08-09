@@ -54,7 +54,7 @@ public class AuthorizationDataHandler implements Serializable {
     private RoleAccessSession roleAccessSession;
     private RoleManagementSession roleManagementSession;
     private AuthenticationToken administrator;
-    private Collection<AdminGroup> authorizedadmingroups;
+    private Collection<AdminGroup> authorizedRoles;
     private InformationMemory informationmemory;
 
     /** Creates a new instance of ProfileDataHandler */
@@ -103,7 +103,7 @@ public class AuthorizationDataHandler implements Serializable {
         }
         roleManagementSession.create(administrator, name);
         informationmemory.administrativePriviledgesEdited();
-        this.authorizedadmingroups = null;
+        this.authorizedRoles = null;
     }
 
     /** Method to remove a role.
@@ -112,7 +112,7 @@ public class AuthorizationDataHandler implements Serializable {
       authorizedToEditAdministratorPrivileges(name);
       roleManagementSession.remove(administrator, name);
       informationmemory.administrativePriviledgesEdited();
-	  this.authorizedadmingroups = null;
+	  this.authorizedRoles = null;
     }
 
     /** Method to rename a role. 
@@ -121,7 +121,7 @@ public class AuthorizationDataHandler implements Serializable {
       authorizedToEditAdministratorPrivileges(oldname);
       roleManagementSession.renameRole(administrator, oldname, newname);
       informationmemory.administrativePriviledgesEdited();
-	  this.authorizedadmingroups = null;
+	  this.authorizedRoles = null;
     }
 
     /** 
@@ -129,11 +129,11 @@ public class AuthorizationDataHandler implements Serializable {
      * Only the fields admingroup name and CA id is filled in these objects.
      */
     public Collection<AdminGroup> getAdminGroupNames(){ 
-      if (this.authorizedadmingroups==null) {
+      if (this.authorizedRoles==null) {
           //FIXME: This method should be amended to access control
-        this.authorizedadmingroups = roleDataSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator));    
+        this.authorizedRoles = roleDataSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator));    
       }
-      return this.authorizedadmingroups;
+      return this.authorizedRoles;
     }
     
     /**
