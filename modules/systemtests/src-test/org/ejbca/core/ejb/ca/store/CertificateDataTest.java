@@ -37,17 +37,19 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -66,6 +68,8 @@ public class CertificateDataTest extends TestCase {
     private static KeyPair keyPair;
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
+    private CertReqHistorySessionRemote certReqHistorySession = InterfaceCache.getCertReqHistorySession();
 
     /**
      * Creates a new TestCertificateData object.
@@ -107,9 +111,9 @@ public class CertificateDataTest extends TestCase {
         log.trace(">test02FindAndChange()");
         String fp = CertTools.getFingerprintAsString(cert);
 
-        X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(admin, fp);
+        X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(fp);
         assertNotNull("Cannot find certificate with fp=" + fp, ce);
-        CertificateInfo info = certificateStoreSession.getCertificateInfo(admin, fp);
+        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
         // log.info("Got certificate info for cert with fp="+fp);
         assertEquals("fingerprint does not match.", fp, info.getFingerprint());
         assertEquals("CAfingerprint does not match.", "1234", info.getCAFingerprint());
@@ -128,8 +132,8 @@ public class CertificateDataTest extends TestCase {
         Date now = new Date();
         assertNotNull(info.getUpdateTime());
         assertTrue(now.after(info.getUpdateTime()));
-        certificateStoreSession.revokeCertificate(admin, ce, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
-        CertificateInfo info1 = certificateStoreSession.getCertificateInfo(admin, fp);
+        revocationSession.revokeCertificate(admin, ce, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        CertificateInfo info1 = certificateStoreSession.getCertificateInfo(fp);
         assertEquals("revocation reason does not match.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, info1.getRevocationReason());
         log.info("revocationdate (after rev)=" + info1.getRevocationDate());
         assertTrue("Revocation date in future.", new Date().compareTo(info1.getRevocationDate()) >= 0);
@@ -148,7 +152,7 @@ public class CertificateDataTest extends TestCase {
         String issuerDN = CertTools.getIssuerDN(cert);
         String subjectDN = CertTools.getSubjectDN(cert);
         // List all certificates to see
-        Collection<String> certfps = certificateStoreSession.listAllCertificates(admin, issuerDN);
+        Collection<String> certfps = certificateStoreSession.listAllCertificates(issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -157,7 +161,7 @@ public class CertificateDataTest extends TestCase {
 
         // List all certificates for user foo, which we have created in
         // TestSignSession
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(admin, subjectDN, issuerDN);
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
         assertTrue("something weird with size, all < foos", size >= certfps.size());
         log.debug("List certs for foo: " + certfps.size());
         Iterator<Certificate> iter = certs.iterator();
@@ -167,7 +171,7 @@ public class CertificateDataTest extends TestCase {
             log.debug("revoking cert with fp=" + fp);
             // Revoke all foos certificates, note that revokeCertificate will
             // not change status of certificates that are already revoked
-            certificateStoreSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, null);
+            revocationSession.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED, null);
             log.debug("Revoked cert " + fp);
         }
         log.trace("<test03listAndRevoke()");
@@ -185,7 +189,7 @@ public class CertificateDataTest extends TestCase {
         String subjectDN = CertTools.getSubjectDN(cert);
         // List all certificates for user foo, which we have created in
         // TestSignSession
-        Collection<Certificate> certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(admin, subjectDN, issuerDN);
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesBySubjectAndIssuer(subjectDN, issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -194,7 +198,7 @@ public class CertificateDataTest extends TestCase {
         while (iter.hasNext()) {
             Certificate cert = iter.next();
             String fp = CertTools.getFingerprintAsString(cert);
-            CertificateInfo rev = certificateStoreSession.getCertificateInfo(admin, fp);
+            CertificateInfo rev = certificateStoreSession.getCertificateInfo(fp);
             log.info("revocationdate (after rev)=" + rev.getRevocationDate());
             assertTrue("Revocation date in future.", new Date().compareTo(rev.getRevocationDate()) >= 0);
             assertTrue(rev.getStatus() == SecConst.CERT_REVOKED);
@@ -212,7 +216,7 @@ public class CertificateDataTest extends TestCase {
     public void test05FindAgain() throws Exception {
         log.trace(">test05FindAgain()");
         String fp = CertTools.getFingerprintAsString(cert);
-        CertificateInfo data3 = certificateStoreSession.getCertificateInfo(admin, fp);
+        CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
         assertNotNull("Failed to find cert", data3);
         log.debug("found by key! =" + data3);
         log.debug("fp=" + data3.getFingerprint());
@@ -231,7 +235,7 @@ public class CertificateDataTest extends TestCase {
         assertEquals("Wrong revocation reason", data3.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         log.debug("Looking for cert with DN=" + CertTools.getSubjectDN(cert));
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(admin, CertTools.getSubjectDN(cert),
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesBySubjectAndIssuer(CertTools.getSubjectDN(cert),
                 CertTools.getIssuerDN(cert));
         Iterator<Certificate> iter = certs.iterator();
         while (iter.hasNext()) {
@@ -252,7 +256,7 @@ public class CertificateDataTest extends TestCase {
         log.trace(">test06FindByExpireTime()");
         String fp = CertTools.getFingerprintAsString(cert);
 
-        CertificateInfo data = certificateStoreSession.getCertificateInfo(admin, fp);
+        CertificateInfo data = certificateStoreSession.getCertificateInfo(fp);
         assertNotNull("Failed to find cert", data);
         log.debug("expiredate=" + data.getExpireDate());
 
@@ -263,19 +267,19 @@ public class CertificateDataTest extends TestCase {
 
         log.info("1. Looking for cert with expireDate=" + findDate);
 
-        Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(admin, findDate);
+        Collection<Certificate> certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
-        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(admin, findDate);
+        Collection<String> usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
         log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
         assertTrue("No certs should have expired before this date", usernames.size() == 0);
         findDateSecs = data.getExpireDate().getTime() + 10000;
         findDate = new Date(findDateSecs);
         log.info("2. Looking for cert with expireDate=" + findDate);
-        certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(admin, findDate);
+        certs = certificateStoreSession.findCertificatesByExpireTimeWithLimit(findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("Some certs should have expired before this date", certs.size() != 0);
-        usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(admin, findDate);
+        usernames = certificateStoreSession.findUsernamesByExpireTimeWithLimit(findDate);
         log.debug("findUsernamesByExpireTimeWithLimit returned " + usernames.size() + " usernames.");
         assertTrue("Some certs should have expired before this date", usernames.size() != 0);
 
@@ -302,7 +306,7 @@ public class CertificateDataTest extends TestCase {
 
         String issuerDN = CertTools.getIssuerDN(cert);
         String fp = CertTools.getFingerprintAsString(cert);
-        CertificateInfo data3 = certificateStoreSession.getCertificateInfo(admin, fp);
+        CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
         assertNotNull("Failed to find cert", data3);
 
         log.debug("Looking for cert with DN:" + CertTools.getIssuerDN(cert) + " and serno " + cert.getSerialNumber());
@@ -322,7 +326,7 @@ public class CertificateDataTest extends TestCase {
     public void test08IsRevoked() throws Exception {
         log.trace(">test08IsRevoked()");
         String fp = CertTools.getFingerprintAsString(cert);
-        CertificateInfo data3 = certificateStoreSession.getCertificateInfo(admin, fp);
+        CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
         assertNotNull("Failed to find cert", data3);
         log.debug("found by key! =" + data3);
         log.debug("fp=" + data3.getFingerprint());
@@ -365,7 +369,7 @@ public class CertificateDataTest extends TestCase {
         cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
 
-        UserDataVO userdata = new UserDataVO();
+        EndEntityInformation userdata = new EndEntityInformation();
         Random rand = new Random(new Date().getTime() + 4711);
         for (int i = 0; i < 6; i++) {
             int randint = rand.nextInt(9);
@@ -374,10 +378,10 @@ public class CertificateDataTest extends TestCase {
         log.debug("Generated random username: username =" + username);
         userdata.setUsername(username);
         userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1");
-        certificateStoreSession.addCertReqHistoryData(admin, cert1, userdata);
+        certReqHistorySession.addCertReqHistoryData(admin, cert1, userdata);
 
         userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2");
-        certificateStoreSession.addCertReqHistoryData(admin, cert2, userdata);
+        certReqHistorySession.addCertReqHistoryData(admin, cert2, userdata);
         log.trace("<test09addCertReqHist()");
     }
 
@@ -391,11 +395,11 @@ public class CertificateDataTest extends TestCase {
     public void test10getCertReqHistByIssuerDNAndSerial() throws Exception {
         log.trace(">test10getCertReqHistByIssuerDNAndSerial()");
 
-        CertReqHistory certreqhist = certificateStoreSession.getCertReqHistory(admin, cert1.getSerialNumber(), cert1.getIssuerDN().toString());
+        CertReqHistory certreqhist = certReqHistorySession.retrieveCertReqHistory(admin, cert1.getSerialNumber(), cert1.getIssuerDN().toString());
 
         assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
 
-        UserDataVO userdata = certreqhist.getUserDataVO();
+        EndEntityInformation userdata = certreqhist.getUserDataVO();
         assertTrue("Error wrong username.", (userdata.getUsername().equals(username)));
         assertTrue("Error wrong DN.", (userdata.getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")));
 
@@ -411,7 +415,7 @@ public class CertificateDataTest extends TestCase {
      */
     public void test11getCertReqHistByUsername() throws Exception {
         log.trace(">test11getCertReqHistByUsername()");
-        Collection<CertReqHistory> result = certificateStoreSession.getCertReqHistory(admin, username);
+        Collection<CertReqHistory> result = certReqHistorySession.retrieveCertReqHistory(admin, username);
         assertTrue("Error size of the returned collection.", (result.size() == 2));
 
         Iterator<CertReqHistory> iter = result.iterator();
@@ -432,13 +436,13 @@ public class CertificateDataTest extends TestCase {
     public void test12removeCertReqHistData() throws Exception {
         log.trace(">test12removeCertReqHistData()");
 
-        certificateStoreSession.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert1));
-        certificateStoreSession.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert2));
+        certReqHistorySession.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert1));
+        certReqHistorySession.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert2));
 
-        CertReqHistory certreqhist = certificateStoreSession.getCertReqHistory(admin, cert1.getSerialNumber(), cert1.getIssuerDN().toString());
+        CertReqHistory certreqhist = certReqHistorySession.retrieveCertReqHistory(admin, cert1.getSerialNumber(), cert1.getIssuerDN().toString());
         assertNull("Error removing cert req history data, cert1 data is still there", certreqhist);
 
-        certreqhist = certificateStoreSession.getCertReqHistory(admin, cert2.getSerialNumber(), cert2.getIssuerDN().toString());
+        certreqhist = certReqHistorySession.retrieveCertReqHistory(admin, cert2.getSerialNumber(), cert2.getIssuerDN().toString());
         assertNull("Error removing cert req history data, cert2 data is still there", certreqhist);
 
         log.trace("<test12removeCertReqHistData()");
@@ -455,7 +459,7 @@ public class CertificateDataTest extends TestCase {
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return OK (see
         // ECA-1527).
-        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setStatus(admin, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
@@ -480,7 +484,7 @@ public class CertificateDataTest extends TestCase {
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return REVOKED.
-        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setStatus(admin, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
@@ -505,7 +509,7 @@ public class CertificateDataTest extends TestCase {
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return OK.
-        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setStatus(admin, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.OK, status);
 
@@ -526,7 +530,7 @@ public class CertificateDataTest extends TestCase {
 
         // Set status of the certificate to ARCHIVED, as the CRL job does for
         // expired certificates. getStatus should still return REVOKED.
-        certificateStoreSession.setArchivedStatus(admin, CertTools.getFingerprintAsString(xcert));
+        certificateStoreSession.setStatus(admin, CertTools.getFingerprintAsString(xcert), CertificateConstants.CERT_ARCHIVED);
         status = certificateStoreSession.getStatus(CertTools.getIssuerDN(xcert), xcert.getSerialNumber());
         assertEquals(CertificateStatus.REVOKED, status);
         assertEquals(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN, status.revocationReason);

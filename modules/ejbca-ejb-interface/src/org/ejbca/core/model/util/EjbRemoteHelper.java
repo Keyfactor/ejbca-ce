@@ -27,6 +27,7 @@ import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -83,6 +84,7 @@ public class EjbRemoteHelper {
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
     private CertReqHistorySessionRemote certReqHistorySession = null;
+    private RevocationSessionRemote revocationSession = null;
 
     public AdminEntitySessionRemote getAdminEntitySession() {
         if(adminEntitySession == null) {
@@ -299,6 +301,13 @@ public class EjbRemoteHelper {
         	certReqHistorySession = JndiHelper.getRemoteSession(CertReqHistorySessionRemote.class);
         }
         return certReqHistorySession;
+	}
+
+	public RevocationSessionRemote getRevocationSession() {
+        if (revocationSession == null) {
+        	revocationSession = JndiHelper.getRemoteSession(RevocationSessionRemote.class);
+        }
+        return revocationSession;
 	}
 
 }

@@ -30,10 +30,13 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -46,7 +49,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -77,11 +79,11 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
     private CertificateProfileSession certProfileSession = InterfaceCache.getCertificateProfileSession();
 
-    public CrmfRARequestCustomSerialNoTest(String arg0) throws CertificateEncodingException, CertificateException {
+    public CrmfRARequestCustomSerialNoTest(String arg0) throws CertificateEncodingException, CertificateException, AuthorizationDeniedException, CADoesntExistsException {
         super(arg0);
 
         // Configure CMP for this test, we allow custom certificate serial numbers
-    	CertificateProfile profile = new EndUserCertificateProfile();
+    	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	//profile.setAllowCertSerialNumberOverride(true);
     	try {
     		certProfileSession.addCertificateProfile(admin, "CMPTESTPROFILE", profile);

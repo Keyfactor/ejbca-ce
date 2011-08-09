@@ -84,6 +84,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -207,6 +208,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     private CaSessionRemote caSession = null;
     private ConfigurationSessionRemote configurationSessionRemote = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
+    private RevocationSessionRemote revocationSession = null;
     private SignSessionRemote signSession = null;
     private UserAdminSessionRemote userAdminSession = null;
 
@@ -223,6 +225,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         certificateStoreSession = InterfaceCache.getCertificateStoreSession();
         signSession = InterfaceCache.getSignSession();
         userAdminSession = InterfaceCache.getUserAdminSession();
+        revocationSession = InterfaceCache.getRevocationSession();
         adminGroupSession = InterfaceCache.getAdminGroupSession();  
         
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
@@ -319,7 +322,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     public void test03OcspRevoked() throws Exception {
         log.trace(">test03OcspRevoked()");
         // Now revoke the certificate and try again
-        certificateStoreSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+        revocationSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));

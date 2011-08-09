@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -180,7 +181,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 Certificate certificate = signSession.createCertificate(administrator, username, password, keys.getPublic());
                 userAdminSession.revokeCert(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate),
                         RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-                storeSession.setArchivedStatus(administrator, CertTools.getFingerprintAsString(certificate));
+                storeSession.setStatus(administrator, CertTools.getFingerprintAsString(certificate), CertificateConstants.CERT_ARCHIVED);
             }
             endEntityProfileSession.removeEndEntityProfile(administrator, endEntityProfileName);
             certificateProfileSession.removeCertificateProfile(administrator, certificateProfileName);

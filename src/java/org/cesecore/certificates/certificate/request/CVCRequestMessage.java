@@ -44,7 +44,7 @@ import org.ejbca.cvc.exception.ParseException;
  *
  * Based on EJBCA version: CVCRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
  * 
- * @version $Id: CVCRequestMessage.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id: CVCRequestMessage.java 983 2011-08-09 09:47:07Z tomas $
  */
 public class CVCRequestMessage implements RequestMessage {
     /**
@@ -111,6 +111,7 @@ public class CVCRequestMessage implements RequestMessage {
 		}
     }
 
+    @Override
     public PublicKey getRequestPublicKey()
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
     	try {
@@ -137,11 +138,7 @@ public class CVCRequestMessage implements RequestMessage {
         this.password = pwd;
     }
 
-    /**
-     * Returns the forced password
-     *
-     * @return password
-     */
+    @Override
     public String getPassword() {
     	return password;
     }
@@ -152,12 +149,7 @@ public class CVCRequestMessage implements RequestMessage {
         this.username = username;
     }
 
-    /**
-     * Returns the string representation of the holderReference field (mnemonic+country) of the certification request,
-     * to be used as username.
-     *
-     * @return username, which is the holderReference field from the subject DN in certification request.
-     */
+    @Override
     public String getUsername() {
         if (username != null) {
             return username;
@@ -172,11 +164,7 @@ public class CVCRequestMessage implements RequestMessage {
         return subject;
     }
 
-    /**
-     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
-     *
-     * @return issuerDN of receiving CA or null.
-     */
+    @Override
     public String getIssuerDN() {
     	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getIssuerDN(cc);
@@ -194,73 +182,52 @@ public class CVCRequestMessage implements RequestMessage {
     	return null;
     }
     
-    /**
-     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return issuerDN of CA issuing CRL.
-     */
+    @Override
     public String getCRLIssuerDN() {
         return null;
     }
 
-    /**
-     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
-     *
-     * @return serial number of CA certificate for CA issuing CRL.
-     */
+    @Override
     public BigInteger getCRLSerialNo() {
         return null;
     }
 
-    /**
-     * Returns the string representation of the subject DN from the certification request.
-     *
-     * @return subject DN from certification request or null.
-     */
+    @Override
     public String getRequestDN() {
     	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getSubjectDN(cc);
     }
 
-    /**
-     * @see RequestMessage#getRequestX509Name()
-     */
+    @Override
     public X509Name getRequestX509Name() {
     	String dn = getRequestDN();
     	X509Name name = new X509Name(dn);
     	return name;
     }
 
+    @Override
     public String getRequestAltNames() {
     	return null;
     }
 
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
 	public Date getRequestValidityNotBefore() {
     	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getNotBefore(cc);
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
 	public Date getRequestValidityNotAfter() {
     	CardVerifiableCertificate cc = getCardVerifiableCertificate();
         return CertTools.getNotAfter(cc);
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
 	public X509Extensions getRequestExtensions() {
 		return null;
 	}
 	
-    /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public boolean verify()
     throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         return verify(null);
@@ -298,70 +265,36 @@ public class CVCRequestMessage implements RequestMessage {
         return ret;
     }
 
-    /**
-     * indicates if this message needs recipients public and private key to verify, decrypt etc. If
-     * this returns true, setKeyInfo() should be called.
-     *
-     * @return True if public and private key is needed.
-     */
+    @Override
     public boolean requireKeyInfo() {
         return false;
     }
 
-    /**
-     * Sets the public and private key needed to decrypt/verify the message. Must be set if
-     * requireKeyInfo() returns true.
-     *
-     * @param cert certificate containing the public key.
-     * @param key private key.
-     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
-     *
-     * @see #requireKeyInfo()
-     */
+    @Override
     public void setKeyInfo(Certificate cert, PrivateKey key, String Provider) {
     }
 
-    /**
-     * Returns an error number after an error has occurred processing the request
-     *
-     * @return class specific error number
-     */
+    @Override
     public int getErrorNo() {
         return 0;
     }
 
-    /**
-     * Returns an error message after an error has occurred processing the request
-     *
-     * @return class specific error message
-     */
+    @Override
     public String getErrorText() {
         return "";
     }
 
-    /**
-     * Returns a senderNonce if present in the request
-     *
-     * @return senderNonce
-     */
+    @Override
     public String getSenderNonce() {
         return null;
     }
 
-    /**
-     * Returns a transaction identifier if present in the request
-     *
-     * @return transaction id
-     */
+    @Override
     public String getTransactionId() {
         return null;
     }
 
-    /**
-     * Returns requesters key info, key id or similar
-     *
-     * @return request key info
-     */
+    @Override
     public byte[] getRequestKeyInfo() {
     	byte[] ret = null;
     	try {
@@ -373,32 +306,28 @@ public class CVCRequestMessage implements RequestMessage {
         return ret;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public String getPreferredDigestAlg() {
     	// Not used
     	return CMSSignedGenerator.DIGEST_SHA256;
     }
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+
+    @Override
     public boolean includeCACert() {
     	return false;
     }
 
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public int getRequestType() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public int getRequestId() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
-     */
+    @Override
     public ResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }

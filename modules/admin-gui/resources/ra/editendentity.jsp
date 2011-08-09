@@ -376,7 +376,7 @@
 
                value = request.getParameter(SELECT_ALLOWEDREQUESTS);
                if(value !=null){
-               	 ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, value);
+               	 ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, value);
                	 newuser.setExtendedInformation(ei);
                }
                value = request.getParameter(CHECKBOX_KEYRECOVERABLE);
@@ -1620,7 +1620,7 @@ function checkUseInBatch(){
         	   defaultnrofrequests = "1";
            }
            ExtendedInformation ei = userdata.getExtendedInformation();
-           String counter = ei!=null ? ei.getCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER) : null;
+           String counter = ei!=null ? ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER) : null;
            if (counter == null) {
         	   counter = defaultnrofrequests;
            }

@@ -19,10 +19,8 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.ui.web.protocol.RFC4387URL;
 
@@ -36,8 +34,7 @@ import org.ejbca.ui.web.protocol.RFC4387URL;
  */
 class ValidationAuthorityTst {
 	private final static Logger log = Logger.getLogger(ValidationAuthorityTst.class);
-	private final static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-	static String testCRLStore(CA ca, CrlSessionRemote createCrlSession, String port) throws Exception {
+	static String testCRLStore(CAInfo canifo, CrlStoreSessionRemote crlSession, String port) throws Exception {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  
 		final String sURI = "http://localhost:" + port + "/crls/search.cgi?reloadcache=true";
@@ -47,17 +44,17 @@ class ValidationAuthorityTst {
 		log.debug("reloadcache returned code: "+connection.getResponseCode());
 		// Now on to the actual tests, with fresh caches
 		String problems = new String();
-		problems += testCRLStore( RFC4387URL.sKIDHash, false, ca, createCrlSession, port);
-		problems += testCRLStore( RFC4387URL.iHash, false, ca, createCrlSession, port);
-		problems += testCRLStore( RFC4387URL.sKIDHash, true, ca, createCrlSession, port);
-		problems += testCRLStore( RFC4387URL.iHash, true, ca, createCrlSession, port);
+		problems += testCRLStore( RFC4387URL.sKIDHash, false, canifo, crlSession, port);
+		problems += testCRLStore( RFC4387URL.iHash, false, canifo, crlSession, port);
+		problems += testCRLStore( RFC4387URL.sKIDHash, true, canifo, crlSession, port);
+		problems += testCRLStore( RFC4387URL.iHash, true, canifo, crlSession, port);
 		if ( !problems.isEmpty() ) {
 			return problems; // some tests has failed
 		}
 		return null; // everything OK
 	}
-	private static String testCRLStore( RFC4387URL urlType, boolean isDelta, CA ca, CrlSessionRemote createCrlSession, String port) throws Exception {
-		final X509Certificate caCert = (X509Certificate)ca.getCACertificate();
+	private static String testCRLStore( RFC4387URL urlType, boolean isDelta, CAInfo cainfo, CrlStoreSessionRemote crlSession, String port) throws Exception {
+		final X509Certificate caCert = (X509Certificate)cainfo.getCertificateChain().iterator().next();
 		final HashID id;
 		switch( urlType ) {
 		case sKIDHash:
@@ -81,7 +78,7 @@ class ValidationAuthorityTst {
 			return " Fetching CRL with '"+sURI+"' is not working. responseCode="+connection.getResponseCode();
 		}
 
-		final byte fromBean[] = createCrlSession.getLastCRL(admin, ca.getCAInfo().getSubjectDN(), isDelta);
+		final byte fromBean[] = crlSession.getLastCRL(cainfo.getSubjectDN(), isDelta);
 		final byte fromURL[] = new byte[connection.getContentLength()];
 		connection.getInputStream().read(fromURL);
 		if ( !Arrays.areEqual(fromBean, fromURL) ) {

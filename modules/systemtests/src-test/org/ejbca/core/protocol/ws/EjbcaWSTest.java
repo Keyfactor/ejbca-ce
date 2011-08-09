@@ -259,7 +259,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         int caID = -1;
         try {
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession);
-            X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intAdmin, APPROVINGADMINNAME).iterator().next();
+            X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
             Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 X509Certificate cert = createUserAndCert(username, caID);
@@ -484,19 +484,19 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
     	userDataVoWs.setStartTime(oldTimeFormat);
     	userDataVoWs.setEndTime(oldTimeFormat);
-    	final UserDataVO userDataVo1 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	final EndEntityInformation userDataVo1 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
     	assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
     	assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     	// Convert from UserDataVOWS with standard DateFormat to UserDataVO
     	userDataVoWs.setStartTime(newTimeFormatRequest);
     	userDataVoWs.setEndTime(newTimeFormatRequest);
-    	final UserDataVO userDataVo2 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	final EndEntityInformation userDataVo2 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
     	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
     	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     	// Convert from UserDataVOWS with relative date format to UserDataVO
     	userDataVoWs.setStartTime(relativeTimeFormat);
     	userDataVoWs.setEndTime(relativeTimeFormat);
-    	final UserDataVO userDataVo3 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	final EndEntityInformation userDataVo3 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
     	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
     	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     	// Convert from UserDataVO with standard DateFormat to UserDataVOWS

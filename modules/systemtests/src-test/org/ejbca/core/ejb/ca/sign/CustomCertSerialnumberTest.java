@@ -17,6 +17,7 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -25,9 +26,13 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
@@ -41,7 +46,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -61,7 +65,6 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 	int fooCertProfileId;
 	int fooEEProfileId;
 
-	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
 	private CaSessionRemote caSession = InterfaceCache.getCaSession();
 	private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 	private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
@@ -75,7 +78,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		CryptoProviderTools.installBCProvider();
 
 		assertTrue("Could not create TestCA.", createTestCA());
-		CAInfo inforsa = caAdminSession.getCAInfo(admin, "TEST");
+		CAInfo inforsa = caSession.getCAInfo(admin, "TEST");
 		assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
 		rsacaid = inforsa.getCAId();
 	}
@@ -85,7 +88,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		certificateProfileSession.removeCertificateProfile(admin,"FOOCERTPROFILE");
 		endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
 
-		final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+		final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 		certprof.setAllowKeyUsageOverride(true);
 		certprof.setAllowCertSerialNumberOverride(true);
 		certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
@@ -119,7 +122,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 
 	// Create certificate request for user: foo with cert serialnumber=1234567890
-	public void test01CreateCertWithCustomSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
+	public void test01CreateCertWithCustomSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException, CesecoreException {
 		log.trace(">test01CreateCustomCert()");
 
 		KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);    	    
@@ -134,13 +137,13 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		p10.setUsername("foo");
 		p10.setPassword("foo123");
 
-		UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
+		EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
 		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
-		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
+		ResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
 
 		X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
 		assertNotNull("Failed to create certificate", cert);
@@ -154,12 +157,12 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 
 	// Create certificate request for user: foo2 with random cert serialnumber
-	public void test02CreateCertWithRandomSN() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, InvalidAlgorithmParameterException {
+	public void test02CreateCertWithRandomSN() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ClassNotFoundException, CertificateEncodingException, CertificateException, InvalidAlgorithmParameterException, CesecoreException {
 
 		log.trace(">test02CreateCertWithRandomSN()");
 
 		KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-		BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, "foo").iterator().next()).getSerialNumber();
+		BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername("foo").iterator().next()).getSerialNumber();
 		log.debug("foo serno: " + serno);
 
 		PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
@@ -170,12 +173,12 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		p10.setUsername("foo2");
 		p10.setPassword("foo123");
 
-		UserDataVO user = new UserDataVO("foo2", "C=SE,O=AnaTom,CN=foo2", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
+		EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
 
 
-		IResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
+		ResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
 
 		X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
 		assertNotNull("Failed to create certificate", cert);
@@ -188,11 +191,11 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
 
 	// Create certificate request for user: foo3 with cert serialnumber=1234567890 (the same as cert serialnumber of user foo)
-	public void test03CreateCertWithDublicateSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException {
+	public void test03CreateCertWithDublicateSN() throws EndEntityProfileExistsException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ClassNotFoundException, CertificateEncodingException, CertificateException, WaitingForApprovalException, InvalidAlgorithmParameterException, EjbcaException {
 		log.trace(">test03CreateCertWithDublicateSN()");
 
 		KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-		BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername(admin, "foo").iterator().next()).getSerialNumber();
+		BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername("foo").iterator().next()).getSerialNumber();
 		log.debug("foo serno: " + serno);
 
 		PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
@@ -203,17 +206,17 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		p10.setUsername("foo3");
 		p10.setPassword("foo123");
 
-		UserDataVO user = new UserDataVO("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
+		EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
 		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
 
-		IResponseMessage resp = null;
+		ResponseMessage resp = null;
 		try {
-			resp = certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
-		} catch (EjbcaException e) {
+			resp = certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
+		} catch (CesecoreException e) {
 			log.debug(e.getMessage());
 			assertTrue("Unexpected exception.", e.getMessage().startsWith("There is already a certificate stored in 'CertificateData' with the serial number"));
 		}
@@ -235,20 +238,20 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 		p10.setUsername("foo");
 		p10.setPassword("foo123");
 
-		CertificateProfile fooCertProfile = certificateProfileSession.getCertificateProfile(admin, "FOOCERTPROFILE");
+		CertificateProfile fooCertProfile = certificateProfileSession.getCertificateProfile("FOOCERTPROFILE");
 		fooCertProfile.setAllowCertSerialNumberOverride(false);
 		certificateProfileSession.changeCertificateProfile(admin, "FOOCERTPROFILE", fooCertProfile);
 
-		UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
+		EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER, fooEEProfileId, fooCertProfileId,
 				SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 		user.setPassword("foo123");
 		ExtendedInformation ei = new ExtendedInformation();
 		ei.setCertificateSerialNumber(serno);
 		user.setExtendedinformation(ei);
 		try {
-			certificateRequestSession.processCertReq(admin, user, p10, org.ejbca.core.protocol.X509ResponseMessage.class);
+			certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
 			assertTrue("This method should throw exception", false);
-		} catch (EjbcaException e) {
+		} catch (CesecoreException e) {
 			assertTrue(e.getMessage().contains("not allowing certificate serial number override"));
 		}
 		log.trace("<test04CreateCertWithCustomSNNotAllowed()");

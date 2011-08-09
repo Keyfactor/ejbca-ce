@@ -27,6 +27,9 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -72,13 +75,13 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private static String adminusername1 = null;
     private static X509Certificate admincert1 = null;
-    private static Admin admin1 = null;
+    private static AuthenticationToken admin1 = null;
     private static int caid;
     private static GlobalConfiguration gc = null;
 
     private List<AdminEntity> adminEntities;
-    private Admin intadmin = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
-    private Admin reqadmin;
+    private static final AuthenticationToken intadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("WSTEST"));
+    private AuthenticationToken reqadmin;
 
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
@@ -284,7 +287,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
      * @param approvalRequest
      * @throws ApprovalException
      */
-    private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, Admin admin) throws ApprovalException {
+    private void cleanApprovalRequestFromApprovalSession(ApprovalRequest approvalRequest, AuthenticationToken admin) throws ApprovalException {
         Collection<ApprovalDataVO> collection = approvalSession.findApprovalDataVO(reqadmin, approvalRequest.generateApprovalId());
         if (!collection.isEmpty()) {
             for (ApprovalDataVO approvalDataVO : collection) {
@@ -410,7 +413,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         authorizationSession.forceRuleUpdate(intadmin);
 
-        admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(intadmin, adminusername1).iterator().next();
+        admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername1).iterator().next();
 
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream("p12/wsnonadmintest.jks"), "foo123".toCharArray());

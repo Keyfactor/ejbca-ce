@@ -58,6 +58,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -71,9 +72,13 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
@@ -86,13 +91,14 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -172,6 +178,7 @@ public class SignSessionTest extends CaTestCase {
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertReqHistorySessionRemote certReqHistorySession = InterfaceCache.getCertReqHistorySession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -280,7 +287,7 @@ public class SignSessionTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
 
         certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
-        final EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowKeyUsageOverride(true);
         certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
@@ -384,12 +391,15 @@ public class SignSessionTest extends CaTestCase {
      * @throws NoSuchAlgorithmException
      * @throws CertificateException
      * @throws InvalidKeyException
+     * @throws CesecoreException 
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
      * 
      * @throws Exception
      *             if en error occurs...
      */
     public void test02SignSession() throws ObjectNotFoundException, EjbcaException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException {
+            NoSuchProviderException, SignatureException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException {
         log.trace(">test02SignSession()");
 
         // user that we know exists...
@@ -448,17 +458,17 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
 
         // Verify error handling
-        UserDataVO badUserData = new UserDataVO();
+        EndEntityInformation badUserData = new EndEntityInformation();
         badUserData.setCAId(rsacaid);
         p10 = new PKCS10RequestMessage(bcp10);
         try {
-        	signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, badUserData);
+        	signSession.createCertificate(admin, p10, X509ResponseMessage.class, badUserData);
             assertFalse("Was able to create certificate when it should have failed.", true);
         } catch (SignRequestException e) {
         	log.info("Expected exception caught (no password supplied): " + e.getMessage());
@@ -481,7 +491,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -503,7 +513,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -564,7 +574,7 @@ public class SignSessionTest extends CaTestCase {
             PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytooldsa);
             p10.setUsername("foo");
             p10.setPassword("foo123");
-            IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+            ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             log.info("cert with DN '" + CertTools.getSubjectDN(cert) + "' should not be issued?");
         } catch (Exception e) {
@@ -701,7 +711,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
-        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setUseQCStatement(true);
         certprof.setQCStatementRAName("rfc822Name=qc@primekey.se");
         certprof.setUseQCEtsiQCCompliance(true);
@@ -760,7 +770,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
-        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowValidityOverride(false);
         certprof.setValidity(298);
         certprof.setUseCardNumber(true);
@@ -779,7 +789,7 @@ public class SignSessionTest extends CaTestCase {
         endEntityProfileSession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
         // Change a user that we know...
-        UserDataVO user = new UserDataVO("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -817,7 +827,7 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("123456789", cardNumber);
 
         // Change so that we allow override of validity time
-        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setAllowValidityOverride(true);
         prof.setValidity(3065);
         prof.setUseCardNumber(false);
@@ -853,7 +863,7 @@ public class SignSessionTest extends CaTestCase {
         // current time
         // and that we can not get a certificate valid longer than the
         // certificate profile allows.
-        prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
+        prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setValidity(50);
         certificateProfileSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         notBefore = Calendar.getInstance();
@@ -959,7 +969,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1045,7 +1055,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("fooecdsa");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1131,7 +1141,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("fooecdsaimpca");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1230,7 +1240,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foorsamgf1ca");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         // X509Certificate cert =
         // CertTools.getCertfromByteArray(retcert.getEncoded());
@@ -1284,7 +1294,7 @@ public class SignSessionTest extends CaTestCase {
         pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
 
         // Change already existing user
-        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         userAdminSession.changeUser(admin, user, false);
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -1311,7 +1321,7 @@ public class SignSessionTest extends CaTestCase {
         // Change already existing user to add extended information with counter
         ExtendedInformation ei = new ExtendedInformation();
         int allowedrequests = 2;
-        ei.setCustomData(ExtendedInformation.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
+        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
@@ -1358,7 +1368,7 @@ public class SignSessionTest extends CaTestCase {
     public void test21CVCertificate() throws Exception {
         log.trace(">test21CVCertificate()");
 
-        UserDataVO user = new UserDataVO("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation user = new EndEntityInformation("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("cvc");
         userAdminSession.addUser(admin, user, false);
@@ -1398,7 +1408,7 @@ public class SignSessionTest extends CaTestCase {
 
         // 
         // Same thing but with ECC keys
-        UserDataVO userec = new UserDataVO("cvcec", "C=SE,CN=TCVCEC", cvccaecid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userec = new EndEntityInformation("cvcec", "C=SE,CN=TCVCEC", cvccaecid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userec.setPassword("cvc");
         userAdminSession.addUser(admin, userec, false);
@@ -1445,7 +1455,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
-        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfileSession.addCertificateProfile(admin, "TESTDNORDER", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNORDER");
 
@@ -1461,7 +1471,7 @@ public class SignSessionTest extends CaTestCase {
         endEntityProfileSession.addEndEntityProfile(admin, "TESTDNORDER", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTDNORDER");
 
-        UserDataVO user = new UserDataVO("foo", "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setStatus(UserDataConstants.STATUS_NEW);
         // Change a user that we know...
@@ -1553,7 +1563,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1635,7 +1645,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foodsa");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1678,7 +1688,7 @@ public class SignSessionTest extends CaTestCase {
         pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
 
         // Change already existing user
-        UserDataVO user = new UserDataVO("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         userAdminSession.changeUser(admin, user, false);
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -1709,7 +1719,7 @@ public class SignSessionTest extends CaTestCase {
     public void test28TestDNOverride() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE");
-        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow DN override
         certprof.setValidity(298);
         certificateProfileSession.addCertificateProfile(admin, "TESTDNOVERRIDE", certprof);
@@ -1725,7 +1735,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(admin, "TESTDNOVERRIDE", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTDNOVERRIDE");
-        UserDataVO user = new UserDataVO("foo", "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -1751,18 +1761,18 @@ public class SignSessionTest extends CaTestCase {
         // PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
 
         // Change so that we allow override of validity time
-        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setAllowDNOverride(true);
         certificateProfileSession.changeCertificateProfile(admin, "TESTDNOVERRIDE", prof);
 
         userAdminSession.changeUser(admin, user, false);
-        resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
@@ -1773,7 +1783,7 @@ public class SignSessionTest extends CaTestCase {
         final String altnames = "dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE");
-        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow Extension override
         certprof.setValidity(298);
         certificateProfileSession.addCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", certprof);
@@ -1789,7 +1799,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEXTENSIONOVERRIDE");
-        UserDataVO user = new UserDataVO("foo", "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -1843,7 +1853,7 @@ public class SignSessionTest extends CaTestCase {
         // See if the request message works...
         X509Extensions p10exts = p10.getRequestExtensions();
         assertNotNull(p10exts);
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
@@ -1852,12 +1862,12 @@ public class SignSessionTest extends CaTestCase {
         assertNull(c);
 
         // Change so that we allow override of validity time
-        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setAllowExtensionOverride(true);
         certificateProfileSession.changeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", prof);
 
         userAdminSession.changeUser(admin, user, false);
-        resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
@@ -1897,7 +1907,7 @@ public class SignSessionTest extends CaTestCase {
     public void test31TestProfileSignatureAlgorithm() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTSIGALG");
-        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile uses "inherit from CA"
         certificateProfileSession.addCertificateProfile(admin, "TESTSIGALG", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTSIGALG");
@@ -1911,7 +1921,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(admin, "TESTSIGALG", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTSIGALG");
-        UserDataVO user = new UserDataVO("foo", "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -1931,19 +1941,19 @@ public class SignSessionTest extends CaTestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         // See if the request message works...
-        IResponseMessage resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
 
         // Change so that we can override signature algorithm
-        CertificateProfile prof = certificateProfileSession.getCertificateProfile(admin, cprofile);
+        CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         certificateProfileSession.changeCertificateProfile(admin, "TESTSIGALG", prof);
 
         userAdminSession.changeUser(admin, user, false);
-        resp = signSession.createCertificate(admin, p10, org.ejbca.core.protocol.X509ResponseMessage.class, null);
+        resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
@@ -1966,7 +1976,7 @@ public class SignSessionTest extends CaTestCase {
         assertNotNull("Failed to create certificate", cert);
 
         // Check that certreq history was created
-        List history = certificateStoreSession.getCertReqHistory(admin, username);
+        List history = certReqHistorySession.retrieveCertReqHistory(admin, username);
         assertEquals(1, history.size());
 
         userAdminSession.deleteUser(admin, username);
@@ -1982,7 +1992,7 @@ public class SignSessionTest extends CaTestCase {
         assertNotNull("Failed to create certificate", cert);
 
         // Check that certreq history was not created
-        history = certificateStoreSession.getCertReqHistory(admin, username);
+        history = certReqHistorySession.retrieveCertReqHistory(admin, username);
         assertEquals(0, history.size());
 
         userAdminSession.deleteUser(admin, username);
@@ -2146,7 +2156,7 @@ public class SignSessionTest extends CaTestCase {
     
     private X509Certificate privateKeyUsageGetCertificate(final boolean useStartOffset, final long startOffset, final boolean usePeriod, final long period) throws Exception {
     	certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
-    	final EndUserCertificateProfile certProfile = new EndUserCertificateProfile();
+    	final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	certProfile.setUsePrivateKeyUsagePeriodNotBefore(useStartOffset);
     	certProfile.setPrivateKeyUsagePeriodStartOffset(startOffset);
     	certProfile.setUsePrivateKeyUsagePeriodNotAfter(usePeriod);
@@ -2161,7 +2171,7 @@ public class SignSessionTest extends CaTestCase {
         eeProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfileId));
         endEntityProfileSession.addEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD, eeProfile);
         final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
-        final UserDataVO user = new UserDataVO(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", SecConst.USER_ENDUSER, eeProfileId, certProfileId,
+        final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", SecConst.USER_ENDUSER, eeProfileId, certProfileId,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -2257,7 +2267,7 @@ public class SignSessionTest extends CaTestCase {
      * log.trace(">test10TestOpenScep()"); UserDataPK pk = new
      * UserDataPK("foo"); UserDataRemote data = userhome.findByPrimaryKey(pk);
      * data.setStatus(UserDataRemote.STATUS_NEW);
-     * log.debug("Reset status of 'foo' to NEW"); IResponseMessage resp =
+     * log.debug("Reset status of 'foo' to NEW"); ResponseMessage resp =
      * remote.createCertificate(admin, new ScepRequestMessage(openscep), -1,
      * Class.forName("org.ejbca.core.protocol.ScepResponseMessage"));
      * assertNotNull("Failed to create certificate", resp); byte[] msg =

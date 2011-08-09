@@ -34,6 +34,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -41,6 +43,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -390,13 +394,12 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId)
             throws Exception {
-        SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+        CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-        catokeninfo.setSignKeySpec("1024");
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
-        catokeninfo.setEncKeySpec("1024");
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);
 
