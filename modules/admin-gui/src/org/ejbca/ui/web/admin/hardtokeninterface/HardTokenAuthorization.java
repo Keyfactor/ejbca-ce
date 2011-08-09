@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.roles.RoleData;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -64,12 +65,12 @@ public class HardTokenAuthorization implements Serializable {
         if (hardtokenissuers == null) {
             hardtokenissuers = new TreeMap<String, HardTokenIssuerData>();
             HashSet<Integer> authadmingroupids = new HashSet<Integer>();
-            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caSession.getAvailableCAs(admin))) {
-                authadmingroupids.add(Integer.valueOf(next.getAdminGroupId()));
+            for (RoleData next : authorizationsession.getAllRolesAuthorizedToEdit(admin)) {
+                authadmingroupids.add(Integer.valueOf(next.getPrimaryKey()));
             }
             TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
             for (String alias : allhardtokenissuers.keySet()) {
-                if (authadmingroupids.contains(Integer.valueOf(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getAdminGroupId()))) {
+                if (authadmingroupids.contains(Integer.valueOf(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getRoleDataId()))) {
                     hardtokenissuers.put(alias, allhardtokenissuers.get(alias));
                 }
             }
@@ -135,13 +136,13 @@ public class HardTokenAuthorization implements Serializable {
     }
 
     /**
-     * Returns a Collection of AdminGroup names authorized to issue hard tokens,
+     * Returns a Collection of role names authorized to issue hard tokens,
      * it also only returns the admin groups the administrator is authorized to edit.
      */
-    public Collection<AdminGroup> getHardTokenIssuingAdminGroups() {
+    public Collection<RoleData> getHardTokenIssuingAdminGroups() {
         if (authissueingadmgrps == null) {
             authissueingadmgrps = new ArrayList<AdminGroup>();
-            for (AdminGroup next : adminGroupSession.getAuthorizedAdminGroupNames(admin, caSession.getAvailableCAs(admin))) {
+            for (RoleData next : authorizationsession.getAllRolesAuthorizedToEdit(admin)) { 
                 if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
                     authissueingadmgrps.add(next);
                 }        

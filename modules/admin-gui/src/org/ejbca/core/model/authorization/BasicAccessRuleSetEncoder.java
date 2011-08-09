@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.authorization;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,13 +27,12 @@ import java.util.List;
  * @author  herrvendil 
  * @version $Id$
  */
-public class BasicAccessRuleSetEncoder implements java.io.Serializable {
+public class BasicAccessRuleSetEncoder implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 875480820487234302L;
 
-	private boolean forceadvanced = false;
-		
-	private int currentrole = BasicAccessRuleSet.ROLE_NONE;
+    private boolean forceadvanced = false;
+
 	private Collection<Integer> availableroles = new ArrayList<Integer>();
 	private HashSet<Integer> currentcas = new HashSet<Integer>();
 	private HashSet<Integer> availablecas = new HashSet<Integer>();

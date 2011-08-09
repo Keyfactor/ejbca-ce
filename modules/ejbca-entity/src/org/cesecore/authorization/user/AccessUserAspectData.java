@@ -35,7 +35,7 @@ import org.cesecore.dbprotection.ProtectedData;
  */
 @Entity
 @Table(name = "AccessUserAspectData")
-public class AccessUserAspectData extends ProtectedData implements AccessUserAspect {
+public class AccessUserAspectData extends ProtectedData implements AccessUserAspect, Comparable<AccessUserAspectData> {
 
     private static final long serialVersionUID = 5560742096462018744L;
     private int primaryKey;
@@ -250,5 +250,11 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 	//
 	// End Database integrity protection methods
 	//
+
+    @Override
+    public int compareTo(AccessUserAspectData o) {
+        return matchValue.compareTo(o.matchValue);
+    }
+
 
 }

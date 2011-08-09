@@ -10,42 +10,44 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.ejbca.core.model.authorization;
 
-package org.ejbca.ui.web.admin.administratorprivileges;
-
-import java.util.Collection;
-
-import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.roles.RoleData;
 
 /**
+ * Represents a set of predefined roles.
+ * 
  * 
  * @version $Id$
- *
+ * 
  */
+public enum DefaultRoles {
+    SUPERADMINISTRATOR(1, "SUPERADMINISTRATOR"), 
+    CAADMINISTRATOR(2, "CAADMINISTRATOR"), 
+    RAADMINISTRATOR(3, "RAADMINISTRATOR"), 
+    SUPERVISOR(4, "SUPERVISOR"), 
+    HARDTOKENISSUER(5, "HARDTOKENISSUER");
 
-public class AccessRuleCollection {
-
+    private int numericalValue;
     private String name;
-    private Collection<AccessRuleData> collection;
 
-    public AccessRuleCollection(String name, Collection<AccessRuleData> collection) {
+    private DefaultRoles(int numericalValue, String name) {
+        this.numericalValue = numericalValue;
         this.name = name;
-        this.collection = collection;
+    }
+
+    public int getNumericalValue() {
+        return numericalValue;
     }
 
     public String getName() {
         return name;
     }
+    
 
-    public void setName(String name) {
-        this.name = name;
+
+    public boolean equals(RoleData role) {
+        return this.name.equals(role.getRoleName());
     }
 
-    public Collection<AccessRuleData> getCollection() {
-        return collection;
-    }
-
-    public void setCollection(Collection<AccessRuleData> collection) {
-        this.collection = collection;
-    }
 }

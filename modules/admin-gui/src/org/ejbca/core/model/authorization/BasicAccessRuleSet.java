@@ -13,20 +13,16 @@
  
 package org.ejbca.core.model.authorization;
 
+import java.io.Serializable;
+
 /**
  * A class containing constats used when configuring Basic Access Rule Set 
  *
- * @author  herrvendil 
  * @version $Id$
  */
-public class BasicAccessRuleSet implements java.io.Serializable {
+public class BasicAccessRuleSet implements Serializable {
 
-	public static final int ROLE_NONE                  = 0;
-    public static final int ROLE_SUPERADMINISTRATOR    = 1;
-    public static final int ROLE_CAADMINISTRATOR       = 2;
-    public static final int ROLE_RAADMINISTRATOR       = 3;
-    public static final int ROLE_SUPERVISOR            = 4;
-    public static final int ROLE_HARDTOKENISSUER       = 5;
+    private static final long serialVersionUID = 7733775825127915269L;
 
     public static final int ENDENTITY_VIEW             = 2;
     public static final int ENDENTITY_VIEWHISTORY      = 4;
@@ -46,13 +42,8 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     public static final int OTHER_VIEWLOG = 1;
     public static final int OTHER_ISSUEHARDTOKENS = 2;
     
-    public static final String[]  ROLETEXTS = {"NONE","SUPERADMINISTRATOR","CAADMINISTRATOR",
-    		                                                         "RAADMINISTRATOR", "SUPERVISOR",
-                                                                     "HARDTOKENISSUER"};
-    
+   
     public static final String[]  ENDENTITYRULETEXTS =  {"VIEWENDENTITYRULE","VIEWHISTORYRULE","VIEWHARDTOKENRULE","VIEWPUKENDENTITYRULE",
-    	                                                                                  "CREATEENDENTITYRULE","EDITENDENTITYRULE","DELETEENDENTITYRULE",
-																						  "REVOKEENDENTITYRULE", "KEYRECOVERENDENTITYRULE",
 																						  "APPROVEENDENTITYRULE"};
     		
     public static final String[]  OTHERTEXTS = {"","VIEWLOG","ISSUEHARDTOKENS"};

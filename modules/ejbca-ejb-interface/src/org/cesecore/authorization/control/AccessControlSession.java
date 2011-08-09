@@ -53,5 +53,15 @@ public interface AccessControlSession {
      * @return a list of roles which the subject is authorized to edit.
      */
     Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken);
+    
+    /**
+     * Examines if the current user is authorized to edit a role. It checks all access user aspects (and checks access to the CA's issuing them), as well
+     * as all CA based rules within the role.
+     * 
+     * @param authenticationToken an authentication token for the subject to check
+     * @param role the role to check against.
+     * @return true if the subject has access.
+     */
+    boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role);
 
 }
