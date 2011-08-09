@@ -10,137 +10,119 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 
-import org.ejbca.core.model.authorization.AccessRule;
+import org.cesecore.authorization.rules.AccessRuleData;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-
 
 /**
  * A class used as a help class for displaying access rules
- *
- * @author  TomSelleck
- * @version $Id$ 
+ * 
+
+ * @version $Id$
  */
-public class AccessRulesView implements java.io.Serializable {
+public class AccessRulesView implements Serializable {
 
-    
-	private static final long serialVersionUID = -3783242205091345836L;
+    private static final long serialVersionUID = -3783242205091345836L;
 
-	/**
-     * Creates an AccessRulesView and sorts the accessrules into their approriate
-     * sets.
+    private ArrayList<AccessRuleData> rolebasedaccessrules;
+    private ArrayList<AccessRuleData> regularaccessrules;
+    private ArrayList<AccessRuleData> endentityprofileaccessrules;
+    private ArrayList<AccessRuleData> userdatasourceaccessrules;
+    private ArrayList<AccessRuleData> caaccessrules;
+
+    /**
+     * Creates an AccessRulesView and sorts the access rules into their appropriate sets.
      */
-    public AccessRulesView(Collection<?> accessrules){
-      this.rolebasedaccessrules = new ArrayList<AccessRule>();
-      this.regularaccessrules = new ArrayList<AccessRule>();
-      this.endentityprofileaccessrules = new ArrayList<AccessRule>();
-      this.caaccessrules = new ArrayList<AccessRule>();
-      this.userdatasourceaccessrules = new ArrayList<AccessRule>();
-        
-        
-      Iterator<?> iter = accessrules.iterator();
-      while(iter.hasNext()){
-        Object obj = iter.next();
-        String accessrulestring = "";
-        AccessRule accessrule = null;
-        if( obj instanceof AccessRule ){
-          accessrulestring = ((AccessRule) obj).getAccessRule();
-          accessrule = (AccessRule) obj;
-        }else{
-          accessrulestring = (String) obj;
-          accessrule = new AccessRule(accessrulestring, 0,  false);
-        }  
-        boolean regular = true;
-        
-        // Check if rule is a role based one
-        for(int i=0; i< AccessRulesConstants.ROLEACCESSRULES.length; i++){
-           if(accessrulestring.equals(AccessRulesConstants.ROLEACCESSRULES[i])){
-             this.rolebasedaccessrules.add(accessrule);
-             regular=false;
-           }  
+    public AccessRulesView(Collection<AccessRuleData> accessrules) {
+        this.rolebasedaccessrules = new ArrayList<AccessRuleData>();
+        this.regularaccessrules = new ArrayList<AccessRuleData>();
+        this.endentityprofileaccessrules = new ArrayList<AccessRuleData>();
+        this.caaccessrules = new ArrayList<AccessRuleData>();
+        this.userdatasourceaccessrules = new ArrayList<AccessRuleData>();
+
+        for(AccessRuleData accessrule : accessrules) {  
+            boolean regular = true;
+
+            // Check if rule is a role based one
+            for (String roleConstant : AccessRulesConstants.ROLEACCESSRULES) {
+                if (accessrule.getAccessRuleName().equals(roleConstant)) {
+                    this.rolebasedaccessrules.add(accessrule);
+                    regular = false;
+                }
+            }
+
+            // Check if rule is end entity profile access rule
+            if (accessrule.getAccessRuleName().startsWith("/endentityprofilesrules")) {
+                this.endentityprofileaccessrules.add(accessrule);
+                regular = false;
+            }
+
+            // Check if rule is CA access rule
+            if (accessrule.getAccessRuleName().startsWith(AccessRulesConstants.CAPREFIX) || accessrule.getAccessRuleName().equals(AccessRulesConstants.CABASE)) {
+                this.caaccessrules.add(accessrule);
+                regular = false;
+            }
+
+            // Check if rule is end entity profile access rule
+            if (accessrule.getAccessRuleName().startsWith(AccessRulesConstants.USERDATASOURCEBASE)) {
+                this.userdatasourceaccessrules.add(accessrule);
+                regular = false;
+            }
+
+            // Otherwise it's a regular accessrule.
+            if (regular) {
+                this.regularaccessrules.add(accessrule);
+            }
         }
-        
-        // Check if rule is end entity profile access rule
-        if(accessrulestring.startsWith("/endentityprofilesrules")){
-          this.endentityprofileaccessrules.add(accessrule);
-          regular=false;
-        }
-        
-        // Check if rule is CA access rule
-        if(accessrulestring.startsWith(AccessRulesConstants.CAPREFIX) || accessrulestring.equals(AccessRulesConstants.CABASE)){
-          this.caaccessrules.add(accessrule);
-          regular=false;
-        }
-        
-        // Check if rule is end entity profile access rule
-        if(accessrulestring.startsWith(AccessRulesConstants.USERDATASOURCEBASE)){
-          this.userdatasourceaccessrules.add(accessrule);
-          regular=false;
-        }
-        
-        // Otherwise it's a regular accessrule.
-        if(regular) {
-          this.regularaccessrules.add(accessrule);  
-        }
-      } 
-      
-      Collections.sort(this.rolebasedaccessrules);
-      Collections.sort(this.regularaccessrules);
-      Collections.sort(this.endentityprofileaccessrules);
-      Collections.sort(this.caaccessrules);
-      Collections.sort(this.userdatasourceaccessrules);
-      
-    }
-    
-   
-    /**
-     *  Method that returns all role based access rules, sorted.
-     */
-    public Collection<AccessRule> getRoleBasedAccessRules(){
-      return this.rolebasedaccessrules;   
+
+        Collections.sort(this.rolebasedaccessrules);
+        Collections.sort(this.regularaccessrules);
+        Collections.sort(this.endentityprofileaccessrules);
+        Collections.sort(this.caaccessrules);
+        Collections.sort(this.userdatasourceaccessrules);
+
     }
 
     /**
-     *  Method that returns all regular access rules, sorted.
-     */    
-    public Collection<AccessRule> getRegularAccessRules(){
-      return this.regularaccessrules;   
-    }
-    
-    /**
-     *  Method that returns all end entity profile access rules, sorted.
-     */    
-    public Collection<AccessRule> getEndEntityProfileAccessRules(){
-      return this.endentityprofileaccessrules;   
+     * Method that returns all role based access rules, sorted.
+     */
+    public Collection<AccessRuleData> getRoleBasedAccessRules() {
+        return this.rolebasedaccessrules;
     }
 
     /**
-     *  Method that returns all CA access rules, sorted.
+     * Method that returns all regular access rules, sorted.
      */
-    public Collection<AccessRule> getCAAccessRules(){
-      return this.caaccessrules;   
-    }    
+    public Collection<AccessRuleData> getRegularAccessRules() {
+        return this.regularaccessrules;
+    }
 
     /**
-     *  Method that returns all User Data Source access rules, sorted.
+     * Method that returns all end entity profile access rules, sorted.
      */
-    public Collection<AccessRule> getUserDataSourceAccessRules(){
-      return this.userdatasourceaccessrules;   
+    public Collection<AccessRuleData> getEndEntityProfileAccessRules() {
+        return this.endentityprofileaccessrules;
     }
-    
-    // Private constants.  
-    
-    // Private methods.
-    private ArrayList<AccessRule> rolebasedaccessrules;
-    private ArrayList<AccessRule> regularaccessrules;
-    private ArrayList<AccessRule> endentityprofileaccessrules;
-    private ArrayList<AccessRule> userdatasourceaccessrules;
-    private ArrayList<AccessRule> caaccessrules;
+
+    /**
+     * Method that returns all CA access rules, sorted.
+     */
+    public Collection<AccessRuleData> getCAAccessRules() {
+        return this.caaccessrules;
+    }
+
+    /**
+     * Method that returns all User Data Source access rules, sorted.
+     */
+    public Collection<AccessRuleData> getUserDataSourceAccessRules() {
+        return this.userdatasourceaccessrules;
+    }
+
 }

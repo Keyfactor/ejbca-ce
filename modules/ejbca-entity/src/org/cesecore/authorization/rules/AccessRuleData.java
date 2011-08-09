@@ -37,7 +37,7 @@ import org.cesecore.dbprotection.ProtectedData;
  */
 @Entity
 @Table(name = "AccessRuleData")
-public class AccessRuleData extends ProtectedData implements Serializable {
+public class AccessRuleData extends ProtectedData implements Serializable, Comparable<AccessRuleData> {
 
     private static final long serialVersionUID = -8052112002139185890L;
 
@@ -319,5 +319,10 @@ public class AccessRuleData extends ProtectedData implements Serializable {
 	//
 	// End Database integrity protection methods
 	//
+
+    @Override
+    public int compareTo(AccessRuleData o) {   
+        return accessRuleName.compareTo(o.accessRuleName);
+    }
 
 }

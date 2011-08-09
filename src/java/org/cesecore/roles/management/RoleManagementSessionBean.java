@@ -231,6 +231,16 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     	return addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);    	
     }
+    
+    @Override
+    public RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
+        RoleData result = null;
+        //Remove the old rules
+        result = removeAccessRulesFromRole(authenticationToken, role, accessRules);
+        //Add the new ones.
+        result = addAccessRulesToRoleNoAuth(authenticationToken, result, accessRules);  
+        return result;
+    }
 
     private RoleData addAccessRulesToRoleNoAuth(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AccessRuleNotFoundException {

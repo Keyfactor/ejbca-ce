@@ -38,8 +38,7 @@ import org.cesecore.roles.RoleNotFoundException;
  * 
  * See {@link https://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_(ADV_FSP)#Roles_Management}
  * 
- * Based on cesecore version:
- *      RoleManagementSession.java 621 2011-03-18 10:18:26Z tomas
+ * Based on cesecore version: RoleManagementSession.java 621 2011-03-18 10:18:26Z tomas
  * 
  * @version $Id$
  * 
@@ -49,10 +48,8 @@ public interface RoleManagementSession {
     /**
      * Adds a role
      * 
-     * @param roleName
-     *            Name of the role
-     * @throws RoleExistsException
-     *             If role by that name already exists.
+     * @param roleName Name of the role
+     * @throws RoleExistsException If role by that name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
     RoleData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException, AuthorizationDeniedException;
@@ -60,24 +57,20 @@ public interface RoleManagementSession {
     /**
      * Remove a role. If the role does not exist nothing is done and the method silently returns.
      * 
-     * @param authenticationToken
-     *            An authentication token.
-     * @param roleName
-     *            The name of the role to remove.
-     * @throws RoleNotFoundException if role does not exist 
+     * @param authenticationToken An authentication token.
+     * @param roleName The name of the role to remove.
+     * @throws RoleNotFoundException if role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
     void remove(AuthenticationToken authenticationToken, String roleName) throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
-     * Removes a known role. Will also remove all associated access rules and user aspects.
-     * If the role does not exist nothing is done and the method silently returns.
+     * Removes a known role. Will also remove all associated access rules and user aspects. If the role does not exist nothing is done and the method
+     * silently returns.
      * 
-     * @param authenticationToken
-     *            An authentication token.
-     * @param role
-     *            the role to remove.
-     * @throws RoleNotFoundException if role does not exist 
+     * @param authenticationToken An authentication token.
+     * @param role the role to remove.
+     * @throws RoleNotFoundException if role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
     void remove(AuthenticationToken authenticationToken, RoleData role) throws RoleNotFoundException, AuthorizationDeniedException;
@@ -85,81 +78,85 @@ public interface RoleManagementSession {
     /**
      * Renames a role.
      * 
-     * @param role
-     *            The name of the old role to change.
-     * @param newName
-     *            The new name of the role.
-     * @throws RoleExistsException
-     *             If the new role name already exists.
+     * @param role The name of the old role to change.
+     * @param newName The new name of the role.
+     * @throws RoleExistsException If the new role name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
-    RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException, AuthorizationDeniedException;
-    
+    RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException,
+            AuthorizationDeniedException;
+
     /**
      * Renames a role.
      * 
-     * @param role
-     *            The role to change.
-     * @param newName
-     *            The new name of the role.
-     * @throws RoleExistsException
-     *             If the new role name already exists.
+     * @param role The role to change.
+     * @param newName The new name of the role.
+     * @throws RoleExistsException If the new role name already exists.
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
-    RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException, AuthorizationDeniedException;
+    RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException,
+            AuthorizationDeniedException;
+
+    /**
+     * Replaces the existing access rules in the given role by removing the old ones and adding the list of new ones.
+     * 
+     * @param authenticationToken for authorization purposes.
+     * @param role the role in question.
+     * @param accessRules A Collection of access rules to replace with.
+     * @return the same role.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     * @throws RoleNotFoundException if the supplied role was not found in persistence. 
+     */
+    RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
+            throws AuthorizationDeniedException, RoleNotFoundException;
 
     /**
      * Associates a list of access rules to a role. If the given role already exists, replace it.
      * 
-     * @param role
-     *            The role
-     * @param accessRulesZ
-     *            A collection of access rules. These are all presumed to be persisted.
-     * @throws AccessRuleExistsException
-     *             if an access rule was submitted without being persisted first.
+     * @param role The role
+     * @param accessRules A collection of access rules. These are all presumed to be persisted.
+     * @throws AccessRuleExistsException if an access rule was submitted without being persisted first.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      * 
      * @return the merged {@link RoleData}
      */
-    RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules) throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException;
+    RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
+            throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException;
 
     /**
      * Removes the given access rules from a role.
      * 
-     * @param role
-     *            The role.
-     * @param accessRules
-     *            A collection of access rules. If these rules haven't been removed from persistence, they will be here.
+     * @param role The role.
+     * @param accessRules A collection of access rules. If these rules haven't been removed from persistence, they will be here.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
-    RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules) throws RoleNotFoundException, AuthorizationDeniedException;
+    RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
+            throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
      * Gives the collection of subjects the given role. If the subject already exists, update it with the new value.
      * 
-     * @param subjects
-     *            A collection of subjects
-     * @param role
-     *            The role to give.
+     * @param subjects A collection of subjects
+     * @param role The role to give.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
-     *            
-     *            TODO: Rename this method AddAccessUserAspectsToRole
+     * 
+     *             TODO: Rename this method AddAccessUserAspectsToRole
      */
-    RoleData addSubjectsToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects) throws RoleNotFoundException, AuthorizationDeniedException;
+    RoleData addSubjectsToRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects)
+            throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
      * Removes the role from the list of subjects.
      * 
-     * @param subjects
-     *            A collection of subjects.
-     * @param role
-     *            The role to remove.
+     * @param subjects A collection of subjects.
+     * @param role The role to remove.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      */
-    RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects) throws RoleNotFoundException, AuthorizationDeniedException;
+    RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects)
+            throws RoleNotFoundException, AuthorizationDeniedException;
 
 }

@@ -31,9 +31,11 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.roles.RoleData;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -87,7 +89,7 @@ public class InformationMemory implements Serializable {
     TreeMap<String, Integer> publishernames = null;
     Map<Integer, String> admingrpidmap = null;
     
-    HashSet<String> authorizedaccessrules = null;
+    HashSet<AccessRuleData> authorizedaccessrules = null;
     
     GlobalConfiguration globalconfiguration = null;
     EndEntityProfileNameProxy endentityprofilenameproxy = null;
@@ -117,7 +119,7 @@ public class InformationMemory implements Serializable {
       this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, caSession, endEntityProfileSession);
       this.caauthorization = new CAAuthorization(administrator, caadminsession, caSession, authorizationsession, certificateProfileSession);
       this.logauthorization = new LogAuthorization(administrator, authorizationsession, caSession);
-      this.hardtokenauthorization = new HardTokenAuthorization(administrator, adminGroupSession, hardtokensession, authorizationsession, caSession);
+      this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, caSession);
     }
 
     public String getCertificateProfileName(int id){
@@ -380,18 +382,20 @@ public class InformationMemory implements Serializable {
     }
 
     /**
-     *  Returns a administrators set of authorized available accessrules.
+     * Returns a administrators set of authorized available accessrules.
      * 
      * @return A HashSet containing the administrators authorized available accessrules.
      */
 
-    public HashSet<String> getAuthorizedAccessRules(){
-      if(authorizedaccessrules == null) {
-	    authorizedaccessrules = new HashSet<String>(authorizationsession.getAuthorizedAvailableAccessRules(administrator, caSession.getAvailableCAs(administrator),
-	    		globalconfiguration.getEnableEndEntityProfileLimitations(), globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
-	    		endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator), userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
-      }
-	   return authorizedaccessrules;
+    public HashSet<AccessRuleData> getAuthorizedAccessRules() {
+        if (authorizedaccessrules == null) {
+            authorizedaccessrules = new HashSet<AccessRuleData>(authorizationsession.getAuthorizedAvailableAccessRules(administrator,
+                    caSession.getAvailableCAs(administrator), globalconfiguration.getEnableEndEntityProfileLimitations(),
+                    globalconfiguration.getIssueHardwareTokens(), globalconfiguration.getEnableKeyRecovery(),
+                    endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator),
+                    userdatasourcesession.getAuthorizedUserDataSourceIds(administrator, true)));
+        }
+        return authorizedaccessrules;
     }
 
 	/**
@@ -426,7 +430,7 @@ public class InformationMemory implements Serializable {
 	/**
 	 *  @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
 	 */	
-	public Collection<AdminGroup> getHardTokenIssuingAdminGroups(){
+	public Collection<RoleData> getHardTokenIssuingAdminGroups(){
 	  return hardtokenauthorization.getHardTokenIssuingAdminGroups();	
 	}
 
@@ -437,10 +441,9 @@ public class InformationMemory implements Serializable {
     public TreeMap<String, Integer> getAuthorizedAdminGroups(){
       if(authgroups == null){
         authgroups = new TreeMap<String, Integer>();
-        Iterator<AdminGroup> iter = this.adminGroupSession.getAuthorizedAdminGroupNames(administrator, caSession.getAvailableCAs(administrator)).iterator();
-        while(iter.hasNext()){
-          AdminGroup admingroup = iter.next();	
-          authgroups.put(admingroup.getAdminGroupName(),Integer.valueOf(admingroup.getAdminGroupId()));
+
+        for(RoleData role : authorizationsession.getAllRolesAuthorizedToEdit(administrator)) {
+          authgroups.put(role.getRoleName(),Integer.valueOf(role.getPrimaryKey()));
         }              		
       }
       return authgroups;	 

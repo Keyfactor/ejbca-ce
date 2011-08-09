@@ -109,43 +109,48 @@ public class Authorizer implements Serializable {
         return (authorizationProxy.isAuthorized(admin.getAdminInformation(), resource)  || authorizationProxy.isAuthorized(admin.getAdminInformation(), "/super_administrator"));
   
     }
+
     /**
      * Method to check if a group is authorized to a resource
-     *
+     * 
      * @param admininformation information about the user to be authorized.
      * @param resource the resource to look up.
      * @return true if authorized
      */
-    public boolean isGroupAuthorized(Admin admin, int pk, String resource) {
-        if(admin == null) {
-            if(log.isInfoEnabled()) {
+    public boolean isGroupAuthorized(Admin admin, String resource) {
+        if (admin == null) {
+            if (log.isInfoEnabled()) {
                 log.info("Administrator is null, and therefore group not authorized to resource : " + resource);
             }
             return false;
         }
-        
+
         AdminInformation admininformation = admin.getAdminInformation();
-        
-        if(!authorizationProxy.isGroupAuthorized(admininformation.getGroupId(), resource)){
-        	try {
-        		if(!admininformation.isSpecialUser()) {
-        			logSession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
-        		} else {
-        			logSession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
-        		}
-        	} catch (Throwable e) {
-        		log.info("Missed to log 'Admin group not authorized to resource', admin="+admin.toString()+", resource="+resource, e);
-        	}
+
+        if (!authorizationProxy.isGroupAuthorized(admininformation.getGroupId(), resource)) {
+            try {
+                if (!admininformation.isSpecialUser()) {
+                    logSession.log(admin, admininformation.getX509Certificate(), module, new java.util.Date(), null, null,
+                            LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, "Adminstrator group not authorized to resource : " + resource);
+                } else {
+                    logSession.log(admin, LogConstants.INTERNALCAID, module, new java.util.Date(), null, null,
+                            LogConstants.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, "Adminstrator group not authorized to resource : " + resource);
+                }
+            } catch (Throwable e) {
+                log.info("Missed to log 'Admin group not authorized to resource', admin=" + admin.toString() + ", resource=" + resource, e);
+            }
             return false;
         }
         try {
-        	if(!admininformation.isSpecialUser()) {
-        		logSession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
-        	} else {
-        		logSession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
-        	}
+            if (!admininformation.isSpecialUser()) {
+                logSession.log(admin, admininformation.getX509Certificate(), module, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE, "Adminstrator group not authorized to resource : " + resource);
+            } else {
+                logSession.log(admin, LogConstants.INTERNALCAID, module, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_AUTHORIZEDTORESOURCE, "Adminstrator group not authorized to resource : " + resource);
+            }
         } catch (Throwable e) {
-        	log.info("Missed to log 'Admin group authorized to resource', admin="+admin.toString()+", resource="+resource, e);
+            log.info("Missed to log 'Admin group authorized to resource', admin=" + admin.toString() + ", resource=" + resource, e);
         }
         return true;
     }

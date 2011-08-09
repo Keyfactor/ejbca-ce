@@ -93,7 +93,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private void runSetup(String caname) throws Exception {
         getLogger().info("Adding Hard Token Super Administrator .....\n\n");
         int caid = ejb.getCaSession().getCAInfo(getAdmin(), caname).getCAId();
-        int admingroupid = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), AdminGroup.TEMPSUPERADMINGROUP).getAdminGroupId();
+        int admingroupid = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), AdminGroup.TEMPSUPERADMINGROUP).getRoleDataId();
 
         configureGlobalConfiguration();
         createAdministratorTokenProfile();

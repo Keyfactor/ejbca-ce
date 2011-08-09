@@ -77,7 +77,11 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         return result;
     }
 
-    private boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+    @Override
+    /*
+     * FIXME: Test this method! 
+     */
+    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
             if (!isAuthorizedNoLog(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {

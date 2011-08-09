@@ -13,7 +13,10 @@
 package org.cesecore.roles;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Entity;
@@ -30,15 +33,14 @@ import org.cesecore.dbprotection.ProtectedData;
 /**
  * Represents a role, and is based in the AdminGroup concept from EJBCA.
  * 
- * Based on cesecore version:
- *      RoleData.java 394 2011-03-01 15:41:34Z mikek
+ * Based on cesecore version: RoleData.java 394 2011-03-01 15:41:34Z mikek
  * 
  * @version $Id$
  * 
  */
 @Entity
 @Table(name = "RoleData")
-public class RoleData extends ProtectedData implements Serializable {
+public class RoleData extends ProtectedData implements Serializable, Comparable<RoleData> {
 
     public static final String DEFAULT_ROLE_NAME = "DEFAULT";
 
@@ -89,12 +91,12 @@ public class RoleData extends ProtectedData implements Serializable {
     }
 
     // @Column @Lob
-	@Override
+    @Override
     public String getRowProtection() {
         return rowProtection;
     }
 
-	@Override
+    @Override
     public void setRowProtection(final String rowProtection) {
         this.rowProtection = rowProtection;
     }
@@ -103,7 +105,7 @@ public class RoleData extends ProtectedData implements Serializable {
      * If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for
      * Hibernate.
      */
-    //@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessUsers")
+    // @OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessUsers")
     public Map<Integer, AccessUserAspectData> getAccessUsers() {
         return accessUsers;
     }
@@ -116,7 +118,7 @@ public class RoleData extends ProtectedData implements Serializable {
      * If we use lazy fetching we have to take care so that the Entity is managed until we fetch the values. Set works better with eager fetching for
      * Hibernate.
      */
-    //@OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessRules")
+    // @OneToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER) @JoinColumn(name = "RoleData_accessRules")
     public Map<Integer, AccessRuleData> getAccessRules() {
         return accessRules;
     }
@@ -153,7 +155,7 @@ public class RoleData extends ProtectedData implements Serializable {
         if (accessUsers == null) {
             if (other.accessUsers != null)
                 return false;
-        } else if (!accessUsers.equals(other.accessUsers)) {            
+        } else if (!accessUsers.equals(other.accessUsers)) {
             return false;
         }
         if (primaryKey == null) {
@@ -169,48 +171,75 @@ public class RoleData extends ProtectedData implements Serializable {
         return true;
     }
 
-	//
-	// Start Database integrity protection methods
-	//
-	
-	@Transient
-	@Override
-	protected String getProtectString(final int version) {
-		StringBuilder build = new StringBuilder();
-		// What is important to protect here is the data that we define, id, name and certificate profile data
-		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-		build.append(getPrimaryKey()).append(getRoleName());
-		return build.toString();
-	}
+    //
+    // Start Database integrity protection methods
+    //
 
-	@Transient
-	@Override
-	protected int getProtectVersion() {
-		return 1;
-	}
+    @Transient
+    @Override
+    protected String getProtectString(final int version) {
+        StringBuilder build = new StringBuilder();
+        // What is important to protect here is the data that we define, id, name and certificate profile data
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getPrimaryKey()).append(getRoleName());
+        return build.toString();
+    }
 
-	@PrePersist
-	@PreUpdate
-	@Transient
-	@Override
-	protected void protectData() {
-		super.protectData();
-	}
-	
-	@PostLoad
-	@Transient
-	@Override
-	protected void verifyData() {
-		super.verifyData();
-	}
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
 
-	@Override 
-	@Transient
-	protected String getRowId() {
-		return String.valueOf(getPrimaryKey());
-	}
-	//
-	// End Database integrity protection methods
-	//
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return String.valueOf(getPrimaryKey());
+    }
+
+    //
+    // End Database integrity protection methods
+    //
+
+    @Override
+    public int compareTo(RoleData o) {
+        return roleName.compareTo(o.roleName);
+    }
+
+    /**
+     * This method takes a collection of access rules and returns the set of those rules that don't exist in this Role's rules.
+     * 
+     * FIXME: Unit test this method.
+     * 
+     * @param rules a list of rules
+     * @return the set of the above rules not used in this role. Returns null if rules was null.
+     */
+    public Collection<AccessRuleData> getDisjunctSetOfRules(Collection<AccessRuleData> rules) {
+        List<AccessRuleData> result = new ArrayList<AccessRuleData>();
+        if (rules != null) {
+            for (AccessRuleData rule : rules) {
+                if (!accessRules.containsKey(rule.getPrimaryKey())) {
+                    result.add(rule);
+                }
+            }
+        }
+        return result;
+
+    }
 
 }
