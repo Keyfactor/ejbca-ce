@@ -27,6 +27,8 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
@@ -124,8 +126,8 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
 	private String currentAdminGroupName = null;
 	private String matchCaId = null;
-	private String matchWith = AdminEntity.MATCHWITHTEXTS[AdminEntity.WITH_SERIALNUMBER];
-	private String matchType = null;
+	private AccessMatchValue matchWith = AccessMatchValue.WITH_SERIALNUMBER;  
+	private AccessMatchType matchType = null;
 	private String matchValue = null;
 
 	/** @return a List of (SelectItem<String, String>) authorized CA */
@@ -170,41 +172,43 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	// Simple form backing
 	public String getMatchCaId() { return matchCaId; }
 	public void setMatchCaId(String matchCaId) { this.matchCaId= matchCaId; }
-	public String getMatchWith() { return matchWith; }
-	public void setMatchWith(String matchWith) { this.matchWith= matchWith; }
-	public String getMatchType() { return matchType; }
-	public void setMatchType(String matchType) { this.matchType= matchType; }
+	public AccessMatchValue getMatchWith() { return matchWith; }
+	public void setMatchWith(AccessMatchValue matchWith) { this.matchWith= matchWith; }
+	public AccessMatchType getMatchType() { return matchType; }
+	public void setMatchType(AccessMatchType matchType) { this.matchType= matchType; }
 	public String getMatchValue() { return matchValue; }
 	public void setMatchValue(String matchValue) { this.matchValue = matchValue; }
 
-	/** Adds an admin to the current group. */
-	public void addAdmin() {
-		int matchWith = Arrays.asList(AdminEntity.MATCHWITHTEXTS).indexOf(getMatchWith());
-		int matchType = Arrays.asList(AdminEntity.MATCHTYPETEXTS).indexOf(getMatchType()) + 1000;
+	/** Adds an admin to the current group. 
+	 * @throws RoleNotFoundException */
+	public void addAdmin() throws RoleNotFoundException {
+	    AccessMatchValue matchWith = getMatchWith();
+		AccessMatchType matchType = getMatchType();
 		String matchValue = getMatchValue();
 		if (matchValue==null || "".equals(matchValue)) {
 			addErrorMessage("MATCHVALUEREQUIRED");
 			return;
 		}
 		int caid = Integer.parseInt(getMatchCaId());
-		AdminEntity adminEntity = new AdminEntity(matchWith, matchType, matchValue, caid);
+		AccessUserAspectData adminEntity = new AccessUserAspectData(getCurrentAdminGroupObject().getRoleName(), caid, matchWith, matchType, matchValue);
 		// TODO: Check if adminentity exist and add a nice errormessage instead of being silent
-		Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
+		Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
 		adminEntities.add(adminEntity);
 		try {
-			getAuthorizationDataHandler().addAdminEntities(getCurrentAdminGroup(), adminEntities);
+			getAuthorizationDataHandler().addAdminEntities(getCurrentAdminGroupObject(), adminEntities);
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
 		}
 	}
 
-	/** Removes an admin from the current group. */
-	public void deleteAdmin() {
+	/** Removes an admin from the current group. 
+	 * @throws RoleNotFoundException */
+	public void deleteAdmin() throws RoleNotFoundException {
 		AccessUserAspectData adminEntity =  getAdminForEach();
-		Collection<AdminEntity> adminEntities = new ArrayList<AdminEntity>();
+		Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
 		adminEntities.add(adminEntity);
 		try {
-			getAuthorizationDataHandler().removeAdminEntities(getCurrentAdminGroup(), adminEntities);
+			getAuthorizationDataHandler().removeAdminEntities(getCurrentAdminGroupObject(), adminEntities);
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
 		}
@@ -212,10 +216,10 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
 	/** @return the current admin group for the current row in the datatable */
 	private RoleData getCurrentAdminGroupObjectForEach() {
-		String adminGroupName = ((AdminGroup) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("adminGroup")).getAdminGroupName();
+		String adminGroupName = ((RoleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("adminGroup")).getRoleName();
 		RoleData adminGroup = null;
 		try {
-			adminGroup = getAuthorizationDataHandler().getAdminGroup(adminGroupName);
+			adminGroup = getAuthorizationDataHandler().getRole(adminGroupName);
 		} catch (AuthorizationDeniedException e) {
 			addErrorMessage("AUTHORIZATIONDENIED");
 		}
@@ -276,7 +280,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	private List<Integer> currentEndEntityRules = null;
 
 	// Stores the value from request, but always reads the value directly from the saved data
-	public Integer getCurrentRole() {return getBasicRuleSet().getCurrentRole(); }
+	public String getCurrentRole() {return getBasicRuleSet().getCurrentRole(); }
 	public void setCurrentRole(RoleData currentRole) { this.currentRole = currentRole; 	}
 	public List<String> getCurrentCAs() { return integerSetToStringList(getBasicRuleSet().getCurrentCAs()); }
 	public void setCurrentCAs(List<String> currentCAs) { 	this.currentCAs = stringListToIntegerList(currentCAs); }
@@ -313,8 +317,8 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	/** @return the available admin roles as a Collection<SelectItem>  */
 	public Collection<SelectItem> getAvailableRoles() {
 		Collection<SelectItem> list = new ArrayList<SelectItem>();
-		for (Integer currentRole : (Collection<Integer>) getBasicRuleSet().getAvailableRoles()) {
-			list.add(new SelectItem(currentRole, getEjbcaWebBean().getText(BasicAccessRuleSet.ROLETEXTS[currentRole])));
+		for (String currentRole : getBasicRuleSet().getAvailableRoles()) {
+			list.add(new SelectItem(currentRole, getEjbcaWebBean().getText(currentRole)));
 		}
 		return list;
 	}
@@ -361,8 +365,9 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		return list;
 	}
 
-	/** Save the current state of the access rules and invalidate caches */
-	public void saveAccessRules() {
+	/** Save the current state of the access rules and invalidate caches 
+	 * @throws RoleNotFoundException */
+	public void saveAccessRules() throws RoleNotFoundException {
 		BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRole, currentCAs, currentEndEntityRules, currentEndEntityProfiles, currentOtherRules);
 		try {
 			getAuthorizationDataHandler().replaceAccessRules(getCurrentAdminGroup(), barsd.getCurrentAdvancedRuleSet());
