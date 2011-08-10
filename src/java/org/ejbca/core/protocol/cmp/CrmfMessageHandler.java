@@ -49,7 +49,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -70,7 +70,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	
 	private static final Logger LOG = Logger.getLogger(CrmfMessageHandler.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     /** strings for error messages defined in internal resources */
 	private static final String CMP_ERRORADDUSER = "cmp.erroradduser";

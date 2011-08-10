@@ -40,7 +40,7 @@ import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -64,7 +64,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     private PublisherSessionLocal publisherSession;
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override

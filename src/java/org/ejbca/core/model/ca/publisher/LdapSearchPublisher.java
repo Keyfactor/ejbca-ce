@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.CertTools;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.TCPTool;
 
 import com.novell.ldap.LDAPConnection;
@@ -19,7 +19,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 	
 	private static final Logger log = Logger.getLogger(LdapSearchPublisher.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
 	// Default Values
 	protected static final String SEARCHBASEDN = "searchbasedn";

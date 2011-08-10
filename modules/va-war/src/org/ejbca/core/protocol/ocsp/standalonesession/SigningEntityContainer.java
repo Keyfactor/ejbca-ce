@@ -42,7 +42,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 
@@ -60,7 +60,7 @@ class  SigningEntityContainer {
     /**
      * Internal localization of logs and errors
      */
-    static private final InternalResources intres = InternalResources.getInstance();
+    static private final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     /**
      * The data of the session.
      */

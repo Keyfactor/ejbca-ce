@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.log.Admin;
@@ -44,7 +44,7 @@ public class AdminEntitySessionBean implements AdminEntitySessionLocal, AdminEnt
     private static final Logger LOG = Logger.getLogger(AdminEntitySessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;

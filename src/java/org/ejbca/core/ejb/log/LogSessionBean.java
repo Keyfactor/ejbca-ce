@@ -37,7 +37,7 @@ import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -59,7 +59,7 @@ public class LogSessionBean implements LogSessionLocal, LogSessionRemote {
     private static final Logger LOG = Logger.getLogger(LogSessionBean.class);
     
 	/** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
     
     @Resource
     private SessionContext sessionContext;

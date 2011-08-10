@@ -21,7 +21,7 @@ import javax.servlet.ServletContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 
 /**
@@ -35,7 +35,7 @@ public class WebLanguages implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(WebLanguages.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /** Constructor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */

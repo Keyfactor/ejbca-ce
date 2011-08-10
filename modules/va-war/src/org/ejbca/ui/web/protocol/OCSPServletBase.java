@@ -72,7 +72,7 @@ import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
@@ -111,7 +111,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
 	
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	private  boolean canlog =true;
 	private final String m_sigAlg = OcspConfiguration.getSignatureAlgorithm();
 	/** True if requests must be signed by a certificate issued by a list of trusted CA's*/

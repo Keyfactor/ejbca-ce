@@ -49,7 +49,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -247,18 +247,18 @@ public class CrmfRARequestTest extends CmpTestCase {
         	crmfHttpUserTest(userDN2, key2, null, null);
         	// check that the request fails when asking for certificate for another
         	// user with same key.
-        	crmfHttpUserTest(userDN2, key1, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName2 + "'",
+        	crmfHttpUserTest(userDN2, key1, InternalEjbcaResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName2 + "'",
         			"'" + userName1 + "'"), null);
-        	crmfHttpUserTest(userDN1, key2, InternalResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName1 + "'",
+        	crmfHttpUserTest(userDN1, key2, InternalEjbcaResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName1 + "'",
         			"'" + userName2 + "'"), null);
         	// check that you can not issue a certificate with same DN as another
         	// user.
-        	crmfHttpUserTest("CN=AdminCA1,O=EJBCA Sample,C=SE", key3, InternalResources.getInstance().getLocalizedMessage(
+        	crmfHttpUserTest("CN=AdminCA1,O=EJBCA Sample,C=SE", key3, InternalEjbcaResources.getInstance().getLocalizedMessage(
         			"signsession.subjectdn_exists_for_another_user", "'AdminCA1'", "'SYSTEMCA'"), null);
 
         	hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
 
-        	crmfHttpUserTest("CN=" + hostname + ",O=EJBCA Sample,C=SE", key4, InternalResources.getInstance().getLocalizedMessage(
+        	crmfHttpUserTest("CN=" + hostname + ",O=EJBCA Sample,C=SE", key4, InternalEjbcaResources.getInstance().getLocalizedMessage(
         			"signsession.subjectdn_exists_for_another_user", "'" + hostname + "'", "'tomcat'"), null);
 
         } finally {

@@ -39,7 +39,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
@@ -71,7 +71,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcherSessionBean.class);
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
     @EJB
 	private SignSessionLocal signSession;

@@ -35,7 +35,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -59,7 +59,7 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 	
 	 private static Logger log = Logger.getLogger(KISSResponseGenerator.class);
 	
-	 private static final InternalResources intres = InternalResources.getInstance();
+	 private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
 	 private CertificateStoreSession certificateStoreSession;
 	 private UserAdminSession userAdminSession;

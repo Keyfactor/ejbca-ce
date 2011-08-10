@@ -20,7 +20,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -42,7 +42,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
 
     private static final Logger log = Logger.getLogger(UserPasswordExpireWorker.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /**
      * Worker that makes a query to the Certificate Store about expiring

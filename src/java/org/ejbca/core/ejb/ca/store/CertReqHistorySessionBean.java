@@ -34,7 +34,7 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
 /**
@@ -49,7 +49,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
 
     private final static Logger log = Logger.getLogger(CertReqHistorySessionBean.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;

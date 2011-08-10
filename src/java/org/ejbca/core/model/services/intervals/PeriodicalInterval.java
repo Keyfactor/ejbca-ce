@@ -15,7 +15,7 @@ package org.ejbca.core.model.services.intervals;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseInterval;
 
 /**
@@ -31,7 +31,7 @@ public class PeriodicalInterval extends BaseInterval {
 	
 	private static final Logger log = Logger.getLogger(PeriodicalInterval.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 	public static final String PROP_UNIT  = "interval.periodical.unit";
 	public static final String PROP_VALUE = "interval.periodical.value";

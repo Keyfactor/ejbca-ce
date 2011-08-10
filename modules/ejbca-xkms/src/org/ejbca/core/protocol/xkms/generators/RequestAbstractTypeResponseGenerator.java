@@ -41,7 +41,7 @@ import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.KeyValueType;
@@ -70,7 +70,7 @@ import org.w3._2002._03.xkms_.ValidityIntervalType;
 public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseGenerator{
 
     private static Logger log = Logger.getLogger(RequestAbstractTypeResponseGenerator.class);
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
     protected static final BigInteger SERVERRESPONSELIMIT = new BigInteger("30");
 

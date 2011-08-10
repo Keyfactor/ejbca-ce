@@ -29,7 +29,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /** Handles and maintains the CA-part of the OCSP functionality
@@ -40,7 +40,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
 
     private static Logger log = Logger.getLogger(OCSPCAService.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     public static final float LATEST_VERSION = 4; 
     

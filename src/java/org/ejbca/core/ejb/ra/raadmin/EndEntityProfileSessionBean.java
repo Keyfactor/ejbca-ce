@@ -38,7 +38,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -56,7 +56,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private static final Logger LOG = Logger.getLogger(EndEntityProfileSessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     private static final Random RANDOM = new Random(new Date().getTime());
 

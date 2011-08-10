@@ -36,7 +36,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -63,7 +63,7 @@ import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLocal, ApprovalExecutionSessionRemote {
 
 	static final Logger log = Logger.getLogger(ApprovalExecutionSessionBean.class);
-    static final InternalResources intres = InternalResources.getInstance();
+    static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
     private UserAdminSessionLocal userAdminSession;

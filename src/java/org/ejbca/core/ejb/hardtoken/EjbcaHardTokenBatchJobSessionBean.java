@@ -31,7 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ra.UserData;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 
 /**
@@ -48,7 +48,7 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     private static final Logger log = Logger.getLogger(EjbcaHardTokenBatchJobSessionBean.class);
     
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;

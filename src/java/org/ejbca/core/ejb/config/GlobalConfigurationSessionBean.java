@@ -37,7 +37,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
@@ -52,7 +52,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     private static final Logger log = Logger.getLogger(GlobalConfigurationSessionBean.class);
     
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /**
      * Cache variable containing the global configuration. This cache may be
