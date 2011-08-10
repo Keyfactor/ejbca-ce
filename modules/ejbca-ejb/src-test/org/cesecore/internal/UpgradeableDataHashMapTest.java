@@ -1,4 +1,4 @@
-package org.ejbca.core.model;
+package org.cesecore.internal;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.Thread.State;
