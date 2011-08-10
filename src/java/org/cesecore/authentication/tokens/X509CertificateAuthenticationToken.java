@@ -21,8 +21,8 @@ import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.util.CertTools;
 
 /**
  * This is an implementation of the AuthenticationToken concept, based on using an {@link X509Certificate} as it's single credential, and that

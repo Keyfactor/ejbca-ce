@@ -31,7 +31,7 @@ import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 
 /**
  * A class for reading values from QC-statement extension.

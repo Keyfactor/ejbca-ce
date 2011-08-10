@@ -40,8 +40,8 @@ import org.cesecore.certificates.certificate.certextensions.standard.SubjectAltN
 import org.cesecore.certificates.certificate.certextensions.standard.SubjectDirectoryAttributes;
 import org.cesecore.certificates.certificate.certextensions.standard.SubjectKeyIdentifier;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.util.CertTools;
 
 /**
  * Class parsing the src/java/certextensions.properties file 

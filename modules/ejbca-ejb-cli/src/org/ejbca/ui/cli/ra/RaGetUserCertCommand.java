@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**

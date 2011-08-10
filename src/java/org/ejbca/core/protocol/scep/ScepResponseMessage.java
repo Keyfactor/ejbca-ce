@@ -51,8 +51,8 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 
 /**
  * A response message for scep (pkcs7).

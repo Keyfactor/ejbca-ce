@@ -21,7 +21,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 
 /** Microsoft Template extension, for domain controllers
  * 

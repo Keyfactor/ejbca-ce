@@ -31,7 +31,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.keystore.P12toPEM;

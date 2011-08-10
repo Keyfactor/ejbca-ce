@@ -33,9 +33,9 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 
 /**

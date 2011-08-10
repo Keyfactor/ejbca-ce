@@ -48,7 +48,6 @@ import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectNotFoundException;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -56,6 +55,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.util.CertTools;
 
 /**
  * Implementation of the RoleManagementSession interface.

@@ -32,7 +32,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;

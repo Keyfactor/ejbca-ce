@@ -29,8 +29,8 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSession;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.log.Admin;
 

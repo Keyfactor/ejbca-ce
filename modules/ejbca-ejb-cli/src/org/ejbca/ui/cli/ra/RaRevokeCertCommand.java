@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 

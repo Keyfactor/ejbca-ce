@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.TCPTool;
 

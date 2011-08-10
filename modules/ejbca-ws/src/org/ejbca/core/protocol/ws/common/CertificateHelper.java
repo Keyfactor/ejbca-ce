@@ -14,8 +14,8 @@ package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateException;
 
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.SecConst;
 
 /**

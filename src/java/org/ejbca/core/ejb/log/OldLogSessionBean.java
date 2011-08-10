@@ -28,7 +28,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;

@@ -42,7 +42,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;

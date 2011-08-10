@@ -28,8 +28,8 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.util.CertTools;
 import org.junit.Test;
 
 /**

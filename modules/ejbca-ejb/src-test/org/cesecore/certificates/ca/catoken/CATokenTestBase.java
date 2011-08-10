@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -40,6 +39,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
 /**

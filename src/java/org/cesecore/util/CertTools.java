@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.cesecore.certificates.util;
+package org.cesecore.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -108,9 +108,7 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.StringTools;
+import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
 import org.ejbca.cvc.CVCObject;

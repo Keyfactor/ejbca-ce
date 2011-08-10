@@ -49,13 +49,13 @@ import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.internal.CACacheHelper;
 import org.cesecore.certificates.ca.internal.CACacheManager;
 import org.cesecore.certificates.ca.internal.CATokenCacheManager;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 
 /**

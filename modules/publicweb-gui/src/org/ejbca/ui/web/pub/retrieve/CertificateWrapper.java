@@ -15,7 +15,7 @@ package org.ejbca.ui.web.pub.retrieve;
 
 import java.security.cert.Certificate;
 
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 
 /**
  * This bean wraps a certificate, to be able to use CertTools to get values from certs, 

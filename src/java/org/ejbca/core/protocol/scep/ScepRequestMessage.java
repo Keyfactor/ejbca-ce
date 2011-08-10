@@ -58,8 +58,8 @@ import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 
 
 /**

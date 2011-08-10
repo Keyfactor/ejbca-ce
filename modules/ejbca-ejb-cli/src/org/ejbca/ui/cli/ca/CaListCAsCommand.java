@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 

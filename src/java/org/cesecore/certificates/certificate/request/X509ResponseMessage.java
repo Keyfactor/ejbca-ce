@@ -24,7 +24,7 @@ import java.security.cert.CertificateException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.SignRequestException;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 
 /**
  * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can 

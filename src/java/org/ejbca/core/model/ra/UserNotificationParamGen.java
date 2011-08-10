@@ -16,8 +16,8 @@ package org.ejbca.core.model.ra;
 import java.security.cert.Certificate;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalNotificationParamGen;
 
 /**

@@ -30,12 +30,12 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.internal.CACacheManager;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 
 /**

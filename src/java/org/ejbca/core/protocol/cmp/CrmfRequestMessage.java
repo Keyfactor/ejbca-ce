@@ -48,8 +48,8 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.util.RequestMessageUtils;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;

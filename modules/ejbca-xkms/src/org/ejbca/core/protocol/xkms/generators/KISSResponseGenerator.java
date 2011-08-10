@@ -33,7 +33,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;

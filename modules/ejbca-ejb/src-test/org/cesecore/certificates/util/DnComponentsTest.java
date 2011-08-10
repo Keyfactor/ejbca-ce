@@ -15,6 +15,7 @@ package org.cesecore.certificates.util;
 
 import static org.junit.Assert.assertEquals;
 
+import org.cesecore.util.CertTools;
 import org.junit.Test;
 
 /**

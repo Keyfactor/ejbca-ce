@@ -53,9 +53,9 @@ import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 
 /**
  * Based on EJBCA version: 
