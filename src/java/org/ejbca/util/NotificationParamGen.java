@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cesecore.util.ValidityDate;
+
 /**
  * Base class generating parameter data for email notifications. Derived classes can add additional parameters.
  * 

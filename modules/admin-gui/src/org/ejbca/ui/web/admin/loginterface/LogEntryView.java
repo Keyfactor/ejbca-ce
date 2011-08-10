@@ -19,11 +19,11 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
-import org.ejbca.util.ValidityDate;
 
 /**
  * A class used as a help class for displaying LogEntries.

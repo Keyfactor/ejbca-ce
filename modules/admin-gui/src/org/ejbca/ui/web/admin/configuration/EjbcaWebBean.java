@@ -57,6 +57,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -74,7 +75,6 @@ import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;
-import org.ejbca.util.ValidityDate;
 
 /**
  * The main bean for the web interface, it contains all basic functions.

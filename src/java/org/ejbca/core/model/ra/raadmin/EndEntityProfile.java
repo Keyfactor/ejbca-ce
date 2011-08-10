@@ -40,10 +40,10 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.Base64;
 import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.util.ValidityDate;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**

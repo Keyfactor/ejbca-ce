@@ -39,6 +39,7 @@ import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceReq
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.provider.TLSProvider;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
@@ -46,7 +47,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.protocol.ocsp.OCSPData;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
-import org.ejbca.util.provider.TLSProvider;
 
 /** 
  * This instance is created when the OCSP Servlet session is initiated with {@link OCSPServletStandAlone#init()}. It will be only one instance of this class.
