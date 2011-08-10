@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.UnitParser;
 
 /**
  * Helper class for handling user friendly format of time intervals.

@@ -25,8 +25,8 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.util.ValidityDate;
 
 
 /**

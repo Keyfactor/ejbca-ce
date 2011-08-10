@@ -11,11 +11,14 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.util;
+package org.cesecore.util;
 
 import java.util.Calendar;
 
 import junit.framework.TestCase;
+
+import org.cesecore.util.YearMonthDayTime;
+
 
 /** 
  * Test of the YearMonthDayTime helper class.

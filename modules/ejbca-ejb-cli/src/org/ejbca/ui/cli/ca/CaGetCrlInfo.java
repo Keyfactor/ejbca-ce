@@ -17,8 +17,8 @@ import java.util.Collection;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.util.ValidityDate;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.ValidityDate;
 
 /**
  * List information about the latest CRL from each CA.
