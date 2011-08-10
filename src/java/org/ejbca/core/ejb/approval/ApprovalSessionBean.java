@@ -409,7 +409,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             log.trace(">sendNotification approval notification: id=" + id);
         }
         try {
-            X509CertificateAuthenticationToken sendAdmin = admin;
+            AuthenticationToken sendAdmin = admin;
             /* TODO: Commented out during code changes. Remove later.
             if (admin.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
                 

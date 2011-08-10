@@ -24,6 +24,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.roles.RoleData;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -40,20 +41,20 @@ public class HardTokenAuthorization implements Serializable {
     private TreeMap<String, HardTokenIssuerData> hardtokenissuers = null;
     private TreeMap<String, Integer> hardtokenprofiles = null;
     private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
-    private ArrayList<AdminGroup> authissueingadmgrps = null;
+    private ArrayList<RoleData> authissueingadmgrps = null;
 
     private AuthenticationToken admin;
     private HardTokenSession hardtokensession;
     private AccessControlSessionLocal authorizationsession;    
-    private CaSession caSession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
 
     /** Creates a new instance of CAAuthorization. */
     public HardTokenAuthorization(AuthenticationToken admin, HardTokenSession hardtokensession, 
-    		AccessControlSessionLocal authorizationsession, CaSession caSession) {
+    		AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession) {
       this.admin=admin;
       this.hardtokensession=hardtokensession;            
       this.authorizationsession = authorizationsession;
-      this.caSession = caSession;
+      this.complexAccessControlSession = complexAccessControlSession;
     }
 
     /**
@@ -65,7 +66,7 @@ public class HardTokenAuthorization implements Serializable {
         if (hardtokenissuers == null) {
             hardtokenissuers = new TreeMap<String, HardTokenIssuerData>();
             HashSet<Integer> authadmingroupids = new HashSet<Integer>();
-            for (RoleData next : authorizationsession.getAllRolesAuthorizedToEdit(admin)) {
+            for (RoleData next : complexAccessControlSession.getAllRolesAuthorizedToEdit(admin)) {
                 authadmingroupids.add(Integer.valueOf(next.getPrimaryKey()));
             }
             TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
@@ -141,8 +142,8 @@ public class HardTokenAuthorization implements Serializable {
      */
     public Collection<RoleData> getHardTokenIssuingAdminGroups() {
         if (authissueingadmgrps == null) {
-            authissueingadmgrps = new ArrayList<AdminGroup>();
-            for (RoleData next : authorizationsession.getAllRolesAuthorizedToEdit(admin)) { 
+            authissueingadmgrps = new ArrayList<RoleData>();
+            for (RoleData next : complexAccessControlSession.getAllRolesAuthorizedToEdit(admin)) { 
                 if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
                     authissueingadmgrps.add(next);
                 }        

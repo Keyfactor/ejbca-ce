@@ -84,13 +84,6 @@
       <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
       <ejb-link>LogSession</ejb-link>
    </ejb-local-ref>
-   <ejb-local-ref id="EJBLocalRef_7">
-      <ejb-ref-name>ejb/AuthorizationSessionLocal</ejb-ref-name>
-      <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal</local>
-      <ejb-link>AuthorizationSession</ejb-link>
-   </ejb-local-ref>
    <ejb-local-ref id="EJBLocalRef_8">
       <ejb-ref-name>ejb/HardTokenSessionLocal</ejb-ref-name>
       <ejb-ref-type>Session</ejb-ref-type>

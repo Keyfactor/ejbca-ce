@@ -32,6 +32,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -81,6 +83,8 @@ public class CADataHandler implements Serializable {
     private CaSession caSession;
     private AuthenticationToken administrator;
     private AccessControlSession authorizationsession;
+    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private InformationMemory info;
     private UserAdminSession adminsession;
     private GlobalConfigurationSession globalconfigurationsession; 
@@ -97,11 +101,14 @@ public class CADataHandler implements Serializable {
                          GlobalConfigurationSession globalconfigurationsession,
                          CertificateProfileSession certificateProfileSession,
                          AccessControlSession authorizationsession, RevocationSessionLocal revocationSession,
+                         AccessUserAspectManagerSessionLocal accessUserAspectManagerSession, AccessRuleManagementSessionLocal accessRuleManagementSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession; 
        this.caSession = caSession;
        this.authorizationsession = authorizationsession;
+       this.accessRuleManagementSession = accessRuleManagementSession;
+       this.accessUserAspectManagerSession = accessUserAspectManagerSession;
        this.adminsession = adminsession;
        this.certificateProfileSession = certificateProfileSession;
        this.endEntityProfileSession = endEntityProfileSession;
@@ -164,7 +171,8 @@ public class CADataHandler implements Serializable {
     boolean caidexits = this.adminsession.checkForCAId(administrator, caid) ||
                         this.certificateProfileSession.existsCAIdInCertificateProfiles(caid) ||
                         this.endEntityProfileSession.existsCAInEndEntityProfiles(administrator, caid) ||
-                        this.authorizationsession.existsCAInRules(administrator, caid);
+                        (this.accessRuleManagementSession.existsCaInAccessRules(caid) && this.accessUserAspectManagerSession.existsCAInAccessUserAspects(caid))
+                    ;
      
     if(!caidexits){
         caSession.removeCA(administrator, caid);

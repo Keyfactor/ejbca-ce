@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.admins;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +21,7 @@ import java.util.List;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.roles.RoleData;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -47,7 +47,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
             if (args.length < 5) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
-                Collection<RoleData> adminGroups = ejb.getAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin());
+                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin());
                 Collections.sort((List<RoleData>) adminGroups);
                 String availableGroups = "";
                 for (RoleData adminGroup : adminGroups) {
@@ -56,52 +56,59 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 getLogger().info("Available Admin groups: " + availableGroups);
                 getLogger().info("Available access rules:");
                 GlobalConfiguration globalConfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
-                for (String current : (Collection<String>) ejb.getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin(),
-                        ejb.getCaSession().getAvailableCAs(getAdmin()), globalConfiguration.getEnableEndEntityProfileLimitations(),
-                        globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
-                        ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin()),
-                        ejb.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true))) {
+
+                Collection<String> authorizedAvailableAccessRules = ejb.getComplexAccessControlSession().getAuthorizedAvailableAccessRules(
+                        getAdmin(), globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
+                        globalConfiguration.getEnableKeyRecovery(), ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin()),
+                        ejb.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true),
+                        EjbcaConfiguration.getCustomAvailableAccessRules());
+
+                for (String current : authorizedAvailableAccessRules) {
                     getLogger().info(" " + getParsedAccessRule(current));
                 }
                 String availableRules = "";
-                for (String current : AccessRule.RULE_TEXTS) {
-                    availableRules += (availableRules.length() == 0 ? "" : ", ") + current;
+                for (AccessRuleState current : AccessRuleState.values()) {
+                    availableRules += (availableRules.length() == 0 ? "" : ", ") + current.getName();
                 }
                 getLogger().info("Available rules: " + availableRules);
                 getLogger().info("Recursive is one of: TRUE, FALSE");
                 return;
             }
             String groupName = args[1];
-            if (ejb.getRoleAccessSession().findRole(groupName) == null) {
+            RoleData role = ejb.getRoleAccessSession().findRole(groupName);
+            if (role == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
             String accessRule = getOriginalAccessRule(args[2]);
             GlobalConfiguration globalConfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
-            if (!((Collection<String>) ejb.getAuthorizationSession().getAuthorizedAvailableAccessRules(getAdmin(),
-                    ejb.getCaSession().getAvailableCAs(getAdmin()), globalConfiguration.getEnableEndEntityProfileLimitations(),
-                    globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery(),
-                    ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin()),
-                    ejb.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true))).contains(accessRule)) {
+            Collection<String> authorizedAvailableAccessRules = ejb.getComplexAccessControlSession().getAuthorizedAvailableAccessRules(getAdmin(),
+                    globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),
+                    globalConfiguration.getEnableKeyRecovery(), ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin()),
+                    ejb.getUserDataSourceSession().getAuthorizedUserDataSourceIds(getAdmin(), true),
+                    EjbcaConfiguration.getCustomAvailableAccessRules());
+
+            if (!authorizedAvailableAccessRules.contains(accessRule)) {
                 getLogger().error("Accessrule \"" + accessRule + "\" is not available.");
                 return;
             }
-            int rule = Arrays.asList(AccessRule.RULE_TEXTS).indexOf(args[3]);
-            if (rule == -1) {
+            AccessRuleState rule = AccessRuleState.matchName(args[3]);
+            if (rule == null) {
                 getLogger().error("No such rule \"" + args[3] + "\".");
                 return;
             }
             boolean recursive = "TRUE".equalsIgnoreCase(args[4]);
             List<String> accessRuleStrings = new ArrayList<String>();
+
             accessRuleStrings.add(accessRule);
             if (rule == AccessRuleState.RULE_NOTUSED) {
-                ejb.getRoleAccessSession().removeAccessRules(getAdmin(), groupName, accessRuleStrings);
+                ejb.getRoleManagementSession().removeAccessRulesFromRole(getAdmin(), role, accessRuleStrings);
             } else {
-                ejb.getRoleAccessSession().removeAccessRules(getAdmin(), groupName, accessRuleStrings);
-                AccessRuleData accessRuleObject = new AccessRuleData(accessRule, rule, recursive);
+                ejb.getRoleManagementSession().removeAccessRulesFromRole(getAdmin(), role, accessRuleStrings);
+                AccessRuleData accessRuleObject = new AccessRuleData(role.getRoleName(), accessRule, rule, recursive);
                 Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
                 accessRules.add(accessRuleObject);
-                ejb.getRoleAccessSession().addAccessRules(getAdmin(), groupName, accessRules);
+                ejb.getRoleManagementSession().addAccessRulesToRole(getAdmin(), role, accessRules);
             }
         } catch (Exception e) {
             getLogger().error("", e);

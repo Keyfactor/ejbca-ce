@@ -19,6 +19,7 @@ import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -65,11 +66,12 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @Local
 public interface EjbBridgeSessionLocal {
 
-	AdminEntitySessionLocal getAdminEntitySession();	
+        AccessControlSessionLocal getAccessControlSession();
+	AccessRuleManagementSessionLocal getAccessRuleManagementSession();
+        AdminEntitySessionLocal getAdminEntitySession();	
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
 	AuthenticationSessionLocal getAuthenticationSession();
-	AccessControlSessionLocal getAccessControlSession();
 	@Deprecated OldAuthenticationSessionLocal getOldAuthenticationSession(); //TODO: This will be removed.
 	CAAdminSessionLocal getCaAdminSession();
 	CaSessionLocal getCaSession();

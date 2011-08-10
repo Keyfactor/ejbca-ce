@@ -23,6 +23,7 @@ import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -105,6 +106,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
 		return ret;
 	}
 
+	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return getEjbLocal().getAccessRuleManagementSession(); }
 	@Override public AdminEntitySessionLocal getAdminEntitySession() { return getEjbLocal().getAdminEntitySession(); }	
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return getEjbLocal().getApprovalExecutionSession(); }
 	@Override public ApprovalSessionLocal getApprovalSession() { return getEjbLocal().getApprovalSession(); }

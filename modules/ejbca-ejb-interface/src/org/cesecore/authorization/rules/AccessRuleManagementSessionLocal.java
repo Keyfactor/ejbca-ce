@@ -19,25 +19,39 @@ import javax.ejb.Local;
 /**
  * Local interface for AccessRuleManagement
  * 
- * Based on cesecore version:
- *      AccessRuleManagementSessionLocal.java 461 2011-03-08 09:40:15Z tomas
+ * Based on cesecore version: AccessRuleManagementSessionLocal.java 461 2011-03-08 09:40:15Z tomas
  * 
  * @version $Id$
- *
+ * 
  */
 @Local
 public interface AccessRuleManagementSessionLocal {
 
     void persistRule(AccessRuleData rule);
-    
+
     AccessRuleData createRule(String accessruleName, String roleName, AccessRuleState state, boolean isRecursive) throws AccessRuleExistsException;
-    
+
     AccessRuleData find(int primaryKey);
-    
+
     void remove(AccessRuleData accessRule);
-    
+
     void remove(Collection<AccessRuleData> accessRules);
-    
+
     AccessRuleData setState(AccessRuleData rule, AccessRuleState state, boolean isRecursive);
+    
+    /**
+     * Method to check if an end entity profile exists in any end entity profile
+     * rules. Used to avoid desynchronization of profilerules.
+     * 
+     * @param profileid the profile id to search for.
+     * @return true if profile exists in any of the accessrules.
+     */
+    public boolean existsEndEntityProfileInRules(int profileid);
+    
+    /**
+     * Help function to existsCAInRules, checks if caid exists among
+     * accessrules.
+     */
+    boolean existsCaInAccessRules(int caid);
 
 }

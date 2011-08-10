@@ -60,8 +60,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 /**
  * Implementation of the RoleManagementSession interface.
  * 
- * Based on cesecore version:
- *      RoleManagementSessionBean.java 925 2011-07-04 11:41:17Z mikek
+ * Based on cesecore version: RoleManagementSessionBean.java 925 2011-07-04 11:41:17Z mikek
  * 
  * @version $Id$
  * 
@@ -81,7 +80,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     @EJB
     private AccessControlSessionLocal accessControlSession;
-    
+
     @EJB
     private AccessUserAspectManagerSessionLocal accessUserAspectSession;
 
@@ -90,7 +89,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
-    
+
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
 
@@ -98,9 +97,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     private EntityManager entityManager;
 
     @Override
-    public void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException {
+    public void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate)
+            throws RoleExistsException, RoleNotFoundException {
         // Create a role
-    	RoleData role = createNoAuth(authenticationToken, roleName);
+        RoleData role = createNoAuth(authenticationToken, roleName);
 
         // Create a user aspect that matches the authentication token, and add that to the role.
         List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
@@ -113,13 +113,13 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.EDITROLES.resource(), AccessRuleState.RULE_ACCEPT, true));
         addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);
     }
-    
+
     @Override
     public RoleData create(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException, AuthorizationDeniedException {
-    	// Authorized to edit roles?
-    	authorizedToEditRole(authenticationToken, roleName);
-    	
-    	return createNoAuth(authenticationToken, roleName);
+        // Authorized to edit roles?
+        authorizedToEditRole(authenticationToken, roleName);
+
+        return createNoAuth(authenticationToken, roleName);
     }
 
     private RoleData createNoAuth(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException {
@@ -149,23 +149,23 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", roleName);
             throw new RoleNotFoundException(msg);
         } else {
-        	// this remove check authorization
+            // this remove check authorization
             remove(authenticationToken, role);
         }
     }
 
     @Override
     public void remove(AuthenticationToken authenticationToken, RoleData role) throws RoleNotFoundException, AuthorizationDeniedException {
-    	// Authorized to edit roles?
-    	authorizedToEditRole(authenticationToken, role.getRoleName());
-    	removeNoAuth(authenticationToken, role);
+        // Authorized to edit roles?
+        authorizedToEditRole(authenticationToken, role.getRoleName());
+        removeNoAuth(authenticationToken, role);
     }
 
     private void removeNoAuth(AuthenticationToken authenticationToken, RoleData role) throws RoleNotFoundException {
-    	if (role != null) {
-    		String roleName = role.getRoleName(); 
+        if (role != null) {
+            String roleName = role.getRoleName();
             role = roleAccessSession.findRole(role.getPrimaryKey());
-            if (role != null) {            	
+            if (role != null) {
                 accessUserAspectSession.remove(role.getAccessUsers().values());
                 accessRuleManagement.remove(role.getAccessRules().values());
 
@@ -177,39 +177,41 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 securityEventsLogger.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                        authenticationToken.toString(), null, null, null, details);            	
+                        authenticationToken.toString(), null, null, null, details);
             } else {
                 if (role == null) {
                     final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", roleName);
                     throw new RoleNotFoundException(msg);
                 }
             }
-    	} else {
-    		if (log.isDebugEnabled()) {
-    			log.debug("trying to remove role by 'null' RoleData.");
-    		}
-    	}
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("trying to remove role by 'null' RoleData.");
+            }
+        }
     }
 
     @Override
-    public RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException, AuthorizationDeniedException {
+    public RoleData renameRole(AuthenticationToken authenticationToken, String role, String newName) throws RoleExistsException,
+            AuthorizationDeniedException {
         return renameRole(authenticationToken, roleAccessSession.findRole(role), newName);
     }
-    
+
     @Override
-    public RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException, AuthorizationDeniedException {
+    public RoleData renameRole(AuthenticationToken authenticationToken, RoleData role, String newName) throws RoleExistsException,
+            AuthorizationDeniedException {
         RoleData result = null;
         if (roleAccessSession.findRole(newName) == null) {
-        	// Authorized to edit roles?
-        	authorizedToEditRole(authenticationToken, role.getRoleName());
-        	
+            // Authorized to edit roles?
+            authorizedToEditRole(authenticationToken, role.getRoleName());
+
             role.setRoleName(newName);
 
             result = entityManager.merge(role);
 
             accessTreeUpdateSession.signalForAccessTreeUpdate();
             accessControlSession.forceCacheExpire();
-            
+
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingrouprenamed", role.getRoleName(), newName);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -226,28 +228,29 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     @Override
     public RoleData addAccessRulesToRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {
-    	// Authorized to edit roles?
-    	authorizedToEditRole(authenticationToken, role.getRoleName());
+        // Authorized to edit roles?
+        authorizedToEditRole(authenticationToken, role.getRoleName());
 
-    	return addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);    	
+        return addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);
     }
-    
+
     @Override
-    public RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
+    public RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role,
+            final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
         RoleData result = null;
-        //Remove the old rules
+        // Remove the old rules
         result = removeAccessRulesFromRole(authenticationToken, role, accessRules);
-        //Add the new ones.
-        result = addAccessRulesToRoleNoAuth(authenticationToken, result, accessRules);  
+        // Add the new ones.
+        result = addAccessRulesToRoleNoAuth(authenticationToken, result, accessRules);
         return result;
     }
 
-    private RoleData addAccessRulesToRoleNoAuth(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
-            throws RoleNotFoundException, AccessRuleNotFoundException {
+    private RoleData addAccessRulesToRoleNoAuth(AuthenticationToken authenticationToken, final RoleData role,
+            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException, AccessRuleNotFoundException {
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
-            throw new RoleNotFoundException(msg);        	
+            throw new RoleNotFoundException(msg);
         }
 
         Map<Integer, AccessRuleData> rules = result.getAccessRules();
@@ -279,16 +282,25 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     @Override
-    public RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessRuleData> accessRules) throws RoleNotFoundException, AuthorizationDeniedException{
+    public RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, List<String> accessRuleNames)
+            throws RoleNotFoundException, AuthorizationDeniedException {
+        Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        for (String accessRuleName : accessRuleNames) {
+            accessRules.add(accessRuleManagement.find(AccessRuleData.generatePrimaryKey(role.getRoleName(), accessRuleName)));
+        }
+        return removeAccessRulesFromRole(authenticationToken, role, accessRules);
+    }
+
+    @Override
+    public RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessRuleData> accessRules)
+            throws RoleNotFoundException, AuthorizationDeniedException {
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
-            throw new RoleNotFoundException(msg);        	
+            throw new RoleNotFoundException(msg);
         }
-
-    	// Authorized to edit roles?
-    	authorizedToEditRole(authenticationToken, result.getRoleName());
-
+        // Authorized to edit roles?
+        authorizedToEditRole(authenticationToken, result.getRoleName());
         Map<Integer, AccessRuleData> resultAccessRules = result.getAccessRules();
         for (AccessRuleData accessRule : accessRules) {
             if (resultAccessRules.containsKey(accessRule.getPrimaryKey())) {
@@ -314,19 +326,21 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     @Override
-    public RoleData addSubjectsToRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> users) throws RoleNotFoundException, AuthorizationDeniedException {
-    	// Authorized to edit roles?
-    	authorizedToEditRole(authenticationToken, role.getRoleName());
+    public RoleData addSubjectsToRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> users)
+            throws RoleNotFoundException, AuthorizationDeniedException {
+        // Authorized to edit roles?
+        authorizedToEditRole(authenticationToken, role.getRoleName());
 
-    	return addSubjectsToRoleNoAuth(authenticationToken, role, users);
+        return addSubjectsToRoleNoAuth(authenticationToken, role, users);
     }
 
-    private RoleData addSubjectsToRoleNoAuth(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> users) throws RoleNotFoundException {
+    private RoleData addSubjectsToRoleNoAuth(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> users)
+            throws RoleNotFoundException {
         if (roleAccessSession.findRole(role.getPrimaryKey()) == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
-            throw new RoleNotFoundException(msg);        	
+            throw new RoleNotFoundException(msg);
         }
-        
+
         Map<Integer, AccessUserAspectData> existingUsers = role.getAccessUsers();
         for (AccessUserAspectData userAspect : users) {
             // if userAspect hasn't been persisted, do so.
@@ -354,15 +368,16 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     @Override
-    public RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> subjects) throws RoleNotFoundException, AuthorizationDeniedException {
+    public RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, final RoleData role, Collection<AccessUserAspectData> subjects)
+            throws RoleNotFoundException, AuthorizationDeniedException {
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
-            throw new RoleNotFoundException(msg);        	
+            throw new RoleNotFoundException(msg);
         }
 
-    	// Authorized to edit roles?
-    	authorizedToEditRole(authenticationToken, result.getRoleName());
+        // Authorized to edit roles?
+        authorizedToEditRole(authenticationToken, result.getRoleName());
 
         Map<Integer, AccessUserAspectData> accessUsersFromResult = result.getAccessUsers();
         for (AccessUserAspectData subject : subjects) {
@@ -388,8 +403,6 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     }
 
-
-
     private int findFreeRoleId(AuthenticationToken token) {
         final Random random = new SecureRandom();
         int id = random.nextInt();
@@ -403,11 +416,11 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         return id;
     }
 
-	private void authorizedToEditRole(AuthenticationToken authenticationToken, String roleName) throws AuthorizationDeniedException {
+    private void authorizedToEditRole(AuthenticationToken authenticationToken, String roleName) throws AuthorizationDeniedException {
         if (!accessControlSession.isAuthorized(authenticationToken, StandardRules.EDITROLES.resource())) {
             String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.notauthorizedtoeditroles", authenticationToken.toString(), roleName);
             throw new AuthorizationDeniedException(msg);
         }
-	}
+    }
 
 }
