@@ -41,7 +41,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.JDBCUtil;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
@@ -54,7 +54,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
 
 	private static final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 	/** Constants capturing the possible error returned by the Unid-Fnr OCSP Extension 
 	 * 

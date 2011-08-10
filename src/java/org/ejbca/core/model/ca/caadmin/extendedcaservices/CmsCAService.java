@@ -64,7 +64,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /** Handles and maintains the CA-part of the CMS message functionality.
  *  The service have it's own certificate used for signing and encryption 
@@ -84,7 +84,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	
 	private static Logger m_log = Logger.getLogger(CmsCAService.class);
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 	public static final float LATEST_VERSION = 2; 
 

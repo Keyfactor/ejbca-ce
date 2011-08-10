@@ -37,7 +37,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.ra.UserAdminConstants;
@@ -55,7 +55,7 @@ import org.ejbca.util.keystore.P12toPEM;
 public class BatchMakeP12 extends BaseCommand {
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     BatchToolProperties props = new BatchToolProperties();
 

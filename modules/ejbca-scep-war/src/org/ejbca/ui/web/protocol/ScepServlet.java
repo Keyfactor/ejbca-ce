@@ -40,7 +40,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.ui.web.RequestHelper;
@@ -69,7 +69,7 @@ import org.ejbca.ui.web.RequestHelper;
 public class ScepServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(ScepServlet.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
     private SignSessionLocal signsession;

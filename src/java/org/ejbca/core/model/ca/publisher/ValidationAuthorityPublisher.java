@@ -29,7 +29,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
@@ -45,7 +45,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 
 	private static final Logger log = Logger.getLogger(ValidationAuthorityPublisher.class);
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 	public static final float LATEST_VERSION = 1;
 

@@ -19,7 +19,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.ActionException;
@@ -38,7 +38,7 @@ public class MailAction extends BaseAction {
 	
 	private static final Logger log = Logger.getLogger(MailAction.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
 	private static final Admin admin = Admin.getInternalAdmin();
 	

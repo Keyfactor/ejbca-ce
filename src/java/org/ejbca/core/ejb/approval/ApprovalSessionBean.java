@@ -52,7 +52,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataUtil;
@@ -81,7 +81,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private static final Logger log = Logger.getLogger(ApprovalSessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;

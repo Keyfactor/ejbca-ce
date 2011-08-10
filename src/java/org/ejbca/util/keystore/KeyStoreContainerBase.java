@@ -48,7 +48,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CMS;
 
@@ -58,7 +58,7 @@ import org.ejbca.util.CMS;
 public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     private static final Logger log = Logger.getLogger(KeyStoreContainerBase.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     protected final KeyStore keyStore;
     private final String providerName;

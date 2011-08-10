@@ -123,7 +123,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -258,7 +258,7 @@ public class EjbcaWS implements IEjbcaWS {
 	
 	private static final Logger log = Logger.getLogger(EjbcaWS.class);	
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private void logAdminName(AuthenticationToken admin, IPatternLogger logger) {
         final X509Certificate cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();

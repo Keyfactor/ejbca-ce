@@ -25,7 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
@@ -40,7 +40,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 public class CmpPbeVerifyer {
 	private static final Logger LOG = Logger.getLogger(CmpPbeVerifyer.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     private byte[] protectedBytes = null;
     private DERBitString protection = null;

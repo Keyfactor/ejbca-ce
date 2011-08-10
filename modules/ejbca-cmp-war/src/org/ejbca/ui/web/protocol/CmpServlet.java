@@ -28,7 +28,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.ui.web.RequestHelper;
@@ -44,7 +44,7 @@ public class CmpServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CmpServlet.class);
-    private static final InternalResources intres = InternalResources.getInstance(); // Internal localization of logs and errors
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance(); // Internal localization of logs and errors
 
     @EJB
     private CmpMessageDispatcherSessionLocal cmpMessageDispatcherLocal;

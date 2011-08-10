@@ -65,7 +65,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.util.CertTools;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CMPSendHTTP;
 import org.ejbca.core.protocol.cmp.CMPSendTCP;
 import org.ejbca.util.PerformanceTest;
@@ -101,7 +101,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  */
 class CMPTest extends ClientToolBox {
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     static private class StressTest {
         final PerformanceTest performanceTest;
 

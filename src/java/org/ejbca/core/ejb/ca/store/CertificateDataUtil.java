@@ -31,7 +31,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.StringTools;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 
 /** Code from CertificateStoreSessionBean that should be available in the stand-alone VA. 
@@ -45,7 +45,7 @@ public abstract class CertificateDataUtil {
 	// TODO: The methods in this class are copy-paste from CertificateStoreSessionBean, very bad!
 	//
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     private static final Logger LOG = Logger.getLogger(CertificateDataUtil.class);
     
     protected Certificate findCertificateByFingerprint(AuthenticationToken admin, String fingerprint, EntityManager entityManager) {

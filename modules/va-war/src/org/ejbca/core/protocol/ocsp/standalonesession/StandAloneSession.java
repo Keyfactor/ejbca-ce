@@ -40,7 +40,7 @@ import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.util.KeyTools;
 import org.ejbca.config.OcspConfiguration;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.protocol.ocsp.OCSPData;
@@ -63,7 +63,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
     /**
      * Internal localization of logs and errors
      */
-    static private final InternalResources intres = InternalResources.getInstance();
+    static private final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	/**
 	 * Reference to an object that holds all entities used for the OCSP signing.
 	 */

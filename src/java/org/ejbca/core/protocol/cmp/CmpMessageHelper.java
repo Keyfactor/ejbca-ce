@@ -58,7 +58,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertRepMessage;
@@ -77,7 +77,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  */
 public class CmpMessageHelper {
 	private static Logger LOG = Logger.getLogger(CmpMessageHelper.class);
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
 	private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
 

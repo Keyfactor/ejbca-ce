@@ -21,7 +21,7 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -44,7 +44,7 @@ public final class EndEntityProfileCache {
 
     private static final Logger LOG = Logger.getLogger(EndEntityProfileCache.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     /*
      * Cache of profiles, with Id as keys. This cache may be

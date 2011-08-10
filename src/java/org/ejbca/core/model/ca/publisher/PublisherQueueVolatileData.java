@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 
 /**
@@ -35,7 +35,7 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
 
 	private static final Logger log = Logger.getLogger(PublisherQueueVolatileData.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /**
      * Determines if a de-serialized file is compatible with this class.

@@ -17,7 +17,7 @@ import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.util.Base64;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
 import com.novosec.pkix.asn1.cmp.PKIBody;
@@ -37,7 +37,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 
 	private static final Logger log = Logger.getLogger(GeneralCmpMessage .class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
     /**
      * Determines if a de-serialized file is compatible with this class.

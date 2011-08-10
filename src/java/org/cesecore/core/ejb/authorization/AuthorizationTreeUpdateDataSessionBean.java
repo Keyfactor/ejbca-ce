@@ -22,7 +22,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateData;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Bean to handle the AuthorizationTreeUpdateData entity.
@@ -36,7 +36,7 @@ public class AuthorizationTreeUpdateDataSessionBean implements AuthorizationTree
     private static final Logger LOG = Logger.getLogger(AuthorizationTreeUpdateDataSessionBean.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;

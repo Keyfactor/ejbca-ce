@@ -32,7 +32,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 
 /**
@@ -42,7 +42,7 @@ import org.ejbca.core.model.SecConst;
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher {
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     public static final String crlExternalCommandPropertyName = "crl.application";
     public static final String calclulateDeltaCrlLocallyPropertyName = "crl.calclulateDeltaCrlLocally";

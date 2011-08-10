@@ -21,7 +21,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.log.OldLogSession;
 import org.ejbca.core.ejb.log.OldLogSessionLocal;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -36,7 +36,7 @@ public class OldLogDevice implements ILogDevice, Serializable {
 	public final static String DEFAULT_DEVICE_NAME = "OldLogDevice";
 	
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 	private static final Logger log = Logger.getLogger(OldLogDevice.class);
 

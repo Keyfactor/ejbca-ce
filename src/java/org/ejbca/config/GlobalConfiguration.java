@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 
 /**
@@ -32,8 +32,8 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
-    public static final String PREFEREDINTERNALRESOURCES = InternalResources.PREFEREDINTERNALRESOURCES;
-    public static final String SECONDARYINTERNALRESOURCES = InternalResources.SECONDARYINTERNALRESOURCES;
+    public static final String PREFEREDINTERNALRESOURCES = InternalEjbcaResources.PREFEREDINTERNALRESOURCES;
+    public static final String SECONDARYINTERNALRESOURCES = InternalEjbcaResources.SECONDARYINTERNALRESOURCES;
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};

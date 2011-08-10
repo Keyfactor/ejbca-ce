@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.cesecore.certificates.util.CertTools;
 import org.ejbca.config.ConfigurationHolder;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.ValidityDate;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -43,7 +43,7 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
     private static final Logger log = Logger.getLogger(Log4jLogDevice.class);
 
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /**
      * A handle to the unique Singleton instance.

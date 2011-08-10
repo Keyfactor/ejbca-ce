@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 
 /**
@@ -35,7 +35,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 
     private static final Logger log = Logger.getLogger(ServiceConfiguration.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
 	private static final float LATEST_VERSION = 5;
 	

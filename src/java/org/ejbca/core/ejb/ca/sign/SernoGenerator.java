@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Implements a singleton serial number generator using SecureRandom. This
@@ -62,7 +62,7 @@ public class SernoGenerator implements ISernoGenerator {
 	/** Log4j instance */
 	private static Logger log = Logger.getLogger(SernoGenerator.class);
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources
+	private static final InternalEjbcaResources intres = InternalEjbcaResources
 			.getInstance();
 
 	/** random generator algorithm, default SHA1PRNG */

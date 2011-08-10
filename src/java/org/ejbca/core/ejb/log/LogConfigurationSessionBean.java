@@ -23,7 +23,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.util.ObjectCache;
 
@@ -36,7 +36,7 @@ import org.ejbca.util.ObjectCache;
 public class LogConfigurationSessionBean implements LogConfigurationSessionLocal, LogConfigurationSessionRemote {
 
 	private static final Logger LOG = Logger.getLogger(LogConfigurationSessionBean.class);
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;

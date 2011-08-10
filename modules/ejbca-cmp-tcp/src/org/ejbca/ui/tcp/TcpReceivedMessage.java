@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.Base64;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Decodes a TCP messages from a client.
@@ -31,7 +31,7 @@ import org.ejbca.core.model.InternalResources;
 public class TcpReceivedMessage {
 	private static final Logger log = Logger.getLogger(TcpReceivedMessage.class.getName());
 	/** Internal localization of logs and errors */
-	private static final InternalResources intres = InternalResources.getInstance();
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	/**
 	 * true if the session should be closed after returning to the client
 	 */

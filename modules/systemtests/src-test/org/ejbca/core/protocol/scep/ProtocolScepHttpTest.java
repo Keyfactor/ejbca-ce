@@ -80,7 +80,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.InterfaceCache;
@@ -667,7 +667,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         return respBytes;
     }
 
-    static class InternalResourcesStub extends InternalResources {
+    static class InternalResourcesStub extends InternalEjbcaResources {
 
         private static final long serialVersionUID = 1L;
         private static final Logger log = Logger.getLogger(InternalResourcesStub.class);
@@ -693,12 +693,12 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
                 try {
                     if (primaryStream != null) {
-                        primaryResource.load(primaryStream);
+                        primaryEjbcaResource.load(primaryStream);
                     } else {
                         log.error("primaryResourse == null");
                     }
                     if (secondaryStream != null) {
-                        secondaryResource.load(secondaryStream);
+                        secondaryEjbcaResource.load(secondaryStream);
                     } else {
                         log.error("secondaryResource == null");
                     }
@@ -724,7 +724,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
 
         }
 
-        public static synchronized InternalResources getInstance() {
+        public static synchronized InternalEjbcaResources getInstance() {
             if (instance == null) {
                 instance = new InternalResourcesStub();
             }

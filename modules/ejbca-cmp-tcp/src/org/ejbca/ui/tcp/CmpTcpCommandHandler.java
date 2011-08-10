@@ -35,7 +35,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.quickserver.net.server.ClientBinaryHandler;
 import org.quickserver.net.server.ClientEventHandler;
@@ -52,7 +52,7 @@ import org.quickserver.net.server.DataType;
 public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHandler  {
 
 	private static final Logger LOG = Logger.getLogger(CmpTcpCommandHandler.class.getName());
-    private static final InternalResources INTRES = InternalResources.getInstance();
+    private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
     private static EjbLocalHelper ejb = null;
 	
 	private static synchronized EjbLocalHelper getEjb() {

@@ -40,7 +40,7 @@ import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.StringTools;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.Base64;
-import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.util.ValidityDate;
@@ -62,7 +62,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     private static final Logger log = Logger.getLogger(EndEntityProfile.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     public static final float LATEST_VERSION = 14;
 
