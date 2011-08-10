@@ -10,16 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.token;
+package org.cesecore.applicationserver;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 /**
- * Based on CESeCore version:
- *      CryptoTokenSessionLocal.java 280 2011-02-18 12:19:50Z tomas
+ * This bean exists for the sole purpose of verifying that transactional timeouts work as expected on different application servers.
  * 
- * @Version $Id$ 
+ * @version $Id: TransactionTimeoutSessionRemote.java 769 2011-05-11 08:07:05Z tomas $
+ * 
  */
-@Local
-public interface CryptoTokenSessionLocal extends CryptoTokenSession {
+@Remote
+public interface TransactionTimeoutSessionRemote {
+
+    /**
+     * This method, when implemented, should time out after a short amount of time.
+     * @param sleepTime Time that this method should sleep. 
+     * 
+     * @throws InterruptedException 
+     */
+    public int timeout(long sleepTime) throws InterruptedException;
+
 }

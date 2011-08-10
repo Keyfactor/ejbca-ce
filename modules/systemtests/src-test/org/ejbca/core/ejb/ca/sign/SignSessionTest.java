@@ -76,6 +76,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -281,9 +282,10 @@ public class SignSessionTest extends CaTestCase {
         super.tearDown();
     }
 
-    /** creates new user */
+    /** creates new user 
+     */
     public void test01CreateNewUser() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, FinderException {
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, FinderException, CertificateProfileExistsException {
         log.trace(">test01CreateNewUser()");
 
         certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");

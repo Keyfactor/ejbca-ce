@@ -10,16 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.token;
+package org.cesecore.applicationserver;
 
-import javax.ejb.Remote;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
+import org.cesecore.jndi.JndiConstants;
 
 /**
- * Based on CESeCore version:
- *      CryptoTokenSessionRemote.java 280 2011-02-18 12:19:50Z tomas
- * 
- * @Version $Id$ 
+ * @version $Id: TransactionTimeoutSessionBean.java 769 2011-05-11 08:07:05Z tomas $
+ *
  */
-@Remote 
-public interface CryptoTokenSessionRemote extends CryptoTokenSession {
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TransactionTimeoutSessionRemote")
+@TransactionAttribute(TransactionAttributeType.REQUIRED)
+public class TransactionTimeoutSessionBean implements TransactionTimeoutSessionRemote {
+
+    @Override
+    public int timeout(long sleepTime) throws InterruptedException {
+        Thread.sleep(sleepTime);
+        return 1337;
+    }
+
 }
