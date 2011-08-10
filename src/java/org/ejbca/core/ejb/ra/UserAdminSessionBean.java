@@ -65,7 +65,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.config.XkmsConfiguration;

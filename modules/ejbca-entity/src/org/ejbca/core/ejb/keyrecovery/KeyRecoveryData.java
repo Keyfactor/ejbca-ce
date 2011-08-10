@@ -24,8 +24,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.StringTools;
 
 /**
  * Representation of a certificates key recovery data.

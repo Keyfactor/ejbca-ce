@@ -19,8 +19,8 @@ import java.io.StringWriter;
 import java.util.Properties;
 
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.util.StringTools;
 
 /**
  * Holds non sensitive information about a CryptoToken.

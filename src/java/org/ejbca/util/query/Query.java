@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.StringTools;
 
 
 
@@ -221,7 +221,7 @@ public class Query implements java.io.Serializable {
      * The add(String) methods checks against StringTools.hasStripChars.
      *
      * @return true if the query is legal, false otherwise
-     * @see org.ejbca.util.StringTools#hasSqlStripChars(String)
+     * @see org.cesecore.util.StringTools#hasSqlStripChars(String)
      */
     public boolean hasIllegalSqlChars() {
         log.debug("hasIllegalSqlChars: "+hasIllegalSqlChars);

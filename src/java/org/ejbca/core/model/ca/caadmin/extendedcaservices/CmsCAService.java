@@ -59,10 +59,10 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 

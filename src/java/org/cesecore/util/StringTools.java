@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.util;
+package org.cesecore.util;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
@@ -44,8 +44,6 @@ import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.util.Base64;
-import org.cesecore.util.CryptoProviderTools;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.

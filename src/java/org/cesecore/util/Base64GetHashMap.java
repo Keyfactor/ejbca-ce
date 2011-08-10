@@ -16,7 +16,6 @@ package org.cesecore.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.cesecore.certificates.util.StringTools;
 
 
 /** An implementation of HashMap that base64 decodes all String's that you 'get', 

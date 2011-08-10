@@ -30,9 +30,7 @@
 	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/va-war/src"/>
-	<!--  
 	<classpathentry kind="src" path="modules/systemtests/src-test"/>
-	-->
 	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
 	<classpathentry kind="lib" path="modules/externalra-gui/resources/WEB-INF/lib/icefaces.jar"/>

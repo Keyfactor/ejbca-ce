@@ -19,7 +19,7 @@ import java.util.Date;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.StringTools;
 
 
 /**
