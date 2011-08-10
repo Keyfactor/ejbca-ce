@@ -1890,7 +1890,7 @@ Then whenever an approval request is created an e-mail is sent both to the reque
 </p><p>
 When the approving administrators have recieved the mail, there is a link directly to the approve request page where he can review the requests. When he has approved and rejected the requested all the other administrators in notified about this.
 </p><p>
-The text of notifications is configured in src/intresources/intresources.xx.properties. The relevant properties starts with "notification". See the ' Dynamic Substitution Variables' section in this manual for a list of available variables.
+The text of notifications is configured in src/intresources/ejbcaresources.xx.properties and intresources.xx.properties. The relevant properties starts with "notification". See the ' Dynamic Substitution Variables' section in this manual for a list of available variables.
 </p><p>
 Remember to configure mail-server settings in the mail.properties file.
 </p>

@@ -83,7 +83,7 @@
 		<!-- clover.jar is needed if we compiled with clover (see modules/build.xml). Without this cli does not work when using clover -->
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" file="${clover.jar}" flatten="true" verbose="false" failonerror="false"/>
     	<copy todir="${mod.ejbca-ejb-cli.dist}">
-    		<fileset dir="${ejbca.home}/src" includes="intresources/intresources.*.properties"/>
+    		<fileset dir="${ejbca.home}/src" includes="intresources/*resources.*.properties"/>
     		<fileset dir="${ejbca.home}/bin" includes="batchtool.properties"/>
     	</copy>
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ejb-cli.dist}/log4j.xml" failonerror="true"/>
