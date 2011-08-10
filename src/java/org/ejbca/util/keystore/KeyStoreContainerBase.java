@@ -369,7 +369,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
                                             privateKey,
                                             this.keyStore.getProvider().getName() );
         if ( !certReq.verify() ) {
-            String msg = intres.getLocalizedMessage("catoken.errorcertreqverify", alias);
+            String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
             throw new Exception(msg);
         }
         String filename = alias+".pem";
@@ -403,7 +403,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             }
         }
         if ( notFound ) {
-            final String msg = intres.getLocalizedMessage("catoken.errorkeynottoken");
+            final String msg = intres.getLocalizedMessage("token.errorkeynottoken");
             throw new Exception(msg);
         }
     }
@@ -421,7 +421,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     private PrivateKey getPrivateKey(String alias) throws Exception {
         final PrivateKey key = (PrivateKey)getKey(alias);
         if ( key==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errornokeyalias", alias);
+            String msg = intres.getLocalizedMessage("token.errornokeyalias", alias);
             throw new ErrorAdminCommandException(msg);
         }
         return key;
@@ -429,7 +429,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
     private X509Certificate getCertificate( String alias ) throws KeyStoreException, ErrorAdminCommandException {
         final X509Certificate cert = (X509Certificate)this.keyStore.getCertificate(alias);
         if ( cert==null ) {
-            String msg = intres.getLocalizedMessage("catoken.errornocertalias", alias);
+            String msg = intres.getLocalizedMessage("token.errornocertalias", alias);
             throw new ErrorAdminCommandException(msg);
         }
         return cert;

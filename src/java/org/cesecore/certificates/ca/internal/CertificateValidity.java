@@ -30,7 +30,7 @@ import org.cesecore.util.ValidityDate;
  * 
  * Based on EJBCA version: CertificateValidity.java 8373 2009-11-30 14:07:00Z jeklund
  * 
- * @version $Id: CertificateValidity.java 850 2011-05-20 15:01:44Z johane $
+ * @version $Id: CertificateValidity.java 984 2011-08-10 11:42:39Z tomas $
  */
 public class CertificateValidity {
 
@@ -88,7 +88,7 @@ public class CertificateValidity {
         				// Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
         				startTimeDate = ValidityDate.parseAsUTC(eiStartTime);
         			} catch (ParseException e) {
-        				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiStartTime));
+        				log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",eiStartTime));
         			}
         		}
     			if ( startTimeDate != null && startTimeDate.before(now)) {
@@ -106,7 +106,7 @@ public class CertificateValidity {
         				// Try parsing data as "yyyy-MM-dd HH:mm" assuming UTC
         				endTimeDate = ValidityDate.parseAsUTC(eiEndTime);
         			} catch (ParseException e) {
-        				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiEndTime));
+        				log.error(intres.getLocalizedMessage("createcert.errorinvalidstarttime",eiEndTime));
         			}
         		}
 	        }
@@ -135,7 +135,7 @@ public class CertificateValidity {
         }
         // Limit validity: Do not allow last date to be before first date
         if (lastDate.before(firstDate)) {
-			log.info(intres.getLocalizedMessage("signsession.errorinvalidcausality",firstDate,lastDate));
+			log.info(intres.getLocalizedMessage("createcert.errorinvalidcausality",firstDate,lastDate));
         	Date tmp = lastDate;
         	lastDate = firstDate;
         	firstDate = tmp;
@@ -144,7 +144,7 @@ public class CertificateValidity {
         // Unless allowValidityOverride is set, then we allow everything
         // So this check is probably completely unneeded and can never be true
     	if (firstDate.before(now) && !certProfile.getAllowValidityOverride()) {
-			log.error(intres.getLocalizedMessage("signsession.errorbeforecurrentdate",firstDate,subject.getUsername()));
+			log.error(intres.getLocalizedMessage("createcert.errorbeforecurrentdate",firstDate,subject.getUsername()));
     		firstDate = now;
     		// Update valid length from the profile since the starting point has changed
 			certProfileLastDate = ValidityDate.getDate(val,firstDate);
@@ -155,16 +155,16 @@ public class CertificateValidity {
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
-    		log.warn(intres.getLocalizedMessage("signsession.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
+    		log.warn(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
     		lastDate = certProfileLastDate;
     	}
 		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
         if (cacert != null && lastDate.after(CertTools.getNotAfter(cacert)) && !isRootCA) {
-        	log.info(intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), CertTools.getNotAfter(cacert)));
+        	log.info(intres.getLocalizedMessage("createcert.limitingvalidity", lastDate.toString(), CertTools.getNotAfter(cacert)));
             lastDate = CertTools.getNotAfter(cacert);
         }            
         if ( !lastDate.before(CertificateValidity.tooLateExpireDate) ) {
-        	String msg = intres.getLocalizedMessage("signsession.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.tooLateExpireDate.toString()); 
+        	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.tooLateExpireDate.toString()); 
         	log.info(msg);
             throw new IllegalValidityException(msg);
         }
