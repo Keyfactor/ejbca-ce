@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/ 
-package org.cesecore.util;
+package org.cesecore.certificates.certificate.request;
 
 import java.io.IOException;
 import java.security.PrivateKey;
@@ -18,10 +18,9 @@ import java.security.cert.Certificate;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.request.CVCRequestMessage;
-import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.FileTools;
 
 
 /**
