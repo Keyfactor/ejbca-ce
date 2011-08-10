@@ -10,24 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.ejbca.core.ejb.config;
 
-package org.ejbca.core.ejb.ca.revoke;
 
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.Date;
-
-import javax.ejb.Remote;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
-
-/**
+/** 
+ * Session bean to handle health check activities.
+ * 
  * @version $Id$
  */
-@Remote
-public interface RevocationSessionRemote extends RevocationSession {
+public interface HealthCheckSession {
+
 
 }

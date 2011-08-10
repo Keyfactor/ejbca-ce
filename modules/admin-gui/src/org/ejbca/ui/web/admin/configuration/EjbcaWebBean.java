@@ -26,6 +26,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -34,6 +35,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.ejb.EJBException;
+import javax.security.auth.x500.X500Principal;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,6 +45,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -426,7 +429,11 @@ public class EjbcaWebBean implements Serializable {
     	if(certificates != null){
     		if(raauthorized[resource] == null) {
     			// We don't bother to lookup the admin's username and email for this check..
-    			Admin admin = new Admin(certificates[0], null, null);
+    	        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+    	        credentials.add(certificates[0]);
+    	        Set<X500Principal> principals = new HashSet<X500Principal>();
+    	        principals.add(certificates[0].getSubjectX500Principal());
+    	        AuthenticationToken admin = new X509CertificateAuthenticationToken(principals, credentials);
     			raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(admin, AUTHORIZED_RA_RESOURCES[resource]));
     		}
     		returnval = raauthorized[resource].booleanValue();

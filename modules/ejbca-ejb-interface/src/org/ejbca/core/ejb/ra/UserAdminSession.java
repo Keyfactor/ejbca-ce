@@ -377,14 +377,6 @@ public interface UserAdminSession {
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
-     * Method that looks up the username and email address for a administrator
-     * and returns the populated Admin object.
-     * 
-     * @param certificate is the administrators certificate
-     */
-    public AuthenticationToken getAdmin(Certificate certificate);
-
-    /**
      * Finds a user by username.
      * 
      * @param admin the administrator performing the action

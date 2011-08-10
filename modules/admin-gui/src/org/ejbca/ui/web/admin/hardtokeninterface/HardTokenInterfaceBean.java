@@ -24,11 +24,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.roles.RoleData;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -151,9 +151,9 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     }
     
     public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException {
-        Iterator<AdminGroup> iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
+        Iterator<RoleData> iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
         while (iter.hasNext()) {
-            if (iter.next().getAdminGroupId() == admingroupid) {
+            if (iter.next().getPrimaryKey() == admingroupid) {
                 if (!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer())) {
                     throw new HardTokenIssuerExistsException();
                 }

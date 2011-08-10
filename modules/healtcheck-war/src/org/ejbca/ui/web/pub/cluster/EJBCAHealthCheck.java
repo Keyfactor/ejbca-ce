@@ -16,10 +16,10 @@ package org.ejbca.ui.web.pub.cluster;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.config.HealthCheckSessionLocal;
 
 /**
  * EJBCA Health Checker. 
@@ -46,12 +46,12 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 	
 	private CAAdminSessionLocal caAdminSession;
 	private PublisherSessionLocal publisherSession;
-	private CertificateStoreSessionLocal certificateStoreSession;
+	private HealthCheckSessionLocal healthCheckSession;
 
-	public EJBCAHealthCheck(CAAdminSessionLocal caAdminSession, PublisherSessionLocal publisherSession, CertificateStoreSessionLocal certificateStoreSession) {
+	public EJBCAHealthCheck(CAAdminSessionLocal caAdminSession, PublisherSessionLocal publisherSession, HealthCheckSessionLocal healthCheckSession) {
 	    this.caAdminSession = caAdminSession;
 	    this.publisherSession = publisherSession;
-	    this.certificateStoreSession = certificateStoreSession;
+	    this.healthCheckSession = healthCheckSession;
 	}
 	
 	public String checkHealth(HttpServletRequest request) {
@@ -87,7 +87,7 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		if (log.isDebugEnabled()) {
 			log.debug("Checking database connection.");
 		}
-		return certificateStoreSession.getDatabaseStatus();
+		return healthCheckSession.getDatabaseStatus();
 	}
 
 	private String checkCAs(){

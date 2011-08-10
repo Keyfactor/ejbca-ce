@@ -28,20 +28,16 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.model.authorization.AuthenticationFailedException;
-import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
@@ -52,27 +48,12 @@ import org.ejbca.core.model.ra.UserDataVO;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil implements CertificateStoreSessionLocal, CertificateStoreSessionRemote {
     
-    private static final Logger log = Logger.getLogger(CertificateStoreOnlyDataSessionBean.class);
-    
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
     public CertificateStoreOnlyDataSessionBean() {
         super();
-        CryptoProviderTools.installBCProvider();
-    }
-
-	@Override
-    public String getDatabaseStatus() {
-		String returnval = "";
-		try {
-			entityManager.createNativeQuery(EjbcaConfiguration.getHealthCheckDbQuery()).getResultList();
-			// TODO: Do we need to flush() the connection to avoid that this is executed in a batch after the method returns?
-		} catch (Exception e) {
-			returnval = "\nDB: Error creating connection to database: " + e.getMessage();
-			log.error("Error creating connection to database.",e);
-		}
-		return returnval;
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
 	@Override
@@ -81,18 +62,18 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
     }
 
 	@Override
-    public Certificate findCertificateByIssuerAndSerno(AuthenticationToken admin, String issuerDN, BigInteger serno) {
-    	return findCertificateByIssuerAndSerno(admin, issuerDN, serno, entityManager);
+    public Certificate findCertificateByIssuerAndSerno(String issuerDN, BigInteger serno) {
+    	return findCertificateByIssuerAndSerno(issuerDN, serno, entityManager);
     }
 
 	@Override
-    public Collection<Certificate> findCertificatesByType(AuthenticationToken admin, int type, String issuerDN) {
-        return findCertificatesByType(admin, type, issuerDN, entityManager);
+    public Collection<Certificate> findCertificatesByType(int type, String issuerDN) {
+        return findCertificatesByType(type, issuerDN, entityManager);
     }
 
 	@Override
-    public Collection<Certificate> findCertificatesByUsername(AuthenticationToken admin, String username) {
-    	return findCertificatesByUsername(admin, username, entityManager);
+    public Collection<Certificate> findCertificatesByUsername(String username) {
+    	return findCertificatesByUsername(username, entityManager);
     }
 
 	/* *******************************************************************
@@ -100,52 +81,42 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	 *********************************************************************/
 	
 	@Override
-	public void addCertReqHistoryData(AuthenticationToken admin, Certificate cert, UserDataVO useradmindata) {
+	public boolean checkIfAllRevoked(String username) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public void authenticate(X509Certificate certificate, boolean requireAdminCertificateInDatabase) throws AuthenticationFailedException {
+	public Certificate findCertificateByFingerprint(String fingerprint) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public boolean checkIfAllRevoked(AuthenticationToken admin, String username) {
+	public Collection<Certificate> findCertificatesByExpireTimeWithLimit(Date expireTime) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Certificate findCertificateByFingerprint(AuthenticationToken admin, String fingerprint) {
+	public Collection<Certificate> findCertificatesByIssuerAndSernos(String issuerDN, Collection<BigInteger> sernos) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesByExpireTimeWithLimit(AuthenticationToken admin, Date expireTime) {
+	public Collection<Certificate> findCertificatesBySerno(BigInteger serno) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesByIssuerAndSernos(AuthenticationToken admin, String issuerDN, Collection<BigInteger> sernos) {
+	public Collection<Certificate> findCertificatesBySubject(String subjectDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesBySerno(AuthenticationToken admin, BigInteger serno) {
+	public Collection<Certificate> findCertificatesBySubjectAndIssuer(String subjectDN, String issuerDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<Certificate> findCertificatesBySubject(AuthenticationToken admin, String subjectDN) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public Collection<Certificate> findCertificatesBySubjectAndIssuer(AuthenticationToken admin, String subjectDN, String issuerDN) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public Collection<Certificate> findCertificatesByUsernameAndStatus(AuthenticationToken admin, String username, int status) {
+	public Collection<Certificate> findCertificatesByUsernameAndStatus(String username, int status) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -155,37 +126,27 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
-	public String findUsernameByCertSerno(AuthenticationToken admin, BigInteger serno, String issuerdn) {
+	public String findUsernameByCertSerno(BigInteger serno, String issuerdn) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<String> findUsernamesByExpireTimeWithLimit(AuthenticationToken admin, Date expiretime) {
+	public Collection<String> findUsernamesByExpireTimeWithLimit(Date expiretime) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Set<String> findUsernamesByIssuerDNAndSubjectDN(AuthenticationToken admin, String issuerDN, String subjectDN) {
+	public Set<String> findUsernamesByIssuerDNAndSubjectDN(String issuerDN, String subjectDN) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(AuthenticationToken admin, String issuerDN, byte[] subjectKeyId) {
+	public Set<String> findUsernamesByIssuerDNAndSubjectKeyId(String issuerDN, byte[] subjectKeyId) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public CertReqHistory getCertReqHistory(AuthenticationToken admin, BigInteger certificateSN, String issuerDN) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public List<CertReqHistory> getCertReqHistory(AuthenticationToken admin, String username) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public CertificateInfo getCertificateInfo(AuthenticationToken admin, String fingerprint) {
+	public CertificateInfo getCertificateInfo(String fingerprint) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -195,47 +156,17 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 	}
 
 	@Override
-	public Collection<String> listAllCertificates(AuthenticationToken admin, String issuerdn) {
+	public Collection<String> listAllCertificates(String issuerdn) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
-	public Collection<RevokedCertInfo> listRevokedCertInfo(AuthenticationToken admin, String issuerdn, long lastbasecrldate) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public void removeCertReqHistoryData(AuthenticationToken admin, String certFingerprint) {
+	public Collection<RevokedCertInfo> listRevokedCertInfo(String issuerdn, long lastbasecrldate) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
 	@Override
 	public void revokeAllCertByCA(AuthenticationToken admin, String issuerdn, int reason) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public void revokeCertificate(AuthenticationToken admin, Certificate cert, Collection<Integer> publishers, int reason, String userDataDN) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public void setArchivedStatus(AuthenticationToken admin, String fingerprint) throws AuthorizationDeniedException {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public void setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Collection<Integer> publishers, int reason, String userDataDN) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public void setRevokeStatus(AuthenticationToken admin, String issuerdn, BigInteger serno, Date revokeDate, Collection<Integer> publishers, int reason, String userDataDN) {
-		throw new RuntimeException("Not implemented in stand alone version.");
-	}
-
-	@Override
-	public boolean setStatus(String fingerprint, int status) {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 
@@ -246,6 +177,68 @@ public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil imp
 
 	@Override
 	public CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno) {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean setRevokeStatusNoAuth(AuthenticationToken admin,
+			Certificate certificate, Date revokedDate, int reason,
+			String userDataDN) throws CertificateRevokeException,
+			AuthorizationDeniedException {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean storeCertificateNoAuth(AuthenticationToken admin,
+			Certificate incert, String username, String cafp, int status,
+			int type, int certificateProfileId, String tag, long updateTime)
+			throws CreateException, AuthorizationDeniedException {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public Collection<Certificate> findCertificatesBySubjectKeyId(
+			byte[] subjectKeyId) {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public X509Certificate findLatestX509CertificateBySubject(String subjectDN) {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn,
+			BigInteger serno, Date revokedDate, int reason, String userDataDN)
+			throws CertificateRevokeException, AuthorizationDeniedException {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean setRevokeStatus(AuthenticationToken admin,
+			Certificate certificate, Date revokedDate, int reason,
+			String userDataDN) throws CertificateRevokeException,
+			AuthorizationDeniedException {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean setRevokeStatus(AuthenticationToken admin, String issuerdn,
+			BigInteger serno, int reason, String userDataDN)
+			throws CertificateRevokeException, AuthorizationDeniedException {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean setRevokeStatus(AuthenticationToken admin,
+			Certificate certificate, int reason, String userDataDN)
+			throws CertificateRevokeException, AuthorizationDeniedException {
+		throw new RuntimeException("Not implemented in stand alone version.");
+	}
+
+	@Override
+	public boolean setStatus(AuthenticationToken admin, String fingerprint,
+			int status) throws AuthorizationDeniedException {
 		throw new RuntimeException("Not implemented in stand alone version.");
 	}
 }

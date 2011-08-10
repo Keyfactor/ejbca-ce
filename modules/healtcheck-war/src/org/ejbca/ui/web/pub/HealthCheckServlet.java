@@ -15,9 +15,9 @@ package org.ejbca.ui.web.pub;
 
 import javax.ejb.EJB;
 
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.config.HealthCheckSessionLocal;
 import org.ejbca.ui.web.pub.cluster.EJBCAHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.TextResponse;
@@ -49,12 +49,12 @@ public class HealthCheckServlet extends AbstractHealthServlet {
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
+    private HealthCheckSessionLocal healthCheckSession;
 
 
     @Override
     public void initializeServlet() {
-        healthcheck = new EJBCAHealthCheck(caAdminSession, publisherSession, certificateStoreSession);
+        healthcheck = new EJBCAHealthCheck(caAdminSession, publisherSession, healthCheckSession);
         healthresponse = new TextResponse();
     }
 

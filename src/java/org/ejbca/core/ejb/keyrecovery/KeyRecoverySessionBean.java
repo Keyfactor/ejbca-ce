@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
@@ -57,7 +56,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
@@ -108,10 +106,6 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         boolean returnval = false;
         if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
             returnval = true;
-        }
-        if (admin.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER) {
-            returnval = true; // Special Case, public web use should be able to
-                              // key recover
         }
         if (!returnval) {
             returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid

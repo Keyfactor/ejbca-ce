@@ -23,8 +23,12 @@ import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -32,6 +36,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -45,6 +50,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DnComponents;
@@ -320,7 +326,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertNotNull(cainfo);
             X509Certificate newCACert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
             // Create a user and generate the cert
-            UserDataVO userdata = new UserDataVO(username, "CN=" + username, cainfo.getCAId(), null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+            EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                     SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userAdminSession.addUser(admin, userdata, true);
@@ -367,8 +373,13 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
             // Approve revocation and verify success
-            Admin approvingAdmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next(),
-                    APPROVINGADMINNAME, null);
+            X509Certificate certificate = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(certificate);
+            Set<X500Principal> principals = new HashSet<X500Principal>();
+            principals.add(certificate.getSubjectX500Principal());
+            AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            //Admin approvingAdmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next(), APPROVINGADMINNAME, null);
             approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, cainfo.getCAId());
             // try to revoke the now revoked cert via CMP and verify error
