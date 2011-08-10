@@ -41,6 +41,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.Base64;
@@ -51,7 +52,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.pub.ServletDebug;
 import org.ejbca.ui.web.pub.ServletUtils;
-import org.ejbca.util.RequestMessageUtils;
 
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10

@@ -20,7 +20,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.ra.UserDataVO;
 
 
 

@@ -17,7 +17,6 @@ import java.util.Collection;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
-import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * @version $Id$

@@ -21,6 +21,8 @@ package org.ejbca.core.model.authorization;
 
 import java.io.Serializable;
 
+import org.cesecore.authorization.access.AccessTreeNode;
+
 
 /**
  * A class representing an accessrule. 
