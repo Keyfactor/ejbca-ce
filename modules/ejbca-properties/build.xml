@@ -28,7 +28,7 @@
         	<fileset dir="${build.dir}"/>
             <fileset dir="${ejbca.home}" includes="conf/**/*.properties"/>
             <fileset dir="${ejbca.home}/src/upgrade"/>
-            <fileset dir="${internalresources.base.dir}" includes="intresources/*.properties"/>
+            <fileset dir="${internalresources.base.dir}" includes="*resources/*.properties"/>
         </jar>
     </target>
     

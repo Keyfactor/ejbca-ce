@@ -97,7 +97,7 @@
 
 # ------------- Core language configuration -------------
 # The language that should be used internally for logging, exceptions and approval notifications.
-# The languagefile is stored in 'src/intresources/intresources.xx.properties'. 
+# The languagefile is stored in 'src/intresources/ejbcaresources.xx.properties/intresources.xx.properties'.
 # Should be one of EN,FR,PT,PT_BR,SE
 # Default: EN
 #intresources.preferredlanguage=EN

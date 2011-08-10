@@ -628,11 +628,12 @@
           Fix encoding of files for internal (log) internationalization) 
 		  TODO: This looks more like this is something the French language contributor should run before a commit. Should be combined with the diff-script to show missing and redundant translations. 
         --> 		
+		<delete file="${tmp}/intresources/ejbcaresources.fr.properties"/>
 		<delete file="${tmp}/intresources/intresources.fr.properties"/>
     	<native2ascii encoding="ISO8859-1" 
     		src="${tmp}/intresources" 
     		dest="${tmp}/intresources"
-    		includes="intresources.fr.properties" 
+    		includes="*resources.fr.properties" 
     	/>
 	</target>
 	
