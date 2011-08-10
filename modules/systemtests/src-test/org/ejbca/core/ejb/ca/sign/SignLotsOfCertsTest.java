@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -59,6 +60,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
     
     private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -116,7 +118,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
     public void test00AddRSACA() throws Exception {
         adminGroupSession.init(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
         createTestCA(CANAME, 2048);
-        CAInfo info = caAdminSession.getCAInfo(admin, CANAME);
+        CAInfo info = caSession.getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + CANAME));
         assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + CANAME));
