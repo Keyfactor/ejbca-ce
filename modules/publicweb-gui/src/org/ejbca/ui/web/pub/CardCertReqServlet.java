@@ -49,6 +49,7 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -70,7 +71,6 @@ import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.RequestMessageUtils;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a browser. A new

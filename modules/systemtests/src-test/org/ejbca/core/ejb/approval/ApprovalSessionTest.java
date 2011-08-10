@@ -13,8 +13,6 @@
 
 package org.ejbca.core.ejb.approval;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -48,7 +46,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -62,7 +59,6 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;

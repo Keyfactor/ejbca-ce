@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -62,7 +63,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
@@ -117,7 +117,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
-import org.ejbca.util.RequestMessageUtils;
 
 /**
  * 

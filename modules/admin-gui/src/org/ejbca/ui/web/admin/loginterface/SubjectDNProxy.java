@@ -22,7 +22,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * A class used to improve performance by proxying certificatesnr to subjectdn mappings by minimizing the number of needed lockups over rmi.

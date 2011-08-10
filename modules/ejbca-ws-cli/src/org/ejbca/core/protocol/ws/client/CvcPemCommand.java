@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -32,7 +33,6 @@ import org.ejbca.cvc.exception.CvcException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.RequestMessageUtils;
 
 
 /**

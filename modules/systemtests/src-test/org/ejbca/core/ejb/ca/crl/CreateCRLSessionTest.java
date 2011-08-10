@@ -69,7 +69,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;

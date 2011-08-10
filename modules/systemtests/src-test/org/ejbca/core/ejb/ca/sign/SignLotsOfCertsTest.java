@@ -29,7 +29,6 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;

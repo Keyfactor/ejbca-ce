@@ -12,11 +12,7 @@
  *************************************************************************/
 package org.cesecore.authorization.control;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -33,14 +29,8 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.DefaultRoles;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Based on cesecore version: AccessControlSessionBean.java 897 2011-06-20 11:17:25Z johane

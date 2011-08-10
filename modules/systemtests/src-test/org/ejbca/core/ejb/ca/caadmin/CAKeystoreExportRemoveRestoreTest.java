@@ -38,7 +38,6 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**

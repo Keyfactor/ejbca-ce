@@ -95,6 +95,7 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
@@ -111,7 +112,6 @@ import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
-import org.ejbca.util.RequestMessageUtils;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.FrameView;

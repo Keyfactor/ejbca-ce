@@ -46,7 +46,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;

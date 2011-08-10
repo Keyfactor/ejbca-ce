@@ -13,7 +13,6 @@
 package org.cesecore.authorization.control;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.roles.RoleData;
 
 /**
  * Main interface for checking authorization. This interface makes use of roles and entity authentication to verify authorization.

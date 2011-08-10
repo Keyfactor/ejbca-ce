@@ -47,10 +47,10 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.util.RequestMessageUtils;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;

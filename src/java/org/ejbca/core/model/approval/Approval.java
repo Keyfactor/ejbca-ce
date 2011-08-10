@@ -19,10 +19,8 @@ import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.util.Date;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.ejbca.core.model.authorization.AdminInformation;
-import org.ejbca.core.model.log.Admin;
 
 
 

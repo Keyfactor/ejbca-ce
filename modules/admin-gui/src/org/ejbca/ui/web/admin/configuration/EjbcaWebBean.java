@@ -71,7 +71,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AuthenticationFailedException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;

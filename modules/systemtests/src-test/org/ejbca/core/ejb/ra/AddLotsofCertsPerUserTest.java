@@ -42,9 +42,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 

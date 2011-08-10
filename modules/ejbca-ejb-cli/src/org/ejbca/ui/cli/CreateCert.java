@@ -20,11 +20,11 @@ import java.util.Collection;
 
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
-import org.ejbca.util.RequestMessageUtils;
 
 /**
  * Issue a certificate for a user based on a CSR
