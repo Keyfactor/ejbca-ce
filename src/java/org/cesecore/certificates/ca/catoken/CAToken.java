@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.internal.IUpgradeableData;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -43,6 +42,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.StringTools;
 
 /**
  * Handles operations of the device producing signatures and handling the private key. The SigningCryptoToken interface adds capabilities of handling

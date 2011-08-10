@@ -37,10 +37,10 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.StringTools;
 
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.

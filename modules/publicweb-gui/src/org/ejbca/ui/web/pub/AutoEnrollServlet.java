@@ -42,9 +42,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;

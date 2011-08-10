@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.certificates.util.DNFieldExtractor;
-import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.StringTools;
 
 
 /**

@@ -18,10 +18,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.model.SecConst;
 
 

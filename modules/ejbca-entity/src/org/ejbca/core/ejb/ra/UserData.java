@@ -32,7 +32,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.SecConst;

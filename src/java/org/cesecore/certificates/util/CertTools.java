@@ -110,6 +110,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CVCAuthorizationTemplate;
 import org.ejbca.cvc.CVCObject;

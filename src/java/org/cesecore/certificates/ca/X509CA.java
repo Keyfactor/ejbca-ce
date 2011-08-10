@@ -101,13 +101,13 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.util.SimpleTime;
+import org.cesecore.util.StringTools;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.

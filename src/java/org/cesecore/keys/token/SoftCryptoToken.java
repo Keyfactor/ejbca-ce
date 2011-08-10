@@ -35,11 +35,11 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.util.StringTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.util.KeyStoreTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 
 /**
  * Handles maintenance of the soft devices producing signatures and handling the private key and stored in database.

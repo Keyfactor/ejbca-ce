@@ -22,6 +22,7 @@ import java.util.Collections;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.StringTools;
 import org.junit.Test;
 
 /**

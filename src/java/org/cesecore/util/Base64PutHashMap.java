@@ -16,7 +16,6 @@ package org.cesecore.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.cesecore.certificates.util.StringTools;
 
 /**
  * An implementation of HashMap that base64 encodes all String's that you 'put', it encodes them to form "B64:<base64 encoded string>". It only

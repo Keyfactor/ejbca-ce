@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
-import org.cesecore.certificates.util.StringTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
 import org.ejbca.core.ejb.log.LogSession;
