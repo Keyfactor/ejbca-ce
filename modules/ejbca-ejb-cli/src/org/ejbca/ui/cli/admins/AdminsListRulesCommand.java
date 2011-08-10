@@ -10,46 +10,58 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.admins;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.ejbca.core.model.authorization.AccessRule;
-import org.ejbca.core.model.authorization.AdminGroup;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Lists access rules for a group
+ * 
  * @version $Id$
  */
 public class AdminsListRulesCommand extends BaseAdminsCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "listrules"; }
-	public String getDescription() { return "Lists access rules for a group"; }
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+
+    public String getSubCommand() {
+        return "listrules";
+    }
+
+    public String getDescription() {
+        return "Lists access rules for a group";
+    }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
+                getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group>");
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName);
+            RoleData adminGroup = ejb.getRoleAccessSession().findRole(groupName);
             if (adminGroup == null) {
-            	getLogger().error("No such group \"" + groupName + "\" .");
+                getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
-            List<AccessRule> list = (List<AccessRule>) adminGroup.getAccessRules();
+            List<AccessRuleData> list = new ArrayList<AccessRuleData>(adminGroup.getAccessRules().values());
             Collections.sort(list);
-            for (AccessRule accessRule : list) {
-            	getLogger().info(getParsedAccessRule(accessRule.getAccessRule()) + " " + AccessRule.RULE_TEXTS[accessRule.getRule()] + " " + (accessRule.isRecursive() ? "RECURSIVE" : ""));
+            for (AccessRuleData accessRule : list) {
+                getLogger().info(
+                        getParsedAccessRule(accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
+                                + (accessRule.getRecursive() ? "RECURSIVE" : ""));
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-		}
+        }
     }
 }

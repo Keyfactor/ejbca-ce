@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
+import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
@@ -57,12 +58,13 @@ public class EjbRemoteHelper {
     private ApprovalSessionRemote approvalSession = null;
     private ApprovalExecutionSessionRemote approvalExecutionSession = null;
     private OldAuthenticationSessionRemote authenticationSession = null;
-    private AuthorizationSessionRemote authorizationSession = null;
+    private AccessControlSessionRemote accessControlSession = null;
     private CAAdminSessionRemote caAdminSession = null;
     private CaSessionRemote caSession = null;
     private CertificateProfileSessionRemote certificateProfileSession = null;
     private CertificateRequestSessionRemote certificateRequestSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
+    private CertReqHistorySessionRemote certReqHistorySession = null;
     private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
     private ConfigurationSessionRemote configurationSession = null;
     private CrlStoreSessionRemote crlSession = null;
@@ -83,30 +85,29 @@ public class EjbRemoteHelper {
     private UpgradeSessionRemote upgradeSession = null;
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
-    private CertReqHistorySessionRemote certReqHistorySession = null;
     private RevocationSessionRemote revocationSession = null;
 
     public AdminEntitySessionRemote getAdminEntitySession() {
-        if(adminEntitySession == null) {
+        if (adminEntitySession == null) {
             adminEntitySession = JndiHelper.getRemoteSession(AdminEntitySessionRemote.class);
         }
         return adminEntitySession;
     }
-    
+
     public RoleAccessSessionRemote getRoleAccessSession() {
-        if(roleAccessSession == null) {
+        if (roleAccessSession == null) {
             roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
         }
         return roleAccessSession;
     }
-    
+
     public CaSessionRemote getCaSession() {
-        if(caSession == null) {
+        if (caSession == null) {
             caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
         }
         return caSession;
     }
-    
+
     public CAAdminSessionRemote getCAAdminSession() {
         if (caAdminSession == null) {
             caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
@@ -115,18 +116,18 @@ public class EjbRemoteHelper {
     }
 
     public CertificateProfileSessionRemote getCertificateProfileSession() {
-        if(certificateProfileSession == null) {
+        if (certificateProfileSession == null) {
             certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class);
         }
         return certificateProfileSession;
     }
-    
-	public CmpMessageDispatcherSessionRemote getCmpMessageDispatcherSession() {
+
+    public CmpMessageDispatcherSessionRemote getCmpMessageDispatcherSession() {
         if (cmpMessageDispatcherSession == null) {
-        	cmpMessageDispatcherSession = JndiHelper.getRemoteSession(CmpMessageDispatcherSessionRemote.class);
+            cmpMessageDispatcherSession = JndiHelper.getRemoteSession(CmpMessageDispatcherSessionRemote.class);
         }
         return cmpMessageDispatcherSession;
-	}
+    }
 
     public CrlCreateSessionRemote getCrlCreateSession() {
         if (crlStoreSession == null) {
@@ -134,24 +135,24 @@ public class EjbRemoteHelper {
         }
         return crlStoreSession;
     }
-	
-	public EndEntityProfileSessionRemote getEndEntityProfileSession() {
-        if(endEntityProfileSession == null) {
+
+    public EndEntityProfileSessionRemote getEndEntityProfileSession() {
+        if (endEntityProfileSession == null) {
             endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class);
         }
         return endEntityProfileSession;
     }
-    
+
     public RaAdminSessionRemote getRAAdminSession() {
         if (raAdminSession == null) {
             raAdminSession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
         }
         return raAdminSession;
     }
-    
+
     public GlobalConfigurationSessionRemote getGlobalConfigurationSession() {
-    	if (globalConfigurationSession == null) {
-    		globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        if (globalConfigurationSession == null) {
+            globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
         }
         return globalConfigurationSession;
     }
@@ -191,13 +192,6 @@ public class EjbRemoteHelper {
         return hardTokenSession;
     }
 
-    public AuthorizationSessionRemote getAuthorizationSession() {
-        if (authorizationSession == null) {
-            authorizationSession = JndiHelper.getRemoteSession(AuthorizationSessionRemote.class);
-        }
-        return authorizationSession;
-    }
-
     public OldAuthenticationSessionRemote getAuthenticationSession() {
         if (authenticationSession == null) {
             authenticationSession = JndiHelper.getRemoteSession(OldAuthenticationSessionRemote.class);
@@ -220,7 +214,7 @@ public class EjbRemoteHelper {
     }
 
     public LogConfigurationSessionRemote getLogConfigurationSession() {
-		if (logConfigurationSession == null) {
+        if (logConfigurationSession == null) {
             logConfigurationSession = JndiHelper.getRemoteSession(LogConfigurationSessionRemote.class);
         }
         return logConfigurationSession;
@@ -275,33 +269,41 @@ public class EjbRemoteHelper {
         return configurationSession;
     }
 
-	public ServiceDataSessionRemote getServiceDataSession() {
+    public ServiceDataSessionRemote getServiceDataSession() {
         if (serviceDataSession == null) {
             serviceDataSession = JndiHelper.getRemoteSession(ServiceDataSessionRemote.class);
         }
         return serviceDataSession;
-	}
+    }
 
-	public ServiceSessionRemote getServiceSession() {
+    public ServiceSessionRemote getServiceSession() {
         if (serviceSession == null) {
             serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
         }
         return serviceSession;
     }
 
-	public ApprovalExecutionSessionRemote getApprovalExecutionSession() {
+    public ApprovalExecutionSessionRemote getApprovalExecutionSession() {
         if (approvalExecutionSession == null) {
-        	approvalExecutionSession = JndiHelper.getRemoteSession(ApprovalExecutionSessionRemote.class);
+            approvalExecutionSession = JndiHelper.getRemoteSession(ApprovalExecutionSessionRemote.class);
         }
         return approvalExecutionSession;
-	}
-	
-	public CertReqHistorySessionRemote getCertReqHistorySession() {
+    }
+
+    public CertReqHistorySessionRemote getCertReqHistorySession() {
         if (certReqHistorySession == null) {
-        	certReqHistorySession = JndiHelper.getRemoteSession(CertReqHistorySessionRemote.class);
+            certReqHistorySession = JndiHelper.getRemoteSession(CertReqHistorySessionRemote.class);
         }
         return certReqHistorySession;
-	}
+    }
+
+
+    public AccessControlSessionRemote getAccessControlSession() {
+        if(accessControlSession == null) {
+            accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
+        }
+        return accessControlSession;
+    }
 
 	public RevocationSessionRemote getRevocationSession() {
         if (revocationSession == null) {

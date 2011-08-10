@@ -215,7 +215,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     @Override
-    public void addUser(X509CertificateAuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
+    public void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
             int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid) throws PersistenceException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
     	EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, UserDataConstants.STATUS_NEW, type, endentityprofileid,
@@ -228,7 +228,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest.class.getName(), null), };
 
     @Override
-    public void addUserFromWS(X509CertificateAuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+    public void addUserFromWS(AuthenticationToken admin, EndEntityInformation userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
     	PersistenceException, WaitingForApprovalException, CADoesntExistsException, EjbcaException {
         int profileId = userdata.getEndEntityProfileId();
         EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, profileId);
@@ -242,7 +242,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     // EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))) on Glassfish
     // See UserAdminSessionTest
     @Override
-    public void addUser(X509CertificateAuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
+    public void addUser(AuthenticationToken admin, EndEntityInformation endEntity, boolean clearpwd) throws AuthorizationDeniedException, EjbcaException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException, CADoesntExistsException {
     	final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caid = endEntity.getCAId();

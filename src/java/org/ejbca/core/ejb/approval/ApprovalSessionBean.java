@@ -94,7 +94,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private UserAdminSessionLocal userAdminSession;
 
     @Override
-    public void addApprovalRequest(X509CertificateAuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc)
+    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc)
             throws ApprovalException {
         log.trace(">addApprovalRequest");
         int approvalId = approvalRequest.generateApprovalId();
@@ -402,7 +402,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void sendApprovalNotification(X509CertificateAuthenticationToken admin, String approvalAdminsEmail,
+    public void sendApprovalNotification(AuthenticationToken admin, String approvalAdminsEmail,
             String approvalNotificationFromAddress, String approvalURL, String notificationSubject, String notificationMsg, Integer id,
             int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
         if (log.isTraceEnabled()) {

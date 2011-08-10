@@ -31,10 +31,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -53,13 +53,13 @@ public class ClearCacheServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(ClearCacheServlet.class);
 	
 	@EJB
+	private AccessControlSessionLocal accessControlSession;
+	@EJB
 	private GlobalConfigurationSessionLocal globalconfigurationsession;
 	@EJB
 	private EndEntityProfileSessionLocal endentitysession;
 	@EJB
 	private CertificateProfileSessionLocal certificateprofilesession;
-	@EJB
-	private AuthorizationSessionLocal authorizationsession;
 	@EJB
 	private LogConfigurationSessionLocal logConfigurationsession;
 	@EJB
@@ -101,8 +101,7 @@ public class ClearCacheServlet extends HttpServlet {
         		if(log.isDebugEnabled()) {
         			log.debug("Cert Profile cache cleared");
         		}
-        	       			
-        		authorizationsession.flushAuthorizationRuleCache();
+        		accessControlSession.forceCacheExpire();
         		if(log.isDebugEnabled()) {
         			log.debug("Authorization Rule cache cleared");
         		}

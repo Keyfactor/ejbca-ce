@@ -5,9 +5,7 @@
 <persistence>
     <persistence-unit name="ejbca-pu" transaction-type="RESOURCE_LOCAL">
         <class>org.ejbca.core.ejb.approval.ApprovalData</class>
-        <class>org.ejbca.core.ejb.authorization.AccessRulesData</class>
         <class>org.ejbca.core.ejb.authorization.AdminEntityData</class>
-        <class>org.ejbca.core.ejb.authorization.AdminGroupData</class>
         <class>org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateData</class>
         <class>org.ejbca.core.ejb.ca.caadmin.CAData</class>
         <class>org.ejbca.core.ejb.ca.caadmin.CertificateProfileData</class>
