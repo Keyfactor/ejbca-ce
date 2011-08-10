@@ -22,7 +22,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.ConfigurationHolder;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.ValidityDate;

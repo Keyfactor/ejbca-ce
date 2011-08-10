@@ -25,8 +25,8 @@ import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.util.CertTools;
 
 /** This class mostly exists in order to avoid having static non-final variables in SignSessionBean (not allowed according to EJB spec.
  * This class holds the variable isUniqueCertificateSerialNumberIndex, which is initialized by calling, once (or several times)

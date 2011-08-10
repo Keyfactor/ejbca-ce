@@ -15,8 +15,8 @@ package org.ejbca.core.protocol.ws.client.gen;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 
 /**
  * Holds certificate WS response data 

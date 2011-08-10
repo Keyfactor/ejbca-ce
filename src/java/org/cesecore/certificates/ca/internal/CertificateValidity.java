@@ -21,9 +21,9 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 
 /** Class used to construct validity times based on a range of different input parameters and configuration. 

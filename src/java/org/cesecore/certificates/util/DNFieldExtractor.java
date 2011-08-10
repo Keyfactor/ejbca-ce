@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.CertTools;
 import org.ietf.ldap.LDAPDN;
 
 /**

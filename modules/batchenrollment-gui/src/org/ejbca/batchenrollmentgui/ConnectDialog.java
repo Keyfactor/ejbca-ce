@@ -51,7 +51,7 @@ import javax.swing.JOptionPane;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 

@@ -14,7 +14,6 @@ import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.CertTools;
 import org.junit.Before;
 import org.junit.Test;
 

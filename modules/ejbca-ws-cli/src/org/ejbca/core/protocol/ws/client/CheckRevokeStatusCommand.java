@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.math.BigInteger;
 
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.ui.cli.ErrorAdminCommandException;

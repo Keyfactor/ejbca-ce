@@ -23,8 +23,8 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.log.Admin;
 

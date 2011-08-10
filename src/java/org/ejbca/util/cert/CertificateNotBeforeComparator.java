@@ -16,7 +16,7 @@ import java.security.cert.Certificate;
 import java.util.Comparator;
 import java.util.Date;
 
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 
 /** Simple comparator comparing two certificates for NotBefore date.
  * if arg0 have a NotBefore that is after arg1, arg0 is less than arg1.

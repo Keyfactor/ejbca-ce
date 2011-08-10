@@ -29,6 +29,7 @@ import org.cesecore.certificates.util.AlgorithmToolsHelper.MockECDSAPublicKey;
 import org.cesecore.certificates.util.AlgorithmToolsHelper.MockNotSupportedPublicKey;
 import org.cesecore.certificates.util.AlgorithmToolsHelper.MockRSAPublicKey;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;

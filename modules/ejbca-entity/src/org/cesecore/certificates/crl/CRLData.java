@@ -27,9 +27,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.util.CertTools;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 
 /**

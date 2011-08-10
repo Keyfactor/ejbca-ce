@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.certificates.certificate.certextensions.standard.SeisCardNumber;
-import org.cesecore.certificates.util.CertTools;
+import org.cesecore.util.CertTools;
 
 /**
  * A class for reading values from SeisCardNumber extension.
