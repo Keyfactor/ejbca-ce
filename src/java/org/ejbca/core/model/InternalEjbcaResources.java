@@ -12,13 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.model;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.internal.InternalResources;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
@@ -26,15 +28,13 @@ import org.ejbca.config.EjbcaConfiguration;
  * and log comments.
  * 
  * If fetched the resource files from the src/intresources directory and is
- * included in the file ejbca-ejb.jar
- * 
- * @author Philip Vendil 2006 sep 24
+ * included in the file ejbca-properties.jar
  * 
  * @version $Id$
  */
-public class InternalResources implements Serializable {
+public class InternalEjbcaResources extends InternalResources {
 
-    private static final Logger log = Logger.getLogger(InternalResources.class);
+    private static final Logger log = Logger.getLogger(InternalEjbcaResources.class);
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -50,12 +50,14 @@ public class InternalResources implements Serializable {
     public static final String PREFEREDINTERNALRESOURCES = EjbcaConfiguration.getInternalResourcesPreferredLanguage();
     public static final String SECONDARYINTERNALRESOURCES = EjbcaConfiguration.getInternalResourcesSecondaryLanguage();
 
-    protected static InternalResources instance = null;
+    protected static InternalEjbcaResources instance = null;
 
-    protected Properties primaryResource = new Properties();
-    protected Properties secondaryResource = new Properties();
+    protected Properties primaryEjbcaResource = new Properties();
+    protected Properties secondaryEjbcaResource = new Properties();
 
-    private static final String RESOURCE_LOCATION = "/intresources/intresources.";
+    private static final String RESOURCE_PATH = "/intresources";
+    private static final String RESOURCE_NAME = "/ejbcaresources.";
+    private static final String RESOURCE_LOCATION = RESOURCE_PATH+RESOURCE_NAME;
 
     /**
      * Method used to setup the Internal Resource management.
@@ -65,29 +67,50 @@ public class InternalResources implements Serializable {
      *            configured in the System Configuration.
      * @throws IOException
      */
-    protected InternalResources() {
-        setupResources();
+    protected InternalEjbcaResources() {
+    	super();
+        setupResources(RESOURCE_LOCATION);
     }
 
-    private void setupResources() {
+    protected InternalEjbcaResources(String resPath) {
+    	super(resPath);
+        setupResources(resPath+RESOURCE_NAME);
+    }
+
+    private void setupResources(String resLocation) {
         final String primaryLanguage = PREFEREDINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
         final String secondaryLanguage = SECONDARYINTERNALRESOURCES.toLowerCase(Locale.ENGLISH);
         // The test flag is defined when called from test code (junit)
         InputStream primaryStream = null;
         InputStream secondaryStream = null;
         try {
-
-            primaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + primaryLanguage + ".properties");
-            secondaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + secondaryLanguage + ".properties");
+        	// We first check for presence of the file in the classpath, if it does not exist we also allow to have the
+        	// the file in the filesystem
+            primaryStream = InternalEjbcaResources.class.getResourceAsStream(resLocation + primaryLanguage + ".properties");
+            if (primaryStream == null) {
+            	try {
+            		primaryStream = new FileInputStream(resLocation + primaryLanguage + ".properties");
+                } catch (FileNotFoundException e) {
+                    log.error("Localization files not found", e);
+                }
+            }
+            secondaryStream = InternalEjbcaResources.class.getResourceAsStream(resLocation + secondaryLanguage + ".properties");
+            if (secondaryStream == null) {
+            	try {
+            		secondaryStream = new FileInputStream(resLocation + secondaryLanguage + ".properties");
+                } catch (FileNotFoundException e) {
+                    log.error("Localization files not found", e);
+                }
+            }
 
             try {
                 if (primaryStream != null) {
-                    primaryResource.load(primaryStream);
+                    primaryEjbcaResource.load(primaryStream);
                 } else {
                     log.error("primaryResourse == null");
                 }
                 if (secondaryStream != null) {
-                    secondaryResource.load(secondaryStream);
+                    secondaryEjbcaResource.load(secondaryStream);
                 } else {
                     log.error("secondaryResource == null");
                 }
@@ -112,9 +135,9 @@ public class InternalResources implements Serializable {
      * Metod that returs a instance of the InternalResources might be null if
      * load() haven't been called before this method.
      */
-    public static synchronized InternalResources getInstance() {
+    public static synchronized InternalEjbcaResources getInstance() {
         if (instance == null) {
-            instance = new InternalResources();
+            instance = new InternalEjbcaResources();
         }
         return instance;
     }
@@ -362,13 +385,16 @@ public class InternalResources implements Serializable {
      * found in any of the resource file "key" is returned.
      * 
      */
-    private String getMessageString(final String key) {
-        String retval = primaryResource.getProperty(key);
+    protected String getMessageString(final String key) {
+        String retval = primaryEjbcaResource.getProperty(key);
         if (retval == null) {
-            retval = secondaryResource.getProperty(key);
+            retval = secondaryEjbcaResource.getProperty(key);
         }
         if (retval == null) {
-            retval = key;
+        	retval = super.getMessageString(key);
+        	if (retval == null) {
+        		retval = key;
+        	}
         }
         return retval.trim();
     }

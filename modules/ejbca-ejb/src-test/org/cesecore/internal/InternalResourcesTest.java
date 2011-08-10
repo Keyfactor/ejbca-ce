@@ -14,28 +14,23 @@ package org.cesecore.internal;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.apache.log4j.Logger;
-import org.cesecore.config.CesecoreConfiguration;
 import org.junit.Test;
 
 /**
  * Based on EJBCA version: 
  *      InternalResourcesTest.java 8865 2010-04-09 15:14:51Z mikekushner
  * Based on cesecore version:
- *      InternalResourcesTest.java 227 2011-02-02 11:26:38Z tomas
+ *      InternalResourcesTest.java 985 2011-08-10 13:19:09Z tomas
  * 
  * @version $Id$
  */
 public class InternalResourcesTest {
 
+	private static final String TEST_RESOURCE_LOCATION = "src/main/resources/intresources";
+	
     @Test
     public void testGetLocalizedMessageString() {
-        InternalResources intres = InternalResourcesStub.getInstance();
+        InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.testmsg");
         assertEquals("Test ENG", res);
         // This message will only exist in the secondary language file
@@ -45,23 +40,21 @@ public class InternalResourcesTest {
 
     @Test
     public void testNonExistingLocalizedMessageString() {
-        InternalResources intres = InternalResourcesStub.getInstance();
-
+        InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.foo");
         assertEquals("raadmin.foo", res);
     }
 
     @Test
     public void testGetLocalizedMessageStringObject() {
-        InternalResources intres = InternalResourcesStub.getInstance();
+        InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", new Boolean(true), "bye");
         assertEquals("Test 1 3 hi true bye message 1", res);
     }
 
     @Test
     public void testGetLocalizedMessageStringObjectWithNull() {
-        InternalResources intres = InternalResourcesStub.getInstance();
-
+        InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.testparams", null, Integer.valueOf(3), null, new Boolean(true), "bye");
         assertEquals("Test  3  true bye message ", res);
 
@@ -71,7 +64,7 @@ public class InternalResourcesTest {
 
     @Test
     public void testMessageStringWithExtraParameter() {
-        InternalResources intres = InternalResourcesStub.getInstance();
+        InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
         String res = intres.getLocalizedMessage("raadmin.testmsgsv");
         assertEquals("Test SV", res);
         res = intres.getLocalizedMessage("raadmin.testmsgsv", "foo $bar \\haaaar");
@@ -79,64 +72,4 @@ public class InternalResourcesTest {
 
     }
 
-    static class InternalResourcesStub extends InternalResources {
-
-        private static final long serialVersionUID = 1L;
-        private static final Logger log = Logger.getLogger(InternalResourcesStub.class);
-
-        private static final String RESOURCE_PATH = "src/main/resources/intresources/intresources.";
-
-        private InternalResourcesStub() {
-
-            setupResources();
-
-        }
-
-        private void setupResources() {
-            String primaryLanguage = CesecoreConfiguration.getInternalResourcesPreferredLanguage().toLowerCase();
-            String secondaryLanguage = CesecoreConfiguration.getInternalResourcesSecondaryLanguage().toLowerCase();
-
-            InputStream primaryStream = null;
-            InputStream secondaryStream = null;
-
-            primaryLanguage = "en";
-            secondaryLanguage = "se";
-            try {
-                primaryStream = new FileInputStream(RESOURCE_PATH + primaryLanguage + ".properties");
-                secondaryStream = new FileInputStream(RESOURCE_PATH + secondaryLanguage + ".properties");
-
-                try {
-                    primaryResource.load(primaryStream);
-                    secondaryResource.load(secondaryStream);
-                } catch (IOException e) {
-                    log.error("Error reading internal resourcefile", e);
-                }
-
-            } catch (FileNotFoundException e) {
-                log.error("Localization files not found", e);
-                throw new RuntimeException("Localization files not found: "+e.getMessage());
-
-            } finally {
-                try {
-                    if (primaryStream != null) {
-                        primaryStream.close();
-                    }
-                    if (secondaryStream != null) {
-                        secondaryStream.close();
-                    }
-                } catch (IOException e) {
-                    log.error("Error closing internal resources language streams: ", e);
-                }
-            }
-
-        }
-
-        public static synchronized InternalResources getInstance() {
-            if (instance == null) {
-                instance = new InternalResourcesStub();
-            }
-            return instance;
-        }
-
-    }
 }
