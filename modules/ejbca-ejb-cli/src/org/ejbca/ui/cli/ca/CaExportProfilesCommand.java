@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -54,7 +55,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             Iterator<Integer> iter = certprofids.iterator();
             while (iter.hasNext()) {
             	int profileid = iter.next().intValue();
-                if (profileid == SecConst.PROFILE_NO_PROFILE) { // Certificate profile not found i database.
+                if (profileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { // Certificate profile not found i database.
                 	getLogger().error("Couldn't find certificate profile '"+profileid+"' in database.");
                 } else if (SecConst.isFixedCertificateProfile(profileid)) {
                     //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");

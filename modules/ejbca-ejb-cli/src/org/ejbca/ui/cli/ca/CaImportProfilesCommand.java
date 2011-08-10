@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
@@ -114,7 +115,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         profileid = newprofileid;
                                     }
                                 } else {
-                                    if (ejb.getCertificateProfileSession().getCertificateProfileId(profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (ejb.getCertificateProfileSession().getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                                     	getLogger().error("Error: Certificate profile '"+profilename+"' already exist in database.");
                                         error = true;
                                     } else if (ejb.getCertificateProfileSession().getCertificateProfile(profileid) != null) {

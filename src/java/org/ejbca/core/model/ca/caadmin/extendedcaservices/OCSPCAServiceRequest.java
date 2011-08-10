@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
-import org.ejbca.config.OcspConfiguration;
+import org.cesecore.config.OcspConfiguration;
 
 /**
  * Class used when requesting OCSP related services from a CA.  

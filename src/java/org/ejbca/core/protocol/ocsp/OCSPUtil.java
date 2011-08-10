@@ -52,10 +52,10 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
-import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;

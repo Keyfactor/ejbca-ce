@@ -57,6 +57,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -188,12 +189,12 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
         // Default key usage is defined in certificate profiles
-        return createCertificate(admin, username, password, pk, -1, null, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+        return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
     public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException, EjbcaException, CesecoreException {
-        return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+        return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
@@ -307,7 +308,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 		if (log.isDebugEnabled()) {
 			log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
 		}
-	    if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
+	    if (certificateprofileid != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 	    	if (log.isDebugEnabled()) {
 	    		log.debug("Overriding user certificate profile with :" + certificateprofileid);
 	    	}

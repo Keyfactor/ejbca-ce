@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -94,7 +95,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			// Fetch Certificate Profile info
 			getLogger().debug("Searching for Certificate Profile " + certificateProfile);
 			int certificateProfileId = ejb.getCertificateProfileSession().getCertificateProfileId(certificateProfile);
-			if (certificateProfileId == SecConst.PROFILE_NO_PROFILE) {
+			if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 				getLogger().error("Certificate Profile " + certificateProfile + " doesn't exists.");
 				throw new Exception("Certificate Profile '" + certificateProfile + "' doesn't exists.");
 			}

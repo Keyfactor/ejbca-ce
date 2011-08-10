@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -114,7 +115,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			if (certificateprofile != null) {
 				getLogger().debug("Searching for Certificate Profile " + certificateprofile);
 				certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certificateprofile);
-				if (certificateprofileid == SecConst.PROFILE_NO_PROFILE) {
+				if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 					getLogger().error("Certificate Profile " + certificateprofile + " doesn't exists.");
 					throw new Exception("Certificate Profile '" + certificateprofile + "' doesn't exists.");
 				}

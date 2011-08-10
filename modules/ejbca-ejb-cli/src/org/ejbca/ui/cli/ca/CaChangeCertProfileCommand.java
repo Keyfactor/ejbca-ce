@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -49,7 +50,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		        final String certProfileName = args[2];
 		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
 		        final int certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certProfileName);
-		        if (certificateprofileid == SecConst.PROFILE_NO_PROFILE) {
+		        if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 		        	getLogger().error("Certificate Profile " + certProfileName + " doesn't exists.");
 		            throw new Exception("Certificate Profile '" + certProfileName + "' doesn't exists.");
 		        }

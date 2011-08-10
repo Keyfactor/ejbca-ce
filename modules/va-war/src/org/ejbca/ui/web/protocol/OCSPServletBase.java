@@ -67,13 +67,13 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveE
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.protocol.certificatestore.HashID;
@@ -117,7 +117,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	/** True if requests must be signed by a certificate issued by a list of trusted CA's*/
 	private final boolean m_reqRestrictSignatures = OcspConfiguration.getRestrictSignatures();
 	private final int m_reqRestrictMethod = OcspConfiguration.getRestrictSignaturesByMethod();
-	private final int m_signTrustValidTime = OcspConfiguration.getSignTrustValidTime();
+	private final int m_signTrustValidTime = OcspConfiguration.getSignTrustValidTimeInSeconds();
 	/** A list of CA's trusted for issuing certificates for signing requests */
 	private Hashtable mTrustedReqSigIssuers;
 	private Hashtable mTrustedReqSigSigners;
@@ -304,8 +304,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 		// Cache-friendly parameters
 		if (m_log.isDebugEnabled()) {
-			m_log.debug("untilNextUpdate: " + OcspConfiguration.getUntilNextUpdate(SecConst.CERTPROFILE_NO_PROFILE));
-			m_log.debug("maxAge: " + OcspConfiguration.getMaxAge(SecConst.CERTPROFILE_NO_PROFILE));
+			m_log.debug("untilNextUpdate: " + OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+			m_log.debug("maxAge: " + OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
 		}
 		// Create and load the certificate cache if this is an internal or external OCSP responder
 		this.data.m_caCertCache = createCertificateCache();
@@ -554,8 +554,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			// Read default values here for each request since may take a millisecond to read the value
 			// These values can be changed depending on if there are different configurations for different certificate profiles
 			// In that case it is updated once we have read the certificate status of the certificate searched for.
-			long maxAge = OcspConfiguration.getMaxAge(SecConst.CERTPROFILE_NO_PROFILE); 
-			long nextUpdate = OcspConfiguration.getUntilNextUpdate(SecConst.CERTPROFILE_NO_PROFILE);
+			long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE); 
+			long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 
 			OCSPResp ocspresp = null;
 			OCSPRespGenerator res = new OCSPRespGenerator();

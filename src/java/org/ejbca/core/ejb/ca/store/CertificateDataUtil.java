@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -207,7 +208,7 @@ public abstract class CertificateDataUtil {
     	}
     	final int pId; {
     		final Integer tmp=data.getCertificateProfileId();
-    		pId = tmp!=null ? tmp.intValue() : SecConst.CERTPROFILE_NO_PROFILE;
+    		pId = tmp!=null ? tmp.intValue() : CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
     	}
     	final int status = data.getStatus();
     	if ( status==SecConst.CERT_REVOKED ) {
