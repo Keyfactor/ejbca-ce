@@ -10,24 +10,13 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
-package org.ejbca.core.ejb.ca.revoke;
-
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.util.Collection;
-import java.util.Date;
+package org.ejbca.core.ejb.config;
 
 import javax.ejb.Remote;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateRevokeException;
 
 /**
  * @version $Id$
  */
 @Remote
-public interface RevocationSessionRemote extends RevocationSession {
-
+public interface HealthCheckSessionRemote extends HealthCheckSession {
 }

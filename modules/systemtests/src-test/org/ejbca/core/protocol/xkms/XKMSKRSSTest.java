@@ -23,9 +23,12 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -35,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -46,6 +50,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -1046,10 +1051,15 @@ public class XKMSKRSSTest extends TestCase {
             caID = RevocationApprovalTest.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator()
                     .next();
-            AuthenticationToken approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(adminCert);
+            Set<X500Principal> principals = new HashSet<X500Principal>();
+            principals.add(adminCert.getSubjectX500Principal());
+            AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            // Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 // Create new user
-                UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+                EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                         SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
                 userdata.setPassword("foo123");
                 userAdminSession.addUser(administrator, userdata, true);

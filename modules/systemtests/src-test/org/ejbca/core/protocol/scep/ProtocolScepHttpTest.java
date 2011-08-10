@@ -70,6 +70,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
 import org.cesecore.keys.util.KeyTools;
@@ -82,7 +83,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.InterfaceCache;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
@@ -387,8 +387,8 @@ public class ProtocolScepHttpTest extends CaTestCase {
     //
     // Private helper methods
     //
-    private UserDataVO getUserDataVO(String userName, String userDN) {
-        final UserDataVO data = new UserDataVO(userName, userDN, caid, null, "sceptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+    private EndEntityInformation getUserDataVO(String userName, String userDN) {
+        final EndEntityInformation data = new EndEntityInformation(userName, userDN, caid, null, "sceptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         data.setPassword("foo123");
         data.setStatus(UserDataConstants.STATUS_NEW);

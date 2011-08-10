@@ -70,6 +70,8 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -77,7 +79,8 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.CertTools;
-import org.cesecore.core.ejb.authorization.AdminGroupSessionRemote;
+import org.cesecore.certificates.util.StringTools;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
@@ -1221,15 +1224,14 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec(keySpec);
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_ECDSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1271,7 +1273,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
 
             caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSession.getCAInfo(admin, dn);
+            CAInfo info = caSession.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
@@ -1316,15 +1318,14 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-            adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec(keySpec);
-            catokeninfo.setEncKeySpec("1024");
-            catokeninfo.setSignKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_DSA);
-            catokeninfo.setEncKeyAlgorithm(AlgorithmConstants.KEYALGORITHM_RSA);
+            CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1366,7 +1367,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
 
             caAdminSession.createCA(admin, cainfo);
 
-            CAInfo info = caAdminSession.getCAInfo(admin, dn);
+            CAInfo info = caSession.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));

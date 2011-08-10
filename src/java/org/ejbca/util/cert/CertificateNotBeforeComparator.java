@@ -24,12 +24,12 @@ import org.cesecore.certificates.util.CertTools;
  * @author tomas
  * @version $Id$
  */
-public class CertificateNotBeforeComparator implements Comparator {
+public class CertificateNotBeforeComparator implements Comparator<Certificate> {
 
 	/** Compared NotBefore field of arg0 and arg1 if they are both instances of java.security.cert.Certificate
 	 * @return -1 if NotBefore in arg0 is after BotBefore in arg1, +1 if reverse and 0 if NotBefore is exactly the same.
 	 */
-	public int compare(Object arg0, Object arg1) {
+	public int compare(Certificate arg0, Certificate arg1) {
 		// We don't have to check instanceof here because the Comparator javadoc says that it is supposed to throw ClassCastException
 		// if the types are wrong.
 		Certificate cert1 = (Certificate) arg1;

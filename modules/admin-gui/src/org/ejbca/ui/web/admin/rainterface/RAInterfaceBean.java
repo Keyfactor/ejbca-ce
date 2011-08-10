@@ -771,10 +771,6 @@ public class RAInterfaceBean implements Serializable {
     /** Help function used to check end entity profile authorization. */
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
     	boolean returnval = false;
-    	// TODO FIX
-    	if (admin.getAdminInformation().isSpecialUser()) {
-    		return true;
-    	}
     	if (log) {
     		returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights)
     		&& authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);

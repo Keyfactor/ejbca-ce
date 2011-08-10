@@ -50,7 +50,6 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -80,7 +79,6 @@ import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -94,7 +92,6 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -1357,18 +1354,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace("<revokeCert()");
         }
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public AuthenticationToken getAdmin(Certificate certificate) {
-        String adminUsername = certificateStoreSession.findUsernameByCertSerno(CertTools.getSerialNumber(certificate),
-                CertTools.getIssuerDN(certificate));
-        String adminEmail = null;
-        if (adminUsername != null) {
-        	adminEmail = UserData.findSubjectEmailByUsername(entityManager, adminUsername);
-        }
-        return new Admin(certificate, adminUsername, adminEmail);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
