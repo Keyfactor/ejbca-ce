@@ -15,8 +15,6 @@ package org.cesecore.util;
 
 import junit.framework.TestCase;
 
-import org.cesecore.util.SimpleTime;
-
 /** 
  * Test of the SimpleTime helper class.
  *  

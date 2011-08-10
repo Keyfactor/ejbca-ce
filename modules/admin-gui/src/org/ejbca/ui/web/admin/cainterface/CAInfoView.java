@@ -25,10 +25,10 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
+import org.cesecore.util.SimpleTime;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.util.SimpleTime;
 
 
 /**

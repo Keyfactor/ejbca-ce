@@ -120,6 +120,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -147,7 +148,6 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.util.SimpleTime;
 
 /**
  * Administrates and manages CAs in EJBCA system.

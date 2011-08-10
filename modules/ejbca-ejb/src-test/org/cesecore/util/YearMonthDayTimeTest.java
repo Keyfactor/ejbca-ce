@@ -17,8 +17,6 @@ import java.util.Calendar;
 
 import junit.framework.TestCase;
 
-import org.cesecore.util.YearMonthDayTime;
-
 
 /** 
  * Test of the YearMonthDayTime helper class.
