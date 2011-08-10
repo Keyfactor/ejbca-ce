@@ -13,6 +13,8 @@
 
 package org.cesecore.internal;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -27,12 +29,12 @@ import org.cesecore.config.CesecoreConfiguration;
  * and log comments.
  * 
  * If fetched the resource files from the src/intresources directory and is
- * included in the file ejbca-ejb.jar
+ * included in the file cesecore-ejb.jar
  * 
  * Based on EJBCA version: 
  *      InternalResources.java 11076 2011-01-07 07:54:16Z anatom
  * CESeCore version:
- *      InternalResources.java 78 2011-01-10 13:55:30Z mikek
+ *      InternalResources.java 985 2011-08-10 13:19:09Z tomas
  * 
  * @version $Id$
  */
@@ -56,7 +58,9 @@ public class InternalResources implements Serializable {
     protected Properties primaryResource = new Properties();
     protected Properties secondaryResource = new Properties();
 
-    private static final String RESOURCE_LOCATION = "/intresources/intresources.";
+    private static final String RESOURCE_PATH = "/intresources";
+    private static final String RESOURCE_NAME = "/intresources.";
+    private static final String RESOURCE_LOCATION = RESOURCE_PATH+RESOURCE_NAME;
 
     /**
      * Method used to setup the Internal Resource management.
@@ -67,10 +71,14 @@ public class InternalResources implements Serializable {
      * @throws IOException
      */
     protected InternalResources() {
-        setupResources();
+        setupResources(RESOURCE_LOCATION);
     }
 
-    private void setupResources() {
+    protected InternalResources(String resPath) {
+        setupResources(resPath+RESOURCE_NAME);
+    }
+
+    private void setupResources(String resLocation) {
         final String primaryLanguage = CesecoreConfiguration.getInternalResourcesPreferredLanguage().toLowerCase(Locale.ENGLISH);
         final String secondaryLanguage = CesecoreConfiguration.getInternalResourcesSecondaryLanguage().toLowerCase(Locale.ENGLISH);
         // The test flag is defined when called from test code (junit)
@@ -78,8 +86,22 @@ public class InternalResources implements Serializable {
         InputStream secondaryStream = null;
         try {
 
-            primaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + primaryLanguage + ".properties");
-            secondaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + secondaryLanguage + ".properties");
+            primaryStream = InternalResources.class.getResourceAsStream(resLocation + primaryLanguage + ".properties");
+            if (primaryStream == null) {
+            	try {
+            		primaryStream = new FileInputStream(resLocation + primaryLanguage + ".properties");
+                } catch (FileNotFoundException e) {
+                    log.error("Localization files not found", e);
+                }
+            }
+            secondaryStream = InternalResources.class.getResourceAsStream(resLocation + secondaryLanguage + ".properties");
+            if (secondaryStream == null) {
+            	try {
+            		secondaryStream = new FileInputStream(resLocation + secondaryLanguage + ".properties");
+                } catch (FileNotFoundException e) {
+                    log.error("Localization files not found", e);
+                }
+            }
 
             try {
                 if (primaryStream != null) {
@@ -363,7 +385,7 @@ public class InternalResources implements Serializable {
      * found in any of the resource file "key" is returned.
      * 
      */
-    private String getMessageString(final String key) {
+    protected String getMessageString(final String key) {
         String retval = primaryResource.getProperty(key);
         if (retval == null) {
             retval = secondaryResource.getProperty(key);
