@@ -60,7 +60,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -377,7 +376,7 @@ public class CAInterfaceBean implements Serializable {
 
 	public String republish(CertificateView certificatedata) {
 		String returnval = "CERTREPUBLISHFAILED";
-		int certificateProfileId = SecConst.CERTPROFILE_NO_PROFILE;
+		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 		String username = null;
 		String password = null;
 		String dn = null;
@@ -396,7 +395,7 @@ public class CAInterfaceBean implements Serializable {
 		final CertificateInfo certinfo = certificatesession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
 		if (certinfo != null) {
 			// If we are missing Certificate Request History for this certificate, we can at least recover some of this info
-			if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
+			if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 				certificateProfileId = certinfo.getCertificateProfileId();
 			}
 			if (username == null) {
@@ -406,7 +405,7 @@ public class CAInterfaceBean implements Serializable {
 				dn = certinfo.getSubjectDN();
 			}
 		}
-		if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
+		if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 			// If there is no cert req history and the cert profile was not defined in the CertificateData row, so we can't do anything about it..
 			returnval = "CERTREQREPUBLISHFAILED";
 		} else {

@@ -17,8 +17,8 @@ import java.security.KeyStore.PasswordProtection;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.token.p11.P11Slot;
-import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.protocol.ocsp.OCSPData;
 
 /**

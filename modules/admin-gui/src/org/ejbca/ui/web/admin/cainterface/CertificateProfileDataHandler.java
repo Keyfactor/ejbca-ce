@@ -26,7 +26,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
@@ -45,8 +44,6 @@ public class CertificateProfileDataHandler implements Serializable {
     private AuthenticationToken administrator;
     private InformationMemory info;
     private CertificateProfileSession certificateProfileSession;
-
-    public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY = SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY;
 
     /** Creates a new instance of CertificateProfileDataHandler */
     public CertificateProfileDataHandler(AuthenticationToken administrator, AccessControlSessionLocal authorizationsession, CaSession caSession,

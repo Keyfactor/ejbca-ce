@@ -93,6 +93,7 @@ public final class SecConst {
     public static final int NO_HARDTOKENISSUER            = 0;
 
     /** Used when no certificate profile id value is available */
+    // TODO: remove all these CERTPROFILE_ because they are in CertificateProfileConstants in CESeCore
     public static final int CERTPROFILE_NO_PROFILE            = 0; 
     public static final int CERTPROFILE_FIXED_ENDUSER         = 1;
     public static final int CERTPROFILE_FIXED_SUBCA           = 2;
@@ -110,10 +111,8 @@ public final class SecConst {
     public static final int ALLCAS = 1;
         
     /**
-     * Constants defining range of id's reserved for fixed certificate types. Observe fixed
-     * certificates cannot have value 0.
+     * Constants defining range of id's reserved for fixed end entity profile
      */
-    public static final int FIXED_CERTIFICATEPROFILE_BOUNDRY = 1000;
     public static final int PROFILE_NO_PROFILE = 0;
 
     
@@ -176,6 +175,7 @@ public final class SecConst {
     /**
      * @return true is certificate profile identified by profileId is fixed
      */
+    // TODO: remove this method because it is in CertificateProfileConstants in CESeCore
     public static boolean isFixedCertificateProfile(final int profileId) {
     	return (
     			profileId == SecConst.CERTPROFILE_FIXED_ENDUSER ||

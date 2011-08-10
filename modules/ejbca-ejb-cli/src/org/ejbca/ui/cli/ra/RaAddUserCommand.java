@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -199,11 +200,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 error = true;
             }
 
-            if (certificatetypeid == SecConst.PROFILE_NO_PROFILE) { // Certificate
-                // profile
-                // not found
-                // i
-                // database.
+            if (certificatetypeid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { 
+            	// Certificate profile not found in database.
                 getLogger().error("Could not find certificate profile in database.");
                 error = true;
             }

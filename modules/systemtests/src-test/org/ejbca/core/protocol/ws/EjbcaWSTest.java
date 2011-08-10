@@ -38,6 +38,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -662,10 +663,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         raAdminSession.saveGlobalConfigurationRemote(intAdmin, gc);
-        if (certificateProfileSession.getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0) {
+        if (certificateProfileSession.getCertificateProfileId("WSTESTPROFILE") != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         }
-        CertificateProfile profile = new EndUserCertificateProfile();
+        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         profile.setAllowValidityOverride(true);
         certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
         UserDataVOWS tokenUser1 = new UserDataVOWS();
@@ -731,7 +732,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(intAdmin, username);
+        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         assertTrue(userCerts.size() == 1);
         return (X509Certificate) userCerts.iterator().next();
     }

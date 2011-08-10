@@ -25,6 +25,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -138,7 +139,7 @@ public class ApplyBean implements java.io.Serializable {
         if (useradmindata != null) {
             int certprofile = useradmindata.getCertificateProfileId();
 
-            if (certprofile != SecConst.PROFILE_NO_PROFILE) {
+            if (certprofile != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 CertificateProfile p = ejb.getCertificateProfileSession().getCertificateProfile(certprofile);
                 returnval = p.getAvailableBitLengths();
             }

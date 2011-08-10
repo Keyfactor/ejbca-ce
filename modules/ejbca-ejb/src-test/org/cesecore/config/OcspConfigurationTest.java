@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileWriter;
 
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,8 +41,8 @@ public class OcspConfigurationTest {
 
 	@Test
 	public void testMaxAgeNextUpdate() throws Exception {
-		long maxAge = OcspConfiguration.getMaxAge(OcspConfiguration.CERTPROFILE_NO_PROFILE);
-		long nextUpdate = OcspConfiguration.getUntilNextUpdate(OcspConfiguration.CERTPROFILE_NO_PROFILE);
+		long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+		long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 		assertEquals(30000, maxAge);
 		assertEquals(0, nextUpdate);
 		

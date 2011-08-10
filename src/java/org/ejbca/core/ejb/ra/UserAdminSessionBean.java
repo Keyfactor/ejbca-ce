@@ -59,6 +59,7 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -1277,7 +1278,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Republish with the same user DN that was used in the original publication, if we can find it
             userDataDN = certReqHistory.getUserDataVO().getDN();
             // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
-            if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
+            if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 certificateProfileId = certReqHistory.getUserDataVO().getCertificateProfileId();
             }
         } else if (data != null) {
@@ -1286,7 +1287,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         	// Republish with the same user DN that is currently used as a fallback, if we can find it
         	userDataDN = data.getSubjectDN();
             // If for some reason the certificate profile id was not set in the certificate data, try to get it from current userdata
-            if (certificateProfileId == SecConst.CERTPROFILE_NO_PROFILE) {
+            if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 certificateProfileId = data.getCertificateProfileId();
             }
         }
@@ -1310,7 +1311,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 throw new AlreadyRevokedException(msg);
             }
         }
-        if (endEntityProfileId!=-1 && certificateProfileId!=SecConst.CERTPROFILE_NO_PROFILE) {
+        if (endEntityProfileId!=-1 && certificateProfileId!=CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
         	// We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
             final int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, caid, certificateProfileId);

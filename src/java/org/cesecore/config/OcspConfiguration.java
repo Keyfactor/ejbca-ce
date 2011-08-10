@@ -21,6 +21,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
@@ -54,18 +55,6 @@ public class OcspConfiguration {
 
     public static final int RESPONDERIDTYPE_NAME = 1;
     public static final int RESPONDERIDTYPE_KEYHASH = 2;
-
-    /** Used when no certificate profile id value is available */
-    public static final int CERTPROFILE_NO_PROFILE = 0;
-    public static final int CERTPROFILE_FIXED_ENDUSER = 1;
-    public static final int CERTPROFILE_FIXED_SUBCA = 2;
-    public static final int CERTPROFILE_FIXED_ROOTCA = 3;
-    public static final int CERTPROFILE_FIXED_OCSPSIGNER = 4;
-    public static final int CERTPROFILE_FIXED_HARDTOKENAUTH = 5;
-    public static final int CERTPROFILE_FIXED_HARDTOKENAUTHENC = 6;
-    public static final int CERTPROFILE_FIXED_HARDTOKENENC = 7;
-    public static final int CERTPROFILE_FIXED_HARDTOKENSIGN = 8;
-    public static final int CERTPROFILE_FIXED_SERVER = 9;
 
     /**
      * Algorithm used by server to generate signature on OCSP responses
@@ -322,7 +311,7 @@ public class OcspConfiguration {
         long value = 0;
         Configuration config = ConfigurationHolder.instance();
         String key = "ocsp." + certProfileId + ".untilNextUpdate";
-        if ((certProfileId == CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
+        if ((certProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
             key = "ocsp.untilNextUpdate";
         }
         try {
@@ -340,7 +329,7 @@ public class OcspConfiguration {
         long value = 30;
         Configuration config = ConfigurationHolder.instance();
         String key = "ocsp." + certProfileId + ".maxAge";
-        if ((certProfileId == CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
+        if ((certProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) || (!config.containsKey(key))) {
             key = "ocsp.maxAge";
         }
         try {

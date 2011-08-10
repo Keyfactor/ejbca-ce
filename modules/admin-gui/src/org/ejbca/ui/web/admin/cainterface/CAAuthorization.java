@@ -26,6 +26,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.SecConst;
@@ -148,7 +149,7 @@ public class CAAuthorization implements Serializable {
           // If not superadministrator, then should only end entity profiles be added.
           if(superadministrator || certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY){                      
             // if default profiles, add fixed to name.
-            if(id.intValue() <= SecConst.FIXED_CERTIFICATEPROFILE_BOUNDRY || (!superadministrator && certprofile.isApplicableToAnyCA())) {
+            if(id.intValue() <= CertificateProfileConstants.FIXED_CERTIFICATEPROFILE_BOUNDRY || (!superadministrator && certprofile.isApplicableToAnyCA())) {
 			  allprofilenames.put(idtonamemap.get(id) + " (FIXED)",id);   
             } else {
 		      allprofilenames.put(idtonamemap.get(id),id);

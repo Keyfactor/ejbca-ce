@@ -36,11 +36,11 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.token.p11.P11Slot;
 import org.cesecore.keys.token.p11.P11SlotUser;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.provider.TLSProvider;
-import org.ejbca.config.OcspConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
@@ -120,12 +120,12 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
                 }
             }
             final boolean isIndex;
-            final String sharedLibrary = OcspConfiguration.getSharedLibrary();
+            final String sharedLibrary = OcspConfiguration.getP11SharedLibrary();
             final String configFile = OcspConfiguration.getSunP11ConfigurationFile();
             final P11Slot slot;
             if ( sharedLibrary!=null && sharedLibrary.length()>0 ) {
                 final String sSlot;
-                final String sSlotRead = OcspConfiguration.getSlot();
+                final String sSlotRead = OcspConfiguration.getP11SlotIndex();
                 if ( sSlotRead==null || sSlotRead.length()<1 ) {
                     throw new ServletException("No slot number given.");
                 }

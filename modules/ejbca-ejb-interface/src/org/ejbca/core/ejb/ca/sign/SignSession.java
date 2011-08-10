@@ -202,7 +202,7 @@ public interface SignSession {
 	 * @param notBefore an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
 	 * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
 	 * @param certificateprofileid used to override the one set in userdata.
-	 *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
+	 *                             Should be set to CertificateProfileConstants.CERTPROFILE_NO_PROFILE if the usedata certificateprofileid should be used
 	 * @param caid                 used to override the one set in userdata.
 	 *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
 	 * 

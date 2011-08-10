@@ -16,7 +16,7 @@ package org.ejbca.ui.web.pub.cluster;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.ejbca.config.OcspConfiguration;
+import org.cesecore.config.OcspConfiguration;
 import org.ejbca.ui.web.protocol.IHealtChecker;
 
 
