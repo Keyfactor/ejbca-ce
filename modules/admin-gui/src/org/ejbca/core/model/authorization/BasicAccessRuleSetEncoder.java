@@ -49,12 +49,12 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     /**
      * Tries to encode a advanced ruleset into basic ones. Sets the forceadvanced flag if encoding isn't possible.
      */
-    public BasicAccessRuleSetEncoder(Collection<AccessRuleData> currentaccessrules, Collection<String> availableaccessrules, boolean usehardtokens,
+    public BasicAccessRuleSetEncoder(Collection<AccessRuleData> currentaccessrules, Collection<AccessRuleData> availableaccessrules, boolean usehardtokens,
             boolean usekeyrecovery) {
-        HashSet<String> aar = new HashSet<String>();
+        HashSet<AccessRuleData> aar = new HashSet<AccessRuleData>();
         aar.addAll(availableaccessrules);
         for (AccessRuleData accessRule : currentaccessrules) {
-            aar.add(accessRule.getAccessRuleName());
+            aar.add(accessRule);
         }
         initAvailableRoles(aar);
         initAvailableRules(usehardtokens, usekeyrecovery, aar);
@@ -145,7 +145,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         return availableotherrules;
     }
 
-    private void initAvailableRoles(HashSet<String> availableruleset) {
+    private void initAvailableRoles(HashSet<AccessRuleData> availableruleset) {
         namesOfAvailableRoles.add(DefaultRoles.SUPERADMINISTRATOR.getName());
 
         namesOfAvailableRoles.add(DefaultRoles.RAADMINISTRATOR.getName());
@@ -374,7 +374,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         return returnval;
     }
 
-    private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection<String> availableaccessrules) {
+    private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection<AccessRuleData> availableaccessrules) {
         availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEW));
         availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_VIEWHISTORY));
         if (usehardtokens) {
@@ -389,9 +389,9 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         if (usekeyrecovery) {
             availableendentityrules.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
         }
-        Iterator<String> iter = availableaccessrules.iterator();
-        while (iter.hasNext()) {
-            String nextrule = iter.next();
+
+        for(AccessRuleData rule : availableaccessrules) {
+            String nextrule = rule.getAccessRuleName();
             if (nextrule.equals(AccessRulesConstants.CABASE)) {
                 this.availablecas.add(Integer.valueOf(BasicAccessRuleSet.CA_ALL));
             } else if (nextrule.startsWith(AccessRulesConstants.CAPREFIX)) {

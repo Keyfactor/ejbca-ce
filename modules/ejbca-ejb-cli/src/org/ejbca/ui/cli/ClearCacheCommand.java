@@ -22,7 +22,6 @@ import org.ejbca.util.CliTools;
  * Clears caches used internally by EJBCA. The caches are used to limit the number of database queries issued to the database.
  * See conf/cache.properties.sample for configuration of caches.
  *
- * @author Tomas Gustavsson, PrimeKey Solutions AB
  * @version $Id$
  */
 public class ClearCacheCommand extends BaseCommand {
@@ -69,7 +68,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (authorization) {
 				getLogger().info("Flushing authorization cache.");
 				// Flush access control
-				ejb.getAuthorizationSession().flushAuthorizationRuleCache();
+				ejb.getAccessControlSession().forceCacheExpire();
 			}
 			if (logconf) {
 				getLogger().info("Flushing log configuration cache.");

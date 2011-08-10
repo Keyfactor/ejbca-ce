@@ -47,7 +47,7 @@ public interface ApprovalSession {
      * @throws ApprovalException
      *             if an approval already exists for this request.
      */
-    public void addApprovalRequest(X509CertificateAuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException;
+    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -136,7 +136,7 @@ public interface ApprovalSession {
      * 
      * @param gc is the GlobalConfiguration used for notification info
      */
-    public void reject(X509CertificateAuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
 
     /**

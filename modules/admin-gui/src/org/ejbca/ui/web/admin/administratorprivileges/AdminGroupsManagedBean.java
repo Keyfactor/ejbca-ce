@@ -14,7 +14,6 @@
 package org.ejbca.ui.web.admin.administratorprivileges;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +26,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -37,7 +37,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.BasicAccessRuleSet;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetDecoder;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetEncoder;
@@ -380,7 +379,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	
 	private BasicAccessRuleSetEncoder getBasicRuleSetInternal(RoleData adminGroup) {
 		GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
-		return new BasicAccessRuleSetEncoder(adminGroup.getAccessRules(), getAuthorizationDataHandler().getAvailableAccessRules(),
+		return new BasicAccessRuleSetEncoder(adminGroup.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRules(),
 				globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
 	}
 
@@ -416,16 +415,16 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 	/** @return a viewable list of the possible values for a access rule */
 	public Collection<SelectItem> getAccessRuleRules() {
 		Collection<SelectItem> result = new ArrayList<SelectItem>();
-		result.add(new SelectItem(AccessRule.RULE_NOTUSED, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_NOTUSED], true)));
-		result.add(new SelectItem(AccessRule.RULE_ACCEPT, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_ACCEPT], true)));
-		result.add(new SelectItem(AccessRule.RULE_DECLINE, getEjbcaWebBean().getText(AccessRule.RULE_TEXTS[AccessRule.RULE_DECLINE], true)));
+		result.add(new SelectItem(AccessRuleState.RULE_NOTUSED, getEjbcaWebBean().getText(AccessRuleState.RULE_NOTUSED.getName(), true)));
+		result.add(new SelectItem(AccessRuleState.RULE_ACCEPT, getEjbcaWebBean().getText(AccessRuleState.RULE_ACCEPT.getName(), true)));
+		result.add(new SelectItem(AccessRuleState.RULE_DECLINE, getEjbcaWebBean().getText(AccessRuleState.RULE_DECLINE.getName(), true)));
 		return result;
 	}
 
 	/** @return a parsed version of the accessrule for the current row in the datatable. CAs, End Entity Profiles and UserDataSources are given their cleartext name. */
 	public String getParsedAccessRule() {
-		AccessRule accessRule =  (AccessRule) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("accessRule");
-		String resource = accessRule.getAccessRule();
+		AccessRuleData accessRule =  (AccessRuleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("accessRule");
+		String resource = accessRule.getAccessRuleName();
 		// Check if it is a profile rule, then replace profile id with profile name.
 		if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
 			if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
@@ -461,8 +460,9 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		return resource;
 	}
 
-	/** Save the current state of the access rules and invalidate caches */
-	public void saveAdvancedAccessRules() {
+	/** Save the current state of the access rules and invalidate caches 
+	 * @throws RoleNotFoundException */
+	public void saveAdvancedAccessRules() throws RoleNotFoundException {
 		log.info("Trying to replace access rules..");
 		Collection<AccessRuleData> allRules = new ArrayList<AccessRuleData>();
 		Collection<AccessRuleData> toReplace = new ArrayList<AccessRuleData>();
@@ -473,9 +473,9 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 		allRules.addAll(getAccessRules().getCAAccessRules());
 		allRules.addAll(getAccessRules().getUserDataSourceAccessRules());
 		// TODO: Remove all access rules marked as UNUSED and replace the others
-		for(AccessRule ar : allRules) {
-			if (ar.getRule() == AccessRule.RULE_NOTUSED) {
-				toRemove.add(ar.getAccessRule());
+		for(AccessRuleData ar : allRules) {
+			if (ar.getInternalState() == AccessRuleState.RULE_NOTUSED) {
+				toRemove.add(ar);
 			} else {
 				toReplace.add(ar);
 			}

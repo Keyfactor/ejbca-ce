@@ -172,7 +172,7 @@ public class AuthorizationSessionBean implements AuthorizationSessionLocal, Auth
         	log.trace(">existsEndEntityProfileInRules("+profileid+")");    		
     	}
     	final String whereClause = "accessRule = '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "' OR accessRule LIKE '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "/%'";
-        long count = AccessRulesData.findCountByCustomQuery(entityManager, whereClause);
+        long count = AccessRuleData.findCountByCustomQuery(entityManager, whereClause);
     	if (log.isTraceEnabled()) {
         	log.trace("<existsEndEntityProfileInRules("+profileid+"): "+count);
     	}

@@ -97,7 +97,7 @@ public abstract class AccessRulesConstants {
     public static final String HARDTOKEN_ISSUEHARDTOKENADMINISTRATORS     = "/hardtoken_functionality/issue_hardtoken_administrators";
     
     // Standard Regular Access Rules
-    protected static final String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
+    public static final String[] STANDARDREGULARACCESSRULES = {REGULAR_CAFUNCTIONALTY, 
                                                            REGULAR_CABASICFUNCTIONS,
                                                            REGULAR_ACTIVATECA,
                                                            REGULAR_RENEWCA,
