@@ -13,6 +13,7 @@
 package org.cesecore.roles.management;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -134,6 +135,17 @@ public interface RoleManagementSession {
      */
     RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessRuleData> accessRules)
             throws RoleNotFoundException, AuthorizationDeniedException;
+    
+    /**
+    * Removes the given access rules from a role.
+    * 
+    * @param role The role.
+    * @param accessRules A collection of strings. These rules will be looked up and removed from persistence.
+    * @throws RoleNotFoundException if the role does not exist
+    * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
+    */
+   RoleData removeAccessRulesFromRole(AuthenticationToken authenticationToken, RoleData role, List<String> accessRuleNames)
+           throws RoleNotFoundException, AuthorizationDeniedException;
 
     /**
      * Gives the collection of subjects the given role. If the subject already exists, update it with the new value.

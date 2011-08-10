@@ -21,15 +21,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.util.ValueExtractor;
 
 /**
  * Implementation of AccessRuleManagementSession class
  * 
- * Based on cesecore version:
- *      AccessRuleManagementSessionBean.java 854 2011-05-24 12:57:17Z johane
+ * Based on cesecore version: AccessRuleManagementSessionBean.java 854 2011-05-24 12:57:17Z johane
  * 
  * @version $Id$
  * 
@@ -37,6 +39,8 @@ import org.cesecore.util.QueryResultWrapper;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessRuleManagementSessionLocal")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AccessRuleManagementSessionBean implements AccessRuleManagementSessionLocal {
+
+    private static final Logger log = Logger.getLogger(AccessRuleManagementSessionBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -46,6 +50,37 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
         final Query query = entityManager.createQuery("SELECT a FROM AccessRuleData a WHERE a.primaryKey=:primaryKey");
         query.setParameter("primaryKey", primaryKey);
         return (AccessRuleData) QueryResultWrapper.getSingleResult(query);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public boolean existsEndEntityProfileInRules(int profileid) {
+        if (log.isTraceEnabled()) {
+            log.trace(">existsEndEntityProfileInRules(" + profileid + ")");
+        }
+        final String whereClause = "accessRule = '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "' OR accessRule LIKE '"
+                + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "/%'";
+        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
+        long count = ValueExtractor.extractLongValue(query.getSingleResult());
+        if (log.isTraceEnabled()) {
+            log.trace("<existsEndEntityProfileInRules(" + profileid + "): " + count);
+        }
+        return count > 0;
+    }
+
+    @Override
+    public boolean existsCaInAccessRules(int caid) {
+        if (log.isTraceEnabled()) {
+            log.trace(">existsCAInAccessRules(" + caid + ")");
+        }
+        String whereClause = "accessRule = '" + AccessRulesConstants.CABASE + "/" + caid + "' OR accessRule LIKE '" + AccessRulesConstants.CABASE
+                + "/" + caid + "/%'";
+        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
+        long count = ValueExtractor.extractLongValue(query.getSingleResult());
+        if (log.isTraceEnabled()) {
+            log.trace("<existsCAInAccessRules(" + caid + "): " + count);
+        }
+        return count > 0;
     }
 
     @Override
@@ -76,7 +111,8 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public AccessRuleData createRule(String accessRuleName, String roleName, AccessRuleState state, boolean isRecursive) throws AccessRuleExistsException {
+    public AccessRuleData createRule(String accessRuleName, String roleName, AccessRuleState state, boolean isRecursive)
+            throws AccessRuleExistsException {
         AccessRuleData result = null;
         int primaryKey = AccessRuleData.generatePrimaryKey(roleName, accessRuleName);
 

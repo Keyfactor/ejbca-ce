@@ -27,7 +27,6 @@
     <session name="HardTokenSessionBean"><interface class="org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote" binding-name="ejbca/HardTokenSessionRemote"/></session>  
     <session name="ServiceDataSessionBean"><interface class="org.ejbca.core.ejb.services.ServiceDataSessionRemote" binding-name="ejbca/ServiceDataSessionRemote"/></session>  
     <session name="CAAdminSessionBean"><interface class="org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote" binding-name="ejbca/CAAdminSessionRemote"/></session>  
-    <session name="AuthorizationSessionBean"><interface class="org.ejbca.core.ejb.authorization.AuthorizationSessionRemote" binding-name="ejbca/AuthorizationSessionRemote"/></session>  
     <session name="CmpMessageDispatcherSessionBean"><interface class="org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote" binding-name="ejbca/CmpMessageDispatcherSessionRemote"/></session>  
     <session name="RaAdminSessionBean"><interface class="org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote" binding-name="ejbca/RaAdminSessionRemote"/></session>  
     <session name="KeyRecoverySessionBean"><interface class="org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote" binding-name="ejbca/KeyRecoverySessionRemote"/></session>  

@@ -20,10 +20,11 @@ import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.authorization.AuthorizationSessionRemote;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
@@ -66,6 +67,7 @@ public class EjbRemoteHelper {
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private CertReqHistorySessionRemote certReqHistorySession = null;
     private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
+    private ComplexAccessControlSessionRemote complexAccessControlSessionRemote = null;
     private ConfigurationSessionRemote configurationSession = null;
     private CrlStoreSessionRemote crlSession = null;
     private CrlCreateSessionRemote crlStoreSession = null;
@@ -79,6 +81,7 @@ public class EjbRemoteHelper {
     private RaAdminSessionRemote raAdminSession = null;
     private GlobalConfigurationSessionRemote globalConfigurationSession;
     private RoleAccessSessionRemote roleAccessSession = null;
+    private RoleManagementSessionRemote roleManagementSession = null;
     private ServiceDataSessionRemote serviceDataSession = null;
     private ServiceSessionRemote serviceSession = null;
     private SignSessionRemote signSession = null;
@@ -127,6 +130,13 @@ public class EjbRemoteHelper {
             cmpMessageDispatcherSession = JndiHelper.getRemoteSession(CmpMessageDispatcherSessionRemote.class);
         }
         return cmpMessageDispatcherSession;
+    }
+
+    public ComplexAccessControlSessionRemote getComplexAccessControlSession() {
+        if (complexAccessControlSessionRemote == null) {
+            complexAccessControlSessionRemote = JndiHelper.getRemoteSession(ComplexAccessControlSessionRemote.class);
+        }
+        return complexAccessControlSessionRemote;
     }
 
     public CrlCreateSessionRemote getCrlCreateSession() {
@@ -297,19 +307,25 @@ public class EjbRemoteHelper {
         return certReqHistorySession;
     }
 
-
     public AccessControlSessionRemote getAccessControlSession() {
-        if(accessControlSession == null) {
+        if (accessControlSession == null) {
             accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
         }
         return accessControlSession;
     }
 
-	public RevocationSessionRemote getRevocationSession() {
+    public RevocationSessionRemote getRevocationSession() {
         if (revocationSession == null) {
-        	revocationSession = JndiHelper.getRemoteSession(RevocationSessionRemote.class);
+            revocationSession = JndiHelper.getRemoteSession(RevocationSessionRemote.class);
         }
         return revocationSession;
-	}
+    }
+    
+    public RoleManagementSessionRemote getRoleManagementSession() {
+        if(roleManagementSession == null) {
+            roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+        }
+        return roleManagementSession;
+    }
 
 }

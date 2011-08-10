@@ -35,6 +35,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -93,14 +94,15 @@ public class RAInterfaceBean implements Serializable {
     
     private EndEntityProfileDataHandler    profiles;
 
-    private UserAdminSessionLocal userAdminSession;
-    private CertificateStoreSession certificatesession;
     private AccessControlSessionLocal authorizationsession;
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
+    private CertificateProfileSession certificateProfileSession;
+    private CertificateStoreSession certificatesession;
     private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
+    private UserAdminSessionLocal userAdminSession;
     private UserDataSourceSession userdatasourcesession;
-    private CertificateProfileSession certificateProfileSession;
     
     private UsersView usersView;
     private CertificateView[]                  certificates;
@@ -138,6 +140,7 @@ public class RAInterfaceBean implements Serializable {
     		keyrecoverysession = ejb.getKeyRecoverySession();
     		userdatasourcesession = ejb.getUserDataSourceSession();
     		certificateProfileSession = ejb.getCertificateProfileSession();
+    		this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
 
     		initialized =true;
     	} else {
@@ -527,7 +530,7 @@ public class RAInterfaceBean implements Serializable {
         int profileid = endEntityProfileSession.getEndEntityProfileId(administrator, name);
         // Check if any users or authorization rule use the profile.
         profileused = userAdminSession.checkForEndEntityProfileId(administrator, profileid)
-                      || authorizationsession.existsEndEntityProfileInRules(administrator, profileid);
+                      || accessRuleManagementSession.existsEndEntityProfileInRules(profileid);
         if (!profileused) {
         	profiles.removeEndEntityProfile(name);
         } else {

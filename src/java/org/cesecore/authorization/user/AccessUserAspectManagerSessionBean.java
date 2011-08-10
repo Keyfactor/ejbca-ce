@@ -25,6 +25,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
 import org.cesecore.util.QueryResultWrapper;
+import org.ejbca.util.ValueExtractor;
 
 /**
  * Implementation of AccessUserAspectManagerSession
@@ -86,6 +87,16 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
             remove(userAspect);
         }
 
+    }
+    
+    @Override
+    public boolean existsCAInAccessUserAspects(int caId) {      
+        final Query query = entityManager.createQuery("SELECT COUNT(a) FROM AccessUserAspectData a WHERE a.caId=:caId");
+        query.setParameter("caId", caId);
+        long count = ValueExtractor.extractLongValue(query.getSingleResult());
+        
+     
+        return count > 0;
     }
 
 }

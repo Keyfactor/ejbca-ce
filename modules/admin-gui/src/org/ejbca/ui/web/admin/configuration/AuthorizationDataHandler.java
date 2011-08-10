@@ -28,6 +28,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSession;
 import org.cesecore.roles.management.RoleManagementSession;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
@@ -47,6 +48,7 @@ public class AuthorizationDataHandler implements Serializable {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private AccessControlSessionLocal authorizationsession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     private RoleAccessSession roleAccessSession;
     private RoleManagementSession roleManagementSession;
     private AuthenticationToken administrator;
@@ -55,12 +57,13 @@ public class AuthorizationDataHandler implements Serializable {
 
     /** Creates a new instance of ProfileDataHandler */
     public AuthorizationDataHandler(AuthenticationToken administrator, InformationMemory informationmemory, RoleAccessSession roleAccessSession,
-            RoleManagementSession roleManagementSession, AccessControlSessionLocal authorizationsession) {
+            RoleManagementSession roleManagementSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession) {
         this.roleManagementSession = roleManagementSession;
         this.roleAccessSession = roleAccessSession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;
         this.informationmemory = informationmemory;
+        this.complexAccessControlSession = complexAccessControlSession;
     }
 
     /**
@@ -134,7 +137,7 @@ public class AuthorizationDataHandler implements Serializable {
     public Collection<RoleData> getRoles() {
         if (this.authorizedRoles == null) {
             // FIXME: This method should be amended to access control
-            this.authorizedRoles = authorizationsession.getAllRolesAuthorizedToEdit(administrator);
+            this.authorizedRoles = complexAccessControlSession.getAllRolesAuthorizedToEdit(administrator);
         }
         return this.authorizedRoles;
     }
@@ -197,7 +200,7 @@ public class AuthorizationDataHandler implements Serializable {
      * 
      * @returns a Collection of String with available access rules.
      */
-    public Collection<AccessRuleData> getAvailableAccessRules() {
+    public Collection<String> getAvailableAccessRules() {
         return this.informationmemory.getAuthorizedAccessRules();
     }
 
@@ -233,12 +236,12 @@ public class AuthorizationDataHandler implements Serializable {
             throw new AuthorizationDeniedException(msg);
         }
         // Authorized to group
-        if (!authorizationsession.isAuthorizedToEditRole(administrator, role)) {
+        if (!complexAccessControlSession.isAuthorizedToEditRole(administrator, role)) {
             throw new AuthorizationDeniedException("Admin " + administrator + " not authorized to group " + role);
         }
         // Check if admin group is among available admin groups
         boolean exists = false;
-        for (RoleData next : authorizationsession.getAllRolesAuthorizedToEdit(administrator)) {
+        for (RoleData next : complexAccessControlSession.getAllRolesAuthorizedToEdit(administrator)) {
             if (next.equals(role)) {
                 exists = true;
             }

@@ -25,6 +25,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -45,17 +46,19 @@ public class RAAuthorization implements Serializable {
 	private TreeMap<String, Integer> authviewprofilenames = null;
     private AuthenticationToken admin;
     private AccessControlSessionLocal authorizationsession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.globalConfigurationSession = globalConfigurationSession;
     	this.authorizationsession = authorizationsession;
     	this.caSession = caSession;
     	this.endEntityProfileSession = endEntityProfileSession;
+    	this.complexAccessControlSession = complexAccessControlSession;
     }
 
     /**
@@ -128,7 +131,7 @@ public class RAAuthorization implements Serializable {
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
     	Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap(admin).keySet());
-      	Collection<Integer> result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, profileIds);     	
+      	Collection<Integer> result = this.complexAccessControlSession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, profileIds);     	
       	result.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator<Integer> iter = result.iterator();
       	                    

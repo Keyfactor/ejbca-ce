@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
- * Remote interface for AuthorizationSession.
+ * @version $Id$
+ * 
  */
-@Remote
-public interface AuthorizationSessionRemote extends AuthorizationSession {
+@Local
+public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSession {
+
+
 
 }

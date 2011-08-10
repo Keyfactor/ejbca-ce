@@ -39,16 +39,22 @@ public enum AccessRuleState {
     } 
     
     public static AccessRuleState matchDatabaseValue(Integer value) {
-        return map.get(value);
+        return databaseValueToRuleMap.get(value);
+    }
+    
+    public static AccessRuleState matchName(String name) {
+        return nameToRuleMap.get(name);
     }
     
     private String name;
     private int databaseValue;
-    private static Map<Integer, AccessRuleState> map = new HashMap<Integer, AccessRuleState>();
+    private static Map<Integer, AccessRuleState> databaseValueToRuleMap = new HashMap<Integer, AccessRuleState>();
+    private static Map<String, AccessRuleState> nameToRuleMap = new HashMap<String, AccessRuleState>();
     
     static {
         for(AccessRuleState state : AccessRuleState.values()) {
-            map.put(state.getDatabaseValue(), state);
+            databaseValueToRuleMap.put(state.getDatabaseValue(), state);
+            nameToRuleMap.put(state.getName(), state);
         }
     }
     
