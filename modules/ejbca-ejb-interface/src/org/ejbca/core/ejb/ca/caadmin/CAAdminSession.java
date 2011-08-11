@@ -330,13 +330,16 @@ public interface CAAdminSession {
      * The signature algorithm, encryption algorithm, key algorithm and other
      * properties are not removed so that the keystore can later by restored by
      * using
+
      * {@link CAAdminTestSessionBean#restoreCAKeyStore(AuthenticationToken, String, byte[], String, String, String, String)}
      * .
+     * 
      * 
      * @param admin Administrator
      * @param caname Name (human readable) of CA for which the keystore should be removed
      * @throws EJBException in case if the catoken is not a soft catoken
      * 
+
      * @see CAAdminTestSessionBean#exportCAKeyStore(AuthenticationToken, String, String, String, String, String)
      */
     public void removeCAKeyStore(AuthenticationToken admin, String caname) throws EJBException;

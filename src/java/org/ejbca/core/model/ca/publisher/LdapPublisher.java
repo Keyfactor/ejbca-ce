@@ -57,7 +57,9 @@ import com.novell.ldap.LDAPSearchConstraints;
  */
 public class LdapPublisher extends BasePublisher {
 
-	private static final Logger log = Logger.getLogger(LdapPublisher.class);
+
+    private static final long serialVersionUID = -584431431033065114L;
+    private static final Logger log = Logger.getLogger(LdapPublisher.class);
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -779,17 +781,17 @@ public class LdapPublisher extends BasePublisher {
 	}
 
 	/**
-	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection(Admin)
+	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection(AuthenticationToken)
 	 */    
 	public void testConnection(AuthenticationToken admin) throws PublisherConnectionException {
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		LDAPConnection lc = createLdapConnection();
 		// Try all the listed servers
-		Iterator servers = getHostnameList().iterator();
+		Iterator<String> servers = getHostnameList().iterator();
 		boolean connectionFailed;
 		do {
 			connectionFailed = false;
-			String currentServer = (String) servers.next();
+			String currentServer = servers.next();
 			LDAPEntry entry = null;
 			try {
 				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
@@ -863,8 +865,8 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 *  Returns the hostnames of ldap server.
 	 */    
-	public ArrayList getHostnameList(){
-		ArrayList ret = new ArrayList();	// <String>
+	public List<String> getHostnameList(){
+		List<String> ret = new ArrayList<String>();	
 		String[] hostnames = getHostnames().split(";");
 		for (int i=0; i<hostnames.length; i++) {
 			ret.add(hostnames[i]);

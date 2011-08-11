@@ -141,7 +141,7 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	}
 
 	/** 
-	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(Admin, String)
+	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(AuthenticationToken, String)
 	 */
 	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {		
 		return getCustomUserDataSource().fetch(admin,searchstring);
@@ -149,7 +149,7 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	
 	/** 
 	 * @throws MultipleMatchException 
-	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(Admin, String, boolean)
+	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(AuthenticationToken, String, boolean)
 	 */
 	
 	public boolean removeUserData(AuthenticationToken admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException, MultipleMatchException {

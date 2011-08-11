@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -44,7 +45,7 @@ public interface ILogDevice extends Serializable {
      * @param comment comment of the event.
      * @param exception the exception that has occurred (can be null)
      */
-    public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
+    public void log(AuthenticationToken admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception);
     
     /**
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.

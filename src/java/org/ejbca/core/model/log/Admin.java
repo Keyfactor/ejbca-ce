@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminInformation;
 
 /**

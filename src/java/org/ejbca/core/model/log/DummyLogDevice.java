@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -59,7 +60,7 @@ public class DummyLogDevice implements ILogDevice, Serializable {
 	
 	/** @see org.ejbca.core.model.log.ILogDevice */
 	@Override
-	public void log(Admin admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
+	public void log(AuthenticationToken admininfo, int caid, int module, Date time, String username, Certificate certificate, int event, String comment, Exception exception) {
 	}
 
 	/** @see org.ejbca.core.model.log.ILogDevice */
