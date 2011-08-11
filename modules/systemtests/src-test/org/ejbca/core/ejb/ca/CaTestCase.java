@@ -59,7 +59,6 @@ import org.ejbca.util.query.Query;
  * This class represents an abstract class for all tests which require testing
  * CAs.
  * 
- * @author mikek
  * @version $Id$
  */
 public abstract class CaTestCase extends TestCase {

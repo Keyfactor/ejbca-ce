@@ -59,7 +59,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
     /**
      * Main constructor of an approval request with step functionality
      */
-	public DummyApprovalRequest(X509CertificateAuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
+	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
 		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
 		this.executable = executable;
 	} 
