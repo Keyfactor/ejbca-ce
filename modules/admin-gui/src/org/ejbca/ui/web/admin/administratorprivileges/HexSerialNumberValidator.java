@@ -24,7 +24,6 @@ import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessMatchValue;
-import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /** Validates hexadecimal serial numbers entered in the admin-GUI. Does it by constructing a biginteger.

@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.approval;
 
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -50,6 +50,6 @@ public interface ApprovalExecutionSession {
      * @throws AdminAlreadyApprovedRequestException
      * @throws EjbcaException
      */
-    public void approve(X509CertificateAuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException;
 }

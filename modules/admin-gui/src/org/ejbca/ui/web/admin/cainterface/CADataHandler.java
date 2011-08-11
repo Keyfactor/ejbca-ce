@@ -31,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -80,7 +79,6 @@ public class CADataHandler implements Serializable {
     private CAAdminSession caadminsession; 
     private CaSession caSession;
     private AuthenticationToken administrator;
-    private AccessControlSession authorizationsession;
     private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private InformationMemory info;
@@ -98,13 +96,12 @@ public class CADataHandler implements Serializable {
                          UserAdminSession adminsession, 
                          GlobalConfigurationSession globalconfigurationsession,
                          CertificateProfileSession certificateProfileSession,
-                         AccessControlSession authorizationsession, RevocationSessionLocal revocationSession,
+                         RevocationSessionLocal revocationSession,
                          AccessUserAspectManagerSessionLocal accessUserAspectManagerSession, AccessRuleManagementSessionLocal accessRuleManagementSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession; 
        this.caSession = caSession;
-       this.authorizationsession = authorizationsession;
        this.accessRuleManagementSession = accessRuleManagementSession;
        this.accessUserAspectManagerSession = accessUserAspectManagerSession;
        this.adminsession = adminsession;

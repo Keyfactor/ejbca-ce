@@ -30,6 +30,8 @@ import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -101,6 +103,8 @@ public class CAInterfaceBean implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
     private RevocationSessionLocal revocationSession;
+	private AccessUserAspectManagerSessionLocal userAspectSession;
+	private AccessRuleManagementSessionLocal accessRuleSession; 
     private boolean initialized;
     private AuthenticationToken administrator;
     private InformationMemory informationmemory;
@@ -134,12 +138,14 @@ public class CAInterfaceBean implements Serializable {
           certificateProfileSession = ejb.getCertificateProfileSession();
           endEntityProfileSession = ejb.getEndEntityProfileSession(); 
           revocationSession = ejb.getRevocationSession();
+          accessRuleSession = ejb.getAccessRuleManagementSession();
+          userAspectSession = ejb.getAccessUserAspectSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
             cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
-                    certificateProfileSession, authorizationsession, revocationSession, ejbcawebbean);
+                    certificateProfileSession, revocationSession, userAspectSession, accessRuleSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;

@@ -26,7 +26,7 @@ import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -75,7 +75,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
-    public void approve(X509CertificateAuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
         log.trace(">approve");
         ApprovalData adl;

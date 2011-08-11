@@ -27,10 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.LogConfiguration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
-import org.ejbca.core.model.log.ILogExporter;
-import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -56,7 +54,7 @@ public class LogInterfaceBean implements Serializable {
     // Private fields.
     private CertificateStoreSession certificatesession;
     //private LogSession logSession;
-    private LogConfigurationSessionLocal logConfigurationSession;
+    //private LogConfigurationSessionLocal logConfigurationSession;
     private LogEntriesView                 logentriesview;
     private AuthenticationToken admin;
     private SubjectDNProxy                 dnproxy;  
@@ -90,7 +88,7 @@ public class LogInterfaceBean implements Serializable {
     		admin = ejbcawebbean.getAdminObject();
     		EjbLocalHelper ejb = new EjbLocalHelper();
     		//logSession = ejb.getLogSession(); 
-    		logConfigurationSession = ejb.getLogConfigurationSession(); 
+    		//logConfigurationSession = ejb.getLogConfigurationSession(); 
     		certificatesession = ejb.getCertificateStoreSession();
     		this.informationmemory = ejbcawebbean.getInformationMemory();
     		initializeEventNameTables(ejbcawebbean);
@@ -184,7 +182,8 @@ public class LogInterfaceBean implements Serializable {
      * @return the logconfiguration
      */
     public LogConfiguration loadLogConfiguration(int caid) {
-    	return logConfigurationSession.loadLogConfiguration(caid);   
+    	//return logConfigurationSession.loadLogConfiguration(caid);
+    	return null;
     }    
         
     /**
@@ -274,10 +273,10 @@ public class LogInterfaceBean implements Serializable {
      * @throws Exception differs depending on the used ILogExporter 
      * @see org.ejbca.core.model.log.ILogExporter
      */
-    public byte[] exportLastQuery(final String deviceName, final ILogExporter exporter) throws Exception {
-    	//final Collection<LogEntry> logentries = logSession.query(deviceName, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
-    	return exporter.export(admin, null);
-    }
+//    public byte[] exportLastQuery(final String deviceName, final ILogExporter exporter) throws Exception {
+//    	//final Collection<LogEntry> logentries = logSession.query(deviceName, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
+//    	return exporter.export(admin, null);
+//    }
     
     public Collection<String> getAvailableQueryLogDevices() {
     	//return logSession.getAvailableQueryLogDevices();

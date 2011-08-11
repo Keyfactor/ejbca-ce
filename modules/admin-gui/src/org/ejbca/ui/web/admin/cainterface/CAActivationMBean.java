@@ -21,7 +21,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -61,10 +62,12 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
 	private EndEntityProfileSession endEntityProfileSession;
-	private AccessControlSession authorizationsession;
 	private UserAdminSession adminsession;
 	private GlobalConfigurationSession globalconfigurationsession;
 	private RevocationSessionLocal revocationSession;
+	private AccessUserAspectManagerSessionLocal userAspectSession;
+	private AccessRuleManagementSessionLocal accessRuleSession; 
+	
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
 	public static final String KEEPCURRENT = "keepcurrent";
@@ -84,14 +87,15 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			EjbLocalHelper ejb = new EjbLocalHelper();
 			caadminsession = ejb.getCaAdminSession();
 			caSession = ejb.getCaSession();
-			authorizationsession = ejb.getAccessControlSession();
 			adminsession = ejb.getUserAdminSession();
 			globalconfigurationsession = ejb.getGlobalConfigurationSession();
 			certificateProfileSession = ejb.getCertificateProfileSession();
 			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			revocationSession = ejb.getRevocationSession();
-
-			cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession, certificateProfileSession, authorizationsession, revocationSession, webBean);
+			accessRuleSession = ejb.getAccessRuleManagementSession();
+			userAspectSession = ejb.getAccessUserAspectSession();
+			
+			cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession, certificateProfileSession, revocationSession, userAspectSession, accessRuleSession, webBean);
 			caInfoList = new ArrayList<CAWrapper>();
 			initializeWrappers();
 		} catch (Exception e){
