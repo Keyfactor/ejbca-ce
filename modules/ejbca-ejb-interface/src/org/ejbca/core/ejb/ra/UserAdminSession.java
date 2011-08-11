@@ -169,7 +169,7 @@ public interface UserAdminSession {
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      * 
-     * @deprecated use {@link #changeUser(Admin, UserDataVO, boolean)} instead
+     * @deprecated use {@link #changeUser(AuthenticationToken, UserDataVO, boolean)} instead
      */
     @Deprecated
     public void changeUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,

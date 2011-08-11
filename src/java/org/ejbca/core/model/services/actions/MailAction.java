@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.Admin;
@@ -35,75 +36,75 @@ import org.ejbca.util.mail.MailSender;
  * @version $Id$
  */
 public class MailAction extends BaseAction {
-	
-	private static final Logger log = Logger.getLogger(MailAction.class);
+
+    private static final Logger log = Logger.getLogger(MailAction.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-	
-	private static final Admin admin = Admin.getInternalAdmin();
-	
-	public static final String PROP_SENDERADDRESS   = "action.mail.senderAddress";
-	public static final String PROP_RECIEVERADDRESS = "action.mail.recieverAddress";
 
-	/**
-	 * Sends the mail
-	 * 
-	 * Only supports the MailActionInfo otherwise is ActionException thrown.
-	 * 
-	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
-	 */
-	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
-		LogSessionLocal logSession = ((LogSessionLocal)ejbs.get(LogSessionLocal.class));
-		checkConfig(actionInfo);
-		
-		MailActionInfo mailActionInfo = (MailActionInfo) actionInfo;
-		String senderAddress = properties.getProperty(PROP_SENDERADDRESS);
-		
-		String reciverAddress = mailActionInfo.getReciever();
-		if(reciverAddress== null){
-			reciverAddress = properties.getProperty(PROP_RECIEVERADDRESS);
-		}
-				
-		if(reciverAddress == null || reciverAddress.trim().equals("")){
-			String msg = intres.getLocalizedMessage("services.mailaction.errorreceiveraddress");
-			throw new ActionException(msg);
-		}
-		        
+    public static final String PROP_SENDERADDRESS = "action.mail.senderAddress";
+    public static final String PROP_RECIEVERADDRESS = "action.mail.recieverAddress";
+
+    /**
+     * Sends the mail
+     * 
+     * Only supports the MailActionInfo otherwise is ActionException thrown.
+     * 
+     * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
+     */
+    public void performAction(AuthenticationToken admin, int caId, ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
+        LogSessionLocal logSession = ((LogSessionLocal) ejbs.get(LogSessionLocal.class));
+        checkConfig(actionInfo);
+
+        MailActionInfo mailActionInfo = (MailActionInfo) actionInfo;
+        String senderAddress = properties.getProperty(PROP_SENDERADDRESS);
+
+        String reciverAddress = mailActionInfo.getReciever();
+        if (reciverAddress == null) {
+            reciverAddress = properties.getProperty(PROP_RECIEVERADDRESS);
+        }
+
+        if (reciverAddress == null || reciverAddress.trim().equals("")) {
+            String msg = intres.getLocalizedMessage("services.mailaction.errorreceiveraddress");
+            throw new ActionException(msg);
+        }
+
         try {
-        	MailSender.sendMailOrThrow(senderAddress, Arrays.asList(reciverAddress), MailSender.NO_CC, mailActionInfo.getSubject(), mailActionInfo.getMessage(), MailSender.NO_ATTACHMENTS);
-        	if (mailActionInfo.isLoggingEnabled()) {
-        		String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
-        		logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null, LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
-        	}
+            MailSender.sendMailOrThrow(senderAddress, Arrays.asList(reciverAddress), MailSender.NO_CC, mailActionInfo.getSubject(),
+                    mailActionInfo.getMessage(), MailSender.NO_ATTACHMENTS);
+            if (mailActionInfo.isLoggingEnabled()) {
+                String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
+                logSession.log(admin, caId, LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null,
+                        LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
+            }
         } catch (Exception e) {
-			String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
+            String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
             log.error(msg, e);
-            try{
+            try {
                 if (mailActionInfo.isLoggingEnabled()) {
-                	logSession.log(admin, admin.getCaId(), LogConstants.MODULE_APPROVAL, new java.util.Date(),null, null, LogConstants.EVENT_ERROR_NOTIFICATION, msg);
+                    logSession.log(admin, caId, LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null,
+                            LogConstants.EVENT_ERROR_NOTIFICATION, msg);
                 }
-            }catch(Exception f){
+            } catch (Exception f) {
                 throw new EJBException(f);
             }
         }
-	}
-	
-	/**
-	 * Method that checks the configuration sets the variables and throws an exception
-	 * if it's invalid
-	 *  
-	 * @param actionInfo
-	 * @throws ActionException
-	 */
-	private void checkConfig(ActionInfo actionInfo) throws ActionException {
-		if(!(actionInfo instanceof MailActionInfo)){
-			String msg = intres.getLocalizedMessage("services.mailaction.erroractioninfo");
-			throw new ActionException(msg);
-		}
-		String senderAddress = properties.getProperty(PROP_SENDERADDRESS);
-		if(senderAddress == null || senderAddress.trim().equals("")){
-			String msg = intres.getLocalizedMessage("services.mailaction.errorsenderaddress");
-			throw new ActionException(msg);
-		}
-	}
+    }
+
+    /**
+     * Method that checks the configuration sets the variables and throws an exception if it's invalid
+     * 
+     * @param actionInfo
+     * @throws ActionException
+     */
+    private void checkConfig(ActionInfo actionInfo) throws ActionException {
+        if (!(actionInfo instanceof MailActionInfo)) {
+            String msg = intres.getLocalizedMessage("services.mailaction.erroractioninfo");
+            throw new ActionException(msg);
+        }
+        String senderAddress = properties.getProperty(PROP_SENDERADDRESS);
+        if (senderAddress == null || senderAddress.trim().equals("")) {
+            String msg = intres.getLocalizedMessage("services.mailaction.errorsenderaddress");
+            throw new ActionException(msg);
+        }
+    }
 }
