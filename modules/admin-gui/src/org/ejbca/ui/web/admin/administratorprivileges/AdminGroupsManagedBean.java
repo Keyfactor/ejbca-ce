@@ -36,7 +36,6 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.BasicAccessRuleSet;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetDecoder;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetEncoder;

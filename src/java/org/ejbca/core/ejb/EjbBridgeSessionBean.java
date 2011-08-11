@@ -23,13 +23,13 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -102,6 +102,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB UserAdminSessionLocal userAdminSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
+	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
+	@EJB AccessUserAspectManagerSessionLocal accessUserAspectSession;
 
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
@@ -136,6 +138,8 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
 	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
+	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
+	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return accessUserAspectSession; }
   
 
 }

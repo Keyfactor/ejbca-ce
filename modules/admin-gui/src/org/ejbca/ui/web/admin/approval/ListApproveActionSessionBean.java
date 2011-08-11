@@ -107,7 +107,7 @@ public class ListApproveActionSessionBean extends BaseManagedBean {
         List<ApprovalDataVO> result = new ArrayList<ApprovalDataVO>();
 		try {
             RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getGlobalConfigurationSession(),
-            		ejb.getAccessControlSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession());
+            		ejb.getAccessControlSession(), ejb.getComplexAccessControlSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession());
 			result = ejb.getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
 			if(result.size() == QUERY_MAX_NUM_ROWS){
 				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1", true) + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2", true);

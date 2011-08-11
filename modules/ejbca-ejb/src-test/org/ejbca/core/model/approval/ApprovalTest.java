@@ -15,7 +15,6 @@ package org.ejbca.core.model.approval;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Test to externalize an approval
@@ -97,9 +95,12 @@ public class ApprovalTest extends TestCase {
     	assertTrue(readapprovals.size() == 1);
     	
     	Approval rap = (Approval) readapprovals.iterator().next();
-    	assertTrue(CertTools.getIssuerDN(rap.getAdmin().getAdminInformation().getX509Certificate()).equals(CertTools.getIssuerDN(testcert)));
-    	assertTrue(CertTools.getSerialNumber(rap.getAdmin().getAdminInformation().getX509Certificate()).equals(CertTools.getSerialNumber(testcert)));
-    	assertTrue(rap.getAdmin().getUsername().equals("USERNAME"));
+    	X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken)rap.getAdmin(); 
+    	assertTrue(CertTools.getIssuerDN(xtok.getCertificate()).equals(CertTools.getIssuerDN(testcert)));
+    	assertTrue(CertTools.getSerialNumber(xtok.getCertificate()).equals(CertTools.getSerialNumber(testcert)));
+    	assertTrue(rap.getAdminCertIssuerDN().equals(CertTools.getIssuerDN(testcert)));
+    	assertTrue(rap.getAdminCertSerialNumber().equals(CertTools.getSerialNumber(testcert)));
+    	//assertTrue(rap.getAdmin().getUsername().equals("USERNAME"));
     	assertTrue(rap.isApproved());
     	assertTrue(rap.getComment().equals("test"));
     	assertTrue(rap.getApprovalDate().equals(apDate));
