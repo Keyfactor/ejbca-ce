@@ -38,11 +38,9 @@ import org.ejbca.core.ejb.JBossUnmarshaller;
 import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
-import org.ejbca.core.ejb.log.LogConfigurationData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
-import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
@@ -192,6 +190,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Override
     public void postMigrateDatabase400SmallTables() {
+    	// LogConfiguration removed for EJBCA 5.0, so no upgrade of that needed
     	log.info(" Processing CertificateProfileData entities.");
     	final List<CertificateProfileData> cpds = CertificateProfileData.findAll(entityManager);
     	for (CertificateProfileData cpd : cpds) {
@@ -201,11 +200,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	final List<HardTokenIssuerData> htids = HardTokenIssuerData.findAll(entityManager);
     	for (HardTokenIssuerData htid : htids) {
     		htid.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, htid.getDataUnsafe()));
-    	}
-    	log.info(" Processing LogConfigurationData entities.");
-    	final List<LogConfigurationData> lcds = LogConfigurationData.findAll(entityManager);
-    	for (LogConfigurationData lcd : lcds) {
-    		lcd.setLogConfigurationUnsafe(JBossUnmarshaller.extractObject(LogConfiguration.class, lcd.getLogConfigurationUnsafe()));
     	}
     	log.info(" Processing AdminPreferencesData entities.");
     	final List<AdminPreferencesData> apds = AdminPreferencesData.findAll(entityManager);

@@ -46,9 +46,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
-import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
-import org.ejbca.core.ejb.log.OldLogSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -92,9 +89,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB HardTokenBatchJobSessionLocal hardTokenBatchJobSession;
 	@EJB HardTokenSessionLocal hardTokenSession;
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
-	@EJB LogSessionLocal logSession;
-	@EJB LogConfigurationSessionLocal logConfigurationSession;
-	@EJB OldLogSessionLocal oldLogSession;
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB RaAdminSessionLocal raSession;
@@ -132,8 +126,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
 	@Override public HardTokenSessionLocal getHardTokenSession() { return hardTokenSession; }
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
-	@Override public LogSessionLocal getLogSession() { return logSession; }
-	@Override public OldLogSessionLocal getOldLogSession() { return oldLogSession; }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
 	@Override public RaAdminSessionLocal getRaAdminSession() { return raSession; }
@@ -146,7 +138,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
-	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return logConfigurationSession; }	
 
     @Override
     public SimpleAuthenticationProviderLocal getSimpleAuthenticationProvider() { return simpleAuthenticationProvider; }

@@ -15,14 +15,9 @@ package org.ejbca.core.model.services.actions;
 import java.util.Arrays;
 import java.util.Map;
 
-import javax.ejb.EJBException;
-
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
 import org.ejbca.core.model.services.BaseAction;
@@ -52,7 +47,6 @@ public class MailAction extends BaseAction {
      * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
      */
     public void performAction(AuthenticationToken admin, int caId, ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
-        LogSessionLocal logSession = ((LogSessionLocal) ejbs.get(LogSessionLocal.class));
         checkConfig(actionInfo);
 
         MailActionInfo mailActionInfo = (MailActionInfo) actionInfo;
@@ -73,20 +67,11 @@ public class MailAction extends BaseAction {
                     mailActionInfo.getMessage(), MailSender.NO_ATTACHMENTS);
             if (mailActionInfo.isLoggingEnabled()) {
                 String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
-                logSession.log(admin, caId, LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null,
-                        LogConstants.EVENT_INFO_NOTIFICATION, logmsg);
+                log.info(logmsg);
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
-            log.error(msg, e);
-            try {
-                if (mailActionInfo.isLoggingEnabled()) {
-                    logSession.log(admin, caId, LogConstants.MODULE_APPROVAL, new java.util.Date(), null, null,
-                            LogConstants.EVENT_ERROR_NOTIFICATION, msg);
-                }
-            } catch (Exception f) {
-                throw new EJBException(f);
-            }
+            log.info(msg, e);
         }
     }
 

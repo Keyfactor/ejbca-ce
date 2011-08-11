@@ -88,7 +88,8 @@ public enum EjbcaEventTypes implements EventType {
     SERVICE_EDIT,
     SERVICE_RENAME,
     SERVICE_EXECUTED,
-    ADMINWEB_ADMINISTRATORLOGGEDIN
+    ADMINWEB_ADMINISTRATORLOGGEDIN,
+    EJBCA_STARTING
     ;
 
     @Override

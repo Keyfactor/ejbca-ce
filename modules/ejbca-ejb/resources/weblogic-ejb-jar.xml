@@ -79,26 +79,6 @@
         <enable-call-by-reference>True</enable-call-by-reference>
     </weblogic-enterprise-bean>
     <weblogic-enterprise-bean>
-        <ejb-name>LogConfigurationSessionBean</ejb-name>
-        <stateless-session-descriptor>
-            <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.log.LogConfigurationSessionRemote</business-remote>
-                <jndi-name>ejbca/LogConfigurationSessionRemote</jndi-name>
-            </business-interface-jndi-name-map>
-        </stateless-session-descriptor>
-        <enable-call-by-reference>True</enable-call-by-reference>
-    </weblogic-enterprise-bean>
-    <weblogic-enterprise-bean>
-        <ejb-name>LogSessionBean</ejb-name>
-        <stateless-session-descriptor>
-            <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.log.LogSessionRemote</business-remote>
-                <jndi-name>ejbca/LogSessionRemote</jndi-name>
-            </business-interface-jndi-name-map>
-        </stateless-session-descriptor>
-        <enable-call-by-reference>True</enable-call-by-reference>
-    </weblogic-enterprise-bean>
-    <weblogic-enterprise-bean>
         <ejb-name>UpgradeSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>

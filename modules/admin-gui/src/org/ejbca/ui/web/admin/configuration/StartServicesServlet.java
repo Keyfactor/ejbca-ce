@@ -18,7 +18,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -30,6 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -39,13 +42,14 @@ import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
-import org.ejbca.core.ejb.log.LogSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 
 /**
@@ -67,13 +71,13 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
-    private LogSessionLocal logSession;
-    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private ServiceSessionLocal serviceSession;
     @EJB
     private CertificateCreateSessionLocal certCreateSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
     
     // Since timers are reloaded at server startup, we can leave them in the database. This was a workaround for WebLogic.
     // By skipping this we don't need application server (read JBoss) specific config for what this module depends on.
@@ -168,16 +172,15 @@ public class StartServicesServlet extends HttpServlet {
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
         log.trace(">init loading CAs into cache");
         try {
-        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
         	caAdminSession.initializeAndUpgradeCAs();
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
 
         // Make a log row that EJBCA is starting
-        Admin internalAdmin = Admin.getInternalAdmin();
-        logSession.log(internalAdmin, internalAdmin.getCaId(), LogConstants.MODULE_SERVICES, new Date(), null, null,
-        		LogConstants.EVENT_INFO_STARTING, iMsg);
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", iMsg);
+        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, null, Integer.valueOf(LogConstants.INTERNALCAID).toString(), null, null, details);				
 
         log.trace(">init calling ServiceSession.load");
         try {
@@ -189,7 +192,6 @@ public class StartServicesServlet extends HttpServlet {
         // Load Certificate profiles at startup to upgrade them if needed
         log.trace(">init loading CertificateProfile to check for upgrades");
         try {
-        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
         	certificateProfileSession.initializeAndUpgradeProfiles();
         } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);

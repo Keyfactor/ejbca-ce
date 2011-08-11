@@ -35,8 +35,6 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
-import org.ejbca.core.ejb.log.LogConfigurationSessionRemote;
-import org.ejbca.core.ejb.log.LogSessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -72,8 +70,6 @@ public class EjbRemoteHelper {
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
-    private LogConfigurationSessionRemote logConfigurationSession = null;
-    private LogSessionRemote logSession = null;
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
     private RaAdminSessionRemote raAdminSession = null;
@@ -212,20 +208,6 @@ public class EjbRemoteHelper {
             userDataSourceSession = JndiHelper.getRemoteSession(UserDataSourceSessionRemote.class);
         }
         return userDataSourceSession;
-    }
-
-    public LogConfigurationSessionRemote getLogConfigurationSession() {
-        if (logConfigurationSession == null) {
-            logConfigurationSession = JndiHelper.getRemoteSession(LogConfigurationSessionRemote.class);
-        }
-        return logConfigurationSession;
-    }
-
-    public LogSessionRemote getLogSession() {
-        if (logSession == null) {
-            logSession = JndiHelper.getRemoteSession(LogSessionRemote.class);
-        }
-        return logSession;
     }
 
     public PublisherQueueSessionRemote getPublisherQueueSession() {
