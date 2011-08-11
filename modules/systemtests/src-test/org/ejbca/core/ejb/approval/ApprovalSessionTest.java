@@ -37,10 +37,17 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -56,7 +63,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
-import org.ejbca.core.model.authorization.AdminEntity;
+import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
@@ -71,6 +78,8 @@ public class ApprovalSessionTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(ApprovalSessionTest.class);
     private static final AuthenticationToken intadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
+    private static final String roleName = "ApprovalTest";
+    
     private static String reqadminusername = null;
     private static String adminusername1 = null;
     private static String adminusername2 = null;
@@ -85,17 +94,21 @@ public class ApprovalSessionTest extends CaTestCase {
     private static AuthenticationToken admin2 = null;
     private static AuthenticationToken externaladmin = null;
 
-    private static ArrayList<AdminEntity> adminentities;
+    private RoleData role;
+    
+    private static ArrayList<AccessUserAspectData> adminentities;
     private static GlobalConfiguration gc = null;
 
     private int caid = getTestCAId();
 
+    private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
+    private RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
+    private RoleAccessSessionRemote roleAccessSessionRemote = InterfaceCache.getRoleAccessSession();
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = InterfaceCache.getApprovalExecutionSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();    
 
     public ApprovalSessionTest(String name) {
         super(name);
@@ -149,13 +162,15 @@ public class ApprovalSessionTest extends CaTestCase {
             makep12.createAllNew();
             tmpfile.delete();
             
-            adminentities = new ArrayList<AdminEntity>();
-            adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername1, caid));
-            adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername2, caid));
-            adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, reqadminusername, caid));
-            adminentities.add(new AdminEntity(AdminEntity.WITH_SERIALNUMBER, AdminEntity.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(externalcert), "CN=externalCert,C=SE".hashCode()));
-            adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
-            authorizationSession.forceRuleUpdate(intadmin);
+            role = roleManagementSession.create(intadmin, roleName);
+            
+            adminentities = new ArrayList<AccessUserAspectData>();
+            adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));
+            adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername2));
+            adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, reqadminusername));
+            adminentities.add(new AccessUserAspectData(role.getRoleName(), "CN=externalCert,C=SE".hashCode(), AccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(externalcert)));
+            roleManagementSession.addSubjectsToRole(intadmin, roleAccessSessionRemote.findRole(DefaultRoles.SUPERADMINISTRATOR.getName()), adminentities);          
+            accessControlSession.forceCacheExpire();
 
             admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername1).iterator().next();
             admincert2 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername2).iterator().next();
@@ -565,7 +580,8 @@ public class ApprovalSessionTest extends CaTestCase {
         userAdminSession.deleteUser(intadmin, adminusername1);
         userAdminSession.deleteUser(intadmin, adminusername2);
         userAdminSession.deleteUser(intadmin, reqadminusername);
-        adminEntitySession.removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+        roleManagementSession.remove(intadmin, role);
+      
         removeTestCA();
     }
 }
