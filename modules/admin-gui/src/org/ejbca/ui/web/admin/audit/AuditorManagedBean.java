@@ -34,10 +34,10 @@ import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.AuthenticationSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryCriteria;
 import org.cesecore.util.ValidityDate;
@@ -47,7 +47,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /**
- * TODO: Add proper AuthenticationToken created from admin cert 
  * @version $Id$
  */
 public class AuditorManagedBean implements Serializable {
@@ -58,8 +57,7 @@ public class AuditorManagedBean implements Serializable {
 	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
 	private final SecurityEventsLoggerSessionLocal securityEventsLoggerSession = new EjbLocalHelper().getSecurityEventsLoggerSession();
 	private final CAAdminSessionLocal caAdminSession = new EjbLocalHelper().getCaAdminSession();
-	private final SimpleAuthenticationProviderLocal simpleAuthenticationProvider = new EjbLocalHelper().getSimpleAuthenticationProvider();
-	private final AuthenticationSessionLocal authenticationSession = new EjbLocalHelper().getAuthenticationSession();
+	
 	private String device;
 	private String sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
 	private boolean sortOrder = QueryCriteria.ORDER_DESC;
@@ -295,7 +293,9 @@ public class AuditorManagedBean implements Serializable {
 				criteria = criteria.lsr(condition.getColumn(), conditionValue); break;
 			}
 		}
-		AuthenticationToken token = authenticationSession.authenticate(null, simpleAuthenticationProvider);
+
+	
+		AuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Reload action from AuditorManagedBean"));
 		
 		results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
 	}

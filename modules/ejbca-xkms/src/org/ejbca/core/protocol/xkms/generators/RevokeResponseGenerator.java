@@ -24,7 +24,7 @@ import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -54,7 +54,7 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
     private UserAdminSession userAdminSession;
     
     public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc,
-    		CaSession caadminsession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession caadminsession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
         super(remoteIP, req, requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityProfileSession,

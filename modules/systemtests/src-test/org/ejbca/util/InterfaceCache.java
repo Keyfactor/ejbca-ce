@@ -23,7 +23,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
@@ -112,7 +112,7 @@ public class InterfaceCache {
 		return getEjb().getHardTokenSession();
 	}
 
-	public static OldAuthenticationSessionRemote getAuthenticationSession() {
+	public static EndEntityAuthenticationSessionRemote getAuthenticationSession() {
 		return getEjb().getAuthenticationSession();
 	}
 

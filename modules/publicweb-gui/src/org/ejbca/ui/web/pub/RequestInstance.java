@@ -46,7 +46,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.ConfigurationHolder;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -73,7 +73,7 @@ public class RequestInstance {
 	
 	private ServletContext servletContext;
 	private ServletConfig servletConfig;
-	private OldAuthenticationSessionLocal authenticationSession;
+	private EndEntityAuthenticationSessionLocal authenticationSession;
 	private CaSessionLocal caSession;
     private CertificateProfileSessionLocal certificateProfileSession;
     private EndEntityProfileSessionLocal endEntityProfileSession;
@@ -82,7 +82,7 @@ public class RequestInstance {
 	private UserAdminSessionLocal userAdminSession;
 	private GlobalConfigurationSession globalConfigurationSession;
 	
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, OldAuthenticationSessionLocal authenticationSession, CaSessionLocal caSession,
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;

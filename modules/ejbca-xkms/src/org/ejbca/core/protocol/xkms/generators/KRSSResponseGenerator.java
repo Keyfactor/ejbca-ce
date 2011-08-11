@@ -60,7 +60,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -103,7 +103,7 @@ public class KRSSResponseGenerator extends
 	 protected Document requestDoc = null;
 
 	 private CaSession casession;
-	 private OldAuthenticationSession authenticationSession;
+	 private EndEntityAuthenticationSession authenticationSession;
 	 private CertificateStoreSession certificateStoreSession;
 	 private EndEntityProfileSession endEntityProfileSession;
 	 private KeyRecoverySession keyRecoverySession;
@@ -112,7 +112,7 @@ public class KRSSResponseGenerator extends
 	 private UserAdminSession userAdminSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
-    		CaSession casession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
         super(remoteIP, req, casession, certificateStoreSession, crlSession);

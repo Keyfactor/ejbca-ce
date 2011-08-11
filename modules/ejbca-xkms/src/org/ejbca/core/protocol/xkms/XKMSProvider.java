@@ -68,7 +68,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -141,7 +141,7 @@ public class XKMSProvider implements Provider<Source> {
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
-    private OldAuthenticationSessionLocal authenticationSession;
+    private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB

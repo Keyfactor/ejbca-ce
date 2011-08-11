@@ -60,7 +60,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     private static String username2;
     private static String pwd2;
 
-    private OldAuthenticationSessionRemote authenticationSessionRemote = InterfaceCache.getAuthenticationSession();
+    private EndEntityAuthenticationSessionRemote authenticationSessionRemote = InterfaceCache.getAuthenticationSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();

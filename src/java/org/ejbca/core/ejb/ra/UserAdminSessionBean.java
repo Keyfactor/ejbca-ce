@@ -684,7 +684,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName(), null),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeUser"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeCert"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionBean.class.getName(), "finishUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionBean.class.getName(), "finishUser"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "unrevokeCert"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "prepareForKeyRecovery"),
             /**

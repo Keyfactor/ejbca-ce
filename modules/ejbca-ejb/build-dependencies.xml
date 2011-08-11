@@ -552,8 +552,8 @@
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/ca/sign/*.java"/>
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
-					<include name="org/ejbca/core/ejb/ca/auth/OldAuthenticationSessionLocal.java"/>
-					<include name="org/ejbca/core/ejb/ca/auth/OldAuthenticationSession.java"/>
+					<include name="org/ejbca/core/ejb/ca/auth/EndEntityAuthenticationSessionLocal.java"/>
+					<include name="org/ejbca/core/ejb/ca/auth/EndEntityAuthenticationSession.java"/>
 					<include name="org/ejbca/core/ejb/ra/UserAdminSessionLocal.java"/>
 					<include name="org/ejbca/core/ejb/ra/UserAdminSession.java"/>
 					<include name="org/cesecore/authentication/AuthenticationSessionBean.java"/>

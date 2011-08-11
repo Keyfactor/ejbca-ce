@@ -58,7 +58,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -118,7 +118,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
-    private OldAuthenticationSessionLocal authenticationSession;
+    private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -585,7 +585,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             // we have circular dependencies!
             Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
             ejbs.put(ApprovalSessionLocal.class, approvalSession);
-            ejbs.put(OldAuthenticationSessionLocal.class, authenticationSession);
+            ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
             ejbs.put(AccessControlSessionLocal.class, authorizationSession);
             ejbs.put(CAAdminSessionLocal.class, caAdminSession);
             ejbs.put(CaSessionLocal.class, caSession);

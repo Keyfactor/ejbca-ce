@@ -31,8 +31,9 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -69,7 +70,6 @@ public interface EjbBridgeSessionLocal {
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
 	AuthenticationSessionLocal getAuthenticationSession();
-	@Deprecated OldAuthenticationSessionLocal getOldAuthenticationSession(); //TODO: This will be removed.
 	CAAdminSessionLocal getCaAdminSession();
 	CaSessionLocal getCaSession();
 	CertificateProfileSessionLocal getCertificateProfileSession();
@@ -80,6 +80,7 @@ public interface EjbBridgeSessionLocal {
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlStoreSessionLocal getCrlStoreSession();
 	CrlCreateSessionLocal getCrlCreateSession();
+	EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession();
 	EndEntityProfileSessionLocal getEndEntityProfileSession();
 	GlobalConfigurationSessionLocal getGlobalConfigurationSession();
 	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();
@@ -97,6 +98,5 @@ public interface EjbBridgeSessionLocal {
 	CertificateCreateSessionLocal getCertificateCreateSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	UserAdminSessionLocal getUserAdminSession();
-	
-	@Deprecated SimpleAuthenticationProviderLocal getSimpleAuthenticationProvider();
+	WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
 }

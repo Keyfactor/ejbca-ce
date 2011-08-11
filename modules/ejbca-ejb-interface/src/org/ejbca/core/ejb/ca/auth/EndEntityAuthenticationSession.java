@@ -23,7 +23,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
  * Provides access to authentication system.
  * @version $Id$
  */
-public interface OldAuthenticationSession {
+public interface EndEntityAuthenticationSession {
 
     /**
      * Authenticates a user to the user database and returns the user DN.
