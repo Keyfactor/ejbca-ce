@@ -19,12 +19,12 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.InterfaceCache;
 
 /**
@@ -37,9 +37,8 @@ import org.ejbca.util.InterfaceCache;
  */
 public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
-	private static final Admin[] NON_CLI_ADMINS = new Admin[] {
-		new Admin(Admin.TYPE_INTERNALUSER),
-		new Admin(Admin.TYPE_PUBLIC_WEB_USER)
+	private static final AuthenticationToken[] NON_CLI_ADMINS = new AuthenticationToken[] {
+		new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GlobalConfigurationSessionBeanTest"))
 	}; 
 	
 	private Collection<Integer> caids;
@@ -47,8 +46,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 	private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
 	
 	private CaSessionRemote caSession = InterfaceCache.getCaSession();
-	private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-	private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+	private AccessControlSessionRemote authorizationSession = InterfaceCache.getAccessControlSession();
 
 	private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private GlobalConfiguration original = null;
@@ -125,7 +123,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      */
     public void testNonCLIUser_getAvailableCAs() throws Exception {
     	enableCLI(true);
-    	for (Admin admin : NON_CLI_ADMINS) {
+    	for (AuthenticationToken admin : NON_CLI_ADMINS) {
     		operationGetAvailabeCAs(admin);
     	}
     }
@@ -146,7 +144,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      */
     public void testNonCLIUser_getCAInfo() throws Exception {
     	enableCLI(true);
-    	for (Admin admin : NON_CLI_ADMINS) {
+    	for (AuthenticationToken admin : NON_CLI_ADMINS) {
     		operationGetCAInfo(admin, caids);
     	}
     }
@@ -177,7 +175,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     	}
     	assertEquals("CLI should have been enabled/disabled",
     			enable, newConfig.getEnableCommandLineInterface());
-    	authorizationSession.flushAuthorizationRuleCache();
+    	authorizationSession.forceCacheExpire();
     }
     
     /**
@@ -189,7 +187,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     	// Get some CA ids: should be empty now
     	final Collection<Integer> emptyCaids = caSession.getAvailableCAs(admin);
     	assertTrue("Should not have got any CAs as admin of type "
-    			+ admin.getAdminType(), emptyCaids.isEmpty());
+    			+ admin.toString(), emptyCaids.isEmpty());
     }
     
     /**
@@ -197,12 +195,14 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      *  is not authorized.
      * @param admin to perform the operation with.
      * @param knownCaids IDs to test with.
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
      */
-    private void operationGetCAInfo(final AuthenticationToken admin, final Collection<Integer> knownCaids) {
+    private void operationGetCAInfo(final AuthenticationToken admin, final Collection<Integer> knownCaids) throws CADoesntExistsException, AuthorizationDeniedException {
     	// Get CA infos: We should not get any CA infos even if we know the IDs
     	for (int caid : knownCaids)  {
     		final CAInfo ca = caSession.getCAInfo(admin, caid);
-    		assertNull("Got CA " + caid + " as admin of type " + admin.getAdminType(), ca);
+    		assertNull("Got CA " + caid + " as admin of type " + admin.toString(), ca);
     	}
     }
 

@@ -15,15 +15,20 @@ package org.ejbca.core.model.approval;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
-import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import junit.framework.TestCase;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * @version $Id$
@@ -49,8 +54,14 @@ public class ApprovalRequestTest extends TestCase {
             + "QUOBOvc=").getBytes());
 	
 	public void testWriteExternal() throws Exception {
-		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
-		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert, null, null),null,1,2, false);
+		X509Certificate testcert = (X509Certificate)CertTools.getCertfromByteArray(testcertenc);
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(testcert);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(testcert.getSubjectX500Principal());
+        AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+
+		DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -71,8 +82,14 @@ public class ApprovalRequestTest extends TestCase {
 	}
 
 	public void testGenerateApprovalId() throws Exception {
-		Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
-		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert, null, null),null,1,2, false);
+		X509Certificate testcert = (X509Certificate)CertTools.getCertfromByteArray(testcertenc);
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(testcert);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(testcert.getSubjectX500Principal());
+        AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+
+        DummyApprovalRequest ar = new DummyApprovalRequest(token, null, 1, 2, false);
 		
     	int id1 = ar.generateApprovalId();
     	int id2 = ar.generateApprovalId();

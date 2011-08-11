@@ -23,7 +23,7 @@ import java.util.TreeMap;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.roles.RoleData;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 
@@ -44,11 +44,11 @@ public class HardTokenAuthorization implements Serializable {
     private AuthenticationToken admin;
     private HardTokenSession hardtokensession;
     private AccessControlSessionLocal authorizationsession;    
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
+    private ComplexAccessControlSession complexAccessControlSession;
 
     /** Creates a new instance of CAAuthorization. */
     public HardTokenAuthorization(AuthenticationToken admin, HardTokenSession hardtokensession, 
-    		AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession) {
+    		AccessControlSessionLocal authorizationsession, ComplexAccessControlSession complexAccessControlSession) {
       this.admin=admin;
       this.hardtokensession=hardtokensession;            
       this.authorizationsession = authorizationsession;
