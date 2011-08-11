@@ -66,7 +66,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
@@ -102,7 +102,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
-    private OldAuthenticationSessionLocal authenticationSession;
+    private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB

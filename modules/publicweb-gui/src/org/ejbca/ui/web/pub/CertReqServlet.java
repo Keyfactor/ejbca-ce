@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -67,7 +67,7 @@ public class CertReqServlet extends HttpServlet {
 
     // This injection has been verified on JBoss
 	@EJB
-	private OldAuthenticationSessionLocal authenticationSession;
+	private EndEntityAuthenticationSessionLocal authenticationSession;
 	@EJB
 	private CaSessionLocal caSession;
 	@EJB

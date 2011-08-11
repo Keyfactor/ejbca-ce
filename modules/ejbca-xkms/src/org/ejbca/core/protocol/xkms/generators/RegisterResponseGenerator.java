@@ -20,7 +20,7 @@ import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSession;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -46,7 +46,7 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
 	//private static Logger log = Logger.getLogger(RegisterResponseGenerator.class);
 
 	public RegisterResponseGenerator(String remoteIP, RegisterRequestType req, Document requestDoc,
-    		CaSession casession, OldAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
 		super(remoteIP, req,requestDoc, casession, authenticationSession, certificateStoreSession, endEntityProfileSession,

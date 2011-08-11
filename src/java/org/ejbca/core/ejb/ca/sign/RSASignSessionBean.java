@@ -70,7 +70,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.JndiHelper;
-import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
@@ -101,7 +101,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
     @EJB
-    private OldAuthenticationSessionLocal authenticationSession;
+    private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB

@@ -10,14 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.ca.auth;
+package org.ejbca.core.ejb.authentication;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
+
+import org.cesecore.authentication.tokens.AuthenticationProvider;
 
 /**
- * Remote interface for AuthenticationSession.
+ * Provides authentication for web service users.
+ * 
+ * @version $Id$
+ *
  */
-@Remote
-public interface OldAuthenticationSessionRemote extends OldAuthenticationSession {
+@Local
+public interface WebAuthenticationProviderSessionLocal extends AuthenticationProvider {
 
 }

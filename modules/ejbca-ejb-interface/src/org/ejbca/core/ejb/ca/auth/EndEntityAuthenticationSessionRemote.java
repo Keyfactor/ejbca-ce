@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.auth;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 /**
- * Local interface for AuthenticationSession.
+ * Remote interface for AuthenticationSession.
  */
-@Local
-public interface OldAuthenticationSessionLocal extends OldAuthenticationSession{
+@Remote
+public interface EndEntityAuthenticationSessionRemote extends EndEntityAuthenticationSession {
 
 }

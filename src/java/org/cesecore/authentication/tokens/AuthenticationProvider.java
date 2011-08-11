@@ -14,6 +14,8 @@ package org.cesecore.authentication.tokens;
 
 import java.io.Serializable;
 
+import org.cesecore.authentication.AuthenticationFailedException;
+
 /**
  * This is a callback interface that provides a method of authentication for a subject. It should be implemented by whatever EJB Session bean (outside
  * of CESeCore) that perform local authentication.
@@ -35,6 +37,6 @@ public interface AuthenticationProvider extends Serializable {
      * @param credentials A set of credentials.
      * @return an AuthenticationToken if the subject was authenticated, null otherwise.
      */
-    AuthenticationToken authenticate(AuthenticationSubject subject);
+    AuthenticationToken authenticate(AuthenticationSubject subject) throws AuthenticationFailedException;
 
 }
