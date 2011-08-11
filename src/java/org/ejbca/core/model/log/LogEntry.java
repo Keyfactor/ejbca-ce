@@ -30,7 +30,22 @@ import java.util.Date;
  */
 public class LogEntry implements Serializable {
 
+    // Indicates the type of administrator.
+    /** An administrator authenticated with client certificate */
+    public static final int TYPE_CLIENTCERT_USER = 0;
+    /** A user of the public web pages */
+    public static final int TYPE_PUBLIC_WEB_USER = 1;
+    /** An internal RA function, such as cmd line or CMP */
+    public static final int TYPE_RA_USER = 2;
+    /** An internal CA admin function, such as cms line */
+    public static final int TYPE_CACOMMANDLINE_USER = 3;
+    /** Batch generation tool */
+    public static final int TYPE_BATCHCOMMANDLINE_USER = 4;
+    /** Internal user in EJBCA, such as automatic job */
+    public static final int TYPE_INTERNALUSER = 5;
+
     private int id;
+    /** One of LogEntry.TYPE_ constants */
     private int admintype;
     private String admindata;
     private int caid;

@@ -30,11 +30,9 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -47,7 +45,7 @@ public interface UserAdminSession {
 
     /**
      * Important: this method is old and shouldn't be used, use
-     * addUser(..UserDataVO...) instead.
+     * addUser(..EndEntityInformation...) instead.
      * 
      * @param admin the administrator performing the action
      * @param username the unique user name.
@@ -80,7 +78,7 @@ public interface UserAdminSession {
      * profile to user we merge them before calling addUser
      * 
      * @param admin the administrator pwrforming the action
-     * @param userdata a UserDataVO object, the fields status, timecreated and
+     * @param userdata a EndEntityInformation object, the fields status, timecreated and
      *            timemodified will not be used.
      * @param clearpwd true if the password will be stored in clear form in the
      *            db, otherwise it is hashed.
@@ -107,7 +105,7 @@ public interface UserAdminSession {
      * Add a new user.
      * 
      * @param admin the administrator performing the action
-     * @param userdata a UserDataVO object, the fields status, timecreated and
+     * @param userdata a EndEntityInformation object, the fields status, timecreated and
      *            timemodified will not be used.
      * @param clearpwd true if the password will be stored in clear form in the
      *            db, otherwise it is hashed.
@@ -133,7 +131,7 @@ public interface UserAdminSession {
      * Changes data for a user in the database specified by username.
      * 
      * Important, this method is old and shouldn't be used, user
-     * changeUser(..UserDataVO...) instead.
+     * changeUser(..EndEntityInformation...) instead.
      * 
      * @param username the unique username.
      * @param password the password used for authentication.*
@@ -169,7 +167,7 @@ public interface UserAdminSession {
      *             SubjectDN Serialnumber already exists when it is specified in
      *             the CA that it should be unique.
      * 
-     * @deprecated use {@link #changeUser(AuthenticationToken, UserDataVO, boolean)} instead
+     * @deprecated use {@link #changeUser(AuthenticationToken, EndEntityInformation, boolean)} instead
      */
     @Deprecated
     public void changeUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
@@ -180,7 +178,7 @@ public interface UserAdminSession {
      * Change user information.
      * 
      * @param admin the administrator performing the action
-     * @param userdata a UserDataVO object, timecreated and timemodified will
+     * @param userdata a EndEntityInformation object, timecreated and timemodified will
      *             not be used.
      * @param clearpwd true if the password will be stored in clear form in the
      *             db, otherwise it is hashed.
@@ -208,7 +206,7 @@ public interface UserAdminSession {
      * Change user information.
      * 
      * @param admin the administrator performing the action
-     * @param userdata a UserDataVO object, timeCreated and timeModified will
+     * @param userdata a EndEntityInformation object, timeCreated and timeModified will
      *             not be used.
      * @param clearpwd true if the password will be stored in clear form in the
      *             db, otherwise it is hashed.
@@ -380,25 +378,25 @@ public interface UserAdminSession {
      * Finds a user by username.
      * 
      * @param admin the administrator performing the action
-     * @return UserDataVO or null if the user is not found.
+     * @return EndEntityInformation or null if the user is not found.
      */
     public EndEntityInformation findUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its subject and issuer DN.
-     * @return UserDataVO or null if the user is not found.
+     * @return EndEntityInformation or null if the user is not found.
      */
     public EndEntityInformation findUserBySubjectAndIssuerDN(AuthenticationToken admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a user by its subject DN.
-     * @return UserDataVO or null if the user is not found.
+     * @return EndEntityInformation or null if the user is not found.
      */
     public EndEntityInformation findUserBySubjectDN(AuthenticationToken admin, String subjectdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a users by subject email.
-     * @return List of all matching UserDataVO, never null
+     * @return List of all matching EndEntityInformation, never null
      */
     public List<EndEntityInformation> findUserByEmail(AuthenticationToken admin, String email) throws AuthorizationDeniedException;
 
@@ -415,7 +413,7 @@ public interface UserAdminSession {
      * Finds all users with a specified status.
      * 
      * @param status the status to look for, from 'UserData'.
-     * @return Collection of UserDataVO
+     * @return Collection of EndEntityInformation
      */
     public Collection<EndEntityInformation> findAllUsersByStatus(AuthenticationToken admin, int status) throws FinderException;
 
@@ -423,7 +421,7 @@ public interface UserAdminSession {
      * Finds all users registered to a specified CA.
      * 
      * @param caid the caid of the CA, from 'UserData'.
-     * @return Collection of UserDataVO, or empty collection if the query is
+     * @return Collection of EndEntityInformation, or empty collection if the query is
      *         illegal or no users exist
      */
     public Collection<EndEntityInformation> findAllUsersByCaId(AuthenticationToken admin, int caid);
@@ -433,7 +431,7 @@ public interface UserAdminSession {
      * UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT.
      * 
      * @param status the status, from 'UserData'.
-     * @return all UserDataVO objects or an empty list
+     * @return all EndEntityInformation objects or an empty list
      */
     public List<EndEntityInformation> findAllBatchUsersByStatusWithLimit(int status);
 
@@ -451,7 +449,7 @@ public interface UserAdminSession {
      *            administrator is authorized to view.
      * @param numberofrows the number of rows to fetch, use 0 for default
      *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
-     * @return a collection of UserDataVO.
+     * @return a collection of EndEntityInformation.
      * @throws IllegalQueryException when query parameters internal rules isn't
      *            fulfilled.
      * @see org.ejbca.util.query.Query
@@ -523,7 +521,7 @@ public interface UserAdminSession {
     		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
     
     /**
-     * Selects a list of specific list of UserDataVO entities, as filtered by
+     * Selects a list of specific list of EndEntityInformation entities, as filtered by
      * the below parameters. 
      * 
      * @param caIds The list of CAIDs to filter by. If this list is empty, all

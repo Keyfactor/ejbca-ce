@@ -21,15 +21,19 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -424,7 +428,12 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             }
         }
 
-        admin1 = new Admin(admincert1, adminusername1, null);
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(admincert1);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(admincert1.getSubjectX500Principal());
+        admin1 = new X509CertificateAuthenticationToken(principals, credentials);
+        //admin1 = new Admin(admincert1, adminusername1, null);
         reqadmin = userAdminSession.getAdmin(reqadmincert);
     }
 

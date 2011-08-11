@@ -22,7 +22,7 @@ public interface LogConstants {
      * Constant containing caid that couldn't be determined in any other way. Log events can only be viewed.
      * by superadministrator.
      */
-    public static final int INTERNALCAID = Admin.INTERNALCAID;
+    public static final int INTERNALCAID = 0;
 
     // Public constants
 

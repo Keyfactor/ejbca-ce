@@ -21,10 +21,15 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSession;
@@ -46,7 +51,7 @@ public abstract class ApprovalRequest implements Externalizable {
 
     private static final long serialVersionUID = -1L;
     private static final Logger log = Logger.getLogger(ApprovalRequest.class);
-    private static final int LATEST_BASE_VERSION = 3;
+    private static final int LATEST_BASE_VERSION = 4;
 
     /**
      * Simple request type means that the approver will only see new data about the action and will not compare it to old data
@@ -60,7 +65,6 @@ public abstract class ApprovalRequest implements Externalizable {
     public static final int REQUESTTYPE_COMPARING = 2;
 
     private AuthenticationToken requestAdmin = null; // Base64 encoding of x509certificate?
-    private X509Certificate requestAdminCertificate = null;
     private String requestSignature = null;
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
     private int numOfRequiredApprovals = 0;
@@ -79,7 +83,7 @@ public abstract class ApprovalRequest implements Externalizable {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable
      *            to any end entity profile
      */
-    protected ApprovalRequest(AuthenticationToken requestAdmin, X509Certificate certificate, String requestSignature, int approvalRequestType,
+    protected ApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int approvalRequestType,
             int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
         super();
         setRequestAdmin(requestAdmin);
@@ -88,7 +92,6 @@ public abstract class ApprovalRequest implements Externalizable {
         this.numOfRequiredApprovals = numOfRequiredApprovals;
         this.cAId = cAId;
         this.endEntityProfileId = endEntityProfileId;
-        this.requestAdminCertificate = certificate;
     }
 
     /**
@@ -241,7 +244,11 @@ public abstract class ApprovalRequest implements Externalizable {
      * Returns the certificate of the request admin.
      */
     public Certificate getRequestAdminCert() {
-        return requestAdminCertificate;
+    	if (requestAdmin instanceof X509CertificateAuthenticationToken) {
+			X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) requestAdmin;
+			return xtok.getCertificate();
+		}
+        return null;
     }
 
     public AuthenticationToken getRequestAdmin() {
@@ -300,7 +307,11 @@ public abstract class ApprovalRequest implements Externalizable {
                 log.error(e);
             }
 
-            this.requestAdmin = new Admin(x509cert, null, null);
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(x509cert);
+            Set<X500Principal> principals = new HashSet<X500Principal>();
+            principals.add(x509cert.getSubjectX500Principal());
+            this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();
@@ -309,7 +320,14 @@ public abstract class ApprovalRequest implements Externalizable {
             this.approvalSteps = new boolean[1];
         }
         if (version == 2) {
-            this.requestAdmin = (Admin) in.readObject();
+            final Admin admin = (Admin) in.readObject();
+            final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(x509cert);
+            Set<X500Principal> principals = new HashSet<X500Principal>();
+            principals.add(x509cert.getSubjectX500Principal());
+            this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            this.requestAdmin = null;
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();
@@ -318,7 +336,28 @@ public abstract class ApprovalRequest implements Externalizable {
             this.approvalSteps = new boolean[1];
         }
         if (version == 3) {
-            this.requestAdmin = (Admin) in.readObject();
+        	// Version 2 and 3 only care about the certificate from the old Admin object
+            final Admin admin = (Admin) in.readObject();
+            final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(x509cert);
+            Set<X500Principal> principals = new HashSet<X500Principal>();
+            principals.add(x509cert.getSubjectX500Principal());
+            this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            this.requestSignature = (String) in.readObject();
+            this.approvalRequestType = in.readInt();
+            this.numOfRequiredApprovals = in.readInt();
+            this.cAId = in.readInt();
+            this.endEntityProfileId = in.readInt();
+            int stepSize = in.readInt();
+            this.approvalSteps = new boolean[stepSize];
+            for (int i = 0; i < approvalSteps.length; i++) {
+                approvalSteps[i] = in.readBoolean();
+            }
+        }
+        if (version == 4) {
+        	// Version 4 after conversion to CESeCore where Admin was deprecated.
+            this.requestAdmin = (AuthenticationToken) in.readObject();
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();

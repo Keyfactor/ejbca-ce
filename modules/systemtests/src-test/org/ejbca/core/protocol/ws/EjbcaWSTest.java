@@ -23,16 +23,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -263,7 +268,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         try {
             caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
-            Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
+            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(adminCert);
+            Set<X500Principal> principals = new HashSet<X500Principal>();
+            principals.add(adminCert.getSubjectX500Principal());
+            AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            //Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 X509Certificate cert = createUserAndCert(username, caID);
                 String issuerdn = cert.getIssuerDN().toString();

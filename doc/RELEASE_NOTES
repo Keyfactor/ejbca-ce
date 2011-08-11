@@ -1,3 +1,11 @@
+EJBCA 5.0.0
+-----------
+
+Old log and log configuration is gone.
+
+Approvals. When upgrading from 4.x to 5.x new approval requests created in a 5.x instance can not be read in a 4.x instance. 
+So if you require uptime and roll-back capabilities, only allow to create new approval requests from an 4.x host.
+ 
 EJBCA 3.11.3
 ------------
 This is a maintenance release containing 3 bug fixes.

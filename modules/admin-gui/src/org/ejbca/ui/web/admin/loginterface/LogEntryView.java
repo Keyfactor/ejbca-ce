@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
@@ -99,7 +98,7 @@ public class LogEntryView implements Serializable, Cloneable, Comparable {
        this.time = logentry.getTime();
       
        logentrydata[ADMINTYPE] = Integer.toString(logentry.getAdminType());
-       if (logentry.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
+       if (logentry.getAdminType() == LogEntry.TYPE_CLIENTCERT_USER) {
           String dnstring = dnproxy.getSubjectDN(logentry.getAdminData());
           if ((dnstring !=null) && (!StringUtils.contains(logentry.getAdminData(), "SubjectDN")) ) {
         	  DNFieldExtractor dn = new DNFieldExtractor(dnstring, DNFieldExtractor.TYPE_SUBJECTDN);
@@ -109,7 +108,7 @@ public class LogEntryView implements Serializable, Cloneable, Comparable {
         	  logentrydata[ADMINDATA] = logentry.getAdminData();
           }
        } else {
-          if (logentry.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER) {
+          if (logentry.getAdminType() == LogEntry.TYPE_PUBLIC_WEB_USER) {
             if (logentry.getAdminData() != null) {           
               logentrydata[ADMINDATA] = "IP : " + logentry.getAdminData();
             }
