@@ -51,8 +51,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         if (certificateArray.length != 1) {
             return null;
         } else {
-            X509Certificate certificate;
-            certificate = certificateArray[0];
+            X509Certificate certificate = certificateArray[0];
             // Check Validity
             try {
                 certificate.checkValidity();
@@ -60,7 +59,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return null;
             }
             if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                // TODO: Verify Signature on cert? Not really needed since it's one of ou certs in the database.
+                // TODO: Verify Signature on cert? Not really needed since it's one of our certs in the database.
                 // Check if certificate is revoked.
                 boolean isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
                 if (isRevoked) {
