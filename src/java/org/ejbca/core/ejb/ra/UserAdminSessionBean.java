@@ -50,6 +50,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -75,6 +76,7 @@ import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
@@ -148,6 +150,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
     private AccessControlSessionLocal authorizationSession;
+    @EJB
+    private ComplexAccessControlSession complexAccessControlSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
@@ -1680,7 +1684,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
 
         if (caauthorizationstring == null || endentityprofilestring == null) {
-            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, caSession, endEntityProfileSession);
+            raauthorization = new RAAuthorization(admin, globalConfigurationSession, authorizationSession, complexAccessControlSession, caSession, endEntityProfileSession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
                 endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
@@ -1854,16 +1858,21 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                             String msg = intres.getLocalizedMessage("ra.errornotificationnoemail", data.getUsername());
                             throw new Exception(msg);
                         }
-                        // Get the administrators DN from the admin certificate,
-                        // if one exists
-                        // When approvals is used, this will be the DN of the
-                        // admin that approves the request
-                        Certificate adminCert = admin.getAdminInformation().getX509Certificate();
-                        String approvalAdminDN = CertTools.getSubjectDN(adminCert);
-                        if (log.isDebugEnabled()) {
-                            log.debug("approvalAdminDN: " + approvalAdminDN);
-                        }
-                        UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, findUser(admin, admin.getUsername()));
+                        // Get the administrators DN from the admin certificate, if one exists
+                        // When approvals is used, this will be the DN of the admin that approves the request
+                        String approvalAdminDN = null;
+                        EndEntityInformation approvalAdmin = null;
+                        if (admin instanceof X509CertificateAuthenticationToken) {
+							X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) admin;
+	                        Certificate adminCert = xtok.getCertificate();
+	                        approvalAdminDN = CertTools.getSubjectDN(adminCert);
+	                        if (log.isDebugEnabled()) {
+	                            log.debug("approvalAdminDN: " + approvalAdminDN);
+	                        }
+	                        approvalAdmin = findUserBySubjectAndIssuerDN(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserAdminSession")), 
+	                        		CertTools.getSubjectDN(adminCert), CertTools.getIssuerDN(adminCert));
+						}
+                        UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, approvalAdmin);
                         /*
                          * substitute any $ fields in the receipient and from
                          * fields

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -54,7 +53,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	/** Constructor used in externalization only */
 	public GenerateTokenApprovalRequest() {}
 
-	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, X509CertificateAuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, AuthenticationToken requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId,2);
 		this.username = username;
 		this.dn = userDN;

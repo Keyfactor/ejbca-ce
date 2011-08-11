@@ -15,7 +15,6 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,8 +64,8 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 	 * @param endEntityProfileId
 	 */
 	public ActivateCATokenApprovalRequest(String cAName, String authenticationCode,
-	        AuthenticationToken requestAdmin, X509Certificate requestCertificate, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdmin, requestCertificate, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
+	        AuthenticationToken requestAdmin, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+		super(requestAdmin, null, REQUESTTYPE_SIMPLE, numOfReqApprovals, cAId, endEntityProfileId);
 		this.cAName = cAName;
 		this.authenticationCode = authenticationCode;
 	}

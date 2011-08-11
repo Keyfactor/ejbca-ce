@@ -17,11 +17,18 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
+import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.security.auth.x500.X500Principal;
+
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
-import org.ejbca.core.model.authorization.AdminInformation;
+import org.ejbca.core.model.log.Admin;
 
 
 
@@ -155,11 +162,27 @@ public class Approval implements Comparable<Approval>, Externalizable {
 			this.approvalSignature = (String) in.readObject();
 			//this.username = (String) in.readObject(); This information is now available through the Admin object
 		} else if (version == 2) {
-			this.admin = (X509CertificateAuthenticationToken) in.readObject();
-			if (this.admin != null) {
-				// We trust this admin as if it were created internal to EJBCA and 
-				// fill in the auth token
-				this.admin.setAuthToken(AdminInformation.getRandomToken());
+            final Admin admin = (Admin) in.readObject();
+            final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
+            if (x509cert != null) {
+                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                credentials.add(x509cert);
+                Set<X500Principal> principals = new HashSet<X500Principal>();
+                principals.add(x509cert.getSubjectX500Principal());
+                this.admin = new X509CertificateAuthenticationToken(principals, credentials);            	
+            } else if ((admin.getAdminType() >= 0) && (admin.getAdminType() <= 5)) {
+				// We trust this admin as if it were created internal to EJBCA and fill in the auth token
+            	this.admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
+            }
+			this.approved = in.readBoolean();
+			this.approvalDate = (Date) in.readObject();
+			this.comment = (String) in.readObject();
+			this.approvalSignature = (String) in.readObject();
+		} else if (version == 3) {
+			this.admin = (AuthenticationToken) in.readObject();
+			if (this.admin instanceof AlwaysAllowLocalAuthenticationToken) {
+				// We trust this admin as if it were created internal to EJBCA and fill in the auth token
+				this.admin = new AlwaysAllowLocalAuthenticationToken(this.admin.getPrincipals().iterator().next());
 			}
 			this.approved = in.readBoolean();
 			this.approvalDate = (Date) in.readObject();

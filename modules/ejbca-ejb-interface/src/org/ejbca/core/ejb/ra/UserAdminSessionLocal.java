@@ -29,7 +29,7 @@ public interface UserAdminSessionLocal extends UserAdminSession {
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
      * 
-     * @return Collection of UserDataVO
+     * @return Collection of EndEntityInformation
      */
     public Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin) throws FinderException;
     

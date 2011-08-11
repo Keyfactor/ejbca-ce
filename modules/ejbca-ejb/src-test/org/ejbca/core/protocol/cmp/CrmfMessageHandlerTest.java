@@ -14,10 +14,11 @@ package org.ejbca.core.protocol.cmp;
 
 import junit.framework.TestCase;
 
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.SimpleMock;
 
 /**
@@ -44,9 +45,9 @@ public class CrmfMessageHandlerTest extends TestCase {
          * order to get around the fact that we're not running any of the logic
          * in its usual constructor, instead using the empty default one.
          */
-        SimpleMock.inject(crmfMessageHandler, "admin", new Admin(Admin.TYPE_RA_USER));
+        SimpleMock.inject(crmfMessageHandler, "admin", new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfMessageHandlerTest")));
         final UserAdminSessionRemote userAdminSessionMock = new SimpleMock(UserAdminSessionRemote.class) {{
-        	map("findUserBySubjectDN", new UserDataVO() {
+        	map("findUserBySubjectDN", new EndEntityInformation() {
 				private static final long serialVersionUID = 1L;
 				public String getUsername() { return USER_NAME; };
 			});

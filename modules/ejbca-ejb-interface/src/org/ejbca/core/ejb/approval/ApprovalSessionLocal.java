@@ -19,7 +19,6 @@ import java.util.Date;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -67,7 +66,7 @@ public interface ApprovalSessionLocal extends ApprovalSession {
 	/** Method that returns the approval data value object. */
 	ApprovalDataVO getApprovalDataVO(ApprovalData adl);
 
-	void sendApprovalNotification(X509CertificateAuthenticationToken admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
+	void sendApprovalNotification(AuthenticationToken admin, String approvalAdminsEmail, String approvalNotificationFromAddress, String approvalURL,
             String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest,
             Approval approval);
 

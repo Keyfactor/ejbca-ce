@@ -17,17 +17,22 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.util.Base64;
@@ -39,7 +44,6 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.LinkView;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
@@ -139,8 +143,8 @@ public class ApprovalDataVOView implements Serializable {
         if (!initialized) {
             return "DummyAdmin";
         }
-        if (data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
-            Certificate cert = data.getApprovalRequest().getRequestAdminCert();
+        Certificate cert = data.getApprovalRequest().getRequestAdminCert();
+        if (cert != null) {
             String dn = CertTools.getSubjectDN(cert);
             String o = CertTools.getPartFromDN(dn, "O");
             if (o == null) {
@@ -171,10 +175,15 @@ public class ApprovalDataVOView implements Serializable {
     public ApprovalDataVO getApproveActionDataVO() {
         if (!initialized) {
             try {
+            	X509Certificate certificate = (X509Certificate)CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert);
+                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                credentials.add(certificate);
+                Set<X500Principal> principals = new HashSet<X500Principal>();
+                principals.add(certificate.getSubjectX500Principal());
+                AuthenticationToken token = new X509CertificateAuthenticationToken(principals, credentials);
+                DummyApprovalRequest req = new DummyApprovalRequest(token, null, ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false);
                 return new ApprovalDataVO(1, 1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0, 0, "", "", ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,
-                        new ArrayList<Approval>(), new DummyApprovalRequest(
-                                new Admin(CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert), null, null), null,
-                                ApprovalDataVO.ANY_ENDENTITYPROFILE, ApprovalDataVO.ANY_CA, false), new Date(), new Date(), 2);
+                        new ArrayList<Approval>(), req, new Date(), new Date(), 2);
             } catch (CertificateException e) {
                 log.error(e);
             }
@@ -201,12 +210,13 @@ public class ApprovalDataVOView implements Serializable {
     }
 
     public boolean getShowViewRequestorCertLink() {
-        return data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER;
+    	// Return true if there is a certificate
+        return (data.getApprovalRequest().getRequestAdminCert() != null);
     }
 
     public String getViewRequestorCertLink() {
         String retval = "";
-        if (data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
+        if (data.getApprovalRequest().getRequestAdminCert() != null) {
             String link;
             try {
                 link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl()

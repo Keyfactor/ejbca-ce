@@ -65,6 +65,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventStatus;
@@ -73,6 +74,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -131,7 +133,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
-import org.ejbca.core.model.approval.ApprovedActionAdmin;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
@@ -260,7 +261,7 @@ public class EjbcaWS implements IEjbcaWS {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private void logAdminName(AuthenticationToken admin, IPatternLogger logger) {
-        final X509Certificate cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
+        final X509Certificate cert = ((X509CertificateAuthenticationToken)admin).getCertificate();
         logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
         logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
     }
@@ -1428,7 +1429,9 @@ public class EjbcaWS implements IEjbcaWS {
 
 		if(WebServiceConfiguration.getNoAuthorizationOnFetchUserData()){
 			final AuthenticationToken tmp = ejbhelper.getAdmin(true);
-			admin = new ApprovedActionAdmin(tmp.getAdminInformation().getX509Certificate(), tmp.getUsername(), tmp.getEmail());
+			// We know client certificate is needed, so no other authentication tokens can exist
+			X509Certificate admincert = ((X509CertificateAuthenticationToken)tmp).getCertificate();
+			admin = new AlwaysAllowLocalAuthenticationToken(new X509Principal(admincert.getSubjectDN().getName()));
 		}else{
 			admin = ejbhelper.getAdmin();
 		}
@@ -1458,6 +1461,8 @@ public class EjbcaWS implements IEjbcaWS {
 			        retval.add(new UserDataSourceVOWS(ejbhelper.convertUserDataVO(admin, next.getUserDataVO()),next.getIsFieldModifyableSet()));
 			    }
 			}
+        } catch (CADoesntExistsException e) {	// EJBException, ClassCastException, ...
+            throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.CA_NOT_EXISTS, Level.INFO);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
             throw EjbcaWSHelper.getInternalException(e, logger);
         } finally {
@@ -1480,10 +1485,6 @@ public class EjbcaWS implements IEjbcaWS {
 		boolean hardTokenExists = false;
 		boolean userExists = false;
 		
-		ApprovalRequest ar = null;
-		boolean approvalSuccessfullStep1 = false;
-		boolean isRejectedStep1 = false;
-
 		// Get Significant user Id
 		final CAInfo significantcAInfo;
 		final ArrayList<java.security.cert.Certificate> genCertificates = new ArrayList<java.security.cert.Certificate>();
@@ -1509,107 +1510,96 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		}
 			
-			
-			if(ejbhelper.isAdmin()){			
-				
-                if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
-                	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
-                	throw new AuthorizationDeniedException(msg);
-                }
-                if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS)) {
-                	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, null);
-                	throw new AuthorizationDeniedException(msg);
-                }
-                if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + significantcAInfo.getCAId())) {
-                    throw new AuthorizationDeniedException("Admin " + admin + " was not authorized to resource " + AccessRulesConstants.CAPREFIX
-                            + significantcAInfo.getCAId());
-                }
-                if (userExists) {
-                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITENDENTITY)) {
-                    	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITY, null);
-                    	throw new AuthorizationDeniedException(msg);
-                    }
-                    endEntityProfileId = userDataVO.getEndEntityProfileId();
-                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                            + AccessRulesConstants.EDIT_RIGHTS)) {
-                    	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                                + AccessRulesConstants.EDIT_RIGHTS, null);
-                    	throw new AuthorizationDeniedException(msg);
-                    }
+		// Approval request if we require approvals to generate token certificates
+		ApprovalRequest ar = null;
+		if(ejbhelper.isAdmin()){			
 
-                    if (overwriteExistingSN) {
-                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
-                        	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
-                        	throw new AuthorizationDeniedException(msg);
-                        }
-                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                                + AccessRulesConstants.REVOKE_RIGHTS)) {
-                        	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                                    + AccessRulesConstants.REVOKE_RIGHTS, null);
-                        	throw new AuthorizationDeniedException(msg);
-                        }
-                    }
-                } else {
-                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATEENDENTITY)) {
-                    	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_CREATEENDENTITY, null);
-                    	throw new AuthorizationDeniedException(msg);
-                    }
-                    if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                            + AccessRulesConstants.CREATE_RIGHTS)) {
-                    	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                                + AccessRulesConstants.CREATE_RIGHTS, null);
-                    	throw new AuthorizationDeniedException(msg);
-                    }
-                    if (overwriteExistingSN) {
-                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
-                        	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
-                        	throw new AuthorizationDeniedException(msg);
-                        }
-                        if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                                + AccessRulesConstants.REVOKE_RIGHTS)) {
-                        	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
-                                    + AccessRulesConstants.REVOKE_RIGHTS, null);
-                        	throw new AuthorizationDeniedException(msg);
-                        }
-                    }
-                }
+			if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+				final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
+				throw new AuthorizationDeniedException(msg);
+			}
+			if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS)) {
+				final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, null);
+				throw new AuthorizationDeniedException(msg);
+			}
+			if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + significantcAInfo.getCAId())) {
+				throw new AuthorizationDeniedException("Admin " + admin + " was not authorized to resource " + AccessRulesConstants.CAPREFIX
+						+ significantcAInfo.getCAId());
+			}
+			if (userExists) {
+				if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITENDENTITY)) {
+					final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITY, null);
+					throw new AuthorizationDeniedException(msg);
+				}
+				endEntityProfileId = userDataVO.getEndEntityProfileId();
+				if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+						+ AccessRulesConstants.EDIT_RIGHTS)) {
+					final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+							+ AccessRulesConstants.EDIT_RIGHTS, null);
+					throw new AuthorizationDeniedException(msg);
+				}
 
-			}else{
-				if(WebServiceConfiguration.getApprovalForGenTokenCertificates()){
-					ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(),admin,null,WebServiceConfiguration.getNumberOfRequiredApprovals(),significantcAInfo.getCAId(),endEntityProfileId);
-					int status = ApprovalDataVO.STATUS_REJECTED; 					
-					try{
-					  status = approvalSession.isApproved(admin, ar.generateApprovalId(), 1);
-					  approvalSuccessfullStep1 =  status == ApprovalDataVO.STATUS_APPROVED;
-					  if(approvalSuccessfullStep1){
-						  ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
-						  String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
-						  userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
-					  }
-					  isRejectedStep1 = status == ApprovalDataVO.STATUS_REJECTED;
-					  if(   status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED
-					     || status == ApprovalDataVO.STATUS_EXPIRED){
-						  throw new ApprovalException("");
-					  }
-					}catch(ApprovalException e){
-						approvalSession.addApprovalRequest(admin, ar, globalConfigurationSession.getCachedGlobalConfiguration(admin));
-						throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.",ar.generateApprovalId());
+				if (overwriteExistingSN) {
+					if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
+						final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
+						throw new AuthorizationDeniedException(msg);
 					}
-				}else{
-					throw new AuthorizationDeniedException();
+					if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+							+ AccessRulesConstants.REVOKE_RIGHTS)) {
+						final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+								+ AccessRulesConstants.REVOKE_RIGHTS, null);
+						throw new AuthorizationDeniedException(msg);
+					}
+				}
+			} else {
+				if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATEENDENTITY)) {
+					final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_CREATEENDENTITY, null);
+					throw new AuthorizationDeniedException(msg);
+				}
+				if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+						+ AccessRulesConstants.CREATE_RIGHTS)) {
+					final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+							+ AccessRulesConstants.CREATE_RIGHTS, null);
+					throw new AuthorizationDeniedException(msg);
+				}
+				if (overwriteExistingSN) {
+					if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_REVOKEENDENTITY)) {
+						final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_REVOKEENDENTITY, null);
+						throw new AuthorizationDeniedException(msg);
+					}
+					if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+							+ AccessRulesConstants.REVOKE_RIGHTS)) {
+						final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + endEntityProfileId
+								+ AccessRulesConstants.REVOKE_RIGHTS, null);
+						throw new AuthorizationDeniedException(msg);
+					}
 				}
 			}
 
-		if(ar != null && isRejectedStep1){
-			throw new ApprovalRequestExecutionException("The approval for id " + ar.generateApprovalId() + " have been rejected.");
-		}
-		
-		if(ar != null && !approvalSuccessfullStep1){
-			throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
-		}
-		
-		if(ar != null){
-			admin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate(), admin.getUsername(), admin.getEmail());
+		}else{
+			if(WebServiceConfiguration.getApprovalForGenTokenCertificates()){
+				ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getLabel(),admin,null,WebServiceConfiguration.getNumberOfRequiredApprovals(),significantcAInfo.getCAId(),endEntityProfileId);
+				int status = ApprovalDataVO.STATUS_REJECTED; 					
+				try{
+					status = approvalSession.isApproved(admin, ar.generateApprovalId(), 1);
+					if(status == ApprovalDataVO.STATUS_APPROVED){
+						ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
+						String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
+						userDataWS.setSubjectDN(originalDN); // replace requested DN with original DN to make sure nothing have changed.
+					} else if (status == ApprovalDataVO.STATUS_REJECTED) {
+						throw new ApprovalRequestExecutionException("The approval for id " + ar.generateApprovalId() + " has been rejected.");												
+					} else if (status == ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED || status == ApprovalDataVO.STATUS_EXPIRED) {
+						throw new ApprovalException("The approval for id " + ar.generateApprovalId() + " has expired.");
+					} else {
+						throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
+					}
+				}catch(ApprovalException e){
+					approvalSession.addApprovalRequest(admin, ar, globalConfigurationSession.getCachedGlobalConfiguration(admin));
+					throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.",ar.generateApprovalId());
+				}
+			}else{
+				throw new AuthorizationDeniedException();
+			}
 		}
 		
 			hardTokenExists = hardTokenSession.existsHardToken(admin, hardTokenDataWS.getHardTokenSN());
@@ -2119,17 +2109,19 @@ public class EjbcaWS implements IEjbcaWS {
 				logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
 			}
 
-			int caId = admin.getCaId();
+			int caId = 0;
 			if(cAName  != null){
 				CAInfo cAInfo = caSession.getCAInfo(admin, cAName);
 				caId = cAInfo.getCAId();
+			} else {
+				caId = ((X509CertificateAuthenticationToken)admin).getCertificate().getSubjectDN().getName().hashCode();
 			}
 
 			String comment = type + " : " + msg;
             Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
+            details.put("msg", comment);
             String certstring = CertTools.getIssuerDN(logCert)+";"+CertTools.getSerialNumberAsString(logCert)+";"+CertTools.getSubjectDN(logCert);
-            auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, admin.toString(), username, certstring, null, details);
+            auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caId), username, certstring, details);
 			//logSession.log(admin, caId, LogConstants.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
 		} catch (CertificateException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);

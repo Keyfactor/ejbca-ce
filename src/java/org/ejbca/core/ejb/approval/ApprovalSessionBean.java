@@ -42,6 +42,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -92,6 +93,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
+    @EJB
+    private CertificateStoreSessionLocal certStoreSession;
 
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc)
@@ -176,7 +179,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void reject(X509CertificateAuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc)
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc)
             throws ApprovalRequestExpiredException, AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
         log.trace(">reject");
         ApprovalData adl;
@@ -339,7 +342,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private ApprovalData findNonExpiredApprovalDataLocal(int approvalId) {
         ApprovalData retval = null;
         Collection<ApprovalData> result = ApprovalData.findByApprovalIdNonExpired(entityManager, approvalId);
-        log.debug("Found number of approvalIdNonExpired: " + result.size());
+        if (log.isDebugEnabled()) {
+        	log.debug("Found number of approvalIdNonExpired: " + result.size());
+        }
         Iterator<ApprovalData> iter = result.iterator();
         while (iter.hasNext()) {
             ApprovalData next = iter.next();
@@ -419,8 +424,16 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             Certificate requestAdminCert = approvalRequest.getRequestAdminCert();
             String requestAdminDN = null;
             String requestAdminUsername = null;
-
-            requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
+            if (requestAdminCert != null) {
+                requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
+                // Try to get username from database
+                EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
+                        CertTools.getSubjectDN(requestAdminCert), CertTools.getIssuerDN(requestAdminCert));
+                requestAdminUsername = endEntityInformation.getUsername();
+            } else {
+                requestAdminUsername = intres.getLocalizedMessage("CLITOOL");
+                requestAdminDN = "CN=" + requestAdminUsername;
+            }
 
             if (approvalAdminsEmail.equals("") || approvalNotificationFromAddress.equals("")) {
                 final String msg = intres.getLocalizedMessage("approval.errornotificationemail", id);
@@ -432,8 +445,17 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 String approvalAdminDN = null;
                 String approveComment = null;
                 if (approval != null) {
-                    approvalAdminUsername = approval.getAdmin().toString();
-                    approvalAdminDN = CertTools.getSubjectDN(approval.getAdmin().getCertificate());
+                	// Do we have an approval admin certificate?
+                	if (approval.getAdmin() instanceof X509CertificateAuthenticationToken) {
+						X509CertificateAuthenticationToken xtoken = (X509CertificateAuthenticationToken) approval.getAdmin();
+	                    approvalAdminDN = CertTools.getSubjectDN(xtoken.getCertificate());
+	                    // Try to get username from database
+	                    EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
+	                            CertTools.getSubjectDN(xtoken.getCertificate()), CertTools.getIssuerDN(xtoken.getCertificate()));
+	                    approvalAdminUsername = endEntityInformation.getUsername();						
+					} else {
+	                    approvalAdminUsername = approval.getAdmin().toString();						
+					}
                     approveComment = approval.getComment();
                 }
                 Integer numAppr = Integer.valueOf(numberOfApprovalsLeft);
@@ -443,17 +465,20 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 String message = paramGen.interpolate(notificationMsg);
                 List<String> toList = Arrays.asList(approvalAdminsEmail);
                 String sendAdminEmail = null;
-                // Firstly, see if it exists in the certificate
-                sendAdminEmail = CertTools.getEMailAddress(sendAdmin.getCertificate());
-                if (sendAdminEmail == null) {
-                    // Secondly, see if it exists locally
-                    EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
-                            CertTools.getSubjectDN(sendAdmin.getCertificate()), CertTools.getIssuerDN(sendAdmin.getCertificate()));
-                    if(endEntityInformation != null) {
-                        sendAdminEmail = endEntityInformation.getEmail();
-                    }
-                }
-
+            	if (sendAdmin instanceof X509CertificateAuthenticationToken) {
+                    // Firstly, see if it exists in the certificate
+					X509CertificateAuthenticationToken xtoken = (X509CertificateAuthenticationToken) sendAdmin;
+                    // Try to get username from database
+	                sendAdminEmail = CertTools.getEMailAddress(xtoken.getCertificate());
+	                if (sendAdminEmail == null) {
+	                    // Secondly, see if it exists locally
+	                    EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
+	                            CertTools.getSubjectDN(xtoken.getCertificate()), CertTools.getIssuerDN(xtoken.getCertificate()));
+	                    if(endEntityInformation != null) {
+	                        sendAdminEmail = endEntityInformation.getEmail();
+	                    }
+	                }
+				}
                 if (sendAdminEmail == null || sendAdminEmail.length() == 0) {
                     final String msg = intres.getLocalizedMessage("approval.errornotificationemail", id);
                     log.info(msg);

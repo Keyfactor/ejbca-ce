@@ -31,6 +31,7 @@ import org.ejbca.core.model.authorization.AdminInformation;
  *
  * @author TomSelleck
  * @version $Id$
+ * @deprecated Use org.cesecore.authentication.tokens.AuthenticationToken instead.
  */
 public class Admin implements Serializable {
 
@@ -46,30 +47,28 @@ public class Admin implements Serializable {
     private static final long serialVersionUID = -9221031402622809524L;
     
     /** Default CA Id for non-certificate administrators */
-    public static final int INTERNALCAID = 0;
+    private static final int INTERNALCAID = 0;
     
     // Indicates the type of administrator.
     /** An administrator authenticated with client certificate */
-    public static final int TYPE_CLIENTCERT_USER = 0;
+    private static final int TYPE_CLIENTCERT_USER = 0;
     /** A user of the public web pages */
-    public static final int TYPE_PUBLIC_WEB_USER = 1;
-    /** An internal RA function, such as cmd line or CMP */
-    public static final int TYPE_RA_USER = 2;
-    /** An internal CA admin function, such as cms line */
-    public static final int TYPE_CACOMMANDLINE_USER = 3;
-    /** Batch generation tool */
-    public static final int TYPE_BATCHCOMMANDLINE_USER = 4;
     /** Internal user in EJBCA, such as automatic job */
-    public static final int TYPE_INTERNALUSER = 5;
-
-    public static final int SPECIAL_ADMIN_BOUNDRARY = 100;
+    private static final int TYPE_INTERNALUSER = 5;
 
     public static final String[] ADMINTYPETEXTS = {"CLIENTCERT", "PUBLICWEBUSER", "RACMDLINE", "CACMDLINE", "BATCHCMDLINE", "INTERNALUSER"};
-/*
-    private static final int[] ADMINTYPETOADMINENTITY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_RAADMIN,
-                                                         AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
-                                                         AdminEntity.SPECIALADMIN_INTERNALUSER};
-*/
+
+    // Special Users. (Constants cannot have 0 value).
+    private static final int SPECIALADMIN_PUBLICWEBUSER             = 2000;
+    private static final int SPECIALADMIN_CACOMMANDLINEADMIN        = 2001;
+    private static final int SPECIALADMIN_RAADMIN                   = 2002;
+    private static final int SPECIALADMIN_BATCHCOMMANDLINEADMIN     = 2003;
+    private static final int SPECIALADMIN_INTERNALUSER              = 2004;
+
+    private static final int[] ADMINTYPETOADMINENTITY = {0, Admin.SPECIALADMIN_PUBLICWEBUSER, Admin.SPECIALADMIN_RAADMIN,
+    	Admin.SPECIALADMIN_CACOMMANDLINEADMIN, Admin.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
+    	Admin.SPECIALADMIN_INTERNALUSER};
+
     private static Admin internalAdmin = null;
     
     protected int type = -1;

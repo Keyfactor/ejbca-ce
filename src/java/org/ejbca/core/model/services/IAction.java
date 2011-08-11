@@ -46,6 +46,6 @@ public interface IAction {
 	 * @param ejbs A map between Local EJB interface classes and their injected stub
 	 * @throws ActionException if the action failed in any way.
 	 */
-	public void performAction(AuthenticationToken admin, int caId, ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException;
+	public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException;
 
 }

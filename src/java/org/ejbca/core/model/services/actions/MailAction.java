@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
@@ -46,7 +45,7 @@ public class MailAction extends BaseAction {
      * 
      * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
      */
-    public void performAction(AuthenticationToken admin, int caId, ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
+    public void performAction(ActionInfo actionInfo, Map<Class<?>, Object> ejbs) throws ActionException {
         checkConfig(actionInfo);
 
         MailActionInfo mailActionInfo = (MailActionInfo) actionInfo;
