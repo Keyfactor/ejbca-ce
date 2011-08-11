@@ -32,6 +32,7 @@ import org.ejbca.core.model.SecConst;
  * use class EndEntityInformation instead.
  *
  * @version $Id$
+ * @deprecated Use org.cesecore.certificates.endentity.EndEntityInformation instead.
  */
 public class UserDataVO implements Serializable {
 
