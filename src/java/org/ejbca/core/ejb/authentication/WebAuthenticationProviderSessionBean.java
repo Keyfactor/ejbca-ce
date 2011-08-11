@@ -22,7 +22,6 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
-import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -46,11 +45,11 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     private CertificateStoreSessionLocal certificateStoreSession;
 
     @Override
-    public AuthenticationToken authenticate(AuthenticationSubject subject) throws AuthenticationFailedException {
+    public AuthenticationToken authenticate(AuthenticationSubject subject) {
 
         X509Certificate[] certificateArray = subject.getCredentials().toArray(new X509Certificate[0]);
         if (certificateArray.length != 1) {
-            throw new AuthenticationFailedException("Authenitcation subject contained more than one credential.");
+            return null;
         } else {
             X509Certificate certificate;
             certificate = certificateArray[0];

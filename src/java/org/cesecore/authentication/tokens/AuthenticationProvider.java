@@ -37,6 +37,6 @@ public interface AuthenticationProvider extends Serializable {
      * @param credentials A set of credentials.
      * @return an AuthenticationToken if the subject was authenticated, null otherwise.
      */
-    AuthenticationToken authenticate(AuthenticationSubject subject) throws AuthenticationFailedException;
+    AuthenticationToken authenticate(AuthenticationSubject subject);
 
 }
