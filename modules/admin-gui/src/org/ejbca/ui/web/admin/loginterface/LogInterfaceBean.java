@@ -29,11 +29,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
-import org.ejbca.core.ejb.log.LogSession;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
-import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
@@ -51,11 +49,13 @@ import org.ejbca.util.query.Query;
  */
 public class LogInterfaceBean implements Serializable {
 
+	// TODO: not functioning anymore, remove when new audit bean has been introduced
+	
 	private static final long serialVersionUID = 1L;
 	public static final int MAXIMUM_QUERY_ROWCOUNT = WebConfiguration.getLogMaxQueryRowCount();
     // Private fields.
     private CertificateStoreSession certificatesession;
-    private LogSession logSession;
+    //private LogSession logSession;
     private LogConfigurationSessionLocal logConfigurationSession;
     private LogEntriesView                 logentriesview;
     private AuthenticationToken admin;
@@ -89,7 +89,7 @@ public class LogInterfaceBean implements Serializable {
     	if(!initialized){
     		admin = ejbcawebbean.getAdminObject();
     		EjbLocalHelper ejb = new EjbLocalHelper();
-    		logSession = ejb.getLogSession(); 
+    		//logSession = ejb.getLogSession(); 
     		logConfigurationSession = ejb.getLogConfigurationSession(); 
     		certificatesession = ejb.getCertificateStoreSession();
     		this.informationmemory = ejbcawebbean.getInformationMemory();
@@ -113,8 +113,8 @@ public class LogInterfaceBean implements Serializable {
      * @param size the number of elements to return.
      */
     public LogEntryView[] filterByQuery(String deviceName, Query query, int index, int size) throws IllegalQueryException {
-    	Collection<LogEntry> logentries = logSession.query(deviceName, query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
-    	logentriesview.setEntries(logentries);
+    	//Collection<LogEntry> logentries = logSession.query(deviceName, query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
+    	logentriesview.setEntries(null);
     	lastquery = query;
     	return logentriesview.getEntries(index,size);        
     }    
@@ -132,8 +132,8 @@ public class LogInterfaceBean implements Serializable {
     	String user = StringTools.strip(username);  
     	Query query = new Query(Query.TYPE_LOGQUERY);
     	query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, user);
-    	Collection<LogEntry> logentries = logSession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
-    	returnval.setEntries(logentries);
+    	//Collection<LogEntry> logentries = logSession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
+    	returnval.setEntries(null);
     	lastquery = query;
     	return returnval;        
     }        
@@ -150,8 +150,8 @@ public class LogInterfaceBean implements Serializable {
     	Query query = new Query(Query.TYPE_LOGQUERY);
     	Date starttime = new Date( (new Date()).getTime() - (time * 60000));
     	query.add(starttime, new Date());
-    	Collection<LogEntry> logentries = logSession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
-    	logentriesview.setEntries(logentries);
+    	//Collection<LogEntry> logentries = logSession.query(deviceName, query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
+    	logentriesview.setEntries(null);
     	lastquery = query;
     	return logentriesview.getEntries(index,size);        
     }            
@@ -192,8 +192,8 @@ public class LogInterfaceBean implements Serializable {
      *
      * @param logconfiguration the logconfiguration to save.
      */    
-    public void saveLogConfiguration(int caid, org.ejbca.core.model.log.LogConfiguration logconfiguration) {
-    	logSession.saveLogConfiguration(admin, caid, logconfiguration);   
+    public void saveLogConfiguration(int caid, LogConfiguration logconfiguration) {
+    	//logSession.saveLogConfiguration(admin, caid, logconfiguration);   
     }    
 
     /**
@@ -275,12 +275,13 @@ public class LogInterfaceBean implements Serializable {
      * @see org.ejbca.core.model.log.ILogExporter
      */
     public byte[] exportLastQuery(final String deviceName, final ILogExporter exporter) throws Exception {
-    	final Collection<LogEntry> logentries = logSession.query(deviceName, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
-    	return exporter.export(admin, logentries);
+    	//final Collection<LogEntry> logentries = logSession.query(deviceName, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), MAXIMUM_QUERY_ROWCOUNT);
+    	return exporter.export(admin, null);
     }
     
     public Collection<String> getAvailableQueryLogDevices() {
-    	return logSession.getAvailableQueryLogDevices();
+    	//return logSession.getAvailableQueryLogDevices();
+    	return null;
     }
 
     // Private methods.

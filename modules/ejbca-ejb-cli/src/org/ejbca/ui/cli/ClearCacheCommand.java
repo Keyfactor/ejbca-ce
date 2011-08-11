@@ -34,7 +34,7 @@ public class ClearCacheCommand extends BaseCommand {
         if (args.length < 2) {
         	getLogger().info("Description: " + getDescription());
         	getLogger().info("See conf/cache.properties.sample for config options. This command should only be needed if cache times are set yo very high values.");
-            getLogger().info("Usage: " + getCommand() + " -all -globalconf -eeprofile -certprofile -authorization -logconf -ca");
+            getLogger().info("Usage: " + getCommand() + " -all -globalconf -eeprofile -certprofile -authorization -ca");
             getLogger().info("Where arguments are optional, but you have to provide at least one");
         	return;
         }		
@@ -46,7 +46,6 @@ public class ClearCacheCommand extends BaseCommand {
 		final boolean eeprofile = argsList.remove("-eeprofile") || all;
 		final boolean certprofile = argsList.remove("-certprofile") || all;
 		final boolean authorization = argsList.remove("-authorization") || all;
-		final boolean logconf = argsList.remove("-logconf") || all;
 		final boolean cacache = argsList.remove("-ca") || all;
 
 		try {
@@ -69,11 +68,6 @@ public class ClearCacheCommand extends BaseCommand {
 				getLogger().info("Flushing authorization cache.");
 				// Flush access control
 				ejb.getAccessControlSession().forceCacheExpire();
-			}
-			if (logconf) {
-				getLogger().info("Flushing log configuration cache.");
-				// Flush log configuration
-				ejb.getLogConfigurationSession().flushConfigurationCache();
 			}
 			if (cacache) {
 				getLogger().info("Flushing CA cache.");

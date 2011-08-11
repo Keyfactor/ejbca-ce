@@ -42,15 +42,12 @@ import org.ejbca.core.ejb.hardtoken.HardTokenPropertyData;
 import org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK;
-import org.ejbca.core.ejb.log.LogConfigurationData;
-import org.ejbca.core.ejb.log.LogEntryData;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
-import org.ejbca.core.model.log.LogConfiguration;
 
 /**
  * Simple class to trigger Hibernate's JPA schema validation.
@@ -403,39 +400,6 @@ public class DatabaseSchemaTest extends TestCase {
 		entity.setUsername(VARCHAR_250B);
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testKeyRecoveryData");
-	}
-
-	public void testLogConfigurationData() {
-		LOG.trace(">testLogConfigurationData");
-		logMemStats();
-		LogConfigurationData entity = new LogConfigurationData();
-		entity.setId(BOGUS_INTEGER);
-		entity.setLogConfigurationUnsafe(new LogConfiguration(false, false, HASHMAP_200K));
-		entity.setLogEntryRowNumber(0);
-		entity.setRowProtection(CLOB_10KiB);
-		entity.setRowVersion(0);
-		storeAndRemoveEntity(entity);
-		LOG.trace("<testLogConfigurationData");
-	}
-
-	public void testLogEntryData() {
-		LOG.trace(">testLogEntryData");
-		logMemStats();
-		LogEntryData entity = new LogEntryData();
-		entity.setAdminData(VARCHAR_250B);
-		entity.setAdminType(0);
-		entity.setCaId(0);
-		entity.setCertificateSNR(VARCHAR_250B);
-		entity.setEvent(0);
-		entity.setId(BOGUS_INTEGER);
-		entity.setLogComment(VARCHAR_250B);
-		entity.setModule(0);
-		entity.setRowProtection(CLOB_10KiB);
-		entity.setRowVersion(0);
-		entity.setTime(0L);
-		entity.setUsername(VARCHAR_250B);
-		storeAndRemoveEntity(entity);
-		LOG.trace("<testLogEntryData");
 	}
 
 	public void testUserData() {

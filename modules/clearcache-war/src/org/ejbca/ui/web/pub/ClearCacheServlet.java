@@ -36,7 +36,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
-import org.ejbca.core.ejb.log.LogConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 
 /**
@@ -60,8 +59,6 @@ public class ClearCacheServlet extends HttpServlet {
 	private EndEntityProfileSessionLocal endentitysession;
 	@EJB
 	private CertificateProfileSessionLocal certificateprofilesession;
-	@EJB
-	private LogConfigurationSessionLocal logConfigurationsession;
 	@EJB
 	private CaSessionLocal casession;
 	
@@ -106,11 +103,6 @@ public class ClearCacheServlet extends HttpServlet {
         			log.debug("Authorization Rule cache cleared");
         		}
 			
-        		logConfigurationsession.flushConfigurationCache();
-        		if(log.isDebugEnabled()) {
-        			log.debug("Log Configuration cache cleared");
-        		}
-        	
         		casession.flushCACache();
         		if(log.isDebugEnabled()) {
         			log.debug("CA cache cleared");
