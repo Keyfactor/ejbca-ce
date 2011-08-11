@@ -25,7 +25,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSession;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -46,13 +46,13 @@ public class RAAuthorization implements Serializable {
 	private TreeMap<String, Integer> authviewprofilenames = null;
     private AuthenticationToken admin;
     private AccessControlSessionLocal authorizationsession;
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
+    private ComplexAccessControlSession complexAccessControlSession;
     private GlobalConfigurationSession globalConfigurationSession;
     private CaSession caSession;
     private EndEntityProfileSession endEntityProfileSession;
     
     /** Creates a new instance of RAAuthorization. */
-    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
+    public RAAuthorization(AuthenticationToken admin, GlobalConfigurationSession globalConfigurationSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSession complexAccessControlSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession) {
     	this.admin = admin;
     	this.globalConfigurationSession = globalConfigurationSession;
     	this.authorizationsession = authorizationsession;
@@ -201,15 +201,7 @@ public class RAAuthorization implements Serializable {
      */
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights) {
         boolean returnval = false;
-        // TODO FIX
-        if (admin.getAdminInformation().isSpecialUser()) {
-            returnval = true;
-        } else {
-
-            returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
-                    + rights);
-
-        }
+        returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
         return returnval;
     }  
 }

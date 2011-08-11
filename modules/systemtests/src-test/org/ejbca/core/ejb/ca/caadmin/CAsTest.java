@@ -15,9 +15,15 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -97,7 +103,6 @@ public class CAsTest extends CaTestCase {
 
     private static Collection<Certificate> rootcacertchain = null;
 
-    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
@@ -110,8 +115,15 @@ public class CAsTest extends CaTestCase {
      * 
      * @param name
      *            name
+     * @throws InvalidAlgorithmParameterException 
+     * @throws NoSuchProviderException 
+     * @throws NoSuchAlgorithmException 
+     * @throws IllegalStateException 
+     * @throws SignatureException 
+     * @throws CertificateEncodingException 
+     * @throws InvalidKeyException 
      */
-    public CAsTest(String name) {
+    public CAsTest(String name) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException {
         super(name);
         CryptoProviderTools.installBCProvider();
         
