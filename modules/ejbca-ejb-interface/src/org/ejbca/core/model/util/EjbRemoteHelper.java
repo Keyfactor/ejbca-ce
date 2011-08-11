@@ -18,7 +18,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.core.ejb.JndiHelper;
@@ -55,7 +54,6 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote;
  */
 public class EjbRemoteHelper {
 
-    private AdminEntitySessionRemote adminEntitySession = null;
     private ApprovalSessionRemote approvalSession = null;
     private ApprovalExecutionSessionRemote approvalExecutionSession = null;
     private OldAuthenticationSessionRemote authenticationSession = null;
@@ -89,13 +87,6 @@ public class EjbRemoteHelper {
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
     private RevocationSessionRemote revocationSession = null;
-
-    public AdminEntitySessionRemote getAdminEntitySession() {
-        if (adminEntitySession == null) {
-            adminEntitySession = JndiHelper.getRemoteSession(AdminEntitySessionRemote.class);
-        }
-        return adminEntitySession;
-    }
 
     public RoleAccessSessionRemote getRoleAccessSession() {
         if (roleAccessSession == null) {

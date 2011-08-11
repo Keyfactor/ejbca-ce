@@ -40,7 +40,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -58,7 +57,6 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
@@ -97,7 +95,6 @@ public class ApprovalSessionTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
     private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
 
     public ApprovalSessionTest(String name) {

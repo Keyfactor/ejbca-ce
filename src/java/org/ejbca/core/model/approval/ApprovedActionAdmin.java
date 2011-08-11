@@ -36,7 +36,4 @@ public class ApprovedActionAdmin extends AuthenticationToken {
 		this.type = TYPE_CLIENTCERT_USER;
 	}
 
-	public AdminInformation getAdminInformation() {		
-		return new AdminInformation(AdminEntity.SPECIALADMIN_INTERNALUSER, authToken);
-	}
 }

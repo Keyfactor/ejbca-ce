@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.ejbca.core.model.authorization.AdminGroup;
+import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -40,12 +40,11 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
-            Collection<AdminGroup> adminGroups = ejb.getRoleAccessSession().getAuthorizedAdminGroupNames(getAdmin(), ejb.getCaSession().getAvailableCAs(getAdmin()));
-            Collections.sort((List<AdminGroup>) adminGroups);
-            for (AdminGroup adminGroupRep : adminGroups) {
-                AdminGroup adminGroup = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), adminGroupRep.getAdminGroupName());
-                int numberOfAdmins = adminGroup.getNumberAdminEntities();
-                getLogger().info(adminGroup.getAdminGroupName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
+            Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin());            
+            Collections.sort((List<RoleData>) adminGroups);
+            for (RoleData adminGroup : adminGroups) {                
+                int numberOfAdmins = adminGroup.getAccessUsers().size();
+                getLogger().info(adminGroup.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
             }
         } catch (Exception e) {
             getLogger().error("", e);

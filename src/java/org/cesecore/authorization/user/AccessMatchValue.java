@@ -37,16 +37,23 @@ public enum AccessMatchValue {
     }
     
     public static AccessMatchValue matchFromDatabase(Integer numericValue) {
-        return lookup.get(numericValue);
+        return databaseLookup.get(numericValue);
+    }
+    
+    public static AccessMatchValue matchFromName(String name) {
+        return nameLookup.get(name);
     }
 
-    private static Map<Integer, AccessMatchValue> lookup;
+    private static Map<Integer, AccessMatchValue> databaseLookup;
+    private static Map<String, AccessMatchValue> nameLookup;
     private int numericValue;
     
     static {
-        lookup = new HashMap<Integer, AccessMatchValue>();
+        databaseLookup = new HashMap<Integer, AccessMatchValue>();
+        nameLookup = new HashMap<String, AccessMatchValue>();
         for(AccessMatchValue value : AccessMatchValue.values()) {
-            lookup.put(value.numericValue, value);
+            databaseLookup.put(value.numericValue, value);
+            nameLookup.put(value.name(), value);
         }
     }
     

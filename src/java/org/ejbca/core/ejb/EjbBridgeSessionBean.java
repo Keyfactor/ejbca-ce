@@ -22,17 +22,19 @@ import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -68,11 +70,11 @@ import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
-
-	@EJB AdminEntitySessionLocal adminEntitySession;	
+	
 	@EJB ApprovalExecutionSessionLocal approvalExecutionSession;
 	@EJB ApprovalSessionLocal approvalSession;
 	@EJB AccessControlSessionLocal authorizationSession;
+	@EJB AccessRuleManagementSessionLocal accessRuleManagementSession;
 	@EJB AuthenticationSessionLocal authenticationSession;
 	@EJB OldAuthenticationSessionLocal oldAuthenticationSession;
 	@EJB CAAdminSessionLocal caAdminSession;
@@ -81,6 +83,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CertificateStoreSessionLocal certificateStoreSession;
 	@EJB CertReqHistorySessionLocal certReqHistorySession;
 	@EJB CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
+	@EJB ComplexAccessControlSessionLocal complexAccessControlSession;
 	@EJB CrlStoreSessionLocal crlStoreSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB CertificateCreateSessionLocal certificateCreateSession;
@@ -95,21 +98,23 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
 	@EJB RaAdminSessionLocal raSession;
+	@EJB RevocationSessionLocal revocationSession;
 	@EJB RoleAccessSessionLocal roleAccessSession;
+	@EJB RoleManagementSessionLocal roleManagementSession;
 	@EJB SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
 	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB UserAdminSessionLocal userAdminSession;
-	@EJB RevocationSessionLocal revocationSession;
+
 	
 	@EJB SimpleAuthenticationProviderLocal simpleAuthenticationProvider;
 
-	@Override public AdminEntitySessionLocal getAdminEntitySession() { return adminEntitySession; }	
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
 	@Override public AccessControlSessionLocal getAccessControlSession() { return authorizationSession; }
+	@Override public AccessRuleManagementSessionLocal getAccessRuleManagementSession() { return accessRuleManagementSession; }
 	@Override public AuthenticationSessionLocal getAuthenticationSession() { return authenticationSession; }
 	@Override public OldAuthenticationSessionLocal getOldAuthenticationSession() { return oldAuthenticationSession; }
 	@Override public CAAdminSessionLocal getCaAdminSession() { return caAdminSession; }
@@ -118,6 +123,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CertificateStoreSessionLocal getCertificateStoreSession() { return certificateStoreSession; }
 	@Override public CertReqHistorySessionLocal getCertReqHistorySession() { return certReqHistorySession; }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
+	@Override public ComplexAccessControlSessionLocal getComplexAccessControlSession() { return complexAccessControlSession; }
 	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
 	@Override public CertificateCreateSessionLocal getCertificateCreateSession() { return certificateCreateSession; }
@@ -133,16 +139,17 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public RaAdminSessionLocal getRaAdminSession() { return raSession; }
 	@Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
 	@Override public RoleAccessSessionLocal getRoleAccessSession() { return roleAccessSession; }
+	@Override public RoleManagementSessionLocal getRoleManagementSession() { return roleManagementSession; }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return securityEventsAuditorSession; }
 	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
 	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
-	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return logConfigurationSession; }
-	
-	
+	@Override public LogConfigurationSessionLocal getLogConfigurationSession() { return logConfigurationSession; }	
 
     @Override
     public SimpleAuthenticationProviderLocal getSimpleAuthenticationProvider() { return simpleAuthenticationProvider; }
+
+
 }

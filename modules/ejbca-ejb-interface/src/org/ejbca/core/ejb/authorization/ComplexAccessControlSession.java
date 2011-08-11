@@ -55,13 +55,13 @@ public interface ComplexAccessControlSession {
      * Method used to collect an administrators available access rules based on which rule he himself is authorized to.
      * 
      * @param admin is the administrator calling the method.
-     * @param availableCaIds A Collection<Integer> of all CA Ids
+     * @param availableCaIds A Collection<Integer> of all CA IDs
      * @param enableendentityprofilelimitations Include End Entity Profile access rules
      * @param usehardtokenissuing Include Hard Token access rules
      * @param usekeyrecovery Include Key Recovery access rules
-     * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile ids
-     * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources ids
-     * @return a Collection of String containing available accessrules.
+     * @param authorizedEndEntityProfileIds A Collection<Integer> of all authorized End Entity Profile IDs
+     * @param authorizedUserDataSourceIds A Collection<Integer> of all authorized user data sources IDs
+     * @return a Collection of strings representing the available access rules.
      */
     Collection<String> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,
             boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,

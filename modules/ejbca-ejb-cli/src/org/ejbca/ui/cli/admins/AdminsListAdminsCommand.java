@@ -15,6 +15,10 @@ package org.ejbca.ui.cli.admins;
 
 import java.util.Collection;
 
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.roles.RoleData;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -45,23 +49,19 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            AdminGroup adminGroup = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName);
+            RoleData adminGroup = ejb.getRoleAccessSession().findRole(groupName);
             if (adminGroup == null) {
                 getLogger().error("No such group \"" + groupName + "\" .");
                 return;
             }
-            Collection<AdminEntity> list = adminGroup.getAdminEntities();
-            for (AdminEntity adminEntity : list) {
-                String caName = (String) ejb.getCAAdminSession().getCAIdToNameMap(getAdmin()).get(adminEntity.getCaId());
+            for (AccessUserAspectData  userAspect : adminGroup.getAccessUsers().values()) {
+                String caName = (String) ejb.getCAAdminSession().getCAIdToNameMap(getAdmin()).get(userAspect.getCaId());
                 if (caName == null) {
-                    caName = "Unknown CA with id " + adminEntity.getCaId();
+                    caName = "Unknown CA with id " + userAspect.getCaId();
                 }
-                String matchWith = AdminEntity.MATCHWITHTEXTS[adminEntity.getMatchWith()];
-                String matchType = "SPECIAL";
-                if (adminEntity.getMatchType() < AdminEntity.SPECIALADMIN_PUBLICWEBUSER) {
-                    matchType = AdminEntity.MATCHTYPETEXTS[adminEntity.getMatchType() - 1000];
-                }
-                String matchValue = adminEntity.getMatchValue();
+                AccessMatchValue matchWith = userAspect.getMatchWithByValue();
+                AccessMatchType matchType = userAspect.getMatchTypeAsType();     
+                String matchValue = userAspect.getMatchValue();
                 getLogger().info("\"" + caName + "\" " + matchWith + " " + matchType + " \"" + matchValue + "\"");
             }
         } catch (Exception e) {

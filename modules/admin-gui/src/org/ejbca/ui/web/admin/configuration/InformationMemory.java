@@ -38,6 +38,7 @@ import org.cesecore.roles.RoleData;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -97,22 +98,22 @@ public class InformationMemory implements Serializable {
 
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSession caSession, RaAdminSession raadminsession,
-            AccessControlSessionLocal authorizationsession, ComplexAccessControlSession complexAccessControlSession,
+            AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession,
             EndEntityProfileSession endEntityProfileSession, HardTokenSession hardtokensession, PublisherSession publishersession,
             UserDataSourceSession userdatasourcesession, CertificateProfileSession certificateProfileSession,
             GlobalConfigurationSession globalConfigurationSession, GlobalConfiguration globalconfiguration) {
         this.caadminsession = caadminsession;
-        this.administrator = administrator;   
+        this.administrator = administrator;
         this.endEntityProfileSession = endEntityProfileSession;
         this.publishersession = publishersession;
         this.userdatasourcesession = userdatasourcesession;
         this.globalconfiguration = globalconfiguration;
         this.certificateProfileSession = certificateProfileSession;
-        this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, caSession,
-                endEntityProfileSession);
+        this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
+                caSession, endEntityProfileSession);
         this.caauthorization = new CAAuthorization(administrator, caadminsession, caSession, authorizationsession, certificateProfileSession);
         this.logauthorization = new LogAuthorization(administrator, authorizationsession, caSession);
-        this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, caSession);
+        this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, complexAccessControlSession);
         this.complexAccessControlSession = complexAccessControlSession;
     }
 

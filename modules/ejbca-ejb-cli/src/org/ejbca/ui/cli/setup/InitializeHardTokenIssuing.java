@@ -18,9 +18,13 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.roles.RoleData;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
@@ -31,26 +35,19 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 /**
  * Class used for easy setup primecard server.
  * 
- * This isn't used as a command line but used from within, it's run by the
- * command "setup initializehardtokenissuing"
+ * This isn't used as a command line but used from within, it's run by the command "setup initializehardtokenissuing"
  * 
- * It's main method run sets up: 1. Sets the global setting use hard token
- * functionality to true. 2. A default 'Administrator Token' Hard Profile Token
- * 3. A default 'Local' Hard Token Issuer with the 'Temporary Super Admin Group'
- * as admin group. 4. Adds a 'Administrator Token End Entity Profile' End Entity
- * Profile with the following fields: * CN, required * 'Administrator Token' as
- * default and available tokens * 'local' as default and available issuers *
- * default available CA is taken from parameter to run method
+ * It's main method run sets up: 1. Sets the global setting use hard token functionality to true. 2. A default 'Administrator Token' Hard Profile
+ * Token 3. A default 'Local' Hard Token Issuer with the 'Temporary Super Admin Group' as admin group. 4. Adds a 'Administrator Token End Entity
+ * Profile' End Entity Profile with the following fields: * CN, required * 'Administrator Token' as default and available tokens * 'local' as default
+ * and available issuers * default available CA is taken from parameter to run method
  * 
- * 5. Adds a user SuperAdminToken with CN=SuperAdminToken with issuer local 6.
- * Adds SuperAdminToken to Temporary Super Admin Group
+ * 5. Adds a user SuperAdminToken with CN=SuperAdminToken with issuer local 6. Adds SuperAdminToken to Temporary Super Admin Group
  * 
- * After run have been executed should it be easy to run primecard locally to
- * just issue the first card.
+ * After run have been executed should it be easy to run primecard locally to just issue the first card.
  * 
  * @author Philip Vendil
- * @version $Id: InitializeHardTokenIssuing.java 8119 2009-10-17 00:33:15Z
- *          jeklund $
+ * @version $Id$
  * 
  */
 public class InitializeHardTokenIssuing extends BaseCommand {
@@ -93,7 +90,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private void runSetup(String caname) throws Exception {
         getLogger().info("Adding Hard Token Super Administrator .....\n\n");
         int caid = ejb.getCaSession().getCAInfo(getAdmin(), caname).getCAId();
-        int admingroupid = ejb.getRoleAccessSession().getAdminGroup(getAdmin(), AdminGroup.TEMPSUPERADMINGROUP).getRoleDataId();
+        int admingroupid = ejb.getRoleAccessSession().findRole(DefaultRoles.SUPERADMINISTRATOR.getName()).getPrimaryKey();
 
         configureGlobalConfiguration();
         createAdministratorTokenProfile();
@@ -102,11 +99,10 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         createSuperAdminTokenUser(caid);
         addSuperAdminTokenUserToTemporarySuperAdminGroup(caid);
 
-        getLogger()
-                .info(
-                        "A hard token Administrator have been added.\n\n" + "In order to issue the card. Startup PrimeCard in local mode using\n"
-                                + "the alias 'local'. Then insert an empty token.\n"
-                                + "This Administrator is also a super administrator for the EJBCA installation.\n");
+        getLogger().info(
+                "A hard token Administrator have been added.\n\n" + "In order to issue the card. Startup PrimeCard in local mode using\n"
+                        + "the alias 'local'. Then insert an empty token.\n"
+                        + "This Administrator is also a super administrator for the EJBCA installation.\n");
     }
 
     /**
@@ -115,7 +111,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void configureGlobalConfiguration() throws Exception {
-    	ejb.getGlobalConfigurationSession().setSettingIssueHardwareTokens(getAdmin(), true);
+        ejb.getGlobalConfigurationSession().setSettingIssueHardwareTokens(getAdmin(), true);
     }
 
     /**
@@ -184,8 +180,9 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
 
         profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH + ";"
-                + SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENENC);
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER + ";"
+                + SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC + ";"
+                + SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENENC);
 
         // Set Default Token Type
         profile.setValue(EndEntityProfile.DEFKEYSTORE, 0, "" + tokenid);
@@ -202,8 +199,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     }
 
     /**
-     * Adds a new superadmintoken user to the user database and puts it to the
-     * local issuer queue.
+     * Adds a new superadmintoken user to the user database and puts it to the local issuer queue.
      * 
      * @throws Exception
      */
@@ -213,8 +209,8 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(), ADMINTOKENPROFILENAME);
         int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(), ISSUERALIAS);
 
-        this.ejb.getUserAdminSession().addUser(getAdmin(), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true, endentityprofileid,
-                certificateprofileid, 65, tokenid, hardtokenissuerid, caid);
+        this.ejb.getUserAdminSession().addUser(getAdmin(), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true,
+                endentityprofileid, certificateprofileid, 65, tokenid, hardtokenissuerid, caid);
     }
 
     /**
@@ -223,8 +219,11 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void addSuperAdminTokenUserToTemporarySuperAdminGroup(int caid) throws Exception {
-        List<AdminEntity> adminentities = new ArrayList<AdminEntity>();
-        adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, SUPERADMINTOKENNAME, caid));
-        ejb.getAdminEntitySession().addAdminEntities(getAdmin(), "Temporary Super Administrator Group", adminentities);
+        String roleName = "Temporary Super Administrator Group";
+        List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+        subjects.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
+                SUPERADMINTOKENNAME));
+        RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+        ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(), role, subjects);
     }
 }
