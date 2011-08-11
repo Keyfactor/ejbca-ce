@@ -164,7 +164,7 @@ public class AuthorizationDataHandler implements Serializable {
     public void addAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException,
             AccessRuleNotFoundException, RoleNotFoundException {
         authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(roleName));
-        authorizedToAddAccessRules(accessRules);
+        authorizedToAddAccessRules(roleName, accessRules);
         roleManagementSession.addAccessRulesToRole(administrator, roleAccessSession.findRole(roleName), accessRules);
         informationmemory.administrativePriviledgesEdited();
     }
@@ -198,7 +198,7 @@ public class AuthorizationDataHandler implements Serializable {
     /**
      * Method returning all the available access rules authorized to administrator to manage.
      * 
-     * @returns a Collection of String with available access rules.
+     * @returns a Collection of strings with available access rules.
      */
     public Collection<String> getAvailableAccessRules() {
         return this.informationmemory.getAuthorizedAccessRules();
@@ -254,9 +254,9 @@ public class AuthorizationDataHandler implements Serializable {
         }
     }
 
-    private void authorizedToAddAccessRules(Collection<AccessRuleData> accessrules) throws AuthorizationDeniedException {
+    private void authorizedToAddAccessRules(String roleName, Collection<AccessRuleData> accessrules) throws AuthorizationDeniedException {
         for (AccessRuleData accessRule : accessrules) {
-            if (!this.informationmemory.getAuthorizedAccessRules().contains(accessRule.getAccessRuleName())) {
+            if (!this.informationmemory.getAuthorizedAccessRules().contains(accessRule)) {
                 throw new AuthorizationDeniedException("Accessruleset contained non authorized access rules");
             }
         }

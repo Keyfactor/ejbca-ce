@@ -229,12 +229,13 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
      * @param rules a list of rules
      * @return the set of the above rules not used in this role. Returns null if rules was null.
      */
-    public Collection<AccessRuleData> getDisjunctSetOfRules(Collection<AccessRuleData> rules) {
+    public Collection<AccessRuleData> getDisjunctSetOfRules(Collection<String> rules) {
         List<AccessRuleData> result = new ArrayList<AccessRuleData>();
         if (rules != null) {
-            for (AccessRuleData rule : rules) {
-                if (!accessRules.containsKey(rule.getPrimaryKey())) {
-                    result.add(rule);
+            for (String rule : rules) {
+                Integer key = AccessRuleData.generatePrimaryKey(roleName, rule);
+                if (!accessRules.containsKey(key)) {
+                    result.add(accessRules.get(key));
                 }
             }
         }

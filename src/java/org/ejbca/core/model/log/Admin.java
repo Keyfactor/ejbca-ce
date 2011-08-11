@@ -66,11 +66,11 @@ public class Admin implements Serializable {
     public static final int SPECIAL_ADMIN_BOUNDRARY = 100;
 
     public static final String[] ADMINTYPETEXTS = {"CLIENTCERT", "PUBLICWEBUSER", "RACMDLINE", "CACMDLINE", "BATCHCMDLINE", "INTERNALUSER"};
-
+/*
     private static final int[] ADMINTYPETOADMINENTITY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_RAADMIN,
                                                          AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
                                                          AdminEntity.SPECIALADMIN_INTERNALUSER};
-
+*/
     private static Admin internalAdmin = null;
     
     protected int type = -1;

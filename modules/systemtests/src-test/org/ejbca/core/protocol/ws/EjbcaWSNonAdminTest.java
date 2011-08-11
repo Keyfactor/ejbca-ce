@@ -33,7 +33,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -51,7 +50,7 @@ import org.ejbca.core.model.approval.approvalrequests.GenerateTokenApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
@@ -89,7 +88,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+
     private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     
     public void test00SetupAccessRights() throws Exception {
@@ -408,7 +407,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         adminEntities = new ArrayList<AdminEntity>();
         adminEntities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminusername1, caid));
-        adminEntitySession.addAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
+        adminEntitySession.addAdminEntities(intadmin, DefaultRoles.SUPERADMINISTRATOR.getName(), adminEntities);
 
         authorizationSession.forceRuleUpdate(intadmin);
 
@@ -431,7 +430,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     protected void removeApprovalAdmins() throws Exception {
         userAdminSession.deleteUser(intadmin, adminusername1);
-        adminEntitySession.removeAdminEntities(intadmin, AdminGroup.TEMPSUPERADMINGROUP, adminEntities);
+        adminEntitySession.removeAdminEntities(intadmin, DefaultRoles.SUPERADMINISTRATOR.getName(), adminEntities);
 
     }
 }

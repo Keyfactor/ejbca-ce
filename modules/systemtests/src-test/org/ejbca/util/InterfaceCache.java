@@ -13,12 +13,14 @@
 
 package org.ejbca.util;
 
+import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionRemote;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionRemote;
@@ -60,12 +62,8 @@ public class InterfaceCache {
 		return ejb;
 	}
 	
-	public static AdminEntitySessionRemote getAdminEntitySession() {
-	    return getEjb().getAdminEntitySession();
-	}
-
-	public static AdminGroupSessionRemote getAdminGroupSession() {
-	    return getEjb().getAdminGroupSession();
+	public static AccessControlSessionRemote getAccessControlSession() {
+	    return getEjb().getAccessControlSession();
 	}
 	
 	public static CAAdminSessionRemote getCAAdminSession() {
@@ -116,10 +114,6 @@ public class InterfaceCache {
 		return getEjb().getHardTokenSession();
 	}
 
-	public static AuthorizationSessionRemote getAuthorizationSession() {
-		return getEjb().getAuthorizationSession();
-	}
-
 	public static OldAuthenticationSessionRemote getAuthenticationSession() {
 		return getEjb().getAuthenticationSession();
 	}
@@ -163,7 +157,15 @@ public class InterfaceCache {
 	public static ConfigurationSessionRemote getConfigurationSession() {
 		return getEjb().getConfigurationSession();
 	}
+	
+	public static RoleAccessSessionRemote getRoleAccessSession() {
+	    return getEjb().getRoleAccessSession();
+	}
 
+	public static RoleManagementSessionRemote getRoleManagementSession() {
+	    return getEjb().getRoleManagementSession();
+	}
+	
 	public static ServiceSessionRemote getServiceSession() {
 		return getEjb().getServiceSession();
 	}

@@ -114,7 +114,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Collection<String> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken,
+    public Collection<String> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, 
             boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,
             Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules) {
         ArrayList<String> accessrules = new ArrayList<String>();

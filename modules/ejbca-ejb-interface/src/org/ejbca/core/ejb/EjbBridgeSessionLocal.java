@@ -26,11 +26,12 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.core.ejb.authorization.AdminEntitySessionLocal;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.OldAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -68,7 +69,6 @@ public interface EjbBridgeSessionLocal {
 
         AccessControlSessionLocal getAccessControlSession();
 	AccessRuleManagementSessionLocal getAccessRuleManagementSession();
-        AdminEntitySessionLocal getAdminEntitySession();	
 	ApprovalExecutionSessionLocal getApprovalExecutionSession();
 	ApprovalSessionLocal getApprovalSession();
 	AuthenticationSessionLocal getAuthenticationSession();
@@ -78,6 +78,7 @@ public interface EjbBridgeSessionLocal {
 	CertificateProfileSessionLocal getCertificateProfileSession();
 	CertificateStoreSessionLocal getCertificateStoreSession();
 	CertReqHistorySessionLocal getCertReqHistorySession();
+	ComplexAccessControlSessionLocal getComplexAccessControlSession();
 	RevocationSessionLocal getRevocationSession();
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlStoreSessionLocal getCrlStoreSession();
@@ -94,6 +95,7 @@ public interface EjbBridgeSessionLocal {
 	PublisherSessionLocal getPublisherSession();
 	RaAdminSessionLocal getRaAdminSession();
 	RoleAccessSessionLocal getRoleAccessSession();
+	RoleManagementSessionLocal getRoleManagementSession();
 	SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession();
 	SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession();
 	ServiceSessionLocal getServiceSession();

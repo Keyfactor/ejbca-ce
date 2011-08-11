@@ -31,9 +31,6 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.crl.CRLData;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.authorization.AccessRulesData;
-import org.ejbca.core.ejb.authorization.AdminEntityData;
-import org.ejbca.core.ejb.authorization.AdminGroupData;
 import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
@@ -145,7 +142,7 @@ public class DatabaseSchemaTest extends TestCase {
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testApprovalData");
 	}
-
+/*
 	public void testAccessRulesData() {
 		LOG.trace(">testAccessRulesData");
 		logMemStats();
@@ -159,7 +156,8 @@ public class DatabaseSchemaTest extends TestCase {
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testAccessRulesData");
 	}
-
+*/
+	/*
 	public void testAdminEntityData() {
 		LOG.trace(">testAdminEntityData");
 		logMemStats();
@@ -174,7 +172,8 @@ public class DatabaseSchemaTest extends TestCase {
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testAdminEntityData");
 	}
-
+*/
+	/*
 	public void testAdminGroupData() {
 		LOG.trace(">testAdminGroupData");
 		logMemStats();
@@ -187,7 +186,7 @@ public class DatabaseSchemaTest extends TestCase {
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testAdminGroupData");
 	}
-
+*/
 	public void testCAData() {
 		LOG.trace(">testCAData");
 		logMemStats();

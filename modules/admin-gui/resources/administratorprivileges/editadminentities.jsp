@@ -117,10 +117,10 @@
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{admin.matchValue}" rendered="#{adminGroupsManagedBean.adminEntityConstants.WITH_SERIALNUMBER ne admin.matchWith}"/>
+			<h:outputText value="#{admin.matchValue}" rendered="#{adminGroupsManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER ne admin.matchWith}"/>
 			<h:outputLink
 				value="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.globalConfiguration.raPath}/listendentities.jsp?action=listusers&buttonisrevoked=value&textfieldserialnumber=#{admin.matchValue}"
-				rendered="#{adminGroupsManagedBean.adminEntityConstants.WITH_SERIALNUMBER eq admin.matchWith}">
+				rendered="#{adminGroupsManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER eq admin.matchWith}">
 				<h:outputText value="#{admin.matchValue}"/>
 			</h:outputLink>
 		</h:column>
