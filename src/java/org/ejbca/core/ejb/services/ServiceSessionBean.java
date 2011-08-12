@@ -53,7 +53,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
-import org.ejbca.core.ejb.JndiHelper;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -85,7 +85,7 @@ import org.ejbca.core.model.services.ServiceExistsException;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ServiceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRemote {
 

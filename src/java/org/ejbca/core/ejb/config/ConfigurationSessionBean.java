@@ -20,16 +20,16 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.ejbca.config.EjbcaConfigurationHolder;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.JndiHelper;
+import org.ejbca.config.EjbcaConfigurationHolder;
 
 /**
  * This bean handles configuration changes for system tests.
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ConfigurationSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ConfigurationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 

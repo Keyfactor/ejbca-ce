@@ -29,10 +29,10 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.SecConst;
 
 /**
@@ -40,7 +40,7 @@ import org.ejbca.core.model.SecConst;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CAAdminTestSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminTestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 

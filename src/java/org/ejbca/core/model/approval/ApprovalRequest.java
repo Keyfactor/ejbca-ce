@@ -30,9 +30,6 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
@@ -369,23 +366,6 @@ public abstract class ApprovalRequest implements Externalizable {
                 approvalSteps[i] = in.readBoolean();
             }
         }
-    }
-
-    /**
-     * @param admin
-     * @param caSession
-     * @return
-     */
-    protected static final String findCAName(AuthenticationToken admin, int caid, CaSession caSession) {
-        String caname;
-        try {
-            caname = caSession.getCAInfo(admin, caid).getName();
-        } catch (CADoesntExistsException e) {
-            caname = "CA does not exist: " + caid;
-        } catch (AuthorizationDeniedException e) {
-            caname = "Unauthorized to CA: " + caid;
-        }
-        return caname;
     }
 
 }

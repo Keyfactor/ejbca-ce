@@ -45,9 +45,9 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.SecConst;
 
 /**

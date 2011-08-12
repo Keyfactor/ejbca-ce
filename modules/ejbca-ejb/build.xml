@@ -126,6 +126,13 @@
 		<!-- CESeCore util and common classes.. a bit rough.. -->
 		<include name="org/cesecore/*.java"/>
 		<include name="org/cesecore/audit/*.java"/>
+		<include name="org/cesecore/certificates/certificate/Certificate*.java"/>
+		<include name="org/cesecore/certificates/certificate/*Exception.java"/>
+		<include name="org/cesecore/certificates/certificate/request/*.java"/>
+		<include name="org/cesecore/certificates/ca/*.java"/>
+		<include name="org/cesecore/certificates/crl/*.java"/>
+		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
+		<exclude name="org/cesecore/certificates/certificateprofile/*Cache.java"/>
 		<include name="org/cesecore/audit/audit/*.java"/>
 		<include name="org/cesecore/audit/enums/*.java"/>
 		<include name="org/cesecore/audit/impl/*.java"/>
@@ -142,10 +149,15 @@
 		<include name="org/cesecore/time/*.java"/>
 		<include name="org/cesecore/time/providers/*.java"/>
 		<include name="org/cesecore/util/*.java"/>
+		<include name="org/cesecore/certificates/util/**/*.java"/>
 		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
 		<exclude name="org/cesecore/**/*SessionBean.java"/>
 
 		<!-- From EJBCA entity lib -->
+		<include name="org/cesecore/certificates/ca/internal/CACacheManager.java"/>
+		<include name="cesecore/certificates/ca/CADoesntExistsException.java"/>
+		<include name="org/cesecore/certificates/certificateprofiles/CertificateProfile.java"/>
+		<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalException.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalRequestExpiredException.java"/>
@@ -154,17 +166,10 @@
 		<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
 		<include name="org/ejbca/core/model/authorization/AccessRule.java"/>
 		<include name="org/ejbca/core/model/authorization/AdminGroup.java"/>
-		<include name="org/ejbca/core/model/ca/caadmin/X509CA.java"/>
-		<include name="org/ejbca/core/model/ca/caadmin/CVCCA.java"/>
-		<include name="org/ejbca/core/model/ca/caadmin/CACacheManager.java"/>
-		<include name="org/ejbca/core/model/ca/caadmin/CADoesntExistsException.java"/>
-		<include name="org/ejbca/core/model/ca/certificateprofiles/CACertificateProfile.java"/>
-		<include name="org/ejbca/core/model/ca/certificateprofiles/EndUserCertificateProfile.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherConst.java"/>
 		<include name="org/ejbca/core/model/ca/store/CertReqHistory.java"/>
-		<include name="org/ejbca/core/model/ca/store/CertificateInfo.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuer.java"/>
 		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfile.java"/>
 		<include name="org/ejbca/core/model/log/LogConfiguration.java"/>
@@ -177,6 +182,9 @@
 		<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
 		<include name="org/ejbca/util/GUIDGenerator.java"/>
 		<!-- From EJBCA interface lib -->
+		<include name="org/cesecore/certificates/crl/CRLInfo.java"/>
+		<include name="org/cesecore/certificates/ca/CAExistsException.java"/>
+		<include name="org/cesecore/certificates/certificate/CertificateStatus.java"/>
 		<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
 		<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
 		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>
@@ -189,12 +197,10 @@
 		<include name="org/ejbca/core/model/authorization/AuthorizationDeniedException.java"/>
 		<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
 		<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
-		<include name="org/ejbca/core/model/ca/caadmin/CAExistsException.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
 		<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
 		<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
-		<include name="org/ejbca/core/ejb/ca/store/CertificateStatus.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
 		<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenData.java"/>
@@ -203,6 +209,7 @@
 		<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
 		<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryData.java"/>
 		<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+		<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
 		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
 		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->
@@ -213,8 +220,8 @@
 		<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
 		<include name="org/ejbca/util/PrinterManager.java"/>
 		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>
-		<include name="org/ejbca/core/model/ca/certificateprofiles/*.java"/>
-		<include name="org/ejbca/util/cert/CrlExtensions.java"/>
+		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
+		<include name="org/cesecore/certificates/util/cert/CrlExtensions.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
 		<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
@@ -222,7 +229,7 @@
 		<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
 		<!-- Dependecies from multiple places -->
 		<include name="com/novosec/pkix/asn1/**/*.java"/>
-		<include name="org/ejbca/core/protocol/X509ResponseMessage.java"/>
+		<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java"/>
 		<!-- Dependecies from EJB CLI and CTB -->
 		<include name="org/ejbca/util/CliTools.java"/>
 		<!-- Dependecies from EJB CLI and XMKS -->

@@ -15,8 +15,6 @@ package org.ejbca.core.model.services;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-
 /**
  * Interface used to define a service action. An action could be to generate
  * a email, report, write to file.

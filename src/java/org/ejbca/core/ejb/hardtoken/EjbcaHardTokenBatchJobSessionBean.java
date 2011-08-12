@@ -28,7 +28,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.ejb.JndiHelper;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.hardtoken.UnavailableTokenException;
@@ -38,7 +38,7 @@ import org.ejbca.core.model.hardtoken.UnavailableTokenException;
  *
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenBatchJobSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "HardTokenBatchJobSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessionRemote, HardTokenBatchJobSessionLocal  {
 

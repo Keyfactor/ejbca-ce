@@ -17,8 +17,6 @@ import java.util.List;
 
 import org.ejbca.util.CliTools;
 
-import com.icesoft.net.messaging.MessageServiceClient.Administrator;
-
 
 /**
  * Clears caches used internally by EJBCA. The caches are used to limit the number of database queries issued to the database.

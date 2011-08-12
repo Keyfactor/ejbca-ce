@@ -23,7 +23,6 @@ import java.util.Properties;
 import javax.ejb.EJBException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.model.log.Admin;
 
 
 

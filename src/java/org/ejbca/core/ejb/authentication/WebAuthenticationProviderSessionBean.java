@@ -28,16 +28,16 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.JndiHelper;
 
 /**
  *
  * @version $Id$
  * 
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "WebAuthenticationProviderSessionLocal")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "WebAuthenticationProviderSessionLocal")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class WebAuthenticationProviderSessionBean implements WebAuthenticationProviderSessionLocal {
 

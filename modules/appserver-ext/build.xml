@@ -50,8 +50,8 @@
             <include name="org/ejbca/appserver/jboss/RollingCalendar.java"/>
             <include name="org/ejbca/appserver/jboss/SignerThread.java"/>   
             <include name="org/ejbca/appserver/jboss/ScriptThread.java"/>   
-    		<include name="org/ejbca/util/CryptoProviderTools.java"/>
-    		<include name="org/ejbca/util/FileTools.java"/>
+    		<include name="org/cesecore/util/CryptoProviderTools.java"/>
+    		<include name="org/cesecore/util/FileTools.java"/>
     	</javac>
     </target>
 

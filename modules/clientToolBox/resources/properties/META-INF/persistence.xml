@@ -23,7 +23,7 @@
 	-->
     <!-- JUnit test run by "ant test:ctb" expects this PU to exist -->
     <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
-        <class>org.ejbca.core.ejb.ca.store.CertificateData</class>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
 <!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/> -->
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
@@ -36,7 +36,7 @@
     </persistence-unit>
     <!-- JUnit test run by "ant test:ctb" expects this PU to be writable -->
     <persistence-unit name="ocsp1" transaction-type="RESOURCE_LOCAL">
-        <class>org.ejbca.core.ejb.ca.store.CertificateData</class>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
 <!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/> -->
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
@@ -49,7 +49,7 @@
     </persistence-unit>
     <!-- Oracle Express Edition example -->
     <persistence-unit name="oracle" transaction-type="RESOURCE_LOCAL">
-        <class>org.ejbca.core.ejb.ca.store.CertificateData</class>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
             <property name="hibernate.connection.driver_class" value="oracle.jdbc.driver.OracleDriver"/>

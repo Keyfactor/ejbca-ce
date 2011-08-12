@@ -21,7 +21,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.ejbca.core.ejb.JndiHelper;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
@@ -31,7 +31,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
  * @author mikek
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "ServiceDataSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ServiceDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceDataSessionRemote {
 

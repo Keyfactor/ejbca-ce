@@ -52,7 +52,7 @@
         </attributes>
     </entity>
 -->
-    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY" metadata-complete="false">
+    <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(254)"/></id>
             <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(254)" nullable="false"/></basic>

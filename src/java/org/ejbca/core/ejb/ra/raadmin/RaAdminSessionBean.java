@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -40,7 +41,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * 
  * @version $Id: RaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund$
  */
-@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "RaAdminSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RaAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRemote {
 

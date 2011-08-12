@@ -236,7 +236,7 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.ca.store.CertificateData" access="PROPERTY" metadata-complete="false">
+    <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)"/></id>
             <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(256)" nullable="false"/></basic>

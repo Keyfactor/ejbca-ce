@@ -36,15 +36,15 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.ejb.JndiHelper;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateStoreOnlyDataSessionBean extends CertificateDataUtil implements CertificateStoreSessionLocal, CertificateStoreSessionRemote {
     
