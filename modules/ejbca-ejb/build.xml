@@ -244,6 +244,7 @@
 		<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
 		<!-- Dependencies from VA WAR and Appserver Extensions -->
 		<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java"/>
+		<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*.java"/>
 		<!-- Tool used to tidy up JavaDoc and make generated WS client classes usable. -->
 		<include name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
 		<!-- Tool for tests. -->

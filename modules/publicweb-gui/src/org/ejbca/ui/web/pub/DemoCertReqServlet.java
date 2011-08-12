@@ -42,7 +42,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.web.RequestHelper;
 
 /**
@@ -180,7 +179,7 @@ public class DemoCertReqServlet extends HttpServlet {
         String includeEmail = request.getParameter("includeemail");
         log.debug("includeEmail=" + includeEmail);
 
-        UserDataVO newuser = new UserDataVO();
+        EndEntityInformation newuser = new EndEntityInformation();
         newuser.setType(SecConst.USER_ENDUSER);
         newuser.setUsername(username);
         newuser.setDN(dn);

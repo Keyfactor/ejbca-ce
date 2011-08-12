@@ -292,7 +292,7 @@ public class CADataHandler implements Serializable {
 
   /**
    *  @throws CryptoTokenAuthenticationFailedException 
- * @see org.ejbca.core.ejb.ca.caadmin.CAAdminTestSessionBean
+ * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
   public void renewCA(int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException{
       caadminsession.renewCA(administrator, caid, keystorepass, regenerateKeys );

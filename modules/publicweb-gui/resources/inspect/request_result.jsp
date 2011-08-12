@@ -2,7 +2,7 @@
  <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
  
  <%@ include file="header.jsp" %>
-<%@page import="org.apache.commons.fileupload.DiskFileUpload,org.apache.commons.fileupload.FileItem,java.util.List,java.util.Iterator,java.io.InputStream,org.ejbca.util.FileTools"%>
+<%@page import="org.apache.commons.fileupload.DiskFileUpload,org.apache.commons.fileupload.FileItem,java.util.List,java.util.Iterator,java.io.InputStream,org.cesecore.util.FileTools"%>
 
 <jsp:useBean id="dump" class="org.ejbca.ui.web.pub.inspect.CertAndRequestDumpBean" scope="page" />
          

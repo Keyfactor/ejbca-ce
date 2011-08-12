@@ -30,13 +30,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
-import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 
@@ -165,23 +163,6 @@ public class CertificateFinderBean {
 		return ret;
 	}
 	
-	public boolean getOcspEnabled() {
-		CAInfo caInfo = getCAInfo();
-		boolean active = false;
-		if (caInfo != null) {
-			Iterator<ExtendedCAServiceInfo> iter = caInfo.getExtendedCAServiceInfos().iterator();
-			while(iter.hasNext()){
-		      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
-		      if(next instanceof OCSPCAServiceInfo){
-		      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
-		      }
-			}			
-		} else {
-			log.debug("getOcspEnabled: caInfo is null");
-		}
-		return active;
-	}
-
 	/**
 	 * Get revocation info for a certificate.
 	 * This method fills in the supplied RevokedCertInfo object with data about a certificate.

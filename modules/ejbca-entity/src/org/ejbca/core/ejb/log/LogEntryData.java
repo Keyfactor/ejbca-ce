@@ -33,9 +33,7 @@ import org.ejbca.core.model.log.LogEntry;
  * 
  * @version $Id$
  * 
- * NOTE: This class is kept in EJBCA 5.0 just in order to be able to export old logs using the OldLogExportCli
- * 
- * TODO: This class is now very similar to LogEntry and these two files could probably be merged,
+ * @deprecated This class is kept in EJBCA 5.0 just in order to be able to export old logs using the OldLogExportCli
  */
 @Entity
 @Table(name="LogEntryData")
