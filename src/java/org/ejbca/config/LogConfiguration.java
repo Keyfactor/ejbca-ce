@@ -29,23 +29,23 @@ public class LogConfiguration {
 	public static synchronized Map<String, String> getUsedLogDevices() {
 		if (logDeviceMap == null) {
 			logDeviceMap = new HashMap<String, String>();
-			String[] logDevicesList = ConfigurationHolder.getString("usedLogDevices", "Log4jLogDevice;OldLogDevice").split(";");
+			String[] logDevicesList = EjbcaConfigurationHolder.getString("usedLogDevices", "Log4jLogDevice;OldLogDevice").split(";");
 			for (int i=0; i<logDevicesList.length; i++) {
 				String name = logDevicesList[i];
 				String[] logDeviceStrings = null;
 				if ("DummyLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = ConfigurationHolder.getString(name, "org.ejbca.core.model.log.DummyLogDeviceFactory;").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "org.ejbca.core.model.log.DummyLogDeviceFactory;").split(";");
 				} else if ("Log4jLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = ConfigurationHolder.getString(name, "org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties").split(";");
 				} else if ("OldLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = ConfigurationHolder.getString(name, "org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties").split(";");
 				} else {
-					logDeviceStrings = ConfigurationHolder.getString(name, "").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "").split(";");
 				}
 				if (logDeviceStrings != null && logDeviceStrings.length>0) {
 					logDeviceMap.put(name, logDeviceStrings[0].trim());
 					if (logDeviceStrings.length>1 && logDeviceStrings[1] != null && logDeviceStrings[1].length() > 0) {
-						ConfigurationHolder.addConfigurationResource(logDeviceStrings[1].trim());
+						EjbcaConfigurationHolder.addConfigurationResource(logDeviceStrings[1].trim());
 					}
 				}
 			}

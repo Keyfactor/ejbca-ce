@@ -42,19 +42,19 @@ import org.apache.log4j.Logger;
  * 
  * @version $Id$
  */
-public final class ConfigurationHolder {
+public final class EjbcaConfigurationHolder {
 
-	private static final Logger log = Logger.getLogger(ConfigurationHolder.class);
+	private static final Logger log = Logger.getLogger(EjbcaConfigurationHolder.class);
 
 	private static CompositeConfiguration config = null;
 	private static CompositeConfiguration configBackup = null;
 	
 	/** This is a singleton so it's not allowed to create an instance explicitly */ 
-	private ConfigurationHolder() {}
+	private EjbcaConfigurationHolder() {}
 	
 	/** ejbca.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
 	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties", "externalra-caservice.properties",
-		"ocsp.properties", "extendedkeyusage.properties", "jaxws.properties", "xkms.properties", "log.properties", "logdevices/log4j.properties", "cache.properties", "database.properties", "va.properties", "va-publisher.properties"};
+		"ocsp.properties", "jaxws.properties", "xkms.properties", "cache.properties", "database.properties", "va.properties", "va-publisher.properties"};
 
 	/** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */
 	public static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
@@ -64,7 +64,7 @@ public final class ConfigurationHolder {
 			// read ejbca.properties, from config file built into jar, and see if we allow configuration by external files
 			boolean allowexternal = false;
 			try {
-				final URL url = ConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
+				final URL url = EjbcaConfigurationHolder.class.getResource("/conf/"+CONFIG_FILES[0]);
 				if (url != null) {
 					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 					allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
@@ -115,7 +115,7 @@ public final class ConfigurationHolder {
 			}
 			// Load internal.properties only from built in configuration file
 			try {
-				final URL url = ConfigurationHolder.class.getResource("/internal.properties");
+				final URL url = EjbcaConfigurationHolder.class.getResource("/internal.properties");
 				if (url != null) {
 					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 					config.addConfiguration(pc);
@@ -154,7 +154,7 @@ public final class ConfigurationHolder {
 		// Make sure the basic initialization has been done
 		instance();
 		try {
-			final URL url = ConfigurationHolder.class.getResource("/conf/" + resourcename);
+			final URL url = EjbcaConfigurationHolder.class.getResource("/conf/" + resourcename);
 			if (url != null) {
 				final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 				config.addConfiguration(pc);

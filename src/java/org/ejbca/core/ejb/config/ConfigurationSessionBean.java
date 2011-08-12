@@ -20,7 +20,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.JndiHelper;
 
@@ -45,31 +45,31 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     @Override
     public boolean backupConfiguration() {
         assertIsNotInProductionMode();
-        return ConfigurationHolder.backupConfiguration();
+        return EjbcaConfigurationHolder.backupConfiguration();
     }
 
     @Override
     public boolean restoreConfiguration() {
         assertIsNotInProductionMode();
-        return ConfigurationHolder.restoreConfiguration();
+        return EjbcaConfigurationHolder.restoreConfiguration();
     }
 
     @Override
     public boolean updateProperties(Properties properties) {
         assertIsNotInProductionMode();
-        return ConfigurationHolder.updateConfiguration(properties);
+        return EjbcaConfigurationHolder.updateConfiguration(properties);
     }
 
     @Override
     public boolean updateProperty(String key, String value) {
         assertIsNotInProductionMode();
-        return ConfigurationHolder.updateConfiguration(key, value);
+        return EjbcaConfigurationHolder.updateConfiguration(key, value);
     }
 
     @Override
     public boolean verifyProperty(String key, String value) {
         assertIsNotInProductionMode();
-        String configValue = ConfigurationHolder.getString(key, null);
+        String configValue = EjbcaConfigurationHolder.getString(key, null);
         if ((value == null && configValue != null) || (value != null && configValue == null)) {
             return false;
         }
@@ -82,12 +82,12 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     @Override
     public String getProperty(String key, String defaultValue) {
         assertIsNotInProductionMode();
-        return ConfigurationHolder.getString(key, defaultValue);
+        return EjbcaConfigurationHolder.getString(key, defaultValue);
     }
 
     @Override
     public Properties getAllProperties() {
         assertIsNotInProductionMode();
-        return ConfigurationHolder.getAsProperties();
+        return EjbcaConfigurationHolder.getAsProperties();
     }
 }

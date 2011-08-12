@@ -45,7 +45,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.FileTools;
-import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -478,7 +478,7 @@ public class RequestInstance {
 		if (rt == null) {
 			log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
 		} else {
-			final String script = ConfigurationHolder
+			final String script = EjbcaConfigurationHolder
 			.getString("web.openvpn.createInstallerScript", "/usr/local/ejbca/bin/mk_openvpn_windows_installer.sh");
 			Process p = rt.exec(script);
 			if (p == null) {
