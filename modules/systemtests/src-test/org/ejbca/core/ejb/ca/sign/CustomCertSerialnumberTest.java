@@ -26,6 +26,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -142,7 +143,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace(">test01CreateCustomCert()");
 
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        BigInteger serno = SernoGenerator.instance().getSerno();
+        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
         log.debug("serno: " + serno);
 
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
@@ -249,7 +250,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace(">test04CreateCertWithCustomSNNotAllowed()");
 
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        BigInteger serno = SernoGenerator.instance().getSerno();
+        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
         log.debug("serno: " + serno);
 
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),

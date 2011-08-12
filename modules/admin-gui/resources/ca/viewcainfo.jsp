@@ -2,7 +2,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, 
                  org.ejbca.ui.web.admin.cainterface.CAInfoView, org.ejbca.util.CertTools, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.SecConst,
-                 org.cesecore.authorization.AuthorizationDeniedException;,
+                 org.cesecore.authorization.AuthorizationDeniedException,
                  java.security.cert.X509Certificate" %>
 
 <html>

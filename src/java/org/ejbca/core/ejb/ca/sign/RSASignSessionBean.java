@@ -121,12 +121,6 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             // Install BouncyCastle provider
         	CryptoProviderTools.installBCProviderIfNotAvailable();
-
-            // Set up the serial number generator for Certificate Serial numbers
-            // The serial number generator is a Singleton, so it can be initialized here and 
-            // used by X509CA
-            SernoGenerator.instance().setAlgorithm(EjbcaConfiguration.getRNGAlgorithm());
-            SernoGenerator.instance().setSernoOctetSize(EjbcaConfiguration.getCaSerialNumberOctetSize());
         } catch (Exception e) {
             log.debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
