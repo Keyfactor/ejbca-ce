@@ -13,30 +13,32 @@
  
 package org.ejbca.ui.cli.admins;
 
+import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Remove admin group
+ * Remove admin role
  */
 public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
 
 	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "removegroup"; }
-	public String getDescription() { return "Remove admin group"; }
+	public String getSubCommand() { return "removerole"; }
+	public String getDescription() { return "Remove admin role"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 2) {
     			getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group>");
+                getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
-            String groupName = args[1];
-            if (ejb.getRoleAccessSession().getAdminGroup(getAdmin(), groupName) == null) {
-            	getLogger().error("No such group \"" + groupName + "\" .");
+            String roleName = args[1];
+            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+            if (role == null) {
+            	getLogger().error("No such role \"" + roleName + "\" .");
                 return;
             }
-            ejb.getRoleAccessSession().removeAdminGroup(getAdmin(), groupName);
+            ejb.getRoleManagementSession().remove(getAdmin(), role);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

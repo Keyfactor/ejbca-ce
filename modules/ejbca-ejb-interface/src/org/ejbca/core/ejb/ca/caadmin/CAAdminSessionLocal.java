@@ -37,5 +37,13 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      */
     public int getNumOfApprovalRequired(int action, int caid, int certProfileId);
 
+    /**
+     * Used by health-check. Validate that CAs are online and optionally performs
+     * a signature test.
+     * 
+     * @return an error message or an empty String if all are ok.
+     */
+    public String healthCheck();
+    
 
 }

@@ -17,6 +17,8 @@ import java.util.List;
 
 import org.ejbca.util.CliTools;
 
+import com.icesoft.net.messaging.MessageServiceClient.Administrator;
+
 
 /**
  * Clears caches used internally by EJBCA. The caches are used to limit the number of database queries issued to the database.
@@ -72,7 +74,7 @@ public class ClearCacheCommand extends BaseCommand {
 			if (cacache) {
 				getLogger().info("Flushing CA cache.");
 				// Flush CAs
-				ejb.getCaSession().flushCACache();
+				ejb.getCaSession();
 			}
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);

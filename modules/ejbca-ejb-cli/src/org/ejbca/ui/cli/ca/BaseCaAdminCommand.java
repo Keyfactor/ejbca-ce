@@ -156,7 +156,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 
     protected void initAuthorizationModule(int caid, String superAdminCN) {
         getLogger().info("Initalizing Temporary Authorization Module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
-        ejb.getRoleAccessSession().init(getAdmin(), caid, superAdminCN);     
+        //ejb.getRoleAccessSession().init(getAdmin(), caid, superAdminCN);     
     } // initAuthorizationModule
     
     protected String getAvailableCasString() {

@@ -19,6 +19,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
@@ -31,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -42,8 +45,8 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -128,7 +131,7 @@ public class AdminCertReqServlet extends HttpServlet {
     @EJB
     private SignSessionLocal signSession;
     @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private WebAuthenticationProviderSessionLocal authenticationSession;
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -137,7 +140,7 @@ public class AdminCertReqServlet extends HttpServlet {
         } catch (Exception e) {
             throw new ServletException(e);
         }
-    	if (signSession==null || userAdminSession==null) {
+    	if (signSession==null || authenticationSession==null) {
     		log.error("Local EJB injection failed.");
     	}
     }
@@ -172,7 +175,7 @@ public class AdminCertReqServlet extends HttpServlet {
         try{
             ejbcawebbean.initialize(request, "/ra_functionallity/create_end_entity");
         } catch(Exception e){
-            throw new java.io.IOException("Authorization Denied");
+            throw new IOException("Authorization Denied");
         }
         
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
@@ -180,7 +183,15 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException("This servlet requires certificate authentication!");
         }
         
-        AuthenticationToken admin = userAdminSession.getAdmin(certs[0]);
+        
+        final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certs[0]);
+        AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+        AuthenticationToken admin = authenticationSession.authenticate(subject);
+        if (admin == null) {
+            throw new IOException("Authorization denied for certificate: "+CertTools.getSubjectDN(certs[0]));
+        }
+        //AuthenticationToken admin = userAdminSession.getAdmin(certs[0]);
         
         RequestHelper.setDefaultCharacterEncoding(request);
 

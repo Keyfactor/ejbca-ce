@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -45,6 +46,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.cesecore.CesecoreException;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -60,10 +62,10 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.ServiceLocatorException;
+import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
@@ -73,7 +75,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
@@ -112,6 +113,7 @@ public class EjbcaWSHelper {
     private HardTokenSession hardTokenSession;
     private EndEntityProfileSession endEntityProfileSession;
     private UserAdminSession userAdminSession;
+    private WebAuthenticationProviderSessionLocal authenticationSession;
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSession caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession,
@@ -153,6 +155,7 @@ public class EjbcaWSHelper {
 	 * @param allowNonAdmins true if we should verify that it is a real administrator, false only extracts the certificate and checks that it is not revoked.
 	 * @param wsContext web service context that contains the SSL information
 	 * @return Admin object based on the SSL client certificate
+	 * @throws AuthorizationDeniedException if no cleint certificate or allowNonAdmins == false and the cert does not belong to an admin
 	 */
 	protected AuthenticationToken getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
 		AuthenticationToken admin = null;
@@ -166,24 +169,17 @@ public class EjbcaWSHelper {
 			}
 
 			X509Certificate cert = certificates[0];
-			admin = userAdminSession.getAdmin(cert);
-			// Check that user have the administrator flag set.
-			if(!allowNonAdmins){
+            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(certificates[0]);
+            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            admin = authenticationSession.authenticate(subject);
+            if ((admin == null) && (!allowNonAdmins)) {
 				userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
 			        throw new AuthorizationDeniedException(msg);
 				}
-			}
-
-			try {
-				certificateStoreSession.authenticate(cert, WebConfiguration.getRequireAdminCertificateInDatabase());
-			} catch (AuthenticationFailedException e) {
-				// The message from here is usually the same as we used to hardcode here...
-            	//String msg = intres.getLocalizedMessage("authentication.revokedormissing");
-				// But it can also be that the certificate has expired, very unlikely since the SSL server checks that
-				throw new AuthorizationDeniedException(e.getMessage());
-			}
+            }        	
 		} catch (EJBException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
@@ -196,33 +192,26 @@ public class EjbcaWSHelper {
 	 * Method used to check if the admin is an administrator
 	 * i.e have administrator flag set and access to resource
 	 * /administrator
-	 * @return
+	 * @return true of false
 	 * @throws AuthorizationDeniedException 
 	 */
-	protected boolean isAdmin() throws EjbcaException {
+	protected boolean isAdmin() {
 		boolean retval = false;
-		MessageContext msgContext = wsContext.getMessageContext();
-		HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-		X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-
-		if(certificates == null){
-			throw new EjbcaException(ErrorCode.AUTH_CERT_NOT_RECEIVED, 
-                "Error no client certificate recieved used for authentication.");
-		}
-
-		try{
-			AuthenticationToken admin = userAdminSession.getAdmin(certificates[0]);
-			userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(certificates[0]), CertTools.getIssuerDN(certificates[0]));
-			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
-		        throw new AuthorizationDeniedException(msg);
+		AuthenticationToken admin;
+		try {
+			admin = getAdmin(false);
+			if ((admin != null) && (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR))) {
+				retval = true;
 			}
-			retval = true;
-		}catch(AuthorizationDeniedException e){
-		} catch (EJBException e) {			
-			log.error("Error checking if isAdmin: ", e);
-		} 
-		
+		} catch (AuthorizationDeniedException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Not an admin: ", e);
+			}
+		} catch (EjbcaException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Not an admin: ", e);
+			}
+		}
 		return retval;
 	}
 
