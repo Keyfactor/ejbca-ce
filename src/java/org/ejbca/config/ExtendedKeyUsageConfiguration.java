@@ -70,7 +70,7 @@ public final class ExtendedKeyUsageConfiguration {
      */
 	private static synchronized void fillExtendedKeyUsageOidsAndTexts() {
     	final ListOrderedMap map = new ListOrderedMap();
-    	final Configuration conf = ConfigurationHolder.instance();
+    	final Configuration conf = EjbcaConfigurationHolder.instance();
     	final String ekuname = "extendedkeyusage.name.";
     	final String ekuoid = "extendedkeyusage.oid.";
     	for (int i = 0; i < 255; i++) {

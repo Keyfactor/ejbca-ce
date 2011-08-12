@@ -27,7 +27,7 @@ import org.bouncycastle.ocsp.CertificateID;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.ConfigurationHolder;
+import org.ejbca.config.EjbcaConfigurationHolder;
 
 /**
  * @author tomas
@@ -42,7 +42,7 @@ public class CertificateCacheTest extends TestCase {
 
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
-		ConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "15");
+		EjbcaConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "15");
 		Collection<Certificate> certs = new ArrayList<Certificate>();
 		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
 		certs.add(testrootcert);
@@ -119,7 +119,7 @@ public class CertificateCacheTest extends TestCase {
 
 	public static Throwable threadException = null;
 	public void test02loadCertificates() throws Exception {
-		ConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "1");
+		EjbcaConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "1");
 		Collection<Certificate> certs = new ArrayList<Certificate>();
 		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);
 		certs.add(testrootcert);

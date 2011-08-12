@@ -54,7 +54,7 @@ public final class ConfigurationHolder {
     private static CompositeConfiguration configBackup = null;
 
     /** cesecore.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
-    private static final String[] CONFIG_FILES = { "/conf/ejbca.properties", "/conf/cesecore.properties", "/conf/extendedkeyusage.properties", "/conf/log.properties",
+    private static final String[] CONFIG_FILES = { "/conf/cesecore.properties", "/conf/extendedkeyusage.properties", "/conf/log.properties",
             "/conf/cache.properties", "/conf/database.properties", "/conf/databaseprotection.properties"};
 
     /** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */

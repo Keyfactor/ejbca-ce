@@ -47,24 +47,24 @@ public class InternalConfiguration {
 	 * Application version number
 	 */
 	public static String getAppVersionNumber() {
-		return ConfigurationHolder.getExpandedString("app.version.number", "versionNotAvailable");
+		return EjbcaConfigurationHolder.getExpandedString("app.version.number", "versionNotAvailable");
 	}
 
 	/**
 	 * SVN revision
 	 */
 	public static String getSvnRevision() {
-		return ConfigurationHolder.getExpandedString("svn.revision", "revisionNotAvailable");
+		return EjbcaConfigurationHolder.getExpandedString("svn.revision", "revisionNotAvailable");
 	}
 
 	/**
 	 * Full application version
 	 */
 	public static String getAppVersion() {
-		return ConfigurationHolder.getExpandedString("app.version", getAppNameCapital() + " " + getAppVersionNumber() + " (" + getSvnRevision() + ")");
+		return EjbcaConfigurationHolder.getExpandedString("app.version", getAppNameCapital() + " " + getAppVersionNumber() + " (" + getSvnRevision() + ")");
 	}
 
 	public static String getDataSourceJndiNamePrefix(){
-		return ConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "");	// We need to return an empty string for WebLogic. "java:/" will be set anyway on JBoss.
+		return EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "");	// We need to return an empty string for WebLogic. "java:/" will be set anyway on JBoss.
 	}
 }
