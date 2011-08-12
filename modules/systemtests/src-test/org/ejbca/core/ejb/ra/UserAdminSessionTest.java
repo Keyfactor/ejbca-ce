@@ -13,7 +13,11 @@
 
 package org.ejbca.core.ejb.ra;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
@@ -208,7 +212,7 @@ public class UserAdminSessionTest extends CaTestCase {
         usernames.add(thisusername);
 
         // Set the CA to enforce unique subjectDN serialnumber
-        CAInfo cainfo = caSession.getCA(admin, caid).getCAInfo();
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
         boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
         caAdminSession.editCA(admin, cainfo);
@@ -241,7 +245,7 @@ public class UserAdminSessionTest extends CaTestCase {
     }
 
     public void test03ChangeUserWithUniqueDNSerialnumber() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, EjbcaException {
+            WaitingForApprovalException, EjbcaException, CADoesntExistsException {
         log.trace(">test03ChangeUserWithUniqueDNSerialnumber()");
 
         // Make user that we know later...
@@ -253,7 +257,7 @@ public class UserAdminSessionTest extends CaTestCase {
         }
         String email = thisusername + username + "@anatomanatom.se";
 
-        CAInfo cainfo = caSession.getCA(admin, caid).getCAInfo();
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
         boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
 
         // Set the CA to enforce unique serialnumber
