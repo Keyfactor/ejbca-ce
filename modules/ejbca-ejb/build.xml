@@ -138,6 +138,7 @@
 		<include name="org/cesecore/audit/impl/*.java"/>
 		<include name="org/cesecore/audit/log/*.java"/>
 		<include name="org/cesecore/authentication/tokens/*.java"/>
+		<include name="org/cesecore/authentication/*Exception.java"/>
 		<include name="org/cesecore/authorization/*.java"/>
 		<include name="org/cesecore/authorization/control/*.java"/>
 		<include name="org/cesecore/authorization/rules/*.java"/>
@@ -218,6 +219,7 @@
 		<!-- Dependecies from EJB CLI, AdminWeb -->
 		<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
 		<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+		<include name="org/ejbca/config/LogConfiguration.java"/>
 		<include name="org/ejbca/util/PrinterManager.java"/>
 		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
@@ -234,6 +236,7 @@
 		<include name="org/ejbca/util/CliTools.java"/>
 		<!-- Dependecies from EJB CLI and XMKS -->
 		<include name="org/ejbca/util/keystore/P12toPEM.java"/>
+		<include name="org/cesecore/certificates/ca/internal/SernoGenerator.java"/>
 		<!-- Dependecies from EJBCA WS CLI and XMKS CLI -->
 		<include name="org/ejbca/ui/cli/IAdminCommand.java"/>
 		<!-- Dependecies from EJBCA WS CLI and VA WAR -->

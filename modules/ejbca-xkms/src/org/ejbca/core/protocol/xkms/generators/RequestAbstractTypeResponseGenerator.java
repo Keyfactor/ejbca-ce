@@ -32,6 +32,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -40,7 +41,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
@@ -119,7 +119,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	private String genId() {
 		String id = "";
 		try {
-			id = SernoGenerator.instance().getSerno().toString();
+			id = SernoGeneratorRandom.instance().getSerno().toString();
 		} catch (Exception e) {
 			log.error(intres.getLocalizedMessage("xkms.errorgenrespid"),e);			
 		}

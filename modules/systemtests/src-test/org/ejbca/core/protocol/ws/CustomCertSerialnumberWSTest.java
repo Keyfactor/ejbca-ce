@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -83,7 +84,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 			log.debug("new file does not exist");
 		}
 
-		BigInteger serno = SernoGenerator.instance().getSerno();
+		BigInteger serno = SernoGeneratorRandom.instance().getSerno();
 		log.debug("serno: " + serno);
 
 		if (certificateProfileSession.getCertificateProfileId("WSTESTPROFILE") != 0) {

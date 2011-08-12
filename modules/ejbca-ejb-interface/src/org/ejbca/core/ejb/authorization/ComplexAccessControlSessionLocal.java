@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
+import java.util.Collection;
+
 import javax.ejb.Local;
+
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.roles.RoleData;
 
 /**
  * @version $Id$
@@ -21,6 +26,11 @@ import javax.ejb.Local;
 @Local
 public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSession {
 
+    /**
+     * Returns a Collection of role names authorized to the resource,
+     * it also only returns only the admin groups the administrator is authorized to edit.
+     */
+    public Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
 
 
 }

@@ -2,7 +2,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, 
-    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,org.ejbca.core.model.SecConst,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,org.ejbca.core.model.SecConst,org.cesecore.authorization.AuthorizationDeniedException,
                  org.ejbca.ui.web.RevokedInfoView" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -145,7 +145,7 @@
       if(globalconfiguration.getEnableEndEntityProfileLimitations()){
     	  try{
     	    includePUK = rabean.authorizedToViewHardToken(username);
-    	  }catch(org.cesecore.authorization.AuthorizationDeniedException; e){
+    	  }catch(AuthorizationDeniedException e){
     		  authorized = false;
     	  }
       }
@@ -167,7 +167,7 @@
        if(globalconfiguration.getEnableEndEntityProfileLimitations()){
     	   try{
              includePUK = rabean.authorizedToViewHardToken(username);
- 	       }catch(org.cesecore.authorization.AuthorizationDeniedException; e){
+ 	       }catch(AuthorizationDeniedException e){
 		     authorized = false;
 	       }
        }
@@ -376,7 +376,7 @@ function viewcopies(link){
         <A style="cursor:pointer;" onclick='viewcert()'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <%   }
-         }catch(org.cesecore.authorization.AuthorizationDeniedException; ade){}
+         }catch(AuthorizationDeniedException ade){}
         %>&nbsp; 
        </td>
      </tr> 

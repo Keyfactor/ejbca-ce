@@ -23,7 +23,10 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -233,5 +236,29 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
         return returnval;
     }
+
+    @Override
+    public Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource) {
+    	ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
+    	// Look for Roles that have access rules that allows the group access to the rule below.
+    	Collection<RoleData> roles = getAllRolesAuthorizedToEdit(admin);
+    	Collection<RoleData> onerole = new ArrayList<RoleData>();
+    	for (RoleData role : roles) {
+    		// We want to check all roles if they are authorized, we can do that with a "private" AccessTree.
+    		// Probably quite inefficient but...
+    		AccessTree tree = new AccessTree();
+    		onerole.clear();
+    		onerole.add(role);
+    		tree.buildTree(onerole);
+    		// Create an AlwaysAllowAuthenticationToken just to find out if there is 
+    		// an access rule for the requested resource
+    		AlwaysAllowLocalAuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("isGroupAuthorized"));
+    		if (tree.isAuthorized(token, resource)) {
+    			authissueingadmgrps.add(role);
+    		}
+    	}
+    	return authissueingadmgrps;
+    }
+
 
 }

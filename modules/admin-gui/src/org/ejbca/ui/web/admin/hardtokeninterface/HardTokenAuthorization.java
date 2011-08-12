@@ -14,19 +14,15 @@
 package org.ejbca.ui.web.admin.hardtokeninterface;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
 
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.roles.RoleData;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 
@@ -42,16 +38,16 @@ public class HardTokenAuthorization implements Serializable {
     private TreeMap<String, HardTokenIssuerData> hardtokenissuers = null;
     private TreeMap<String, Integer> hardtokenprofiles = null;
     private HashMap<Integer, String>  hardtokenprofilesnamemap = null;
-    private ArrayList<RoleData> authissueingadmgrps = null;
+    private Collection<RoleData> authissueingadmgrps = null;
 
     private AuthenticationToken admin;
     private HardTokenSession hardtokensession;
     private AccessControlSessionLocal authorizationsession;    
-    private ComplexAccessControlSession complexAccessControlSession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
 
     /** Creates a new instance of CAAuthorization. */
     public HardTokenAuthorization(AuthenticationToken admin, HardTokenSession hardtokensession, 
-    		AccessControlSessionLocal authorizationsession, ComplexAccessControlSession complexAccessControlSession) {
+    		AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession) {
       this.admin=admin;
       this.hardtokensession=hardtokensession;            
       this.authorizationsession = authorizationsession;
@@ -143,27 +139,9 @@ public class HardTokenAuthorization implements Serializable {
      */
     public Collection<RoleData> getHardTokenIssuingAdminGroups() {
         if (authissueingadmgrps == null) {
-            authissueingadmgrps = new ArrayList<RoleData>();
-            // Look for Roles that have access rules that allows the group access to the rule below.
-            Collection<RoleData> roles = complexAccessControlSession.getAllRolesAuthorizedToEdit(admin);
-        	Collection<RoleData> onerole = new ArrayList<RoleData>();
-            for (RoleData role : roles) {
-            	// We want to check all roles if they are authorized, we can do that with a "private" AccessTree.
-            	// Probably quite inefficient but...
-            	AccessTree tree = new AccessTree();
-            	onerole.clear();
-            	onerole.add(role);
-            	tree.buildTree(onerole);
-            	// Create an AlwaysAllowAuthenticationToken just to find out if there is 
-            	// an access rule for the requested resource
-            	AlwaysAllowLocalAuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("isGroupAuthorized"));
-            	if (tree.isAuthorized(token, "/hardtoken_functionality/issue_hardtokens")) {
-            		authissueingadmgrps.add(role);
-            	}
-			}
+            authissueingadmgrps = complexAccessControlSession.getAuthorizedAdminGroups(null, "/hardtoken_functionality/issue_hardtokens");
         }
-        return authissueingadmgrps;
-        	
+        return authissueingadmgrps;        	
 //            for (RoleData next : roles) {
 //                if (authorizationsession.isGroupAuthorizedNoLog(next.getAdminGroupId(), "/hardtoken_functionality/issue_hardtokens")) {
 //                    authissueingadmgrps.add(next);
