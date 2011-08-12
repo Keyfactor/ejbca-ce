@@ -159,7 +159,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 
     private static final long serialVersionUID = 1L;
-    private static final Logger log = Logger.getLogger(CAAdminTestSessionBean.class);
+    private static final Logger log = Logger.getLogger(CAAdminSessionBean.class);
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;

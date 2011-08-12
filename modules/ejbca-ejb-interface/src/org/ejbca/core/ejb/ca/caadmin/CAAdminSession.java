@@ -330,7 +330,7 @@ public interface CAAdminSession {
      * properties are not removed so that the keystore can later by restored by
      * using
 
-     * {@link CAAdminTestSessionBean#restoreCAKeyStore(AuthenticationToken, String, byte[], String, String, String, String)}
+     * {@link CAAdminSession#restoreCAKeyStore(AuthenticationToken, String, byte[], String, String, String, String)}
      * .
      * 
      * 
@@ -339,7 +339,7 @@ public interface CAAdminSession {
      * @throws EJBException in case if the catoken is not a soft catoken
      * 
 
-     * @see CAAdminTestSessionBean#exportCAKeyStore(AuthenticationToken, String, String, String, String, String)
+     * @see CAAdminSession#exportCAKeyStore(AuthenticationToken, String, String, String, String, String)
      */
     public void removeCAKeyStore(AuthenticationToken admin, String caname) throws EJBException;
 

@@ -20,7 +20,7 @@
 		    <jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 		    <jsp:useBean id="issuer" type="java.lang.String" scope="page" />
 		    <jsp:useBean id="serno" type="java.lang.String" scope="page" />
-		    <jsp:useBean id="certInfo" class="org.ejbca.core.model.ca.crl.RevokedCertInfo" scope="page" />
+		    <jsp:useBean id="certInfo" class="org.cesecore.certificates.crl.RevokedCertInfo" scope="page" />
 		    <%
 		        finder.initialize(request.getRemoteAddr());
 		        finder.lookupRevokedInfo(issuer, serno, certInfo);
