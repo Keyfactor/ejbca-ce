@@ -13,6 +13,10 @@
 
 package org.ejbca.core.ejb.approval;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -69,6 +73,10 @@ import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @version $Id: ApprovalSessionTest.java 9666 2010-08-18 11:22:12Z mikekushner$
@@ -110,10 +118,10 @@ public class ApprovalSessionTest extends CaTestCase {
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();    
 
-    public ApprovalSessionTest(String name) {
-        super(name);
+    @BeforeClass
+   public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
-        createTestCA();
+        
     }
 
     public void init() throws Exception {
@@ -129,9 +137,9 @@ public class ApprovalSessionTest extends CaTestCase {
         return authenticationToken;
     }
 
+    @Before
     public void setUp() throws Exception {
         super.setUp();
-
         if (adminusername1 == null) {
             adminusername1 = genRandomUserName();
             adminusername2 = adminusername1 + "2";
@@ -188,10 +196,18 @@ public class ApprovalSessionTest extends CaTestCase {
         }
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
+        
+        userAdminSession.deleteUser(intadmin, adminusername1);
+        userAdminSession.deleteUser(intadmin, adminusername2);
+        userAdminSession.deleteUser(intadmin, reqadminusername);
+        roleManagementSession.remove(intadmin, role);
+      
     }
 
+    @Test
     public void testAddApprovalRequest() throws Exception {
 
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
@@ -250,6 +266,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
     }
 
+    @Test
     public void testApprove() throws Exception {
         
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
@@ -331,6 +348,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     }
 
+    @Test
     public void testReject() throws Exception {
         log.trace(">testReject()");
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
@@ -392,6 +410,7 @@ public class ApprovalSessionTest extends CaTestCase {
         log.trace("<testReject()");
     }
 
+    @Test
     public void testIsApproved() throws Exception {
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
         approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest, gc);
@@ -430,6 +449,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     }
 
+    @Test
     public void testIsApprovedWithSteps() throws Exception {
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, 3, false);
         approvalSessionRemote.addApprovalRequest(reqadmin, nonExecutableRequest, gc);
@@ -487,6 +507,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     }
 
+    @Test
     public void testFindNonExpiredApprovalRequest() throws Exception {
         DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, SecConst.EMPTY_ENDENTITYPROFILE, false);
 
@@ -510,6 +531,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     }
 
+    @Test
     public void testQuery() throws Exception {
 
         // Add a few requests
@@ -550,6 +572,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalSessionRemote.removeApprovalRequest(admin1, id3);
     }
     
+    @Test
     public void testApprovalsWithExternalAdmins() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, 
     				InvalidKeyException, CertificateEncodingException, SignatureException,IllegalStateException, ApprovalRequestExpiredException, 
     				ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
@@ -576,12 +599,4 @@ public class ApprovalSessionTest extends CaTestCase {
         log.trace("<testApprovalsWithExternalAdmins()");    	
     }
 
-    public void testZZZCleanUp() throws Exception {
-        userAdminSession.deleteUser(intadmin, adminusername1);
-        userAdminSession.deleteUser(intadmin, adminusername2);
-        userAdminSession.deleteUser(intadmin, reqadminusername);
-        roleManagementSession.remove(intadmin, role);
-      
-        removeTestCA();
-    }
 }

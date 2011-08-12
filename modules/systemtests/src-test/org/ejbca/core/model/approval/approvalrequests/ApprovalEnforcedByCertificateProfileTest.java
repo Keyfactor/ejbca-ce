@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.approval.approvalrequests;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -63,6 +65,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests approvals which are required by the certificate profile and not only by
@@ -111,15 +117,21 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
+    
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+       
+    }
 
+    @Test
     public void test00SetupDatabase() throws Exception {
         log.info("test00SetupDatabase");
-        createTestCA();
 
         // Create admin end entity
         adminUsername = genRandomUserName("approvalEnforcedTestAdmin");
@@ -155,6 +167,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         log.info("endEntityProfileId=" + endEntityProfileId);
     }
 
+    @Test
     public void test01AddEditEndEntity() {
         log.info("test01AddEditEndEntity");
 
@@ -221,6 +234,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
+    @Test
     public void test02ActivateCAToken() throws Exception {
         log.info("test02ActivateCAToken");
 
@@ -242,6 +256,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
+    @Test
     public void test03RevokeUser() throws Exception {
         log.info("test03RevokeUser");
 
@@ -273,7 +288,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             fail();
         }
     }
-
+    
+    @Test
     public void test04KeyRecovery() throws Exception {
         log.info("test04KeyRecovery");
 
@@ -328,6 +344,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
+    @AfterClass
     public void test99RemoveCreated() throws AuthorizationDeniedException {
         log.info("test99RemoveCreated");
 

@@ -46,6 +46,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.cesecore.CesecoreException;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -192,7 +193,7 @@ public class EjbcaWSHelper {
 	 * Method used to check if the admin is an administrator
 	 * i.e have administrator flag set and access to resource
 	 * /administrator
-	 * @return true of false
+	 * @return
 	 * @throws AuthorizationDeniedException 
 	 */
 	protected boolean isAdmin() {

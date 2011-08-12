@@ -13,12 +13,15 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Collection;
@@ -37,8 +40,6 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -77,6 +78,11 @@ import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -124,9 +130,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    public CrmfRAPbeRequestTest(String arg0) throws CertificateException, AuthorizationDeniedException, CADoesntExistsException {
-        super(arg0);
+    @BeforeClass
+    public void beforeClass() throws Exception{
         CryptoProviderTools.installBCProvider();
+        
+        
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
@@ -192,7 +200,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             }
         }
     }
-
+    
+    @Before
     public void setUp() throws Exception {
         super.setUp();
         if (keys == null) {
@@ -200,10 +209,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Test
     public void test01CrmfHttpOkUser() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -288,6 +299,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
     }
 
+    @Test
     public void test03CrmfHttpTooManyIterations() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -310,6 +322,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         // expect a FailInfo.BAD_MESSAGE_CHECK
     }
 
+    @Test
     public void test04RevocationApprovals() throws Exception {
         // Generate random username and CA name
         String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
@@ -407,7 +420,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
     } // test04RevocationApprovals
 
-    public void testZZZCleanUp() throws Exception {
+    @AfterClass
+    public void cleanUp() throws Exception {
     	log.trace(">testZZZCleanUp");
     	boolean cleanUpOk = true;
 		try {

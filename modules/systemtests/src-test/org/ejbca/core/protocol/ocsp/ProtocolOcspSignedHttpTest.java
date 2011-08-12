@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -51,6 +55,10 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** Test requiring signed OCSP requests.
  * This test requires that the option 'ocsp.signaturerequired=true' is set in conf/ocsp-properties.
@@ -86,32 +94,29 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         return new TestSuite(ProtocolOcspSignedHttpTest.class);
     }
 
-    public ProtocolOcspSignedHttpTest(String name) throws Exception {
-        this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
-    }
-
-    protected  ProtocolOcspSignedHttpTest(String name, String reqP, String res) throws Exception {
-        super(name);
-        helper = new OcspJunitHelper(reqP, res); 
-
-        // Install BouncyCastle provider
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
+    @Before
     public void setUp() throws Exception {
-        createTestCA();
+        super.setUp();
+        helper = new OcspJunitHelper("http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp"); 
         cacert = (X509Certificate) getTestCACert();
     	configurationSessionRemote.updateProperty(OcspConfiguration.SIGNATUREREQUIRED, "true");
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
     	configurationSessionRemote.restoreConfiguration();
-        removeTestCA();
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
+    @Test
     public void test01OcspGood() throws Exception {
         log.trace(">test02OcspGood()");
 
@@ -192,7 +197,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     }
 
 
-    static byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
+    private static byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
             + "DjCCAwowggMGBgsqhkiG9w0BDAoBAqCCAqkwggKlMCcGCiqGSIb3DQEMAQMwGQQU"
             + "/h0pQXq7ZVjYWlDvzEwwmiJ8O8oCAWQEggJ4MZ12+kTVGd1w7SP4ZWlq0bCc4MsJ"
             + "O0FFSX3xeVp8Bx16io1WkEFOW3xfqjuxKOL6YN9atoOZdfhlOMhmbhglm2PJSzIg"

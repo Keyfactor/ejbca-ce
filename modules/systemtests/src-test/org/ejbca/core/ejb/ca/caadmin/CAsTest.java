@@ -13,17 +13,18 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.Field;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -35,8 +36,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -88,6 +89,10 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests the ca data entity bean.
@@ -110,26 +115,18 @@ public class CAsTest extends CaTestCase {
 
     private AuthenticationToken adminTokenNoAuth;
 
-    /**
-     * Creates a new CAsTest object.
-     * 
-     * @param name
-     *            name
-     * @throws InvalidAlgorithmParameterException 
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
-     * @throws IllegalStateException 
-     * @throws SignatureException 
-     * @throws CertificateEncodingException 
-     * @throws InvalidKeyException 
-     */
-    public CAsTest(String name) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException {
-        super(name);
+    @BeforeClass
+    public void beforeClass() {
         CryptoProviderTools.installBCProvider();
-        
+    }
+
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(),
+                keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         credentials.add(certificate);
         Set<X500Principal> principals = new HashSet<X500Principal>();
@@ -138,10 +135,7 @@ public class CAsTest extends CaTestCase {
         adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
     }
 
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -151,17 +145,16 @@ public class CAsTest extends CaTestCase {
      * 
      * It also checks that the CA is stored correctly.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test01AddRSACA() throws Exception {
         log.trace(">test01AddRSACA()");
         boolean ret = false;
         try {
-            removeTestCA(); // We cant be sure this CA was not left over from
             // some other failed test
             // TODO: do we need init here? We should run the system tests on a "base installed" system
-            //adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -202,7 +195,7 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -222,9 +215,10 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not EC", false);
             }
-            assertTrue("CA is not valid for the specified duration.", cert.getNotAfter().after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue(
+                    "CA is not valid for the specified duration.",
+                    cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             ret = true;
 
             // Test to generate a certificate request from the CA
@@ -232,9 +226,9 @@ public class CAsTest extends CaTestCase {
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TEST", msg.getRequestDN());
-            
+
             // Check CMP RA secret, default value empty string
-            X509CAInfo xinfo = (X509CAInfo)info;
+            X509CAInfo xinfo = (X509CAInfo) info;
             assertNotNull(xinfo.getCmpRaAuthSecret());
             assertEquals("", xinfo.getCmpRaAuthSecret());
         } catch (CAExistsException pee) {
@@ -248,9 +242,9 @@ public class CAsTest extends CaTestCase {
     /**
      * renames CA in database.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test02RenameCA() throws Exception {
         log.trace(">test02RenameCA()");
 
@@ -269,9 +263,9 @@ public class CAsTest extends CaTestCase {
     /**
      * edits ca and checks that it's stored correctly.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test03EditCA() throws Exception {
         log.trace(">test03EditCA()");
 
@@ -289,15 +283,15 @@ public class CAsTest extends CaTestCase {
      * 
      * It also checks that the CA is stored correctly.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test04AddECDSACA() throws Exception {
 
         boolean ret = false;
         try {
-        	// TODO: is init needed? We should run the system tests on a base installed system
-            //adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
+            // TODO: is init needed? We should run the system tests on a base installed system
+            // adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -344,11 +338,10 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
-            
+
             removeOldCa("TESTECDSA");
-            
 
             caAdminSession.createCA(admin, cainfo);
 
@@ -383,18 +376,18 @@ public class CAsTest extends CaTestCase {
      * 
      * It also checks that the CA is stored correctly.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test05AddECDSAImplicitlyCACA() throws Exception {
         log.trace(">test05AddECDSAImplicitlyCACA()");
         boolean ret = false;
-       
+
         removeOldCa("TESTECDSAImplicitlyCA");
-        
+
         try {
-        	// TODO: do we need init here? we should run the system tests on a base installed system
-            //adminGroupSession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
+            // TODO: do we need init here? we should run the system tests on a base installed system
+            // adminGroupSession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -413,8 +406,10 @@ public class CAsTest extends CaTestCase {
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA", "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE, new Date(), "",
-                    SecConst.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA ImplicitlyCA CA", -1, null, policies, // PolicyId
+                    SecConst.CERTPROFILE_FIXED_ROOTCA, 365,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA ImplicitlyCA CA", -1, null,
+                    policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -477,18 +472,18 @@ public class CAsTest extends CaTestCase {
      * 
      * It also checks that the CA is stored correctly.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test06AddRSASha256WithMGF1CA() throws Exception {
         log.trace(">test06AddRSASha256WithMGF1CA()");
-        
+
         removeOldCa("TESTSha256WithMGF1");
-        
+
         boolean ret = false;
         try {
             String cadn = "CN=TESTSha256WithMGF1";
-            //adminGroupSession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -532,7 +527,7 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
             caAdminSession.createCA(admin, cainfo);
 
@@ -560,16 +555,17 @@ public class CAsTest extends CaTestCase {
         log.trace("<test06AddRSASha256WithMGF1CA()");
     }
 
+    @Test
     public void test07AddRSACA4096() throws Exception {
         log.trace(">test07AddRSACA4096()");
-        
+
         removeOldCa("TESTRSA4096");
-        
+
         boolean ret = false;
         try {
             String dn = CertTools
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -625,7 +621,7 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -658,16 +654,17 @@ public class CAsTest extends CaTestCase {
         log.trace("<test07AddRSACA4096()");
     }
 
+    @Test
     public void test08AddRSACAReverseDN() throws Exception {
-        
+
         removeOldCa("TESTRSAREVERSE");
-        
+
         log.trace(">test08AddRSACAReverseDN()");
         boolean ret = false;
         try {
             String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
             String name = "TESTRSAREVERSE";
-            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -723,7 +720,7 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -754,12 +751,13 @@ public class CAsTest extends CaTestCase {
         log.trace("<test08AddRSACAReverseDN()");
     }
 
+    @Test
     public void test09AddCVCCARSA() throws Exception {
         removeOldCa("TESTDV-D");
         removeOldCa("TESTCVCA");
         removeOldCa("TESTDV-F");
         certificateProfileSession.removeCertificateProfile(admin, "TESTCVCDV");
-        
+
         boolean ret = false;
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -782,7 +780,7 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            //adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -824,9 +822,9 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not RSA", false);
             }
-            assertTrue("CA is not valid for the specified duration.", CertTools.getNotAfter(cert).after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue("CA is not valid for the specified duration.",
+                    CertTools.getNotAfter(cert).after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
@@ -841,7 +839,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            //adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             // Create a Certificate profile
             CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
             certificateProfileSession.addCertificateProfile(admin, "TESTCVCDV", profile);
@@ -885,9 +883,9 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not RSA", false);
             }
-            assertTrue("CA is not valid for the specified duration.", CertTools.getNotAfter(cert).after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue("CA is not valid for the specified duration.",
+                    CertTools.getNotAfter(cert).after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
             assertEquals("SETESTDV-D00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
@@ -905,7 +903,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            //adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -945,9 +943,9 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not RSA", false);
             }
-            assertTrue("CA is not valid for the specified duration.", CertTools.getNotAfter(cert).after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue("CA is not valid for the specified duration.",
+                    CertTools.getNotAfter(cert).after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
             assertEquals("FITESTDV-F00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
@@ -1063,14 +1061,15 @@ public class CAsTest extends CaTestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test10AddCVCCAECC() throws Exception {
         removeOldCa("TESTCVCAECC");
         removeOldCa("TESTDVECC-D");
         removeOldCa("TESTDVECC-F");
-        
+
         boolean ret = false;
         CATokenInfo catokeninfo = new CATokenInfo();
-        //catokeninfo.setSignKeySpec("secp256r1");
+        // catokeninfo.setSignKeySpec("secp256r1");
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
@@ -1091,7 +1090,7 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            //adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1132,9 +1131,9 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not ECC", false);
             }
-            assertTrue("CA is not valid for the specified duration.", CertTools.getNotAfter(cert).after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue("CA is not valid for the specified duration.",
+                    CertTools.getNotAfter(cert).after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
@@ -1149,7 +1148,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            //adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1189,9 +1188,9 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not ECC", false);
             }
-            assertTrue("CA is not valid for the specified duration.", CertTools.getNotAfter(cert).after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue("CA is not valid for the specified duration.",
+                    CertTools.getNotAfter(cert).after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
             assertEquals("SETDVEC-D00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
@@ -1208,7 +1207,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            //adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1249,9 +1248,9 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not ECC", false);
             }
-            assertTrue("CA is not valid for the specified duration.", CertTools.getNotAfter(cert).after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue("CA is not valid for the specified duration.",
+                    CertTools.getNotAfter(cert).after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && CertTools.getNotAfter(cert).before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             // Check role
             CardVerifiableCertificate cvcert = (CardVerifiableCertificate) cert;
             assertEquals("FITDVEC-F00001", cvcert.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
@@ -1383,19 +1382,19 @@ public class CAsTest extends CaTestCase {
     } // test10AddCVCCAECC
 
     /**
-     * Test that we can create a SubCA signed by an external RootCA. The SubCA
-     * create a certificate request sent to the RootCA that creates a
+     * Test that we can create a SubCA signed by an external RootCA. The SubCA create a certificate request sent to the RootCA that creates a
      * certificate which is then received on the SubCA again.
      * 
      * @throws Exception
      */
+    @Test
     public void test11RSASignedByExternal() throws Exception {
         removeOldCa("TESTSIGNEDBYEXTERNAL");
-        
+
         boolean ret = false;
         CAInfo info = null;
         try {
-            //adminGroupSession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -1444,7 +1443,7 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
 
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1514,15 +1513,15 @@ public class CAsTest extends CaTestCase {
      * 
      * It also checks that the CA is stored correctly.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test12AddDSACA() throws Exception {
         boolean ret = false;
         try {
             removeTestCA("TESTDSA"); // We cant be sure this CA was not left
             // over from some other failed test
-            //adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+            // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -1564,7 +1563,7 @@ public class CAsTest extends CaTestCase {
                     true, // useCertReqHistory
                     true, // useUserStorage
                     true, // useCertificateStorage
-                    null //cmpRaAuthSecret
+                    null // cmpRaAuthSecret
             );
 
             caAdminSession.createCA(admin, cainfo);
@@ -1584,9 +1583,10 @@ public class CAsTest extends CaTestCase {
             } else {
                 assertTrue("Public key is not DSA", false);
             }
-            assertTrue("CA is not valid for the specified duration.", cert.getNotAfter().after(
-                    new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
-                    && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
+            assertTrue(
+                    "CA is not valid for the specified duration.",
+                    cert.getNotAfter().after(new Date(new Date().getTime() + 10 * 364 * 24 * 60 * 60 * 1000L))
+                            && cert.getNotAfter().before(new Date(new Date().getTime() + 10 * 366 * 24 * 60 * 60 * 1000L)));
             ret = true;
 
             // Test to generate a certificate request from the CA
@@ -1601,6 +1601,7 @@ public class CAsTest extends CaTestCase {
         assertTrue("Creating DSA CA failed", ret);
     } // test12AddDSACA
 
+    @Test
     public void test13RenewCA() throws Exception {
         // Test renew cacert
         CAInfo info = caSession.getCAInfo(admin, getTestCAId());
@@ -1675,6 +1676,7 @@ public class CAsTest extends CaTestCase {
         caAdminSession.renewCA(admin, getTestCAId(), "foo123", false);
     } // test13RenewCA
 
+    @Test
     public void test14RevokeCA() throws Exception {
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
@@ -1692,42 +1694,43 @@ public class CAsTest extends CaTestCase {
         assertTrue(info.getRevocationDate().getTime() > 0);
     } // test14RevokeCA
 
+    @Test
     public void test15ExternalExpiredCA() throws Exception {
         final String caname = "TestExternalExpiredCA";
-        byte[] testcert = Base64.decode(("MIICDjCCAXegAwIBAgIIaXCEunuPDowwDQYJKoZIhvcNAQEFBQAwFzEVMBMGA1UE"+
-        		"AwwMc2hvcnQgZXhwaXJlMB4XDTExMDIwNTE3MjI1MloXDTExMDIwNTE4MjIxM1ow"+
-        		"FzEVMBMGA1UEAwwMc2hvcnQgZXhwaXJlMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB"+
-        		"iQKBgQCNAygw3H9WuThxxFAv2oc5SzijHLUdvgD+Y9E3nKWWgRq1ECcKo0d60U24"+
-        		"gJiuSkH+PcC300a1AnfWAac/MkuFS9F58J6vjud+AA0MzoD5Tlc9lbxQy6qoKF29"+
-        		"87VMITZjISSdfnlfWbXVeNqTrqeTBreOS34TTZ7bLzBCvGcq1wIDAQABo2MwYTAd"+
-        		"BgNVHQ4EFgQUfLHTt9G8cdsVxZR9gOsHUqqh/1wwDwYDVR0TAQH/BAUwAwEB/zAf"+
-        		"BgNVHSMEGDAWgBR8sdO30bxx2xXFlH2A6wdSqqH/XDAOBgNVHQ8BAf8EBAMCAYYw"+
-        		"DQYJKoZIhvcNAQEFBQADgYEAS4PvelI9Fmxxcbs0Nrx8qk+TlREOeDX+rsXvKcJ2"+
-        		"gGEhtMX1yCNn0uSQuc/mM4Dz5faxCCQQMZl8Vp07d1MrTMYcka+P6RtEKneXfLim"+
-        		"fXnqR22xd2P7ssXE52/tTnAyJbYUrOOCI6iiek3dZN8oTmGhZUBHIgFzxC/8MgHa"+
-        "G6Y=").getBytes());
+        byte[] testcert = Base64.decode(("MIICDjCCAXegAwIBAgIIaXCEunuPDowwDQYJKoZIhvcNAQEFBQAwFzEVMBMGA1UE"
+                + "AwwMc2hvcnQgZXhwaXJlMB4XDTExMDIwNTE3MjI1MloXDTExMDIwNTE4MjIxM1ow"
+                + "FzEVMBMGA1UEAwwMc2hvcnQgZXhwaXJlMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB"
+                + "iQKBgQCNAygw3H9WuThxxFAv2oc5SzijHLUdvgD+Y9E3nKWWgRq1ECcKo0d60U24"
+                + "gJiuSkH+PcC300a1AnfWAac/MkuFS9F58J6vjud+AA0MzoD5Tlc9lbxQy6qoKF29"
+                + "87VMITZjISSdfnlfWbXVeNqTrqeTBreOS34TTZ7bLzBCvGcq1wIDAQABo2MwYTAd"
+                + "BgNVHQ4EFgQUfLHTt9G8cdsVxZR9gOsHUqqh/1wwDwYDVR0TAQH/BAUwAwEB/zAf"
+                + "BgNVHSMEGDAWgBR8sdO30bxx2xXFlH2A6wdSqqH/XDAOBgNVHQ8BAf8EBAMCAYYw"
+                + "DQYJKoZIhvcNAQEFBQADgYEAS4PvelI9Fmxxcbs0Nrx8qk+TlREOeDX+rsXvKcJ2"
+                + "gGEhtMX1yCNn0uSQuc/mM4Dz5faxCCQQMZl8Vp07d1MrTMYcka+P6RtEKneXfLim"
+                + "fXnqR22xd2P7ssXE52/tTnAyJbYUrOOCI6iiek3dZN8oTmGhZUBHIgFzxC/8MgHa" + "G6Y=").getBytes());
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         removeOldCa(caname); // for the test
         List<Certificate> certs = new ArrayList<Certificate>();
         certs.add(cert);
 
         try {
-        	// Import the CA certificate
-        	caAdminSession.importCACertificate(admin, caname, certs);
-        	CAInfo info = caSession.getCAInfo(admin, caname);
-        	// The CA must not get stats SecConst.CA_EXPIRED when it is an external CA
-        	assertEquals(SecConst.CA_EXTERNAL, info.getStatus());
+            // Import the CA certificate
+            caAdminSession.importCACertificate(admin, caname, certs);
+            CAInfo info = caSession.getCAInfo(admin, caname);
+            // The CA must not get stats SecConst.CA_EXPIRED when it is an external CA
+            assertEquals(SecConst.CA_EXTERNAL, info.getStatus());
         } finally {
-        	removeOldCa(caname); // for the test        	
+            removeOldCa(caname); // for the test
         }
     } // test15ExternalExpiredCA
 
     /** Try to create a CA using invalid parameters */
+    @Test
     public void test16InvalidCreateCaActions() throws Exception {
         log.trace(">test16InvalidCreateCaActions()");
         removeTestCA("TESTFAIL"); // We cant be sure this CA was not left over from
         // some other failed test
-        //adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
+        // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -1738,75 +1741,77 @@ public class CAsTest extends CaTestCase {
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TEST", "", "1024",
-        		AlgorithmConstants.KEYALGORITHM_RSA));
+                AlgorithmConstants.KEYALGORITHM_RSA));
 
-        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-        		CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
-        		24, // CRLPeriod
-        		0, // CRLIssueInterval
-        		10, // CRLOverlapTime
-        		10, // Delta CRL period
-        		new ArrayList<Integer>(), true, // Authority Key Identifier
-        		false, // Authority Key Identifier Critical
-        		true, // CRL Number
-        		false, // CRL Number Critical
-        		null, // defaultcrldistpoint
-        		null, // defaultcrlissuer
-        		null, // defaultocsplocator
-        		null, // defaultfreshestcrl
-        		true, // Finish User
-        		extendedcaservices, false, // use default utf8 settings
-        		new ArrayList<Integer>(), // Approvals Settings
-        		1, // Number of Req approvals
-        		false, // Use UTF8 subject DN by default
-        		true, // Use LDAP DN order by default
-        		false, // Use CRL Distribution Point on CRL
-        		false, // CRL Distribution Point on CRL critical
-        		true, true, // isDoEnforceUniquePublicKeys
-        		true, // isDoEnforceUniqueDistinguishedName
-        		false, // isDoEnforceUniqueSubjectDNSerialnumber
-        		true, // useCertReqHistory
-        		true, // useUserStorage
-        		true, // useCertificateStorage
-        		null //cmpRaAuthSecret
+        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 3650,
+                null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                10, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
         );
 
         // Try to create the CA as an unprivileged user
         try {
-        	caAdminSession.createCA(adminTokenNoAuth, cainfo);
-        	assertTrue("Was able to create CA as unprivileged user.", false);
+            caAdminSession.createCA(adminTokenNoAuth, cainfo);
+            assertTrue("Was able to create CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         // Try to create the CA with a 0 >= CA Id < CAInfo.SPECIALCAIDBORDER
-        setPrivateFieldInSuper(cainfo, "caid", CAInfo.SPECIALCAIDBORDER-1);
+        setPrivateFieldInSuper(cainfo, "caid", CAInfo.SPECIALCAIDBORDER - 1);
         try {
-        	caAdminSession.createCA(admin, cainfo);
-        	assertTrue("Was able to create CA with reserved CA Id.", false);
+            caAdminSession.createCA(admin, cainfo);
+            assertTrue("Was able to create CA with reserved CA Id.", false);
         } catch (CAExistsException e) {
-        	// Expected
+            // Expected
         }
         // Try to create a CA where the CA Id already exists (but not the name)
         CAInfo caInfoTest = caSession.getCAInfo(admin, "TEST");
         setPrivateFieldInSuper(cainfo, "caid", caInfoTest.getCAId());
         try {
-        	caAdminSession.createCA(admin, cainfo);
-        	assertTrue("Was able to create CA with CA Id of already existing CA.", false);
+            caAdminSession.createCA(admin, cainfo);
+            assertTrue("Was able to create CA with CA Id of already existing CA.", false);
         } catch (CAExistsException e) {
-        	// Expected
+            // Expected
         }
         log.trace("<test16InvalidCreateCaActions()");
     }
 
+    @Test
     public void test17InvalidEditCaActions() throws Exception {
         log.trace(">test17InvalidEditCaActions()");
         CAInfo caInfoTest = caSession.getCAInfo(admin, "TEST");
         // Try to edit the CA as an unprivileged user
         try {
             caAdminSession.editCA(adminTokenNoAuth, caInfoTest);
-        	assertTrue("Was able to edit CA as unprivileged user.", false);
+            assertTrue("Was able to edit CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         // Try to edit the CA with 'null' authentication code
         CATokenInfo caTokenInfoTest = caInfoTest.getCATokenInfo();
@@ -1814,23 +1819,24 @@ public class CAsTest extends CaTestCase {
         caInfoTest.setCATokenInfo(caTokenInfoTest);
         try {
             caAdminSession.editCA(adminTokenNoAuth, caInfoTest);
-        	assertTrue("Was able to edit CA with null authentication code.", false);
+            assertTrue("Was able to edit CA with null authentication code.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         // Try to edit the CA with wrong authentication code
         caInfoTest.getCATokenInfo().setAuthenticationCode("wrong code");
         caInfoTest.setCATokenInfo(caTokenInfoTest);
         try {
             caAdminSession.editCA(adminTokenNoAuth, caInfoTest);
-        	assertTrue("Was able to edit CA with null authentication code.", false);
+            assertTrue("Was able to edit CA with null authentication code.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         log.trace("<test17InvalidEditCaActions()");
     }
-    
+
     /** Get CA Info using an unprivileged admin and then trying by pretending to be privileged. */
+    @Test
     public void test18PublicWebCaInfoFetch() throws Exception {
         log.trace(">test18PublicWebCaInfoFetch()");
         // Try to get CAInfo as an unprivileged user using remote EJB
@@ -1838,13 +1844,13 @@ public class CAsTest extends CaTestCase {
             caSession.getCAInfo(adminTokenNoAuth, "TEST");
             fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
         } catch (CADoesntExistsException ignored) {
-        	// OK
+            // OK
         }
         try {
             caSession.getCAInfo(adminTokenNoAuth, "CN=TEST".hashCode());
             fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
         } catch (CADoesntExistsException ignored) {
-        	// OK
+            // OK
         }
         // Try to get CAInfo pretending to be an privileged user using remote EJB
         try {
@@ -1852,110 +1858,113 @@ public class CAsTest extends CaTestCase {
             System.out.println("info: " + info);
             fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
         } catch (CADoesntExistsException ignored) {
-        	// OK
+            // OK
         }
         try {
             caSession.getCAInfo(admin, "CN=TEST".hashCode());
             fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
         } catch (CADoesntExistsException ignored) {
-        	// OK
+            // OK
         }
         log.trace("<test18PublicWebCaInfoFetch()");
     }
-    
+
+    @Test
     public void test19UnprivilegedCaMakeRequest() throws Exception {
         log.trace(">test19UnprivilegedCaMakeRequest()");
         try {
             caAdminSession.makeRequest(adminTokenNoAuth, 0, null, false, false, false, null);
-        	assertTrue("Was able to make request to CA as unprivileged user.", false);
+            assertTrue("Was able to make request to CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         log.trace("<test19UnprivilegedCaMakeRequest()");
     }
-    
+
+    @Test
     public void test20BadCaReceiveResponse() throws Exception {
         log.trace(">test20BadCaReceiveResponse()");
         try {
             caAdminSession.receiveResponse(adminTokenNoAuth, 0, null, null, null);
-        	assertTrue("Was able to receiveResponse for a CA as unprivileged user.", false);
+            assertTrue("Was able to receiveResponse for a CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         try {
             caAdminSession.receiveResponse(admin, -1, null, null, null);
-        	assertTrue("Was able to receiveResponse for a CA that does not exist.", false);
+            assertTrue("Was able to receiveResponse for a CA that does not exist.", false);
         } catch (EjbcaException e) {
-        	// Expected
+            // Expected
         }
         try {
             caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), new CmpResponseMessage(), null, null);
-        	assertTrue("Was able to receiveResponse for a CA with a non X509ResponseMessage.", false);
+            assertTrue("Was able to receiveResponse for a CA with a non X509ResponseMessage.", false);
         } catch (EjbcaException e) {
-        	// Expected
+            // Expected
         }
         try {
-        	ResponseMessage resp = new X509ResponseMessage();
-        	resp.setCertificate(caSession.getCAInfo(admin, "TEST").getCertificateChain().iterator().next());
+            ResponseMessage resp = new X509ResponseMessage();
+            resp.setCertificate(caSession.getCAInfo(admin, "TEST").getCertificateChain().iterator().next());
             caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), resp, null, null);
-        	assertTrue("Was able to receiveResponse for a CA that is not 'signed by external'.", false);
+            assertTrue("Was able to receiveResponse for a CA that is not 'signed by external'.", false);
         } catch (EjbcaException e) {
-        	// Expected
+            // Expected
         }
         log.trace("<test20BadCaReceiveResponse()");
     }
 
+    @Test
     public void test21UnprivilegedCaProcessRequest() throws Exception {
         log.trace(">test21UnprivilegedCaProcessRequest()");
         CAInfo caInfo = caSession.getCAInfo(admin, "TEST");
         try {
             // Try to process a request for a CA with an unprivileged user.
             caAdminSession.processRequest(adminTokenNoAuth, caInfo, null);
-        	assertTrue("Was able to process request to CA as unprivileged user.", false);
+            assertTrue("Was able to process request to CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
-        	// Expected
+            // Expected
         }
         // Try to process a request for a CA with a 0 >= CA Id < CAInfo.SPECIALCAIDBORDER
-        setPrivateFieldInSuper(caInfo, "caid", CAInfo.SPECIALCAIDBORDER-1);
+        setPrivateFieldInSuper(caInfo, "caid", CAInfo.SPECIALCAIDBORDER - 1);
         try {
             caAdminSession.processRequest(admin, caInfo, null);
-        	assertTrue("Was able to create CA with reserved CA Id.", false);
+            assertTrue("Was able to create CA with reserved CA Id.", false);
         } catch (CAExistsException e) {
-        	// Expected
+            // Expected
         }
         log.trace("<test21UnprivilegedCaProcessRequest()");
     }
-    
 
     /**
      * Preemtively remove CA in case it was created by a previous run:
-     * @throws AuthorizationDeniedException 
+     * 
+     * @throws AuthorizationDeniedException
      */
-    private void removeOldCa(String caName) throws AuthorizationDeniedException {     
+    private void removeOldCa(String caName) throws AuthorizationDeniedException {
         HashMap<Integer, String> nameMap = caAdminSession.getCAIdToNameMap(admin);
-        if(nameMap.containsValue(caName)){
-            for(Entry<Integer, String> entry: nameMap.entrySet()) {
-                if(entry.getValue().equals(caName)) {
+        if (nameMap.containsValue(caName)) {
+            for (Entry<Integer, String> entry : nameMap.entrySet()) {
+                if (entry.getValue().equals(caName)) {
                     caSession.removeCA(admin, entry.getKey());
                     break;
                 }
             }
-            
+
         }
     }
 
     /** Used for direct manipulation of objects without setters. */
-	private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
-		log.trace(">setPrivateField");
-		try {
-			Field field = object.getClass().getSuperclass().getDeclaredField(fieldName);
-			field.setAccessible(true);
-			field.set(object, value);
-		} catch (Exception e) {
-			log.error("", e);
-			assertTrue("Could not set " + fieldName + " to " + value + ": " + e.getMessage(), false);
-		}
-		log.trace("<setPrivateField");
-	}
+    private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
+        log.trace(">setPrivateField");
+        try {
+            Field field = object.getClass().getSuperclass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(object, value);
+        } catch (Exception e) {
+            log.error("", e);
+            assertTrue("Could not set " + fieldName + " to " + value + ": " + e.getMessage(), false);
+        }
+        log.trace("<setPrivateField");
+    }
 
 }

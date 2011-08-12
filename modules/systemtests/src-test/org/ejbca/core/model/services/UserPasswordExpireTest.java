@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.services;
 
+import static org.junit.Assert.*;
+
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -30,6 +32,9 @@ import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -47,21 +52,18 @@ public class UserPasswordExpireTest extends CaTestCase {
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    /**
-     * Creates a new TestUserPasswordExpire object.
-     * 
-     * @param name
-     *            DOCUMENT ME!
-     */
-    public UserPasswordExpireTest(String name) {
-        super(name);
-        assertTrue("Could not create TestCA.", createTestCA());
-    }
-
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
+        userAdminSession.deleteUser(admin, USERNAME);
+        log.debug("Removed user: " + USERNAME);
+        serviceSession.removeService(admin, "TestUserPasswordService");
+        log.debug("Removed service: TestUserPasswordService");
     }
 
     /**
@@ -69,6 +71,7 @@ public class UserPasswordExpireTest extends CaTestCase {
      * users password
      * 
      */
+    @Test
     public void test01ExpireUserPassword() throws Exception {
         log.trace(">test01CreateNewUser()");
 
@@ -126,20 +129,5 @@ public class UserPasswordExpireTest extends CaTestCase {
         assertEquals(UserDataConstants.STATUS_GENERATED, data.getStatus());
 
         log.trace("<test01CreateNewUser()");
-    }
-
-    /**
-     * Remove all data stored by JUnit tests
-     * 
-     */
-    public void test99CleanUp() throws Exception {
-        log.trace(">test99CleanUp()");
-        userAdminSession.deleteUser(admin, USERNAME);
-        log.debug("Removed user: " + USERNAME);
-        serviceSession.removeService(admin, "TestUserPasswordService");
-        log.debug("Removed service: TestUserPasswordService");
-        removeTestCA();
-        log.debug("Removed test CA");
-        log.trace("<test99CleanUp()");
     }
 }

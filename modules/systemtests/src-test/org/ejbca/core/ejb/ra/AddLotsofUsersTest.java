@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb.ra;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -26,6 +28,9 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
@@ -40,19 +45,13 @@ public class AddLotsofUsersTest extends CaTestCase {
     
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    /**
-     * Creates a new TestAddLotsofUsers object.
-     */
-    public AddLotsofUsersTest(String name) {
-        super(name);
-    }
-
+    @Before
     public void setUp() throws Exception {
-        createTestCA();
     }
 
+    @After
     public void tearDown() throws Exception {
-        removeTestCA();
+
     }
 
     /**
@@ -68,6 +67,7 @@ public class AddLotsofUsersTest extends CaTestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
         final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
@@ -98,6 +98,7 @@ public class AddLotsofUsersTest extends CaTestCase {
         log.trace("<test01Create2000Users()");
     }
     
+    @Test
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
     	List<EndEntityInformation> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(UserDataConstants.STATUS_NEW);

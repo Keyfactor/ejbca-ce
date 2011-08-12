@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.*;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.KeyPair;
@@ -30,7 +32,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -38,6 +42,9 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.InterfaceCache;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** This is a performance test:
  * - 10 threads generates 1000 certificates each with 1024 bit public key
@@ -57,10 +64,10 @@ public class SignLotsOfCertsTest extends CaTestCase {
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     public static KeyPair keys;
-    
-    private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
+     
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -69,12 +76,14 @@ public class SignLotsOfCertsTest extends CaTestCase {
      *
      * @param name name
      */
-    public SignLotsOfCertsTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();	// Install BouncyCastle provider
     }
 
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
         log.trace(">setUp()");
         if (keys == null) {
             keys = KeyTools.genKeys("1024", "RSA");
@@ -83,6 +92,18 @@ public class SignLotsOfCertsTest extends CaTestCase {
     }
 
     public void tearDown() throws Exception {
+        super.tearDown();
+        removeTestCA(CANAME);
+        deleteUser("no1");
+        deleteUser("no2");
+        deleteUser("no3");
+        deleteUser("no4");
+        deleteUser("no5");
+        deleteUser("no6");
+        deleteUser("no7");
+        deleteUser("no8");
+        deleteUser("no9");
+        deleteUser("no10");
     }
 
     private void newUser(String post) throws Exception {
@@ -115,8 +136,9 @@ public class SignLotsOfCertsTest extends CaTestCase {
         }
     }
 
+    @Test
     public void test00AddRSACA() throws Exception {
-        adminGroupSession.init(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
+        //roleManagementSession.init(admin, getTestCAId(CANAME), DEFAULT_SUPERADMIN_CN);
         createTestCA(CANAME, 2048);
         CAInfo info = caSession.getCAInfo(admin, CANAME);
         X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
@@ -139,6 +161,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
      * @throws Exception
      *             if an error occurs...
      */
+    @Test
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
         newUser("no1");
@@ -160,6 +183,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test03SignLotsOfCerts() throws Exception {
         log.trace(">test03SignLotsOfCerts()");
 
@@ -216,20 +240,6 @@ public class SignLotsOfCertsTest extends CaTestCase {
         // fos.write(cert.getEncoded());
         // fos.close();
         log.trace("<test03SignLotsOfCerts()");
-    }
-
-    public void testZZZCleanUp() throws Exception {
-        removeTestCA(CANAME);
-        deleteUser("no1");
-        deleteUser("no2");
-        deleteUser("no3");
-        deleteUser("no4");
-        deleteUser("no5");
-        deleteUser("no6");
-        deleteUser("no7");
-        deleteUser("no8");
-        deleteUser("no9");
-        deleteUser("no10");
     }
 
     private class SignTester implements Runnable { // NOPMD we want to use thread here, it's not a JEE app

@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.SecureRandom;
@@ -37,6 +41,10 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -61,13 +69,14 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private static X509Certificate caCertificate1;
     private static X509Certificate caCertificate2;
 
-    public CmpRAAuthenticationTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     /** Create CAs and change configuration for the following tests. */
-    public void test000Setup() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         LOG.trace(">test000Setup");
         // Create and configure CAs with different CMP RA secrets
         caCertificate1 = setupCA(CA_NAME_1, PBE_SECRET_1);
@@ -97,6 +106,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     }
 
     /** Test that a CA specific secret. */
+    @Test
     public void test01IssueConfirmRevoke1() throws Exception {
         LOG.trace(">test01IssueConfirmRevoke1");
         testIssueConfirmRevoke(caCertificate1, PBE_SECRET_1, CA_NAME_1);
@@ -104,6 +114,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     }
 
     /** Test another CA specific secret. */
+    @Test
     public void test02IssueConfirmRevoke2() throws Exception {
         LOG.trace(">test02IssueConfirmRevoke2");
         testIssueConfirmRevoke(caCertificate2, PBE_SECRET_2, CA_NAME_2);
@@ -111,6 +122,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     }
 
     /** Test that a globally configured secret overrides any CA specific secret. */
+    @Test
     public void test03IssueConfirmRevokeWithCommonSecret() throws Exception {
         LOG.trace(">test03IssueConfirmRevokeWithCommonSecret");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBE_SECRET_3);
@@ -119,6 +131,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     }
 
     /** Test that the proper secret is used if CA is configured to ProfileDefault (= use default from EEP). */
+    @Test
     public void test04IssueConfirmRevokeEEP() throws Exception {
         LOG.trace(">test04IssueConfirmRevokeEEP");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null);
@@ -148,6 +161,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
      * Sends a certificate request message and verifies result. Sends a confirm message and verifies result. Sends a revocation message and verifies
      * result.
      */
+    @Test
     private void testIssueConfirmRevoke(X509Certificate caCertificate, String pbeSecret, String keyId) throws Exception {
         LOG.trace(">testIssueConfirmRevoke");
         // Generate and send certificate request
@@ -197,7 +211,9 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     }
 
     /** Remove CAs and restore configuration that was used by the tests. */
-    public void testZZZCleanUp() throws Exception {
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
         LOG.trace(">testZZZCleanUp");
         boolean cleanUpOk = true;
         cleanUpOk &= removeTestCA(CA_NAME_1);

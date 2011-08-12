@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.HashMap;
 
 import javax.ejb.EJBException;
 
@@ -63,7 +64,7 @@ public interface CAAdminSession {
      * 
      * @return HashMap with Integer->String mappings
      */
-    public java.util.HashMap<Integer,String> getCAIdToNameMap(AuthenticationToken admin);
+    public HashMap<Integer,String> getCAIdToNameMap(AuthenticationToken admin);
 
     /**
      * Creates a certificate request that should be sent to External Root CA for

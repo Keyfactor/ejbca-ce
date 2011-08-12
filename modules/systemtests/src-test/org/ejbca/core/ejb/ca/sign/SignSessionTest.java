@@ -13,6 +13,12 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -106,6 +112,10 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.cert.SeisCardNumberExtension;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests signing session.
@@ -187,22 +197,16 @@ public class SignSessionTest extends CaTestCase {
 
     private CAInfo inforsa;
 
-    /**
-     * Creates a new TestSignSession object.
-     * 
-     * @param name
-     *            name
-     */
-    public SignSessionTest(String name) throws Exception {
-        super(name);
-
-    }
-
-    public void setUp() throws Exception {
-        super.setUp();
-
+    @BeforeClass
+    public static void beforeClass() {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+       
         if (rsakeys == null) {
             rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
@@ -226,7 +230,7 @@ public class SignSessionTest extends CaTestCase {
         }
         // Add this again since it will be removed by the other tests in the
         // batch..
-        assertTrue("Could not create TestCA.", createTestCA());
+       
         inforsa = caSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
@@ -278,12 +282,77 @@ public class SignSessionTest extends CaTestCase {
         dsacacert = (X509Certificate) objs[0];
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
+        // Delete test end entity profile
+        try {
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+        } catch (Exception ignored) { /* ignore */
+        }
+        try {
+            certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
+        } catch (Exception e) { /* ignore */
+        }
+        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+        // delete users that we know...
+        try {
+            userAdminSession.deleteUser(admin, "foo");
+            log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, "fooecdsa");
+            log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, "fooecdsaimpca");
+            log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, "cvc");
+            log.debug("deleted user: cvc, foo123, C=SE,CN=TESTCVC");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, "cvcec");
+            log.debug("deleted user: cvcec, foo123, C=SE,CN=TCVCEC");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, "foodsa");
+            log.debug("deleted user: foodsa, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, USER_PRIVKEYUSAGEPERIOD);
+            log.debug("deleted user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
+        } catch (Exception e) { /* ignore */
+        }
     }
 
     /** creates new user 
      */
+    @Test
     public void test01CreateNewUser() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, FinderException, CertificateProfileExistsException {
         log.trace(">test01CreateNewUser()");
@@ -400,6 +469,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test02SignSession() throws ObjectNotFoundException, EjbcaException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException {
         log.trace(">test02SignSession()");
@@ -439,6 +509,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test03TestBCPKCS10() throws Exception {
         log.trace(">test03TestBCPKCS10()");
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -484,6 +555,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test04TestKeytoolPKCS10() throws Exception {
         log.trace(">test04TestKeytoolPKCS10()");
 
@@ -506,6 +578,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test05TestIEPKCS10() throws Exception {
         log.trace(">test05TestIEPKCS10()");
 
@@ -527,6 +600,7 @@ public class SignSessionTest extends CaTestCase {
      * 
      * @throws Exception if an error occurs...
      */
+    @Test
     public void test06KeyUsage() throws Exception {
         log.trace(">test06KeyUsage()");
 
@@ -566,6 +640,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test07DSAKey() throws Exception {
         log.trace(">test07DSAKey()");
 
@@ -593,6 +668,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test08SwedeChars() throws Exception {
         log.trace(">test08SwedeChars()");
         // Make user that we know...
@@ -627,6 +703,7 @@ public class SignSessionTest extends CaTestCase {
      * Tests multiple instances of one altName
      * 
      */
+    @Test
     public void test09TestMultipleAltNames() throws Exception {
         log.trace(">test09TestMultipleAltNames()");
 
@@ -708,6 +785,7 @@ public class SignSessionTest extends CaTestCase {
     }
 
     /** Tests creating a certificate with QC statement */
+    @Test
     public void test10TestQcCert() throws Exception {
         log.trace(">test10TestQcCert()");
 
@@ -767,6 +845,7 @@ public class SignSessionTest extends CaTestCase {
      * Tests creting a certificate with QC statement
      * 
      */
+    @Test
     public void test11TestValidityOverride() throws Exception {
         log.trace(">test11TestValidityOverrideAndCardNumber()");
 
@@ -911,7 +990,8 @@ public class SignSessionTest extends CaTestCase {
      * 
      * @throws Exception
      *             if en error occurs...
-     */
+     */ 
+    @Test
     public void test12SignSessionECDSAWithRSACA() throws Exception {
         log.trace(">test12SignSessionECDSAWithRSACA()");
 
@@ -950,6 +1030,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test13TestBCPKCS10ECDSAWithRSACA() throws Exception {
         log.trace(">test13TestBCPKCS10ECDSAWithRSACA()");
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -998,6 +1079,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test14SignSessionECDSAWithECDSACA() throws Exception {
         log.trace(">test14SignSessionECDSAWithECDSACA()");
 
@@ -1036,6 +1118,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test15TestBCPKCS10ECDSAWithECDSACA() throws Exception {
         log.trace(">test15TestBCPKCS10ECDSAWithECDSACA()");
         userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
@@ -1084,6 +1167,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test16SignSessionECDSAWithECDSAImplicitlyCACA() throws Exception {
         log.trace(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
 
@@ -1122,6 +1206,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA() throws Exception {
         log.trace(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
         userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
@@ -1170,6 +1255,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test18SignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
 
@@ -1221,6 +1307,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test19TestBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
         userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
@@ -1278,6 +1365,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test20MultiRequests() throws Exception {
         log.trace(">test20MultiRequests()");
 
@@ -1452,6 +1540,7 @@ public class SignSessionTest extends CaTestCase {
         log.trace("<test21CVCertificate()");
     }
 
+    @Test
     public void test22DnOrder() throws Exception {
         log.trace(">test22DnOrder()");
 
@@ -1508,6 +1597,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test23SignSessionDSAWithRSACA() throws Exception {
         log.trace(">test23SignSessionDSAWithRSACA()");
 
@@ -1544,6 +1634,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test24TestBCPKCS10DSAWithRSACA() throws Exception {
         log.trace(">test24TestBCPKCS10DSAWithRSACA()");
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -1590,6 +1681,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test25SignSessionDSAWithDSACA() throws Exception {
         log.trace(">test25SignSessionDSAWithDSACA()");
 
@@ -1626,6 +1718,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test26TestBCPKCS10DSAWithDSACA() throws Exception {
         log.trace(">test26TestBCPKCS10DSAWithDSACA()");
         userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
@@ -1672,6 +1765,7 @@ public class SignSessionTest extends CaTestCase {
      * @throws Exception
      *             if en error occurs...
      */
+    @Test
     public void test27IssuanceRevocationReason() throws Exception {
         log.trace(">test27IssuanceRevocationReason()");
 
@@ -1718,6 +1812,7 @@ public class SignSessionTest extends CaTestCase {
         log.trace("<test27IssuanceRevocationReason()");
     }
 
+    @Test
     public void test28TestDNOverride() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE");
@@ -1781,6 +1876,7 @@ public class SignSessionTest extends CaTestCase {
 
     } // test28TestDNOverride
 
+    @Test
     public void test29TestExtensionOverride() throws Exception {
         final String altnames = "dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
@@ -1882,7 +1978,7 @@ public class SignSessionTest extends CaTestCase {
         List<String> returnNames = Arrays.asList(retAltNames.split(", "));
         assertTrue(originalNames.containsAll(returnNames));
     } // test29TestExtensionOverride
-
+    @Test
     public void test30OfflineCA() throws Exception {
         // user that we know exists...
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
@@ -1906,6 +2002,7 @@ public class SignSessionTest extends CaTestCase {
         caAdminSession.editCA(admin, inforsa);
     }
 
+    @Test
     public void test31TestProfileSignatureAlgorithm() throws Exception {
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTSIGALG");
@@ -1962,6 +2059,7 @@ public class SignSessionTest extends CaTestCase {
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
     } // test31TestProfileSignatureAlgorithm
 
+    @Test
     public void test32TestCertReqHistory() throws Exception {
 
         // Configure CA not to store certreq history
@@ -2007,6 +2105,7 @@ public class SignSessionTest extends CaTestCase {
     /**
      * Test several cases where certificate generation should fail.
      */
+    @Test
     public void test33certCreationErrorHandling() throws Exception {
         log.trace(">test33certCreationErrorHandling");
         log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
@@ -2027,6 +2126,7 @@ public class SignSessionTest extends CaTestCase {
      * it will not be in the certificate.
      * @throws Exception In case of error.
      */
+    @Test
     public void test34privateKeyUsagePeriod_unused() throws Exception {
     	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, false, 0L);        
         assertNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
@@ -2036,6 +2136,7 @@ public class SignSessionTest extends CaTestCase {
      * Tests setting different notBefore dates. 
      * @throws Exception In case of error.
      */
+    @Test
     public void test35privateKeyUsagePeriod_notBefore() throws Exception {
     	// A: Only PrivateKeyUsagePeriod.notBefore with same as cert
     	privateKeyUsageTestStartOffset(0L);
@@ -2063,6 +2164,7 @@ public class SignSessionTest extends CaTestCase {
      * Tests setting different notAfter dates.
      * @throws Exception In case of error.
      */
+    @Test
     public void test36privateKeyUsagePeriod_notAfter() throws Exception {
         // 1: Only PrivateKeyUsagePeriod.notAfter 33 days after issuance
     	privateKeyUsageTestValidityLength(33 * 24 * 3600L);
@@ -2081,6 +2183,7 @@ public class SignSessionTest extends CaTestCase {
      * Tests the combinations of different notBefore and notAfter dates.
      * @throws Exception In case of error.
      */
+    @Test
     public void test37privateKeyUsagePeriod_both() throws Exception {
     	// A: 1, 2, 3, 4
     	privateKeyUsageTestBoth(0L, 33 * 24 * 3600L);
@@ -2190,76 +2293,7 @@ public class SignSessionTest extends CaTestCase {
         return cert;
     }
     
-    public void test99CleanUp() throws Exception {
-        log.trace(">test99CleanUp()");
 
-        // Delete test end entity profile
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
-        } catch (Exception ignored) { /* ignore */
-        }
-        try {
-            certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
-        } catch (Exception e) { /* ignore */
-        }
-        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
-        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
-        // delete users that we know...
-        try {
-            userAdminSession.deleteUser(admin, "foo");
-            log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, "fooecdsa");
-            log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, "fooecdsaimpca");
-            log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, "cvc");
-            log.debug("deleted user: cvc, foo123, C=SE,CN=TESTCVC");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, "cvcec");
-            log.debug("deleted user: cvcec, foo123, C=SE,CN=TCVCEC");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, "foodsa");
-            log.debug("deleted user: foodsa, foo123, C=SE, O=AnaTom, CN=foo");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, USER_PRIVKEYUSAGEPERIOD);
-            log.debug("deleted user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
-        } catch (Exception e) { /* ignore */
-        }
-
-        removeTestCA();
-        log.trace("<test99CleanUp()");
-    }
 
     /**
      * Tests scep message

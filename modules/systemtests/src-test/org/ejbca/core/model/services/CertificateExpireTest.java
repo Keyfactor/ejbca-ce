@@ -13,6 +13,11 @@
 
 package org.ejbca.core.model.services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -38,6 +43,10 @@ import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests the certificate expiration notifications.
@@ -62,26 +71,31 @@ public class CertificateExpireTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private ServiceDataSessionRemote serviceDataSession = InterfaceCache.getServiceDataSessionRemote();
 
-    public CertificateExpireTest() {
-        super();
-    }
-
-    public CertificateExpireTest(String name) {
-        super(name);
-    }
-
+ 
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
+        createTestCA(CA_NAME);
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
+        log.trace(">test99CleanUp()");
+        userAdminSession.deleteUser(admin, username);
+        log.debug("Removed user: " + username);
+        serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
+        log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
+        assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
+        assertTrue("Could not remove test CA properly.", removeTestCA(CA_NAME));
+        log.debug("Removed test CA");
+        log.trace("<test99CleanUp()");
     }
 
-    /**
-     * FIXME: Make this into a @BeforeClass method in JUNIT4
-     */
-    public void test00BeforeClass() {
+    @BeforeClass
+    public static void  beforeClass() {
         CryptoProviderTools.installBCProvider();
-        assertTrue("Could not create TestCA.", createTestCA(CA_NAME));
+        
     }
     
     /**
@@ -89,6 +103,7 @@ public class CertificateExpireTest extends CaTestCase {
      * users password
      * 
      */
+    @Test
     public void test01ExpireCertificate() throws Exception {
         log.trace(">test01CreateNewUser()");
 
@@ -165,18 +180,5 @@ public class CertificateExpireTest extends CaTestCase {
         log.trace("<test01CreateNewUser()");
     }
 
-    /**
-     * Remove all data stored by JUnit tests
-     */
-    public void test99CleanUp() throws Exception {
-        log.trace(">test99CleanUp()");
-        userAdminSession.deleteUser(admin, username);
-        log.debug("Removed user: " + username);
-        serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
-        log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
-        assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
-        assertTrue("Could not remove test CA properly.", removeTestCA(CA_NAME));
-        log.debug("Removed test CA");
-        log.trace("<test99CleanUp()");
-    }
+
 }

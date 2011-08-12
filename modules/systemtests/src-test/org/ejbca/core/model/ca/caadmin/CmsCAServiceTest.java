@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.ca.caadmin;
 
+import static org.junit.Assert.*;
+
 import java.security.cert.CertStore;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,10 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests the CertTools class.
@@ -57,29 +63,26 @@ public class CmsCAServiceTest extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    
-    /**
-     * Creates a new TestCertTools object.
-     * 
-     * @param name
-     *            DOCUMENT ME!
-     */
-    public CmsCAServiceTest(String name) throws Exception {
-        super(name);
+
+    @BeforeClass
+    public static void beforeClass() {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
-        assertTrue("Could not create TestCA.", createTestCA());
+
     }
 
+    @Before
     public void setUp() throws Exception {
-        log.trace(">setUp()");
-        CryptoProviderTools.installBCProvider();
-        log.trace("<setUp()");
+        super.setUp();
+
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
+    @Test
     public void test01CmsCAServiceNotActive() throws Exception {
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         // First try a request when the service is not active
@@ -95,6 +98,7 @@ public class CmsCAServiceTest extends CaTestCase {
 
     /**
 	 */
+    @Test
     public void test02ActivateCmsCAService() throws Exception {
         // Activate the CMS service in the CA
         CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
@@ -106,6 +110,7 @@ public class CmsCAServiceTest extends CaTestCase {
 
     /**
 	 */
+    @Test
     public void test03CmsCAServiceActive() throws Exception {
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         CmsCAServiceResponse resp = null;
@@ -149,6 +154,7 @@ public class CmsCAServiceTest extends CaTestCase {
 
     /**
 	 */
+    @Test
     public void test03CmsCAEncryptDecrypt() throws Exception {
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_ENCRYPT);
         CmsCAServiceResponse resp = null;
@@ -189,6 +195,7 @@ public class CmsCAServiceTest extends CaTestCase {
 
     /**
 	 */
+    @Test
     public void test04DeActivateCmsCAService() throws Exception {
         // Deactivate the CMS service in the CA
         CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
@@ -198,7 +205,4 @@ public class CmsCAServiceTest extends CaTestCase {
         caAdminSession.editCA(admin, cainfo);
     }
 
-    public void test99RemoveTestCA() throws Exception {
-        removeTestCA();
-    }
 }

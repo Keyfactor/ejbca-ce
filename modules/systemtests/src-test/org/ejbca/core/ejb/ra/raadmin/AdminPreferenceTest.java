@@ -13,6 +13,10 @@
 
 package org.ejbca.core.ejb.ra.raadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -20,6 +24,9 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the admin preference entity bean.
@@ -37,20 +44,15 @@ public class AdminPreferenceTest extends CaTestCase {
     
     private static final String user = genRandomUserName();
 
-    /**
-     * Creates a new AdminPreference object.
-     *
-     * @param name name
-     */
-    public AdminPreferenceTest(String name) {
-        super(name);
-    }
 
+    @Before
     public void setUp() throws Exception {
-
+        super.setUp();
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
@@ -59,6 +61,7 @@ public class AdminPreferenceTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test01AddAdminPreference() throws Exception {
         log.trace(">test01AddAdminPreference()");
         AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
@@ -78,6 +81,7 @@ public class AdminPreferenceTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test02ModifyAdminPreference() throws Exception {
         log.trace(">test02ModifyAdminPreference()");
         AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));

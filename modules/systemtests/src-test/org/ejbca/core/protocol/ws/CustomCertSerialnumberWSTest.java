@@ -1,5 +1,9 @@
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -34,6 +38,9 @@ import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.util.InterfaceCache;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** This test requires that "Enable End Entity Profile Limitations" in syste configuration is turned of.
  * 
@@ -45,7 +52,8 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
 	private CertificateProfileSession certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
-	public void test00SetupAccessRights() {
+	@BeforeClass
+	public void setupAccessRights() {
 		try {
 			super.setupAccessRights();
 		} catch (Exception e) {
@@ -53,6 +61,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 		}
 	}
 
+	@Test
 	public void test01CreateCertWithCustomSN() throws CreateException, CertificateProfileExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, CertificateException, NoSuchAlgorithmException, KeyStoreException, NoSuchProviderException, IOException, AuthorizationDeniedException {
 
 		log.debug(">test01CreateCertWithCustomSN");
@@ -133,7 +142,8 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 		log.debug("<test01CreateCertWithCustomSN");
 	}
 
-	public void test99cleanUpAdmins() throws Exception {
+	@AfterClass
+	public void cleanUpAdmins() throws Exception {
 		super.cleanUpAdmins();
 	}
 }

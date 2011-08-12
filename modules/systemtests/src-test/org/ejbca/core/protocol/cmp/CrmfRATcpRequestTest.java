@@ -13,6 +13,9 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
@@ -55,6 +58,11 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -86,8 +94,9 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
-	public CrmfRATcpRequestTest(String arg0) throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
-		super(arg0);
+    @BeforeClass
+	public void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
+	
 		CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
@@ -127,6 +136,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
     }
 
+    @Before
     public void setUp() throws Exception {
         super.setUp();
         if (keys == null) {
@@ -134,10 +144,12 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         }
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Test
     public void test01CrmfUnknowUser() throws Exception {
         // A name that does not exis
         userDN = "CN=abc123rry5774466, O=PrimeKey Solutions AB, C=SE";
@@ -159,6 +171,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpCertRepMessage(userDN, cacert, resp, reqId);
     }
 
+    @Test
     public void test02CrmfOkUser() throws Exception {
 
         // Create a new good user
@@ -196,6 +209,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
     }
 
+    @Test
     public void test03BlueXCrmf() throws Exception {
         PKIMessage req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(bluexir)).readObject());
         byte[] resp = sendCmpTcp(bluexir, 5);
@@ -208,6 +222,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpCertRepMessage(userDN, cacert, resp, reqId);
     }
 
+    @Test
     public void test04CrmfUnauthenticated() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -226,6 +241,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received an unathenticated message in RA mode.");
     }
 
+    @Test
     public void test05CrmfUnknownProtection() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -250,6 +266,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test06DnEmail() throws Exception {
         String subjectDN = "C=SE,CN=Göran Strömförare,E=adam@eva.se";
         // createCmpUser("cmptest2", subjectDN);
@@ -286,7 +303,8 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
     }
 
-    public void testZZZCleanUp() throws Exception {
+    @AfterClass
+    public void cleanUp() throws Exception {
     	log.trace(">testZZZCleanUp");
     	boolean cleanUpOk = true;
 		try {

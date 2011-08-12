@@ -13,6 +13,11 @@
 
 package org.ejbca.core.ejb.ra;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.security.cert.Certificate;
 import java.util.Enumeration;
@@ -30,6 +35,9 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.NonEjbTestTools;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test the combined function for editing and requesting a keystore/certificate
@@ -49,13 +57,15 @@ public class CertificateRequestSessionTest extends CaTestCase {
     private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    public void test000Setup() {
-        createTestCA();
+    @Before
+    public void setup() throws Exception {
+        super.setUp();
     }
 
     /**
      * Verify that a soft token can be generated in a single transaction.
      */
+    @Test
     public void testSoftTokenRequestRollback() throws Exception {
         // First try a successful request and validate the returned KeyStore
         String username = "softTokenRequestTest-" + random.nextInt();
@@ -150,8 +160,9 @@ public class CertificateRequestSessionTest extends CaTestCase {
         assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn, CertTools.getSubjectDN(cert));
     }
 
-    public void testZZZTearDown() {
-        removeTestCA();
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
 }

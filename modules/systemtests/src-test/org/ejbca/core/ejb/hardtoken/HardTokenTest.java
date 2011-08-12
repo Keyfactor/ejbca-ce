@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +38,10 @@ import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests the hard token related entity beans.
@@ -59,22 +66,22 @@ public class HardTokenTest extends CaTestCase {
     private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
 
-    /**
-     * Creates a new TestHardToken object.
-     * 
-     * @param name
-     *            name
-     */
-    public HardTokenTest(String name) {
-        super(name);
+
+    @BeforeClass
+    public static void beforeClass() {       
         CryptoProviderTools.installBCProvider();
-        assertTrue("Could not create TestCA.", createTestCA());
+        
     }
 
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
+
     }
 
     /**
@@ -83,7 +90,7 @@ public class HardTokenTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-
+@Test
     public void test01AddHardToken() throws Exception {
         log.trace(">test01AddHardToken()");
 
@@ -113,7 +120,7 @@ public class HardTokenTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-
+@Test
     public void test02EditHardToken() throws Exception {
         log.trace(">test02EditHardToken()");
 
@@ -140,7 +147,7 @@ public class HardTokenTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-
+@Test
     public void test03FindHardTokenByCertificate() throws Exception {
         log.trace(">test03FindHardTokenByCertificate()");
 
@@ -163,7 +170,7 @@ public class HardTokenTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-
+@Test
     public void test04EncryptHardToken() throws Exception {
         log.trace(">test04EncryptHardToken()");
 
@@ -203,7 +210,7 @@ public class HardTokenTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-
+@Test
     public void test05removeHardTokens() throws AuthorizationDeniedException {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);
@@ -220,7 +227,4 @@ public class HardTokenTest extends CaTestCase {
         assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken(admin, "2345"));
     }
 
-    public void test99RemoveTestCA() throws Exception {
-        removeTestCA();
-    }
 }

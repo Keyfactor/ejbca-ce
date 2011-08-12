@@ -21,12 +21,13 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -50,68 +51,51 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 
 /**
- * This class represents an abstract class for all tests which require testing
- * CAs.
+ * This class represents an abstract class for all tests which require testing CAs.
  * 
  * @version $Id$
  */
-public abstract class CaTestCase extends TestCase {
+public abstract class CaTestCase extends RoleUsingTestCase {
     private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
-    
+
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private AdminGroupSessionRemote adminGroupSession = null;
     private CAAdminSessionRemote caAdminSessionRemote = null;
     private CaSessionRemote caSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private GlobalConfigurationSessionRemote globalConfigurationSession = null;
-
-    public CaTestCase() {
-        super();
-        setupInterfaces();
-    }
-
-    public CaTestCase(String name) {
-        super(name);
-        setupInterfaces();
-    }
-
-    /** Use this constructor when we run tests that operate on the external OCSP Responder.. not ideal heritage.. TODO: Simplify if possible.. */
-    public CaTestCase(String name, boolean setupInterfaces) {
-        super(name);
-        if (setupInterfaces) {
-            setupInterfaces();
-        }
-    }
-
-    public void setupInterfaces() {
-        adminGroupSession = InterfaceCache.getAdminGroupSession();
-        caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-        caSession = InterfaceCache.getCaSession();
-        certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-        globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-    }
-
+    
+    protected String roleName = "CaTestCase";
+   
+  @Before
     public void setUp() throws Exception {
-        super.setUp();
+        super.setUpAuthTokenAndRole(roleName);
+        removeTestCA(); // We cant be sure this CA was not left over from
+        createTestCA();
     }
 
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
+        super.tearDownRemoveRole();
+        removeTestCA();
     }
 
     /**
      * Makes sure the Test CA exists.
      * 
      * @return true if successful
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-    public boolean createTestCA() {
+    private boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException {
         return createTestCA(getTestCAName(), 1024);
     }
 
@@ -119,8 +103,10 @@ public abstract class CaTestCase extends TestCase {
      * Makes sure the Test CA exists.
      * 
      * @return true if successful
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-    public boolean createTestCA(int keyStrength) {
+    public boolean createTestCA(int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException {
         return createTestCA(getTestCAName(), keyStrength);
     }
 
@@ -128,41 +114,46 @@ public abstract class CaTestCase extends TestCase {
      * Makes sure the Test CA exists.
      * 
      * @return true if successful
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-    public boolean createTestCA(String caName) {
+    public boolean createTestCA(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
         return createTestCA(caName, 1024);
     }
 
-	/**
-	 * Makes sure the Test CA exists.
-	 * 
-	 * @return true if successful
-	 */
-	public boolean createTestCA(String caName, int keyStrength) {
-		return createTestCA( caName, keyStrength, "CN="+caName, CAInfo.SELFSIGNED, null);
-	}
-	/**
-	 * Make sure testCA exist.
-	 * @param caName The CA name
-	 * @param keyStrength
-	 * @param dn DN of the CA
-	 * @param signedBy id of the signing CA
-	 * @return
-	 */
-	public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection certificateChain) {
+    /**
+     * Makes sure the Test CA exists.
+     * 
+     * @return true if successful
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
+     */
+    public boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException {
+        return createTestCA(caName, keyStrength, "CN=" + caName, CAInfo.SELFSIGNED, null);
+    }
+
+    /**
+     * Make sure testCA exist.
+     * 
+     * @param caName The CA name
+     * @param keyStrength
+     * @param dn DN of the CA
+     * @param signedBy id of the signing CA
+     * @return
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
+     */
+    public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection certificateChain) throws CADoesntExistsException,
+            AuthorizationDeniedException {
         log.trace(">createTestCA");
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    	try {
-			 this.adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
-		} catch (AdminGroupExistsException e) {
-			log.error("",e);
-		}
-		// Search for requested CA
-		CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
-		if (caInfo != null) {
-			return true;
-		}
-		// Create request CA, if necessary
+
+        // Search for requested CA
+        CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
+        if (caInfo != null) {
+            return true;
+        }
+        // Create request CA, if necessary
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -172,10 +163,7 @@ public abstract class CaTestCase extends TestCase {
         // Create and active OSCP CA Service.
         ArrayList extendedcaservices = new ArrayList();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                "CN=XKMSCertificate, " + dn,
-                "",
-                ""+keyStrength,
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, "CN=XKMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
         /*
         extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
@@ -184,75 +172,63 @@ public abstract class CaTestCase extends TestCase {
         		""+keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
         */
-        X509CAInfo cainfo = new X509CAInfo(dn,
-                caName, SecConst.CA_ACTIVE, new Date(),
-                "", signedBy==CAInfo.SELFSIGNED ? SecConst.CERTPROFILE_FIXED_ROOTCA : SecConst.CERTPROFILE_FIXED_SUBCA,
-                3650,
-                null, // Expiretime
-                CAInfo.CATYPE_X509,
-                signedBy,
-                certificateChain,
-                catokeninfo,
-                "JUnit RSA CA",
-                -1, null,
-                null, // PolicyId
+        X509CAInfo cainfo = new X509CAInfo(dn, caName, SecConst.CA_ACTIVE, new Date(), "",
+                signedBy == CAInfo.SELFSIGNED ? SecConst.CERTPROFILE_FIXED_ROOTCA : SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+                CAInfo.CATYPE_X509, signedBy, certificateChain, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
                 10, // Delta CRL period
-                new ArrayList(),
-                true, // Authority Key Identifier
+                new ArrayList(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
                 false, // CRL Number Critical
-                null, // defaultcrldistpoint 
-                null, // defaultcrlissuer 
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
                 null, // defaultocsplocator
                 null, // defaultfreshestcrl
                 true, // Finish User
-                extendedcaservices,
-                false, // use default utf8 settings
+                extendedcaservices, false, // use default utf8 settings
                 new ArrayList(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
-        		true, // Use LDAP DN order by default
-        		false, // Use CRL Distribution Point on CRL
-        		false,  // CRL Distribution Point on CRL critical
-        		true,
-                true, // isDoEnforceUniquePublicKeys
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, true, // isDoEnforceUniquePublicKeys
                 true, // isDoEnforceUniqueDistinguishedName
                 false, // isDoEnforceUniqueSubjectDNSerialnumber
                 true, // useCertReqHistory
                 true, // useUserStorage
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
-        		);
+        );
 
         try {
-        	this.caAdminSessionRemote.createCA(admin, cainfo);
-		} catch (Exception e) {
-			log.error("", e);
-			return false;
-		}
+            this.caAdminSessionRemote.createCA(admin, cainfo);
+        } catch (Exception e) {
+            log.error("", e);
+            return false;
+        }
         final CAInfo info = this.caSession.getCAInfo(admin, caName);
-		final String normalizedDN = CertTools.stringToBCDNString(dn);
+        final String normalizedDN = CertTools.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
-        if ( !normalizedCertDN.equals(normalizedDN) ) {
-        	log.error("CA certificate DN is not what it should. Is '"+normalizedDN+"'. Should be '"+normalizedCertDN+"'.");
-			return false;
+        if (!normalizedCertDN.equals(normalizedDN)) {
+            log.error("CA certificate DN is not what it should. Is '" + normalizedDN + "'. Should be '" + normalizedCertDN + "'.");
+            return false;
         }
         if (!info.getSubjectDN().equals(normalizedCertDN)) {
-        	log.error("Creating CA failed!");
-			return false;
+            log.error("Creating CA failed!");
+            return false;
         }
-        if ( this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
-        	log.error("CA certificate not available in database!!");
-        	return false;
+        if (this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
+            log.error("CA certificate not available in database!!");
+            return false;
         }
         log.trace("<createTestCA");
-		return true;
-	}
+        return true;
+    }
 
     /**
      * @return the caid of the test CA
@@ -263,15 +239,19 @@ public abstract class CaTestCase extends TestCase {
 
     /**
      * @return the CA certificate
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-    public Certificate getTestCACert() {
+    public Certificate getTestCACert() throws CADoesntExistsException, AuthorizationDeniedException {
         return getTestCACert(getTestCAName());
     }
 
     /**
      * @return the CA certificate
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-    public Certificate getTestCACert(String caName) {
+    public Certificate getTestCACert(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
         Certificate cacert = null;
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         CAInfo cainfo = caSession.getCAInfo(admin, getTestCAId(caName));
@@ -305,7 +285,7 @@ public abstract class CaTestCase extends TestCase {
      * 
      * @return true if successful
      */
-    public boolean removeTestCA() {
+    private boolean removeTestCA() {
         return removeTestCA(getTestCAName());
     }
 
@@ -316,7 +296,7 @@ public abstract class CaTestCase extends TestCase {
      */
     public boolean removeTestCA(String caName) {
         // Search for requested CA
-    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         try {
             final CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
             if (caInfo == null) {
@@ -353,13 +333,15 @@ public abstract class CaTestCase extends TestCase {
         log.debug("Generated random username: username =" + username);
         return username;
     } // genRandomUserName
-    
+
     /**
      * Find all certificates for a user and approve any outstanding revocation.
      */
-    protected int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason, int approvalType,
-            CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
-    	log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType + " approvalCAID=" + approvalCAID);
+    protected int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
+            int approvalType, CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession,
+            ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
+        log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
+                + " approvalCAID=" + approvalCAID);
         Collection userCerts = certificateStoreSession.findCertificatesByUsername(username);
         Iterator i = userCerts.iterator();
         int approvedRevocations = 0;
@@ -377,14 +359,15 @@ public abstract class CaTestCase extends TestCase {
                 }
                 Query q = new Query(Query.TYPE_APPROVALQUERY);
                 q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
-                ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID, "(endEntityProfileId="
-                        + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
+                ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID,
+                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.");
-                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin));
+                approvalExecutionSession.approve(approvingAdmin, approvalID, approval,
+                        globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin));
                 approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
-                assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
+                Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
-                assertEquals(status.revocationReason, reason);
+                Assert.assertEquals(status.revocationReason, reason);
                 approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
                 approvedRevocations++;
             }
@@ -392,7 +375,7 @@ public abstract class CaTestCase extends TestCase {
         return approvedRevocations;
     }
 
-	public CAInfo getCAInfo(AuthenticationToken admin, String name) {
-		return this.caSession.getCAInfo(admin, name);
-	}
+    public CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException {
+        return this.caSession.getCAInfo(admin, name);
+    }
 }

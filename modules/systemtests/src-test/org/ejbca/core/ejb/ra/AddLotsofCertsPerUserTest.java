@@ -13,10 +13,7 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 
 import org.apache.log4j.Logger;
@@ -45,6 +42,10 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Add a lot of users and a lot of certificates for each user 
@@ -70,21 +71,25 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     /**
      * Creates a new TestAddLotsofUsers object.
      */
-    public AddLotsofCertsPerUserTest(String name) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
+
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        keys = KeyTools.genKeys("2048", "RSA");
+        
     }
 
+    @Before
     public void setUp() throws Exception {
-        createTestCA();
+        super.setUp();
         final CAInfo cainfo = caSession.getCAInfo(administrator, getTestCAName());
         cainfo.setDoEnforceUniquePublicKeys(false);
         caAdminSession.editCA(administrator, cainfo);
+        keys = KeyTools.genKeys("2048", "RSA");
     }
 
+    @After
     public void tearDown() throws Exception {
-        removeTestCA();
+        super.tearDown();
     }
 
     private String genUserName(String baseUsername) {
@@ -99,6 +104,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
      * @throws Exception
      *             on error
      */
+    @Test
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
         final String baseUsername = "lotsacertsperuser-" + System.currentTimeMillis() + "-";
