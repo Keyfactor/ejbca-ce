@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb.ra;
 
+import static org.junit.Assert.*;
+
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.security.KeyPair;
@@ -58,6 +60,10 @@ import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
@@ -81,22 +87,34 @@ public class UserAdminSessionTest extends CaTestCase {
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
 
-    /**
-     * Creates a new TestUserData object.
-     * 
-     * @param name
-     *            DOCUMENT ME!
-     */
-    public UserAdminSessionTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
+ 
 		CryptoProviderTools.installBCProviderIfNotAvailable();        
-        assertTrue("Could not create TestCA.", createTestCA());
+
     }
 
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
+        for (int i = 0; i < usernames.size(); i++) {
+            try {
+                userAdminSession.deleteUser(admin, (String) usernames.get(i));
+            } catch (Exception e) {
+            } // NOPMD, ignore errors so we don't stop deleting users because
+              // one of them does not exist.
+        }
+        try {
+            endEntityProfileSession.removeEndEntityProfile(admin, "TESTMERGEWITHWS");
+        } catch (Exception e) {
+        } // NOPMD, ignore errors so we don't stop deleting users because one of
+          // them does not exist.
+
     }
 
     private void genRandomSerialnumber() throws Exception {
@@ -117,6 +135,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test01AddUser() throws Exception {
         log.trace(">test01AddUser()");
 
@@ -175,6 +194,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test02AddUserWithUniqueDNSerialnumber() throws Exception {
         log.trace(">test02AddUserWithUniqueDNSerialnumber()");
 
@@ -294,6 +314,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test03_1QueryUser() throws Exception {
         log.trace(">test03_1QueryUser()");
         Query query = new Query(Query.TYPE_USERQUERY);
@@ -312,6 +333,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test04ChangeUser() throws Exception {
         log.trace(">test04ChangeUser()");
         EndEntityInformation data = userAdminSession.findUser(admin, username);
@@ -390,6 +412,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test05DeleteUser() throws Exception {
         log.trace(">test05DeleteUser()");
         userAdminSession.deleteUser(admin, username);
@@ -411,6 +434,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test06MergeWithWS() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COMMONNAME);
@@ -441,20 +465,5 @@ public class UserAdminSessionTest extends CaTestCase {
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
     }
 
-    public void test99RemoveTestCA() throws Exception {
-        for (int i = 0; i < usernames.size(); i++) {
-            try {
-                userAdminSession.deleteUser(admin, (String) usernames.get(i));
-            } catch (Exception e) {
-            } // NOPMD, ignore errors so we don't stop deleting users because
-              // one of them does not exist.
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTMERGEWITHWS");
-        } catch (Exception e) {
-        } // NOPMD, ignore errors so we don't stop deleting users because one of
-          // them does not exist.
 
-        removeTestCA();
-    }
 }

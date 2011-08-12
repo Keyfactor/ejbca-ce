@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -78,6 +85,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+
 import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
@@ -226,7 +234,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             userAdded = true;
 
             boolean adminExists = false;
-            RoleData role = roleAccessSession.findRole(DefaultRoles.SUPERADMINISTRATOR.getName());
+            RoleData role = roleAccessSession.findRole(roleName);
             for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
                 if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
                     adminExists = true;
@@ -235,9 +243,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
             if (!adminExists) {
                 List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-                list.add(new AccessUserAspectData(AdminGroup.TEMPSUPERADMINGROUP, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME,
-                        AccessMatchType.TYPE_EQUALCASE, TEST_ADMIN_USERNAME));
-                roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(AdminGroup.TEMPSUPERADMINGROUP), list);
+                list.add(new AccessUserAspectData(roleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+                        TEST_ADMIN_USERNAME));
+                roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(roleName), list);
                 accessControlSession.forceCacheExpire();
             }
 
@@ -2380,13 +2388,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void cleanUpAdmins() throws Exception {
         if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
-            // Remove from admin group            
-            RoleData admingroup = roleAccessSession.findRole(DefaultRoles.SUPERADMINISTRATOR.getName());
+            // Remove from admin group
+            RoleData admingroup = roleAccessSession.findRole(roleName);
             for (AccessUserAspectData accessUserAspect : admingroup.getAccessUsers().values()) {
                 if (accessUserAspect.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
                     Collection<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
                     list.add(accessUserAspect);
-                    roleManagementSession.removeSubjectsFromRole(intAdmin, roleAccessSession.findRole(AdminGroup.TEMPSUPERADMINGROUP), list);         
+                    roleManagementSession.removeSubjectsFromRole(intAdmin, roleAccessSession.findRole(roleName), list);
                     accessControlSession.forceCacheExpire();
                 }
             }

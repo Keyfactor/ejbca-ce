@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.keyrecovery;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -31,6 +34,10 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests the key recovery modules.
@@ -48,26 +55,21 @@ public class KeyRecoveryTest extends CaTestCase {
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
-    /**
-     * Creates a new TestLog object.
-     *
-     * @param name name
-     */
-    public KeyRecoveryTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
         
     }
 
+    @Before
     public void setUp() throws Exception {
         super.setUp();
-        log.trace(">setUp()");
-        assertTrue("Could not create TestCA.", createTestCA());
-        log.trace("<setUp()");
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
+
     }
 
     /**
@@ -75,6 +77,7 @@ public class KeyRecoveryTest extends CaTestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test01AddKeyPair() throws Exception {
         log.trace(">test01AddKeyPair()");
         // Generate test keypair and certificate.
@@ -99,6 +102,7 @@ public class KeyRecoveryTest extends CaTestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test02MarkAndRecoverKeyPair() throws Exception {
         log.error("User:::: " + user);
         log.trace(">test02MarkAndRecoverKeyPair()");
@@ -118,6 +122,7 @@ public class KeyRecoveryTest extends CaTestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test03RemoveKeyPair() throws Exception {
         log.error("User:::: " + user);
         log.trace(">test03RemoveKeyPair()");
@@ -128,7 +133,5 @@ public class KeyRecoveryTest extends CaTestCase {
         log.trace("<test03RemoveKeyPair()");
     }
 
-	public void test99RemoveTestCA() throws Exception {
-		removeTestCA();
-	}
+
 }

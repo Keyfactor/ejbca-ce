@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -53,6 +57,9 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.InterfaceCache;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -66,11 +73,11 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
 
     final private static String PBEPASSWORD = "password";
 
-    final private String issuerDN;
+    private String issuerDN;
 
-    final private int caid;
+    private int caid;
     final private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    final private X509Certificate cacert;
+    private X509Certificate cacert;
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
@@ -79,8 +86,8 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
     private CertificateProfileSession certProfileSession = InterfaceCache.getCertificateProfileSession();
 
-    public CrmfRARequestCustomSerialNoTest(String arg0) throws CertificateEncodingException, CertificateException, AuthorizationDeniedException, CADoesntExistsException {
-        super(arg0);
+    @BeforeClass
+    public void beforeClass() throws CertificateEncodingException, CertificateException, AuthorizationDeniedException, CADoesntExistsException {
 
         // Configure CMP for this test, we allow custom certificate serial numbers
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -226,6 +233,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         return ret;
     }
 
+    @Test
     public void test01CustomCertificateSerialNumber() throws Exception {
     	final KeyPair key1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     	final String userName1 = "cmptest1";
@@ -257,6 +265,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     	}
     }
 
+    @AfterClass
     public void testZZZCleanUp() throws Exception {
     	log.trace(">testZZZCleanUp");
         assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());

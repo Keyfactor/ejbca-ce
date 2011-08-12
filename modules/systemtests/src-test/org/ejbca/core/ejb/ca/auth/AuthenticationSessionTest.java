@@ -13,6 +13,11 @@
 
 package org.ejbca.core.ejb.ca.auth;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -42,6 +47,10 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests authentication session used by signer.
@@ -67,18 +76,26 @@ public class AuthenticationSessionTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     /** Creates a new TestAuthenticationSession object. */
-    public AuthenticationSessionTest(String name) {
-        super(name);
-        assertTrue("Could not create TestCA.", createTestCA());
-    }
-
-    public void setUp() throws Exception {
-        log.trace(">setUp()");
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
-        log.trace("<setUp()");
     }
 
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+    }
+
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
+        userAdminSession.deleteUser(admin, username1);
+        log.debug("deleted user: " + username1);
+
+        userAdminSession.deleteUser(admin, username2);
+        log.debug("deleted user: " + username2);
+
     }
 
     private void createUser(AuthenticationToken admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
@@ -98,6 +115,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     /** tests creation of new users */
+    @Test
     public void test01CreateNewUser() throws Exception {
         log.trace(">test01CreateNewUser()");
 
@@ -119,6 +137,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     /** Tests authentication of users */
+    @Test
     public void test02AuthenticateUser() throws Exception {
         log.trace(">test02AuthenticateUser()");
         // user that we know exists...
@@ -138,6 +157,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     /** Tests filed authentication */
+    @Test
     public void test03FailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
@@ -154,6 +174,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     /** Tests more failed authentication */
+    @Test
     public void test04FailAuthenticateUser() throws Exception {
         log.trace(">test04FailAuthenticateUser()");
         // user that we know exists... but we issue wrong password
@@ -169,6 +190,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     }
 
     /** Test reset of key recovery mark. */
+    @Test
     public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
@@ -213,6 +235,7 @@ public class AuthenticationSessionTest extends CaTestCase {
      * (maxNumFailedLogins) can be performed before the account is locked which
      * is then tested by trying to login using the correct password.
      */
+    @Test
     public void test06MultipleFailedLogins() throws Exception {
         log.trace(">test06FailedLoginsThenCorrect()");
 
@@ -323,20 +346,5 @@ public class AuthenticationSessionTest extends CaTestCase {
         }
     }
 
-    /** Delete user after completed tests */
-    public void test98DeleteUsers() throws Exception {
-        log.trace(">test98DeleteUsers()");
 
-        userAdminSession.deleteUser(admin, username1);
-        log.debug("deleted user: " + username1);
-
-        userAdminSession.deleteUser(admin, username2);
-        log.debug("deleted user: " + username2);
-
-        log.trace("<test98eleteUsers()");
-    }
-
-    public void test99RemoveTestCA() throws Exception {
-        removeTestCA();
-    }
 }

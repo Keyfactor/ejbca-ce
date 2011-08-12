@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.web.protocol;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -25,7 +27,10 @@ import java.util.Set;
 import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.junit.Test;
 
 /**
  * Testing of CertStoreServlet
@@ -42,8 +47,12 @@ public class CertStoreServletTest extends CaTestCase {
 	 * @throws IOException 
 	 * @throws CertificateException 
 	 * @throws MalformedURLException 
+	 * @throws AuthorizationDeniedException 
+	 * @throws CADoesntExistsException 
 	 */
-	public void testIt() throws MalformedURLException, CertificateException, IOException, URISyntaxException, MessagingException {
+	
+	@Test
+	public void testIt() throws MalformedURLException, CertificateException, IOException, URISyntaxException, MessagingException, CADoesntExistsException, AuthorizationDeniedException {
 		final CAInHierarchy ca1 = new CAInHierarchy("root", this);
 		final CAInHierarchy ca1_1 = new CAInHierarchy("1 from root", this);
 		ca1.subs.add(ca1_1);

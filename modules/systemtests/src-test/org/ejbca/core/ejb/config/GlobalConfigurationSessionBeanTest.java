@@ -13,6 +13,11 @@
 
 package org.ejbca.core.ejb.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -26,6 +31,9 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the global configuration entity bean.
@@ -51,19 +59,12 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 	private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private GlobalConfiguration original = null;
 
-    /**
-     * Creates a new TestGlobalConfiguration object.
-     * 
-     * @param name
-     *            name
-     */
-    public GlobalConfigurationSessionBeanTest(String name) {
-        super(name);
-    }
+
+    @Before
 
     public void setUp() throws Exception {
-    	enableCLI(true);
-    	createTestCA();    	
+        super.setUp();
+    	enableCLI(true);  	
 
         // First save the original
         // FIXME: Do this in @BeforeClass in JUnit4
@@ -74,11 +75,12 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     	assertFalse("No CAs exists so this test will not work", caids.isEmpty());
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
     	globalConfigurationSession.saveGlobalConfigurationRemote(administrator, original);
     	enableCLI(true);
         administrator = null;
-        removeTestCA();
     }
 
     /**
@@ -87,6 +89,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
 
         // Read a value to reset the timer
@@ -121,6 +124,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * user and call the method getAvailableCAs.
      * @throws Exception
      */
+    @Test
     public void testNonCLIUser_getAvailableCAs() throws Exception {
     	enableCLI(true);
     	for (AuthenticationToken admin : NON_CLI_ADMINS) {
@@ -132,6 +136,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * method getAvailableCAs.
      * @throws Exception
      */
+    @Test
     public void testDisabledCLI_getAvailableCAs() throws Exception {
     	enableCLI(false);
     	operationGetAvailabeCAs(administrator);
@@ -142,6 +147,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * user and call the method getAvailableCAs.
      * @throws Exception
      */
+    @Test
     public void testNonCLIUser_getCAInfo() throws Exception {
     	enableCLI(true);
     	for (AuthenticationToken admin : NON_CLI_ADMINS) {
@@ -153,6 +159,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * method getAvailableCAs.
      * @throws Exception
      */
+    @Test
     public void testDisabledCLI_getCAInfo() throws Exception {
     	enableCLI(false);
     	operationGetCAInfo(administrator, caids);

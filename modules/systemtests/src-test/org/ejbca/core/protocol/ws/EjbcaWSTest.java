@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.net.URL;
 import java.security.KeyPair;
@@ -38,6 +43,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -67,7 +73,6 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
@@ -85,6 +90,8 @@ import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
+import org.junit.AfterClass;
+import org.junit.Test;
 
 /**
  * This test uses remote EJB calls to setup the environment.
@@ -124,95 +131,114 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
     }
 
+    @Test
     public void test00SetupAccessRights() throws Exception {
         super.setupAccessRights();
     }
 
+    @Test
     public void test01EditUser() throws Exception {
         setUpAdmin();
         super.editUser();
     }
 
+    @Test
     public void test02FindUser() throws Exception {
         setUpAdmin();
         findUser();
     }
 
+    @Test
     public void test03_1GeneratePkcs10() throws Exception {
         setUpAdmin();
         generatePkcs10();
     }
 
+    @Test
     public void test03_2GenerateCrmf() throws Exception {
         setUpAdmin();
         generateCrmf();
     }
 
+    @Test
     public void test03_3GenerateSpkac() throws Exception {
         setUpAdmin();
         generateSpkac();
     }
 
+    @Test
     public void test03_4GeneratePkcs10Request() throws Exception {
         setUpAdmin();
         generatePkcs10Request();
     }
 
+    @Test
     public void test03_5CertificateRequest() throws Exception {
         setUpAdmin();
         certificateRequest();
     }
 
+    @Test
     public void test03_6EnforcementOfUniquePublicKeys() throws Exception {
         setUpAdmin();
         enforcementOfUniquePublicKeys();
     }
 
+    @Test
     public void test03_6EnforcementOfUniqueSubjectDN() throws Exception {
         setUpAdmin();
         enforcementOfUniqueSubjectDN();
     }
 
+    @Test
     public void test04GeneratePkcs12() throws Exception {
         setUpAdmin();
         generatePkcs12();
     }
 
+    @Test
     public void test05FindCerts() throws Exception {
         setUpAdmin();
         findCerts();
     }
 
+    @Test
     public void test06RevokeCert() throws Exception {
         setUpAdmin();
         revokeCert();
     }
 
+    @Test
     public void test07RevokeToken() throws Exception {
         setUpAdmin();
         revokeToken();
     }
 
+    @Test
     public void test08CheckRevokeStatus() throws Exception {
         setUpAdmin();
         checkRevokeStatus();
     }
 
+    @Test
     public void test09Utf8() throws Exception {
         setUpAdmin();
         utf8();
     }
 
+    @Test
     public void test10GetLastCertChain() throws Exception {
         setUpAdmin();
         getLastCertChain();
     }
 
+    @Test
     public void test11RevokeUser() throws Exception {
         setUpAdmin();
         revokeUser();
     }
 
+    @Test
     public void test12IsAuthorized() throws Exception {
         setUpAdmin();
 
@@ -220,36 +246,43 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));
     }
 
+    @Test
     public void test13genTokenCertificates() throws Exception {
         setUpAdmin();
         genTokenCertificates(false);
     }
 
+    @Test
     public void test14getExistsHardToken() throws Exception {
         setUpAdmin();
         getExistsHardToken();
     }
 
+    @Test
     public void test15getHardTokenData() throws Exception {
         setUpAdmin();
         getHardTokenData("12345678", false);
     }
 
+    @Test
     public void test16getHardTokenDatas() throws Exception {
         setUpAdmin();
         getHardTokenDatas();
     }
 
+    @Test
     public void test17CustomLog() throws Exception {
         setUpAdmin();
         customLog();
     }
 
+    @Test
     public void test18GetCertificate() throws Exception {
         setUpAdmin();
         getCertificate();
     }
 
+    @Test
     public void test19RevocationApprovals() throws Exception {
     	log.trace(">test19RevocationApprovals");
         setUpAdmin();
@@ -363,88 +396,106 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	log.trace("<test19RevocationApprovals");
     }
 
+    @Test
     public void test20KeyRecoverNewest() throws Exception {
         setUpAdmin();
         keyRecover();
     }
 
+    @Test
     public void test21GetAvailableCAs() throws Exception {
         setUpAdmin();
         getAvailableCAs();
     }
 
+    @Test
     public void test22GetAuthorizedEndEntityProfiles() throws Exception {
         setUpAdmin();
         getAuthorizedEndEntityProfiles();
     }
 
+    @Test
     public void test23GetAvailableCertificateProfiles() throws Exception {
         setUpAdmin();
         getAvailableCertificateProfiles();
     }
 
+    @Test
     public void test24GetAvailableCAsInProfile() throws Exception {
         setUpAdmin();
         getAvailableCAsInProfile();
     }
-
+    
+    @Test
     public void test25GreateCRL() throws Exception {
         setUpAdmin();
         createCRL();
     }
 
+    
+    @Test
     public void test26_1CvcRequestRSA() throws Exception {
         setUpAdmin();
         cvcRequest("CN=WSCVCA,C=SE", "WSTESTCVCA", "CN=WSDVCA,C=SE", "WSTESTDVCA", CA1_WSTESTUSER1CVCRSA, "1024", AlgorithmConstants.KEYALGORITHM_RSA,
                 AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
     }
-
+    
+    @Test
     public void test26_2CleanCvcRequestRSA() throws Exception {
         // Remove the CAs
         deleteCVCCA("CN=WSCVCA,C=SE", "CN=WSDVCA,C=SE");
     }
 
+    @Test
     public void test26_3CvcRequestECDSA() throws Exception {
         setUpAdmin();
         cvcRequest("CN=WSCVCAEC,C=SE", "WSTESTCVCAEC", "CN=WSDVCAEC,C=SE", "WSTESTDVCAEC", CA2_WSTESTUSER1CVCEC, "secp256r1",
                 AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
 
+    @Test
     public void test26_4CleanCvcRequestECDSA() throws Exception {
         // Remove the CAs
         deleteCVCCA("CN=WSCVCAEC,C=SE", "CN=WSDVCAEC,C=SE");
     }
 
+    @Test
     public void test27EjbcaVersion() throws Exception {
         setUpAdmin();
         ejbcaVersion();
     }
 
+    @Test
     public void test29ErrorOnEditUser() throws Exception {
         setUpAdmin();
         errorOnEditUser();
     }
 
+    @Test
     public void test30ErrorOnGeneratePkcs10() throws Exception {
         setUpAdmin();
         errorOnGeneratePkcs10();
     }
 
+    @Test
     public void test31ErrorOnGeneratePkcs12() throws Exception {
         setUpAdmin();
         errorOnGeneratePkcs12();
     }
 
+    @Test
     public void test32OperationOnNonexistingCA() throws Exception {
         setUpAdmin();
         operationOnNonexistingCA();
     }
 
+    @Test
     public void test33CheckQueueLength() throws Exception {
         setUpAdmin();
         checkQueueLength();
     }
 
+    @Test
     public void test34_1CaRenewCertRequestRSA() throws Exception {
     	log.trace(">test34_1CaRenewCertRequestRSA()");
         setUpAdmin();
@@ -458,6 +509,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace("<test34_1CaRenewCertRequestRSA()");
     }
 
+    @Test
     public void test34_2CaRenewCertRequestECC() throws Exception {
     	log.trace(">test34_2CaRenewCertRequestECC()");
         setUpAdmin();
@@ -472,6 +524,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 		log.trace("<test34_2CaRenewCertRequestECC()");
     }
 
+    @Test
     public void test35CleanUpCACertRequest() throws Exception {
     	log.trace(">test35CleanUpCACertRequest()");
         setUpAdmin();
@@ -479,10 +532,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         log.trace("<test35CleanUpCACertRequest()");
     }
 
-    /** In EJBCA 4.0.0 we changed the date format to ISO 8601. This verifies the that we still accept old requests, but returns UserDataVOWS objects using the new DateFormat */
-    public void test36EjbcaWsHelperTimeFormatConversion() throws CADoesntExistsException, ClassCastException, EjbcaException {
+    /** In EJBCA 4.0.0 we changed the date format to ISO 8601. This verifies the that we still accept old requests, but returns UserDataVOWS objects using the new DateFormat 
+     * @throws AuthorizationDeniedException */
+    @Test
+    public void test36EjbcaWsHelperTimeFormatConversion() throws CADoesntExistsException, ClassCastException, EjbcaException, AuthorizationDeniedException {
     	log.trace(">test36EjbcaWsHelperTimeFormatConversion()");
-    	final EjbcaWSHelper ejbcaWsHelper = new EjbcaWSHelper(null, null, caAdminSessionRemote, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSessionRemote, userAdminSession);
+    	final EjbcaWSHelper ejbcaWsHelper = new EjbcaWSHelper(null, null, caAdminSessionRemote, caSession, certificateProfileSession, certificateStoreSession, endEntityProfileSession, hardTokenSessionRemote, userAdminSession);
 		final Date nowWithOutSeconds = new Date((new Date().getTime()/60000)*60000);	// To avoid false negatives.. we will loose precision when we convert back and forth..
     	final String oldTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(nowWithOutSeconds);
     	final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
@@ -546,6 +601,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * 
      * @throws Exception
      */
+    @Test
     public void testEvilFind01() throws Exception {
         log.trace(">testEvilFind01()");
         setUpAdmin();
@@ -567,6 +623,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars01() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
@@ -577,6 +634,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars02() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
@@ -587,6 +645,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars03() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
@@ -597,6 +656,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars04() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
@@ -607,6 +667,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars05() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
@@ -617,6 +678,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars06() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
@@ -627,12 +689,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Use single transaction method for requesting KeyStore with special
      * characters in the certificate SubjectDN.
      */
+    @Test
     public void testCertificateRequestWithSpecialChars07() throws Exception {
         setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
     }
 
+    @AfterClass
     public void test99cleanUpAdmins() throws Exception {
         super.cleanUpAdmins();
     }
@@ -733,7 +797,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Create a user a generate cert.
      */
     private X509Certificate createUserAndCert(String username, int caID) throws Exception {
-        UserDataVO userdata = new UserDataVO(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         userAdminSession.addUser(intAdmin, userdata, true);

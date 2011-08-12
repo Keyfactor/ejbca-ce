@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -53,6 +55,10 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -114,10 +120,15 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
 
-    public CrmfRAPbeMultipleKeyIdRequestTest(String arg0) throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
-        super(arg0);
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
-        // Try to get caIds
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+     // Try to get caIds
         CAInfo adminca1 = caSession.getCAInfo(admin, "CmpCA1");
         caid1 = adminca1.getCAId();
         CAInfo adminca2 = caSession.getCAInfo(admin, "CmpCA2");
@@ -153,19 +164,25 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         }
         issuerDN1 = CertTools.getSubjectDN(cacert1);
         issuerDN2 = CertTools.getSubjectDN(cacert2);
-    }
-
-    public void setUp() throws Exception {
-        super.setUp();
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         }
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
+        String user1 = CertTools.getPartFromDN(userDN1, "CN");
+        String user2 = CertTools.getPartFromDN(userDN2, "CN");
+        try {
+            userAdminSession.deleteUser(admin, user1);
+            userAdminSession.deleteUser(admin, user2);
+        } catch (Exception e) {
+            // Ignore errors
+        }
     }
 
+    @Test
     public void test01CrmfHttpOkUserWrongKeyId() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -189,6 +206,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpFailMessage(resp, "End entity profile with name 'foobarfoobar' not found.", 1, reqId, 2);
     }
 
+    @Test
     public void test02CrmfHttpOkUserKeyId1() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -270,6 +288,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
     }
 
+    @Test
     public void test03CrmfTcpOkUserKeyId1() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -322,6 +341,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN1, cacert1, resp);
     }
 
+    @Test
     public void test04CrmfTcpOkUserKeyId2() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -374,6 +394,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
     }
 
+    @Test
     public void test05CrmfHttpOkUserKeyId2() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -441,6 +462,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
     }
 
+    @Test
     public void test06CrmfTcpOkUserKeyId3() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -498,6 +520,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
     } // test06CrmfTcpOkUserKeyId3
 
+    @Test
     public void test07ExtensionOverride() throws Exception {
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -606,15 +629,5 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Skip confirmation message, we have tested that several times already
     } // test07ExtensionOverride
 
-    public void test99CleanUp() throws Exception {
-        String user1 = CertTools.getPartFromDN(userDN1, "CN");
-        String user2 = CertTools.getPartFromDN(userDN2, "CN");
-        try {
-            userAdminSession.deleteUser(admin, user1);
-            userAdminSession.deleteUser(admin, user2);
-        } catch (Exception e) {
-            // Ignore errors
-        }
-    }
 
 }

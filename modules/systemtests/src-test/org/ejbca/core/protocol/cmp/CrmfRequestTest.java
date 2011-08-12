@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
@@ -55,6 +57,11 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -82,8 +89,9 @@ public class CrmfRequestTest extends CmpTestCase {
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-	public CrmfRequestTest(String arg0) throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
-		super(arg0);
+    @BeforeClass
+	public void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
+
         CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
@@ -120,6 +128,7 @@ public class CrmfRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
     }
 
+    @Before
     public void setUp() throws Exception {
         super.setUp();
         if (keys == null) {
@@ -127,11 +136,13 @@ public class CrmfRequestTest extends CmpTestCase {
         }
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
     //client mode
+    @Test
     public void test01CrmfHttpUnknowUser() throws Exception {
     	log.trace(">test01CrmfHttpUnknowUser");
         // A name that does not exist
@@ -166,6 +177,7 @@ public class CrmfRequestTest extends CmpTestCase {
     }
 
     //client mode
+    @Test
     public void test02CrmfHttpUnknowUserSignedMessage() throws Exception {
         // A name that does not exist
         byte[] nonce = CmpMessageHelper.createSenderNonce();
@@ -192,6 +204,7 @@ public class CrmfRequestTest extends CmpTestCase {
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
     }
 
+    @Test
     public void test03CrmfHttpOkUser() throws Exception {
     	log.trace(">test02CrmfHttpOkUser");
         // Create a new good user
@@ -241,6 +254,7 @@ public class CrmfRequestTest extends CmpTestCase {
     	log.trace("<test02CrmfHttpOkUser");
     }
 
+    @Test
     public void test04BlueXCrmf() throws Exception {
     	log.trace(">test03BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
@@ -249,6 +263,7 @@ public class CrmfRequestTest extends CmpTestCase {
     	log.trace("<test03BlueXCrmf");
     }
 
+    @Test
     public void test05BadBytes() throws Exception {
     	log.trace(">test04BadBytes");
         byte[] msg = bluexir;
@@ -311,7 +326,7 @@ public class CrmfRequestTest extends CmpTestCase {
     }
     */
     
-    
+    @Test
     public void test07SignedConfirmationMessage() throws Exception {
     	log.trace(">test07SignedConfirmationMessage()");
         CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
@@ -330,8 +345,8 @@ public class CrmfRequestTest extends CmpTestCase {
     }
  
     
-    
-    public void testZZZCleanUp() throws Exception {
+    @AfterClass
+    public void cleanUp() throws Exception {
     	log.trace(">testZZZCleanUp");
     	boolean cleanUpOk = true;
 		try {

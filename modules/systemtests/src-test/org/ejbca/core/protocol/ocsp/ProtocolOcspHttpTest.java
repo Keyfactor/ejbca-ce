@@ -13,11 +13,16 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -38,8 +43,6 @@ import java.util.Hashtable;
 
 import javax.ejb.ObjectNotFoundException;
 
-import junit.framework.TestSuite;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -58,7 +61,6 @@ import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
-import org.bouncycastle.ocsp.UnknownStatus;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -73,7 +75,6 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -85,7 +86,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -103,24 +103,21 @@ import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebConnection;
-import com.gargoylesoftware.htmlunit.WebRequestSettings;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 /**
  * Tests http pages of ocsp
  * @version $Id$
  **/
-public class ProtocolOcspHttpTest extends CaTestCase {
+public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
-    private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
-
-    protected final String httpReqPath;
-    protected final String resourceOcsp;
+    static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
     protected static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
@@ -130,13 +127,9 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             + "i1P53jnSPLkyqm7i3nLNi+hG7rMgF+kRi6ZLKhzIPyKcAWV8iZCI8xl/GurbZ8zd" + "nTiIOfQIP9eD/nhIIo7n4JOaTUeqgyafPsEgKdTiZfSdXjvy6rj5GiZ3DaGZ9SNK"
             + "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
-    protected int caid = getTestCAId();
-    protected static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    protected static X509Certificate cacert = null;
-    protected static X509Certificate ocspTestCert = null;
-    private static X509Certificate unknowncacert = null;
 
-    protected OcspJunitHelper helper = null;
+    static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
 
     private static byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
             + "DjCCAwowggMGBgsqhkiG9w0BDAoBAqCCAqkwggKlMCcGCiqGSIb3DQEMAQMwGQQU" + "/h0pQXq7ZVjYWlDvzEwwmiJ8O8oCAWQEggJ4MZ12+kTVGd1w7SP4ZWlq0bCc4MsJ"
@@ -204,93 +197,73 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             + "KuCHXrnUlw5RLeublCbUAAAAAAAAAAAAAAAAAAAAAAAAMD0wITAJBgUrDgMCGgUA" + "BBRo3arw4fuHPsqvDnvA8Q/TLyjoRQQU3Xm6ZsAJT0/iLV7S3mKeme0FVGACAgQA" + "AAA=")
             .getBytes());
 
-    private final String httpPort;
+    String httpPort;
 
-    private AdminGroupSessionRemote adminGroupSession = null;
-    private CAAdminSessionRemote caAdminSession = null;
-    private CaSessionRemote caSession = null;
-    private ConfigurationSessionRemote configurationSessionRemote = null;
-    private CertificateStoreSessionRemote certificateStoreSession = null;
-    private RevocationSessionRemote revocationSession = null;
-    private SignSessionRemote signSession = null;
-    private UserAdminSessionRemote userAdminSession = null;
+    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
+    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    public static TestSuite suite() {
-        return new TestSuite(ProtocolOcspHttpTest.class);
+    @BeforeClass
+    public static void beforeClass(String name) throws CertificateException {   
+        // Install BouncyCastle provider
+        CryptoProviderTools.installBCProvider();
     }
 
-    public ProtocolOcspHttpTest(String name) throws CertificateException {
-        super(name);
-        // Setup remote interface access if we run EJBCA in CA-mode
-        caAdminSession = InterfaceCache.getCAAdminSession();
-        caSession = InterfaceCache.getCaSession();
-        configurationSessionRemote = InterfaceCache.getConfigurationSession();
-        certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-        signSession = InterfaceCache.getSignSession();
-        userAdminSession = InterfaceCache.getUserAdminSession();
-        revocationSession = InterfaceCache.getRevocationSession();
-        adminGroupSession = InterfaceCache.getAdminGroupSession();  
-        
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         resourceOcsp = "publicweb/status/ocsp";
         helper = new OcspJunitHelper(httpReqPath, resourceOcsp);
-        // Install BouncyCastle provider
-        CryptoProviderTools.installBCProvider();
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
-
-    }
-
-    public ProtocolOcspHttpTest(String name, String httpPort, String resourceOcsp) throws CertificateException {
-        super(name, false);
-        this.httpPort = httpPort;
-        httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
-        this.resourceOcsp = resourceOcsp;
-        helper = new OcspJunitHelper(httpReqPath, resourceOcsp);
-        // Install BouncyCastle provider
-        CryptoProviderTools.installBCProvider();
-        unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
-    }
-
-    public void setUp() throws Exception {
+        
     	log.debug("httpReqPath=" + httpReqPath);
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
-        assertTrue("Failed to create test CA.", createTestCA());
         cacert = (X509Certificate) getTestCACert();
+        caid = getTestCAId();
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
         cacert = null;
+        removeDSACA();
+        removeECDSACA();
+        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
+                .getResponseCode() == 200);
+        userAdminSession.deleteUser(admin, "ocsptest");
     }
 
+    @Test
     public void test01Access() throws Exception {
-        // Hit with GET does work since EJBCA 3.8.2
-        final WebClient webClient = new WebClient();
-        WebConnection con = webClient.getWebConnection();
-        WebRequestSettings settings = new WebRequestSettings(new URL(httpReqPath + '/' + resourceOcsp));
-        WebResponse resp = con.getResponse(settings);
-        assertEquals("Response code", 200, resp.getStatusCode());
+        super.test01Access();
     }
-
+    
     /**
      * Tests ocsp message
      * 
      * @throws Exception
      *             error
      */
+    @Test
     public void test02OcspGood() throws Exception {
         log.trace(">test02OcspGood()");
-
+    
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
         // change status of cert to bad status
         // send OCSP req and get bad status
         // (send crap message and get good error)
-
+    
         // Get user and ocspTestCert that we know...
         loadUserCert(caid);
-
+    
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -300,12 +273,12 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
         OCSPReq req = gen.generate();
-
+    
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
         assertEquals("No of SingleResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
-
+    
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
@@ -315,6 +288,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         assertEquals("Status is not null (good)", null, status);
         log.trace("<test02OcspGood()");
     }
+    
 
     /**
      * Tests ocsp message
@@ -322,6 +296,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test03OcspRevoked() throws Exception {
         log.trace(">test03OcspRevoked()");
         // Now revoke the certificate and try again
@@ -330,12 +305,12 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
-
+    
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
         SingleResp singleResp = singleResps[0];
-
+    
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
@@ -346,78 +321,23 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         log.trace("<test03OcspRevoked()");
     }
-
-    /**
-     * Tests ocsp message
-     * 
-     * @throws Exception
-     *             error
-     */
+    
+    @Test
     public void test04OcspUnknown() throws Exception {
-        log.trace(">test04OcspUnknown()");
-        // An OCSP request for an unknown certificate (not exist in db)
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
-        OCSPReq req = gen.generate();
-
-        // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
-        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
-        SingleResp singleResp = singleResps[0];
-
-        CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
-        Object status = singleResp.getCertStatus();
-        assertTrue("Status is not Unknown", status instanceof UnknownStatus);
-
-        log.trace("<test04OcspUnknown()");
+        super.test04OcspUnknown();
     }
 
-    /**
-     * Tests ocsp message
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test05OcspUnknownCA() throws Exception {
-        log.trace(">test05OcspUnknownCA()");
-        // An OCSP request for a certificate from an unknwon CA
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
-        OCSPReq req = gen.generate();
-
-        // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
-        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
-        SingleResp singleResp = singleResps[0];
-
-        CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
-        Object status = singleResp.getCertStatus();
-        assertTrue("Status is not Unknown", status instanceof UnknownStatus);
-
-        log.trace("<test05OcspUnknownCA()");
+        super.test05OcspUnknownCA();
     }
 
+    @Test
     public void test06OcspSendWrongContentType() throws Exception {
-        // An OCSP request for a certificate from an unknwon CA
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
-        OCSPReq req = gen.generate();
-        // POST the OCSP request
-        URL url = new URL(httpReqPath + '/' + resourceOcsp);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
-        // POST it, but don't add content type
-        OutputStream os = con.getOutputStream();
-        os.write(req.getEncoded());
-        os.close();
-        assertEquals("Response code", 400, con.getResponseCode());
-
+        super.test06OcspSendWrongContentType();
     }
-
+    
+    @Test
     public void test07SignedOcsp() throws Exception {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
@@ -507,6 +427,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test08OcspEcdsaGood() throws Exception {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
@@ -545,6 +466,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
@@ -577,142 +499,25 @@ public class ProtocolOcspHttpTest extends CaTestCase {
 
     } // test09OcspEcdsaImplicitlyCAGood
 
+    @Test
     public void test10MultipleRequests() throws Exception {
-        // Tests that we handle multiple requests in one OCSP request message
-
-        // An OCSP request for a certificate from an unknown CA
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
-
-        // Get user and ocspTestCert that we know...
-        loadUserCert(caid);
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-
-        OCSPReq req = gen.generate();
-
-        // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
-        assertEquals("No of SingleResps should be 2.", 2, singleResps.length);
-        SingleResp singleResp1 = singleResps[0];
-
-        CertificateID certId = singleResp1.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
-        Object status = singleResp1.getCertStatus();
-        assertTrue("Status is not Unknown", status instanceof UnknownStatus);
-
-        SingleResp singleResp2 = singleResps[1];
-        certId = singleResp2.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
-        status = singleResp2.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
-
+        super.test10MultipleRequests();
     }
 
-    /**
-     * In compliance with RFC 2560 on
-     * "ASN.1 Specification of the OCSP Response": If the value of
-     * responseStatus is one of the error conditions, responseBytes are not set.
-     * 
-     * OCSPResponse ::= SEQUENCE { responseStatus OCSPResponseStatus,
-     * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
-     */
+    @Test
     public void test11MalformedRequest() throws Exception {
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        // Add 101 OCSP requests.. the Servlet will consider a request with more
-        // than 100 malformed..
-        // This does not mean that we only should allow 100 in the future, just
-        // that we if so need to find
-        // another way make the Servlet return
-        // OCSPRespGenerator.MALFORMED_REQUEST
-        for (int i = 0; i < 101; i++) {
-            gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        }
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
-        // Send the request and receive null
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200);
-        assertNull("No SingleResps should be returned.", singleResps);
+        super.test11MalformedRequest();
     }
 
+    @Test
     public void test12CorruptRequests() throws Exception {
-        log.trace(">test12CorruptRequests()");
-
-        // An OCSP request, ocspTestCert is already created in earlier tests
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
-
-        // Request 1
-        //
-        // Send the request and receive a singleResponse
-        byte[] orgbytes = req.getEncoded(); // Save original bytes, so we can
-        // make different strange values
-        byte[] bytes = req.getEncoded();
-        // Switch the first byte, now it's a really corrupted request
-        bytes[0] = 0x44;
-        SingleResp[] singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error
-        // code
-        // 1
-        // means
-        // malformed
-        // request
-        assertNull("SingleResps should be null.", singleResps);
-
-        // Request 2
-        //
-        // Remove the last byte, should still be quite corrupted
-        // bytes = Arrays.copyOf(orgbytes, orgbytes.length-1); only works in
-        // Java 6
-        bytes = ArrayUtils.remove(orgbytes, orgbytes.length - 1);
-        singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error
-        // code
-        // 1
-        // means
-        // malformed
-        // request
-        assertNull("SingleResps should be null.", singleResps);
-
-        // Request 3
-        //
-        // more than 1 million bytes
-        // bytes = Arrays.copyOf(orgbytes, 1000010); only works in Java 6
-        bytes = ArrayUtils.addAll(orgbytes, new byte[1000010]);
-        singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // //
-        // error
-        // code
-        // 1
-        // means
-        // malformed
-        // request
-        assertNull("SingleResps should be null.", singleResps);
-
-        // Request 4
-        // 
-        //
-        // A completely empty request with no question in it
-        gen = new OCSPReqGenerator();
-        req = gen.generate();
-        bytes = req.getEncoded();
-        singleResps = helper.sendOCSPPost(bytes, "123456789", 1, 200); // 
-        assertNull("SingleResps should be null.", singleResps);
-
-        log.trace("<test12CorruptRequests()");
+        super.test12CorruptRequests();
     }
-
+    
     /**
      * Just verify that a simple GET works.
      */
+    @Test
     public void test13GetRequests() throws Exception {
         // See if the OCSP Servlet can read non-encoded requests
         final String plainReq = httpReqPath
@@ -753,57 +558,24 @@ public class ProtocolOcspHttpTest extends CaTestCase {
         Object status = singleResps[0].getCertStatus();
         assertEquals("Status is not null (null is 'good')", null, status);
     }
-
-    /**
-     * Send a bunch of faulty requests
-     */
+    
+    @Test
     public void test14CorruptGetRequests() throws Exception {
-        // An array of zeros cannot be right..
-        helper.sendOCSPGet(new byte[4096], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
-        // Send an empty GET request: .../ocsp/{nothing}
-        helper.sendOCSPGet(new byte[0], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
-        // Test too large requests
-        /*
-         * try { // When we use an URL of length ~ 8100 chars on JBoss we get a
-         * "Connection reset", // JBoss 5 considers this a bad request (400) //
-         * so we cannot test the real Malformed response we want here
-         * helper.sendOCSPGet(new byte[6020], null,
-         * OCSPRespGenerator.MALFORMED_REQUEST, 200); } catch (IOException e) {
-         * log.info(e.getMessage()); } try { // When we use an URL of length ~ >
-         * 500000 chars on JBoss we get a "Error writing to server", // so we
-         * cannot test the real Malformed response we want here caused by to
-         * large requests helper.sendOCSPGet(new byte[1000001], null,
-         * OCSPRespGenerator.MALFORMED_REQUEST, 200); } catch (IOException e) {
-         * log.info(e.getMessage()); }
-         */
+        super.test14CorruptGetRequests();
     }
 
-    /**
-     * Send multiple requests in one GET request. RFC 5019 2.1.1 prohibits
-     * clients from this, but the server should be RFC 2560 compatible and
-     * support this as long as the total request URL is smaller than 256 bytes.
-     */
+    @Test
     public void test15MultipleGetRequests() throws Exception {
-        loadUserCert(caid);
-        // An OCSP request, ocspTestCert is already created in earlier tests
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
-        OCSPReq req = gen.generate();
-        SingleResp[] singleResps = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespGenerator.SUCCESSFUL, 200);
-        assertNotNull("SingleResps should not be null.", singleResps);
-        assertEquals("Serno in response does not match serno in request.", singleResps[0].getCertID().getSerialNumber(), ocspTestCert.getSerialNumber());
-        assertTrue("Serno in response does not match serno in request.", singleResps[1].getCertID().getSerialNumber().toString().equals("1"));
-        assertEquals("Status is not null (null is 'good')", null, singleResps[0].getCertStatus());
-        assertTrue("Status is not unknown", singleResps[1].getCertStatus() instanceof UnknownStatus);
+        super.test15MultipleGetRequests();
     }
-
+    
     /**
      * Tests ocsp message
      * 
      * @throws Exception
      *             error
      */
+    @Test
     public void test16OcspDsaGood() throws Exception {
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
@@ -839,6 +611,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
     /**
      * Verify that Internal OCSP responses are signed by CA signing key.
      */
+    @Test
     public void test17OCSPResponseSignature() throws Exception {
 
         // Get user and ocspTestCert that we know...
@@ -886,6 +659,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * HTTP Content-length: 1000 byte ASN1 sequence length: 199995 byte Payload
      * size: 200000 byte (not including HTTP header)
      */
+    @Test
     public void test18MaliciousOcspRequest() throws Exception {
         log.trace(">test18MaliciousOcspRequest");
         int i = 0;
@@ -961,6 +735,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * HTTP Content-length: 200000 byte ASN1 sequence length: 9996 byte Payload
      * size: 200000 byte (not including HTTP header)
      */
+    @Test
     public void test19MaliciousOcspRequest() throws Exception {
         log.trace(">test19MaliciousOcspRequest");
         int i = 0;
@@ -1026,6 +801,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * Verify OCSP response for a malicious request where the POST data starts
      * with a proper OCSP request.
      */
+    @Test
     public void test20MaliciousOcspRequest() throws Exception {
         log.trace(">test20MaliciousOcspRequest");
         // Start by sending a valid OCSP requests so we know the helpers work
@@ -1060,7 +836,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-    public void test98RemoveDSACA() throws Exception {
+    public void removeDSACA() throws Exception {
         log.trace(">test98RemoveDSACA()");
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
@@ -1083,7 +859,7 @@ public class ProtocolOcspHttpTest extends CaTestCase {
      * @throws Exception
      *             error
      */
-    public void test99RemoveECDSACA() throws Exception {
+    public void removeECDSACA() throws Exception {
         log.trace(">test08RemoveECDSACA()");
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
@@ -1098,14 +874,6 @@ public class ProtocolOcspHttpTest extends CaTestCase {
             log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
         }
         log.trace("<test99RemoveECDSACA()");
-    }
-
-    public void testZZZTearDown() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
-        removeTestCA();
-        userAdminSession.deleteUser(admin, "ocsptest");
-
     }
 
     //

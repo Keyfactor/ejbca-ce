@@ -13,10 +13,11 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -50,14 +51,19 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
-/** These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
+/**
+ * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
  * and these requests are handled by EJBCA without further authentication, end entities are created automatically in EJBCA.
  * 
- * You need a CMP TCP listener configured on port 5587 to run this test.
- * (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
+ * You need a CMP TCP listener configured on port 5587 to run this test. (cmp.tcp.enabled=true, cmp.tcp.portno=5587)
  * 
  * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
@@ -65,23 +71,23 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * @version $Id$
  */
 public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
-	
+
     private static final Logger log = Logger.getLogger(CrmfRAPbeTcpRequestTest.class);
 
-    private static final String PBEPASSWORD        = "password";
-    private static final String CPNAME             = CrmfRAPbeTcpRequestTest.class.getName();
-    private static final String EEPNAME            = CrmfRAPbeTcpRequestTest.class.getName();
+    private static final String PBEPASSWORD = "password";
+    private static final String CPNAME = CrmfRAPbeTcpRequestTest.class.getName();
+    private static final String EEPNAME = CrmfRAPbeTcpRequestTest.class.getName();
 
     /** userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations */
     private static String userDN = "C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,CN=cmptest";
-    
-    private static String issuerDN                 = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-    private KeyPair keys = null;  
+
+    private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+    private KeyPair keys = null;
 
     private static int caid = 0;
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
-    
+
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
@@ -89,27 +95,30 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    /** This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
+    /**
+     * This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
+     * 
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-	public CrmfRAPbeTcpRequestTest(String arg0) throws CertificateException, AuthorizationDeniedException, CADoesntExistsException {
-		super(arg0);
-		CryptoProviderTools.installBCProvider();
+    @BeforeClass
+    public void beforeClass(String arg0) throws Exception {
+
+        CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
-            	caid = iter.next().intValue();
-            }        	
+                caid = iter.next().intValue();
+            }
         } else {
-        	caid = adminca1.getCAId();
+            caid = adminca1.getCAId();
         }
         if (caid == 0) {
-        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }        	
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
         CAInfo cainfo = caSession.getCAInfo(admin, caid);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -118,7 +127,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
             String subject = CertTools.getSubjectDN(cert);
             if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
-                cacert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());            	
+                cacert = (X509Certificate) CertTools.getCertfromByteArray(cert.getEncoded());
             }
         } else {
             log.error("NO CACERT for caid " + caid);
@@ -135,108 +144,112 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         if (certificateProfileSession.getCertificateProfile(CPNAME) == null) {
             CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowValidityOverride(true);
-            try {	// TODO: Fix this better
-				certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);
-			} catch (CertificateProfileExistsException e) {
-				e.printStackTrace();
-			}
+            try { // TODO: Fix this better
+                certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);
+            } catch (CertificateProfileExistsException e) {
+                e.printStackTrace();
+            }
         }
         int cpId = certificateProfileSession.getCertificateProfileId(CPNAME);
         if (endEntityProfileSession.getEndEntityProfile(admin, EEPNAME) == null) {
-            // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check 'Modifyable'), MS UPN in altNames in the end entity profile.
+            // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check
+            // 'Modifyable'), MS UPN in altNames in the end entity profile.
             EndEntityProfile eep = new EndEntityProfile(true);
-            eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE,0, "" + cpId);
-            eep.setValue(EndEntityProfile.AVAILCERTPROFILES,0, "" + cpId);
+            eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + cpId);
+            eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);
             eep.setModifyable(DnComponents.RFC822NAME, 0, true);
-            eep.setUse(DnComponents.RFC822NAME, 0, false);	// Don't use field from "email" data
+            eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field from "email" data
             try {
-    			endEntityProfileSession.addEndEntityProfile(admin, EEPNAME, eep);
-    		} catch (EndEntityProfileExistsException e) {
-    			log.error("Could not create end entity profile.", e);
-    		}
+                endEntityProfileSession.addEndEntityProfile(admin, EEPNAME, eep);
+            } catch (EndEntityProfileExistsException e) {
+                log.error("Could not create end entity profile.", e);
+            }
         }
-	}
-	
-	public void setUp() throws Exception {
-		super.setUp();
-		if (keys == null) {
-			keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-		}
-	}
-	
-	public void tearDown() throws Exception {
-		super.tearDown();
-	}
+    }
 
-	public void test02CrmfTcpOkUser() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        if (keys == null) {
+            keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        }
+    }
 
-		byte[] nonce = CmpMessageHelper.createSenderNonce();
-		byte[] transid = CmpMessageHelper.createSenderNonce();
-		
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    @Test
+    public void test02CrmfTcpOkUser() throws Exception {
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
         PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
-		assertNotNull(req);
+        assertNotNull(req);
 
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-		ByteArrayOutputStream bao = new ByteArrayOutputStream();
-		DEROutputStream out = new DEROutputStream(bao);
-		out.writeObject(req);
-		byte[] ba = bao.toByteArray();
-		// Send request and receive response
-		byte[] resp = sendCmpTcp(ba, 5);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-		X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
-		assertNotNull(cert);
-		
-		// Send a confirm message to the CA
-		String hash = "foo123";
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(req);
+        byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        byte[] resp = sendCmpTcp(ba, 5);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+        X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+        assertNotNull(cert);
+
+        // Send a confirm message to the CA
+        String hash = "foo123";
         PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
-		assertNotNull(confirm);
+        assertNotNull(confirm);
         PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
-		bao = new ByteArrayOutputStream();
-		out = new DEROutputStream(bao);
-		out.writeObject(req1);
-		ba = bao.toByteArray();
-		// Send request and receive response
-		resp = sendCmpTcp(ba, 5);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-		checkCmpPKIConfirmMessage(userDN, cacert, resp);
-		
-		// Now revoke the bastard using the CMPv2 CRL entry extension!
-		PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
+        bao = new ByteArrayOutputStream();
+        out = new DEROutputStream(bao);
+        out.writeObject(req1);
+        ba = bao.toByteArray();
+        // Send request and receive response
+        resp = sendCmpTcp(ba, 5);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+
+        // Now revoke the bastard using the CMPv2 CRL entry extension!
+        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
-		assertNotNull(revReq);
-		bao = new ByteArrayOutputStream();
-		out = new DEROutputStream(bao);
-		out.writeObject(revReq);
-		ba = bao.toByteArray();
-		// Send request and receive response
-		resp = sendCmpTcp(ba, 5);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
-		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-		assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
+        assertNotNull(revReq);
+        bao = new ByteArrayOutputStream();
+        out = new DEROutputStream(bao);
+        out.writeObject(revReq);
+        ba = bao.toByteArray();
+        // Send request and receive response
+        resp = sendCmpTcp(ba, 5);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+        checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
+        int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
+        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
 
-	}
+    }
 
-	public void testZZZCleanUp() throws Exception {
-    	log.trace(">testZZZCleanUp");
-    	boolean cleanUpOk = true;
-		try {
-			userAdminSession.deleteUser(admin, "cmptest");
-		} catch (NotFoundException e) {
-			// A test probably failed before creating the entity
-        	log.error("Failed to delete user \"cmptest\".");
-        	cleanUpOk = false;
-		}
-		endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
-		certificateProfileSession.removeCertificateProfile(admin, CPNAME);
-		if (!configurationSession.restoreConfiguration()) {
-			cleanUpOk = false;
-		}
+    @AfterClass
+    public void cleanUp() throws Exception {
+        log.trace(">testZZZCleanUp");
+        boolean cleanUpOk = true;
+        try {
+            userAdminSession.deleteUser(admin, "cmptest");
+        } catch (NotFoundException e) {
+            // A test probably failed before creating the entity
+            log.error("Failed to delete user \"cmptest\".");
+            cleanUpOk = false;
+        }
+        endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
+        certificateProfileSession.removeCertificateProfile(admin, CPNAME);
+        if (!configurationSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
         assertTrue("Unable to clean up properly.", cleanUpOk);
-    	log.trace("<testZZZCleanUp");
-	}
-	
+        log.trace("<testZZZCleanUp");
+    }
 
 }

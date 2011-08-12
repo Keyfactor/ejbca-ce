@@ -13,6 +13,8 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.*;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -22,39 +24,38 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests and removes the ca data entity bean.
- *
+ * 
  * @version $Id$
  */
 public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    
+
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    
-    /**
-     * Creates a new TestCAs object.
-     *
-     * @param name name
-     */
-    public RemoveCATest(String name) {
-        super(name);
-    }
 
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
      * removes RSA CA
-     *
+     * 
      * @throws Exception error
      */
+    @Test
     public void test02removeRSACA() throws Exception {
         log.trace(">test02removeRSACA()");
         assertTrue("Removing RSA CA failed", removeTestCA("TEST"));
@@ -63,9 +64,10 @@ public class RemoveCATest extends CaTestCase {
 
     /**
      * removes ECDSA CA
-     *
+     * 
      * @throws Exception error
      */
+    @Test
     public void test03removeECDSACA() throws Exception {
         log.trace(">test03removeECDSACA()");
         boolean ret = false;
@@ -88,9 +90,10 @@ public class RemoveCATest extends CaTestCase {
 
     /**
      * removes RSA CA
-     *
+     * 
      * @throws Exception error
      */
+    @Test
     public void test04removeRSASha256WithMGF1CA() throws Exception {
         log.trace(">test04removeRSASha256WithMGF1CA()");
         boolean ret = false;
@@ -104,91 +107,96 @@ public class RemoveCATest extends CaTestCase {
         log.trace("<test04removeRSASha256WithMGF1CA()");
     }
 
+    @Test
     public void test05removeRSACA4096() throws Exception {
         log.trace(">test05removeRSACA4096()");
         boolean ret = false;
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools
+                    .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         assertTrue("Removing RSA CA 4096 failed", ret);
         log.trace("<test05removeRSACA4096()");
     }
-    
+
+    @Test
     public void test06removeRSACAReverse() throws Exception {
         log.trace(">test06removeRSACAReverse()");
         boolean ret = false;
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         assertTrue("Removing RSA CA Reverse failed", ret);
         log.trace("<test06removeRSACAReverse()");
     }
 
+    @Test
     public void test07removeCVCCA() throws Exception {
         log.trace(">test07removeCVCCA()");
         boolean ret = false;
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TESTCVCA,C=SE");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TESTCVCA,C=SE");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TESTDV-D,C=SE");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TESTDV-D,C=SE");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TESTDV-F,C=FI");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TESTDV-F,C=FI");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         // test10AddCVCCAECC
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TCVCAEC,C=SE");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TCVCAEC,C=SE");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TDVEC-D,C=SE");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TDVEC-D,C=SE");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
         try {
-        	String dn = CertTools.stringToBCDNString("CN=TDVEC-F,C=FI");
-        	caSession.removeCA(admin, dn.hashCode());
+            String dn = CertTools.stringToBCDNString("CN=TDVEC-F,C=FI");
+            caSession.removeCA(admin, dn.hashCode());
             ret = true;
         } catch (Exception e) {
-        	log.info("Remove failed: ", e);
+            log.info("Remove failed: ", e);
         }
 
         assertTrue("Removing CVC CA failed", ret);
 
         try {
-        	certificateProfileSession.removeCertificateProfile(admin, "TESTCVCDV");
+            certificateProfileSession.removeCertificateProfile(admin, "TESTCVCDV");
         } catch (Exception e) {
-        	log.info("Remove profile failed: ", e);
+            log.info("Remove profile failed: ", e);
         }
         log.trace("<test07removeCVCCA()");
     }
 
+    @Test
     public void test09removeRSASignedByExternal() throws Exception {
         log.trace(">test09removeRSASignedByExternal()");
         boolean ret = false;
@@ -200,7 +208,8 @@ public class RemoveCATest extends CaTestCase {
         assertTrue("Removing RSA CA failed", ret);
         log.trace("<test09removeRSASignedByExternal()");
     }
-    
+
+    @Test
     public void test10removeDSACA() throws Exception {
         log.trace(">test10removeDSACA()");
         boolean ret = false;
@@ -214,6 +223,7 @@ public class RemoveCATest extends CaTestCase {
         log.trace("<test10removeDSACA()");
     }
 
+    @Test
     public void test11removeRevokeCA() throws Exception {
         log.trace(">test11removeRevokeCA()");
         boolean ret = false;

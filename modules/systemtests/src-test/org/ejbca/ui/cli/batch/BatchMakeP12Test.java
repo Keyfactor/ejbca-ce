@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.cli.batch;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 
 import org.apache.log4j.Logger;
@@ -23,6 +25,9 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /** Tests the batch making of soft cards.
  *
@@ -35,21 +40,18 @@ public class BatchMakeP12Test extends CaTestCase {
     private int caid = getTestCAId();
 
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    
-    /**
-     * Creates a new TestBatchMakeP12 object.
-     *
-     * @param name name
-     */
-    public BatchMakeP12Test(String name) {
-        super(name);
-        assertTrue("Could not create TestCA.", createTestCA());
-    }
 
+
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
+ 
     }
 
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
+
     }
 
     /**
@@ -57,6 +59,7 @@ public class BatchMakeP12Test extends CaTestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test01CreateNewUsers() throws Exception {
         log.trace(">test01CreateNewUser()");
         String username = genRandomUserName();
@@ -93,6 +96,7 @@ public class BatchMakeP12Test extends CaTestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test02MakeP12() throws Exception {
         log.trace(">test02MakeP12()");
 
@@ -104,8 +108,5 @@ public class BatchMakeP12Test extends CaTestCase {
         makep12.createAllNew();
         log.trace("<test02MakeP12()");
     }
-    
-	public void test99RemoveTestCA() throws Exception {
-		removeTestCA();
-	}
+
 }

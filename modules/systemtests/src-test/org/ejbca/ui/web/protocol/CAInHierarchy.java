@@ -25,6 +25,8 @@ import junit.framework.Assert;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.protocol.certificatestore.HashID;
@@ -37,7 +39,7 @@ import org.ejbca.core.protocol.certificatestore.HashID;
  * @author Lars Silven Primekey
  * @version $Id$
  */
-class CAInHierarchy {
+public class CAInHierarchy {
 	private final static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 	final String name;
 	final Set<CAInHierarchy> subs;
@@ -47,10 +49,10 @@ class CAInHierarchy {
 		this.subs = new HashSet<CAInHierarchy>();
 		this.testCase = _testCase;
 	}
-	X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) {
+	X509Certificate createCA(Set<Integer> setOfSubjectKeyIDs) throws CADoesntExistsException, AuthorizationDeniedException {
 		return createCA(CAInfo.SELFSIGNED, null, setOfSubjectKeyIDs);
 	}
-	private X509Certificate createCA( int signedBy, Collection<Certificate> certificateChain, Set<Integer> setOfSubjectKeyIDs ) {
+	private X509Certificate createCA( int signedBy, Collection<Certificate> certificateChain, Set<Integer> setOfSubjectKeyIDs ) throws CADoesntExistsException, AuthorizationDeniedException {
 		Assert.assertTrue( "Failed to created certificate.",
 		                   this.testCase.createTestCA(this.name, 1024, "CN="+this.name+",O=EJBCA junit,OU=CertStoreServletTest",
 		                                          signedBy, certificateChain) );
@@ -72,7 +74,7 @@ class CAInHierarchy {
 		}
 		this.testCase.removeTestCA(this.name);
 	}
-	private CAInfo getCAInfo() {
+	private CAInfo getCAInfo() throws CADoesntExistsException, AuthorizationDeniedException {
 		return this.testCase.getCAInfo(admin, this.name);
 	}
 }

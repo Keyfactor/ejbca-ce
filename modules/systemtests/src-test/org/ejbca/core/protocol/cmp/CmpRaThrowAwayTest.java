@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.SecureRandom;
@@ -35,6 +37,10 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
@@ -55,13 +61,15 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
 
     private static X509Certificate caCertificate;
 
-    public CmpRaThrowAwayTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     /** Create CA and change configuration for the following tests. */
-    public void test000Setup() throws Exception {
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         LOG.trace(">test000Setup");
         createTestCA(TESTCA_NAME); // Create test CA
         caCertificate = (X509Certificate) InterfaceCache.getCaSession().getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
@@ -80,6 +88,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         LOG.trace("<test000Setup");
     }
 
+    @Test
     public void testIssueConfirmRevokeCombination1() throws Exception {
         LOG.trace(">testIssueConfirmRevokeCombination1");
         // Run through all possible configurations of what to store in the database
@@ -93,7 +102,9 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         LOG.trace("<testIssueConfirmRevokeCombination1");
     }
 
-    public void testZZZTearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
         LOG.trace(">testZZZTearDown");
         boolean cleanUpOk = true;
         cleanUpOk &= InterfaceCache.getConfigurationSession().restoreConfiguration();
@@ -106,6 +117,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
      * Sends a certificate request message and verifies result. Sends a confirm message and verifies result. Sends a revocation message and verifies
      * result. (If we save certificate data!)
      */
+    @Test
     public void testIssueConfirmRevoke(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws Exception {
         LOG.trace(">testIssueConfirmRevoke");
         LOG.info("useCertReqHistory=" + useCertReqHistory + " useUserStorage=" + useUserStorage + " useCertificateStorage=" + useCertificateStorage);

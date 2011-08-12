@@ -13,6 +13,9 @@
 
 package org.ejbca.core.model.approval.approvalrequests;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -27,6 +30,11 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -36,7 +44,10 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -52,6 +63,10 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class RevocationApprovalTest extends CaTestCase {
 
@@ -61,24 +76,26 @@ public class RevocationApprovalTest extends CaTestCase {
     private static final AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static AuthenticationToken reuestingAdmin = null;
     private static AuthenticationToken approvingAdmin = null;
-    private static ArrayList<AdminEntity> adminentities;
+    private static ArrayList<AccessUserAspectData> adminentities;
     
-    private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
+    private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = InterfaceCache.getApprovalExecutionSession();
     private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private AuthorizationSessionRemote authorizationSession = InterfaceCache.getAuthorizationSession();
+    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+
     
     private int caid = getTestCAId();
     private int approvalCAID;
 
-    public RevocationApprovalTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
-        createTestCA();
+        
     }
 
     private X509CertificateAuthenticationToken createAuthenticationToken(X509Certificate certificate) {
@@ -90,6 +107,7 @@ public class RevocationApprovalTest extends CaTestCase {
         return authenticationToken;
     }
 
+    @Before
     public void setUp() throws Exception {
         super.setUp();
         adminUsername = genRandomUserName("revocationTestAdmin");
@@ -106,13 +124,14 @@ public class RevocationApprovalTest extends CaTestCase {
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        adminentities = new ArrayList<AdminEntity>();
-        adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, adminUsername, caid));
-        adminentities.add(new AdminEntity(AdminEntity.WITH_COMMONNAME, AdminEntity.TYPE_EQUALCASEINS, requestingAdminUsername, caid));
-        adminEntitySession.addAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
-        authorizationSession.forceRuleUpdate(internalAdmin);
-        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, adminUsername).iterator().next();
-        X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(internalAdmin, requestingAdminUsername).iterator()
+        adminentities = new ArrayList<AccessUserAspectData>();
+        adminentities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
+        adminentities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
+        roleManagementSession.addSubjectsToRole(internalAdmin, roleAccessSession.findRole(roleName), adminentities);
+        accessControlSession.forceCacheExpire();
+     
+        X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminUsername).iterator().next();
+        X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(requestingAdminUsername).iterator()
                 .next();
         approvingAdmin = createAuthenticationToken(admincert); //TODO for Admin also username was used? (, adminUsername, null);
         reuestingAdmin = createAuthenticationToken(reqadmincert); // new Admin(reqadmincert, requestingAdminUsername, null);
@@ -121,11 +140,12 @@ public class RevocationApprovalTest extends CaTestCase {
         approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
         userAdminSession.deleteUser(internalAdmin, adminUsername);
         userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
-        adminEntitySession.removeAdminEntities(internalAdmin, AdminGroup.TEMPSUPERADMINGROUP, adminentities);
+        roleManagementSession.removeSubjectsFromRole(internalAdmin, roleAccessSession.findRole(roleName), adminentities);
         caSession.removeCA(internalAdmin, approvalCAID);
     }
 
@@ -180,6 +200,7 @@ public class RevocationApprovalTest extends CaTestCase {
     /**
      * Verify that normal operations are working
      */
+    @Test
     public void test01VerifyAddRemoveUser() throws Exception {
         String username = genRandomUserName("test01Revocation");
         try {
@@ -189,6 +210,7 @@ public class RevocationApprovalTest extends CaTestCase {
         }
     } // test01VerifyAddRemoveUser
 
+    @Test
     public void test02RevokeUser() throws Exception {
         String username = genRandomUserName("test02Revocation");
         try {
@@ -217,6 +239,7 @@ public class RevocationApprovalTest extends CaTestCase {
         }
     } // test02RevokeUser
 
+    @Test
     public void test03RevokeAndDeleteUser() throws Exception {
         String username = genRandomUserName("test03Revocation");
         try {
@@ -246,6 +269,7 @@ public class RevocationApprovalTest extends CaTestCase {
         }
     } // test03RevokeAndDeleteUser
 
+    @Test
     public void test04RevokeAndUnrevokeCertificateOnHold() throws Exception {
         String username = genRandomUserName("test04Revocation");
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
@@ -293,7 +317,5 @@ public class RevocationApprovalTest extends CaTestCase {
         }
     } // test04RevokeAndUnrevokeCertificateOnHold
 
-    public void testZZZCleanUp() throws Exception {
-        removeTestCA();
-    }
+
 }

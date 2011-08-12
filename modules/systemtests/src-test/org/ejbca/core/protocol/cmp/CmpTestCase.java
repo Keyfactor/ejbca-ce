@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -79,6 +83,8 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -108,71 +114,81 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
  * Helper class for CMP Junit tests
+ * 
  * @author tomas
  * @version $Id$
  */
 public class CmpTestCase extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CmpTestCase.class);
-    
+
     private static final String resourceCmp = "publicweb/cmp";
     private static final int PORT_NUMBER = 5587;
-    private final String httpReqPath;	// = "http://127.0.0.1:8080/ejbca";
-    private final String CMP_HOST;	// = "127.0.0.1";
-    
+    private String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
+    private String CMP_HOST; // = "127.0.0.1";
+
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
-    
-	public CmpTestCase(String arg0) {
-		super(arg0);
-		String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-		CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "127.0.0.1");
-		httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
-	}
 
-	protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
-		return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo, extensions, notBefore, notAfter, customCertSerno);
-	}
-	
-	protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid, boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
-		OptionalValidity myOptionalValidity = new OptionalValidity();
-		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-		if (notBefore != null) {
-			nb = new org.bouncycastle.asn1.x509.Time(notBefore);
-		}
-		org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
-		if (notAfter != null) {
-			na = new org.bouncycastle.asn1.x509.Time(notAfter);
-		}
-		myOptionalValidity.setNotBefore(nb);
-		myOptionalValidity.setNotAfter(na);
-		
-		CertTemplate myCertTemplate = new CertTemplate();
-		myCertTemplate.setValidity( myOptionalValidity );
-		myCertTemplate.setIssuer(new X509Name(issuerDN));
-		myCertTemplate.setSubject(new X509Name(userDN));
-		byte[]                  bytes = keys.getPublic().getEncoded();
-        ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
-        ASN1InputStream         dIn = new ASN1InputStream(bIn);
-        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence)dIn.readObject());
-		myCertTemplate.setPublicKey(keyInfo);
-		// If we did not pass any extensions as parameter, we will create some of our own, standard ones
+    public void setUp() throws Exception {
+        super.setUp();
+        String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "127.0.0.1");
+        httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
+    }
+    
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+    protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno)
+            throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+        return genCertReq(issuerDN, userDN, "UPN=fooupn@bar.com,rfc822Name=fooemail@bar.com", keys, cacert, nonce, transid, raVerifiedPopo,
+                extensions, notBefore, notAfter, customCertSerno);
+    }
+
+    protected PKIMessage genCertReq(String issuerDN, String userDN, String altNames, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
+            boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno)
+            throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+        OptionalValidity myOptionalValidity = new OptionalValidity();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        if (notBefore != null) {
+            nb = new org.bouncycastle.asn1.x509.Time(notBefore);
+        }
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date());
+        if (notAfter != null) {
+            na = new org.bouncycastle.asn1.x509.Time(notAfter);
+        }
+        myOptionalValidity.setNotBefore(nb);
+        myOptionalValidity.setNotAfter(na);
+
+        CertTemplate myCertTemplate = new CertTemplate();
+        myCertTemplate.setValidity(myOptionalValidity);
+        myCertTemplate.setIssuer(new X509Name(issuerDN));
+        myCertTemplate.setSubject(new X509Name(userDN));
+        byte[] bytes = keys.getPublic().getEncoded();
+        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
+        ASN1InputStream dIn = new ASN1InputStream(bIn);
+        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+        myCertTemplate.setPublicKey(keyInfo);
+        // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         X509Extensions exts = extensions;
         if (exts == null) {
-        	// SubjectAltName
-    		// Some altNames
-            ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-            DEROutputStream         dOut = new DEROutputStream(bOut);
+            // SubjectAltName
+            // Some altNames
+            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+            DEROutputStream dOut = new DEROutputStream(bOut);
             Vector<X509Extension> values = new Vector<X509Extension>();
             Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
-        	if (altNames != null) {
+            if (altNames != null) {
                 GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
                 dOut.writeObject(san);
                 byte[] value = bOut.toByteArray();
                 X509Extension sanext = new X509Extension(false, new DEROctetString(value));
                 values.add(sanext);
                 oids.add(X509Extensions.SubjectAlternativeName);
-        	}
+            }
             // KeyUsage
             int bcku = 0;
             bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
@@ -189,11 +205,11 @@ public class CmpTestCase extends CaTestCase {
             exts = new X509Extensions(oids, values);
         }
         myCertTemplate.setExtensions(exts);
-		if (customCertSerno != null) {
-			// Add serialNumber to the certTemplate, it is defined as a MUST NOT be used in RFC4211, but we will use it anyway in order
-			// to request a custom certificate serial number (something not standard anyway)
-			myCertTemplate.setSerialNumber(new DERInteger(customCertSerno));
-		}
+        if (customCertSerno != null) {
+            // Add serialNumber to the certTemplate, it is defined as a MUST NOT be used in RFC4211, but we will use it anyway in order
+            // to request a custom certificate serial number (something not standard anyway)
+            myCertTemplate.setSerialNumber(new DERInteger(customCertSerno));
+        }
 
         CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
         // myCertRequest.addControls(new
@@ -247,8 +263,8 @@ public class CmpTestCase extends CaTestCase {
         // myCertReqMessages.addCertReqMsg(myCertReqMsg);
 
         // log.debug("CAcert subject name: "+cacert.getSubjectDN().getName());
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
-                .getName())));
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(
+                ((X509Certificate) cacert).getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -287,8 +303,8 @@ public class CmpTestCase extends CaTestCase {
 
         RevReqContent myRevReqContent = new RevReqContent(myRevDetails);
 
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
-                .getName())));
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(
+                ((X509Certificate) cacert).getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -304,8 +320,8 @@ public class CmpTestCase extends CaTestCase {
     protected PKIMessage genCertConfirm(String userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
-                .getName())));
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(userDN)), new GeneralName(new X509Name(
+                ((X509Certificate) cacert).getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -323,8 +339,8 @@ public class CmpTestCase extends CaTestCase {
         return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
 
-    protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations) throws NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException {
+    protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
+            throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         // Create the PasswordBased protection of the message
         PKIHeader head = msg.getHeader();
         head.setSenderKID(new DEROctetString(keyId.getBytes()));
@@ -424,10 +440,11 @@ public class CmpTestCase extends CaTestCase {
         }
     }
 
-    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, Certificate cacert, byte[] senderNonce, byte[] transId, boolean signed, String pbeSecret) throws Exception {
-    	assertNotNull("No response from server.", retMsg);
-    	assertTrue("Response was of 0 length.", retMsg.length > 0);
-    	boolean pbe = (pbeSecret!=null);
+    protected void checkCmpResponseGeneral(byte[] retMsg, String issuerDN, String userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
+            boolean signed, String pbeSecret) throws Exception {
+        assertNotNull("No response from server.", retMsg);
+        assertTrue("Response was of 0 length.", retMsg.length > 0);
+        boolean pbe = (pbeSecret != null);
         //
         // Parse response message
         //
@@ -446,7 +463,8 @@ public class CmpTestCase extends CaTestCase {
         if (pbe) {
             AlgorithmIdentifier algId = header.getProtectionAlg();
             assertNotNull("Protection algorithm was null.", algId);
-            assertEquals("Protection algorithm id: " + algId.getObjectId().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId.getObjectId().getId());	//1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
+            assertEquals("Protection algorithm id: " + algId.getObjectId().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId
+                    .getObjectId().getId()); // 1.2.840.113549.1.1.5 - SHA-1 with RSA Encryption
         }
 
         // Check that the signer is the expected CA
@@ -565,8 +583,7 @@ public class CmpTestCase extends CaTestCase {
     /**
      * 
      * @param message
-     * @param type
-     *            set to 5 when sending a PKI request, 3 when sending a PKIConf
+     * @param type set to 5 when sending a PKI request, 3 when sending a PKIConf
      * @return
      * @throws IOException
      * @throws NoSuchProviderException
@@ -615,7 +632,8 @@ public class CmpTestCase extends CaTestCase {
             assertTrue(respBytes.length > 0);
             return respBytes;
         } catch (ConnectException e) {
-            assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmp.properties and redeploy.", false);
+            assertTrue("This test requires a CMP TCP listener to be configured on " + host + ":" + port + ". Edit conf/cmp.properties and redeploy.",
+                    false);
         } catch (EOFException e) {
             assertTrue("Response was malformed.", false);
         } catch (Exception e) {
@@ -626,13 +644,15 @@ public class CmpTestCase extends CaTestCase {
     }
 
     /**
-     * Normally not overrided. Could be overrided if DN in cert is changed from request by a {@link org.ejbca.core.protocol.ExtendedUserDataHandler}. 
+     * Normally not overrided. Could be overrided if DN in cert is changed from request by a {@link org.ejbca.core.protocol.ExtendedUserDataHandler}.
+     * 
      * @param expected
      * @param actual
      */
     protected void checkDN(String expected, X509Name actual) {
         assertEquals(CertTools.stringToBCDNString(expected), CertTools.stringToBCDNString(actual.toString()));
     }
+
     protected X509Certificate checkCmpCertRepMessage(String userDN, Certificate cacert, byte[] retMsg, int requestId) throws IOException,
             CertificateException {
         //
@@ -672,7 +692,7 @@ public class CmpTestCase extends CaTestCase {
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
         X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(name.toString(), ((X509Certificate)cacert).getSubjectDN().getName());
+        assertEquals(name.toString(), ((X509Certificate) cacert).getSubjectDN().getName());
         name = X509Name.getInstance(header.getRecipient().getName());
         assertEquals(name.toString(), userDN);
 
@@ -693,7 +713,7 @@ public class CmpTestCase extends CaTestCase {
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
         X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(name.toString(), ((X509Certificate)cacert).getSubjectDN().getName());
+        assertEquals(name.toString(), ((X509Certificate) cacert).getSubjectDN().getName());
         name = X509Name.getInstance(header.getRecipient().getName());
         assertEquals(name.toString(), userDN);
 
@@ -714,13 +734,9 @@ public class CmpTestCase extends CaTestCase {
     /**
      * 
      * @param retMsg
-     * @param failMsg
-     *            expected fail message
-     * @param tag
-     *            1 is answer to initialisation resp, 3 certification resp etc,
-     *            23 is error
-     * @param err
-     *            a number from FailInfo
+     * @param failMsg expected fail message
+     * @param tag 1 is answer to initialisation resp, 3 certification resp etc, 23 is error
+     * @param err a number from FailInfo
      * @throws IOException
      */
     protected void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err) throws IOException {
@@ -764,7 +780,7 @@ public class CmpTestCase extends CaTestCase {
             assertNotNull(info);
             int error = info.getStatus().getValue().intValue();
             assertEquals(ResponseStatus.FAILURE.getValue(), error); // 2 is
-                                                                       // rejection
+                                                                    // rejection
             assertEquals(FailInfo.INCORRECT_DATA.getAsBitString(), info.getFailInfo());
         }
         log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + info.getStatusString().getString(0).getString() + "'.");
@@ -809,14 +825,15 @@ public class CmpTestCase extends CaTestCase {
         return ret;
     }
 
-	protected void updatePropertyOnServer(String property, String value) {
-		log.debug("Setting property on server: " + property + "=" + value);
-		assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"", InterfaceCache.getConfigurationSession().updateProperty(property, value));
-	}
+    protected void updatePropertyOnServer(String property, String value) {
+        log.debug("Setting property on server: " + property + "=" + value);
+        assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
+                InterfaceCache.getConfigurationSession().updateProperty(property, value));
+    }
 
     //
     // Private methods
-    // 
+    //
 
     private static byte[] createTcpMessage(byte[] msg) throws IOException {
         ByteArrayOutputStream bao = new ByteArrayOutputStream();

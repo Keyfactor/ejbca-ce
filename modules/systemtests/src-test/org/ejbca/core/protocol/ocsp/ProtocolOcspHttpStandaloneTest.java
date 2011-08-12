@@ -13,6 +13,11 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -43,12 +48,19 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests HTTP pages of a stand-alone OCSP To run this test you must create a
@@ -58,53 +70,42 @@ import org.ejbca.core.model.SecConst;
  * Change the address 127.0.0.1 to where you stand-alone OCSP server is running.
  * Change myCaId to the CA that ocspTest belongs to
  **/
-public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
+public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
-    private static final String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
+   
 
+
+    
     private static final int myCaId = issuerDN.hashCode();
     //private static final String myOcspIp = "127.0.0.1";	TODO: Refactor back to where we could use this test remotely?
 
-    private CertificateStoreSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);	// Stand alone OCSP version..
+  
+    private String httpReqPath = "http://127.0.0.1:" + "8080" + "/ejbca";
+    private String resourceOcsp = "publicweb/status/ocsp";
 
-    public ProtocolOcspHttpStandaloneTest(String name) throws Exception {
-        //super(name, "http://" + myOcspIp + ":8080/ejbca", "publicweb/status/ocsp");
-    	super(name, "8080", "publicweb/status/ocsp");
-        caid = myCaId;
-    }
-    
-    public static TestSuite suite() {
-        // Only include "test*"-methods from this class, not from the parent
-        // class
-        TestSuite ret = new TestSuite();
-        try {
-            Method[] methods = ProtocolOcspHttpStandaloneTest.class.getDeclaredMethods();
-            for (int i = 0; i < methods.length; i++) {
-                String name = methods[i].getName();
-                if (name.startsWith("test")) {
-                    ret.addTest(new ProtocolOcspHttpStandaloneTest(name));
-                }
-            }
-        } catch (Exception e) {
-            log.error("", e);
-        }
-        return ret;
-    }
+   
     
     // Required to override check in baseclass
+    @Before
     public void setUp() throws Exception {
+        super.setUp();
+        caid = myCaId;
+        httpPort = "8080";
+        httpReqPath = "http://127.0.0.1:" + "8080" + "/ejbca";
+        resourceOcsp = "publicweb/status/ocsp";
+        helper = new OcspJunitHelper(httpReqPath, resourceOcsp);
     }
 
     // Required to override check in baseclass
+    @After
     public void tearDown() throws Exception {
+        super.tearDown();
     }
 
-    protected void loadUserCert(int caid) throws Exception {
-        ocspTestCert = getTestCert(false);
-        cacert = getCaCert(ocspTestCert);
-    }
 
+
+    @Test
     public void test01Access() throws Exception {
         super.test01Access();
     }
@@ -115,6 +116,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * @throws Exception
      *             error
      */
+    @Test
     public void test02OcspGood() throws Exception {
         log.trace(">test02OcspGood()");
 
@@ -142,6 +144,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * @throws Exception
      *             error
      */
+    @Test
     public void test03OcspRevoked() throws Exception {
         log.trace(">test03OcspRevoked()");
         final X509Certificate ocspTestCert = getTestCert(true);
@@ -164,27 +167,33 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         log.trace("<test03OcspRevoked()");
     }
 
+    @Test
     public void test04OcspUnknown() throws Exception {
         loadUserCert(caid);
         super.test04OcspUnknown();
     }
 
+    @Test
     public void test05OcspUnknownCA() throws Exception {
         super.test05OcspUnknownCA();
     }
 
+    @Test
     public void test06OcspSendWrongContentType() throws Exception {
         super.test06OcspSendWrongContentType();
     }
 
+    @Test
     public void test10MultipleRequests() throws Exception {
         super.test10MultipleRequests();
     }
 
+    @Test
     public void test11MalformedRequest() throws Exception {
         super.test11MalformedRequest();
     }
 
+    @Test
     public void test12CorruptRequests() throws Exception {
         super.test12CorruptRequests();
     }
@@ -192,6 +201,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     /**
      * Just verify that a both escaped and non-encoded GET requests work.
      */
+    @Test
     public void test13GetRequests() throws Exception {
         super.test13GetRequests();
         // See if the OCSP Servlet can also read escaped requests
@@ -227,10 +237,12 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
     }
 
+    @Test
     public void test14CorruptGetRequests() throws Exception {
         super.test14CorruptGetRequests();
     }
 
+    @Test
     public void test15MultipleGetRequests() throws Exception {
         super.test15MultipleGetRequests();
     }
@@ -239,6 +251,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * Verify the headers of a successful GET request. ocsp.untilNextUpdate has
      * to be configured for this test.
      */
+    @Test
     public void test17VerifyHttpGetHeaders() throws Exception {
         final X509Certificate ocspTestCert = getTestCert(false);
         // An OCSP request, ocspTestCert is already created in earlier tests
@@ -311,6 +324,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
      * Tests nextUpdate and thisUpdate ocsp.untilNextUpdate has to be configured
      * for this test.
      */
+    @Test
     public void test18NextUpdateThisUpdate() throws Exception {
         final X509Certificate ocspTestCert = getTestCert(false);
         // And an OCSP request
@@ -352,28 +366,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
         assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
     }
 
-    private X509Certificate getTestCert(boolean isRevoked) throws Exception {
-        try {
-            Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername("ocspTest");
-            Iterator<Certificate> i = certs.iterator();
-            while (i.hasNext()) {
-                X509Certificate cert = (X509Certificate) i.next();
-                CertificateStatus cs = certificateStoreOnlyDataSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
-                if (isRevoked == cs.equals(CertificateStatus.REVOKED)) {
-                    return cert;
-                }
-            }
-        } catch (Throwable e) {
-            log.debug("", e);
-        }
-        assertNotNull("To run this test you must have at least one active and one revoked end user cert in the database. (Could not fetch certificate.)", null);
-        return null;
-    }
 
-    private X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
-        assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
-        return (X509Certificate) certs.iterator().next();
-    }
 
 }
