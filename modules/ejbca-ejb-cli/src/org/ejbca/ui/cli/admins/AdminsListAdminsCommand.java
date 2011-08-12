@@ -13,18 +13,14 @@
 
 package org.ejbca.ui.cli.admins;
 
-import java.util.Collection;
-
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
-import org.ejbca.core.model.authorization.AdminEntity;
-import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Lists admins in a group
+ * Lists admins in a role
  * @version $Id$
  */
 public class AdminsListAdminsCommand extends BaseAdminsCommand {
@@ -38,20 +34,20 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
     }
 
     public String getDescription() {
-        return "Lists admins in a group";
+        return "Lists admins in a role";
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group>");
+                getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
-            String groupName = args[1];
-            RoleData adminGroup = ejb.getRoleAccessSession().findRole(groupName);
+            String roleName = args[1];
+            RoleData adminGroup = ejb.getRoleAccessSession().findRole(roleName);
             if (adminGroup == null) {
-                getLogger().error("No such group \"" + groupName + "\" .");
+                getLogger().error("No such role \"" + roleName + "\" .");
                 return;
             }
             for (AccessUserAspectData  userAspect : adminGroup.getAccessUsers().values()) {

@@ -2557,4 +2557,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
     }
 
+	@Override
+	public void flushCACache() {
+		// Just forward the call, because in CaSession it is only in the local interface and we
+		// want to be able to use it from CLI
+		caSession.flushCACache();
+	}
+
 }

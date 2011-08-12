@@ -40,7 +40,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -473,11 +472,10 @@ public interface CAAdminSession {
             ExtendedCAServiceNotActiveException, CADoesntExistsException, AuthorizationDeniedException;
 
     /**
-     * Used by health-check. Validate that CAs are online and optionally performs
-     * a signature test.
-     * 
-     * @return an error message or an empty String if all are ok.
+     * Makes sure that no CAs are cached to ensure that we read from database
+     * next time we try to access it.
+     * Present in remote interface so we can call it from CLI.
      */
-    // TODO: This should only be in the local interface.
-    public String healthCheck();
+    public void flushCACache();
+
 }

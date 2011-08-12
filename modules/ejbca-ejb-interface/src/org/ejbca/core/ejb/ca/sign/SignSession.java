@@ -175,7 +175,7 @@ public interface SignSession {
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the provided client certificate was not signed by
      *                                       the CA.
-     * @see org.ejbca.core.ejb.ca.store.CertificateDataBean
+     * @see org.cesecore.certificates.certificate.CertificateData
      * @see org.cesecore.certificates.certificate.request.RequestMessage
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage

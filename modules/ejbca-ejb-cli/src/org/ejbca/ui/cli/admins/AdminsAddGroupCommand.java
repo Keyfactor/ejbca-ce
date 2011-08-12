@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.admins;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Adds a new admin group
+ * Adds a new admin role
  * @version $Id$
  */
 public class AdminsAddGroupCommand extends BaseAdminsCommand {
@@ -26,11 +26,11 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
     }
 
     public String getSubCommand() {
-        return "addgroup";
+        return "addrole";
     }
 
     public String getDescription() {
-        return "Adds an administrative group.";
+        return "Adds an administrative role.";
     }
 
     /** @see org.ejbca.ui.cli.CliCommandPlugin */
@@ -38,11 +38,11 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group>");
+                getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
-            String groupName = args[1];
-            ejb.getRoleAccessSession().addAdminGroup(getAdmin(), groupName);
+            String roleName = args[1];
+            ejb.getRoleManagementSession().create(getAdmin(), roleName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

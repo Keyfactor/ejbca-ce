@@ -42,7 +42,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -63,6 +65,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -72,7 +75,6 @@ import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
-import org.ejbca.core.model.authorization.AuthenticationFailedException;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;
@@ -123,6 +125,7 @@ public class EjbcaWebBean implements Serializable {
     private final UserAdminSessionLocal userAdminSession = ejb.getUserAdminSession();
     private final UserDataSourceSessionLocal userDataSourceSession = ejb.getUserDataSourceSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejb.getGlobalConfigurationSession();
+    private final WebAuthenticationProviderSessionLocal authenticationSession = ejb.getWebAuthenticationProviderSession();
 
     private AdminPreferenceDataHandler adminspreferences;
     private AdminPreference currentadminpreference;
@@ -160,7 +163,14 @@ public class EjbcaWebBean implements Serializable {
         if ((administrator == null) && (certificates == null)) {
             throw new AuthenticationFailedException("Client certificate required.");
         } else if (certificates != null) {
-            administrator = userAdminSession.getAdmin(certificates[0]);
+            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(certificates[0]);
+            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            administrator = authenticationSession.authenticate(subject);
+            if (administrator == null) {
+                throw new AuthenticationFailedException("Authorization failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
+            }        	
+            //administrator = userAdminSession.getAdmin(certificates[0]);
         } // else we have already defined an administrator, for example in initialize_errorpage
 
         globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, globalConfigurationSession, authorizationSession);
@@ -188,11 +198,17 @@ public class EjbcaWebBean implements Serializable {
         if (!initialized) {
             requestServerName = getRequestServerName(request);
 
-            commonInit();
+            commonInit(); // sets administrator object
+            // Check if user certificate is valid and not revoked
+            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            credentials.add(certificates[0]);
+            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            AuthenticationToken admin = authenticationSession.authenticate(subject);
+            if (admin == null) {
+                throw new AuthenticationFailedException("Authentication failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
+            }
+            
             adminspreferences = new AdminPreferenceDataHandler(administrator);
-
-            // Check if user certificate is revoked
-            certificateStoreSession.authenticate(certificates[0], WebConfiguration.getRequireAdminCertificateInDatabase());
 
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();

@@ -23,7 +23,6 @@ import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
