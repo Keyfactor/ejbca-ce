@@ -53,9 +53,9 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -91,7 +91,7 @@ import org.ejbca.core.model.ra.UserAdminConstants;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "HardTokenSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "HardTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSessionRemote {
 

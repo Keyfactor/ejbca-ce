@@ -36,8 +36,8 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -49,7 +49,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "RevocationSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RevocationSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RevocationSessionBean implements RevocationSessionLocal, RevocationSessionRemote {
 

@@ -66,6 +66,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -123,7 +124,7 @@ import org.ejbca.util.query.UserMatch;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "UserAdminSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UserAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSessionRemote {
 

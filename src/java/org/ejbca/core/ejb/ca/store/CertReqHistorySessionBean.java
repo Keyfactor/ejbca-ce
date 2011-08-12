@@ -32,8 +32,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
@@ -43,7 +43,7 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
  *
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertReqHistorySessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertReqHistorySessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, CertReqHistorySessionLocal {
 

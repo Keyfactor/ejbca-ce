@@ -43,7 +43,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.ejbca.core.ejb.JndiHelper;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -61,7 +61,7 @@ import org.ejbca.core.model.log.LogConstants;
  * @author Tomas Gustavsson
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "PublisherQueueSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, PublisherQueueSessionLocal  {
 

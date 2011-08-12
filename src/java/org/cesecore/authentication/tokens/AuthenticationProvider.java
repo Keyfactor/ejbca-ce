@@ -14,8 +14,6 @@ package org.cesecore.authentication.tokens;
 
 import java.io.Serializable;
 
-import org.cesecore.authentication.AuthenticationFailedException;
-
 /**
  * This is a callback interface that provides a method of authentication for a subject. It should be implemented by whatever EJB Session bean (outside
  * of CESeCore) that perform local authentication.

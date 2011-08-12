@@ -63,40 +63,41 @@
 					<include name="org/ejbca/config/DatabaseConfiguration.java"/>
 					<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 					<include name="org/ejbca/config/InternalConfiguration.java"/>
-					<include name="org/ejbca/util/CryptoProviderTools.java"/>
+					<include name="org/cesecore/util/CryptoProviderTools.java"/>
 					<include name="org/ejbca/util/GUIDGenerator.java"/>
 					<include name="org/ejbca/util/JDBCUtil.java"/>
-					<include name="org/ejbca/util/StringTools.java"/>
-					<include name="org/ejbca/util/FileTools.java"/>
-					<include name="org/ejbca/util/Base64.java"/>
+					<include name="org/cesecore/util/StringTools.java"/>
+					<include name="org/cesecore/util/FileTools.java"/>
+					<include name="org/cesecore/util/Base64.java"/>
 					<include name="org/ejbca/core/ejb/InitialContextBuilder.java"/>
 					<!-- <include name="org/ejbca/core/ejb/JNDINames.java"/> -->
 					<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
 					<include name="org/ejbca/core/ejb/ServiceLocatorException.java"/>
-					<include name="org/ejbca/core/model/AlgorithmConstants.java"/>
+					<include name="org/cesecore/certificates/AlgorithmConstants.java"/>
 					<!-- Dependencies from Protect that are pretty general.. -->
-					<include name="org/ejbca/core/model/InternalResources.java"/>
+					<include name="org/cesecore/internal/InternalResources.java"/>
+					<include name="org/ejbca/core/model/InternalEjbcaResources.java"/>
 					<!-- Dependencies from Publisher and Approval that are pretty general.. -->
-					<include name="org/ejbca/core/model/UpgradeableDataHashMap.java"/>
-					<include name="org/ejbca/core/model/IUpgradeableData.java"/>
+					<include name="org/cesecore/internal/UpgradeableDataHashMap.java"/>
+					<include name="org/cesecore/internal/IUpgradeableData.java"/>
 					<include name="org/ejbca/core/ErrorCode.java"/>
 					<include name="org/ejbca/core/EjbcaException.java"/>
 					<!-- Dependencies from Publisher that are pretty general.. -->
-					<include name="org/ejbca/util/Base64GetHashMap.java"/>
-					<include name="org/ejbca/util/Base64PutHashMap.java"/>
+					<include name="org/cesecore/util/Base64GetHashMap.java"/>
+					<include name="org/cesecore/util/Base64PutHashMap.java"/>
 					<!-- SecConst should probably be divided into several constants classes.. -->
 					<include name="org/ejbca/core/model/SecConst.java"/>
 					<!-- Dependencies from CertificateData and CAToken -->
-					<include name="org/ejbca/core/model/util/AlgorithmTools.java"/>
-					<include name="org/ejbca/util/keystore/KeyTools.java"/>
-					<include name="org/ejbca/util/CertTools.java"/>
+					<include name="org/cesecore/certificates/util/AlgorithmTools.java"/>
+					<include name="org/cesecore/keys/util/KeyTools.java"/>
+					<include name="org/cesecore/util/CertTools.java"/>
 					<!-- Dependencies from CertTools -->
-					<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
-					<include name="org/ejbca/util/dn/DnComponents.java"/>
+					<include name="org/cesecore/certificates/crl/RevokedCertInfo.java"/>
+					<include name="org/cesecore/certificates/util/DnComponents.java"/>
 					<!-- Dependencies from noticifations, WS and AdminGUI -->
-					<include name="org/ejbca/util/ValidityDate.java"/>
-					<include name="org/ejbca/util/YearMonthDayTime.java"/>
-					<include name="org/ejbca/util/UnitParser.java"/>
+					<include name="org/cesecore/util/ValidityDate.java"/>
+					<include name="org/cesecore/util/YearMonthDayTime.java"/>
+					<include name="org/cesecore/util/UnitParser.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/common" destdir="${build-temp.dir}/common" debug="on" includeantruntime="no"
@@ -279,8 +280,8 @@
 					<!-- RA classes that maybe shouldn't be here.. -->
 					<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
 					<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
-					<include name="org/ejbca/util/dn/DNFieldsUtil.java"/>
-					<include name="org/ejbca/util/dn/DNFields.java"/>
+					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
+					<include name="org/cesecore/certificates/util/dn/DNFields.java"/>
 					<!-- Uses EjbRemoteHelper -->
 					<exclude name="org/ejbca/core/model/ca/publisher/ExternalOCSPPublisher.java"/>
 					<!-- Uses ExternalOCSPPublisher -->
@@ -312,8 +313,8 @@
 					<!-- RA classes that maybe shouldn't be here.. -->
 					<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
 					<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
-					<include name="org/ejbca/util/dn/DNFieldsUtil.java"/>
-					<include name="org/ejbca/util/dn/DNFields.java"/>
+					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
+					<include name="org/cesecore/certificates/util/dn/DNFields.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certhist" destdir="${build-temp.dir}/certhist" debug="on" includeantruntime="no"
@@ -433,33 +434,33 @@
 					<include name="org/ejbca/core/model/ca/SignRequestException.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/SernoGenerator.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/ISernoGenerator.java"/>
-					<include name="org/ejbca/util/SimpleTime.java"/>
-					<include name="org/ejbca/util/RequestMessageUtils.java"/>
-					<include name="org/ejbca/util/cert/PrintableStringEntryConverter.java"/>
+					<include name="org/cesecore/util/SimpleTime.java"/>
+					<include name="org/cesecore/certificates/certificate/request/RequestMessageUtils.java"/>
+					<include name="org/cesecore/certificates/util/PrintableStringEntryConverter.java"/>
 					<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
-					<include name="org/ejbca/core/protocol/PKCS10RequestMessage.java"/>
-					<include name="org/ejbca/core/protocol/CVCRequestMessage.java"/>
-					<include name="org/ejbca/core/protocol/IRequestMessage.java"/>
-					<include name="org/ejbca/core/protocol/IResponseMessage.java"/>
-					<include name="org/ejbca/core/protocol/ResponseStatus.java"/>
-					<include name="org/ejbca/core/protocol/FailInfo.java"/>
+					<include name="org/cesecore/certificates/certificate/request/PKCS10RequestMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/CVCRequestMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/ResponseStatus.java"/>
+					<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
 					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
 					<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
 					<!-- Dependency on Certificate Extensions -->
-					<include name="org/ejbca/util/cert/SubjectDirAttrExtension.java"/>
-					<include name="org/ejbca/core/model/ca/certextensions/standard/*.java"/>
-					<include name="org/ejbca/core/model/ca/certextensions/*.java"/>
+					<include name="org/cesecore/certificates/certificate/util/SubjectDirAttrExtension.java"/>
+					<include name="org/cesecore/certificates/certificate/certextensions/standard/*.java"/>
+					<include name="org/cesecore/certificates/certificate/certextensions/*.java"/>
 					<!-- OCSPCAService dependencies that maybe shouldn't be here.. -->
-					<include name="org/ejbca/config/OcspConfiguration.java"/>
+					<include name="org/cesecore/config/OcspConfiguration.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>
 					<include name="org/ejbca/core/model/ca/NotSupportedException.java"/>
-					<!-- RA classes that maybe shouldn't be here.. -->
-					<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>
-					<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
-					<include name="org/ejbca/util/dn/DNFieldsUtil.java"/>
-					<include name="org/ejbca/util/dn/DNFields.java"/>
+					<!-- End Entity classes .. -->
+					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
+					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
+					<include name="org/cesecore/certificates/util/dn/DNFields.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/ca" destdir="${build-temp.dir}/ca" debug="on" includeantruntime="no"
@@ -603,7 +604,7 @@
 			<mkdir dir="${build-temp.dir}/ocsp"/>
 			<copy todir="${src-temp.dir}/ocsp">
 				<fileset dir="${src.dir}">
-					<include name="org/ejbca/config/OcspConfiguration.java"/>
+					<include name="org/cesecore/config/OcspConfiguration.java"/>
 					<include name="org/ejbca/util/IPatternLogger.java"/>
 					<include name="org/ejbca/util/PatternLogger.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/*.java"/>
@@ -705,6 +706,8 @@
 					<include name="org/ejbca/core/model/ra/raadmin/**/*.java"/>
 					<include name="org/ejbca/util/passgen/*.java"/>
 					<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
+					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/raadmin" destdir="${build-temp.dir}/raadmin" debug="on" includeantruntime="no"

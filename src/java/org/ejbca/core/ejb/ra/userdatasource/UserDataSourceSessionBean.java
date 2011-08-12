@@ -39,8 +39,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -60,7 +60,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "UserDataSourceSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UserDataSourceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, UserDataSourceSessionRemote {
 

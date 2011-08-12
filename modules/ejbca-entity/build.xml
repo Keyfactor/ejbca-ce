@@ -137,8 +137,8 @@
     	<mkdir dir="${build-va.dir}" />
         <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
-        	<include name="org/ejbca/core/ejb/ca/store/CertificateData.java"/>
-        	<include name="org/ejbca/core/ejb/ca/store/CRLData.java"/>
+        	<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
+        	<include name="org/cesecore/certificates/crl/CRLData.java"/>
         	<src path="${ejbca.home}/src/java"/>
         	<src path="${src.dir}"/>
         </javac>

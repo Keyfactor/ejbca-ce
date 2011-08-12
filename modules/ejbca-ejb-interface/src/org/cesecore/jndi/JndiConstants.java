@@ -23,5 +23,5 @@ package org.cesecore.jndi;
  */
 public class JndiConstants {
 
-    public static final String APP_JNDI_PREFIX = "cesecore/";
+    public static final String APP_JNDI_PREFIX = "ejbca/";
 }

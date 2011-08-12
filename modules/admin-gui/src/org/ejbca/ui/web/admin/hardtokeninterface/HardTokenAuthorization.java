@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -27,11 +25,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.model.authorization.AdminInformation;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 
 /**

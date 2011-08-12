@@ -17,6 +17,7 @@
 		<pathelement location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
 	</path>
 
 	<path id="va-compile.classpath">

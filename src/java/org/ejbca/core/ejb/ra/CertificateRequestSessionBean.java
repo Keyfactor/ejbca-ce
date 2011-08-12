@@ -61,11 +61,11 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.JndiHelper;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -91,7 +91,7 @@ import com.novosec.pkix.asn1.crmf.CertRequest;
  *
  * @version $Id$
  */
-@Stateless(mappedName = JndiHelper.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CertificateRequestSessionBean implements CertificateRequestSessionRemote, CertificateRequestSessionLocal {
 

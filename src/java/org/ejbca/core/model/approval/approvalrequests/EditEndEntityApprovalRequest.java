@@ -131,7 +131,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = newuserdata.getExtendedinformation() != null ? newuserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
-		String caname = findCAName(admin,  newuserdata.getCAId(), caSession);
+		String caname;
+		try {
+			caname = caSession.getCAInfo(admin,  newuserdata.getCAId()).getName();
+		} catch (CADoesntExistsException e) {
+			caname = "NotExist";
+		} catch (AuthorizationDeniedException e) {
+			caname = "AuthDenied";
+		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, newuserdata.getEndEntityProfileId()),true,false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(newuserdata.getCertificateProfileId()),true,false));
@@ -165,7 +172,14 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = orguserdata.getExtendedinformation() != null ? orguserdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES", dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL", orguserdata.getEmail()));
-		String caname = findCAName(admin,  orguserdata.getCAId(), caSession);
+		String caname;
+		try {
+			caname = caSession.getCAInfo(admin,  orguserdata.getCAId()).getName();
+		} catch (CADoesntExistsException e) {
+			caname = "NotExist";
+		} catch (AuthorizationDeniedException e) {
+			caname = "AuthDenied";
+		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, orguserdata.getEndEntityProfileId()), true, false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));

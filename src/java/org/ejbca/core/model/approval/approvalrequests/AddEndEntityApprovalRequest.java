@@ -118,7 +118,14 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));
-		String caname = findCAName(admin,  userdata.getCAId(), caSession);
+		String caname;
+		try {
+			caname = caSession.getCAInfo(admin,  userdata.getCAId()).getName();
+		} catch (CADoesntExistsException e) {
+			caname = "NotExist";
+		} catch (AuthorizationDeniedException e) {
+			caname = "AuthDenied";
+		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
 		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()),true,false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));

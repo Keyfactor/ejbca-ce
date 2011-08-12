@@ -35,6 +35,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -49,7 +50,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
  * 
  * @version $Id$
  */
-@Stateless(mappedName = org.ejbca.core.ejb.JndiHelper.APP_JNDI_PREFIX + "EndEntityProfileSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal, EndEntityProfileSessionRemote {
 

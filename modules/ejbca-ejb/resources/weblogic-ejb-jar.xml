@@ -32,7 +32,7 @@
         <ejb-name>CrlCreateSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.ca.crl.CrlCreateSessionRemote</business-remote>
+                <business-remote>org.cesecore.certificates.crl.CrlCreateSessionRemote</business-remote>
                 <jndi-name>ejbca/CrlCreateSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -122,7 +122,7 @@
         <ejb-name>CertificateProfileSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.ca.store.CertificateProfileSessionRemote</business-remote>
+                <business-remote>org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote</business-remote>
                 <jndi-name>ejbca/CertificateProfileSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -232,7 +232,7 @@
         <ejb-name>CaSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.ca.caadmin.CaSessionRemote</business-remote>
+                <business-remote>org.cesecore.certificates.ca.CaSessionRemote</business-remote>
                 <jndi-name>ejbca/CaSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -262,7 +262,7 @@
         <ejb-name>CrlSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.cesecore.core.ejb.ca.crl.CrlSessionRemote</business-remote>
+                <business-remote>org.cesecore.certificates.crl.CrlSessionRemote</business-remote>
                 <jndi-name>ejbca/CrlSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
@@ -282,7 +282,7 @@
         <ejb-name>CertificateStoreSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.ca.store.CertificateStoreSessionRemote</business-remote>
+                <business-remote>org.cesecore.certificates.certificate.CertificateStoreSessionRemote</business-remote>
                 <jndi-name>ejbca/CertificateStoreSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
