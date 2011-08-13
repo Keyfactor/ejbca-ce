@@ -22,6 +22,7 @@
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- SVGTemplatePrinter -->
 		<path refid="lib.xmlsec.classpath"/>	
+		<path location="${mod.ejbca-entity.lib}"/>
 	</path>
 	
     <target name="build" description="Build this module" depends="compile">
