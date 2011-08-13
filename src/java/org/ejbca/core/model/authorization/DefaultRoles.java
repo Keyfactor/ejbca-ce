@@ -12,13 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.model.authorization;
 
-import org.cesecore.roles.RoleData;
 
 /**
  * Represents a set of predefined roles.
  * 
  * 
- * @version $Id$
+ * @version $Id: DefaultRoles.java 12221 2011-08-09 14:18:26Z mikekushner $
  * 
  */
 public enum DefaultRoles {
@@ -44,10 +43,4 @@ public enum DefaultRoles {
         return name;
     }
     
-
-
-    public boolean equals(RoleData role) {
-        return this.name.equals(role.getRoleName());
-    }
-
 }

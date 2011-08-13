@@ -40,7 +40,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
     public BasicAccessRuleSetDecoder(RoleData currentrole, Collection<Integer> currentcas, Collection<Integer> currentendentityrules,
             Collection<Integer> currentendentityprofiles, Collection<Integer> currentotherrules) {
 
-        if (DefaultRoles.SUPERADMINISTRATOR.equals(currentrole)) {
+        if (DefaultRoles.SUPERADMINISTRATOR.getName().equals(currentrole.getRoleName())) {
             currentruleset.add(new AccessRuleData(DefaultRoles.SUPERADMINISTRATOR.getName(), AccessRulesConstants.ROLE_SUPERADMINISTRATOR,
                     AccessRuleState.RULE_ACCEPT, false));
         } else {

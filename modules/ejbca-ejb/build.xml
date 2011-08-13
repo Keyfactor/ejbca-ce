@@ -149,7 +149,7 @@
 		<include name="org/cesecore/roles/*.java"/>
 		<include name="org/cesecore/time/*.java"/>
 		<include name="org/cesecore/time/providers/*.java"/>
-		<include name="org/cesecore/util/*.java"/>
+		<include name="org/cesecore/util/**/*.java"/>
 		<include name="org/cesecore/certificates/util/**/*.java"/>
 		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
 		<exclude name="org/cesecore/**/*SessionBean.java"/>
@@ -224,6 +224,7 @@
 		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
 		<include name="org/cesecore/certificates/util/cert/CrlExtensions.java"/>
+		<include name="org/ejbca/core/model/authorization/DefaultRoles.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
 		<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
