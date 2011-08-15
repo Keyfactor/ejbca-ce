@@ -105,7 +105,7 @@
             <basic name="expireDate"><column name="expireDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic name="revocationDate"><column name="revocationDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
-            <!- - We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! - ->
+            <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
             <basic name="base64Cert"><column name="base64Cert" column-definition="VARCHAR"/><lob/></basic>
             <basic name="username"><column name="username" column-definition="VARCHAR(256)"/></basic>
             <basic name="tag"><column name="tag" column-definition="VARCHAR(256)"/></basic>
