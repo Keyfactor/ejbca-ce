@@ -177,10 +177,12 @@ public class StartServicesServlet extends HttpServlet {
         	log.error("Error creating CAAdminSession: ", e);
         }
 
+    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("StartServicesServlet.init"));
+
         // Make a log row that EJBCA is starting
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", iMsg);
-        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, null, Integer.valueOf(LogConstants.INTERNALCAID).toString(), null, null, details);				
+        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), Integer.valueOf(LogConstants.INTERNALCAID).toString(), null, null, details);				
 
         log.trace(">init calling ServiceSession.load");
         try {
@@ -201,7 +203,6 @@ public class StartServicesServlet extends HttpServlet {
         // And add this node to list of nodes
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
-        	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("StartServicesServlet.init"));
         	//Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
         	endEntityProfileSession.initializeAndUpgradeProfiles(admin);
         	
