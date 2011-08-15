@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.authentication.tokens;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 /**
@@ -22,7 +23,9 @@ import java.security.Principal;
  * 
  * @version $Id$
  */
-public class UsernamePrincipal implements Principal {
+public class UsernamePrincipal implements Principal, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
 	final String username;
 	
