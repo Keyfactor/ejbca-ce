@@ -31,6 +31,9 @@
     	<copy todir="${build.dir}/conf">
     		<fileset dir="${ejbca.home}/conf" includes="extendedkeyusage.properties"/>
     	</copy>
+    	<copy todir="${build.dir}">
+    		<fileset dir="${ejbca.home}/src/java" includes="defaultvalues.properties"/>
+    	</copy>
     	<!-- Create the JAR -->
     	<pathconvert property="ejbca-ejb-cli.dependencies" pathsep=" ">
     	    <path>
