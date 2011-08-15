@@ -27,7 +27,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
@@ -61,7 +61,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         log.trace(">CertificateExpirationNotifierWorker.work started");
         final CaSessionLocal caSession = ((CaSessionLocal)ejbs.get(CaSessionLocal.class));
         certificateStoreSession = ((CertificateStoreSessionLocal)ejbs.get(CertificateStoreSessionLocal.class));
-        final UserAdminSessionLocal userAdminSession = ((UserAdminSessionLocal)ejbs.get(UserAdminSessionLocal.class));
+        final EndEntityAccessSessionLocal endEntityAccessSession = (EndEntityAccessSessionLocal) ejbs.get(EndEntityAccessSessionLocal.class);
 
         ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
@@ -146,7 +146,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         // Get the certificate through a session bean
                         log.debug("Found a certificate we should notify. Username=" + username + ", fp=" + fingerprint);
                         Certificate cert = certificateStoreSession.findCertificateByFingerprint(fingerprint);
-                        EndEntityInformation userData = userAdminSession.findUser(getAdmin(), username);
+                        EndEntityInformation userData = endEntityAccessSession.findUser(getAdmin(), username);
                         if (userData != null) {
                             if (isSendToEndUsers()) {
                                 if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {

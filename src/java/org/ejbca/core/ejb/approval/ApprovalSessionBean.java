@@ -43,7 +43,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
@@ -52,7 +51,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -92,10 +91,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
-    private UserAdminSessionLocal userAdminSession;
-    @EJB
-    private CertificateStoreSessionLocal certStoreSession;
-
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc)
             throws ApprovalException {
@@ -427,7 +424,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             if (requestAdminCert != null) {
                 requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
                 // Try to get username from database
-                EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
+                EndEntityInformation endEntityInformation = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin,
                         CertTools.getSubjectDN(requestAdminCert), CertTools.getIssuerDN(requestAdminCert));
                 requestAdminUsername = endEntityInformation.getUsername();
             } else {
@@ -450,7 +447,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 						X509CertificateAuthenticationToken xtoken = (X509CertificateAuthenticationToken) approval.getAdmin();
 	                    approvalAdminDN = CertTools.getSubjectDN(xtoken.getCertificate());
 	                    // Try to get username from database
-	                    EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
+	                    EndEntityInformation endEntityInformation = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin,
 	                            CertTools.getSubjectDN(xtoken.getCertificate()), CertTools.getIssuerDN(xtoken.getCertificate()));
 	                    approvalAdminUsername = endEntityInformation.getUsername();						
 					} else {
@@ -472,7 +469,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 	                sendAdminEmail = CertTools.getEMailAddress(xtoken.getCertificate());
 	                if (sendAdminEmail == null) {
 	                    // Secondly, see if it exists locally
-	                    EndEntityInformation endEntityInformation = userAdminSession.findUserBySubjectAndIssuerDN(admin,
+	                    EndEntityInformation endEntityInformation = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin,
 	                            CertTools.getSubjectDN(xtoken.getCertificate()), CertTools.getIssuerDN(xtoken.getCertificate()));
 	                    if(endEntityInformation != null) {
 	                        sendAdminEmail = endEntityInformation.getEmail();

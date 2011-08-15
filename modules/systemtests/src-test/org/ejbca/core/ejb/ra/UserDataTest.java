@@ -29,6 +29,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -64,6 +65,7 @@ public class UserDataTest extends CaTestCase {
     /** variable used to hold a flag value so we can reset it after we have done the tests */
     private static boolean gcEELimitations;
 
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -129,7 +131,7 @@ public class UserDataTest extends CaTestCase {
         log.trace(">test02LookupAndChangeUser()");
 
         log.debug("username=" + username);
-        EndEntityInformation data2 = userAdminSession.findUser(admin, username);
+        EndEntityInformation data2 = endEntityAccessSession.findUser(admin, username);
         log.debug("found by key! =" + data2);
         log.debug("username=" + data2.getUsername());
         assertTrue("wrong username", data2.getUsername().equals(username));
@@ -156,7 +158,7 @@ public class UserDataTest extends CaTestCase {
     public void test03LookupChangedUser() throws Exception {
         log.trace(">test03LookupChangedUser()");
 
-        EndEntityInformation data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -184,7 +186,7 @@ public class UserDataTest extends CaTestCase {
     public void test03LookupChangedUser2() throws Exception {
         log.trace(">test03LookupChangedUser2()");
 
-        EndEntityInformation data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -403,14 +405,14 @@ public class UserDataTest extends CaTestCase {
         // Test set and re-set logic
 
         // The profile has 3 as default value, if I change user with status to generated and value 2 it should be set as that
-        EndEntityInformation user1 = userAdminSession.findUser(admin, user.getUsername());
+        EndEntityInformation user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = new ExtendedInformation();
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         String value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("2", value);
@@ -421,32 +423,32 @@ public class UserDataTest extends CaTestCase {
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I set status to new again, with noting changed, nothing should change
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // The same when I change the user
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to generated, nothing should happen
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to new from generated the default value should be used
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
@@ -457,14 +459,14 @@ public class UserDataTest extends CaTestCase {
         user1.setExtendedinformation(ei);
         user1.setStatus(UserDataConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Changing again to new, with 0 passed in will set the default value
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
@@ -473,7 +475,7 @@ public class UserDataTest extends CaTestCase {
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
         user1.setExtendedinformation(ei);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
@@ -481,7 +483,7 @@ public class UserDataTest extends CaTestCase {
         user1.setExtendedinformation(null);
         user1.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
-        user1 = userAdminSession.findUser(admin, user.getUsername());
+        user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         assertNull(ei);
 
@@ -610,8 +612,8 @@ public class UserDataTest extends CaTestCase {
             userAdminSession.deleteUser(admin, username1);
             assertTrue("Database (mapping) is not case sensitive!", false);
         }
-        EndEntityInformation userDataVO1 = userAdminSession.findUser(admin, username1);
-        EndEntityInformation userDataVO2 = userAdminSession.findUser(admin, username2);
+        EndEntityInformation userDataVO1 = endEntityAccessSession.findUser(admin, username1);
+        EndEntityInformation userDataVO2 = endEntityAccessSession.findUser(admin, username2);
         assertFalse("Returned the same user object for different usernames.", userDataVO1.getUsername().equals(userDataVO2.getUsername()));
         userAdminSession.deleteUser(admin, username1);
         userAdminSession.deleteUser(admin, username2);

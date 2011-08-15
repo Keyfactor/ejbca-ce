@@ -30,6 +30,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -73,6 +74,8 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
+	private EndEntityAccessSessionLocal endEntityAccessSession;
+	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
 	private KeyRecoverySessionLocal keyRecoverySession;
@@ -114,7 +117,7 @@ public class CertReqServlet extends HttpServlet {
      *             on error
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, caSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
+    	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, endEntityAccessSession, caSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
         		raAdminSession, signSession, userAdminSession, globalConfigurationSession).doPost(request, response);
     }
 

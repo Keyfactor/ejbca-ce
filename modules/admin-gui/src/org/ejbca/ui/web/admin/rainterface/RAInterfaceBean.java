@@ -48,6 +48,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
@@ -98,6 +99,7 @@ public class RAInterfaceBean implements Serializable {
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
+    private EndEntityAccessSession endEntityAccessSession;
     private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
@@ -141,6 +143,7 @@ public class RAInterfaceBean implements Serializable {
     		userdatasourcesession = ejb.getUserDataSourceSession();
     		certificateProfileSession = ejb.getCertificateProfileSession();
     		this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
+    		this.endEntityAccessSession = ejb.getEndEntityAccessSession();
 
     		initialized =true;
     	} else {
@@ -291,7 +294,7 @@ public class RAInterfaceBean implements Serializable {
     	EndEntityInformation[] userarray = new EndEntityInformation[1];
     	EndEntityInformation user = null;
     	try {
-    		user = userAdminSession.findUser(administrator, username);
+    		user = endEntityAccessSession.findUser(administrator, username);
     	} catch(AuthorizationDeniedException e) {
     	}
     	if (user != null) {
@@ -314,7 +317,7 @@ public class RAInterfaceBean implements Serializable {
     	if (log.isTraceEnabled()) {
     		log.trace(">findUser(" + username + ")");
     	}
-    	EndEntityInformation user = userAdminSession.findUser(administrator, username);
+    	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
     	UserView userview = null;
     	if (user != null) {
     		userview = new UserView(user, informationmemory.getCAIdToNameMap());
@@ -328,7 +331,7 @@ public class RAInterfaceBean implements Serializable {
     /** Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/
     public UserView findUserForEdit(String username) throws AuthorizationDeniedException {
     	UserView userview = null;
-    	EndEntityInformation user = userAdminSession.findUser(administrator, username);
+    	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
     	if (this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
     		if (!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_RIGHTS, false)) {
     			throw new AuthorizationDeniedException("Not authorized to edit user.");
@@ -355,7 +358,7 @@ public class RAInterfaceBean implements Serializable {
     	while (iter.hasNext()) {
     		EndEntityInformation user = null;
     		try {
-    			user = userAdminSession.findUser(administrator, (String) iter.next());
+    			user = endEntityAccessSession.findUser(administrator, (String) iter.next());
     		} catch(AuthorizationDeniedException e) {}
     		if (user!=null) {
     			userlist.add(user);
@@ -378,13 +381,13 @@ public class RAInterfaceBean implements Serializable {
     		while (iter.hasNext()) {
     			try {
     				Certificate next = iter.next();
-    				EndEntityInformation user = userAdminSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
+    				EndEntityInformation user = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
     				if (user != null) {
     					userlist.add(user);
     				}
     				String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(next));
     				if ( (user == null) || (!StringUtils.equals(username, user.getUsername())) ) {
-    					user = userAdminSession.findUser(administrator, username);
+    					user = endEntityAccessSession.findUser(administrator, username);
     					if (user != null) {
     						userlist.add(user);
     					}            	 
@@ -411,7 +414,7 @@ public class RAInterfaceBean implements Serializable {
     		while (i.hasNext() && userlist.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT +1 ) {
     			EndEntityInformation user = null;
     			try {
-    				user = userAdminSession.findUser(administrator, (String) i.next());
+    				user = endEntityAccessSession.findUser(administrator, (String) i.next());
     				if (user != null) {
     					userlist.add(user);
     				}
@@ -434,12 +437,12 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public boolean isAuthorizedToViewUserHistory(String username) throws AuthorizationDeniedException {
-    	EndEntityInformation user = userAdminSession.findUser(administrator, username);
+    	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
     	return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.HISTORY_RIGHTS, false);
     }
     
     public boolean isAuthorizedToEditUser(String username) throws AuthorizationDeniedException {
-    	EndEntityInformation user = userAdminSession.findUser(administrator, username);
+    	EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
         return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AccessRulesConstants.EDIT_RIGHTS, false);
     }
 
@@ -652,8 +655,8 @@ public class RAInterfaceBean implements Serializable {
         if (cert != null) {
             RevokedInfoView revokedinfo = null;
             String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(cert));
-            if (this.userAdminSession.findUser(administrator, username) != null) {
-                int endentityprofileid = this.userAdminSession.findUser(administrator, username).getEndEntityProfileId();
+            if (this.endEntityAccessSession.findUser(administrator, username) != null) {
+                int endentityprofileid = this.endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
                 this.endEntityAuthorization(administrator, endentityprofileid, AccessRulesConstants.VIEW_RIGHTS, true);
             }
             CertificateStatus revinfo = certificatesession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
@@ -692,7 +695,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public boolean authorizedToViewHardToken(String username) throws AuthorizationDeniedException {
-    	int profileid = userAdminSession.findUser(administrator, username).getEndEntityProfileId();
+    	int profileid = endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
     	if (!endEntityAuthorization(administrator, profileid, AccessRulesConstants.HARDTOKEN_RIGHTS, false)) {
     		throw new AuthorizationDeniedException();
     	}
@@ -708,7 +711,7 @@ public class RAInterfaceBean implements Serializable {
 
     public boolean authorizedToRevokeCert(String username) throws AuthorizationDeniedException{
     	boolean returnval=false;
-    	EndEntityInformation data = userAdminSession.findUser(administrator, username);
+    	EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
     	if (data == null) {
     		return false;
     	}
@@ -725,7 +728,7 @@ public class RAInterfaceBean implements Serializable {
     	boolean returnval = true;
     	returnval = authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
     	if (informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
-    		EndEntityInformation data = userAdminSession.findUser(administrator, username);
+    		EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
     		if (data != null) {       	
     			int profileid = data.getEndEntityProfileId();
     			returnval = endEntityAuthorization(administrator, profileid, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);		  
@@ -738,7 +741,7 @@ public class RAInterfaceBean implements Serializable {
 
     public void markForRecovery(String username, Certificate cert) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	boolean authorized = true;
-    	int endEntityProfileId = userAdminSession.findUser(administrator, username).getEndEntityProfileId();
+    	int endEntityProfileId = endEntityAccessSession.findUser(administrator, username).getEndEntityProfileId();
     	if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
     		authorized = endEntityAuthorization(administrator, endEntityProfileId, AccessRulesConstants.KEYRECOVERY_RIGHTS, false);
     	}

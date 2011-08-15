@@ -50,6 +50,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -81,8 +82,9 @@ public class RequestInstance {
 	private SignSessionLocal signSession;
 	private UserAdminSessionLocal userAdminSession;
 	private GlobalConfigurationSession globalConfigurationSession;
+	private EndEntityAccessSession endEntityAccessSession;
 	
-	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, CaSessionLocal caSession,
+	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession, RaAdminSessionLocal raAdminSession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;
@@ -148,7 +150,7 @@ public class RequestInstance {
 
 			usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration(administrator).getEnableKeyRecovery();
 
-			EndEntityInformation data = userAdminSession.findUser(administrator, username);
+			EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
 
 			if (data == null) {
 				throw new ObjectNotFoundException();
@@ -190,7 +192,7 @@ public class RequestInstance {
 
 			// get users Token Type.
 			tokentype = data.getTokenType();
-			GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caSession, keyRecoverySession, signSession);
+			GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, caSession, keyRecoverySession, signSession);
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {            	  

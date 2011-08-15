@@ -44,6 +44,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -82,6 +83,7 @@ public interface EjbBridgeSessionLocal {
 	CrlStoreSessionLocal getCrlStoreSession();
 	CrlCreateSessionLocal getCrlCreateSession();
 	EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession();
+	EndEntityAccessSessionLocal getEndEntityAccessSession();
 	EndEntityProfileSessionLocal getEndEntityProfileSession();
 	GlobalConfigurationSessionLocal getGlobalConfigurationSession();
 	HardTokenBatchJobSessionLocal getHardTokenBatchJobSession();

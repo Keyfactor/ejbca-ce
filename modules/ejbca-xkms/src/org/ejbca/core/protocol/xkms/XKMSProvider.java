@@ -73,6 +73,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -142,6 +143,8 @@ public class XKMSProvider implements Provider<Source> {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityAuthenticationSessionLocal authenticationSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
@@ -263,28 +266,28 @@ public class XKMSProvider implements Provider<Source> {
 	}
 	
 	private JAXBElement register(String remoteIP, RegisterRequestType value, boolean requestVerifies, Document requestDoc) {
-		RegisterResponseGenerator gen = new RegisterResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		RegisterResponseGenerator gen = new RegisterResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RegisterResultType> registerresult = xKMSObjectFactory.createRegisterResult(gen.getResponse(requestVerifies));
 		return registerresult;
 	}
 	
 	private JAXBElement reissue(String remoteIP, ReissueRequestType value, boolean requestVerifies, Document requestDoc) {
-		ReissueResponseGenerator gen = new ReissueResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		ReissueResponseGenerator gen = new ReissueResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<ReissueResultType> reissueresult = xKMSObjectFactory.createReissueResult(gen.getResponse(requestVerifies));
 		return reissueresult;
 	}
 	
 	private JAXBElement recover(String remoteIP, RecoverRequestType value, boolean requestVerifies, Document requestDoc) {
-		RecoverResponseGenerator gen = new RecoverResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		RecoverResponseGenerator gen = new RecoverResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RecoverResultType> recoverresult = xKMSObjectFactory.createRecoverResult(gen.getResponse(requestVerifies));
 		return recoverresult;
 	}
 	
 	private JAXBElement revoke(String remoteIP, RevokeRequestType value, boolean requestVerifies, Document requestDoc) {
-		RevokeResponseGenerator gen = new RevokeResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityProfileSession,
+		RevokeResponseGenerator gen = new RevokeResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RevokeResultType> recoverresult = xKMSObjectFactory.createRevokeResult(gen.getResponse(requestVerifies));
 		return recoverresult;

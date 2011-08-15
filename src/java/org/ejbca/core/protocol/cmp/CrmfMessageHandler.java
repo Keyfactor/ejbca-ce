@@ -47,6 +47,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -90,7 +91,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private final ExtendedUserDataHandler extendedUserDataHandler;
 	
 	private final SignSession signSession;
-	private final UserAdminSession userAdminSession;
+	private final EndEntityAccessSession endEntityAccessSession;
 	private final CertificateRequestSession certificateRequestSession;
 	
 	/**
@@ -104,9 +105,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.responseProt = null;
 		this.allowCustomCertSerno = false;
 		this.signSession =null;
-		this.userAdminSession = null;
 		this.certificateRequestSession = null;
 		this.extendedUserDataHandler = null;
+		this.endEntityAccessSession = null;
 	}
 	
 	/**
@@ -120,12 +121,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @param userAdminSession
 	 */
 	public CrmfMessageHandler(final AuthenticationToken admin, CaSession caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
-			EndEntityProfileSession endEntityProfileSession, SignSession signSession, UserAdminSession userAdminSession) {
+			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSession endEntityProfileSession, SignSession signSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
 		this.signSession = signSession;
-		this.userAdminSession = userAdminSession;
 		this.certificateRequestSession = certificateRequestSession;
+		this.endEntityAccessSession = endEntityAccessSession;
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
@@ -199,13 +200,13 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("looking for user with dn: "+dn);
 						}
-						data = userAdminSession.findUserBySubjectDN(admin, dn);
+						data = endEntityAccessSession.findUserBySubjectDN(admin, dn);
 					} else {
 						final String username = CertTools.getPartFromDN(dn,usernameComp);
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("looking for user with username: "+username);
 						}						
-						data = userAdminSession.findUser(admin, username);
+						data = endEntityAccessSession.findUser(admin, username);
 					}
 					if (data != null) {
 						if (LOG.isDebugEnabled()) {

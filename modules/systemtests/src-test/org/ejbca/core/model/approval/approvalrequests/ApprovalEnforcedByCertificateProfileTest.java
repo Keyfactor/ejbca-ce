@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -57,6 +58,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -114,6 +116,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
@@ -460,7 +463,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        EndEntityInformation userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
+        EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
         createdUsers.add(userdata.getUsername());
         log.info("created: " + userdata.getUsername());
@@ -469,7 +472,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private void changeUserDN(AuthenticationToken admin, String username, String newDN) throws AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
 
-        EndEntityInformation userdata = userAdminSession.findUser(admin, username);
+        EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull(userdata);
         userdata.setDN(newDN);
         log.debug("changeUser: username=" + username + ", DN="+userdata.getDN()+", password="+userdata.getPassword()+", certProfileId=" + userdata.getCertificateProfileId());
@@ -478,7 +481,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private void changeUserCertProfile(AuthenticationToken admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
     UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
-        EndEntityInformation userdata = userAdminSession.findUser(admin, username);
+        EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull("findUser: " + username, userdata);
         userdata.setCertificateProfileId(newCertProfileId);
         userAdminSession.changeUser(admin, userdata, true);

@@ -45,7 +45,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
                 return;
             }
             String username = args[1];
-            EndEntityInformation data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
             getLogger().info("Found user:");
             getLogger().info("username=" + data.getUsername());
             getLogger().info("dn=\"" + data.getDN() + "\"");
@@ -74,7 +74,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             	if (!foundCertificateOnHold) {
             		getLogger().error("No certificates with status 'On hold' were found for this user.");
             	} else {
-	                data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+	                data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
 	                getLogger().info("New status=" + data.getStatus());
             	}
             } catch (AuthorizationDeniedException e) {

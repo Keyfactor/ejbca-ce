@@ -67,7 +67,7 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subjectDN '" + subjectDN + "' for user " + username);
             try {
-            	EndEntityInformation uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
             	uservo.setDN(subjectDN);
             	ejb.getUserAdminSession().changeUser(getAdmin(), uservo, false);
             } catch (AuthorizationDeniedException e) {

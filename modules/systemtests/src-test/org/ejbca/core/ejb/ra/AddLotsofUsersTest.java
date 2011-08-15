@@ -22,6 +22,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
@@ -43,6 +44,7 @@ public class AddLotsofUsersTest extends CaTestCase {
 
     private int userNo = 0;
     
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @Before
@@ -83,7 +85,7 @@ public class AddLotsofUsersTest extends CaTestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            if (userAdminSession.findUser(administrator, username) != null) {
+            if (endEntityAccessSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");
             } else {
             	userAdminSession.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,

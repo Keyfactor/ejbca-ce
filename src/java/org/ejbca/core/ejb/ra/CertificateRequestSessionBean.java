@@ -101,12 +101,15 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    @EJB
-    private EndEntityAuthenticationSessionLocal authenticationSession;
+
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private EndEntityAuthenticationSessionLocal authenticationSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
@@ -372,7 +375,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			String password = userdata.getPassword();
 			String username = userdata.getUsername();
 			int caid = userdata.getCAId();
-		    GenerateToken tgen = new GenerateToken(authenticationSession, userAdminSession, caSession, keyRecoverySession, signSession);
+		    GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, caSession, keyRecoverySession, signSession);
 		    KeyStore keyStore = tgen.generateOrKeyRecoverToken(admin, username, password, caid, keyspec, keyalg, createJKS, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 			String alias = keyStore.aliases().nextElement();
 		    X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);

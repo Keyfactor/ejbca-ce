@@ -375,32 +375,6 @@ public interface UserAdminSession {
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
-     * Finds a user by username.
-     * 
-     * @param admin the administrator performing the action
-     * @return EndEntityInformation or null if the user is not found.
-     */
-    public EndEntityInformation findUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
-
-    /**
-     * Finds a user by its subject and issuer DN.
-     * @return EndEntityInformation or null if the user is not found.
-     */
-    public EndEntityInformation findUserBySubjectAndIssuerDN(AuthenticationToken admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException;
-
-    /**
-     * Finds a user by its subject DN.
-     * @return EndEntityInformation or null if the user is not found.
-     */
-    public EndEntityInformation findUserBySubjectDN(AuthenticationToken admin, String subjectdn) throws AuthorizationDeniedException;
-
-    /**
-     * Finds a users by subject email.
-     * @return List of all matching EndEntityInformation, never null
-     */
-    public List<EndEntityInformation> findUserByEmail(AuthenticationToken admin, String email) throws AuthorizationDeniedException;
-
-    /**
      * Method that checks if user with specified users certificate exists in
      * database
      * 

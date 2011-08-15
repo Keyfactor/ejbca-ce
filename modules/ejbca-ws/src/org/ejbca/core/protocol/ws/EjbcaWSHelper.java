@@ -68,6 +68,7 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -111,12 +112,13 @@ public class EjbcaWSHelper {
     private CertificateStoreSession certificateStoreSession;
     private CertificateProfileSession certificateProfileSession;
     private HardTokenSession hardTokenSession;
+    private EndEntityAccessSession endEntityAccessSession;
     private EndEntityProfileSession endEntityProfileSession;
     private UserAdminSession userAdminSession;
     private WebAuthenticationProviderSessionLocal authenticationSession;
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSession caSession,
-            CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession,
+            CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
             EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, UserAdminSession userAdminSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
@@ -127,6 +129,7 @@ public class EjbcaWSHelper {
 		this.hardTokenSession = hardTokenSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.userAdminSession = userAdminSession;
+		this.endEntityAccessSession = endEntityAccessSession;
 	}
 	
 	//
@@ -221,7 +224,7 @@ public class EjbcaWSHelper {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
-			EndEntityInformation userdata = userAdminSession.findUser(admin, username);
+			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
 			if(userdata == null){
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
@@ -248,7 +251,7 @@ public class EjbcaWSHelper {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
-			EndEntityInformation userdata = userAdminSession.findUser(admin, username);
+			EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
 			if(userdata == null){
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
