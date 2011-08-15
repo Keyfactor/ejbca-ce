@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -25,8 +26,8 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.ejbca.core.ejb.JBossUnmarshaller;
-import org.ejbca.core.ejb.QueryResultWrapper;
+import org.cesecore.util.JBossUnmarshaller;
+import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
@@ -81,7 +82,20 @@ public class EndEntityProfileData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private HashMap getData() { return JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()); }
+	private HashMap getData() {
+		HashMap ret = null;
+		// When the wrong class is given it can either return null, or throw an exception
+		try {
+			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, getDataUnsafe());
+			if (ret != null) {
+				return ret;
+			}
+		} catch (ClassCastException e) {
+			// NOPMD: pass through to the end line
+		}
+		// If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException or null from above...
+		return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()));
+	}
 	private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
     /**
