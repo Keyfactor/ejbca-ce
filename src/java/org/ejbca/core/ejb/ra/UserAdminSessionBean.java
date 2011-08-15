@@ -43,6 +43,7 @@ import javax.persistence.PersistenceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ServiceTypes;
@@ -73,11 +74,10 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.config.XkmsConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ErrorCode;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
@@ -152,7 +152,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
-    private ComplexAccessControlSession complexAccessControlSession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB

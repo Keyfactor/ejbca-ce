@@ -1320,12 +1320,12 @@ caCertResponse, caRenewCertRequest:
 try {
     ejbcaraws.editUser(user1);
 } catch(EjbcaException_Exception e) {
-    if(org.ejbca.core.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode().equals(e.getFaultInfo().getErrorCode().getInternalErrorCode())) {
+    if(org.cesecore.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode().equals(e.getFaultInfo().getErrorCode().getInternalErrorCode())) {
         log.error("No such certifcate profile.");
     }
 }
     </source>
-    <p>All error codes are described in <code>org.ejbca.core.ErrorCode</code>.</p>
+    <p>All error codes are described in <code>org.cesecore.ErrorCode</code>.</p>
     <p> You can also take a look at <code>src/test/org/ejbca/core/protocol/ws/CommonEjbcaWSTest.java</code> to see how the error code can be used.</p>
 </subsection>
 <subsection name="WS transaction logging">

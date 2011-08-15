@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;

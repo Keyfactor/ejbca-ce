@@ -33,7 +33,6 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
-import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;

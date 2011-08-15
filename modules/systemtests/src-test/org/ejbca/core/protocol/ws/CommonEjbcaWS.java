@@ -85,8 +85,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-
-import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -136,8 +134,6 @@ import org.ejbca.util.InterfaceCache;
  * @version $Id$
  */
 public abstract class CommonEjbcaWS extends CaTestCase {
-
-    private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
     private static final Logger log = Logger.getLogger(CommonEjbcaWS.class);
 
@@ -613,7 +609,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // certificate for this key should be impossible
         final ErrorCode errorCode = certreqInternal(ca1userData2, p10_1, CertificateHelper.CERT_REQ_TYPE_PKCS10);
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.ejbca.core.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
+        assertEquals(org.cesecore.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
                 errorCode.getInternalErrorCode());
 
         // test that the user that was denied a cert can get a cert with another
@@ -667,7 +663,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // certificate with this DN should fail
         final ErrorCode errorCode = certreqInternal(ca1userData2, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10);
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(org.ejbca.core.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
+        assertEquals(org.cesecore.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER.getInternalErrorCode(),
                 errorCode.getInternalErrorCode());
 
         // test that the user that was denied a cert can get a cert with another
@@ -1806,7 +1802,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             errorCode = e.getFaultInfo().getErrorCode();
         }
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.ejbca.core.ErrorCode.CA_NOT_EXISTS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.CA_NOT_EXISTS.getInternalErrorCode());
 
         // restore CA name
         user1.setCaName(getAdminCAName());
@@ -1821,7 +1817,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.ejbca.core.ErrorCode.EE_PROFILE_NOT_EXISTS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.EE_PROFILE_NOT_EXISTS.getInternalErrorCode());
 
         // restore EE profile
         user1.setEndEntityProfileName("EMPTY");
@@ -1836,7 +1832,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.ejbca.core.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.CERT_PROFILE_NOT_EXISTS.getInternalErrorCode());
 
         // restore Certificate profile
         user1.setCertificateProfileName("ENDUSER");
@@ -1851,7 +1847,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.ejbca.core.ErrorCode.UNKOWN_TOKEN_TYPE.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.UNKOWN_TOKEN_TYPE.getInternalErrorCode());
     }
 
     protected void errorOnGeneratePkcs10() throws Exception {
@@ -1888,7 +1884,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.ejbca.core.ErrorCode.LOGIN_ERROR.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.LOGIN_ERROR.getInternalErrorCode());
 
         errorCode = null;
 
@@ -1908,7 +1904,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         assertNotNull("error code should not be null", errorCode);
-        assertEquals(errorCode.getInternalErrorCode(), org.ejbca.core.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode());
+        assertEquals(errorCode.getInternalErrorCode(), org.cesecore.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode());
 
     }
 
@@ -1937,7 +1933,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             ejbcaraws.pkcs12Req("WSTESTUSER31", "foo1234", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
-            assertEquals(org.ejbca.core.ErrorCode.BAD_USER_TOKEN_TYPE.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(org.cesecore.ErrorCode.BAD_USER_TOKEN_TYPE.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         assertNotNull(errorCode);
         errorCode = null;
@@ -1950,7 +1946,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             ejbcaraws.pkcs12Req("WSTESTUSER31", "foo123", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
-            assertEquals(org.ejbca.core.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(org.cesecore.ErrorCode.LOGIN_ERROR.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         assertNotNull(errorCode);
         errorCode = null;
@@ -1964,7 +1960,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             ejbcaraws.pkcs12Req("WSTESTUSER31", "foo1234", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (EjbcaException_Exception ex) {
             errorCode = ex.getFaultInfo().getErrorCode();
-            assertEquals(org.ejbca.core.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
+            assertEquals(org.cesecore.ErrorCode.USER_WRONG_STATUS.getInternalErrorCode(), errorCode.getInternalErrorCode());
         }
         assertNotNull(errorCode);
     }

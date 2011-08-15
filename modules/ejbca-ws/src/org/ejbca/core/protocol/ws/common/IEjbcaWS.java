@@ -248,7 +248,7 @@ public interface IEjbcaWS {
 	 * @throws WaitingForApprovalException
 	 * @throws CertificateExpiredException
 	 * @throws CesecoreException 
-	 * @see org.ejbca.core.ErrorCode 
+	 * @see org.cesecore.ErrorCode 
 	 */
 	public List<Certificate> cvcRequest(String username, String password, String cvcreq)
 	throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, NotFoundException,
@@ -369,7 +369,7 @@ public interface IEjbcaWS {
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in
-	 * {@link org.ejbca.core.model.AlgorithmConstants}.KEYALGORITHM_...
+	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated keystore
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
@@ -900,7 +900,7 @@ public interface IEjbcaWS {
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
 	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in 
-	 * {@link org.ejbca.core.model.AlgorithmConstants}.KEYALGORITHM_...
+	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated token data 
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized to request

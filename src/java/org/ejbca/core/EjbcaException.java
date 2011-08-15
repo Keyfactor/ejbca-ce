@@ -15,6 +15,8 @@ package org.ejbca.core;
 
 import javax.xml.ws.WebFault;
 
+import org.cesecore.ErrorCode;
+
 
 /**
  * Base for all specific application exceptions thrown by EJBCA. Can be used to catch any

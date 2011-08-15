@@ -54,7 +54,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -68,7 +67,6 @@ import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalR
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalRequestExecutionException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
