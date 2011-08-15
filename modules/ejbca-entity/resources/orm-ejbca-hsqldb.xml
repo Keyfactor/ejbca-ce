@@ -64,8 +64,8 @@
         <attributes>
             <id name="pk"><column name="pk" column-definition="VARCHAR(256)"/></id>
             <basic name="nodeId"><column name="nodeId" column-definition="VARCHAR(256)" nullable="false" updatable="false"/></basic>
-            <basic name="sequenceNumber"><column name="sequenceNumber" column-definition="INTEGER" nullable="false" updatable="false"/></basic>
-            <basic name="timeStamp"><column name="timeStamp" column-definition="INTEGER" nullable="false" updatable="false"/></basic>
+            <basic name="sequenceNumber"><column name="sequenceNumber" column-definition="BIGINT" nullable="false" updatable="false"/></basic>
+            <basic name="timeStamp"><column name="timeStamp" column-definition="BIGINT" nullable="false" updatable="false"/></basic>
             <basic name="eventType"><column name="eventType" column-definition="VARCHAR(256)" nullable="false" updatable="false"/></basic>
             <basic name="eventStatus"><column name="eventStatus" column-definition="VARCHAR(256)" nullable="false" updatable="false"/></basic>
             <basic name="authToken"><column name="authToken" column-definition="VARCHAR(256)" nullable="false" updatable="false"/></basic>
