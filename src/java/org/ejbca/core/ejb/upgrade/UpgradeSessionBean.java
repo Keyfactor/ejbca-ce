@@ -16,10 +16,12 @@ package org.ejbca.core.ejb.upgrade;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -35,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.JBossUnmarshaller;
+import org.cesecore.util.JBossUnmarshaller;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
@@ -194,34 +196,58 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	log.info(" Processing CertificateProfileData entities.");
     	final List<CertificateProfileData> cpds = CertificateProfileData.findAll(entityManager);
     	for (CertificateProfileData cpd : cpds) {
-    		cpd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, cpd.getDataUnsafe()));
+    		// When the wrong class is given it can either return null, or throw an exception
+    		HashMap h = getDataUnsafe(cpd.getDataUnsafe());
+    		cpd.setDataUnsafe(h);
     	}
     	log.info(" Processing HardTokenIssuerData entities.");
     	final List<HardTokenIssuerData> htids = HardTokenIssuerData.findAll(entityManager);
     	for (HardTokenIssuerData htid : htids) {
-    		htid.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, htid.getDataUnsafe()));
+    		HashMap h = getDataUnsafe(htid.getDataUnsafe());
+    		htid.setDataUnsafe(h);
     	}
     	log.info(" Processing AdminPreferencesData entities.");
     	final List<AdminPreferencesData> apds = AdminPreferencesData.findAll(entityManager);
     	for (AdminPreferencesData apd : apds) {
-    		apd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, apd.getDataUnsafe()));
+    		HashMap h = getDataUnsafe(apd.getDataUnsafe());
+    		apd.setDataUnsafe(h);
     	}
     	log.info(" Processing EndEntityProfileData entities.");
     	final List<EndEntityProfileData> eepds = EndEntityProfileData.findAll(entityManager);
     	for (EndEntityProfileData eepd : eepds) {
-    		eepd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, eepd.getDataUnsafe()));
+    		HashMap h = getDataUnsafe(eepd.getDataUnsafe());
+    		eepd.setDataUnsafe(h);
     	}
     	log.info(" Processing GlobalConfigurationData entities.");
     	GlobalConfigurationData gcd = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
-    	gcd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, gcd.getDataUnsafe()));
+		HashMap h = getDataUnsafe(gcd.getDataUnsafe());
+    	gcd.setDataUnsafe(h);
     }
+
+	/**
+	 * @param cpd
+	 * @return
+	 */
+	private HashMap getDataUnsafe(Serializable s) {
+		HashMap h = null; 
+		try {
+			h = JBossUnmarshaller.extractObject(LinkedHashMap.class, s);
+			if (h == null) {
+				h = new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, s));
+			}
+		} catch (ClassCastException e) {
+			h = new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, s));
+		}
+		return h;
+	}
     
     @Override
     public void postMigrateDatabase400HardTokenData(List<String> subSet) {
     	for (String tokenSN : subSet) {
     		HardTokenData htd = HardTokenData.findByTokenSN(entityManager, tokenSN);
     		if (htd != null) {
-        		htd.setDataUnsafe(JBossUnmarshaller.extractObject(HashMap.class, htd.getDataUnsafe()));
+        		HashMap h = getDataUnsafe(htd);
+        		htd.setDataUnsafe(h);
     		} else {
     	    	log.warn("Hard token was removed during processing. Ignoring token with serial number '" + tokenSN + "'.");
     		}

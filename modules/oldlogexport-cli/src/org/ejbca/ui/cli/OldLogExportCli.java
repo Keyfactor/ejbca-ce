@@ -22,8 +22,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValidityDate;
-import org.ejbca.core.ejb.QueryResultWrapper;
 import org.ejbca.core.ejb.log.LogEntryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;

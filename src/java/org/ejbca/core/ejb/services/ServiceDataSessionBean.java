@@ -22,7 +22,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.core.ejb.QueryResultWrapper;
+import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
