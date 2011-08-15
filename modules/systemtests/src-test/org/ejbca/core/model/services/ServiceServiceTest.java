@@ -30,7 +30,9 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.model.SecConst;
@@ -69,7 +71,8 @@ public class ServiceServiceTest extends CaTestCase {
 
     private UserAdminSession userAdminSession = InterfaceCache.getUserAdminSession();
     private ServiceSession serviceSession = InterfaceCache.getServiceSession();
-
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
+    
     @Before
     public void setUp() throws Exception {
         super.setUp();
@@ -226,7 +229,7 @@ public class ServiceServiceTest extends CaTestCase {
     private boolean hasServiceRun(final String username) throws Exception {
         // Now the user will be expired
         final boolean result;
-        final EndEntityInformation data = getUserAdminSession().findUser(admin, username);
+        final EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         final int status;
         if (data == null) {
             throw new Exception("User we have added can not be found");

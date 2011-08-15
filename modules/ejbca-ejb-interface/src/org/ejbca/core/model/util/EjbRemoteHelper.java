@@ -36,6 +36,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -67,6 +68,7 @@ public class EjbRemoteHelper {
     private ConfigurationSessionRemote configurationSession = null;
     private CrlStoreSessionRemote crlSession = null;
     private CrlCreateSessionRemote crlStoreSession = null;
+    private EndEntityAccessSessionRemote endEntityAccessSession;
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
@@ -299,6 +301,13 @@ public class EjbRemoteHelper {
             roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
         }
         return roleManagementSession;
+    }
+    
+    public EndEntityAccessSessionRemote getEndEntityAccessSession() {
+        if(endEntityAccessSession == null) {
+            endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
+        }
+        return endEntityAccessSession;
     }
 
 }

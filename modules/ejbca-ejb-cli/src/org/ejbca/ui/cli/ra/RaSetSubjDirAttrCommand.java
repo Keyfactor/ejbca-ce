@@ -47,7 +47,7 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subject directory attributes '" + attributes + "' for user " + username);
             try {
-            	EndEntityInformation uservo = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
             	ExtendedInformation ext = uservo.getExtendedinformation();
             	if (ext == null) {
             		ext = new ExtendedInformation();

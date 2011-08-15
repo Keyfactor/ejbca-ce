@@ -80,7 +80,7 @@ public class ApplyBean implements java.io.Serializable {
         int returnval = 0;
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-			this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
+			this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
 		}
 		
         if (useradmindata != null) {
@@ -107,7 +107,7 @@ public class ApplyBean implements java.io.Serializable {
 		int returnval = 0;		
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-			this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
+			this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
 		}
 		
 		if (useradmindata != null) {
@@ -133,7 +133,7 @@ public class ApplyBean implements java.io.Serializable {
         int[] returnval = null;        
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
+        	this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
@@ -175,7 +175,7 @@ public class ApplyBean implements java.io.Serializable {
         String[] returnval = null;        
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
+        	this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
@@ -222,7 +222,7 @@ public class ApplyBean implements java.io.Serializable {
         String returnval = null;        
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = ejb.getUserAdminSession().findUser(administrator, username);
+        	this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {

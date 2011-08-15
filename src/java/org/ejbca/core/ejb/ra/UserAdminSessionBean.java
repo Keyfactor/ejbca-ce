@@ -136,31 +136,33 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private EntityManager entityManager;
 
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
-    @EJB
-    private EndEntityProfileSessionLocal endEntityProfileSession;
-    @EJB
-    private GlobalConfigurationSessionLocal globalConfigurationSession;
-    @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
-    private RevocationSessionLocal revocationSession;
-    @EJB
-    private CertReqHistorySessionLocal certreqHistorySession;
-    @EJB
-    private CertificateProfileSessionLocal certificateProfileSession;
-    @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
-    @EJB
-    private KeyRecoverySessionLocal keyRecoverySession;
+    private ApprovalSessionLocal approvalSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private ApprovalSessionLocal approvalSession;
+    private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CertReqHistorySessionLocal certreqHistorySession;
+    @EJB
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
+    @EJB
+    private KeyRecoverySessionLocal keyRecoverySession;
+    @EJB
+    private RevocationSessionLocal revocationSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     /** Columns in the database used in select. */
     private static final String USERDATA_CREATED_COL = "timeCreated";
@@ -1364,136 +1366,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation findUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">findUser(" + username + ")");
-        }
-        final UserData data = UserData.findByUsername(entityManager, username);
-        if (data == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with username='" + username + "'");
-            }
-        }
-        final EndEntityInformation ret = returnUserDataVO(admin, data, username);
-        if (log.isTraceEnabled()) {
-            log.trace("<findUser(" + username + "): " + (ret == null ? "null" : ret.getDN()));
-        }
-        return ret;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public EndEntityInformation findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn) throws AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerdn + ")");
-        }
-        // String used in SQL so strip it
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        if (log.isDebugEnabled()) {
-            log.debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
-        }
-        final UserData data = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerdn.hashCode());
-        if (data == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerdn);
-            }
-        }
-        final EndEntityInformation returnval = returnUserDataVO(admin, data, null);
-        if (log.isTraceEnabled()) {
-            log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerdn + ")");
-        }
-        return returnval;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public EndEntityInformation findUserBySubjectDN(final AuthenticationToken admin, final String subjectdn) throws AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">findUserBySubjectDN(" + subjectdn + ")");
-        }
-        // String used in SQL so strip it
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        if (log.isDebugEnabled()) {
-            log.debug("Looking for users with subjectdn: " + dn);
-        }
-        final UserData data = UserData.findBySubjectDN(entityManager, dn);
-        if (data == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with subjectdn: " + dn);
-            }
-        }
-        final EndEntityInformation returnval = returnUserDataVO(admin, data, null);
-        if (log.isTraceEnabled()) {
-            log.trace("<findUserBySubjectDN(" + subjectdn + ")");
-        }
-        return returnval;
-    }
-
-    /** @return the userdata value object if admin is authorized. Does not leak username if auth fails. */
-    private EndEntityInformation returnUserDataVO(final AuthenticationToken admin, final UserData data, final String requestedUsername) throws AuthorizationDeniedException {
-        if (data != null) {
-            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                // Check if administrator is authorized to view user.
-                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
-                	if (requestedUsername == null) {
-                    	final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
-                        throw new AuthorizationDeniedException(msg);
-                	} else {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()), requestedUsername);
-                        throw new AuthorizationDeniedException(msg);
-                	}
-                }
-            }
-            if (!authorizedToCA(admin, data.getCaId())) {
-            	if (requestedUsername == null) {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()));
-                    throw new AuthorizationDeniedException(msg);
-            	} else {
-            		final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername);
-                    throw new AuthorizationDeniedException(msg);
-            	}
-            }
-            return data.toUserDataVO();
-        }
-        return null;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public List<EndEntityInformation> findUserByEmail(AuthenticationToken admin, String email) throws AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">findUserByEmail(" + email + ")");
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Looking for user with email: " + email);
-        }
-        final List<UserData> result = UserData.findBySubjectEmail(entityManager, email);
-        if (result.size() == 0) {
-            if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with Email='" + email + "'");
-            }
-        }
-        final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
-        for (final UserData data : result) {
-            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                // Check if administrator is authorized to view user.
-                if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
-                    continue;
-                }
-            }
-            if (!authorizedToCA(admin, data.getCaId())) {
-            	continue;
-            }
-            returnval.add(data.toUserDataVO());
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<findUserByEmail(" + email + ")");
-        }
-        return returnval;
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
     public void checkIfCertificateBelongToUser(AuthenticationToken admin, BigInteger certificatesnr, String issuerdn) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
@@ -1870,7 +1742,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 	                        if (log.isDebugEnabled()) {
 	                            log.debug("approvalAdminDN: " + approvalAdminDN);
 	                        }
-	                        approvalAdmin = findUserBySubjectAndIssuerDN(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserAdminSession")), 
+	                        approvalAdmin = endEntityAccessSession.findUserBySubjectAndIssuerDN(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserAdminSession")), 
 	                        		CertTools.getSubjectDN(adminCert), CertTools.getIssuerDN(adminCert));
 						}
                         UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, approvalAdmin);

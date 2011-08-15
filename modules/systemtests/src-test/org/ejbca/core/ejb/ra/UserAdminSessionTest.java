@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -86,6 +87,7 @@ public class UserAdminSessionTest extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
@@ -270,7 +272,7 @@ public class UserAdminSessionTest extends CaTestCase {
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
-        assertTrue("The user '" + thisusername + "' was changed eventhough the serialnumber already exists.", userAdminSession.findUserByEmail(admin, email)
+        assertTrue("The user '" + thisusername + "' was changed eventhough the serialnumber already exists.", endEntityAccessSession.findUserByEmail(admin, email)
                 .size() == 0);
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
@@ -279,7 +281,7 @@ public class UserAdminSessionTest extends CaTestCase {
         userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
                 UserDataConstants.STATUS_NEW, caid);
-        assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", userAdminSession.findUserByEmail(admin,
+        assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", endEntityAccessSession.findUserByEmail(admin,
                 email).size() > 0);
 
         // Set the CA back to its original settings of enforcing unique
@@ -298,7 +300,7 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     public void test03FindUser() throws Exception {
         log.trace(">test03FindUser()");
-        EndEntityInformation data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
         boolean exists = userAdminSession.existsUser(admin, username);
@@ -307,7 +309,7 @@ public class UserAdminSessionTest extends CaTestCase {
         String notexistusername = genRandomUserName();
         exists = userAdminSession.existsUser(admin, notexistusername);
         assertFalse(exists);
-        data = userAdminSession.findUser(admin, notexistusername);
+        data = endEntityAccessSession.findUser(admin, notexistusername);
         assertNull(data);
         log.trace("<test03FindUser()");
     }
@@ -340,7 +342,7 @@ public class UserAdminSessionTest extends CaTestCase {
     @Test
     public void test04ChangeUser() throws Exception {
         log.trace(">test04ChangeUser()");
-        EndEntityInformation data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
         assertNull(data.getCardNumber());
@@ -355,7 +357,7 @@ public class UserAdminSessionTest extends CaTestCase {
         data.setSubjectAltName("dnsName=a.b.se, rfc822name=" + email);
 
         userAdminSession.changeUser(admin, data, true);
-        EndEntityInformation data1 = userAdminSession.findUser(admin, username);
+        EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data1);
         assertEquals(username, data1.getUsername());
         assertEquals("123456", data1.getCardNumber());
@@ -368,7 +370,7 @@ public class UserAdminSessionTest extends CaTestCase {
     public void test05RevokeCert() throws Exception {
     	KeyPair keypair = KeyTools.genKeys("512", "RSA");
 
-        EndEntityInformation data1 = userAdminSession.findUser(admin, username);
+        EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data1);
         data1.setPassword("foo123");
         userAdminSession.changeUser(admin, data1, true);
@@ -458,13 +460,13 @@ public class UserAdminSessionTest extends CaTestCase {
                 profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
         addUser.setPassword("foo123");
         userAdminSession.addUserFromWS(admin, addUser, false);
-        EndEntityInformation data = userAdminSession.findUser(admin, username);
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
         addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
         userAdminSession.changeUser(admin, addUser, false, true);
-        data = userAdminSession.findUser(admin, username);
+        data = endEntityAccessSession.findUser(admin, username);
         // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
     }

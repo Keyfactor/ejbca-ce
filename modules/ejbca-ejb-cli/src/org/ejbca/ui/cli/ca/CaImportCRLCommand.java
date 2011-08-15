@@ -117,7 +117,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        		final X509Certificate certificate = certGen.generate(key_pair.getPrivate(), "BC");
 	        		final String fingerprint = CertTools.getFingerprintAsString(certificate);
 	        		// We add all certificates that does not have a user already to "missing_user_name"
-	        		final EndEntityInformation missingUserDataVO = ejb.getUserAdminSession().findUser(getAdmin(), missing_user_name);
+	        		final EndEntityInformation missingUserDataVO = ejb.getEndEntityAccessSession().findUser(getAdmin(), missing_user_name);
 	        		if (missingUserDataVO == null) {
 	        			// Add the user and change status to REVOKED
 		        		getLogger().debug("Loading/updating user " + missing_user_name);

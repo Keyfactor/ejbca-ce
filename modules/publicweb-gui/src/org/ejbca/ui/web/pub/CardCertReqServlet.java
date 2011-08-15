@@ -61,6 +61,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -107,6 +108,8 @@ public class CardCertReqServlet extends HttpServlet {
 	private CertificateStoreSessionLocal certificateStoreSession;
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
+	@EJB
+	private EndEntityAccessSessionLocal endEntityAccessSession;
 	@EJB
 	private HardTokenSessionLocal hardTokenSession;
 	@EJB
@@ -168,7 +171,7 @@ public class CardCertReqServlet extends HttpServlet {
             log.debug("Got request for " + username + ".");
             debug.print("<h3>username: " + username + "</h3>");
             
-            final EndEntityInformation data = userAdminSession.findUser(administrator, username);
+            final EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
             final X509Certificate notRevokedCerts[]; {
                 Set<X509Certificate> set = new HashSet<X509Certificate>();
                 for( Iterator<java.security.cert.Certificate> i = certificateStoreSession.findCertificatesByUsername(username).iterator(); i.hasNext(); ) {

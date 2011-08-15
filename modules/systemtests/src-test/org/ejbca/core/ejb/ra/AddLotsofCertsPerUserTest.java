@@ -31,6 +31,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -59,6 +60,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
@@ -133,7 +135,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             EndEntityInformation userdata = new EndEntityInformation(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, email,
                     UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, hardtokenissuerid, null);
             userdata.setPassword(password);
-            if (userAdminSession.findUser(administrator, username) != null) {
+            if (endEntityAccessSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");
             } else {
                 userAdminSession.addUser(administrator, userdata, true);

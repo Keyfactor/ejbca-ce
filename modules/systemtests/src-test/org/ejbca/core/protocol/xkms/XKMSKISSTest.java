@@ -42,12 +42,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -114,6 +116,7 @@ public class XKMSKISSTest extends TestCase {
     private static String dn2;
     private static String dn3;
 
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -179,7 +182,7 @@ public class XKMSKISSTest extends TestCase {
         dn1 = "C=SE, O=AnaTom, CN=" + username1;
         String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";
         String email1 = username1 + "@foo.se";
-        if (userAdminSession.findUser(administrator, username1) != null) {
+        if (endEntityAccessSession.findUser(administrator, username1) != null) {
             log.info("Error : User already exists in the database.");
         }
         userAdminSession.addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false,
@@ -193,7 +196,7 @@ public class XKMSKISSTest extends TestCase {
         String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/" + username2
                 + ",IPADDRESS=10.0.0.1,DNSNAME=" + username2 + ".test.com";
         String email2 = username2 + "@foo.se";
-        if (userAdminSession.findUser(administrator, username2) != null) {
+        if (endEntityAccessSession.findUser(administrator, username2) != null) {
             log.info("Error : User already exists in the database.");
         }
         userAdminSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false,
@@ -206,7 +209,7 @@ public class XKMSKISSTest extends TestCase {
         dn3 = "C=SE, O=AnaTom, CN=" + username3;
         String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
         String email3 = username3 + "@foo.se";
-        if (userAdminSession.findUser(administrator, username3) != null) {
+        if (endEntityAccessSession.findUser(administrator, username3) != null) {
             log.info("Error : User already exists in the database.");
         }
         userAdminSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false,

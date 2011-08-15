@@ -23,7 +23,9 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -50,6 +52,7 @@ public class UserPasswordExpireTest extends CaTestCase {
     private static final String USERNAME = "UserPasswordExpireTestUser";
     private static final String PWD = "foo123";
 
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -109,7 +112,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         // The service will run...
 
         // Now the user will not have been expired
-        EndEntityInformation data = userAdminSession.findUser(admin, USERNAME);
+        EndEntityInformation data = endEntityAccessSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_NEW, data.getStatus());
 
@@ -125,7 +128,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         Thread.sleep(10000);
 
         // Now the user will be expired
-        data = userAdminSession.findUser(admin, USERNAME);
+        data = endEntityAccessSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
         assertEquals(UserDataConstants.STATUS_GENERATED, data.getStatus());
 

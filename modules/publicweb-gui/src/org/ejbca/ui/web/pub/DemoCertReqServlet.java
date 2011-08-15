@@ -37,6 +37,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -84,6 +85,8 @@ public class DemoCertReqServlet extends HttpServlet {
     private SignSessionLocal signSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private EndEntityAccessSession endEntityAccessSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
@@ -161,7 +164,7 @@ public class DemoCertReqServlet extends HttpServlet {
         username = StringTools.strip(username);
         // need null check here?
         // Before doing anything else, check if the user name is unique and ok.
-        boolean check = checkUsername(admin, username, userAdminSession);
+        boolean check = checkUsername(admin, username, endEntityAccessSession);
         if (check == false) {
             String msg = "User '" + username + "' already exist.";
             log.error(msg);
@@ -314,7 +317,7 @@ public class DemoCertReqServlet extends HttpServlet {
     /**
      * @return true if the username is ok (does not already exist), false otherwise
      */
-    private final boolean checkUsername(AuthenticationToken admin, String username, UserAdminSessionLocal adminsession) throws ServletException {
+    private final boolean checkUsername(AuthenticationToken admin, String username, EndEntityAccessSession adminsession) throws ServletException {
         if (username != null) {
             username = username.trim();
         }

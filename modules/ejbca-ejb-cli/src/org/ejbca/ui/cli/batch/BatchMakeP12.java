@@ -259,7 +259,7 @@ public class BatchMakeP12 extends BaseCommand {
             cert = orgCert;
             boolean finishUser = ejb.getCaSession().getCAInfo(getAdmin(), caid).getFinishUser();
             if (finishUser) {
-            	EndEntityInformation userdata = ejb.getUserAdminSession().findUser(admin, username);
+            	EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(admin, username);
                 ejb.getAuthenticationSession().finishUser(userdata);
             }
 
@@ -407,7 +407,7 @@ public class BatchMakeP12 extends BaseCommand {
             // request counter
             // meaning that we should not reset the clear text password yet.
 
-            EndEntityInformation vo = ejb.getUserAdminSession().findUser(getAdmin(), data.getUsername());
+            EndEntityInformation vo = ejb.getEndEntityAccessSession().findUser(getAdmin(), data.getUsername());
             if ((vo.getStatus() == UserDataConstants.STATUS_NEW) || (vo.getStatus() == UserDataConstants.STATUS_FAILED)
                     || (vo.getStatus() == UserDataConstants.STATUS_KEYRECOVERY)) {
                 ejb.getUserAdminSession().setClearTextPassword(getAdmin(), data.getUsername(), data.getPassword());
@@ -559,7 +559,7 @@ public class BatchMakeP12 extends BaseCommand {
         if (getLogger().isTraceEnabled()) {
             getLogger().trace(">createUser(" + username + ")");
         }
-        EndEntityInformation data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+        EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
         if (data == null) {
             getLogger().error(intres.getLocalizedMessage("batch.errorunknown", username));
             return;

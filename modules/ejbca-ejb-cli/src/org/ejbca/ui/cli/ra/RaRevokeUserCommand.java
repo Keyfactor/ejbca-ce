@@ -46,7 +46,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
             	getLogger().error("Reason must be an integer between 0 and 10 except 7.");
             } else {
-            	EndEntityInformation data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+            	EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
                 if (data==null) {
                 	getLogger().error("User not found.");
                 	return;
@@ -58,7 +58,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 // Revoke users certificates
                 try {
                     ejb.getUserAdminSession().revokeUser(getAdmin(), username, reason);
-                    data = ejb.getUserAdminSession().findUser(getAdmin(), username);
+                    data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
                     getLogger().info("New status=" + data.getStatus());
                 } catch (AuthorizationDeniedException e) {
                 	getLogger().error("Not authorized to revoke user.");

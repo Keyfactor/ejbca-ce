@@ -173,7 +173,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 		getLogger().debug("Loading/updating user " + username);
 		// Check if username already exists.
-		EndEntityInformation userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
+		EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
 		if (userdata==null) {
 			// Add a "user" to map this certificate to
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);

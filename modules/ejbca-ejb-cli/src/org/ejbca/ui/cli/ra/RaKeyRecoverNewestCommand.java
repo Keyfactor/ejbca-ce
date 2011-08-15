@@ -44,7 +44,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			getLogger().error("User is already marked for recovery.");
     			return;                     
     		}
-    		EndEntityInformation userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
+    		EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
     		if(userdata == null){
     			getLogger().error("The user doesn't exist.");
     			return;

@@ -64,6 +64,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -105,6 +106,7 @@ public class KRSSResponseGenerator extends
 	 private CaSession casession;
 	 private EndEntityAuthenticationSession authenticationSession;
 	 private CertificateStoreSession certificateStoreSession;
+	 private EndEntityAccessSession endEntityAccessSession;
 	 private EndEntityProfileSession endEntityProfileSession;
 	 private KeyRecoverySession keyRecoverySession;
 	 private GlobalConfigurationSession globalConfigurationSession;
@@ -112,7 +114,7 @@ public class KRSSResponseGenerator extends
 	 private UserAdminSession userAdminSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
-    		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession,
+    		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
     		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
         super(remoteIP, req, casession, certificateStoreSession, crlSession);
@@ -120,6 +122,7 @@ public class KRSSResponseGenerator extends
         this.casession = casession;
         this.authenticationSession = authenticationSession;
         this.certificateStoreSession = certificateStoreSession;
+        this.endEntityAccessSession = endEntityAccessSession;
         this.endEntityProfileSession = endEntityProfileSession;
         this.keyRecoverySession = keyRecoverySession;
         this.globalConfigurationSession = globalConfigurationSession;
@@ -261,7 +264,7 @@ public class KRSSResponseGenerator extends
 
 				// Save the revocation code
 				if(revocationCode != null && !recover){
-					EndEntityInformation data = userAdminSession.findUser(pubAdmin, userDataVO.getUsername());
+					EndEntityInformation data = endEntityAccessSession.findUser(pubAdmin, userDataVO.getUsername());
 					ExtendedInformation ei = data.getExtendedinformation();
 					if (ei == null) {
 						ei = new ExtendedInformation();
@@ -348,7 +351,7 @@ public class KRSSResponseGenerator extends
 		
 		if(subjectDN != null){
 			try {
-				retval = userAdminSession.findUserBySubjectDN(pubAdmin, subjectDN);
+				retval = endEntityAccessSession.findUserBySubjectDN(pubAdmin, subjectDN);
 			} catch (AuthorizationDeniedException e) {
 				log.error(intres.getLocalizedMessage("xkms.errorinprivs"),e);				
 			}		
@@ -371,7 +374,7 @@ public class KRSSResponseGenerator extends
 			if (log.isDebugEnabled()) {
 				log.debug("Username for certificate with issuerDN:"+CertTools.getIssuerDN(cert)+", serialNo:"+CertTools.getSerialNumber(cert)+" :"+username);
 			}
-			retval = userAdminSession.findUser(pubAdmin, username);
+			retval = endEntityAccessSession.findUser(pubAdmin, username);
 			if(retval==null){
 				if (log.isDebugEnabled()) {
 					log.debug("User with username "+username+"not found.");

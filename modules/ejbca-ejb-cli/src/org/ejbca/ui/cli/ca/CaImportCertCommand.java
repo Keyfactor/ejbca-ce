@@ -87,7 +87,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			}
 			
 			// Check if username already exists.
-			EndEntityInformation userdata = ejb.getUserAdminSession().findUser(getAdmin(), username);
+			EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
 			if (userdata != null) {
 				if (userdata.getStatus() != UserDataConstants.STATUS_REVOKED) {
 					throw new Exception("User " + username +

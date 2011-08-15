@@ -31,6 +31,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -38,6 +39,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -70,6 +72,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     private static String pwd2;
 
     private EndEntityAuthenticationSessionRemote authenticationSessionRemote = InterfaceCache.getAuthenticationSession();
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -110,7 +113,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         userdata.setExtendedinformation(ei);
         userdata.setPassword(password);
         userAdminSession.addUser(admin, userdata, true);
-        EndEntityInformation userdata2 = userAdminSession.findUser(admin, userdata.getUsername());
+        EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
 
@@ -215,7 +218,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(admin, username1));
 
         // Now finish the user (The actual test)
-        EndEntityInformation userdata = userAdminSession.findUser(admin, username1);
+        EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username1);
         authenticationSessionRemote.finishUser(userdata);
         // And se if the user is still marked
 

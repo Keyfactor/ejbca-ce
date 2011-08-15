@@ -51,6 +51,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -60,6 +61,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -152,6 +154,7 @@ public class XKMSKRSSTest extends TestCase {
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
@@ -247,7 +250,7 @@ public class XKMSKRSSTest extends TestCase {
             final String subjectaltname2 = "RFC822NAME=" + username2 + "@foo.se,UNIFORMRESOURCEIDENTIFIER=http://www.test.com/" + username2
                     + ",IPADDRESS=10.0.0.1,DNSNAME=" + username2 + ".test.com";
             final String email2 = username2 + "@foo.se";
-            if (userAdminSession.findUser(administrator, username2) != null) {
+            if (endEntityAccessSession.findUser(administrator, username2) != null) {
                 log.info("User already exists in the database.");
             } else {
                 userAdminSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false,
@@ -259,7 +262,7 @@ public class XKMSKRSSTest extends TestCase {
         {
             String subjectaltname3 = "RFC822NAME=" + username3 + "@foo.se";
             String email3 = username3 + "@foo.se";
-            if (userAdminSession.findUser(administrator, username3) != null) {
+            if (endEntityAccessSession.findUser(administrator, username3) != null) {
                 log.info("User already exists in the database.");
             } else {
                 userAdminSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false,
@@ -279,7 +282,7 @@ public class XKMSKRSSTest extends TestCase {
             final int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             final String subjectaltname1 = "RFC822NAME=" + userName + "@foo.se";
             final String email1 = userName + "@foo.se";
-            if (userAdminSession.findUser(administrator, userName) != null) {
+            if (endEntityAccessSession.findUser(administrator, userName) != null) {
                 log.info("User already exists in the database.");
             } else {
                 userAdminSession.addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false,
