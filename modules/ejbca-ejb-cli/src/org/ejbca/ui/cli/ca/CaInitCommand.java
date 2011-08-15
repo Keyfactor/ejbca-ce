@@ -14,20 +14,24 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -210,6 +214,22 @@ public class CaInitCommand extends BaseCaAdminCommand {
             catokeninfo.setSignatureAlgorithm(signAlg);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         	catokeninfo.setProperties(catokenproperties);
+        	Properties prop = catokeninfo.getProperties();
+        	// Set some CA token properties if they are not set already
+        	if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+        		prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
+        	}
+        	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+        		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        	}
+        	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+        		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        	}
+        	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+        		prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        	}
+    		catokeninfo.setProperties(prop);
+
             if (!catokenpassword.equalsIgnoreCase("null")) {
 	        	catokeninfo.setAuthenticationCode(catokenpassword);	            	
             }
@@ -220,13 +240,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
             }
             
             // Create and active OSCP CA Service.
-            ArrayList extendedcaservices = new ArrayList();
-            String keySpec = keyspec;
+            ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            String extendedServiceKeySpec = keyspec;
             if (keytype.equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
             	// Never use larger keys than 2048 bit RSA for OCSP signing
-            	int len = Integer.parseInt(keySpec);
+            	int len = Integer.parseInt(extendedServiceKeySpec);
             	if (len > 2048) {
-            		keySpec = "2048";				 
+            		extendedServiceKeySpec = "2048";				 
             	}
             }
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -234,13 +254,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                                           "CN=XKMSCertificate, " + dn,
                                           "",
-                                          keySpec,
+                                          extendedServiceKeySpec,
                                           keytype));
             extendedcaservices.add(
                     new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
                                           "CN=CmsCertificate, " + dn,
                                           "",
-                                          keySpec,
+                                          extendedServiceKeySpec,
                                           keytype));
               
             
@@ -251,7 +271,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              null, // Expiretime                                             
                                              CAInfo.CATYPE_X509,
                                              signedByCAId,
-                                             (Collection) null,
+                                             new ArrayList<Certificate>(), // empty certificate chain
                                              catokeninfo,
                                              "Initial CA",
                                              -1, null,
@@ -260,7 +280,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssueInterval
                                              10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
                                              0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
-                                             new ArrayList(),
+                                             new ArrayList<Integer>(),
                                              true, // Authority Key Identifier
                                              false, // Authority Key Identifier Critical
                                              true, // CRL Number
@@ -272,7 +292,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              true, // Finish User
                                              extendedcaservices,
 			                                 false, // use default utf8 settings
-			                                 new ArrayList(), // Approvals Settings
+			                                 new ArrayList<Integer>(), // Approvals Settings
 			                                 1, // Number of Req approvals
 			                                 false, // Use UTF8 subject DN by default
 			                                 true, // Use LDAP DN order by default

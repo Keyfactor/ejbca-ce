@@ -425,7 +425,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Set Certificate Chain
         ca.setCertificateChain(certificatechain);
-
+        // Edit the CA so certificate chain is stored
+        try {
+        	caSession.editCA(admin, ca, true);
+        } catch (Exception fe) {
+            String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            details.put("error", fe.getMessage());
+            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(cainfo.getCAId()).toString(), null, null, details);
+            throw new EJBException(fe);
+        }
         // Publish CA certificates.
         publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
 
