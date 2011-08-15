@@ -74,7 +74,7 @@ public class CAData extends ProtectedData implements Serializable {
     		setCaId(Integer.valueOf(subjectdn.hashCode()));
     		setName(name);
     		setSubjectDN(subjectdn);
-    		if (ca.getCertificateChain().size() != 0) {
+    		if ((ca.getCertificateChain() != null) && (ca.getCertificateChain().size() > 0)) {
     			final Certificate cacert = ca.getCACertificate();
     			setExpireTime(CertTools.getNotAfter(cacert).getTime());  
     			ca.setExpireTime(CertTools.getNotAfter(cacert)); 
