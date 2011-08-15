@@ -42,6 +42,7 @@ public class CertificateCacheTest extends TestCase {
 
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
+		EjbcaConfigurationHolder.instance(); // init config
 		EjbcaConfigurationHolder.updateConfiguration("ocspSigningCertsValidTime", "15");
 		Collection<Certificate> certs = new ArrayList<Certificate>();
 		X509Certificate testrootcert = (X509Certificate)CertTools.getCertfromByteArray(testroot);

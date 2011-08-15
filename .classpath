@@ -78,6 +78,8 @@
 	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/easymock-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
