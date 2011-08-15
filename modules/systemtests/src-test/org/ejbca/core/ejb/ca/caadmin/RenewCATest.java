@@ -13,7 +13,8 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.security.cert.X509Certificate;
 import java.util.Arrays;

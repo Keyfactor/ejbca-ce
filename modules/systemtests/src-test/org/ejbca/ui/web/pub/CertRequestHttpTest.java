@@ -34,8 +34,6 @@ import java.security.interfaces.RSAPublicKey;
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 
-import junit.framework.TestSuite;
-
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.Base64;
 import org.bouncycastle.asn1.DEROutputStream;

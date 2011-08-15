@@ -31,7 +31,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -52,7 +52,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @EJB
     private AccessControlSessionLocal accessControlSession;
     @EJB
-    private CaSession caSession;
+    private CaSessionLocal caSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
 

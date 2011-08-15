@@ -5,7 +5,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents,
-                 org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.ejbca.core.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger,
+                 org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.cesecore.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger,
                  org.cesecore.authorization.AuthorizationDeniedException" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

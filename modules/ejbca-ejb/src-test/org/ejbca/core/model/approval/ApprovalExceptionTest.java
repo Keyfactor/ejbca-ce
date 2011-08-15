@@ -15,8 +15,8 @@ package org.ejbca.core.model.approval;
 
 import junit.framework.TestCase;
 
+import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ErrorCode;
 
 /**
  * @version $Id$

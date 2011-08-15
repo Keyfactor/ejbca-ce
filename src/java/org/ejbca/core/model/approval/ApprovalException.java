@@ -14,8 +14,8 @@ package org.ejbca.core.model.approval;
 
 import javax.xml.ws.WebFault;
 
+import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ErrorCode;
 
 /**
  * General Exception when something serious goes wrong when
