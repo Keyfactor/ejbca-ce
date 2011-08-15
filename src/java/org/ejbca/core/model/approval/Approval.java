@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.log.Admin;
 
 
@@ -51,7 +52,7 @@ public class Approval implements Comparable<Approval>, Externalizable {
 	
 	private static final long serialVersionUID = -1L;
 	
-	private static final int LATEST_VERSION = 2;
+	private static final int LATEST_VERSION = 3;
 
 	private AuthenticationToken admin = null;
     private String adminCertIssuerDN = null;
@@ -170,6 +171,8 @@ public class Approval implements Comparable<Approval>, Externalizable {
                 Set<X500Principal> principals = new HashSet<X500Principal>();
                 principals.add(x509cert.getSubjectX500Principal());
                 this.admin = new X509CertificateAuthenticationToken(principals, credentials);            	
+				this.adminCertIssuerDN = CertTools.getIssuerDN(x509cert);
+				this.adminCertSerialNumber = CertTools.getSerialNumberAsString(x509cert);
             } else if ((admin.getAdminType() >= 0) && (admin.getAdminType() <= 5)) {
 				// We trust this admin as if it were created internal to EJBCA and fill in the auth token
             	this.admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
@@ -183,6 +186,10 @@ public class Approval implements Comparable<Approval>, Externalizable {
 			if (this.admin instanceof AlwaysAllowLocalAuthenticationToken) {
 				// We trust this admin as if it were created internal to EJBCA and fill in the auth token
 				this.admin = new AlwaysAllowLocalAuthenticationToken(this.admin.getPrincipals().iterator().next());
+			} else if (this.admin instanceof X509CertificateAuthenticationToken) {
+				X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken)this.admin;
+				this.adminCertIssuerDN = CertTools.getIssuerDN(xtok.getCertificate());
+				this.adminCertSerialNumber = CertTools.getSerialNumberAsString(xtok.getCertificate());
 			}
 			this.approved = in.readBoolean();
 			this.approvalDate = (Date) in.readObject();
