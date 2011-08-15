@@ -31,11 +31,11 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
     }
 
     public String getSubCommand() {
-        return "listgroups";
+        return "listroles";
     }
 
     public String getDescription() {
-        return "Lists admin groups";
+        return "Lists admin roles";
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
