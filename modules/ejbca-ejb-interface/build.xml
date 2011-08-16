@@ -51,11 +51,15 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<src path="${src.dir}"/>
     		<src path="${ejbca.home}/src/java"/>
-			<include name="org/ejbca/core/ejb/**/CertificateStoreSession*.java"/>
-			<include name="org/cesecore/core/ejb/**/CrlSession*.java"/>
-        	<exclude name="org/ejbca/core/ejb/ca/store/CertificateStore*SessionBean.java" />
-			<exclude name="org/cesecore/core/ejb/ca/crl/Crl*SessionBean.java" />
-        	<include name="org/ejbca/core/ejb/JndiHelper.java" />
+			<include name="org/cesecore/certificates/certificate/CertificateStoreSession*.java"/>
+			<include name="org/cesecore/certificates/crl/CrlStoreSession*.java"/>
+			<include name="org/cesecore/audit/log/SecurityEventsLoggerSession*.java"/>
+			<include name="org/cesecore/authorization/control/AccessControlSession*.java"/>
+        	<exclude name="org/cesecore/certificates/certificate/CertificateStore*SessionBean.java" />
+			<exclude name="org/cesecore/certificates/crl/CrlStore*SessionBean.java" />
+			<exclude name="org/cesecore/audit/log/SecurityEventsLoggerSessionBean.java"/>
+			<exclude name="org/cesecore/authorization/control/AccessControlSessionBean.java"/>
+        	<include name="org/cesecore/jndi/JndiHelper.java" />
     	</javac>
     </target>
 	

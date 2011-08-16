@@ -487,8 +487,8 @@
 	<target name="compile-va-ejb" depends="with.clover, va-ejb-interface, compile-va-common">
 		<mkdir dir="${build-va.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
-			<include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
-			<include name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
+			<include name="org/cesecore/certificates/certifciate/CertificateStoreSessionBean.java" />
+			<include name="org/cesecore/certificates/crl/CrlStoreSessionBean.java" />
 		</javac>
 	</target>
 
@@ -500,6 +500,8 @@
 			<include name="org/ejbca/ui/web/protocol/IHealtChecker.java"/>
 			<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java"/>
 			<include name="org/ejbca/util/DummyPatternLogger.java"/>
+			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
+			<include name="org/ejbca/core/model/InternalEjbcaResources.java"/>
 			<include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java"/>
 			<include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java"/>
 			<include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java"/>

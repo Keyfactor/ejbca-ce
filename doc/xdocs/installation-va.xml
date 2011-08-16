@@ -146,5 +146,14 @@ Note, that this can usually not be done from a windows machine, to a Linux machi
   </subsection>
 </section>
 
+<section name="Security considerations">
+<subsection name="Database privileges">
+<p>
+Since the VA itself only reads from the database you should consider using a read-only database user for the VA.
+The only write access needed to the database is the VA Publisher configured on the CA.
+</p>
+</subsection>
+</section>
+
 </body>
 </document>
