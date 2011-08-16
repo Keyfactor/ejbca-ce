@@ -76,7 +76,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
-    @EJB
+    
     private PublisherQueueSessionLocal publisherQueueSession;
 
     @PostConstruct
