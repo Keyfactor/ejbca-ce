@@ -45,6 +45,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -78,6 +79,8 @@ public class StartServicesServlet extends HttpServlet {
     private CertificateCreateSessionLocal certCreateSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    @EJB
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     
     // Since timers are reloaded at server startup, we can leave them in the database. This was a workaround for WebLogic.
     // By skipping this we don't need application server (read JBoss) specific config for what this module depends on.
@@ -221,10 +224,13 @@ public class StartServicesServlet extends HttpServlet {
         	log.error("Error creating CAAdminSession: ", e);
         }
         
+        log.trace(">init ComplexAccessControlSession to check for initial root role");
+        complexAccessControlSession.initialize();
+
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
-        certCreateSession.isUniqueCertificateSerialNumberIndex();
+        certCreateSession.isUniqueCertificateSerialNumberIndex();        
     }
     
     /**
