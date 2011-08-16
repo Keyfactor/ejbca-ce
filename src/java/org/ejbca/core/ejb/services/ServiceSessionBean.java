@@ -111,7 +111,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private ServiceDataSessionLocal serviceDataSession;
-    @EJB
+
     private ServiceSessionLocal serviceSession;
 
     // Additional dependencies from the services we executeServiceInTransaction

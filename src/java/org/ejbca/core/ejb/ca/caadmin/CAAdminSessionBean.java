@@ -148,6 +148,7 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CardVerifiableCertificate;
+import org.jboss.ejb3.annotation.IgnoreDependency;
 
 /**
  * Administrates and manages CAs in EJBCA system.
@@ -164,27 +165,27 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 
-    @EJB
+    @EJB 
     private AccessControlSessionLocal accessSession;
-    @EJB
+    @EJB 
     private SecurityEventsLoggerSessionLocal auditSession;
-    @EJB
+    @EJB 
     private CaSessionLocal caSession;
-    @EJB
+    @EJB 
     private CaTokenSessionLocal caTokenSession;
-    @EJB
+    @EJB 
     private CertificateProfileSessionLocal certificateProfileSession;
-    @EJB
+    @EJB 
     private CertificateStoreSessionLocal certificateStoreSession;
-    @EJB
+    @EJB 
     private CrlStoreSessionLocal crlStoreSession;
-    @EJB
+    @EJB 
     private RevocationSessionLocal revocationSession;
-    @EJB
+    @EJB 
     private CrlCreateSessionLocal crlCreateSession;
-    @EJB
+    @EJB 
     private PublisherSessionLocal publisherSession;
-    @EJB
+    @EJB 
     private ApprovalSessionLocal approvalSession;
 
     /** Internal localization of logs and errors */
@@ -425,17 +426,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Set Certificate Chain
         ca.setCertificateChain(certificatechain);
-        // Edit the CA so certificate chain is stored
-        try {
-        	caSession.editCA(admin, ca, true);
-        } catch (Exception fe) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            details.put("error", fe.getMessage());
-            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(cainfo.getCAId()).toString(), null, null, details);
-            throw new EJBException(fe);
-        }
+
         // Publish CA certificates.
         publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
 

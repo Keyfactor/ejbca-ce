@@ -38,6 +38,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
@@ -86,7 +87,7 @@ public class DemoCertReqServlet extends HttpServlet {
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
     @EJB
-    private EndEntityAccessSession endEntityAccessSession;
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
