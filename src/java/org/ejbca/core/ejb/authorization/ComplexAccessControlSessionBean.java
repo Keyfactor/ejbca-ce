@@ -14,24 +14,33 @@ package org.ejbca.core.ejb.authorization;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.access.AccessTree;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -55,7 +64,38 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     private CaSessionLocal caSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public void initialize() {
+		log.error(">ejbCreate");
+		Collection<RoleData> roles = roleAccessSession.getAllRoles();
+		if (roles.size() == 0) {
+			log.error("No roles exist, intializing root role");
+	        RoleData role = new RoleData(1, "root");
+	        entityManager.persist(role);
+	        AccessRuleData rule = new AccessRuleData(1, "/", AccessRuleState.RULE_ACCEPT, true);
+	        Map<Integer, AccessRuleData> rules = new HashMap<Integer, AccessRuleData>();
+	        rules.put(1, rule);
+	        role.setAccessRules(rules);
+	        Map<Integer, AccessUserAspectData> existingUsers = new HashMap<Integer, AccessUserAspectData>();
+	        AccessUserAspectData aua = new AccessUserAspectData("root", 0, AccessMatchValue.NONE, AccessMatchType.TYPE_EQUALCASE, "");
+            existingUsers.put(AccessUserAspectData.generatePrimaryKey("root", 0, AccessMatchValue.NONE, AccessMatchType.TYPE_EQUALCASE, ""), aua);
+            role.setAccessUsers(existingUsers);
+	        entityManager.persist(role);
+	        accessTreeUpdateSession.signalForAccessTreeUpdate();
+	        accessControlSession.forceCacheExpire();
+		} else {
+			log.error("Roles exist, not intializing root role");			
+		}
+        log.error("<ejbCreate");
+	}
+	
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     /*
