@@ -272,15 +272,6 @@
             <transient name="markedAsRecoverableInt"/>
         </attributes>
     </entity>
-    <entity class="org.ejbca.core.ejb.log.LogConfigurationData" access="PROPERTY" metadata-complete="false">
-        <attributes>
-            <id name="id"><column name="id" column-definition="INT(11)"/></id>
-            <basic name="logConfigurationUnsafe"><column name="logConfiguration" column-definition="LONGBLOB" nullable="false"/><lob/></basic>
-            <basic name="logEntryRowNumber"><column name="logEntryRowNumber" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
-            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
-        </attributes>
-    </entity>
     <entity class="org.ejbca.core.ejb.log.LogEntryData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
