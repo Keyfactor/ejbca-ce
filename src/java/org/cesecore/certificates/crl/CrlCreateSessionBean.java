@@ -389,7 +389,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     	try {
     		final String caCertSubjectDN; // DN from the CA issuing the CRL to be used when searching for the CRL in the database.
     		{
-    			final Collection<Certificate> certs = ca.getCertificateChain();//cainfo.getCertificateChain();
+    			final Collection<Certificate> certs = cainfo.getCertificateChain();
     			final Certificate cacert = !certs.isEmpty() ? certs.iterator().next(): null;
     			caCertSubjectDN = cacert!=null ? CertTools.getSubjectDN(cacert) : null;
     		}
