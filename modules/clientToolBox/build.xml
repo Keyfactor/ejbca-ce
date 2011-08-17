@@ -25,6 +25,7 @@
         </fileset>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.xml.classpath"/>
+		<path refid="lib.javaxejb.classpath"/>
 	</path>
 
     <target name="build" description="Build this module" depends="compile">
