@@ -101,6 +101,7 @@
 			classpathref="compile-va.classpath">
 			<include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>
 			<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
+			<include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.java" if="use.ocsp.extensionclass"/>
 			<src path="${src.dir}"/>
 			<src path="${ejbca.home}/src/java"/>
 		</javac>
@@ -130,6 +131,7 @@
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
 			<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
+        	<include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.java" if="use.ocsp.extensionclass"/>
 			<src path="${src.dir}"/>
         </javac>
 	</target>
