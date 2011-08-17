@@ -98,6 +98,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void addCA(final AuthenticationToken admin, final CA ca) throws CAExistsException, AuthorizationDeniedException, IllegalCryptoTokenException {
         if (ca != null) {
             if (!accessSession.isAuthorized(admin, StandardRules.CAADD.resource())) {

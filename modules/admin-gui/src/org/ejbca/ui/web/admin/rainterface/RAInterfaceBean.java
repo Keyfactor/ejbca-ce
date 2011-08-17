@@ -49,6 +49,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
@@ -99,7 +100,7 @@ public class RAInterfaceBean implements Serializable {
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
-    private EndEntityAccessSession endEntityAccessSession;
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     private EndEntityProfileSession endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
