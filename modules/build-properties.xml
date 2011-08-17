@@ -165,7 +165,25 @@
 		</fileset>
 	</path>
 
+	<path id="lib.javaxejb.classpath">
+		<fileset dir="${appserver.home}">
+			<!-- JBoss 5.1.0 -->
+	    	<include name="client/jboss-javaee.jar"/>
+	
+			<!-- JBoss 6.0.0 -->
+			<include name="client/jboss-ejb-api_3.1_spec.jar"/>
+			<include name="client/jboss-metadata-ejb.jar"/>
+	
+			<!-- glassfish v2.1.1 -->
+			<include name="lib/javaee.jar"/>
+			
+			<!-- Glassfish 3.1 -->
+			<include name="lib/glassfish/javaee.jar"/>			
+		</fileset>
+	</path>
+	
 	<path id="lib.jee.classpath">
+		<path refid="lib.javaxejb.classpath"/>
 		<fileset dir="${appserver.home}">
 			<!-- JBoss 5.0.0 -->
 			<include name="client/jbossall-client.jar" />
