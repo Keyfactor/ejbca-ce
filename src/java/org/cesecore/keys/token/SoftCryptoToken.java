@@ -81,7 +81,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
     public SoftCryptoToken() {
         super();
         if (log.isDebugEnabled()) {
-            log.debug("Creating SoftCAToken");
+            log.debug("Creating SoftCryptoToken");
         }
     }
 
