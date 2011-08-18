@@ -62,7 +62,6 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -105,7 +104,6 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static KeyPair keys = null;
 
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
 

@@ -124,7 +124,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public void beforeClass() {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
     

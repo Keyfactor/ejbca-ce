@@ -74,7 +74,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
     @BeforeClass
-    public void beforeClass() {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
     

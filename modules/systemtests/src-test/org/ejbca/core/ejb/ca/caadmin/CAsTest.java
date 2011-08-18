@@ -101,8 +101,6 @@ import org.junit.Test;
  */
 public class CAsTest extends CaTestCase {
 
-    private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
-
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
@@ -116,7 +114,7 @@ public class CAsTest extends CaTestCase {
     private AuthenticationToken adminTokenNoAuth;
 
     @BeforeClass
-    public void beforeClass() {
+    public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
