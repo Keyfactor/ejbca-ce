@@ -30,20 +30,26 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
@@ -65,35 +71,75 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
+    private RoleManagementSessionLocal roleMgmtSession;
+    @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+
+    private static final String SUPERADMIN_ROLE = "Super Administrator Role";
     
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void initialize() {
-		log.error(">ejbCreate");
-		Collection<RoleData> roles = roleAccessSession.getAllRoles();
-		if (roles.size() == 0) {
-			log.error("No roles exist, intializing root role");
-	        RoleData role = new RoleData(1, "root");
-	        entityManager.persist(role);
-	        AccessRuleData rule = new AccessRuleData(1, "/", AccessRuleState.RULE_ACCEPT, true);
-	        Map<Integer, AccessRuleData> rules = new HashMap<Integer, AccessRuleData>();
-	        rules.put(1, rule);
-	        role.setAccessRules(rules);
-	        Map<Integer, AccessUserAspectData> existingUsers = new HashMap<Integer, AccessUserAspectData>();
-	        AccessUserAspectData aua = new AccessUserAspectData("root", 0, AccessMatchValue.NONE, AccessMatchType.TYPE_EQUALCASE, "");
-            existingUsers.put(AccessUserAspectData.generatePrimaryKey("root", 0, AccessMatchValue.NONE, AccessMatchType.TYPE_EQUALCASE, ""), aua);
-            role.setAccessUsers(existingUsers);
-	        entityManager.persist(role);
-	        accessTreeUpdateSession.signalForAccessTreeUpdate();
-	        accessControlSession.forceCacheExpire();
-		} else {
-			log.error("Roles exist, not intializing root role");			
-		}
-        log.error("<ejbCreate");
+    public void initializeAuthorizationModule() {
+    	Collection<RoleData> roles = roleAccessSession.getAllRoles();
+    	List<CAData> cas = CAData.findAll(entityManager);
+    	if ((roles.size() == 0) && (cas.size() == 0)) {
+    		log.info("No roles or CAs exist, intializing Super Administrator Role with caid 0 and superadminCN empty.");
+    		log.debug("Creating new role '"+SUPERADMIN_ROLE+"'.");
+    		RoleData role = new RoleData(1, SUPERADMIN_ROLE);
+    		entityManager.persist(role);
+    		log.debug("Adding new rule '/' to "+SUPERADMIN_ROLE+".");
+        	AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
+        	Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
+        	newrules.put(rule.getPrimaryKey(), rule);
+        	role.setAccessRules(newrules);
+    		log.debug("Adding new AccessUserAspect 'NONE' to "+SUPERADMIN_ROLE+".");
+        	Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();
+        	AccessUserAspectData aua = new AccessUserAspectData(SUPERADMIN_ROLE, 0, AccessMatchValue.NONE, AccessMatchType.TYPE_EQUALCASE, "");
+        	newUsers.put(aua.getPrimaryKey(), aua);
+        	role.setAccessUsers(newUsers);    		
+    	} else {
+    		log.error("Roles or CAs exist, not intializing "+SUPERADMIN_ROLE);			
+    	}
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @Override
+    public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">initializeAuthorizationModule("+caid+", "+superAdminCN);
+    	}
+    	// In this method we need to use the entityManager explicitly instead of the role management session bean.
+    	// This is because it is also used to initialize the first rule that will allow the AlwayAllowAuthenticationToken to do anything.
+    	// Without this role and access rule we are not authorized to use the role management session bean 
+    	RoleData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
+    	if (role == null) {
+    		log.debug("Creating new role '"+SUPERADMIN_ROLE+"'.");
+    		roleMgmtSession.create(admin, SUPERADMIN_ROLE);
+    	}
+    	Map<Integer, AccessRuleData> rules = role.getAccessRules();
+    	AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
+    	if (!rules.containsKey(rule.getPrimaryKey())) {
+    		log.debug("Adding new rule '/' to "+SUPERADMIN_ROLE+".");
+        	Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
+        	newrules.add(rule);
+    		roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
+    	}
+    	Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
+    	AccessUserAspectData aua = new AccessUserAspectData(SUPERADMIN_ROLE, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, superAdminCN);
+    	if (!users.containsKey(aua.getPrimaryKey())) {
+    		log.debug("Adding new AccessUserAspect for '"+superAdminCN+"' to "+SUPERADMIN_ROLE+".");
+        	Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+        	subjects.add(aua);
+        	roleMgmtSession.addSubjectsToRole(admin, role, subjects);
+    	}
+    	accessTreeUpdateSession.signalForAccessTreeUpdate();
+    	accessControlSession.forceCacheExpire();
+    	if (log.isTraceEnabled()) {
+    		log.trace("<initializeAuthorizationModule("+caid+", "+superAdminCN);
+    	}
 	}
 	
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

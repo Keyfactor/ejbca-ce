@@ -3,9 +3,9 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
-                 javax.ejb.CreateException, org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
+                 javax.ejb.CreateException, org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.ejbca.core.model.ra.EndEntityInformation,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, java.math.BigInteger,
-                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.ejbca.core.model.ca.crl.RevokedCertInfo, org.cesecore.ErrorCode" %>
+                 org.ejbca.core.model.SecConst, org.cesecore.util.StringTools, org.cesecore.certificates.util.DnComponents, org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.crl.RevokedCertInfo, org.cesecore.ErrorCode" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -101,7 +101,7 @@
   String username                  = null;
   EndEntityProfile  profile        = null; 
   UserView userdata                = null;
-  int profileid                    = UserDataVO.NO_ENDENTITYPROFILE;  
+  int profileid                    = EndEntityInformation.NO_ENDENTITYPROFILE;  
   int[] fielddata                  = null;
 
   boolean userchanged              = false;

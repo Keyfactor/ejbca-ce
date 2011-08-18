@@ -3180,13 +3180,13 @@ class that implementes support for this particular HSM. A hard ca token
 plug-in must:
 </p>
 <ol>
-<li>implement ICAToken</li>
-<li>it is recommended to extend BaseCAToken, since BaseCAToken implements handling of all properties, autoactivation and such</li>
+<li>implement CryptoToken</li>
+<li>it is recommended to extend BaseCryptoToken, since BaseCryptoToken implements handling of all properties, autoactivation and such</li>
 <li>be loaded at the static initialization if CATokenManager where it is
 registered with the CATokenManager using the method
 addAvailableCAToken()</li>
 <li>Provide a JCE Security Provider that is installed by the module and can be fetched by 
-the EJBCA crypto module (BouncyCastle) through the name returned in ICAToken.getProvider().</li>
+the EJBCA crypto module (BouncyCastle) through the name returned in CryptoToken.getProvider().</li>
 </ol>
 <p>
 See HardCATokenSample and/or DummyHardCAToken for samples.
@@ -4470,7 +4470,7 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 	 * The main method that should return a DEREncodable
 	 * using the input data (optional) or defined properties (optional)
 	 * 
-	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile)
+	 * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValue(org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.ca.caadmin.CA, org.cesecore.certificates.certificateprofile.CertificateProfile)
 	 */	
 	public DEREncodable getValue(UserDataVO userData, CA ca,
 			CertificateProfile certProfile) {
@@ -4808,7 +4808,7 @@ to build SQL querys, we have to ban some characters to avoid XSS-attacks and SQL
 These characters will be replaced by /. ',' can be escaped ,'\,'.
 The current JavaScrips used in Admin GUI might also limit you ability to use any UTF-8 character. 
 </p>
-<p>org.ejbca.util.StringTools contains the full list of characters banned for different purposes.</p>
+<p>org.cesecore.util.StringTools contains the full list of characters banned for different purposes.</p>
 </section>
 
 <section name="Code signing">

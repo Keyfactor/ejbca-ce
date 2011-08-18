@@ -1,11 +1,11 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
-    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
-               org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents, 
-               org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
-               org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.certificates.util.AlgorithmConstants"%>
-<%@page import="org.ejbca.util.YearMonthDayTime"%>
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
+               org.cesecore.certificates.certificateprofile.CertificateProfileExistsException, org.cesecore.certificates.certificateprofile.CertificateProfileConstants, org.ejbca.ui.web.CertificateView, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, 
+               org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory, org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
+               org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.certificates.util.AlgorithmConstants"%>
+<%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
@@ -548,7 +548,7 @@
               certificateprofiledata.setCVCAccessRights(ar);    
 
               value = request.getParameter(SELECT_TYPE);
-              int type  = CertificateProfile.TYPE_ENDENTITY;
+              int type  = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
               if(value != null){
                 type = Integer.parseInt(value);
               }

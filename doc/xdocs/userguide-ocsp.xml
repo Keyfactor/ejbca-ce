@@ -195,7 +195,7 @@ for your both the CA database and each OCSP responder.
   </p>
   <p>Specification of the fields:
   <ul>
-  <li>issuerDN must be of "EJBCA normalized" form, as returned by org.ejbca.util.CertTools.getIssuerDN(cert).</li>
+  <li>issuerDN must be of "EJBCA normalized" form, as returned by org.cesecore.util.CertTools.getIssuerDN(cert).</li>
   <li>serialNumber is BigInteger.toString().</li>
   <li>Status is from CertificateDataBean.CERT_REVOKED etc.</li>
   <li>certificateProfileId can be basically anything and is used if you configure things like 'ocsp.999.untilNextUpdate' in ocsp.properties.</li>

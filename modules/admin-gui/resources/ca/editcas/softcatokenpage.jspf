@@ -25,7 +25,7 @@
         <input type="checkbox" name="<%=CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE %>" value="<%=CHECKBOX_VALUE %>"
             <% if (editca) {
                  String prop = softcatokeninfo.getProperties();
-                 if ( (prop != null) && (prop.contains(ICAToken.AUTOACTIVATE_PIN_PROPERTY)) ) {
+                 if ( (prop != null) && (prop.contains(CryptoToken.AUTOACTIVATE_PIN_PROPERTY)) ) {
                    out.write("CHECKED");
                  }
                } else {

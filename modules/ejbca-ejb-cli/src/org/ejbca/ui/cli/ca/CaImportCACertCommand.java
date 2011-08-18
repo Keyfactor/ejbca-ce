@@ -7,8 +7,11 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -37,7 +40,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 		boolean initAuth = argsList.remove("-initauthorization");
 
 		int superAdminCNInd = argsList.indexOf("-superadmincn");
-		String superAdminCN = BaseCaAdminCommand.defaultSuperAdminCN;
+		String superAdminCN = null;
 		if (superAdminCNInd > -1) {
 			if (argsList.size() <= (superAdminCNInd+1)) {
 				getLogger().info("Use -superadmincn SuperAdminCN");
@@ -57,7 +60,6 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			if (initAuth) {
 				String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
 				Integer caid = Integer.valueOf(subjectdn.hashCode());
-				getLogger().info("Initializing authorization module for caid: "+caid+", superadmincn='"+superAdminCN+"'");
 				initAuthorizationModule(caid.intValue(), superAdminCN);
 			}
 			ejb.getCAAdminSession().importCACertificate(getAdmin(), caName, certs);
@@ -71,6 +73,12 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 		} catch (IllegalCryptoTokenException e) {
 			getLogger().error(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
+			getLogger().error(e.getMessage());
+		} catch (AccessRuleNotFoundException e) {
+			getLogger().error(e.getMessage());
+		} catch (RoleExistsException e) {
+			getLogger().error(e.getMessage());
+		} catch (RoleNotFoundException e) {
 			getLogger().error(e.getMessage());
 		}
 	}

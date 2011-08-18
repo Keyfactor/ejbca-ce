@@ -449,7 +449,7 @@ function viewcert(row){
     <td width="10%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
     <td width="8%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
     <td width="10%">
-       <%  if(Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE)) == Admin.TYPE_CLIENTCERT_USER) 
+       <%  if(logentries[i].getValue(LogEntryView.ADMINCERTSERNO) != null) 
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
              else{%>

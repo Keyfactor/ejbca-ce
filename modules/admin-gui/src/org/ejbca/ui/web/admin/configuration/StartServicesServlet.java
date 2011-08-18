@@ -225,7 +225,7 @@ public class StartServicesServlet extends HttpServlet {
         }
         
         log.trace(">init ComplexAccessControlSession to check for initial root role");
-        complexAccessControlSession.initialize();
+        complexAccessControlSession.initializeAuthorizationModule();
 
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database

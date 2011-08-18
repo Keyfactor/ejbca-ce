@@ -70,11 +70,11 @@
 	</category>
 	
 	<category name="org.ejbca">
-        <priority value="DEBUG"/>
+        <priority value="TRACE"/>
     </category>
 
     <category name="org.cesecore">
-        <priority value="DEBUG"/>
+        <priority value="TRACE"/>
     </category>
 	
 	<!-- Limit some debug output, even when debug for EJBCA is enabled -->

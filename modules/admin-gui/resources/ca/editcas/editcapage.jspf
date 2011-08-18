@@ -1,4 +1,4 @@
-<%@page import="org.ejbca.core.model.ca.catoken.CATokenConstants"%>
+<%@page import="org.cesecore.certificates.ca.catoken.CATokenConstants"%>
 <%               
   TreeMap rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
   TreeMap subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();    

@@ -32,5 +32,5 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
      */
     public Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
 
-    void initialize();
+    void initializeAuthorizationModule();
 }
