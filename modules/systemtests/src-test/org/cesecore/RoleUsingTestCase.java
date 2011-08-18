@@ -34,8 +34,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
  * Base class with two good methods that can be used from other tests that needs to set up access roles. This base class can initialize the role
  * system with a role that have access to creating other roles.
  * 
- * Based on cesecore version:
- *      RoleUsingTestCase.java 933 2011-07-07 18:53:11Z mikek
+ * Based on cesecore version: RoleUsingTestCase.java 933 2011-07-07 18:53:11Z mikek
  * 
  * @version $Id$
  * 
@@ -67,6 +66,8 @@ public abstract class RoleUsingTestCase {
     }
 
     public void tearDownRemoveRole() throws RoleNotFoundException, AuthorizationDeniedException {
-        roleManagementSession.remove(roleMgmgToken, roleName);
+        if (roleAccessSessionRemote.findRole(roleName) != null) {
+            roleManagementSession.remove(roleMgmgToken, roleName);
+        }
     }
 }

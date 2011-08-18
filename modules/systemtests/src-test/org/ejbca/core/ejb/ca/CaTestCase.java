@@ -64,7 +64,6 @@ import org.junit.Before;
  * @version $Id$
  */
 public abstract class CaTestCase extends RoleUsingTestCase {
-    private static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
@@ -72,10 +71,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private CaSessionRemote caSession = null;
     private CertificateStoreSessionRemote certificateStoreSession = null;
     private GlobalConfigurationSessionRemote globalConfigurationSession = null;
-    
+
     protected String roleName = "CaTestCase";
-   
-  @Before
+
+    @Before
     public void setUp() throws Exception {
         super.setUpAuthTokenAndRole(roleName);
         removeTestCA(); // We cant be sure this CA was not left over from

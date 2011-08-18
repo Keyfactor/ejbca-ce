@@ -131,11 +131,18 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public void beforeClass() throws Exception{
+    public static void beforeClass() throws Exception{
         CryptoProviderTools.installBCProvider();
         
         
-        // Try to use AdminCA1 if it exists
+        
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        
+     // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
@@ -199,14 +206,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
-    }
-    
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+        
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         }
+        
+        
     }
 
     @After

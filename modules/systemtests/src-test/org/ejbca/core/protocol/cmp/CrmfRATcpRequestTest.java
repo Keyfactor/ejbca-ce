@@ -95,23 +95,29 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
     @BeforeClass
-	public void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
+	public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
 	
 		CryptoProviderTools.installBCProvider();
+     
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
-            	caid = iter.next().intValue();
-            }        	
+                caid = iter.next().intValue();
+            }           
         } else {
-        	caid = adminca1.getCAId();
+                caid = adminca1.getCAId();
         }
         if (caid == 0) {
-        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }        	
+                assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }               
         CAInfo cainfo = caSession.getCAInfo(admin, caid);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -134,11 +140,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+        
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         }

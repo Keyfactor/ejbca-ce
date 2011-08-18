@@ -73,7 +73,8 @@
 					<!-- <include name="org/ejbca/core/ejb/JNDINames.java"/> -->
 					<include name="org/ejbca/core/ejb/ServiceLocator.java"/>
 					<include name="org/ejbca/core/ejb/ServiceLocatorException.java"/>
-					<include name="org/cesecore/certificates/AlgorithmConstants.java"/>
+					<include name="org/cesecore/certificates/util/AlgorithmConstants.java"/>
+					<include name="org/cesecore/certificates/CertificateCreationException.java" />
 					<!-- Dependencies from Protect that are pretty general.. -->
 					<include name="org/cesecore/internal/InternalResources.java"/>
 					<include name="org/ejbca/core/model/InternalEjbcaResources.java"/>

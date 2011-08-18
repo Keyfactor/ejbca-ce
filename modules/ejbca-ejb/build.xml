@@ -129,6 +129,7 @@
 		<include name="org/cesecore/certificates/certificate/Certificate*.java"/>
 		<include name="org/cesecore/certificates/certificate/*Exception.java"/>
 		<include name="org/cesecore/certificates/certificate/request/*.java"/>
+		<include name="org/cesecore/certificates/*Exception.java"/>
 		<include name="org/cesecore/certificates/ca/*.java"/>
 		<include name="org/cesecore/certificates/crl/*.java"/>
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
