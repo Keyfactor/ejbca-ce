@@ -153,7 +153,11 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     	// look for added properties
     	for (Object key : newmap.keySet()) {
     		if (!oldmap.containsKey(key)) {
-				result.put("added:"+key, newmap.get(key));    			
+				Object val = newmap.get(key);
+				if (val == null) {
+					val = ""; 
+				}
+				result.put("added:"+key, val);    			
     		}
     	}
     	return result;
