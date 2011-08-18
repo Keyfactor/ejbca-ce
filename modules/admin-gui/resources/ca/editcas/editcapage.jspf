@@ -1,4 +1,4 @@
-<%@page import="org.cesecore.certificates.ca.catoken.CATokenConstants"%>
+
 <%               
   TreeMap rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
   TreeMap subcaprofiles = info.getAuthorizedSubCACertificateProfileNames();    
@@ -7,14 +7,14 @@
 
   Map publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
-  Collection availablecatokens = CATokenManager.instance().getAvailableCATokens();
+  Collection availablecatokens = CryptoTokenFactory.instance().getAvailableCryptoTokens();
   String[] availablecatokentypes = new String[availablecatokens.size()];
   String[] availablecatokentypetexts = new String[availablecatokens.size()];  
 
   Iterator availablecatokensiter = availablecatokens.iterator();
   int numberofavailabletokens = 0;
   while(availablecatokensiter.hasNext()){
-    AvailableCAToken nextavailable = (AvailableCAToken) availablecatokensiter.next();
+    AvailableCryptoToken nextavailable = (AvailableCryptoToken) availablecatokensiter.next();
     if(nextavailable.isUsed()){
       availablecatokentypes[numberofavailabletokens] = nextavailable.getClassPath();
       if(nextavailable.isTranslateable()){
@@ -43,17 +43,15 @@
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
 
-    if(catokeninfo instanceof SoftCATokenInfo){
-       catokentype = CATokenConstants.CATOKENTYPE_P12;
-    }
-    if(catokeninfo instanceof HardCATokenInfo){
-       catokentype = CATokenConstants.CATOKENTYPE_HSM;
-    }
-    if(catokeninfo instanceof NullCATokenInfo){
-        catokentype = CATokenConstants.CATOKENTYPE_NULL;
+    if(catokeninfo.getClassPath().equals(SoftCryptoToken.class.getName()){
+       catokentype = CAInterfaceBean.CATOKENTYPE_P12;
+    } else if(catokeninfo.getClassPath().equals(PKCS11CryptoToken.class.getName()){
+       catokentype = CAInterfaceBean.CATOKENTYPE_HSM;
+    } else {
+        catokentype = CAInterfaceBean.CATOKENTYPE_NULL;
      }
        catokenpath = catokeninfo.getClassPath();
-       AvailableCAToken availablecatoken = CATokenManager.instance().getAvailableCAToken(catokenpath); 
+       AvailableCryptoToken availablecatoken = CryptoTokenFactory.instance().getAvailableCryptoToken(catokenpath); 
        if(availablecatoken==null)
          throw new Exception("CA Token with classpath "+catokenpath+" is not available.");
        // External CAs use NullCAToken which is not used
@@ -498,10 +496,10 @@ function checkallfields(){
     <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
   <%   }
      }
-   if( catokentype == CATokenConstants.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
+   if( catokentype == CAInterfaceBean.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
    <%@ include file="softcatokenpage.jspf" %> 
 <%}  
-   if( catokentype == CATokenConstants.CATOKENTYPE_HSM && !processrequest && !isexternal){ %>
+   if( catokentype == CAInterfaceBean.CATOKENTYPE_HSM && !processrequest && !isexternal){ %>
    <%@ include file="hardcatokenpage.jspf" %> 
 <%}  %>
 
@@ -524,7 +522,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence") %>
       </td>
       <td width="50%"> 
-        <% String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+        <% String sequence = CAInterfaceBean.DEFAULT_KEYSEQUENCE;
            if (catokeninfo != null) {
         	   sequence = catokeninfo.getKeySequence();
            } else if (processrequest && (processedsequence != null)) { sequence = processedsequence; }%>
@@ -1375,7 +1373,7 @@ function checkallfields(){
 	if ( caname == null ) {
 		caname = cainfo.getName();
 	} 
-	if ( catokentype != CATokenConstants.CATOKENTYPE_HSM ) {
+	if ( catokentype != CAInterfaceBean.CATOKENTYPE_HSM ) {
 	%>
 	<form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
     <tr  id="Row<%=row++%2%>"> 

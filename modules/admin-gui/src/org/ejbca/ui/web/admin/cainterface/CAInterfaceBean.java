@@ -79,7 +79,11 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 public class CAInterfaceBean implements Serializable {
 
 	private static final long serialVersionUID = 2L;
-	
+
+    public static final int CATOKENTYPE_P12          = 1;
+    public static final int CATOKENTYPE_HSM          = 2;
+	public static final int CATOKENTYPE_NULL         = 3;
+
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 
     // Private fields
