@@ -287,7 +287,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @return A string that can be used to "setProperties" of a CryptoToken or null if pin is null or an empty string, this can safely be ignored if
      *         you don't know what to do with it
      */
-    protected static String setAutoActivatePin(Properties properties, String pin, boolean encrypt) {
+    public static String setAutoActivatePin(Properties properties, String pin, boolean encrypt) {
         String ret = null;
         if (StringUtils.isNotEmpty(pin)) {
             String authcode = pin;
