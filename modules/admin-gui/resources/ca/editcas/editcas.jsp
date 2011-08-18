@@ -1,11 +1,11 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.util.FileTools, org.cesecore.util.CertTools, org.cesecore.authorization.AuthorizationDeniedException,
-    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.ca.X509CAInfo, org.cesecore.certificates.ca.CVCCAInfo, org.cesecore.certificates.ca.CATokenInfo, org.cesecore.certificates.ca.catoken.CATokenConstants, org.cesecore.keys.token.SoftCryptoToken, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.ca.X509CAInfo, org.cesecore.certificates.ca.CVCCAInfo, org.cesecore.certificates.ca.catoken.CATokenInfo, org.cesecore.certificates.ca.catoken.CATokenConstants, org.cesecore.certificates.ca.catoken.CAToken, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
-               org.cesecore.certificates.certificate.request.PKCS10RequestMessage, org.cesecore.certificates.certificate.request.RequestMessage, org.cesecore.certificates.certificate.request.CVCRequestMessage, org.cesecore.certificates.ca.CAExistsException, org.cesecore.certificates.ca.CADoesntExistsException, org.cesecore.keys.token.CryptoTokenOfflineException, org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
-               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.cesecore.certificates.ca.extendedcaservices.ExtendedCAServiceInfo, org.cesecore.certificates.ca.internal.CATokenCacheManager, org.cesecore.keys.token.AvailableCryptoToken, org.cesecore.certificates.ca.catoken.CATokenConstants,
-               org.cesecore.certificates.util.DNFieldExtractor,org.cesecore.certificates.util.DnComponents,org.cesecore.keys.token.CryptoToken,org.cesecore.keys.token.BaseCryptoToken, org.cesecore.keys.token.NullCryptoToken, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificateprofile.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
+               org.cesecore.certificates.certificate.request.PKCS10RequestMessage, org.cesecore.certificates.certificate.request.RequestMessage, org.cesecore.certificates.certificate.request.RequestMessageUtils, org.cesecore.certificates.certificate.request.CVCRequestMessage, org.cesecore.certificates.ca.CAExistsException, org.cesecore.certificates.ca.CADoesntExistsException, org.cesecore.keys.token.CryptoTokenOfflineException, org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
+               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo, org.cesecore.certificates.ca.internal.CATokenCacheManager, org.cesecore.keys.token.AvailableCryptoToken, org.cesecore.certificates.ca.catoken.CATokenConstants,
+               org.cesecore.certificates.util.DNFieldExtractor,org.cesecore.certificates.util.DnComponents,org.cesecore.keys.token.CryptoToken,org.cesecore.keys.token.BaseCryptoToken, org.cesecore.keys.token.NullCryptoToken, org.cesecore.keys.token.SoftCryptoToken, org.cesecore.keys.token.PKCS11CryptoToken, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificateprofile.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
                org.cesecore.util.SimpleTime, org.cesecore.util.YearMonthDayTime, org.ejbca.util.CombineTime, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.util.StringTools, org.cesecore.certificates.util.AlgorithmConstants, org.cesecore.certificates.util.AlgorithmTools" %>
 
 
@@ -181,7 +181,7 @@
   String processedsequence = "";
   int catype = CAInfo.CATYPE_X509;  // default
   int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC; // default
-  int catokentype = CATokenConstants.CATOKENTYPE_P12; // default
+  int catokentype = CAInterfaceBean.CATOKENTYPE_P12; // default
   String catokenpath = "NONE";
   String importcaname = null;
   String importpassword = null;
@@ -382,18 +382,17 @@
          // Create and save CA                          
          caname = request.getParameter(HIDDEN_CANAME);
           
-         CATokenInfo catoken = null;
+         CATokenInfo catoken = new CATokenInfo();
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
          String signkeyspec = "2048"; // Default signature key, for CMS and XKMS, is 2048 bit RSA
          String signkeytype = AlgorithmConstants.KEYALGORITHM_RSA;
-         
-         if(catokentype == CATokenConstants.CATOKENTYPE_P12){
+
+         if(catokentype == CAInterfaceBean.CATOKENTYPE_P12){
+		   // Soft PKCS12 keystore, does not have Hard CA token properties         
            String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
            String encalg = AlgorithmTools.getEncSigAlgFromSigAlg(signalg);
            String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
-           String enckeyspec = request.getParameter(SELECT_KEYSIZE);
-           String enckeytype = AlgorithmConstants.KEYALGORITHM_RSA;
            signkeytype = AlgorithmTools.getKeyAlgorithmFromSigAlg(signalg);
            if (signalg.indexOf("ECDSA") != -1) {
         	   signkeyspec = request.getParameter(TEXTFIELD_KEYSPEC);
@@ -406,48 +405,59 @@
            }
            if(signkeyspec == null || signalg == null || signkeytype == null)
              throw new Exception("Error in CATokenData");  
-           catoken = new SoftCATokenInfo();
            catoken.setSignatureAlgorithm(signalg);
-           ((SoftCATokenInfo) catoken).setSignKeyAlgorithm(signkeytype);
-           ((SoftCATokenInfo) catoken).setSignKeySpec(signkeyspec);              
            catoken.setEncryptionAlgorithm(encalg);
-           ((SoftCATokenInfo) catoken).setEncKeyAlgorithm(enckeytype);
-           ((SoftCATokenInfo) catoken).setEncKeySpec(enckeyspec); 
            catoken.setAuthenticationCode(authenticationcode);
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-                   String properties = BaseCAToken.setAutoActivatePin(null, authenticationcode, true);
+                   String properties = BaseCryptoToken.setAutoActivatePin(catoken.getProperties(), authenticationcode, true);
                    catoken.setProperties(properties);
                }
-           }          
+           }
+           Properties prop = catoken.getProperties(); 
+           // Set some CA token properties if they are not set already
+        	if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+        		prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, signkeyspec);
+        	}
+        	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+        		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        	}
+        	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+        		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        	}
+        	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+        		prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        	}
+            catoken.setProperties(prop);
+        	catoken.setClassPath(SoftCryptoToken.class.getName());
          } 
-         if(catokentype == CATokenConstants.CATOKENTYPE_HSM){
-            catokenpath = request.getParameter(HIDDEN_CATOKENPATH);
+         if(catokentype == CAInterfaceBean.CATOKENTYPE_HSM){
+		    // Hard CA token have properties field
             String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
+            catokenpath = request.getParameter(HIDDEN_CATOKENPATH);
             String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
             String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
             if(catokenpath == null || catokenpath == null || signalg == null)
               throw new Exception("Error in CATokenData");  
-            catoken = new HardCATokenInfo();           
             catoken.setClassPath(catokenpath);
             catoken.setProperties(properties);
             catoken.setSignatureAlgorithm(signalg);
             catoken.setAuthenticationCode(authenticationcode);
+            catoken.setClassPath(PKCS11CryptoToken.class.getName());
          }
-
-         if (catokentype != CATokenConstants.CATOKENTYPE_NULL) {
-             int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
-             if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
+         if(catokentype != CAInterfaceBean.CATOKENTYPE_NULL){
+            int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+            if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
                  format = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
              }
-             catoken.setKeySequenceFormat(format);        	 
-             
-             String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+             catoken.setKeySequenceFormat(format);        	     
+             String sequence = CAToken.DEFAULT_KEYSEQUENCE;
              if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null)
-               sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
-             catoken.setKeySequence(sequence);        	 
+             sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
+             catoken.setKeySequence(sequence);
          }
+         
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
@@ -873,43 +883,45 @@
          // We need to pick up the old CATokenInfo, so we don't overwrite with default values when we save the CA further down
          CAInfoView infoView = cadatahandler.getCAInfo(caid);  
          CATokenInfo catoken = infoView.getCATokenInfo();
+         if (catoken == null) {
+             catoken = new CATokenInfo();                  	   
+         }
          
-         if(catokentype == CATokenConstants.CATOKENTYPE_P12){
+         if(catokentype == CAInterfaceBean.CATOKENTYPE_P12){
            String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
-           if (catoken == null) {
-               catoken = new SoftCATokenInfo();                  	   
-           }
            catoken.setAuthenticationCode(authenticationcode);
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-                   String properties = BaseCAToken.setAutoActivatePin(null, authenticationcode, true);
+                   String properties = BaseCryptoToken.setAutoActivatePin(catoken.getProperties(), authenticationcode, true);
                    catoken.setProperties(properties);
                }
            } else {
-               catoken.setProperties("");
+               // Delete any present auto activation pin
+               Properties prop = catoken.getProperties();
+               prop.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+               catoken.setProperties(prop);
            }
-           
+        	catoken.setClassPath(SoftCryptoToken.class.getName());           
          } 
-         if(catokentype == CATokenConstants.CATOKENTYPE_HSM){
+         if(catokentype == CAInterfaceBean.CATOKENTYPE_HSM){
             String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
-            if(catokenpath == null)
-              throw new Exception("Error in CATokenData");  
-            if (catoken == null) {
-                catoken = new HardCATokenInfo();                       
-            }
+            if(catokenpath == null) {
+              throw new Exception("Error in CATokenData, catokenpath is null");
+            }  
             catoken.setAuthenticationCode(authenticationcode);
             catoken.setProperties(properties);
+        	catoken.setClassPath(PKCS11CryptoToken.class.getName());
          }
 
-         if (catokentype != CATokenConstants.CATOKENTYPE_NULL) {
+         if (catokentype != CAInterfaceBean.CATOKENTYPE_NULL) {
              int format = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
              if(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
                  format = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT));
              }
              catoken.setKeySequenceFormat(format); 
                     	 
-             String sequence = CATokenConstants.DEFAULT_KEYSEQUENCE;
+             String sequence = CAToken.DEFAULT_KEYSEQUENCE;
              if(request.getParameter(TEXTFIELD_KEYSEQUENCE) != null) {
                sequence = request.getParameter(TEXTFIELD_KEYSEQUENCE);
              }
@@ -1351,7 +1363,7 @@
          try{           
              byte[] reqbytes = FileTools.readInputStreamtoBuffer(file);
              if (reqbytes != null) {
-            	 IRequestMessage certreq = org.ejbca.util.RequestMessageUtils.parseRequestMessage(reqbytes);
+            	 RequestMessage certreq = RequestMessageUtils.parseRequestMessage(reqbytes);
 
                  if (certreq != null) {    
                    cabean.saveRequestData(reqbytes);                                
@@ -1531,7 +1543,7 @@
                if (cainfo != null) {
                    try{
                        byte[] req = cabean.getRequestData(); 
-                       IRequestMessage certreq = org.ejbca.util.RequestMessageUtils.parseRequestMessage(req);
+                       RequestMessage certreq = RequestMessageUtils.parseRequestMessage(req);
                        Certificate result = cadatahandler.processRequest(cainfo, certreq);
                        cabean.saveProcessedCertificate(result);
                        filemode = CERTGENMODE;   
@@ -1626,10 +1638,10 @@
         if (request.getParameter(SELECT_KEY_SEQUENCE_FORMAT) != null) {
         	keySequenceFormat = Integer.parseInt(request.getParameter(SELECT_KEY_SEQUENCE_FORMAT)); 
         }
-        if(catokenpath.equals(SoftCAToken.class.getName())){
-          catokentype = CATokenConstants.CATOKENTYPE_P12;
+        if(catokenpath.equals(SoftCryptoToken.class.getName())){
+          catokentype = CAInterfaceBean.CATOKENTYPE_P12;
         }else{
-          catokentype = CATokenConstants.CATOKENTYPE_HSM;
+          catokentype = CAInterfaceBean.CATOKENTYPE_HSM;
         }
         editca = false;
         includefile="editcapage.jspf";              
