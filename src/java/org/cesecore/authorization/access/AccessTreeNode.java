@@ -108,12 +108,14 @@ public class AccessTreeNode {
      */
     private boolean isAuthorizedRecursive(AuthenticationToken authenticationToken, String resourcePath, AccessTreeState legacyState) {
     	if (log.isTraceEnabled()) {
-    		log.trace(">isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+")");
+    		log.trace(">isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"). Resource="+resource);
     	}
         boolean returnval = false;
 
         AccessTreeState internalstate = findPreferredRule(authenticationToken);
-
+        if (log.isTraceEnabled()) {
+        	log.trace("preferredRule: "+internalstate);
+        }
         if (resourcePath.equals(resource)) {
             if (legacyState == AccessTreeState.STATE_DECLINE) {
             	if (log.isTraceEnabled()) {
@@ -166,7 +168,7 @@ public class AccessTreeNode {
             }
         }
     	if (log.isTraceEnabled()) {
-    		log.trace("<isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+")");
+    		log.trace("<isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"): "+returnval);
     	}
         return returnval;
     }
@@ -210,6 +212,10 @@ public class AccessTreeNode {
         }
     }
 
+    /** Finds the user aspect matching with the highest priority for the authentication token
+     * and return the AccessTreeState for the rule with the highest priority.
+     * Important if the UserAspect matches more than one rule.
+     */
     private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) {
         AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
         AccessMatchValue statePriority = AccessMatchValue.NONE;
