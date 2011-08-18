@@ -18,31 +18,35 @@ import java.util.HashSet;
 import org.cesecore.authorization.user.AccessUserAspect;
 
 /**
- * An authentication token that always matches the provided AccessUserAspectData if the
- * AuthenticationToken was created in the same JVM as it is verified.
+ * An authentication token that always matches the provided AccessUserAspectData if the AuthenticationToken was created in the same JVM as it is
+ * verified.
  * 
- * Example usage:
- * AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal function abc"));
- *
- * Based on cesecore version:
- *      AlwaysAllowLocalAuthenticationToken.java 948 2011-07-18 09:04:26Z mikek
- *  
+ * Example usage: AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal function abc"));
+ * 
+ * Based on cesecore version: AlwaysAllowLocalAuthenticationToken.java 948 2011-07-18 09:04:26Z mikek
+ * 
  * @version $Id$
  */
 public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -3942437717641924829L;
 
-	@SuppressWarnings("serial")
-	public AlwaysAllowLocalAuthenticationToken(final Principal principal) {
-		super(new HashSet<Principal>() {{ add(principal); }}, null);
-	}
+    public AlwaysAllowLocalAuthenticationToken(final Principal principal) {
+        super(new HashSet<Principal>() {
+            private static final long serialVersionUID = 3125729459998373943L;
 
-	@Override
-	public boolean matches(AccessUserAspect accessUser) {
-		//return super.isCreatedInThisJvm();
-		return true;
-	}
+            {
+                add(principal);
+            }
+        }, null);
+
+    }
+
+    @Override
+    public boolean matches(AccessUserAspect accessUser) {
+        // return super.isCreatedInThisJvm();
+        return true;
+    }
 
     @Override
     public boolean equals(Object authenticationToken) {
