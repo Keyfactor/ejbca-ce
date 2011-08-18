@@ -24,12 +24,9 @@ import org.apache.log4j.Logger;
  * UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by
  * classes saving it's data to a database in BLOB/CLOB form.
  *
- * Based on EJBCA version: 
- *      UpgradeableDataHashMap.java 11075 2011-01-07 07:40:42Z anatom
- * CESeCore version:
- *      UpgradeableDataHashMap.java 406 2011-03-02 11:38:30Z tomas
+ * Based on EJBCA version: UpgradeableDataHashMap.java 11075 2011-01-07 07:40:42Z anatom
  * 
- * @version $Id$
+ * @version $Id: UpgradeableDataHashMap.java 1001 2011-08-18 11:02:01Z tomas $
  *
  * @see org.cesecore.internal.IUpgradeableData
  */
@@ -138,11 +135,19 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
 						result.put("addedvalue:"+key, newmap.get(key));						
 					}
 				} else if (!value.equals(newmap.get(key))) {
-					result.put("changed:"+key, newmap.get(key));
+					Object val = newmap.get(key);
+					if (val == null) {
+						val = ""; 
+					}
+					result.put("changed:"+key, val);
 				}
 			} else {
 				// Value removed
-				result.put("removed:"+key, oldmap.get(key));
+				Object val = oldmap.get(key);
+				if (val == null) {
+					val = ""; 
+				}
+				result.put("removed:"+key, val);
 			}
 		}
     	// look for added properties
