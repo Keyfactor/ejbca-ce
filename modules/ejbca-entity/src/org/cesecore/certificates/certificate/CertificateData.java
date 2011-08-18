@@ -1002,6 +1002,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * */
     public static List<CertificateData> findAllOnHold(EntityManager entityManager, String issuerDN, int firstResult, int maxRows) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status=:status");
+        query.setParameter("issuerDN", issuerDN);
         query.setParameter("status", CertificateConstants.CERT_TEMP_REVOKED);
         query.setFirstResult(firstResult);
         query.setMaxResults(maxRows);
