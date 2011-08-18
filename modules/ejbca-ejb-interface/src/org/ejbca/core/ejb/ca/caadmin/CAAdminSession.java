@@ -184,7 +184,7 @@ public interface CAAdminSession {
      *            password used when regenerating keys, can be null if
      *            regenerateKeys is false.
      * @param regenerateKeys
-     *            if true and the CA have a softCAToken the keys are
+     *            if true and the CA have a soft CAToken the keys are
      *            regenerated before the certificate request.
      */
     public void renewCA(AuthenticationToken admin, int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException,
@@ -325,7 +325,7 @@ public interface CAAdminSession {
 
     /**
      * Removes the catoken keystore from the database and sets its status to
-     * {@link ICAToken#STATUS_OFFLINE}.
+     * {@link CryptoToken#STATUS_OFFLINE}.
      * 
      * The signature algorithm, encryption algorithm, key algorithm and other
      * properties are not removed so that the keystore can later by restored by
