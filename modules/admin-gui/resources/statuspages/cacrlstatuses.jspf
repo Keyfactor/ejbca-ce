@@ -1,4 +1,4 @@
-<%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper,org.ejbca.core.model.ca.store.CRLInfo, org.ejbca.ui.web.admin.cainterface.CAInfoView"%>
+<%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper,org.cesecore.certificates.crl.CRLInfo, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.cesecore.keys.token.CryptoToken, org.ejbca.core.model.SecConst"%>
 <%
 	cabean.initialize(request, ejbcawebbean);
 	Collection caids = cabean.getAuthorizedCAs();
@@ -6,8 +6,6 @@
 %>
 
         
-<%@page import="org.ejbca.core.model.SecConst"%>
-<%@page import="org.ejbca.core.model.ca.catoken.ICAToken"%>
 <div class="h4" id="crlstatus" >
         <h4><%=ejbcawebbean.getText("CAHEALTH")%> <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Status") %></h4>
 		<table border="1" cellspacing="2" cellpadding="3" width="100%" class="grid">
@@ -25,7 +23,7 @@
 							CRLInfo crlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), false);
 							CRLInfo deltacrlinfo = cabean.getLastCRLInfo(cainfo.getCAInfo(), true);
 							int castatus = cainfo.getCAInfo().getStatus();
-							int catokenstatus = cainfo.getCATokenInfo().getCATokenStatus();
+							int catokenstatus = cainfo.getCATokenInfo().getTokenStatus();
 							boolean caservice = true;
 							if (castatus != SecConst.CA_EXTERNAL) {
 								if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != CryptoToken.STATUS_ACTIVE) ) {

@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, 
               org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants,
                org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.publisher.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper, 
-               org.ejbca.core.model.ca.publisher.PublisherExistsException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents"%>
+               org.ejbca.core.model.ca.publisher.PublisherExistsException, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

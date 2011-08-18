@@ -82,7 +82,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     		}
     		getLogger().info(" signalgorithm is on of " + availableSignAlgs);
     		getLogger().info(" adding the parameters '-certprofile profileName' makes the CA use the certificate profile 'profileName' instead of the default ROOTCA or SUBCA. Optional parameter that can be completely left out.");
-    		getLogger().info(" adding the parameters '-superadmincn SuperAdmin' makes an initial CA use the common name SuperAdmin when initializing the authorization module with an initial super administrator. Note only used when creating initial CA.");
+    		getLogger().info(" adding the parameters '-superadmincn SuperAdmin' makes an initial CA use the common name SuperAdmin and initialize the authorization module with an initial super administrator. Note only used when creating initial CA. If parameter is not given, the authorization rules are untouched.");
     		getLogger().info(" catokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in admin gui.");
     		getLogger().info(" signed by caid is the CA id of a CA that will sign this CA. If this is omitted the new CA will be self signed (i.e. a root CA).");
     		return;
@@ -99,7 +99,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     			argsList.remove("-certprofile");
     		}
     		int superAdminCNInd = argsList.indexOf("-superadmincn");
-    		String superAdminCN = BaseCaAdminCommand.defaultSuperAdminCN;
+    		String superAdminCN = null;
     		if (superAdminCNInd > -1) {
     			superAdminCN = argsList.get(superAdminCNInd+1);
     			argsList.remove(superAdminCN);

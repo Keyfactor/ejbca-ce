@@ -2,9 +2,9 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile,
+<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.CertificateView, org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
-                 org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.util.CertTools" %>
+                 org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.util.CertTools, org.cesecore.certificates.certificate.CertificateConstants" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -462,30 +462,30 @@ function confirmrepublish(){
 		 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("EXT_ABBR_KEYUSAGE") %></td>
 		 <td><% boolean first= true;
 	                boolean none = true;
-	                if(certificatedata.getKeyUsage(CertificateProfile.DIGITALSIGNATURE)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)){
 	                  out.write(ejbcawebbean.getText("KU_DIGITALSIGNATURE"));
 	                  first=false;
 	                  none =false;
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.NONREPUDIATION)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.NONREPUDIATION)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_NONREPUDIATION"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.KEYENCIPHERMENT)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.KEYENCIPHERMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_KEYENCIPHERMENT"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.DATAENCIPHERMENT)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.DATAENCIPHERMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_DATAENCIPHERMENT"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.KEYAGREEMENT)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.KEYAGREEMENT)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
@@ -497,19 +497,19 @@ function confirmrepublish(){
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_KEYCERTSIGN"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.CRLSIGN)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.CRLSIGN)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_CRLSIGN"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.ENCIPHERONLY)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.ENCIPHERONLY)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_ENCIPHERONLY"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.DECIPHERONLY)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.DECIPHERONLY)){
 	                  if(!first) out.write(", "); 
 	                  first=false;
 	                  none =false;

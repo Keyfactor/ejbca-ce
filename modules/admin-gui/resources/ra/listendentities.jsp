@@ -3,7 +3,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.cesecore.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.UserView, org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
-                 org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.UserDataConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.util.dn.DNFieldExtractor,
+                 org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.UserDataConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.cesecore.certificates.util.DNFieldExtractor,
                  javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

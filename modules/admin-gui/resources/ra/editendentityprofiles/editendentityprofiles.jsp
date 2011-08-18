@@ -2,8 +2,8 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
                 org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.UserNotification, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
-                org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.ra.UserDataConstants, org.ejbca.core.model.ca.crl.RevokedCertInfo,
-                org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
+                org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,org.ejbca.core.model.ra.UserDataConstants, org.cesecore.certificates.crl.RevokedCertInfo,
+                org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.cesecore.certificates.util.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
                 org.apache.commons.lang.ArrayUtils"%>

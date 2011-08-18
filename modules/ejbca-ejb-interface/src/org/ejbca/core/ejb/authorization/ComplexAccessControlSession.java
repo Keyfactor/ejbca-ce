@@ -15,13 +15,30 @@ package org.ejbca.core.ejb.authorization;
 import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
 
 /**
  * @version $Id$
  *
  */
 public interface ComplexAccessControlSession {
+	
+	/** Initializes the authorization module with a superadmin rule matching the given caid and superadminCN
+	 * 
+	 * @param admin AuthenticationToken of the admin adding the rule
+	 * @param caid the ca id of the CA issuing the SuperAdmin certificate
+	 * @param superAdminCN the CN of the superadmin to match in the rule
+	 * @throws AuthorizationDeniedException 
+	 * @throws RoleExistsException 
+	 * @throws RoleNotFoundException 
+	 * @throws AccessRuleNotFoundException 
+	 */
+    void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException;
+    
     /**
      * Retrieves a list of the roles which the given subject is authorized to edit, by checking if that subject has rights to the CA's behind all
      * access user aspects in that role, and all CA-based rules

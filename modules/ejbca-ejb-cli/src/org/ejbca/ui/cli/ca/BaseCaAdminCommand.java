@@ -28,7 +28,11 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.SecConst;
@@ -154,9 +158,13 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         return result;
     }
 
-    protected void initAuthorizationModule(int caid, String superAdminCN) {
-        getLogger().info("Initalizing Temporary Authorization Module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
-        //ejb.getRoleAccessSession().init(getAdmin(), caid, superAdminCN);     
+    protected void initAuthorizationModule(int caid, String superAdminCN) throws AccessRuleNotFoundException, RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    	if (superAdminCN == null) {
+    		getLogger().info("Not initializing authorization module.");
+    	} else {
+    		getLogger().info("Initalizing authorization module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
+    	}
+        ejb.getComplexAccessControlSession().initializeAuthorizationModule(getAdmin(), caid, superAdminCN);
     } // initAuthorizationModule
     
     protected String getAvailableCasString() {
