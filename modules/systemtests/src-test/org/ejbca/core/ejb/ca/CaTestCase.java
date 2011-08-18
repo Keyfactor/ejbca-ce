@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -32,12 +33,15 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -67,10 +71,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private CAAdminSessionRemote caAdminSessionRemote = null;
-    private CaSessionRemote caSession = null;
-    private CertificateStoreSessionRemote certificateStoreSession = null;
-    private GlobalConfigurationSessionRemote globalConfigurationSession = null;
+    private CAAdminSessionRemote caAdminSessionRemote = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
+    private CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     protected String roleName = "CaTestCase";
 
@@ -142,16 +146,19 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
      */
-    public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection certificateChain) throws CADoesntExistsException,
-            AuthorizationDeniedException {
+    public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
+            throws CADoesntExistsException, AuthorizationDeniedException {
         log.trace(">createTestCA");
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Search for requested CA
-        CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
-        if (caInfo != null) {
+        try {
+            this.caSession.getCAInfo(admin, caName);
             return true;
+        } catch (CADoesntExistsException e) {
+            //Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
         }
+
         // Create request CA, if necessary
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -159,6 +166,23 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf(keyStrength));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+        
         // Create and active OSCP CA Service.
         ArrayList extendedcaservices = new ArrayList();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -178,7 +202,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
                 10, // Delta CRL period
-                new ArrayList(), true, // Authority Key Identifier
+                new ArrayList<Integer>(), true, // Authority Key Identifier
                 false, // Authority Key Identifier Critical
                 true, // CRL Number
                 false, // CRL Number Critical

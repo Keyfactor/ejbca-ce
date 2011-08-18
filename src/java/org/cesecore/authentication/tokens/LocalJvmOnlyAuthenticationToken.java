@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class LocalJvmOnlyAuthenticationToken extends AuthenticationToken {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -6830176240864231535L;
 
     private static final Logger log = Logger.getLogger(LocalJvmOnlyAuthenticationToken.class);
 

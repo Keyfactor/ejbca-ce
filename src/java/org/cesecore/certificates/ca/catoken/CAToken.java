@@ -488,10 +488,6 @@ public class CAToken extends UpgradeableDataHashMap {
         // End common
         //
 
-        //
-        // Generation specific for PCKS11 tokens
-        //
-
         Properties properties = token.getProperties();
         // Current public signature key
         PublicKey pubK = null;
@@ -529,17 +525,16 @@ public class CAToken extends UpgradeableDataHashMap {
             }
         }
         CryptoToken token = getCryptoToken();
-        // KeyStoreTools cont = new KeyStoreTools(createKeyStore(authCode), token.getProvider());
-        // KeyStoreContainer cont = KeyStoreContainerFactory.getInstance(KeyStoreContainer.KEYSTORE_TYPE_PKCS11, token.getProvider(), pwp);
-        // cont.setPassPhraseLoadSave(authCode);
         if (keyspec != null) {
-            log.debug("Generating from string keyspec: " + keyspec);
-            // cont.generate(keyspec, newKeyLabel);
+            if(log.isDebugEnabled()) {
+                log.debug("Generating from string keyspec: " + keyspec);                
+            }
             token.generateKeyPair(keyspec, newKeyLabel);
         } else {
-            log.debug("Generating from AlgorithmParameterSpec: " + paramspec);
-            // cont.generate(paramspec, newKeyLabel);
-            token.generateKeyPair(keyspec, newKeyLabel);
+            if(log.isDebugEnabled()) {
+                log.debug("Generating from AlgorithmParameterSpec: " + paramspec);
+            }
+            token.generateKeyPair(paramspec, newKeyLabel);
         }
         // Set properties so that we will start using the new key, or not, depending on the activate argument
         PurposeMapping kstr = new PurposeMapping(properties);
