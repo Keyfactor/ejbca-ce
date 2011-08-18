@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificateprofile;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -37,7 +40,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version:  CertificateProfileTest.java 11524 2011-03-16 09:57:15Z netmackan
  * 
- * @version $Id: CertificateProfileTest.java 806 2011-05-17 14:03:12Z mikek $
+ * @version $Id: CertificateProfileTest.java 1001 2011-08-18 11:02:01Z tomas $
  */
 public class CertificateProfileTest {
 
@@ -188,6 +191,24 @@ public class CertificateProfileTest {
         Collection<Integer> cas1 = prof.getAvailableCAs();
         assertEquals(1, cas1.size());
         assertEquals(Integer.valueOf(1), cas.iterator().next());
+        
+    	final CertificateProfile orgprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+        Map<Object, Object> diff = orgprof.diff(prof);
+        Set<Map.Entry<Object, Object>> set = diff.entrySet();
+        assertEquals(8, set.size());
+        for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+        	assertNotNull(entry.getKey()+" is empty", entry.getValue());
+        }
+
+        // Check for null when doing diff
+        prof.setAvailableCAs(null);
+        diff = orgprof.diff(prof);
+        set = diff.entrySet();
+        assertEquals(8, set.size());
+        for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+        	assertNotNull(entry.getKey()+" is empty", entry.getValue());
+        }
+
     }    
     
     @Test
@@ -563,5 +584,6 @@ public class CertificateProfileTest {
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
     } 
+
 
 }

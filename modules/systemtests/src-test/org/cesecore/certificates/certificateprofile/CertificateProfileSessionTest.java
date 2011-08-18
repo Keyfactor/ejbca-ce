@@ -55,7 +55,7 @@ import org.junit.Test;
  * 
  * Based on CertificateProfileTest.java 11524 2011-03-16 09:57:15Z netmackan from EJBCA
  *
- * @version $Id: CertificateProfileSessionTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id: CertificateProfileSessionTest.java 1002 2011-08-18 11:08:07Z tomas $
  */
 public class CertificateProfileSessionTest extends RoleUsingTestCase {
     private static final Logger log = Logger.getLogger(CertificateProfileSessionTest.class);
@@ -192,13 +192,17 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
     @Test
     public void test04EditCertificateProfile() throws Exception {
         log.trace(">test04EditCertificateProfile()");
-        boolean ret = false;
         CertificateProfile profile = certificateProfileSession.getCertificateProfile("TEST");
         assertTrue("Retrieving CertificateProfile failed", profile.getCRLDistributionPointURI().equals("TEST"));
         profile.setCRLDistributionPointURI("TEST2");
         certificateProfileSession.changeCertificateProfile(roleMgmgToken, "TEST", profile);
-        ret = true;
-        assertTrue("Editing CertificateProfile failed", ret);
+        profile = certificateProfileSession.getCertificateProfile("TEST");
+        assertEquals("TEST2", profile.getCRLDistributionPointURI());
+        profile.setCRLDistributionPointURI(null);
+        profile.setApprovalSettings(null);
+        certificateProfileSession.changeCertificateProfile(roleMgmgToken, "TEST", profile);
+        profile = certificateProfileSession.getCertificateProfile("TEST");
+        assertEquals("", profile.getCRLDistributionPointURI());
         log.trace("<test04EditCertificateProfile()");
     }
 
