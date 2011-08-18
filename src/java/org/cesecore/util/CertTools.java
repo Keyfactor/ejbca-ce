@@ -2356,7 +2356,7 @@ public class CertTools {
      * Converts DERBitString ResonFlags to a RevokedCertInfo constant
      * 
      * @param reasonFlags DERBITString received from org.bouncycastle.asn1.x509.ReasonFlags.
-     * @return int according to org.ejbca.core.model.ca.crl.RevokedCertInfo
+     * @return int according to org.cesecore.certificates.crl.RevokedCertInfo
      */
     public static int bitStringToRevokedCertInfo(DERBitString reasonFlags) {
         int ret = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
@@ -2500,7 +2500,7 @@ public class CertTools {
      * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500
      *            (C=SE,O=bar,CN=foo).
      * @return a List with DERObjectIdentifiers defining the known order we require
-     * @see org.ejbca.util.dn.DnComponents#getDnObjects(boolean)
+     * @see org.cesecore.certificates.util.DnComponents#getDnObjects(boolean)
      */
     public static List<DERObjectIdentifier> getX509FieldOrder(boolean ldaporder) {
         List<DERObjectIdentifier> fieldOrder = new ArrayList<DERObjectIdentifier>();
