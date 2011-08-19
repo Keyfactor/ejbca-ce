@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -27,7 +26,6 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,7 +48,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: ICAToken.java 8828 2010-03-29 08:10:51Z anatom
  * 
- * @version $Id: CAToken.java 756 2011-05-09 09:25:42Z tomas $
+ * @version $Id: CAToken.java 1012 2011-08-19 12:06:02Z tomas $
  */
 public class CAToken extends UpgradeableDataHashMap {
 
@@ -90,7 +88,6 @@ public class CAToken extends UpgradeableDataHashMap {
 
     private CryptoToken token;
     private PurposeMapping keyStrings;
-    protected Map<String, KeyPair> mKeys;
 
     public CAToken(final CryptoToken token) {
         super();
@@ -108,40 +105,62 @@ public class CAToken extends UpgradeableDataHashMap {
         }
         int ret = CryptoToken.STATUS_OFFLINE;
         // If we have no key aliases, no point in continuing...
-        if (this.keyStrings != null) {
-            String strings[] = this.keyStrings.getAliases();
-            int i = 0;
-            while (strings != null && i < strings.length && this.mKeys != null && this.mKeys.get(strings[i]) != null) {
-                i++;
-            }
-            // If we don't have any keys for the strings, or we don't have enough keys for the strings, no point in continuing...
-            if (strings != null && i >= strings.length) {
-                PrivateKey privateKey;
-                PublicKey publicKey;
-                try {
-                    privateKey = getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYTEST);
-                    publicKey = getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYTEST);
-                } catch (CryptoTokenOfflineException e) {
-                    privateKey = null;
-                    publicKey = null;
-                    if (log.isDebugEnabled()) {
-                        log.debug("no test key defined");
-                    }
-                }
-                if (privateKey != null && publicKey != null) {
-                    // Check that that the testkey is usable by doing a test signature.
-                    try {
-                        token.testKeyPair(privateKey, publicKey);
-                        // If we can test the testkey, we are finally active!
-                        ret = CryptoToken.STATUS_ACTIVE;
-                    } catch (Throwable th) {
-                        log.error(intres.getLocalizedMessage("token.activationtestfail", token.getId()), th);
-                    }
-                }
-            }
+        try {
+        	if (this.keyStrings != null) {
+        		String aliases[] = this.keyStrings.getAliases();
+        		int i = 0;
+        		// Loop that checks  if there all key aliases have keys
+        		while (aliases != null && i < aliases.length) {
+        			if (this.token != null && this.token.getKey(aliases[i]) != null) {
+        				i++;
+        			} else {
+        				if (log.isDebugEnabled()) {
+        					log.debug("Missing key for alias: "+aliases[i]);
+        				}
+        			}
+        		}
+        		// If we don't have any keys for the strings, or we don't have enough keys for the strings, no point in continuing...
+        		if (aliases != null && i >= aliases.length) {
+        			PrivateKey privateKey;
+        			PublicKey publicKey;
+        			try {
+        				privateKey = getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYTEST);
+        				publicKey = getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYTEST);
+        			} catch (CryptoTokenOfflineException e) {
+        				privateKey = null;
+        				publicKey = null;
+        				if (log.isDebugEnabled()) {
+        					log.debug("no test key defined");
+        				}
+        			}
+        			if (privateKey != null && publicKey != null) {
+        				// Check that that the testkey is usable by doing a test signature.
+        				try {
+        					token.testKeyPair(privateKey, publicKey);
+        					// If we can test the testkey, we are finally active!
+        					ret = CryptoToken.STATUS_ACTIVE;
+        				} catch (Throwable th) {
+        					log.error(intres.getLocalizedMessage("token.activationtestfail", token.getId()), th);
+        				}
+        			}
+        		} else {
+        			if (log.isDebugEnabled()) {
+        				StringBuilder builder = new StringBuilder();
+        				for (int j = 0; j < aliases.length; j++) {
+        					builder.append(' ').append(aliases[j]);
+        				}
+        				log.debug("Not enough keys for the key aliases: "+builder.toString());
+        			}
+        		}
+        	}
+        } catch (CryptoTokenOfflineException e) {
+        	if (log.isDebugEnabled()) {
+        		log.debug("CryptToken offline: "+e.getMessage());
+        	}
         }
+
         if (log.isTraceEnabled()) {
-            log.trace("<getCATokenStatus: " + ret);
+        	log.trace("<getCATokenStatus: " + ret);
         }
         return ret;
     }
@@ -231,7 +250,9 @@ public class CAToken extends UpgradeableDataHashMap {
         info.setKeySequence(keysequence);
         info.setKeySequenceFormat(keysequenceformat);
         // Set status of the CA token
-        log.debug("Setting CATokenInfo.status to: " + status);
+        if (log.isDebugEnabled()) {
+        	log.debug("Setting CATokenInfo.status to: " + status);
+        }
         info.setTokenStatus(status);
     }
 

@@ -63,7 +63,7 @@ import org.cesecore.util.CryptoProviderTools;
  * 
  * Based on EJBCA version: CaSessionBean.java 10861 2010-12-14 16:00:17Z anatom
  * 
- * @version $Id: CaSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id: CaSessionBean.java 1012 2011-08-19 12:06:02Z tomas $
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -459,7 +459,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 			}
 			try {
 				CAToken catoken = ca.getCAToken();
-	    		tokenstatus = catoken.getTokenInfo().getTokenStatus();
+	    		tokenstatus = catoken.getTokenStatus();
 			} catch (IllegalCryptoTokenException e) {
 				// this looks bad
 				log.error("Illegal crypto token for CA "+ca.getName()+", "+caid+": ", e);

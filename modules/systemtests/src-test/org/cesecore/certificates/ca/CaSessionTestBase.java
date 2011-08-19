@@ -53,6 +53,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -62,9 +63,7 @@ import org.cesecore.util.CertTools;
 /**
  * Tests the CA session bean.
  * 
- * CeSecore version: CaSessionTestBase.java 1011 2011-08-19 10:53:45Z tomas
- * 
- * @version $Id: CaSessionTestBase.java 1011 2011-08-19 10:53:45Z tomas $
+ * @version $Id: CaSessionTestBase.java 1012 2011-08-19 12:06:02Z tomas $
  */
 public class CaSessionTestBase extends RoleUsingTestCase {
 
@@ -143,6 +142,14 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(ca1.getCAId(), ca2.getCAId());
         assertEquals(ca1.getName(), ca2.getName());
         assertEquals(ca1.getSubjectDN(), ca2.getSubjectDN());
+        assertEquals(CAConstants.CA_ACTIVE, ca1.getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, ca2.getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, ca1.getCAInfo().getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, ca2.getCAInfo().getStatus());
+        assertEquals(CryptoToken.STATUS_ACTIVE, ca1.getCAToken().getTokenStatus());
+        assertEquals(CryptoToken.STATUS_ACTIVE, ca1.getCAToken().getCryptoToken().getTokenStatus());
+        assertEquals(CryptoToken.STATUS_ACTIVE, ca1.getCAInfo().getCATokenInfo().getTokenStatus());
+        assertEquals(CryptoToken.STATUS_ACTIVE, ca2.getCAInfo().getCATokenInfo().getTokenStatus());
 
         // See that we can do something with the CAs to verify that everything was stored as we think
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,
