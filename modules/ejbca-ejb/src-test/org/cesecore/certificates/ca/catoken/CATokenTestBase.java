@@ -44,7 +44,7 @@ import org.cesecore.util.StringTools;
 
 /**
  * 
- * @version $Id: CATokenTestBase.java 601 2011-03-17 09:44:46Z tomas $
+ * @version $Id: CATokenTestBase.java 1012 2011-08-19 12:06:02Z tomas $
  *
  */
 public abstract class CATokenTestBase {
@@ -89,6 +89,9 @@ public abstract class CATokenTestBase {
 		// Now sequence should be 1, generated and activated new keys
 		seq += 1;
 		assertEquals(seq, Integer.valueOf(catoken.getTokenInfo().getKeySequence()));
+		// We still don't have a key generated for the rsatest0000 alias, which we have defined as a key purpose mapping
+		// So status will still be offline
+		assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus());
 		PrivateKey priv = null;
 		PublicKey pub = null;
 		String keyhash = null;
@@ -100,6 +103,8 @@ public abstract class CATokenTestBase {
 
 		// Generate new keys, moving the old ones to "previous key"
 		catoken.generateKeys(tokenpin.toCharArray(), true, true);
+		// Now we move away the rsatest0000 key alias from our mappings, so we are now active
+		assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
 		Properties p = catoken.getTokenInfo().getProperties();
 		String previousSequence = p.getProperty(CryptoToken.PREVIOUS_SEQUENCE_PROPERTY);
 		assertEquals(seq, Integer.valueOf(previousSequence));
@@ -182,6 +187,7 @@ public abstract class CATokenTestBase {
 		pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
 		KeyTools.testKey(priv, pub, catoken.getCryptoToken().getSignProviderName());
 		assertEquals(1024, KeyTools.getKeyLength(pub));
+		assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
 
 		// Clean up and delete our generated keys
 		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "rsatest00001");
