@@ -127,7 +127,7 @@
   checkbox 'Use previous key'. An authenticated request, authenticated with the DVs previous key will be returned.
   </p>
   <p>
-  to create CVCA link certificates the same approach is done. First renew the CVCA (generating new keys), which creates a new self-signed CVCA certificate internally. 
+  To create CVCA link certificates the same approach is done. First renew the CVCA (generating new keys), which creates a new self-signed CVCA certificate internally. 
   Download the new self-signed CVCA certificate (for example from Basic Functions). After this you can create a link certificate by typing the CVCAs name in the text field 
   in 'Edit Certificate Authorities' and clicking 'Sign Certificate Request'. Upload the new CVCA certificate and  
   select 'Use previous key' and 'Create link certificate'.
