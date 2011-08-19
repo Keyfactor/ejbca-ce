@@ -1,4 +1,4 @@
-<%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper,org.cesecore.certificates.crl.CRLInfo, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.cesecore.keys.token.CryptoToken, org.ejbca.core.model.SecConst"%>
+<%@page import="java.util.*, org.ejbca.ui.web.admin.cainterface.EditPublisherJSPHelper,org.cesecore.certificates.crl.CRLInfo, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.cesecore.keys.token.CryptoToken, org.cesecore.certificates.ca.CAConstants"%>
 <%
 	cabean.initialize(request, ejbcawebbean);
 	Collection caids = cabean.getAuthorizedCAs();
@@ -25,8 +25,8 @@
 							int castatus = cainfo.getCAInfo().getStatus();
 							int catokenstatus = cainfo.getCATokenInfo().getTokenStatus();
 							boolean caservice = true;
-							if (castatus != SecConst.CA_EXTERNAL) {
-								if ( (castatus != SecConst.CA_ACTIVE) || (catokenstatus != CryptoToken.STATUS_ACTIVE) ) {
+							if (castatus != CAConstants.CA_EXTERNAL) {
+								if ( (castatus != CAConstants.CA_ACTIVE) || (catokenstatus != CryptoToken.STATUS_ACTIVE) ) {
 									caservice = false;
 								}						
 							}
@@ -38,7 +38,7 @@
 							if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
 								crlstatus = false;
 							}
-							if (castatus != SecConst.CA_EXTERNAL) {
+							if (castatus != CAConstants.CA_EXTERNAL) {
 							%>
 							<tr class="a">	
 								<td><%=name %></td>
