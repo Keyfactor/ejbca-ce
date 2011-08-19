@@ -151,11 +151,15 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   *  @throws CADoesntExistsException 
+ * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void editCA(CAInfo cainfo) throws AuthorizationDeniedException{
-    caadminsession.editCA(administrator, cainfo);  
-    info.cAsEdited();
+  public void editCA(CAInfo cainfo) throws AuthorizationDeniedException, CADoesntExistsException{
+	  CAInfo oldinfo = caSession.getCAInfo(administrator, cainfo.getCAId());
+	  cainfo.setName(oldinfo.getName());
+	  cainfo.setSubjectDN(oldinfo.getSubjectDN());
+	  caadminsession.editCA(administrator, cainfo);  
+	  info.cAsEdited();
   }
 
   /**

@@ -1,5 +1,4 @@
 <%               
-  HardCATokenInfo hardcatokeninfo = (HardCATokenInfo) catokeninfo; 
   
 %>
     <tr  id="Row<%=row++%2%>"> 
@@ -8,7 +7,7 @@
         <%= ejbcawebbean.getText("HARDCATOKENPROPERTIES") %>
       </td>
       <td width="50%"> 
-        <textarea name="<%=TEXTFIELD_HARDCATOKENPROPERTIES%>" cols="45" rows="8"><% if(hardcatokeninfo != null && hardcatokeninfo.getProperties() != null) out.write(hardcatokeninfo.getProperties());%></textarea>
+        <textarea name="<%=TEXTFIELD_HARDCATOKENPROPERTIES%>" cols="45" rows="8"><% if(catokeninfo != null && catokeninfo.getPropertiesString() != null) out.write(catokeninfo.getPropertiesString());%></textarea>
       </td>
     </tr>
     <% if(!editca){ %>
@@ -27,7 +26,7 @@
       </td>
       <td width="50%"> 
            <% if(editca){
-                  out.write(hardcatokeninfo.getSignatureAlgorithm());
+                  out.write(catokeninfo.getSignatureAlgorithm());
               }else{%>
         <select name="<%=SELECT_SIGNATUREALGORITHM %>" size="1">
                 
