@@ -19,7 +19,9 @@ import java.util.Date;
 
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
+import org.cesecore.util.StringTools;
 
 /**
  * Holds non sensitive information about a CA.
@@ -116,8 +118,10 @@ public class CAInfo implements Serializable {
     public CAInfo(){}
     
     public String getSubjectDN() {return subjectdn;}
+    public void setSubjectDN(final String subjectdn) {this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));}
     public int getCAId(){return this.caid;}
     public String getName() {return this.name;}
+    public void setName(final String name) {this.name = name;}
     public int getStatus() {return status;}
     public void setStatus(int status) {this.status = status;}
     /** CAInfo.CATYPE_X509 or CAInfo.CATYPE_CVC */

@@ -62,7 +62,9 @@ import org.cesecore.util.CertTools;
 /**
  * Tests the CA session bean.
  * 
- * @version $Id: CaSessionTestBase.java 988 2011-08-10 14:33:46Z tomas $
+ * CeSecore version: CaSessionTestBase.java 1011 2011-08-19 10:53:45Z tomas
+ * 
+ * @version $Id: CaSessionTestBase.java 1011 2011-08-19 10:53:45Z tomas $
  */
 public class CaSessionTestBase extends RoleUsingTestCase {
 
@@ -74,8 +76,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
     private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
     private CaTokenSessionRemote caTokenSession = JndiHelper.getRemoteSession(CaTokenSessionRemote.class);
- // We don't use the CryptoTokenSession in EJBCA
-//    private CryptoTokenSessionRemote tokenSession = JndiHelper.getRemoteSession(CryptoTokenSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = JndiHelper.getRemoteSession(CertificateCreateSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
@@ -197,6 +197,19 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(50, ca.getCRLIssueInterval());
         assertEquals(50, ca.getCAInfo().getCRLIssueInterval());
 
+        // Test edit using a new "edit" CAInfo
+        X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getValidity(), cainfo.getCATokenInfo(), "new description", 
+        		cainfo.getCRLPeriod(), cainfo.getCRLIssueInterval(), cainfo.getCRLOverlapTime(), cainfo.getDeltaCRLPeriod(), 
+        		cainfo.getCRLPublishers(), true, false, true, false, null, null, null,  null, cainfo.getFinishUser(), 
+        		cainfo.getExtendedCAServiceInfos(), true, cainfo.getApprovalSettings(), cainfo.getNumOfReqApprovals(), false, true, 
+        		false, false, cainfo.getIncludeInHealthCheck(), cainfo.isDoEnforceUniquePublicKeys(), cainfo.isDoEnforceUniqueDistinguishedName(), 
+        		cainfo.isDoEnforceUniqueSubjectDNSerialnumber(), cainfo.isUseCertReqHistory(), cainfo.isUseUserStorage(), cainfo.isUseCertificateStorage(), null);
+        newinfo.setSubjectDN(cainfo.getSubjectDN());
+        newinfo.setName(cainfo.getName());
+        caSession.editCA(roleMgmgToken, newinfo);
+        ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
+        assertEquals("new description", ca.getDescription());
+        
         // Remove
         caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
         try {
@@ -336,7 +349,6 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	}    	
     }
     
-// We don't use the CryptoTokenSessionBean in EJBCA
 //    public void addCAUseSessionBeanToGenerateKeys(CA ca, String cadn, String tokenpwd) throws Exception {
 //    	// Generate CA keys
 //    	CryptoToken newtoken = tokenSession.generateKeyPair(roleMgmgToken, ca.getCAToken().getCryptoToken(), tokenpwd.toCharArray(), "512", "privatesignkeyalias");
