@@ -1,3 +1,4 @@
+<%@page import="org.cesecore.keys.token.CryptoTokenFactory"%>
 
 <%               
   TreeMap rootcaprofiles = info.getAuthorizedRootCACertificateProfileNames();
@@ -43,9 +44,9 @@
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
 
-    if(catokeninfo.getClassPath().equals(SoftCryptoToken.class.getName()){
+    if(catokeninfo.getClassPath().equals(SoftCryptoToken.class.getName())){
        catokentype = CAInterfaceBean.CATOKENTYPE_P12;
-    } else if(catokeninfo.getClassPath().equals(PKCS11CryptoToken.class.getName()){
+    } else if(catokeninfo.getClassPath().equals(PKCS11CryptoToken.class.getName())){
        catokentype = CAInterfaceBean.CATOKENTYPE_HSM;
     } else {
         catokentype = CAInterfaceBean.CATOKENTYPE_NULL;
@@ -522,7 +523,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("KEYSEQUENCE") %> <%= ejbcawebbean.getHelpReference("/userguide.html#Key%20sequence") %>
       </td>
       <td width="50%"> 
-        <% String sequence = CAInterfaceBean.DEFAULT_KEYSEQUENCE;
+        <% String sequence = CAToken.DEFAULT_KEYSEQUENCE;
            if (catokeninfo != null) {
         	   sequence = catokeninfo.getKeySequence();
            } else if (processrequest && (processedsequence != null)) { sequence = processedsequence; }%>

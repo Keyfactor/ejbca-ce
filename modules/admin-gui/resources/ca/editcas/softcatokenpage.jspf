@@ -1,5 +1,4 @@
 <%               
-  SoftCATokenInfo softcatokeninfo = (SoftCATokenInfo) catokeninfo; 
   int[] AVAILABLEKEYSIZES = {1024,2048,4096,8192};
   int[] AVAILABLEKEYSIZES_DSA = {/*512,*/1024};
 %>
@@ -24,7 +23,7 @@
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE %>" value="<%=CHECKBOX_VALUE %>"
             <% if (editca) {
-                 String prop = softcatokeninfo.getProperties();
+                 String prop = catokeninfo.getPropertiesString();
                  if ( (prop != null) && (prop.contains(CryptoToken.AUTOACTIVATE_PIN_PROPERTY)) ) {
                    out.write("CHECKED");
                  }
@@ -40,7 +39,7 @@
       </td>
       <td width="50%"> 
            <% if(editca){
-                  out.write(softcatokeninfo.getSignatureAlgorithm());
+                  out.write(catokeninfo.getSignatureAlgorithm());
               }else{%>
         <select name="<%=SELECT_SIGNATUREALGORITHM %>" size="1">
                 
@@ -52,7 +51,7 @@
       </td>
     </tr>
     <%
-    if (!editca || (softcatokeninfo.getSignatureAlgorithm().indexOf("RSA") != -1) ) {
+    if (!editca || (catokeninfo.getSignatureAlgorithm().indexOf("RSA") != -1) ) {
     %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -60,7 +59,7 @@
       </td>
       <td width="50%"> 
            <% if(editca){
-                out.write(softcatokeninfo.getSignKeySpec());
+                out.write(catokeninfo.getProperties().getProperty(CryptoToken.KEYSPEC_PROPERTY));
               }else{%>
         <select name="<%=SELECT_KEYSIZE %>" size="1" >                
                 <% for(int i=0; i < AVAILABLEKEYSIZES.length; i++){ %>
@@ -70,8 +69,8 @@
            <% } %> 
       </td>
     </tr>
-    <% } if (!editca || (softcatokeninfo.getSignatureAlgorithm().indexOf("DSA") != -1 && 
-    		softcatokeninfo.getSignatureAlgorithm().indexOf("ECDSA") == -1) ) {
+    <% } if (!editca || (catokeninfo.getSignatureAlgorithm().indexOf("DSA") != -1 && 
+    		catokeninfo.getSignatureAlgorithm().indexOf("ECDSA") == -1) ) {
     %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -79,7 +78,7 @@
       </td>
       <td width="50%"> 
            <% if(editca){
-                out.write(softcatokeninfo.getSignKeySpec());
+                out.write(catokeninfo.getProperties().getProperty(CryptoToken.KEYSPEC_PROPERTY));
               }else{%>
         <select name="<%=SELECT_KEYSIZE_DSA %>" size="1" >                
                 <% for(int i=0; i < AVAILABLEKEYSIZES_DSA.length; i++){ %>
@@ -89,7 +88,7 @@
            <% } %> 
       </td>
     </tr>
-    <% } if (!editca || (softcatokeninfo.getSignatureAlgorithm().indexOf("ECDSA") != -1) ) {
+    <% } if (!editca || (catokeninfo.getSignatureAlgorithm().indexOf("ECDSA") != -1) ) {
     %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -97,7 +96,7 @@
       </td>
       <td width="50%"> 
            <% if(editca){
-                out.write(softcatokeninfo.getSignKeySpec());
+                out.write(catokeninfo.getProperties().getProperty(CryptoToken.KEYSPEC_PROPERTY));
               }else{%>
                 <input type="text" name="<%=TEXTFIELD_KEYSPEC%>" size="20" maxlength="255">              
            <% } %> 

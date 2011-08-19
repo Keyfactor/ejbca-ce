@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.util.FileTools, org.cesecore.util.CertTools, org.cesecore.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.util.FileTools, org.cesecore.util.CertTools, org.cesecore.CesecoreException, org.cesecore.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.ca.X509CAInfo, org.cesecore.certificates.ca.CVCCAInfo, org.cesecore.certificates.ca.catoken.CATokenInfo, org.cesecore.certificates.ca.catoken.CATokenConstants, org.cesecore.certificates.ca.catoken.CAToken, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.cesecore.certificates.certificate.request.PKCS10RequestMessage, org.cesecore.certificates.certificate.request.RequestMessage, org.cesecore.certificates.certificate.request.RequestMessageUtils, org.cesecore.certificates.certificate.request.CVCRequestMessage, org.cesecore.certificates.ca.CAExistsException, org.cesecore.certificates.ca.CADoesntExistsException, org.cesecore.keys.token.CryptoTokenOfflineException, org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
@@ -1256,10 +1256,6 @@
         	  includefile="choosecapage.jspf"; 
         	  cadatahandler.removeCA(caid); 
               throw e;
-             }catch(EjbcaException e){ 
-        	  includefile="choosecapage.jspf"; 
-        	  cadatahandler.removeCA(caid); 
-              errormessage = e.getMessage(); 
              } catch(Exception e){   
         	  includefile="choosecapage.jspf";
         	  cadatahandler.removeCA(caid); 
@@ -1270,8 +1266,6 @@
            } 
          }catch(CryptoTokenOfflineException e){  
           throw e;
-      }catch(EjbcaException e){ 
-          errormessage = e.getMessage(); 
       } catch(CertificateException ce){
     	  errorrecievingfile = true;
       } catch(Exception e){   
@@ -1320,8 +1314,6 @@
             }           
           }catch(CryptoTokenOfflineException e){  
               throw e;
-          }catch(EjbcaException e){ 
-              errormessage = e.getMessage(); 
           } catch(ExtCertPathValidatorException e){
         	  errormessage = e.getMessage();  
           } catch(CertificateException e){   
@@ -1580,7 +1572,7 @@
           }catch(CryptoTokenOfflineException e){  
         	  includefile="choosecapage.jspf"; 
               throw e;
-          }catch(EjbcaException e){ 
+          }catch(CesecoreException e){ 
         	  includefile="choosecapage.jspf"; 
               errormessage = e.getMessage(); 
           } catch(Exception e){   
