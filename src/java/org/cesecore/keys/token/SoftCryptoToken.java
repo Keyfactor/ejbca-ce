@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -188,7 +189,10 @@ public class SoftCryptoToken extends BaseCryptoToken {
             KeyStoreException, NoSuchProviderException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         KeyStore keystore = KeyStore.getInstance("PKCS12", PROVIDER);
-        keystore.load(new java.io.ByteArrayInputStream(ksdata), keystorepass);
+        if (log.isDebugEnabled()) {
+        	log.debug("Loading keystore data of size: "+ksdata.length);
+        }
+        keystore.load(new ByteArrayInputStream(ksdata), keystorepass);
         return keystore;
     }
 

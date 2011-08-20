@@ -448,7 +448,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
                 // Do we have it stored as a soft key in properties?
                 key = getKeyFromProperties(alias);
                 if (key == null) {
-                    log.warn(intres.getLocalizedMessage("token.nosuchkey", alias));
+                    log.warn(intres.getLocalizedMessage("token.errornosuchkey", alias));
                     if (log.isDebugEnabled()) {
                         Enumeration<String> aliases;
                         aliases = getKeyStore().aliases();

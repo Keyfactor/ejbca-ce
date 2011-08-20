@@ -640,7 +640,7 @@ public class CAToken extends UpgradeableDataHashMap {
         token.activate(authCode);
 
         if (log.isDebugEnabled()) {
-            String msg = intres.getLocalizedMessage("catoken.generatedkeys", token.getId());
+            String msg = intres.getLocalizedMessage("catoken.generatedkeys", token.getId(), renew, activate);
             log.debug(msg);
         }
         if (log.isTraceEnabled()) {
