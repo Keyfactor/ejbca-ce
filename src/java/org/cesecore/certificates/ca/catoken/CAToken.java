@@ -523,11 +523,17 @@ public class CAToken extends UpgradeableDataHashMap {
         // The key label to use for the new key
         // Remove the old sequence from the end of the key label and replace it with the
         // new label. If no label was present just concatenate the new label
-        String newKeyLabel = StringUtils.removeEnd(keyLabel, oldSequence) + newSequence;
+        String newKeyLabel = keyLabel;
+        if (renew) {
+        	// If renew is false, we are generating initial keys, and then we don't want to generate a new key label here, 
+        	// simply generate the one we have as input
+        	// If renew is true, we want to store away the old key label, pointing to an old key, and generate a new key with a new key label
+        	newKeyLabel = StringUtils.removeEnd(keyLabel, oldSequence) + newSequence;
+        } 
         log.debug("New key label is: " + newKeyLabel);
 
         // As first choice we check if the used have specified which type of key should be generated, this can be different from the currently used
-        // key
+        // key.
         // If the user did not specify this, we try to generate a key with the same specification as the currently used key.
         String keyspec = properties.getProperty(CryptoToken.KEYSPEC_PROPERTY); // can be null, and that is ok
         AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pubK);
@@ -581,6 +587,38 @@ public class CAToken extends UpgradeableDataHashMap {
             // Also set the previous sequence
             properties.setProperty(CryptoToken.PREVIOUS_SEQUENCE_PROPERTY, oldSequence);
         }
+        // If the renew flag is false, we are generating initial keys for the crypt token
+        // In that case we should also generate encryption keys
+		if (!renew) {
+			log.debug("We are generating initial keys, so see if we should generate an encryption key.");
+			// Get the encryption key alias, and if it is not the same as the signature key alias, generate a new key
+			// Encryption keys must be RSA, and we force it to be 2048 bit keys, unless the signature keys are smaller,
+			// in that case we use the same RSA key size as for signature keys
+			String encKeySpec = "2048";
+			// For generating initial keys, a keyspec is needed above, so it should not be null here
+			if (keyspec != null) {
+				try {
+					int len = Integer.parseInt(keyspec.trim());
+					if (len < 2048) {
+						// if less then 2048 used for signature, use same length for key encryption (probably a demo or test CA)
+						// Never use larger keys than 2048 bit RSA key for key encryption
+						encKeySpec = keyspec;
+					}
+				} catch (NumberFormatException e) {
+					// It was a DSA or ECDSA signature keyspec, use RSA 2048 for encryption keys
+					// NOPMD: ignore
+				}
+			}
+	        log.debug("Encryption key spec is: " + encKeySpec);
+	        String enckeyLabel = getKeyLabel(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+	        log.debug("CAKEYPURPOSE_KEYENCRYPT key label is: " + enckeyLabel);
+	        if (StringUtils.equals(keyLabel, enckeyLabel)) {
+	        	log.debug("Key encrypt key alias is same as cert sign key alias, no need to generate specific encryption key.");
+	        } else {
+	        	log.debug("Key encrypt key alias is not same as cert sign key alias, generating specific encryption key.");
+	            token.generateKeyPair(encKeySpec, enckeyLabel);	        	
+	        }
+		}
         // Store updated properties
         token.setProperties(properties);
         CATokenInfo info = getTokenInfo();

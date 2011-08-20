@@ -13,6 +13,8 @@
 package org.cesecore.certificates.ca.catoken;
 
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
@@ -77,7 +79,24 @@ public class SoftCATokenTest extends CATokenTestBase {
 
     	doSaveAndLoad(cryptoToken);
 	}
-	
+
+	@Test
+	public void testDefaultEjbcaSoftTokenProperties() throws Exception {
+    	CryptoToken cryptoToken = createSoftToken("rsatest00000", "1024", false);
+    	Properties prop = cryptoToken.getProperties();
+    	// Default soft token properties in EJBCA
+    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+		cryptoToken.setProperties(prop);
+    	CAToken catoken = new CAToken(cryptoToken);
+        catoken.generateKeys("foo123".toCharArray(), false, true);
+        // Crypto token is not so picky about all aliases being populated
+        assertEquals("crypto token status should be active after key generation", CryptoToken.STATUS_ACTIVE, catoken.getCryptoToken().getTokenStatus());
+        // CA token requires that all aliases have keys associated with them
+        assertEquals("CA token status should be active after key generation", CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
+	}
+
 	/** When nodefaultpwd == true, the property SoftCryptoToken.NODEFAULTPWD is set in order to avoid 
 	 * trying to use default pwd, if pwd is not specified.
 	 * Also the auto activation pin is not set when nodefaultpwd == false.

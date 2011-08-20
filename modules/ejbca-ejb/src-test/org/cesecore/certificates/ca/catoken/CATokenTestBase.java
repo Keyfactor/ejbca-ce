@@ -89,9 +89,10 @@ public abstract class CATokenTestBase {
 		// Now sequence should be 1, generated and activated new keys
 		seq += 1;
 		assertEquals(seq, Integer.valueOf(catoken.getTokenInfo().getKeySequence()));
-		// We still don't have a key generated for the rsatest0000 alias, which we have defined as a key purpose mapping
-		// So status will still be offline
-		assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus());
+		// When generating keys with renew = false, we generate initial keys, which means generating the key aliases
+		// we have specified for signature and encryption keys
+		// After this all needed CAToken keys are generated and status will be active
+		assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
 		PrivateKey priv = null;
 		PublicKey pub = null;
 		String keyhash = null;
@@ -239,6 +240,10 @@ public abstract class CATokenTestBase {
 		KeyTools.testKey(priv, pub, catoken.getCryptoToken().getSignProviderName());
 		assertEquals(256, KeyTools.getKeyLength(pub));
 		keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+		// There should exist an encryption key when we have generated keys with renew = false
+		// Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA
+		PublicKey encPub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+		assertEquals(2048, KeyTools.getKeyLength(encPub));
 
 		// Generate new keys, moving the old ones to "previous key"
 		catoken.generateKeys(tokenpin.toCharArray(), true, true);
@@ -289,13 +294,6 @@ public abstract class CATokenTestBase {
 		assertEquals(nextseq, Integer.valueOf(nextSequence));
 		// Make sure the properties was set correctly so we did not get the "default" key as next
 		priv = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
-		try {
-			// There does not exist any encryption key
-			pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-			assertTrue("Should throw", false);
-		} catch (CryptoTokenOfflineException e) {
-			assertTrue(e.getMessage().contains("No key with alias 'rsatest00001'."));
-		}
 
 		// finally activate the "next key" moving that to current and moving the current to previous
 		catoken.activateNextSignKey(tokenpin.toCharArray());
@@ -316,20 +314,13 @@ public abstract class CATokenTestBase {
 		String previouskeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
 		assertEquals(newkeyhash2, previouskeyhash3);
 		// Next should now return the encryption key instead, since it is the default
-		try {
-			// There does not exist any encryption key
-			priv = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
-			assertTrue("Should throw", false);
-		} catch (CryptoTokenOfflineException e) {
-			assertTrue(e.getMessage().contains("No key with alias 'rsatest00001'."));
-		}
-		try {
-			// There does not exist any encryption key
-			pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-			assertTrue("Should throw", false);
-		} catch (CryptoTokenOfflineException e) {
-			assertTrue(e.getMessage().contains("No key with alias 'rsatest00001'."));
-		}
+		// There exist an RSA encryption key
+		priv = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+		KeyTools.testKey(priv, encPub, catoken.getCryptoToken().getSignProviderName());
+		// There exist an RSA encryption key
+		pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+		assertEquals(2048, KeyTools.getKeyLength(pub));
+		
 		// Clean up and delete our generated keys
 		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "ecctest00001");
 		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "ecctest00002");
