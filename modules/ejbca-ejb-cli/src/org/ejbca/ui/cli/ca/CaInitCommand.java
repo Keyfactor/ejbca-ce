@@ -67,7 +67,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         if (args.length < 10) {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage: " + getCommand() + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [-superadmincn SuperAdmin] [<catokenproperties> or null] [<signed by caid>]");
-    		getLogger().info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.ejbca.core.model.ca.catoken.PKCS11CAToken' for PKCS#11 HSMs.");
+    		getLogger().info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal.");
     		getLogger().info(" catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs");
     		getLogger().info(" keytype is RSA, DSA or ECDSA.");
@@ -236,7 +236,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if ( catokentype.equals("soft")) {
             	catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             } else {
-            	catokeninfo.setClassPath(PKCS11CryptoToken.class.getName());
+            	catokeninfo.setClassPath(catokentype);
             }
             
             // Create and active OSCP CA Service.
