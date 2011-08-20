@@ -327,6 +327,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // 2. We use the system default password
                 boolean renew = false;
                 caTokenSession.generateKeys(admin, ca.getCAId(), authCode.toCharArray(), renew, true);
+                // Re-read them so we don't overwrite with empty values in the end...
+                ca = caSession.getCA(admin, ca.getCAId());
+                catoken = ca.getCAToken();
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -338,6 +341,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         try {
+        	// We don't have to do this if we generated keys, since caTokenSession.generateKeys should do it for us...
+        	// It is not certain that caTokenSession.generateKeys was called though, probably not for HSM CA tokens
             catoken.getCryptoToken().activate(authCode.toCharArray());
         } catch (CryptoTokenAuthenticationFailedException ctaf) {
             String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");
