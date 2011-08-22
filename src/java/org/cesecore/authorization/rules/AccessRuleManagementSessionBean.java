@@ -22,6 +22,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
@@ -73,7 +74,7 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
         if (log.isTraceEnabled()) {
             log.trace(">existsCAInAccessRules(" + caid + ")");
         }
-        String whereClause = "accessRule = '" + AccessRulesConstants.CABASE + "/" + caid + "' OR accessRule LIKE '" + AccessRulesConstants.CABASE
+        String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.toString() + "/" + caid + "' OR accessRule LIKE '" + StandardRules.CAACCESSBASE.toString()
                 + "/" + caid + "/%'";
         Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
         long count = ValueExtractor.extractLongValue(query.getSingleResult());

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
@@ -65,7 +66,7 @@ public class AccessRulesView implements Serializable {
             }
 
             // Check if rule is CA access rule
-            if (accessrule.getAccessRuleName().startsWith(AccessRulesConstants.CAPREFIX) || accessrule.getAccessRuleName().equals(AccessRulesConstants.CABASE)) {
+            if (accessrule.getAccessRuleName().startsWith(StandardRules.CAACCESS.toString()) || accessrule.getAccessRuleName().equals(StandardRules.CAACCESSBASE.toString())) {
                 this.caaccessrules.add(accessrule);
                 regular = false;
             }

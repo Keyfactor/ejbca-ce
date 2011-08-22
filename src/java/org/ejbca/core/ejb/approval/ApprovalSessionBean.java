@@ -43,6 +43,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
@@ -266,9 +267,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 }
             }
             if (retval.getCaid() != ApprovalDataVO.ANY_CA) {
-                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.CAPREFIX + retval.getCaid())) {
+                if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.toString() + retval.getCaid())) {
                     final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                            AccessRulesConstants.CAPREFIX + retval.getCaid(), null);
+                            StandardRules.CAACCESS.toString() + retval.getCaid(), null);
                     throw new AuthorizationDeniedException(msg);
                 }
             }

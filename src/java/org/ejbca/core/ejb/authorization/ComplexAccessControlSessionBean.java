@@ -165,7 +165,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     public Collection<Integer> getAuthorizedCAIds(AuthenticationToken admin) {
         List<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : caSession.getAvailableCAs()) {
-            if (accessControlSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid.toString())) {
+            if (accessControlSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid.toString())) {
                 returnval.add(caid);
             } else {
                 if (log.isDebugEnabled()) {
@@ -206,10 +206,16 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     public Collection<String> getAuthorizedAvailableAccessRules(AuthenticationToken authenticationToken, 
             boolean enableendentityprofilelimitations, boolean usehardtokenissuing, boolean usekeyrecovery,
             Collection<Integer> authorizedEndEntityProfileIds, Collection<Integer> authorizedUserDataSourceIds, String[] customaccessrules) {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getAuthorizedAvailableAccessRules");
+    	}
         ArrayList<String> accessrules = new ArrayList<String>();
 
         accessrules.add(AccessRulesConstants.ROLEACCESSRULES[0]);
         accessrules.add(AccessRulesConstants.ROLEACCESSRULES[1]);
+        if (accessControlSession.isAuthorizedNoLog(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
+            accessrules.add(AccessRulesConstants.ROLE_ROOT);
+        }
         if (accessControlSession.isAuthorizedNoLog(authenticationToken, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             accessrules.add(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         }
@@ -287,11 +293,11 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             }
         }
         // Insert available CA access rules
-        if (accessControlSession.isAuthorizedNoLog(authenticationToken, AccessRulesConstants.CABASE)) {
-            accessrules.add(AccessRulesConstants.CABASE);
+        if (accessControlSession.isAuthorizedNoLog(authenticationToken, StandardRules.CAACCESSBASE.toString())) {
+            accessrules.add(StandardRules.CAACCESSBASE.toString());
         }
         for (int caId : getAuthorizedCAIds(authenticationToken)) {
-            accessrules.add(AccessRulesConstants.CAPREFIX + caId);
+            accessrules.add(StandardRules.CAACCESS.toString() + caId);
         }
 
         // Insert custom access rules
@@ -303,6 +309,9 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
               
             }
         }
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getAuthorizedAvailableAccessRules");
+    	}
         return accessrules;
     }
     

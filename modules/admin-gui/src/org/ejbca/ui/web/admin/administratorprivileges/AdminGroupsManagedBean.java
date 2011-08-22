@@ -26,6 +26,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -395,7 +396,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     public Collection<SelectItem> getAvailableCasAndAll() {
         Collection<SelectItem> cas = getAvailableCaIds();
 
-        if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), AccessRulesConstants.CABASE)) {
+        if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), StandardRules.CAACCESSBASE.toString())) {
             cas.add(new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
         }
 
@@ -515,13 +516,13 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
             }
         }
         // Check if it is a CA rule, then replace CA id with CA name.
-        if (resource.startsWith(AccessRulesConstants.CAPREFIX)) {
+        if (resource.startsWith(StandardRules.CAACCESS.toString())) {
             Map<Integer, String> caIdToNameMap = ejb.getCaAdminSession().getCAIdToNameMap(getAdmin());
-            if (resource.lastIndexOf('/') < AccessRulesConstants.CAPREFIX.length()) {
-                return AccessRulesConstants.CAPREFIX + caIdToNameMap.get(Integer.valueOf(resource.substring(AccessRulesConstants.CAPREFIX.length())));
+            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.toString().length()) {
+                return StandardRules.CAACCESS.toString() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.toString().length())));
             } else {
-                return AccessRulesConstants.CAPREFIX
-                        + caIdToNameMap.get(Integer.valueOf(resource.substring(AccessRulesConstants.CAPREFIX.length(), resource.lastIndexOf('/'))))
+                return StandardRules.CAACCESS.toString()
+                        + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.toString().length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }
