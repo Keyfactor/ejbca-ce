@@ -15,7 +15,7 @@ package org.ejbca.core.ejb;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -65,8 +65,8 @@ public class DatabaseSchemaTest extends TestCase {
 	private static String CLOB_10KiB;
 	private static String CLOB_100KiB;
 	private static String CLOB_1MiB;
-	private static final HashMap HASHMAP_200K = new HashMap();
-	private static final HashMap HASHMAP_1M = new HashMap();
+	private static final LinkedHashMap HASHMAP_200K = new LinkedHashMap();
+	private static final LinkedHashMap HASHMAP_1M = new LinkedHashMap();
 	private static final int BOGUS_INT = -32;	// Very random..
 	private static final Integer BOGUS_INTEGER = Integer.valueOf(BOGUS_INT);
 	private static EntityManagerFactory entityManagerFactory;

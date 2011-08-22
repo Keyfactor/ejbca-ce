@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public enum AccessMatchType {
 
-    TYPE_EQUALCASE(1000), TYPE_EQUALCASEINS(1001), TYPE_NOT_EQUALCASE(1002), TYPE_NOT_EQUALCASEINS(1003);
+    TYPE_EQUALCASE(1000), TYPE_EQUALCASEINS(1001), TYPE_NOT_EQUALCASE(1002), TYPE_NOT_EQUALCASEINS(1003), TYPE_NONE(1999);
 
     private AccessMatchType(int numericValue) {
         this.numericValue = numericValue;

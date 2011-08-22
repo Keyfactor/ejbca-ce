@@ -1093,7 +1093,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     /** Method that returns the hard token data from a hashmap and updates it if necessary. */
-    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, HashMap data) {
+    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, LinkedHashMap data) {
         HardToken returnval = null;
 
         if (data.get(ENCRYPTEDDATA) != null) {
@@ -1104,7 +1104,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
                 ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(response.getData()));
-                data = (HashMap) ois.readObject();
+                data = (LinkedHashMap) ois.readObject();
             } catch (Exception e) {
                 throw new EJBException(e);
             }
@@ -1138,8 +1138,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
      * Method that saves the hard token issuer data to a HashMap that can be
      * saved to database.
      */
-	private HashMap<String,byte[]> setHardToken(AuthenticationToken admin, int encryptcaid, HardToken tokendata) {
-        HashMap<String,byte[]> retval = null;
+	private LinkedHashMap<String,byte[]> setHardToken(AuthenticationToken admin, int encryptcaid, HardToken tokendata) {
+        LinkedHashMap<String,byte[]> retval = null;
         if (encryptcaid != 0) {
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1148,7 +1148,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA, baos
                         .toByteArray());
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
-                HashMap<String,byte[]> data = new HashMap<String,byte[]>();
+                LinkedHashMap<String,byte[]> data = new LinkedHashMap<String,byte[]>();
                 data.put(ENCRYPTEDDATA, response.getData());
                 retval = data;
             } catch (Exception e) {
@@ -1156,7 +1156,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
         } else {
             // Don't encrypt data
-            retval = (HashMap<String,byte[]>) tokendata.saveData();
+            retval = (LinkedHashMap<String,byte[]>) tokendata.saveData();
         }
         return retval;
     }
@@ -1169,10 +1169,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        HashMap h = (HashMap) decoder.readObject();
+        Map h = (Map) decoder.readObject();
         decoder.close();
         // Handle Base64 encoded string values
-        HashMap data = new Base64GetHashMap(h);
+        LinkedHashMap data = new Base64GetHashMap(h);
         switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
         case SwedishEIDProfile.TYPE_SWEDISHEID:
             profile = new SwedishEIDProfile();

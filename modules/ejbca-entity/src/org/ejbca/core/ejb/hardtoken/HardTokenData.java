@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class HardTokenData implements Serializable {
 	/**
 	 * Entity holding data of a hard token issuer.
 	 */
-	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HashMap data) {
+	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, LinkedHashMap data) {
 		setTokenSN(tokensn);
 		setUsername(username);
 		setCtime(createtime.getTime());
@@ -105,21 +104,10 @@ public class HardTokenData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	public HashMap getData() {
-		HashMap ret = null;
-		// When the wrong class is given it can either return null, or throw an exception
-		try {
-			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, getDataUnsafe());
-			if (ret != null) {
-				return ret;
-			}
-		} catch (ClassCastException e) {
-			// NOPMD: pass through to the end line
-		}
-		// If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException or null from above...
-		return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()));
+	public LinkedHashMap getData() {
+		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	public void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	public void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	@Transient
 	public Date getCreateTime() { return new Date(getCtime()); }

@@ -82,21 +82,10 @@ public class EndEntityProfileData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private HashMap getData() {
-		HashMap ret = null;
-		// When the wrong class is given it can either return null, or throw an exception
-		try {
-			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, getDataUnsafe());
-			if (ret != null) {
-				return ret;
-			}
-		} catch (ClassCastException e) {
-			// NOPMD: pass through to the end line
-		}
-		// If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException or null from above...
-		return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()));
+	private LinkedHashMap getData() {
+		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	private void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
     /**
      * Method that returns the end entity profile and updates it if necessary.
@@ -110,7 +99,7 @@ public class EndEntityProfileData implements Serializable {
      * Method that saves the end entity profile.
      */
     public void setProfile(EndEntityProfile profile) {
-        setData((HashMap) profile.saveData());
+        setData((LinkedHashMap) profile.saveData());
     }
 
     /** 

@@ -97,6 +97,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public int getMatchType() {
+    	if (matchType == null) {
+    		return AccessMatchType.TYPE_NONE.getNumericValue();
+    	}
         return matchType.getNumericValue();
     }
 
