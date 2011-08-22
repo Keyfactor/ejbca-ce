@@ -13,10 +13,9 @@
  
 package org.cesecore.internal;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 
 
@@ -31,7 +30,6 @@ import org.apache.log4j.Logger;
  * @see org.cesecore.internal.IUpgradeableData
  */
 public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.io.Serializable {
-    private static final Logger log = Logger.getLogger(UpgradeableDataHashMap.class);
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -75,7 +73,10 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      */
     @SuppressWarnings("unchecked")
     public void loadData(final Object data) {
-    	this.data = (LinkedHashMap<Object, Object>) data;
+    	// By creating a new LinkedHashMap here we slip through a possible upgrade issue when upgrading
+    	// from older implementation that used a plain HashMap instead. 
+    	// Both newer and older versions can be casted to HashMap. 
+    	this.data = new LinkedHashMap<Object, Object>((HashMap)data);
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
     		upgrade();     
     		upgraded = true;

@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -26,6 +27,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,7 +38,9 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -62,7 +66,7 @@ public class CAToken extends UpgradeableDataHashMap {
     /**
      * Latest version of the UpgradeableHashMap, this determines if we need to auto-upgrade any data.
      */
-    public static final float LATEST_VERSION = 7;
+    public static final float LATEST_VERSION = 8;
 
     public static final String CLASSPATH = "classpath";
     public static final String PROPERTYDATA = "propertydata";
@@ -91,14 +95,50 @@ public class CAToken extends UpgradeableDataHashMap {
 
     public CAToken(final CryptoToken token) {
         super();
-        this.token = token;
+        internalInit(token);
+    }
+
+	/**
+	 * @param token
+	 */
+	private void internalInit(final CryptoToken token) {
+		this.token = token;
         Properties p = token.getProperties();
         this.keyStrings = new PurposeMapping(p);
         setProperties(p);
         setClassPath(token.getClass().getName());
+	}
 
+    /** Constructor used to initialize a stored CA token, when the UpgradeableHashMap has been stored as is.
+     * 
+     * @param data LinkedHashMap
+     * @param caid caid that will be token id in the underlying CryptoToken
+     * @throws IllegalCryptoTokenException if token properties can not be loaded
+     */
+    public CAToken(final HashMap tokendata, final int caid) throws IllegalCryptoTokenException {
+		loadData(tokendata); 
+        final String str = (String) data.get(CAToken.KEYSTORE);
+        byte[] keyStoreData = null;
+        if (StringUtils.isNotEmpty(str)) {
+            keyStoreData = Base64.decode(str.getBytes());
+        }
+        final String propertyStr = (String) data.get(CAToken.PROPERTYDATA);
+        final Properties prop = new Properties();
+        if (StringUtils.isNotEmpty(propertyStr)) {
+            try {
+                prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
+            } catch (IOException e) {
+                throw new IllegalCryptoTokenException(e);
+            }
+        }
+        final String classpath = (String) data.get(CAToken.CLASSPATH);
+        if (log.isDebugEnabled()) {
+            log.debug("CA token classpath: " + classpath);
+        }
+        final CryptoToken token = CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid);
+        internalInit(token);
     }
-
+    
     public int getTokenStatus() {
         if (log.isTraceEnabled()) {
             log.trace(">getCATokenStatus");
@@ -438,6 +478,22 @@ public class CAToken extends UpgradeableDataHashMap {
             if (data.get(SEQUENCE_FORMAT) == null) { // v7
                 log.info("Adding new sequence format to CA Token data: " + StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
                 data.put(SEQUENCE_FORMAT, StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+            }
+
+            if (data.get(CLASSPATH) != null) { // v8 upgrade of classpaths for CESeCore
+                final String classpath = (String) data.get(CAToken.CLASSPATH);
+                log.info("Upgrading CA token classpath: "+classpath);
+                String newclasspath = classpath;
+                if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.SoftCAToken")) {
+                	newclasspath = "org.cesecore.keys.token.SoftCryptoToken";
+                } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.PKCS11CAToken")) {
+                	newclasspath = "org.cesecore.keys.token.PKCS11CryptoToken";
+                } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.NullCAToken")) {
+                	newclasspath = "org.cesecore.keys.token.NullCryptoToken";
+                } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.NFastCAToken")) {
+                	log.error("Upgrading of NFastCAToken not supported, you need to convert to using PKCS11CAToken before upgrading.");
+                }
+                data.put(CAToken.CLASSPATH, newclasspath);
             }
 
             data.put(VERSION, new Float(LATEST_VERSION));

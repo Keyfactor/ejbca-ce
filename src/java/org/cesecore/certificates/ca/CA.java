@@ -14,7 +14,6 @@ package org.cesecore.certificates.ca;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -29,9 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -51,8 +48,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64;
@@ -336,26 +331,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (ret == null) {
             // Not cached we have to create the crypto token
             HashMap tokendata = (HashMap) data.get(CATOKENDATA);
-            String classpath = (String) tokendata.get(CAToken.CLASSPATH);
-            if (log.isDebugEnabled()) {
-                log.debug("CA token classpath: " + classpath);
-            }
-            String str = (String) tokendata.get(CAToken.KEYSTORE);
-            byte[] keyStoreData = null;
-            if (StringUtils.isNotEmpty(str)) {
-                keyStoreData = Base64.decode(str.getBytes());
-            }
-            String propertyStr = (String) tokendata.get(CAToken.PROPERTYDATA);
-            Properties prop = new Properties();
-            if (StringUtils.isNotEmpty(propertyStr)) {
-                try {
-                    prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
-                } catch (IOException e) {
-                    throw new IllegalCryptoTokenException(e);
-                }
-            }
-            CryptoToken token = CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid);
-            ret = new CAToken(token);
+            ret = new CAToken(tokendata, caid);
             String signaturealg = (String) tokendata.get(CAToken.SIGNATUREALGORITHM);
             String encryptionalg = (String) tokendata.get(CAToken.ENCRYPTIONALGORITHM);
             String keysequence = (String) tokendata.get(CAToken.SEQUENCE);

@@ -117,12 +117,7 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @Transient
     @SuppressWarnings("unchecked")
     private LinkedHashMap getData() {
-        try {
-            return JBossUnmarshaller.extractObject(LinkedHashMap.class, getDataUnsafe());
-        } catch (ClassCastException e) {
-            // If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException from above...
-            return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()));
-        }
+		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
     }
 
     private final void setData(final LinkedHashMap data) {

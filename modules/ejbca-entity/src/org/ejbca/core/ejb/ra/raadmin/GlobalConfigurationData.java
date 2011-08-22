@@ -76,18 +76,7 @@ public class GlobalConfigurationData implements Serializable {
 
 	@Transient
 	private HashMap getData() {
-		HashMap ret = null;
-		// When the wrong class is given it can either return null, or throw an exception
-		try {
-			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, getDataUnsafe());
-			if (ret != null) {
-				return ret;
-			}
-		} catch (ClassCastException e) {
-			// NOPMD: pass through to the end line
-		}
-		// If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException or null from above...
-		return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()));
+		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
 	
 	private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
