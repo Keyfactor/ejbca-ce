@@ -51,6 +51,7 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
@@ -233,8 +234,8 @@ public class EjbcaWSHelper {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
-			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid )){
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.CAPREFIX + caid, null);
+			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid )){
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() + caid, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
 
@@ -666,7 +667,7 @@ public class EjbcaWSHelper {
 				final int caid = CertTools.getIssuerDN(next).hashCode();
 				Boolean authorized = authorizationCache.get(caid);
 				if (authorized == null) {
-					authorized = authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.CAPREFIX +caid);
+					authorized = authorizationSession.isAuthorizedNoLog(admin,StandardRules.CAACCESS.toString() +caid);
 					authorizationCache.put(caid, authorized);
 				}
 				if (authorized.booleanValue()) {

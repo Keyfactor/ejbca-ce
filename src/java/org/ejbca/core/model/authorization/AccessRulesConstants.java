@@ -49,13 +49,13 @@ public abstract class AccessRulesConstants {
     // Endings used in profile authorization.
     public static final String[]  USERDATASOURCE_ENDINGS = {UDS_FETCH_RIGHTS,UDS_REMOVE_RIGHTS};
 
-    // Name of ca prefix directory in access rules.
-    public static final String CABASE                                     = "/ca";
-    public static final String CAPREFIX                                   = "/ca/";
+    // CA access rules are managed in CESecore, see StandardRules
 
     public static final String ROLE_PUBLICWEBUSER                         = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
+    // ROLE_SUPERADMINISTRATOR is only kept here for legacy reasons */
     public static final String ROLE_SUPERADMINISTRATOR                    = "/super_administrator";
+    public static final String ROLE_ROOT                    = "/";
     
     
     public static final String REGULAR_CAFUNCTIONALTY                     = "/ca_functionality";

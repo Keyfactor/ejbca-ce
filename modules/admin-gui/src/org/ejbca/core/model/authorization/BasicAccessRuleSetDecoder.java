@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.roles.RoleData;
@@ -110,12 +111,12 @@ public class BasicAccessRuleSetDecoder implements Serializable {
                 allcafound = true;
                 break;
             }
-            carules.add(new AccessRuleData(roleName, AccessRulesConstants.CAPREFIX + caId.toString(), AccessRuleState.RULE_ACCEPT, false));
+            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESS.toString() + caId.toString(), AccessRuleState.RULE_ACCEPT, false));
         }
 
         if (allcafound) {
             carules.clear();
-            carules.add(new AccessRuleData(roleName, AccessRulesConstants.CABASE, AccessRuleState.RULE_ACCEPT, true));
+            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.toString(), AccessRuleState.RULE_ACCEPT, true));
         }
 
         this.currentruleset.addAll(carules);

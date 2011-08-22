@@ -20,12 +20,15 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
@@ -33,16 +36,30 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
@@ -63,6 +80,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Resource
     private SessionContext sessionContext;
+
+    @EJB
+    private RoleAccessSessionLocal roleAccessSession;
+    @EJB
+    private RoleManagementSessionLocal roleMgmtSession;
+    @EJB
+    private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
+    @EJB
+    private AccessControlSessionLocal accessControlSession;
 
     private UpgradeSessionLocal upgradeSession;
 
@@ -99,18 +125,22 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             return false;
         }
         // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
-        if (oldVersion <= 400) {
+        if (oldVersion < 400) {
             return postMigrateDatabase400();
+        }
+        // Upgrade database change between EJBCA 4.0.x and EJBCA 5.0.x if needed
+        if (oldVersion < 500) {
+            return postMigrateDatabase500();
         }
         return false;
     }
 
     private boolean upgrade(String dbtype, int oldVersion) {
         if (oldVersion <= 311) {
-            log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
+            log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x and higher.");
             return false;
         }
-        // Seamless upgrade between EJBCA 3.11.x and EJBCA 4.0.x
+        // Seamless upgrade between EJBCA 3.11.x and EJBCA 4.0.x and 5.0.x
         return true;
     }
 
@@ -118,7 +148,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Called from other migrate methods, don't call this directly, call from an
      * interface-method
      * 
-     * Not used in EJBCA 4.0.x, but will probably be in EJBCA 4.1.x
+     * Not used in EJBCA 4.0.x, but might be later
      */
     private boolean migrateDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables
@@ -253,4 +283,48 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		}
     	}
     }
+    
+    /**
+     * In EJBCA 5.0 we have introduced a new authorization rule system.
+     * The old "/super_administrator" rule is replaced by a rule to access "/" with recursive=true.
+     * therefore we must insert a new acess rule in the database in all roles that have super_administrator access.
+     * @throws AuthorizationDeniedException 
+     * @throws RoleNotFoundException 
+     * @throws AccessRuleNotFoundException 
+     * 
+     */
+    private boolean postMigrateDatabase500() {
+    	log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
+    	boolean ret = true;
+    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase500"));
+    	Collection<RoleData> roles = roleAccessSession.getAllRoles();
+    	for (RoleData role : roles) {
+    		Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
+    		Collection<AccessRuleData> rules = rulemap.values();
+    		for (AccessRuleData rule : rules) {
+    			if (StringUtils.equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, rule.getAccessRuleName()) && 
+    					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
+    				// Now we add a new rule
+    				log.info("Adding new access rule of '/' on role: "+role.getRoleName());
+    		    	AccessRuleData slashrule = new AccessRuleData(role.getRoleName(), "/", AccessRuleState.RULE_ACCEPT, true);
+    	        	Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
+    	        	newrules.add(slashrule);
+    	    		try {
+						roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
+					} catch (AccessRuleNotFoundException e) {
+						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+					} catch (RoleNotFoundException e) {
+						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+					} catch (AuthorizationDeniedException e) {
+						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+					}
+    			}
+    		}
+		}
+    	accessTreeUpdateSession.signalForAccessTreeUpdate();
+    	accessControlSession.forceCacheExpire();
+    	log.error("(this is not an error) Finished post upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
+        return ret;
+    }
+
 }

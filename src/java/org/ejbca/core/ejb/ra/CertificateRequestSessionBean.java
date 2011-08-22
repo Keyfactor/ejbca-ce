@@ -52,6 +52,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
@@ -272,8 +273,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			PersistenceException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
-		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX +caid)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.CAPREFIX +caid, null);
+		if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() +caid)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
 	        throw new AuthorizationDeniedException(msg);
 		}
 		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {

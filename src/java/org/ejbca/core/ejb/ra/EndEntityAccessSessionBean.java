@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -206,9 +207,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     
     private boolean authorizedToCA(AuthenticationToken admin, int caid) {
         boolean returnval = false;
-        returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.CAPREFIX + caid);
+        returnval = authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid);
         if (!returnval) {
-            log.info("Admin " + admin.toString() + " not authorized to resource " + AccessRulesConstants.CAPREFIX + caid);
+            log.info("Admin " + admin.toString() + " not authorized to resource " + StandardRules.CAACCESS.toString() + caid);
         }
         return returnval;
     }
