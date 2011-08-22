@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.hardtoken;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -89,21 +88,10 @@ public class HardTokenIssuerData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private HashMap getData() {
-		HashMap ret = null;
-		// When the wrong class is given it can either return null, or throw an exception
-		try {
-			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, getDataUnsafe());
-			if (ret != null) {
-				return ret;
-			}
-		} catch (ClassCastException e) {
-			// NOPMD: pass through to the end line
-		}
-		// If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException or null from above...
-		return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, getDataUnsafe()));
+	private LinkedHashMap getData() {
+		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	private void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	/**
 	 * Method that returns the hard token issuer data and updates it if nessesary.
@@ -119,7 +107,7 @@ public class HardTokenIssuerData implements Serializable {
 	 * Method that saves the hard token issuer data to database.
 	 */
 	public void setHardTokenIssuer(HardTokenIssuer hardtokenissuer){
-		setData((HashMap) hardtokenissuer.saveData());
+		setData((LinkedHashMap) hardtokenissuer.saveData());
 	}
 
 	//

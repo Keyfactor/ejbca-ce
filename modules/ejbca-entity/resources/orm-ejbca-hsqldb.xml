@@ -29,6 +29,7 @@
     Also remember to remove the EJBCA counterpart mapping when doing so.
     -->
     <entity class="org.cesecore.authorization.rules.AccessRuleData" access="PROPERTY" metadata-complete="false">
+    	<table name="AccessRulesData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
             <basic name="accessRuleName"><column name="accessRule" column-definition="VARCHAR(256)" nullable="false"/></basic>
@@ -40,6 +41,7 @@
         </attributes>
     </entity>
     <entity class="org.cesecore.authorization.cache.AccessTreeUpdateData" access="PROPERTY" metadata-complete="false">
+    	<table name="AuthorizationTreeUpdateData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
             <basic name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INTEGER" nullable="false"/></basic>
@@ -49,6 +51,7 @@
     </entity>
 
     <entity class="org.cesecore.authorization.user.AccessUserAspectData" access="PROPERTY" metadata-complete="false">
+    	<table name="AdminEntityData"/>    
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
             <basic name="matchWith"><column name="matchWith" column-definition="INTEGER" nullable="false"/></basic>
@@ -57,6 +60,17 @@
             <basic name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+        </attributes>
+    </entity>
+    <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
+    	<table name="AdminGroupData"/>
+        <attributes>
+            <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
+            <basic name="roleName"><column name="adminGroupName" column-definition="VARCHAR(256)" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
+            <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_accessRules" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
+            <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_adminEntities" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
         </attributes>
     </entity>
 
@@ -139,18 +153,6 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
-
-    <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
-        <attributes>
-            <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
-            <basic name="roleName"><column name="adminGroupName" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="VARCHAR"/><lob/></basic>
-            <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
-            <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="RoleData_accessRules" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
-            <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="RoleData_accessUsers" column-definition="INTEGER"/><cascade><cascade-all/></cascade></one-to-many>
-        </attributes>
-    </entity>
-
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
