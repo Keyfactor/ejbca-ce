@@ -18,6 +18,7 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -188,7 +189,8 @@ public class CAData extends ProtectedData implements Serializable {
         		log.debug("Re-reading CA from database: "+getCaId().intValue());
         	}
         	final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-        	final LinkedHashMap h = (LinkedHashMap) decoder.readObject();
+        	Object o = decoder.readObject();
+        	final Map h = (Map)o;
             decoder.close();
             // Handle Base64 encoded string values
             final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);

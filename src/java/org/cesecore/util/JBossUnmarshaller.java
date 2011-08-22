@@ -16,6 +16,8 @@ package org.cesecore.util;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
@@ -83,6 +85,37 @@ public final class JBossUnmarshaller {
         }
         return ret;
     }
+
+    /**
+     * Helper method for extracting hashMaps Serialized on JBoss under J2EE.
+     * 
+     * The method tries to extract a LinkedHashMap that was serialized. A complicating factor is that previously we used to use HashMap 
+     * instead of LinkedhashMap, therefore we need this helper method to fall through to extracting a HashMap instead of a LinkedHashMap. 
+     * 
+     * @param <T>
+     *            Class that we are trying to extract.
+     * @param t
+     *            Class that we are trying to extract.
+     * @param object
+     *            An object implementing java.lang.Serializable interface
+     * @return The unmarshalled or original object of type T or null if object is neither type T or jboss marshalled value
+     * @throws ClassCastException if the object is JBOSS marshalled, but not of type t
+     */
+    @SuppressWarnings("unchecked")
+	public static LinkedHashMap extractLinkedHashMap(final Serializable object) {
+		LinkedHashMap ret = null;
+		// When the wrong class is given it can either return null, or throw an exception
+		try {
+			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, object);
+			if (ret != null) {
+				return ret;
+			}
+		} catch (ClassCastException e) {
+			// NOPMD: pass through to the end line
+		}
+		// If this is an old record, before we switched to LinkedHashMap, we have to try that, we should get a ClassCastException or null from above...
+		return new LinkedHashMap(JBossUnmarshaller.extractObject(HashMap.class, object));
+	}
 
     /**
      * During upgrade from EJBCA 3.11.x to EJBCA 4.0.x on a 100% up-time cluster, we will have old EJB 2.1 CMP serialization on JBoss installations
