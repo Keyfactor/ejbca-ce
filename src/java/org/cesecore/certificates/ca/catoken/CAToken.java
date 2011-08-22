@@ -486,6 +486,30 @@ public class CAToken extends UpgradeableDataHashMap {
                 String newclasspath = classpath;
                 if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.SoftCAToken")) {
                 	newclasspath = "org.cesecore.keys.token.SoftCryptoToken";
+                	// Upgrade properties to set a default key, also for soft crypto tokens
+                    final String propertyStr = (String) data.get(CAToken.PROPERTYDATA);
+                    final Properties prop = new Properties();
+                    if (StringUtils.isNotEmpty(propertyStr)) {
+                        try {
+                            prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
+                        } catch (IOException e) {
+                            log.error("Error upgrading SoftCAToken properties: ", e);
+                        }
+                    }
+                    // A small unfortunate special property that we have to make in order to 
+                    // be able to use soft keystores that does not have a specific properties set
+                    if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) &&
+                    		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null)) {
+                    	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to privatesignkeyalias.");
+                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                    }
+                    if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) &&
+                    		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING) == null)) {
+                    	log.info("Setting CAKEYPURPOSE_DEFAULT_STRING to privatedeckeyalias.");
+                    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                    }
+                    setPropertyData(storeProperties(prop)); // Stores property string in "data"
                 } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.PKCS11CAToken")) {
                 	newclasspath = "org.cesecore.keys.token.PKCS11CryptoToken";
                 } else if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.NullCAToken")) {
