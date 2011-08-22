@@ -23,6 +23,43 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 4.0.x to EJBCA 5.0.x
+--------------------------------
+Support for the old LogEntryData has been dropped in EJBCA 5.0 and is replaced by a new AuditRecordData. 
+If you need to old audit records export the logs before upgrading. There is also a tool to export them after upgrade.
+The new audit log function have the capabilitiy for audit record protection, at the same time as being cluster friendly. 
+
+EJBCA 5.0 introduces a new access control mechanism that can provide more functionality and more well defined operations.
+Some of the older access rules, such as the super administrator, has changed and needs to be modified in the post-upgrade step.
+It is recommended that you verify that your access roles and rules after an upgrade.
+ 
+*Notes for on-line upgrades*
+1. If you were running an earlier version of EJBCA on an older JBoss (4.2.3 was recommended for EJBCA 3.x), 
+   *and* you need to do an on-line upgrade (upgrade one cluster node while another is running) you should 
+   first upgrade your cluster to to running on JBoss 5.1.x before upgrading any of the cluster nodes to EJBCA 4. 
+2. Configure "app.version.effective=3.11.x" in conf/ejbca.properties for all but the last node that you
+   deploy with EJBCA 4.0.x. Comment out the property and redeploy the other nodes again. This will ensure that
+   the JBoss serialization still works for the deployed EJBCA 3.11.x nodes during the migration.
+
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+If you are upgrading a cluster, update the software on all the nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss and do 'ant bootstrap' with the new version.
+
+4. Start up JBoss.
+
+5. Do 'ant post-upgrade' on one of the nodes. This will upgrade access rules to rules
+that are compatible with the new access control system.
+
+6. Restart JBoss again to flush all caches.
+
+7. Go into the Admin GUI and verify you settings.
+
 From EJBCA 4.0.x to EJBCA 4.0.x
 -------------------------------
 See release notes for details between certain versions. 
@@ -39,12 +76,6 @@ Read RELEASE_NOTES carefully in order to see if any particular changes might eff
 
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
-
-EJBCA 4.0alpha1 NOTE
---------------------
-There is no guarantee that there will be an upgrade path between the alpha release and EJBCA 4.0.0.
-You can try the upgrade process, but backup you database first and roll it back before trying to
-upgrade to the real release.
 
 From EJBCA 3.11.x to EJBCA 4.0.x
 --------------------------------
