@@ -4,7 +4,8 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.CertificateView, org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
-                 org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.util.CertTools, org.cesecore.certificates.certificate.CertificateConstants" %>
+                 org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.util.CertTools, org.cesecore.certificates.certificate.CertificateConstants,
+                 org.cesecore.authorization.control.StandardRules" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -98,7 +99,7 @@
      if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
        try{  
          ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
-         ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AccessRulesConstants.CAPREFIX + caid);
+         ejbcawebbean.isAuthorized(StandardRules.CAACCESS.toString() + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
          if(numberofcertificates > 0)
@@ -491,7 +492,7 @@ function confirmrepublish(){
 	                  none =false;
 	                  out.write(ejbcawebbean.getText("KU_KEYAGREEMENT"));
 	                }
-	                if(certificatedata.getKeyUsage(CertificateProfile.KEYCERTSIGN)){
+	                if(certificatedata.getKeyUsage(CertificateConstants.KEYCERTSIGN)){
 	                  if(!first) out.write(", "); 
 	                  first=false;               
 	                  none =false;
