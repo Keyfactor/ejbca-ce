@@ -81,7 +81,7 @@ public final class JBossUnmarshaller {
         		LOG.error("", e);
 			}
         } else {
-            LOG.error("Extraction from " + className + " is currently not supported");
+            LOG.debug("Extraction from " + className + " is not possible when requesting "+t.getName());
         }
         return ret;
     }
