@@ -33,4 +33,25 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
     public Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
 
     void initializeAuthorizationModule();
+    
+    /**
+     * Method to check if an end entity profile exists in any end entity profile
+     * rules. Used to avoid desynchronization of profilerules.
+     * 
+     * @param profileid the profile id to search for.
+     * @return true if profile exists in any of the accessrules.
+     */
+    boolean existsEndEntityProfileInRules(int profileid);
+    
+    /**
+     * Help function to existsCAInRules, checks if ca id exists among
+     * accessrules.
+     */
+    boolean existsCaInAccessRules(int caid);
+    
+    /**
+     * Checks if caid exists among entities in
+     * AccessUserAspectData.
+     */
+     boolean existsCAInAccessUserAspects(int caId);
 }

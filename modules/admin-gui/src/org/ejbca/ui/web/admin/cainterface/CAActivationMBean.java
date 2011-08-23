@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -67,6 +68,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private RevocationSessionLocal revocationSession;
 	private AccessUserAspectManagerSessionLocal userAspectSession;
 	private AccessRuleManagementSessionLocal accessRuleSession; 
+	private ComplexAccessControlSessionLocal complexAccessControlSession;
 	
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
@@ -94,10 +96,13 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			revocationSession = ejb.getRevocationSession();
 			accessRuleSession = ejb.getAccessRuleManagementSession();
 			userAspectSession = ejb.getAccessUserAspectSession();
+			complexAccessControlSession = ejb.getComplexAccessControlSession();
 			
-			cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession, certificateProfileSession, revocationSession, userAspectSession, accessRuleSession, webBean);
-			caInfoList = new ArrayList<CAWrapper>();
-			initializeWrappers();
+            cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession,
+                    globalconfigurationsession, certificateProfileSession, revocationSession, userAspectSession, accessRuleSession,
+                    complexAccessControlSession, webBean);
+            caInfoList = new ArrayList<CAWrapper>();
+	initializeWrappers();
 		} catch (Exception e){
 			log.error("Error initializing bean: ", e);
 		}

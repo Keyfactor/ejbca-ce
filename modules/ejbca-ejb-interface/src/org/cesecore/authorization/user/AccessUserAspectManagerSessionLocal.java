@@ -82,10 +82,6 @@ public interface AccessUserAspectManagerSessionLocal {
      */
     void remove(Collection<AccessUserAspectData> userAspects);
     
-    /**
-     * Checks if caid exists among entities in
-     * AccessUserAspectData.
-     */
-     boolean existsCAInAccessUserAspects(int caId);
+
 
 }

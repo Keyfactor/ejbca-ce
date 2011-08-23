@@ -52,6 +52,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -81,6 +82,7 @@ public class CADataHandler implements Serializable {
     private AuthenticationToken administrator;
     private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     private InformationMemory info;
     private UserAdminSession adminsession;
     private GlobalConfigurationSession globalconfigurationsession; 
@@ -97,7 +99,9 @@ public class CADataHandler implements Serializable {
                          GlobalConfigurationSession globalconfigurationsession,
                          CertificateProfileSession certificateProfileSession,
                          RevocationSessionLocal revocationSession,
-                         AccessUserAspectManagerSessionLocal accessUserAspectManagerSession, AccessRuleManagementSessionLocal accessRuleManagementSession,
+                         AccessUserAspectManagerSessionLocal accessUserAspectManagerSession, 
+                         AccessRuleManagementSessionLocal accessRuleManagementSession,
+                         ComplexAccessControlSessionLocal complexAccessControlSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession; 
@@ -112,6 +116,7 @@ public class CADataHandler implements Serializable {
        this.administrator = administrator;          
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
+       this.complexAccessControlSession = complexAccessControlSession;
     }
     
   /**
@@ -170,7 +175,7 @@ public class CADataHandler implements Serializable {
     boolean caidexits = this.adminsession.checkForCAId(administrator, caid) ||
                         this.certificateProfileSession.existsCAIdInCertificateProfiles(caid) ||
                         this.endEntityProfileSession.existsCAInEndEntityProfiles(administrator, caid) ||
-                        (this.accessRuleManagementSession.existsCaInAccessRules(caid) && this.accessUserAspectManagerSession.existsCAInAccessUserAspects(caid))
+                        (complexAccessControlSession.existsCaInAccessRules(caid) && this.complexAccessControlSession.existsCAInAccessUserAspects(caid))
                     ;
      
     if(!caidexits){
