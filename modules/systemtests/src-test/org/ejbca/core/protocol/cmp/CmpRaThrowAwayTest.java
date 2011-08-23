@@ -110,7 +110,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         LOG.trace(">testZZZTearDown");
         boolean cleanUpOk = true;
         cleanUpOk &= InterfaceCache.getConfigurationSession().restoreConfiguration();
-        cleanUpOk &= removeTestCA(TESTCA_NAME);
+        removeTestCA(TESTCA_NAME);
         assertTrue("Clean up failed!", cleanUpOk);
         LOG.trace("<testZZZTearDown");
     }

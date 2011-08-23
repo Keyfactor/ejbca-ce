@@ -87,7 +87,7 @@ public class CertificateExpireTest extends CaTestCase {
         serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
         log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
         assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
-        assertTrue("Could not remove test CA properly.", removeTestCA(CA_NAME));
+        removeTestCA(CA_NAME);
         log.debug("Removed test CA");
         log.trace("<test99CleanUp()");
     }

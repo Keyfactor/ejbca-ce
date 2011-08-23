@@ -71,7 +71,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -222,13 +224,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         int castatus = SecConst.CA_OFFLINE;
         // Check that administrator has superadminstrator rights.
         if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", "create", cainfo.getName());
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", cainfo.getName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                     Integer.valueOf(cainfo.getCAId()).toString(), null, null, details);
             throw new AuthorizationDeniedException(msg);
-        }
+        } 
         // Check that CA doesn't already exists
         int caid = cainfo.getCAId();
         if (caid >= 0 && caid <= CAInfo.SPECIALCAIDBORDER) {

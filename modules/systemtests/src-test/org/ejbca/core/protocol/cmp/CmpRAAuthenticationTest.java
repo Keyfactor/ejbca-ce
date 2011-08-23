@@ -216,8 +216,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         super.tearDown();
         LOG.trace(">testZZZCleanUp");
         boolean cleanUpOk = true;
-        cleanUpOk &= removeTestCA(CA_NAME_1);
-        cleanUpOk &= removeTestCA(CA_NAME_2);
+        removeTestCA(CA_NAME_1);
+        removeTestCA(CA_NAME_2);
         cleanUpOk &= InterfaceCache.getConfigurationSession().restoreConfiguration();
         try {
             InterfaceCache.getEndEntityProfileSession().removeEndEntityProfile(ADMIN, EEP_1);

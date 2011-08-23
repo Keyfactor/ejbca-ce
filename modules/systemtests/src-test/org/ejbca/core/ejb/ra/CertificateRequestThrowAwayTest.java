@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -63,7 +62,8 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -100,11 +100,14 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
 
     @BeforeClass
     public void setupBeforeClass() throws CADoesntExistsException, AuthorizationDeniedException {
-        LOG.trace(">test000Setup");
         CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
         super.createTestCA(TESTCA_NAME); // Create test CA
         assertCAConfig(true, true, true);
-        LOG.trace("<test000Setup");
     }
 
     @Test
@@ -127,11 +130,11 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
         LOG.trace("<testCAConfigurationsWithStringRequest");
     }
 
-    @AfterClass
-    public void testZZZTearDown() {
-        LOG.trace(">testZZZTearDown");
-        assertTrue("Clean up failed!", super.removeTestCA(TESTCA_NAME));
-        LOG.trace("<testZZZTearDown");
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+        super.removeTestCA(TESTCA_NAME);
+
     }
 
     /**

@@ -13,24 +13,40 @@
 package org.ejbca.core.ejb.ca;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -43,6 +59,11 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -73,22 +94,59 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private CAAdminSessionRemote caAdminSessionRemote = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
+    private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
+    private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
 
-    protected String roleName = "CaTestCase";
+    protected final String roleName = "CaTestCase";
+
+    protected TestX509CertificateAuthenticationToken caAdmin;
 
     @Before
     public void setUp() throws Exception {
         super.setUpAuthTokenAndRole(roleName);
         removeTestCA(); // We cant be sure this CA was not left over from
         createTestCA();
+
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=CaUser,CN=CaUser"));
+        caAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+        
+        
+
+        RoleData role = roleAccessSession.findRole(roleName);
+        if (role == null) {
+            role = roleManagementSession.create(roleMgmgToken, roleName);
+        }
+        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        accessRules.add(new AccessRuleData(roleName, "/", AccessRuleState.RULE_ACCEPT, true));
+        role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+
+        X509Certificate certificate = caAdmin.getCertificate();
+        
+        List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(), AccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(certificate), "CN")));
+
+        roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
+        
+        accessControlSession.forceCacheExpire();
+
+
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDownRemoveRole();
         removeTestCA();
+        RoleData role = roleAccessSession.findRole(roleName);
+        if (role != null) {
+            roleManagementSession.remove(roleMgmgToken, role);
+        }
     }
 
     /**
@@ -156,7 +214,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             this.caSession.getCAInfo(admin, caName);
             return true;
         } catch (CADoesntExistsException e) {
-            //Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
+            // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
         }
 
         // Create request CA, if necessary
@@ -166,23 +224,23 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-        
+
         Properties prop = catokeninfo.getProperties();
         // Set some CA token properties if they are not set already
         if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf(keyStrength));
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf(keyStrength));
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         }
         catokeninfo.setProperties(prop);
-        
+
         // Create and active OSCP CA Service.
         ArrayList extendedcaservices = new ArrayList();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -307,30 +365,30 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * Removes the Test-CA if it exists.
      * 
      * @return true if successful
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
      */
-    private boolean removeTestCA() {
-        return removeTestCA(getTestCAName());
+    private void removeTestCA() throws AuthorizationDeniedException {
+        removeTestCA(getTestCAName());
     }
 
     /**
      * Removes the Test-CA if it exists.
      * 
      * @return true if successful
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
      */
-    public boolean removeTestCA(String caName) {
+    public void removeTestCA(String caName) throws AuthorizationDeniedException {
         // Search for requested CA
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
         try {
-            final CAInfo caInfo = this.caSession.getCAInfo(admin, caName);
-            if (caInfo == null) {
-                return true;
-            }
-            this.caSession.removeCA(admin, caInfo.getCAId());
-        } catch (Exception e) {
-            log.error("", e);
-            return false;
+            CA ca = caTestSession.getCA(admin, caName);
+            caSession.removeCA(admin, ca.getCAId());
+        } catch( CADoesntExistsException e) {
+            //Ignore
         }
-        return true;
     }
 
     public static final String genRandomPwd() {
