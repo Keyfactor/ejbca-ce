@@ -63,9 +63,7 @@ public final class JBossUnmarshaller {
     public static <T> T extractObject(final Class<T> t, final Serializable object) throws ClassCastException {
         T ret = null;
         final String className = object.getClass().getName();
-        if (className.equals(t.getName())) {
-            ret = (T) object;
-        } else if (JBOSS_MARSHALL_CLASS.equals(className)) {
+        if (JBOSS_MARSHALL_CLASS.equals(className)) {
         	try {
         		Method m = object.getClass().getMethod("get", new Class[0]);
         		ret = (T) m.invoke(object, new Object[0]);
@@ -81,7 +79,7 @@ public final class JBossUnmarshaller {
         		LOG.error("", e);
 			}
         } else {
-            LOG.debug("Extraction from " + className + " is not possible when requesting "+t.getName());
+        	ret = (T) object;
         }
         return ret;
     }
