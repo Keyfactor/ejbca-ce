@@ -216,6 +216,7 @@
 			<copy todir="${src-temp.dir}/authorization">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/authorization/*.java"/>
+					<include name="org/cesecore/authorization/user/AccessUserAspectManager*.java"/>
 					<include name="org/cesecore/core/ejb/authorization/*.java"/>
 					<include name="org/cesecore/authorization/access/*.java"/>
 					<include name="org/cesecore/authorization/cache/*.java"/>
@@ -223,6 +224,7 @@
 					<include name="org/cesecore/authorization/rules/*.java"/>	
 					<include name="org/cesecore/certificates/ca/CaSession*.java"/>	
 					<include name="org/cesecore/roles/access/*.java"/>
+					<include name="org/cesecore/roles/management/*.java"/>
 					<include name="org/ejbca/core/ejb/config/*.java"/>
 					<include name="org/ejbca/core/ejb/ra/EndEntityAccess*.java"/>
 				</fileset>
@@ -234,8 +236,13 @@
 					<include name="org/cesecore/authorization/user/*.java"/>
 					<include name="org/cesecore/authorization/cache/*.java"/>
 					<include name="org/cesecore/dbprotection/*.java"/>
+
 				</fileset>
 				<fileset dir="${src.dir}">
+					<include name="org/cesecore/authorization/user/AccessUserAspect*Exception.java"/>
+					<include name="org/cesecore/roles/access/*.java"/>
+					<include name="org/cesecore/roles/management/*.java"/>
+					<include name="org/cesecore/roles/Role*Exception.java"/>
 					<include name="org/cesecore/authorization/cache/*.java"/>
 					<include name="org/cesecore/authorization/control/*.java"/>
 					<include name="org/cesecore/authorization/rules/*.java"/>
@@ -254,7 +261,6 @@
 					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
-					<include name="org/ejbca/core/ejb/authorization/*SessionBean.java"/>
 					<include name="org/ejbca/core/ejb/authorization/*Cache.java"/>	
 					<include name="org/ejbca/core/model/authorization/*.java"/>
 					<include name="org/ejbca/config/*.java"/>					
