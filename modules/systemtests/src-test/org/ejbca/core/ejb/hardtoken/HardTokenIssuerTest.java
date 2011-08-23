@@ -63,6 +63,8 @@ public class HardTokenIssuerTest extends TestCase {
         issuer.setDescription("TEST");
         ret = hardTokenSession.addHardTokenIssuer(admin, "TEST", 3, issuer);
         assertTrue("Creating Hard Token Issuer failed", ret);
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        assertEquals("TEST", data.getHardTokenIssuer().getDescription());
         log.trace("<test01AddHardTokenIssuer()");
     }
 
@@ -73,11 +75,13 @@ public class HardTokenIssuerTest extends TestCase {
      */
     public void test02RenameHardTokenIssuer() throws Exception {
         log.trace(">test02RenameHardTokenIssuer()");
-
         boolean ret = false;
         ret = hardTokenSession.renameHardTokenIssuer(admin, "TEST", "TEST2", 4);
         assertTrue("Renaming Hard Token Issuer failed", ret);
-
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST2");
+        assertEquals("TEST", data.getHardTokenIssuer().getDescription());
+        data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        assertNull(data);
         log.trace("<test02RenameHardTokenIssuer()");
     }
 
@@ -88,11 +92,23 @@ public class HardTokenIssuerTest extends TestCase {
      */
     public void test03CloneHardTokenIssuer() throws Exception {
         log.trace(">test03CloneHardTokenIssuer()");
-
+        // First test the clone operation on the object (pure JUnit test)
+        HardTokenIssuer issuer = new HardTokenIssuer();
+        issuer.setDescription("TEST");
+        HardTokenIssuer issuer2 = (HardTokenIssuer)issuer.clone();
+        assertEquals("TEST", issuer.getDescription());
+        assertEquals("TEST", issuer2.getDescription());
+        issuer.setDescription("TEST2");
+        assertEquals("TEST2", issuer.getDescription());
+        assertEquals("TEST", issuer2.getDescription());
+        // Next do the test using the session bean
         boolean ret = false;
         ret = hardTokenSession.cloneHardTokenIssuer(admin, "TEST2", "TEST", 4);
-
-        assertTrue("Cloning Certificate Profile failed", ret);
+        assertTrue("Cloning hard token issuer failed", ret);
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST2");
+        assertEquals("TEST", data.getHardTokenIssuer().getDescription());
+        data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        assertEquals("TEST", data.getHardTokenIssuer().getDescription());
 
         log.trace("<test03CloneHardTokenIssuer()");
     }
@@ -111,6 +127,8 @@ public class HardTokenIssuerTest extends TestCase {
         issuerdata.getHardTokenIssuer().setDescription("TEST2");
         ret = hardTokenSession.changeHardTokenIssuer(admin, "TEST", issuerdata.getHardTokenIssuer());
         assertTrue("Editing HardTokenIssuer failed", ret);
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        assertEquals("TEST2", data.getHardTokenIssuer().getDescription());
         log.trace("<test04EditHardTokenIssuer()");
     }
 
