@@ -47,6 +47,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -106,6 +107,7 @@ public class RAInterfaceBean implements Serializable {
     private KeyRecoverySession keyrecoverysession;
     private UserAdminSessionLocal userAdminSession;
     private UserDataSourceSession userdatasourcesession;
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
     
     private UsersView usersView;
     private CertificateView[]                  certificates;
@@ -145,6 +147,7 @@ public class RAInterfaceBean implements Serializable {
     		certificateProfileSession = ejb.getCertificateProfileSession();
     		this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
     		this.endEntityAccessSession = ejb.getEndEntityAccessSession();
+    		complexAccessControlSession = ejb.getComplexAccessControlSession();
 
     		initialized =true;
     	} else {
@@ -534,7 +537,7 @@ public class RAInterfaceBean implements Serializable {
         int profileid = endEntityProfileSession.getEndEntityProfileId(administrator, name);
         // Check if any users or authorization rule use the profile.
         profileused = userAdminSession.checkForEndEntityProfileId(administrator, profileid)
-                      || accessRuleManagementSession.existsEndEntityProfileInRules(profileid);
+                      || complexAccessControlSession.existsEndEntityProfileInRules(profileid);
         if (!profileused) {
         	profiles.removeEndEntityProfile(name);
         } else {

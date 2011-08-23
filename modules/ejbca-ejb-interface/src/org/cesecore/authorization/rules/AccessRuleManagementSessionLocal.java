@@ -38,20 +38,5 @@ public interface AccessRuleManagementSessionLocal {
     void remove(Collection<AccessRuleData> accessRules);
 
     AccessRuleData setState(AccessRuleData rule, AccessRuleState state, boolean isRecursive);
-    
-    /**
-     * Method to check if an end entity profile exists in any end entity profile
-     * rules. Used to avoid desynchronization of profilerules.
-     * 
-     * @param profileid the profile id to search for.
-     * @return true if profile exists in any of the accessrules.
-     */
-    public boolean existsEndEntityProfileInRules(int profileid);
-    
-    /**
-     * Help function to existsCAInRules, checks if caid exists among
-     * accessrules.
-     */
-    boolean existsCaInAccessRules(int caid);
 
 }

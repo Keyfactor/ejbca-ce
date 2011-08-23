@@ -52,6 +52,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSession;
@@ -109,6 +110,7 @@ public class CAInterfaceBean implements Serializable {
     private RevocationSessionLocal revocationSession;
 	private AccessUserAspectManagerSessionLocal userAspectSession;
 	private AccessRuleManagementSessionLocal accessRuleSession; 
+	private ComplexAccessControlSessionLocal complexAccessControlSession;
     private boolean initialized;
     private AuthenticationToken administrator;
     private InformationMemory informationmemory;
@@ -146,10 +148,11 @@ public class CAInterfaceBean implements Serializable {
           userAspectSession = ejb.getAccessUserAspectSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
+          complexAccessControlSession = ejb.getComplexAccessControlSession();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
             cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
-                    certificateProfileSession, revocationSession, userAspectSession, accessRuleSession, ejbcawebbean);
+                    certificateProfileSession, revocationSession, userAspectSession, accessRuleSession, complexAccessControlSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;

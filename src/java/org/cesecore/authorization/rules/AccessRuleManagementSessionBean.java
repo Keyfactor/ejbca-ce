@@ -22,12 +22,9 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.util.ValueExtractor;
 
 /**
  * Implementation of AccessRuleManagementSession class
@@ -51,37 +48,6 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
         final Query query = entityManager.createQuery("SELECT a FROM AccessRuleData a WHERE a.primaryKey=:primaryKey");
         query.setParameter("primaryKey", primaryKey);
         return (AccessRuleData) QueryResultWrapper.getSingleResult(query);
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public boolean existsEndEntityProfileInRules(int profileid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">existsEndEntityProfileInRules(" + profileid + ")");
-        }
-        final String whereClause = "accessRule = '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "' OR accessRule LIKE '"
-                + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "/%'";
-        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
-        long count = ValueExtractor.extractLongValue(query.getSingleResult());
-        if (log.isTraceEnabled()) {
-            log.trace("<existsEndEntityProfileInRules(" + profileid + "): " + count);
-        }
-        return count > 0;
-    }
-
-    @Override
-    public boolean existsCaInAccessRules(int caid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">existsCAInAccessRules(" + caid + ")");
-        }
-        String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.toString() + "/" + caid + "' OR accessRule LIKE '" + StandardRules.CAACCESSBASE.toString()
-                + "/" + caid + "/%'";
-        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
-        long count = ValueExtractor.extractLongValue(query.getSingleResult());
-        if (log.isTraceEnabled()) {
-            log.trace("<existsCAInAccessRules(" + caid + "): " + count);
-        }
-        return count > 0;
     }
 
     @Override
