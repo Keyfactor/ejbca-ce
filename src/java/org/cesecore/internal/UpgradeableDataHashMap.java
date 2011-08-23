@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.cesecore.util.Base64GetHashMap;
+
 
 
 /**
@@ -73,10 +75,10 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      */
     @SuppressWarnings("unchecked")
     public void loadData(final Object data) {
-    	// By creating a new LinkedHashMap here we slip through a possible upgrade issue when upgrading
+    	// By creating a new LinkedHashMap (Base64GetHashMap) here we slip through a possible upgrade issue when upgrading
     	// from older implementation that used a plain HashMap instead. 
     	// Both newer and older versions can be casted to HashMap. 
-    	this.data = new LinkedHashMap<Object, Object>((HashMap)data);
+    	this.data = new Base64GetHashMap((HashMap)data);
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
     		upgrade();     
     		upgraded = true;
