@@ -67,7 +67,7 @@ public class CAInHierarchy {
 		}
 		return caCert;
 	}
-	void deleteCA() {
+	void deleteCA() throws CADoesntExistsException, AuthorizationDeniedException {
 		final Iterator<CAInHierarchy> i = this.subs.iterator();
 		while ( i.hasNext() ) {
 			i.next().deleteCA();

@@ -36,7 +36,7 @@ import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 
@@ -115,7 +115,7 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
         principals.add(certificate.getSubjectX500Principal());
 
         // We cannot use the X509CertificateAuthenticationToken here, since it can only be used internally in a JVM.
-        AuthenticationToken result = new TestAuthenticationToken(principals, credentials);
+        AuthenticationToken result = new TestX509CertificateAuthenticationToken(principals, credentials);
         return result;
     }
 

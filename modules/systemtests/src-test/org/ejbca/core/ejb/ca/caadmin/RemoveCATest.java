@@ -58,7 +58,7 @@ public class RemoveCATest extends CaTestCase {
     @Test
     public void test02removeRSACA() throws Exception {
         log.trace(">test02removeRSACA()");
-        assertTrue("Removing RSA CA failed", removeTestCA("TEST"));
+        removeTestCA("TEST");
         log.trace("<test02removeRSACA()");
     }
 

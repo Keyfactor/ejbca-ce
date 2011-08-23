@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.security.Principal;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -32,14 +33,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -72,6 +79,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -111,8 +119,9 @@ public class CAsTest extends CaTestCase {
     private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
-   // private AuthenticationToken adminTokenNoAuth;
+    // private AuthenticationToken adminTokenNoAuth;
 
     @BeforeClass
     public static void beforeClass() {
@@ -122,16 +131,7 @@ public class CAsTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        /*
-        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-*/
-       // adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+
     }
 
     @After
@@ -150,15 +150,15 @@ public class CAsTest extends CaTestCase {
     public void test01AddRSACA() throws Exception {
 
         final String caName = "TEST";
-        
-        //Preemptively remove the CA if it exists.
+
+        // Preemptively remove the CA if it exists.
         try {
-            CA ca = caTestSession.getCA(roleMgmgToken, caName);
-            caSession.removeCA(admin, ca.getCAId());
-        } catch(CADoesntExistsException e) {
-            //All is well, do go on.
+            CA ca = caTestSession.getCA(caAdmin, caName);
+            caSession.removeCA(caAdmin, ca.getCAId());
+        } catch (CADoesntExistsException e) {
+            // All is well, do go on.
         }
-        
+
         // TODO: do we need init here? We should run the system tests on a "base installed" system
         // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
         CATokenInfo catokeninfo = new CATokenInfo();
@@ -167,24 +167,23 @@ public class CAsTest extends CaTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-        
-        
+
         Properties prop = catokeninfo.getProperties();
         // Set some CA token properties if they are not set already
         if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         }
         catokeninfo.setProperties(prop);
-        
+
         // Create and active OSCP CA Service.
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -222,9 +221,9 @@ public class CAsTest extends CaTestCase {
                 null // cmpRaAuthSecret
         );
 
-        caAdminSession.createCA(admin, cainfo);
+        caAdminSession.createCA(caAdmin, cainfo);
 
-        CAInfo info = caSession.getCAInfo(admin, "TEST");
+        CAInfo info = caSession.getCAInfo(caAdmin, "TEST");
 
         rootcacertchain = info.getCertificateChain();
         X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
@@ -246,7 +245,7 @@ public class CAsTest extends CaTestCase {
 
         // Test to generate a certificate request from the CA
         Collection<Certificate> cachain = info.getCertificateChain();
-        byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
+        byte[] request = caAdminSession.makeRequest(caAdmin, info.getCAId(), cachain, false, false, false, null);
         PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
         assertEquals("CN=TEST", msg.getRequestDN());
 
@@ -329,20 +328,19 @@ public class CAsTest extends CaTestCase {
             Properties prop = catokeninfo.getProperties();
             // Set some CA token properties if they are not set already
             if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                    prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("prime192v1"));
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
             catokeninfo.setProperties(prop);
-            
-            
+
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA", "TESTECDSA", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
@@ -376,8 +374,6 @@ public class CAsTest extends CaTestCase {
                     null // cmpRaAuthSecret
             );
 
-            
-            
             removeOldCa("TESTECDSA");
 
             caAdminSession.createCA(admin, cainfo);
@@ -432,6 +428,23 @@ public class CAsTest extends CaTestCase {
             catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+
+            Properties prop = catokeninfo.getProperties();
+            // Set some CA token properties if they are not set already
+            if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("implicitlyCA"));
+            }
+            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            }
+            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            }
+            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            }
+            catokeninfo.setProperties(prop);
+
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -441,7 +454,7 @@ public class CAsTest extends CaTestCase {
 
             ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-            
+
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA", "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE, new Date(), "",
                     SecConst.CERTPROFILE_FIXED_ROOTCA, 365,
                     null, // Expiretime
@@ -488,8 +501,8 @@ public class CAsTest extends CaTestCase {
             if (pk instanceof JCEECPublicKey) {
                 JCEECPublicKey ecpk = (JCEECPublicKey) pk;
                 assertEquals(ecpk.getAlgorithm(), "EC");
-                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                assertNull("ImplicitlyCA must have null spec", spec);
+                ECParameterSpec spec = ecpk.getParameters();
+                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in ejbca.properties", spec);
 
             } else {
                 assertTrue("Public key is not EC", false);
@@ -537,19 +550,19 @@ public class CAsTest extends CaTestCase {
             Properties prop = catokeninfo.getProperties();
             // Set some CA token properties if they are not set already
             if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                    prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
             catokeninfo.setProperties(prop);
-            
+
             X509CAInfo cainfo = new X509CAInfo(cadn, "TESTSha256WithMGF1", SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
@@ -635,19 +648,19 @@ public class CAsTest extends CaTestCase {
             Properties prop = catokeninfo.getProperties();
             // Set some CA token properties if they are not set already
             if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                    prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
             catokeninfo.setProperties(prop);
-            
+
             X509CAInfo cainfo = new X509CAInfo(
                     dn,
                     "TESTRSA4096",
@@ -750,19 +763,19 @@ public class CAsTest extends CaTestCase {
             Properties prop = catokeninfo.getProperties();
             // Set some CA token properties if they are not set already
             if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                    prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
             catokeninfo.setProperties(prop);
-            
+
             X509CAInfo cainfo = new X509CAInfo(
                     dn,
                     name,
@@ -856,19 +869,19 @@ public class CAsTest extends CaTestCase {
         Properties prop = catokeninfo.getProperties();
         // Set some CA token properties if they are not set already
         if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         }
         catokeninfo.setProperties(prop);
-        
+
         String rootcadn = "CN=TESTCVCA,C=SE";
         String rootcaname = "TESTCVCA";
         String dvddn = "CN=TESTDV-D,C=SE";
@@ -1176,23 +1189,23 @@ public class CAsTest extends CaTestCase {
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        
+
         Properties prop = catokeninfo.getProperties();
         // Set some CA token properties if they are not set already
         if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("secp256r1"));
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         }
         catokeninfo.setProperties(prop);
-        
+
         // No CA Services.
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
 
@@ -1520,6 +1533,22 @@ public class CAsTest extends CaTestCase {
             catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            Properties prop = catokeninfo.getProperties();
+            // Set some CA token properties if they are not set already
+            if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+            }
+            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            }
+            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            }
+            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            }
+            catokeninfo.setProperties(prop);
+
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1564,8 +1593,12 @@ public class CAsTest extends CaTestCase {
                     null // cmpRaAuthSecret
             );
 
-            info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-            assertNull(info);
+            try {
+                caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
+                fail("External CA exists in database. Test can't continue.");
+            } catch (CADoesntExistsException e) {
+                // Life is awesome
+            }
             caAdminSession.createCA(admin, cainfo);
 
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -1646,23 +1679,23 @@ public class CAsTest extends CaTestCase {
             catokeninfo.setClassPath(SoftCryptoToken.class.getName());
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            
+
             Properties prop = catokeninfo.getProperties();
             // Set some CA token properties if they are not set already
             if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                    prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
             }
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                    prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
             catokeninfo.setProperties(prop);
-            
+
             // Create and active OSCP CA Service.
             ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1816,17 +1849,21 @@ public class CAsTest extends CaTestCase {
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
         createTestCA(caname);
-        CAInfo info = caSession.getCAInfo(admin, caname);
-        assertEquals(SecConst.CA_ACTIVE, info.getStatus());
-        assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevocationReason());
-        assertNull(info.getRevocationDate());
+        try {
+            CAInfo info = caSession.getCAInfo(admin, caname);
+            assertEquals(SecConst.CA_ACTIVE, info.getStatus());
+            assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevocationReason());
+            assertNull(info.getRevocationDate());
 
-        // Revoke the CA
-        caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
-        info = caSession.getCAInfo(admin, caname);
-        assertEquals(SecConst.CA_REVOKED, info.getStatus());
-        assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, info.getRevocationReason());
-        assertTrue(info.getRevocationDate().getTime() > 0);
+            // Revoke the CA
+            caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+            info = caSession.getCAInfo(admin, caname);
+            assertEquals(SecConst.CA_REVOKED, info.getStatus());
+            assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, info.getRevocationReason());
+            assertTrue(info.getRevocationDate().getTime() > 0);
+        } finally {
+            removeTestCA(caname);
+        }
     } // test14RevokeCA
 
     @Test
@@ -1872,23 +1909,23 @@ public class CAsTest extends CaTestCase {
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        
+
         Properties prop = catokeninfo.getProperties();
         // Set some CA token properties if they are not set already
         if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         }
         catokeninfo.setProperties(prop);
-        
+
         // Create and active OSCP CA Service.
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
@@ -1927,9 +1964,12 @@ public class CAsTest extends CaTestCase {
                 null // cmpRaAuthSecret
         );
 
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         // Try to create the CA as an unprivileged user
         try {
-            caAdminSession.createCA(roleMgmgToken, cainfo);
+            caAdminSession.createCA(unpriviledgedUser, cainfo);
             assertTrue("Was able to create CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
             // Expected
@@ -1959,8 +1999,13 @@ public class CAsTest extends CaTestCase {
         log.trace(">test17InvalidEditCaActions()");
         CAInfo caInfoTest = caSession.getCAInfo(admin, "TEST");
         // Try to edit the CA as an unprivileged user
+
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+
         try {
-            caAdminSession.editCA(roleMgmgToken, caInfoTest);
+            caAdminSession.editCA(unpriviledgedUser, caInfoTest);
             assertTrue("Was able to edit CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
             // Expected
@@ -1970,7 +2015,7 @@ public class CAsTest extends CaTestCase {
         caTokenInfoTest.setAuthenticationCode(null);
         caInfoTest.setCATokenInfo(caTokenInfoTest);
         try {
-            caAdminSession.editCA(roleMgmgToken, caInfoTest);
+            caAdminSession.editCA(unpriviledgedUser, caInfoTest);
             assertTrue("Was able to edit CA with null authentication code.", false);
         } catch (AuthorizationDeniedException e) {
             // Expected
@@ -1979,7 +2024,7 @@ public class CAsTest extends CaTestCase {
         caInfoTest.getCATokenInfo().setAuthenticationCode("wrong code");
         caInfoTest.setCATokenInfo(caTokenInfoTest);
         try {
-            caAdminSession.editCA(roleMgmgToken, caInfoTest);
+            caAdminSession.editCA(unpriviledgedUser, caInfoTest);
             assertTrue("Was able to edit CA with null authentication code.", false);
         } catch (AuthorizationDeniedException e) {
             // Expected
@@ -1991,19 +2036,27 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test18PublicWebCaInfoFetch() throws Exception {
         log.trace(">test18PublicWebCaInfoFetch()");
+
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+
         // Try to get CAInfo as an unprivileged user using remote EJB
         try {
-            caSession.getCAInfo(roleMgmgToken, "TEST");
-            fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
-        } catch (CADoesntExistsException ignored) {
+            caSession.getCAInfo(unpriviledgedUser, "TEST");
+            fail("Was able to get CA info from remote EJB/CLI pretending to be an unpriviledged user");
+        } catch (AuthorizationDeniedException ignored) {
             // OK
         }
         try {
-            caSession.getCAInfo(roleMgmgToken, "CN=TEST".hashCode());
-            fail("Was able to get CA info from remote EJB/CLI pretending to be PUBLIC_WEB_USER");
-        } catch (CADoesntExistsException ignored) {
+            caSession.getCAInfo(unpriviledgedUser, "CN=TEST".hashCode());
+            fail("Was able to get CA info from remote EJB/CLI pretending to be an unpriviledged user");
+        } catch (AuthorizationDeniedException ignored) {
             // OK
         }
+
+        // FIXME: How do the following tests apply in the future?
+
         // Try to get CAInfo pretending to be an privileged user using remote EJB
         try {
             CAInfo info = caSession.getCAInfo(admin, "TEST");
@@ -2024,8 +2077,13 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test19UnprivilegedCaMakeRequest() throws Exception {
         log.trace(">test19UnprivilegedCaMakeRequest()");
+
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+
         try {
-            caAdminSession.makeRequest(roleMgmgToken, 0, null, false, false, false, null);
+            caAdminSession.makeRequest(unpriviledgedUser, 0, null, false, false, false, null);
             assertTrue("Was able to make request to CA as unprivileged user.", false);
         } catch (AuthorizationDeniedException e) {
             // Expected
@@ -2035,22 +2093,26 @@ public class CAsTest extends CaTestCase {
 
     @Test
     public void test20BadCaReceiveResponse() throws Exception {
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+
         log.trace(">test20BadCaReceiveResponse()");
         try {
-            caAdminSession.receiveResponse(roleMgmgToken, 0, null, null, null);
-            assertTrue("Was able to receiveResponse for a CA as unprivileged user.", false);
+            caAdminSession.receiveResponse(unpriviledgedUser, 0, null, null, null);
+            fail("Was able to receiveResponse for a CA as unprivileged user.");
         } catch (AuthorizationDeniedException e) {
             // Expected
         }
         try {
             caAdminSession.receiveResponse(admin, -1, null, null, null);
-            assertTrue("Was able to receiveResponse for a CA that does not exist.", false);
-        } catch (EjbcaException e) {
+            fail("Was able to receiveResponse for a CA that does not exist.");
+        } catch (CADoesntExistsException e) {
             // Expected
         }
         try {
             caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), new CmpResponseMessage(), null, null);
-            assertTrue("Was able to receiveResponse for a CA with a non X509ResponseMessage.", false);
+            fail("Was able to receiveResponse for a CA with a non X509ResponseMessage.");
         } catch (EjbcaException e) {
             // Expected
         }
@@ -2058,7 +2120,7 @@ public class CAsTest extends CaTestCase {
             ResponseMessage resp = new X509ResponseMessage();
             resp.setCertificate(caSession.getCAInfo(admin, "TEST").getCertificateChain().iterator().next());
             caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), resp, null, null);
-            assertTrue("Was able to receiveResponse for a CA that is not 'signed by external'.", false);
+            fail("Was able to receiveResponse for a CA that is not 'signed by external'.");
         } catch (EjbcaException e) {
             // Expected
         }
@@ -2072,7 +2134,7 @@ public class CAsTest extends CaTestCase {
         try {
             // Try to process a request for a CA with an unprivileged user.
             caAdminSession.processRequest(roleMgmgToken, caInfo, null);
-            assertTrue("Was able to process request to CA as unprivileged user.", false);
+            fail("Was able to process request to CA as unprivileged user.");
         } catch (AuthorizationDeniedException e) {
             // Expected
         }
@@ -2080,7 +2142,7 @@ public class CAsTest extends CaTestCase {
         setPrivateFieldInSuper(caInfo, "caid", CAInfo.SPECIALCAIDBORDER - 1);
         try {
             caAdminSession.processRequest(admin, caInfo, null);
-            assertTrue("Was able to create CA with reserved CA Id.", false);
+            fail("Was able to create CA with reserved CA Id.");
         } catch (CAExistsException e) {
             // Expected
         }
