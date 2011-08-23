@@ -17,9 +17,12 @@ import org.apache.log4j.Logger;
 
 /** Shamelessly ripped from generated XDoclet source, because I don't want to generate util classes.
  * 
+ * TODO: Remove this class, replace all references with org.cesecore.util.GUIDGenerator
+ * 
  * @author XDoclet.sf.net
  * @version $Id$
  */
+@Deprecated
 public class GUIDGenerator {
 	private static final Logger log = Logger.getLogger(GUIDGenerator.class);
 

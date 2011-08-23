@@ -24,9 +24,12 @@ import org.apache.log4j.Logger;
 
 /**
  * This file handles configuration from conf/extendedkeyusage.properties
+ *
+ * TODO: Replace references of this class with org.cesecore.config.ExtendedKeyUsageConfiguration
  * 
  * @version $Id$
  */
+@Deprecated
 public final class ExtendedKeyUsageConfiguration {
 
 	private static final Logger log = Logger.getLogger(ExtendedKeyUsageConfiguration.class);

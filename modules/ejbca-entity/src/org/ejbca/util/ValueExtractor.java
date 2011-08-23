@@ -21,8 +21,11 @@ import org.apache.log4j.Logger;
 /**
  * Helper object to convert from JDBC driver specific objects to a unified form. 
  *
+ * TODO: Replace with org.cesecore.util.ValueExtractor
+ *
  * @version $Id$
  */
+@Deprecated
 public abstract class ValueExtractor {
 	
 	private static final Logger LOG = Logger.getLogger(ValueExtractor.class);
