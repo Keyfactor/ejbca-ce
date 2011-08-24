@@ -541,6 +541,7 @@
 		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
 		<copy todir="${build-test.dir}" failonerror="true">
 			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+			<fileset dir="${ejbca.home}" includes="conf/extendedkeyusage.properties"/>
 		</copy>
 	</target>
 
