@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ca;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -38,6 +39,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CaTokenSessionRemote;
 import org.cesecore.certificates.ca.internal.CATokenCacheManager;
@@ -232,6 +234,43 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             // NOPMD
         }        
     } // testAddRenameAndRemoveX509CA
+
+    public void testAddAndGetCAWithDifferentCaid() throws Exception {
+        caSession.addCA(roleMgmgToken, testx509ca);
+        CA ca1 = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
+        Certificate cert = testx509ca.getCACertificate();
+        assertEquals(ca1.getCAId(), testx509ca.getCAId());
+        // CA certificate subjectDN gives the correct caid here
+        assertEquals(ca1.getCAId(), CertTools.getSubjectDN(cert).hashCode());
+        // Now edit the CA to change the CA-certificate to something with a different subjectDN
+        String cadn = "CN=TEST,O=Foo,C=SE";
+        CAToken catoken = ca1.getCAToken();
+        Collection<Certificate> cachain = new ArrayList<Certificate>();
+        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
+        		catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), "SHA256WithRSA", true, catoken.getCryptoToken()
+        		.getSignProviderName());
+        assertNotNull(cacert);
+        cachain.add(cacert);
+        CAInfo cainfo = ca1.getCAInfo();
+        cainfo.setCertificateChain(cachain);
+        caSession.editCA(roleMgmgToken, cainfo);
+        // Now get the CA and verify that the certificate was changed
+        CA ca2 = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
+        Certificate cert2 = ca2.getCACertificate();
+        assertEquals(ca2.getCAId(), testx509ca.getCAId());
+        // CA certificate subjectDN gives the correct caid here
+        int certcaid = CertTools.getSubjectDN(cert2).hashCode();
+        assertFalse("CAIds should be different using new CA certifciate", ca2.getCAId() == certcaid);
+        // See if we can get the CA using the "bad" ca id as well
+        // First time should find it, and it should add an entry to the "cache" of CAIds in CaSessionBean
+        // Second time uses this cache, therefore we will try two times to make sure that both lookup and cache works
+        CA ca3 = caTestSession.getCA(roleMgmgToken, certcaid);
+        assertNotNull(ca3);
+        assertEquals(ca3.getCAId(), testx509ca.getCAId());
+        CA ca4 = caTestSession.getCA(roleMgmgToken, certcaid);
+        assertNotNull(ca4);
+        assertEquals(ca4.getCAId(), testx509ca.getCAId());
+    } // testAddAndGetCAWithDifferentCaid
 
     public void testAddRenameAndRemoveCVCCA() throws Exception {
         caSession.addCA(roleMgmgToken, testcvcca);

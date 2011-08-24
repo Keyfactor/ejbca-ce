@@ -102,6 +102,11 @@ public class CaSessionTest extends RoleUsingTestCase {
     }
 
     @Test
+    public void testAddAndGetCAWithDifferentCaid() throws Exception {
+        testBase.testAddAndGetCAWithDifferentCaid();
+    }
+
+    @Test
     public void testAddRenameAndRemoveCVCCA() throws Exception {
         testBase.testAddRenameAndRemoveCVCCA();
     }
