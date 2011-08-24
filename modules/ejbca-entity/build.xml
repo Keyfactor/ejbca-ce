@@ -191,6 +191,7 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build-test.dir}" includes="org/ejbca/util/**/*Test.class" excludes=""/>
+				<fileset dir="${build-test.dir}" includes="org/cesecore/**/*Test.class" excludes=""/>
 			</batchtest>
 		</junit>
 		<antcall target="createreport"/>
@@ -205,6 +206,8 @@
 			<fileset dir="${src-test.dir}">
 				<include name="**/*.xml"/>
 			</fileset>
+			<fileset dir="${ejbca.home}/src" includes="intresources/**"/>
+			<fileset dir="${ejbca.home}/src/java/" includes="defaultvalues.properties"/>
 		</copy>
     </target>
 
