@@ -20,7 +20,9 @@ import junit.framework.TestCase;
  */
 public class InternalEjbcaResourcesTest extends TestCase {
 
-	private static final String TEST_RESOURCE_PATH = "src/intresources";
+	private static final String TEST_RESOURCE_PATH = "/intresources";
+	// Classpath issues, use "src/intresources" when running from within eclipse
+	//private static final String TEST_RESOURCE_PATH = "src/intresources";
 
     protected void setUp() throws Exception {
         super.setUp();

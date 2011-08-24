@@ -18,7 +18,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.util.SimpleMock;
 
 /**
@@ -46,13 +46,13 @@ public class CrmfMessageHandlerTest extends TestCase {
          * in its usual constructor, instead using the empty default one.
          */
         SimpleMock.inject(crmfMessageHandler, "admin", new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfMessageHandlerTest")));
-        final UserAdminSessionRemote userAdminSessionMock = new SimpleMock(UserAdminSessionRemote.class) {{
+        final EndEntityAccessSessionRemote endEntitySessionMock = new SimpleMock(EndEntityAccessSessionRemote.class) {{
         	map("findUserBySubjectDN", new EndEntityInformation() {
 				private static final long serialVersionUID = 1L;
 				public String getUsername() { return USER_NAME; };
 			});
         }}.mock();
-        SimpleMock.inject(crmfMessageHandler, "userAdminSession", userAdminSessionMock);
+        SimpleMock.inject(crmfMessageHandler, "endEntityAccessSession", endEntitySessionMock);
         SimpleMock.inject(crmfMessageHandler, "signSession", new SimpleMock(SignSessionRemote.class).mock());
         final CrmfRequestMessage requestMock = new CrmfRequestMessage() {
             private static final long serialVersionUID = 1L;
