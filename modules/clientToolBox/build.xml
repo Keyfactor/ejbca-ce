@@ -48,6 +48,7 @@
             <fileset dir="${ejbca.home}/src/java">
                 <include name="dncomponents.properties"/>
                 <include name="profilemappings.properties"/>
+                <include name="defaultvalues.properties"/>
             </fileset>  
         </jar>
     </target>

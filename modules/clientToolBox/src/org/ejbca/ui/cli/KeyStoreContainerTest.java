@@ -17,7 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.PrivateKey;
+import java.security.ProviderException;
 import java.security.Signature;
 import java.security.cert.Certificate;
 import java.security.interfaces.DSAKey;
@@ -94,6 +96,10 @@ class KeyStoreContainerTest {
                     }            		
             	} catch (ClassCastException ce) {
                 	termOut.println("Not testing keys with alias "+alias+". Not a private key.");            		
+            	} catch (KeyStoreException ce) {
+                	termOut.println("Not testing keys with alias "+alias+". KeyStoreException getting key: "+ce.getMessage());            		
+            	} catch (ProviderException ce) {
+                	termOut.println("Not testing keys with alias "+alias+". ProviderException getting key: "+ce.getMessage());            		
             	}
             }
         }
