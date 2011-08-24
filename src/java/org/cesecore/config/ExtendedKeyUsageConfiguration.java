@@ -98,8 +98,8 @@ public final class ExtendedKeyUsageConfiguration {
     		}
     	}
     	extendedKeyUsageOids = map.asList();
-    	if (extendedKeyUsageOids == null) {
-    		log.error("Extended key usage OIDs is null, there is a serious error with extendedkeyusage.properties");
+    	if ((extendedKeyUsageOids == null) || (extendedKeyUsageOids.size() == 0)) {
+    		log.error("Extended key usage OIDs is null or zero length, there is a serious error with extendedkeyusage.properties");
     		extendedKeyUsageOids = new ArrayList<String>();
     	}
     	extendedKeyUsageOidsAndNames = Collections.synchronizedMap(map);
