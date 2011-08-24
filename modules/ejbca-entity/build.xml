@@ -53,6 +53,8 @@
 	<path id="test.classpath">
 		<path refid="test.classpath"/>
 		<path refid="jdbc-jars.classpath"/>
+		<!-- For UserDataVO, backwards compatibility class -->
+		<path location="${mod.ejbca-util.lib}" />
 	</path>
 
 	<path id="generate.classpath">
