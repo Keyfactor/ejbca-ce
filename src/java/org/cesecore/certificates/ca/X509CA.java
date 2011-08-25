@@ -1063,9 +1063,13 @@ public class X509CA extends CA implements Serializable {
         for (Iterator<Integer> iterator = extendedServiceTypes.iterator(); iterator.hasNext();) {
             Integer type = iterator.next();
             ExtendedCAService service = getExtendedCAService(type);
-            if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
-                retval = true;
-                service.upgrade();
+            if (service != null) {
+                if (Float.compare(service.getLatestVersion(), service.getVersion()) != 0) {
+                    retval = true;
+                    service.upgrade();
+                }            	
+            } else {
+            	log.error("Extended service is null, can not upgrade service of type: "+type);
             }
         }
 

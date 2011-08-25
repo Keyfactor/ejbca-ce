@@ -802,9 +802,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 if (serviceData != null) {
                     // We must have run upgrade on the extended CA services for this to work
                     String implClassname = (String) serviceData.get(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS);
-                    Class<?> implClass = Class.forName(implClassname);
-                    returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
-                    extendedcaservicemap.put(Integer.valueOf(type), returnval);
+                    if (implClassname == null) {
+                    	log.error("implementation classname is null for extended service type: "+type+". Service not created.");
+                    } else {
+                        Class<?> implClass = Class.forName(implClassname);
+                        returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
+                        extendedcaservicemap.put(Integer.valueOf(type), returnval);                    	
+                    }
                 }
             }
         } catch (ClassNotFoundException e) {
