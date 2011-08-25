@@ -202,10 +202,16 @@
 		/>
 	</target>
 
+	<target name="check-intest">
+		<condition property="in-test-mode">
+			<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+		</condition>
+	</target>
+
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle">
+	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle, check-intest">
 		<antcall target="doc.war"><param name="external-deps-satfisfied" value="isset"/></antcall>
 	    <property name="caear" value="${dist.dir}/ejbca.ear" />
 		<property name="eardd.src" value="${tmp}/ear" />
@@ -244,6 +250,12 @@
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${xkms.enabled}"
 			replacement-ejb="ejbca-xkms-ejb.jar"
+		/>
+		<jar-replacement-in-module
+			replacement-tag="!--@ejbca-systemtest-ejb.jar@-->"
+			replacement-file="${eardd.src}/META-INF/application.xml"
+			replacement-enabled="${in-test-mode}"
+			replacement-ejb="systemtests-ejb.jar"
 		/>
 		<antcall target="va_replacings_in_application.xml">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>

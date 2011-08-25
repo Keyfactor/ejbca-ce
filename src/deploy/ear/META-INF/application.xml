@@ -13,9 +13,6 @@
         <ejb>ejbca-ejb.jar</ejb>
     </module>
     <module>
-    	<ejb>systemtests-ejb.jar</ejb>
-    </module>
-    <module>
         <web>
             <web-uri>publicweb.war</web-uri>
             <context-root>/ejbca</context-root>
@@ -59,7 +56,8 @@
             <web-uri>adminweb.war</web-uri>
             <context-root>/ejbca/adminweb</context-root>
         </web>
-    </module> 
+    </module>
+       <!--@ejbca-systemtest-ejb.jar@-->
        <!--@ejbca-ws-ejb.jar@-->
        <!--@ejbca-xkms-ejb.jar@-->
        <!--@doc.war@-->
