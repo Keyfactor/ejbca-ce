@@ -111,12 +111,12 @@ public class BasicAccessRuleSetDecoder implements Serializable {
                 allcafound = true;
                 break;
             }
-            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESS.toString() + caId.toString(), AccessRuleState.RULE_ACCEPT, false));
+            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESS.resource() + caId.toString(), AccessRuleState.RULE_ACCEPT, false));
         }
 
         if (allcafound) {
             carules.clear();
-            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.toString(), AccessRuleState.RULE_ACCEPT, true));
+            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         }
 
         this.currentruleset.addAll(carules);

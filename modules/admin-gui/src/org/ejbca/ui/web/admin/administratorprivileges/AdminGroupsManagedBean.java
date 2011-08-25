@@ -396,7 +396,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     public Collection<SelectItem> getAvailableCasAndAll() {
         Collection<SelectItem> cas = getAvailableCaIds();
 
-        if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), StandardRules.CAACCESSBASE.toString())) {
+        if (getAuthorizationDataHandler().isAuthorizedNoLog(getAdmin(), StandardRules.CAACCESSBASE.resource())) {
             cas.add(new SelectItem(String.valueOf(BasicAccessRuleSet.CA_ALL), getEjbcaWebBean().getText("ALL")));
         }
 
@@ -465,13 +465,25 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
     /** @return a cached list of all the available access rules holding the current state */
     private AccessRulesView getAccessRules() {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getAccessRules");
+    	}
         if (accessRulesViewCache == null) {
             RoleData adminGroup = getCurrentAdminGroupObject();
-            Collection<AccessRuleData> usedAccessRules = adminGroup.getAccessRules().values();
-            Collection<AccessRuleData> unusedAccessRules = adminGroup.getDisjunctSetOfRules(getAuthorizationDataHandler().getAvailableAccessRules());
-            usedAccessRules.addAll(unusedAccessRules);
+            Collection<AccessRuleData> usedAccessRulesCollection = adminGroup.getAccessRules().values();
+            // We need to create a new arraylist here, because the collection returned by adminGroup.getAccessRules().values() does not support addAll
+            ArrayList<AccessRuleData> usedAccessRules = new ArrayList<AccessRuleData>();
+            usedAccessRules.addAll(usedAccessRulesCollection);
+            Collection<String> rules = getAuthorizationDataHandler().getAvailableAccessRules();
+            Collection<AccessRuleData> unusedAccessRules = adminGroup.getDisjunctSetOfRules(rules);
+            if (!unusedAccessRules.isEmpty()) {
+                usedAccessRules.addAll(unusedAccessRules);
+            }
             accessRulesViewCache = new AccessRulesView(usedAccessRules);
         }
+    	if (log.isTraceEnabled()) {
+    		log.trace("<getAccessRules");
+    	}
         return accessRulesViewCache;
     }
 
@@ -487,11 +499,11 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     }
 
     /** @return a viewable list of the possible values for a access rule */
-    public Collection<SelectItem> getAccessRuleRules() {
+    public Collection<SelectItem> getAccessRuleStates() {
         Collection<SelectItem> result = new ArrayList<SelectItem>();
-        result.add(new SelectItem(AccessRuleState.RULE_NOTUSED, getEjbcaWebBean().getText(AccessRuleState.RULE_NOTUSED.getName(), true)));
-        result.add(new SelectItem(AccessRuleState.RULE_ACCEPT, getEjbcaWebBean().getText(AccessRuleState.RULE_ACCEPT.getName(), true)));
-        result.add(new SelectItem(AccessRuleState.RULE_DECLINE, getEjbcaWebBean().getText(AccessRuleState.RULE_DECLINE.getName(), true)));
+        result.add(new SelectItem(AccessRuleState.RULE_NOTUSED.getDatabaseValue(), getEjbcaWebBean().getText(AccessRuleState.RULE_NOTUSED.getName(), true)));
+        result.add(new SelectItem(AccessRuleState.RULE_ACCEPT.getDatabaseValue(), getEjbcaWebBean().getText(AccessRuleState.RULE_ACCEPT.getName(), true)));
+        result.add(new SelectItem(AccessRuleState.RULE_DECLINE.getDatabaseValue(), getEjbcaWebBean().getText(AccessRuleState.RULE_DECLINE.getName(), true)));
         return result;
     }
 
@@ -503,26 +515,26 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         AccessRuleData accessRule = (AccessRuleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("accessRule");
         String resource = accessRule.getAccessRuleName();
         // Check if it is a profile rule, then replace profile id with profile name.
+        Map<Integer, String> profileMap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
-                return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(),
-                                Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
+                return AccessRulesConstants.ENDENTITYPROFILEPREFIX 
+                		+ profileMap.get(Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length())));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(),
+                        + profileMap.get(
                                 Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/')))) + tmpString.substring(tmpString.indexOf('/'));
             }
         }
         // Check if it is a CA rule, then replace CA id with CA name.
-        if (resource.startsWith(StandardRules.CAACCESS.toString())) {
+        if (resource.startsWith(StandardRules.CAACCESS.resource())) {
             Map<Integer, String> caIdToNameMap = ejb.getCaAdminSession().getCAIdToNameMap(getAdmin());
-            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.toString().length()) {
-                return StandardRules.CAACCESS.toString() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.toString().length())));
+            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
+                return StandardRules.CAACCESS.resource() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length())));
             } else {
-                return StandardRules.CAACCESS.toString()
-                        + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.toString().length(), resource.lastIndexOf('/'))))
+                return StandardRules.CAACCESS.resource()
+                        + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }

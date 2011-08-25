@@ -267,9 +267,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 }
             }
             if (retval.getCaid() != ApprovalDataVO.ANY_CA) {
-                if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.toString() + retval.getCaid())) {
+                if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + retval.getCaid())) {
                     final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                            StandardRules.CAACCESS.toString() + retval.getCaid(), null);
+                            StandardRules.CAACCESS.resource() + retval.getCaid(), null);
                     throw new AuthorizationDeniedException(msg);
                 }
             }

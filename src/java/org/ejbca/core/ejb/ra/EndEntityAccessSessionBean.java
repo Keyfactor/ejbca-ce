@@ -207,9 +207,9 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     
     private boolean authorizedToCA(AuthenticationToken admin, int caid) {
         boolean returnval = false;
-        returnval = authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid);
+        returnval = authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid);
         if (!returnval) {
-            log.info("Admin " + admin.toString() + " not authorized to resource " + StandardRules.CAACCESS.toString() + caid);
+            log.info("Admin " + admin.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
         }
         return returnval;
     }

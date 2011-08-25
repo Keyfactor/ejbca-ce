@@ -85,8 +85,8 @@
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RULE}" />
 				</f:facet>
-				<h:selectOneMenu id="selectrole" value="#{accessRule.rule}">
-					<f:selectItems value="#{adminGroupsManagedBean.accessRuleRules}" />
+				<h:selectOneMenu id="selectrole" value="#{accessRule.state}">
+					<f:selectItems value="#{adminGroupsManagedBean.accessRuleStates}" />
 				</h:selectOneMenu> 
 			</h:column>
 			<h:column>

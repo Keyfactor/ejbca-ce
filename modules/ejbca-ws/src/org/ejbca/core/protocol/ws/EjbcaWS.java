@@ -922,8 +922,8 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			final int caid = userdata.getCAId();
 			caAdminSession.verifyExistenceOfCA(caid);
-			if (!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() +caid)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
+			if (!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() +caid)) {
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
 			if (!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
@@ -1095,8 +1095,8 @@ public class EjbcaWS implements IEjbcaWS {
 			  }
 			  int caid = userdata.getCAId();
 			  caAdminSession.verifyExistenceOfCA(caid);
-			  if(!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.toString() +caid)) {
-				  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
+			  if(!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() +caid)) {
+				  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 				  throw new AuthorizationDeniedException(msg);
 			  }
 
@@ -1214,8 +1214,8 @@ public class EjbcaWS implements IEjbcaWS {
 			// Check caid
 			int caid = userdata.getCAId();
 			caAdminSession.verifyExistenceOfCA(caid);
-			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() +caid)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
+			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() +caid)) {
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
 			if (deleteUser) {
@@ -1265,8 +1265,8 @@ public class EjbcaWS implements IEjbcaWS {
 			// check CAID
 			int caid = userdata.getCAId();
 			caAdminSession.verifyExistenceOfCA(caid);
-            if (!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid)) {
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
+            if (!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid)) {
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 		        throw new AuthorizationDeniedException(msg);
             }
 
@@ -1323,8 +1323,8 @@ public class EjbcaWS implements IEjbcaWS {
 				// check that admin is authorized to CA
 				int caid = CertTools.getIssuerDN(next).hashCode();
 				caAdminSession.verifyExistenceOfCA(caid);
-				if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() +caid)) {
-		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
+				if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() +caid)) {
+		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 			        throw new AuthorizationDeniedException(msg);
 				}
 				try {
@@ -1380,8 +1380,8 @@ public class EjbcaWS implements IEjbcaWS {
 		  // check that admin is autorized to CA
 		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
 		  caAdminSession.verifyExistenceOfCA(caid);
-		  if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() +caid)) {
-			  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() +caid, null);
+		  if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() +caid)) {
+			  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 			  throw new AuthorizationDeniedException(msg);
 		  }
 		  
@@ -1526,8 +1526,8 @@ public class EjbcaWS implements IEjbcaWS {
 				final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, null);
 				throw new AuthorizationDeniedException(msg);
 			}
-			if (!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + significantcAInfo.getCAId())) {
-				throw new AuthorizationDeniedException("Admin " + admin + " was not authorized to resource " + StandardRules.CAACCESS.toString()
+			if (!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + significantcAInfo.getCAId())) {
+				throw new AuthorizationDeniedException("Admin " + admin + " was not authorized to resource " + StandardRules.CAACCESS.resource()
 						+ significantcAInfo.getCAId());
 			}
 			if (userExists) {
@@ -1708,8 +1708,8 @@ public class EjbcaWS implements IEjbcaWS {
 						logger, ErrorCode.CA_NOT_EXISTS, null);
 				}
 
-				if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + cAInfo.getCAId())) {
-                	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() + cAInfo.getCAId(), null);
+				if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + cAInfo.getCAId())) {
+                	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + cAInfo.getCAId(), null);
                 	throw new AuthorizationDeniedException(msg);
 				}
 				if(next.getType() == HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST){						
@@ -2018,8 +2018,8 @@ public class EjbcaWS implements IEjbcaWS {
 				HardTokenData next = (HardTokenData) iter.next();
 				int caid = next.getSignificantIssuerDN().hashCode();
 				caAdminSession.verifyExistenceOfCA(caid);
-				if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid)) {
-                	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() + caid, null);
+				if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid)) {
+                	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
                 	throw new AuthorizationDeniedException(msg);
 				}
 				Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin, next.getTokenSN());
@@ -2209,8 +2209,8 @@ public class EjbcaWS implements IEjbcaWS {
             	final String authmsg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
             	throw new AuthorizationDeniedException(authmsg);
 			}
-			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid)) {
-            	final String authmsg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() + caid, null);
+			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid)) {
+            	final String authmsg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
             	throw new AuthorizationDeniedException(authmsg);
 			}
 

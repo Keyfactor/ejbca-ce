@@ -27,6 +27,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.dbprotection.ProtectedData;
 
@@ -227,7 +228,7 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
      * FIXME: Unit test this method.
      * 
      * @param rules a list of rules
-     * @return the set of the above rules not used in this role. Returns null if rules was null.
+     * @return the set of the above rules not used in this role. Returns empty array if rules was null.
      */
     public Collection<AccessRuleData> getDisjunctSetOfRules(Collection<String> rules) {
         List<AccessRuleData> result = new ArrayList<AccessRuleData>();
@@ -235,7 +236,8 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
             for (String rule : rules) {
                 Integer key = AccessRuleData.generatePrimaryKey(roleName, rule);
                 if (!accessRules.containsKey(key)) {
-                    result.add(accessRules.get(key));
+                	// Access rule can not be found, create a new AccessRuleData that we can return
+                    result.add(new AccessRuleData(key.intValue(), rule, AccessRuleState.RULE_NOTUSED, false));
                 }
             }
         }
