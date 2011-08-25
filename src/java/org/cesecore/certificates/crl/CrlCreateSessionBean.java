@@ -41,7 +41,9 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -402,17 +404,27 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     				log.debug("Found "+revcerts.size()+" revoked certificates.");
     			}
     			// Go through them and create a CRL, at the same time archive expired certificates
+    			//
+    			// Archiving is only done for full CRLs, not delta CRLs.
+    			// RFC5280 states that a certificate must not be removed from the CRL until it has appeared on at least on full CRL.
+    			// See RFC5280 section 5.2.4, specifically:
+    			//  If a certificate revocation notice first appears on a delta CRL, then
+    			//  it is possible for the certificate validity period to expire before
+    			//  the next complete CRL for the same scope is issued.  In this case,
+    			//  the revocation notice MUST be included in all subsequent delta CRLs
+    			//  until the revocation notice is included on at least one explicitly
+    			//  issued complete CRL for this scope
     			Date now = new Date();
     			Date check = new Date(now.getTime() - crlperiod);
     			Iterator<RevokedCertInfo> iter = revcerts.iterator();
+    			AuthenticationToken archiveAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSession.archive_expired"));
     			while (iter.hasNext()) {
     				RevokedCertInfo data = iter.next();
     				// We want to include certificates that was revoked after the last CRL was issued, but before this one
     				// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
     				if ( data.getExpireDate().before(check) ) {
     					// Certificate has expired, set status to archived in the database
-    					// TODO: this admin should be internal "allowed to do everything" admin
-    					certificateStoreSession.setStatus(admin, data.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
+    					certificateStoreSession.setStatus(archiveAdmin, data.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
     				} else {
     					Date revDate = data.getRevocationDate();
     					if (revDate == null) {
