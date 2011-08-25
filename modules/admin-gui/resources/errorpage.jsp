@@ -4,7 +4,7 @@
 <%@ page isErrorPage="true" import="org.ejbca.config.GlobalConfiguration, org.cesecore.authorization.AuthorizationDeniedException,
                                    org.cesecore.authentication.AuthenticationFailedException, org.cesecore.keys.token.CryptoTokenOfflineException,
                                    org.ejbca.ui.web.ParameterError, org.ejbca.config.WebConfiguration"%>
-<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="request" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 
 <%  // Initialize environment

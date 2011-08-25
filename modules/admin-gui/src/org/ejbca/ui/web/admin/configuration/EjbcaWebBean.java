@@ -162,7 +162,7 @@ public class EjbcaWebBean implements Serializable {
     private void commonInit() throws Exception {
         if ((administrator == null) && (certificates == null)) {
             throw new AuthenticationFailedException("Client certificate required.");
-        } else if (certificates != null) {
+        } else if ((certificates != null) && (administrator == null)) {
             final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(certificates[0]);
             AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
