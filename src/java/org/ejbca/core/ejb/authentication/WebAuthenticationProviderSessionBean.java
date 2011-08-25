@@ -27,10 +27,10 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  *
@@ -45,7 +45,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     private final static Logger LOG = Logger.getLogger(WebAuthenticationProviderSessionBean.class);
     /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
