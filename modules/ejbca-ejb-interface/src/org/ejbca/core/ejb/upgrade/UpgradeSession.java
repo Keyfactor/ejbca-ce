@@ -23,4 +23,7 @@ public interface UpgradeSession {
      * @return true or false if upgrade was done or not
      */
     public boolean upgrade(AuthenticationToken admin, String dbtype, String sOldVersion, boolean isPost);
+    
+    public boolean checkColumnExists500();
 }
+

@@ -1,0 +1,1 @@
+ALTER TABLE AdminGroupData DROP COLUMN cAId;

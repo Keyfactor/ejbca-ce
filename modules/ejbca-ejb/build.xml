@@ -383,7 +383,6 @@
 
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}"/>
-			<fileset dir="${ejbca.home}/src/upgrade"/>
 			<!--
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
