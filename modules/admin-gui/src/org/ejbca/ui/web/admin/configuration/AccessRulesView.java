@@ -51,28 +51,29 @@ public class AccessRulesView implements Serializable {
         for(AccessRuleData accessrule : accessrules) {  
             boolean regular = true;
 
+            final String rulename = accessrule.getAccessRuleName();
             // Check if rule is a role based one
             for (String roleConstant : AccessRulesConstants.ROLEACCESSRULES) {
-                if (accessrule.getAccessRuleName().equals(roleConstant)) {
+                if (rulename.equals(roleConstant)) {
                     this.rolebasedaccessrules.add(accessrule);
                     regular = false;
                 }
             }
 
             // Check if rule is end entity profile access rule
-            if (accessrule.getAccessRuleName().startsWith("/endentityprofilesrules")) {
+            if (rulename.startsWith("/endentityprofilesrules")) {
                 this.endentityprofileaccessrules.add(accessrule);
                 regular = false;
             }
 
             // Check if rule is CA access rule
-            if (accessrule.getAccessRuleName().startsWith(StandardRules.CAACCESS.toString()) || accessrule.getAccessRuleName().equals(StandardRules.CAACCESSBASE.toString())) {
+            if (rulename.startsWith(StandardRules.CAACCESS.resource()) || accessrule.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource())) {
                 this.caaccessrules.add(accessrule);
                 regular = false;
             }
 
             // Check if rule is end entity profile access rule
-            if (accessrule.getAccessRuleName().startsWith(AccessRulesConstants.USERDATASOURCEBASE)) {
+            if (rulename.startsWith(AccessRulesConstants.USERDATASOURCEBASE)) {
                 this.userdatasourceaccessrules.add(accessrule);
                 regular = false;
             }

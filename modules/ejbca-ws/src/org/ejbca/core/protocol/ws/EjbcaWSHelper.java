@@ -234,8 +234,8 @@ public class EjbcaWSHelper {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
-			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid )){
-	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.toString() + caid, null);
+			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid )){
+	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
 
@@ -667,7 +667,7 @@ public class EjbcaWSHelper {
 				final int caid = CertTools.getIssuerDN(next).hashCode();
 				Boolean authorized = authorizationCache.get(caid);
 				if (authorized == null) {
-					authorized = authorizationSession.isAuthorizedNoLog(admin,StandardRules.CAACCESS.toString() +caid);
+					authorized = authorizationSession.isAuthorizedNoLog(admin,StandardRules.CAACCESS.resource() +caid);
 					authorizationCache.put(caid, authorized);
 				}
 				if (authorized.booleanValue()) {

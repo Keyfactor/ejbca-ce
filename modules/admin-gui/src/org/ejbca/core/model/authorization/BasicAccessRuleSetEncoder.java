@@ -238,11 +238,11 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     private boolean isAllowedCAAdministratorRule(AccessRuleData ar) {
         boolean returnval = false;
 
-        if (ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.toString()) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && ar.getRecursive()) {
+        if (ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource()) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && ar.getRecursive()) {
             returnval = true;
         }
 
-        if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.toString()) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && !ar.getRecursive()) {
+        if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource()) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && !ar.getRecursive()) {
             returnval = true;
         }
 
@@ -297,7 +297,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                 if (ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWLOG)) {
                     returnval = true;
                 }
-                if (ar.getAccessRuleName().equals(AccessRulesConstants.ENDENTITYPROFILEBASE) || ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.toString())) {
+                if (ar.getAccessRuleName().equals(AccessRulesConstants.ENDENTITYPROFILEBASE) || ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource())) {
                     returnval = true;
                 }
             } else {
@@ -308,7 +308,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                 if (ar.getAccessRuleName().startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
                     returnval = true;
                 }
-                if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.toString())) {
+                if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource())) {
                     returnval = true;
                 }
             }
@@ -355,7 +355,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
 
         if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT) {
             if (ar.getRecursive()) {
-                if (ar.getAccessRuleName().equals(AccessRulesConstants.ENDENTITYPROFILEBASE) || ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.toString())) {
+                if (ar.getAccessRuleName().equals(AccessRulesConstants.ENDENTITYPROFILEBASE) || ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource())) {
                     returnval = true;
                 }
             } else {
@@ -367,7 +367,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                 if (ar.getAccessRuleName().startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
                     returnval = true;
                 }
-                if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.toString())) {
+                if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource())) {
                     returnval = true;
                 }
             }
@@ -392,10 +392,10 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         }
 
         for(String nextrule : availableaccessrules) {          
-            if (nextrule.equals(StandardRules.CAACCESSBASE.toString())) {
+            if (nextrule.equals(StandardRules.CAACCESSBASE.resource())) {
                 this.availablecas.add(Integer.valueOf(BasicAccessRuleSet.CA_ALL));
-            } else if (nextrule.startsWith(StandardRules.CAACCESS.toString())) {
-                this.availablecas.add(Integer.valueOf(nextrule.substring(StandardRules.CAACCESS.toString().length())));
+            } else if (nextrule.startsWith(StandardRules.CAACCESS.resource())) {
+                this.availablecas.add(Integer.valueOf(nextrule.substring(StandardRules.CAACCESS.resource().length())));
             } else if (nextrule.equals(AccessRulesConstants.ENDENTITYPROFILEBASE)) {
                 this.availableendentityprofiles.add(Integer.valueOf(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));
             } else if (nextrule.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
@@ -522,7 +522,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                         break;
                     }
                 } else {
-                    if (accessRule.getAccessRuleName().equals(StandardRules.CAACCESSBASE.toString())) {
+                    if (accessRule.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource())) {
                         if (accessRule.getInternalState() == AccessRuleState.RULE_ACCEPT && accessRule.getRecursive()) {
                             this.currentcas.add(Integer.valueOf(BasicAccessRuleSet.CA_ALL));
                         } else {
@@ -530,9 +530,9 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                             break;
                         }
                     } else {
-                        if (accessRule.getAccessRuleName().startsWith(StandardRules.CAACCESS.toString())) {
+                        if (accessRule.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource())) {
                             if (accessRule.getInternalState() == AccessRuleState.RULE_ACCEPT && !accessRule.getRecursive()) {
-                                Integer caid = Integer.valueOf(accessRule.getAccessRuleName().substring(StandardRules.CAACCESS.toString().length()));
+                                Integer caid = Integer.valueOf(accessRule.getAccessRuleName().substring(StandardRules.CAACCESS.resource().length()));
                                 this.currentcas.add(caid);
                             } else {
                                 this.forceadvanced = true;

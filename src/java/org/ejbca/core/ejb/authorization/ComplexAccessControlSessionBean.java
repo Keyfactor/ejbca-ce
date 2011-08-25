@@ -167,7 +167,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     public Collection<Integer> getAuthorizedCAIds(AuthenticationToken admin) {
         List<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : caSession.getAvailableCAs()) {
-            if (accessControlSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.toString() + caid.toString())) {
+            if (accessControlSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid.toString())) {
                 returnval.add(caid);
             } else {
                 if (log.isDebugEnabled()) {
@@ -295,11 +295,11 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             }
         }
         // Insert available CA access rules
-        if (accessControlSession.isAuthorizedNoLog(authenticationToken, StandardRules.CAACCESSBASE.toString())) {
-            accessrules.add(StandardRules.CAACCESSBASE.toString());
+        if (accessControlSession.isAuthorizedNoLog(authenticationToken, StandardRules.CAACCESSBASE.resource())) {
+            accessrules.add(StandardRules.CAACCESSBASE.resource());
         }
         for (int caId : getAuthorizedCAIds(authenticationToken)) {
-            accessrules.add(StandardRules.CAACCESS.toString() + caId);
+            accessrules.add(StandardRules.CAACCESS.resource() + caId);
         }
 
         // Insert custom access rules
@@ -378,7 +378,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         if (log.isTraceEnabled()) {
             log.trace(">existsCAInAccessRules(" + caid + ")");
         }
-        String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.toString() + "/" + caid + "' OR accessRule LIKE '" + StandardRules.CAACCESSBASE.toString()
+        String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.resource() + "/" + caid + "' OR accessRule LIKE '" + StandardRules.CAACCESSBASE.resource()
                 + "/" + caid + "/%'";
         Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
         long count = ValueExtractor.extractLongValue(query.getSingleResult());

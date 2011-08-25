@@ -44,13 +44,13 @@ public abstract class BaseAdminsCommand extends BaseCommand {
             }
         }
         // Check if it is a CA rule, then replace CA id with CA name.
-        if (resource.startsWith(StandardRules.CAACCESS.toString())) {
+        if (resource.startsWith(StandardRules.CAACCESS.resource())) {
             Map<Integer,String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
-            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.toString().length()) {
-                return StandardRules.CAACCESS.toString() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.toString().length())));
+            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
+                return StandardRules.CAACCESS.resource() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length())));
             } else {
-                return StandardRules.CAACCESS.toString()
-                        + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.toString().length(), resource.lastIndexOf('/'))))
+                return StandardRules.CAACCESS.resource()
+                        + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }
@@ -86,13 +86,13 @@ public abstract class BaseAdminsCommand extends BaseCommand {
             }
         }
         // Check if it is a CA rule, then replace CA id with CA name.
-        if (resource.startsWith(StandardRules.CAACCESS.toString())) {
-            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.toString().length()) {
-                return StandardRules.CAACCESS.toString()
-                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(StandardRules.CAACCESS.toString().length())).getCAId();
+        if (resource.startsWith(StandardRules.CAACCESS.resource())) {
+            if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
+                return StandardRules.CAACCESS.resource()
+                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(StandardRules.CAACCESS.resource().length())).getCAId();
             } else {
-                return StandardRules.CAACCESS.toString()
-                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(StandardRules.CAACCESS.toString().length(), resource.lastIndexOf('/'))).getCAId()
+                return StandardRules.CAACCESS.resource()
+                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))).getCAId()
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }
