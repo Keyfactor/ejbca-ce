@@ -40,6 +40,9 @@ It is recommended that you verify that your access roles and rules after an upgr
 2. Configure "app.version.effective=3.11.x" in conf/ejbca.properties for all but the last node that you
    deploy with EJBCA 4.0.x. Comment out the property and redeploy the other nodes again. This will ensure that
    the JBoss serialization still works for the deployed EJBCA 3.11.x nodes during the migration.
+3. If you need to downgrade EJBCA to 4.0.x again after a completed 'ant post-upgrade', you must add back the 
+   dropped database column (value 0 is fine) in the database.
+   If should be possible to downgrade to 4.0.4 again after an 'ant post-upgrade' in EJBCA 5.0. 
 
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 If you are upgrading a cluster, update the software on all the nodes.
@@ -53,12 +56,25 @@ If you are upgrading a cluster, update the software on all the nodes.
 
 4. Start up JBoss.
 
-5. Do 'ant post-upgrade' on one of the nodes. This will upgrade access rules to rules
-that are compatible with the new access control system.
+5. Issue the command 'ant upgrade' from EJBCA_HOME.
+   This will upgrade access rules to rules that are compatible with the new access control system.
 
-6. Restart JBoss again to flush all caches.
+6. If you are running in a cluster, you should now upgrade (ant bootstrap) on all cluster nodes. 
+   The newly deployed nodes should be running now.
+   
+7. Do 'ant post-upgrade' on one of the nodes.
+   This will make the necessary database updates. 
+   Note: On some application server you may have to upgrade the database manually, see below.
+   This will also upgrade CertificateProfile objects and possible CA objects in the database.
+   After this upgrade, it may not be possible to downgrade to EJBCA 4.0.x again. 
 
-7. Go into the Admin GUI and verify you settings.
+8. Restart JBoss again to flush all caches.
+
+9. Go into the Admin GUI and verify you settings.
+
+The database schema upgrade is normally done automatically for you when you run 'ant post-upgrade'. 
+Some application servers will not let you deploy unless the database is in sync though, so you may have
+to run the SQL commands manually. Check src/upgrade/400_500 to find the correct sql files for your database.
 
 From EJBCA 4.0.x to EJBCA 4.0.x
 -------------------------------

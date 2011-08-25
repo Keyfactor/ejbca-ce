@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,7 +112,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 oldVersion = Integer.parseInt(oldVersionArray[0]) * 100 + Integer.parseInt(oldVersionArray[1]);
             }
             if (isPost) {
-                return postUpgrade(oldVersion);
+                return postUpgrade(oldVersion, dbtype);
             }
             return upgrade(dbtype, oldVersion);
         } finally {
@@ -119,28 +120,40 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
     }
 
-    private boolean postUpgrade(int oldVersion) {
+    private boolean postUpgrade(int oldVersion, String dbtype) {
+    	log.debug(">post-upgrade from version: "+oldVersion);
         if (oldVersion < 311) {
             log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x.");
             return false;
         }
         // Upgrade database change between EJBCA 3.11.x and EJBCA 4.0.x if needed
         if (oldVersion < 400) {
-            return postMigrateDatabase400();
+        	if (!postMigrateDatabase400()) {
+        		return false;
+        	}
         }
-        // Upgrade database change between EJBCA 4.0.x and EJBCA 5.0.x if needed
-        if (oldVersion < 500) {
-            return postMigrateDatabase500();
+        // Upgrade database change between EJBCA 4.0.x and EJBCA 5.0.x if needed, and previous post-upgrade succeeded
+        if ((oldVersion < 500)) {
+        	if (!postMigrateDatabase500(dbtype)) {
+        		return false;
+        	}
         }
-        return false;
+        return true;
     }
 
     private boolean upgrade(String dbtype, int oldVersion) {
-        if (oldVersion <= 311) {
+    	log.debug(">upgrade from version: "+oldVersion+", with dbtype: "+dbtype);
+        if (oldVersion < 311) {
             log.error("Only upgrade from EJBCA 3.11.x is supported in EJBCA 4.0.x and higher.");
             return false;
         }
-        // Seamless upgrade between EJBCA 3.11.x and EJBCA 4.0.x and 5.0.x
+        // Upgrade between EJBCA 3.11.x and EJBCA 4.0.x to 5.0.x
+        if (oldVersion <= 500) {
+        	if (!migrateDatabase500()) {
+        		return false;
+        	}
+        }
+
         return true;
     }
 
@@ -175,6 +188,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         } finally {
             JDBCUtil.close(con);
         }
+        log.info("Finished migration of database.");
         return true;
     }
 
@@ -283,7 +297,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		}
     	}
     }
-    
+
     /**
      * In EJBCA 5.0 we have introduced a new authorization rule system.
      * The old "/super_administrator" rule is replaced by a rule to access "/" with recursive=true.
@@ -293,10 +307,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws AccessRuleNotFoundException 
      * 
      */
-    private boolean postMigrateDatabase500() {
-    	log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
+    private boolean migrateDatabase500() {
+    	
+    	// TODO: upgrade "fix CAs that don't have classpath for extended CA services"
+
+    	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
-    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.postMigrateDatabase500"));
+    	
+    	// Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.
+    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
     	Collection<RoleData> roles = roleAccessSession.getAllRoles();
     	for (RoleData role : roles) {
     		Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
@@ -323,8 +342,63 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 		}
     	accessTreeUpdateSession.signalForAccessTreeUpdate();
     	accessControlSession.forceCacheExpire();
+    	
+    	log.error("(this is not an error) Finished upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
+        return ret;
+    }
+
+    /**
+     * In EJBCA 5.0 we have changed classname for CertificatePolicy.
+     * In order to allow us to remove the legacy class in the future we want to upgrade all certificate profiles to use the new classname
+     * 
+     * In order to be able to create new Roles we also need to remove the long deprecated database column caId, otherwise
+     * we will get a database error during insert. Reading works fine though, so this is good for a post upgrade in order
+     * to allow for 100% uptime upgrades.
+     */
+    private boolean postMigrateDatabase500(String dbtype) {
+    	
+    	// TODO: post-upgrade "change CertificatePolicy from ejbca class to cesecore class in certificate profiles that have that defined.
+
+    	log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
+    	boolean ret = true;
+    	boolean exists = upgradeSession.checkColumnExists500();
+    	if (exists) {
+    		ret = migrateDatabase("/400_500/400_500-post-upgrade-"+dbtype+".sql");			
+    	}
+
     	log.error("(this is not an error) Finished post upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
         return ret;
+    }
+
+    /** Checks if the column rowVersion exists in table PublisherQueueData
+     * @ejb.interface-method
+     * 
+     * @return true or false if the column exists or not
+     */
+    public boolean checkColumnExists500() {
+		// Try to find out if rowVersion exists and upgrade the PublisherQueueData in that case
+		// This is needed since PublisherQueueData is a rather new table so it may have been created when the server started 
+		// and we are upgrading from a not so new version
+		final Connection connection = JDBCUtil.getDBConnection();
+		boolean exists = false;
+		try {
+			final PreparedStatement stmt = connection.prepareStatement("select cAId from AdminGroupData where pk='0'");
+			stmt.executeQuery();
+			// If it did not throw an exception the column exists and we must run the post upgrade sql
+			exists = true; 
+			log.info("cAId column exists in AdminGroupData");
+		} catch (SQLException e) {
+			// Column did not exist
+			log.info("cAId column does not exist in AdminGroupData");
+			log.error(e);
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// do nothing
+			}
+		}
+		return exists;
     }
 
 }

@@ -26,6 +26,7 @@
     -->
 
     <entity class="org.cesecore.authorization.rules.AccessRuleData" access="PROPERTY" metadata-complete="false">
+    	<table name="AccessRulesData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic name="accessRuleName"><column name="accessRule" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
@@ -37,6 +38,7 @@
         </attributes>
     </entity>
     <entity class="org.cesecore.authorization.cache.AccessTreeUpdateData" access="PROPERTY" metadata-complete="false">
+    	<table name="AuthorizationTreeUpdateData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INT(11)" nullable="false"/></basic>
@@ -46,6 +48,7 @@
     </entity>
 
     <entity class="org.cesecore.authorization.user.AccessUserAspectData" access="PROPERTY" metadata-complete="false">
+    	<table name="AdminEntityData"/>    
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
             <basic name="matchWith"><column name="matchWith" column-definition="INT(11)" nullable="false"/></basic>
@@ -54,6 +57,18 @@
             <basic name="caId"><column name="cAId" column-definition="INT(11)" nullable="false"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
+        </attributes>
+    </entity>
+
+    <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
+    	<table name="AdminGroupData"/>
+        <attributes>
+            <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
+            <basic name="roleName"><column name="adminGroupName" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
+            <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_accessRules" column-definition="INT(11)"/><cascade><cascade-all/></cascade></one-to-many>
+            <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_adminEntities" column-definition="INT(11)"/><cascade><cascade-all/></cascade></one-to-many>
         </attributes>
     </entity>
 
@@ -90,6 +105,30 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>
     </entity>
+    
+    <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
+        <attributes>
+            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></id>
+            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic name="status"><column name="status" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="type"><column name="type" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
+            <basic name="expireDate"><column name="expireDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic name="revocationDate"><column name="revocationDate" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic name="revocationReason"><column name="revocationReason" column-definition="INT(11)" nullable="false"/></basic>
+            <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
+            <basic name="base64Cert"><column name="base64Cert" column-definition="LONGTEXT"/><lob/></basic>
+            <basic name="username"><column name="username" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic name="tag"><column name="tag" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INT(11)" nullable="false"/></basic>
+            <basic name="updateTime"><column name="updateTime" column-definition="BIGINT(20)" nullable="false"/></basic>
+            <basic name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
+        </attributes>
+    </entity>
 
     <entity class="org.cesecore.certificates.certificateprofile.CertificateProfileData" access="PROPERTY" metadata-complete="false">
         <attributes>
@@ -115,17 +154,6 @@
         </attributes>
     </entity>
     
-    <entity class="org.cesecore.roles.RoleData" access="PROPERTY" metadata-complete="false">
-        <attributes>
-            <id name="primaryKey"><column name="pK" column-definition="INT(11)"/></id>
-            <basic name="roleName"><column name="adminGroupName" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
-            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
-            <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="RoleData_accessRules" column-definition="INT(11)"/><cascade><cascade-all/></cascade></one-to-many>
-            <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="RoleData_accessUsers" column-definition="INT(11)"/><cascade><cascade-all/></cascade></one-to-many>
-        </attributes>
-    </entity>
-
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="INT(11)"/></id>
@@ -166,29 +194,6 @@
             <basic name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic name="publisherId"><column name="publisherId" column-definition="INT(11)" nullable="false"/></basic>
             <basic name="volatileData"><column name="volatileData" column-definition="LONGTEXT"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
-            <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
-        </attributes>
-    </entity>
-    <entity class="org.cesecore.certificates.certificate.CertificateData" access="PROPERTY" metadata-complete="false">
-        <attributes>
-            <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(250) BINARY"/></id>
-            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-            <basic name="caFingerprint"><column name="cAFingerprint" column-definition="VARCHAR(250) BINARY"/></basic>
-            <basic name="status"><column name="status" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="type"><column name="type" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(250) BINARY" nullable="false"/></basic>
-            <basic name="expireDate"><column name="expireDate" column-definition="BIGINT(20)" nullable="false"/></basic>
-            <basic name="revocationDate"><column name="revocationDate" column-definition="BIGINT(20)" nullable="false"/></basic>
-            <basic name="revocationReason"><column name="revocationReason" column-definition="INT(11)" nullable="false"/></basic>
-            <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
-            <basic name="base64Cert"><column name="base64Cert" column-definition="LONGTEXT"/><lob/></basic>
-            <basic name="username"><column name="username" column-definition="VARCHAR(250) BINARY"/></basic>
-            <basic name="tag"><column name="tag" column-definition="VARCHAR(250) BINARY"/></basic>
-            <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="INT(11)" nullable="false"/></basic>
-            <basic name="updateTime"><column name="updateTime" column-definition="BIGINT(20)" nullable="false"/></basic>
-            <basic name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>
