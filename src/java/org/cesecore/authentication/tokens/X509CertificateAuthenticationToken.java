@@ -45,6 +45,12 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
 
     private final X509Certificate certificate;
 
+    private String certstring;
+    private final int adminCaId;
+    private final String altNameString;
+    private final DNFieldExtractor dnExtractor;
+    private final DNFieldExtractor anExtractor;
+
     /**
      * Standard constructor for X509CertificateAuthenticationToken
      * 
@@ -68,6 +74,14 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
         } else {
             certificate = certificateArray[0];
         }
+        
+        certstring = CertTools.getSubjectDN(certificate).toString();
+        adminCaId = CertTools.getIssuerDN(certificate).hashCode();
+        certstring = serialPattern.matcher(certstring).replaceAll("SN=");
+        altNameString = CertTools.getSubjectAlternativeName(certificate);
+
+        dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
+        anExtractor = new DNFieldExtractor(altNameString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     }
 
     /**
@@ -86,15 +100,6 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
     	}
         boolean returnvalue = false;
 
-        String certstring = CertTools.getSubjectDN(certificate).toString();
-        int adminCaId = CertTools.getIssuerDN(certificate).hashCode();
-
-        certstring = serialPattern.matcher(certstring).replaceAll("SN=");
-
-        String anString = null;
-
-        anString = CertTools.getSubjectAlternativeName(certificate);
-
         int parameter;
         int size = 0;
         String[] clientstrings = null;
@@ -102,9 +107,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
         // First check that issuers match.
         if (accessUser.getCaId() == adminCaId) {
             // Determine part of certificate to match with.
-            DNFieldExtractor dn = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
-            DNFieldExtractor an = new DNFieldExtractor(anString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-            DNFieldExtractor usedExtractor = dn;
+            DNFieldExtractor usedExtractor = dnExtractor;
             AccessMatchValue matchValue = accessUser.getMatchWithByValue();
             if (matchValue == AccessMatchValue.WITH_SERIALNUMBER) {
                 BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
@@ -163,11 +166,11 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                     break;
                 case WITH_RFC822NAME:
                     parameter = DNFieldExtractor.RFC822NAME;
-                    usedExtractor = an;
+                    usedExtractor = anExtractor;
                     break;
                 case WITH_UPN:
                     parameter = DNFieldExtractor.UPN;
-                    usedExtractor = an;
+                    usedExtractor = anExtractor;
                     break;
                 default:
                 }
