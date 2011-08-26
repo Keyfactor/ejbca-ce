@@ -65,7 +65,10 @@ public final class PurposeMapping {
      * @param properties key string properties
      */
     public PurposeMapping(final Properties properties) {
+    	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and alias string as defined in Properties */
     	map = new Hashtable<Integer, String>();
+    	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and key purpose string (CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING)
+    	 * for the properties defined in Properties */
     	keymap = new Hashtable<Integer, String>();
     	String tmpS = null;
     	if (properties != null) {
@@ -146,5 +149,9 @@ public final class PurposeMapping {
           set.add(defaultKeyS);
         }
         return (String[])set.toArray(new String[set.size()]);
+    }
+    
+    public String toString() {
+    	return map.toString();
     }
 }
