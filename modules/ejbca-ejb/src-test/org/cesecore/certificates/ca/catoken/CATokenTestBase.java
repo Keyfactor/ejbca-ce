@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -100,6 +101,7 @@ public abstract class CATokenTestBase {
 		pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 		KeyTools.testKey(priv, pub, catoken.getCryptoToken().getSignProviderName());
 		assertEquals(1024, KeyTools.getKeyLength(pub));
+		assertEquals("RSA", AlgorithmTools.getKeyAlgorithm(pub));
 		keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 
 		// Generate new keys, moving the old ones to "previous key"
@@ -196,6 +198,56 @@ public abstract class CATokenTestBase {
 		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "rsatest00003");
 	}
 
+	protected void doCaTokenDSA(CryptoToken cryptoToken) throws KeyStoreException,
+	NoSuchAlgorithmException, CertificateException, IOException,
+	CryptoTokenOfflineException, NoSuchProviderException,
+	InvalidKeyException, SignatureException,
+	CryptoTokenAuthenticationFailedException,
+	InvalidAlgorithmParameterException {
+		CAToken catoken = new CAToken(cryptoToken);
+		// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
+		catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+		catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+		catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+		catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+
+		// First we start by deleting all old entries
+		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "rsatest00001");
+		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "rsatest00002");
+		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "rsatest00003");
+
+		// Try to delete something that does not exist, it should work without error
+		catoken.getCryptoToken().deleteEntry(tokenpin.toCharArray(), "sdkfjhsdkfjhsd777");
+
+		// We have no keys generated according to the labels above, so the status will be offline
+		assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus());
+		assertEquals("SHA1WithDSA", catoken.getTokenInfo().getSignatureAlgorithm());
+		assertEquals("SHA256WithRSA", catoken.getTokenInfo().getEncryptionAlgorithm());
+		assertEquals(getProvider(), catoken.getCryptoToken().getSignProviderName());
+
+		catoken.getCryptoToken().activate(tokenpin.toCharArray());
+		// Should still be offline, because we don't have any keys matching our labels
+		assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus());
+		assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getTokenInfo().getKeySequence());
+		// Generate the first key, will get name rsatest+nextsequence = rsatest00001
+		Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE); // Default sequence is 0
+		catoken.generateKeys(tokenpin.toCharArray(), false, true);
+		// Now sequence should be 1, generated and activated new keys
+		seq += 1;
+		assertEquals(seq, Integer.valueOf(catoken.getTokenInfo().getKeySequence()));
+		// When generating keys with renew = false, we generate initial keys, which means generating the key aliases
+		// we have specified for signature and encryption keys
+		// After this all needed CAToken keys are generated and status will be active
+		assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
+		PrivateKey priv = null;
+		PublicKey pub = null;
+		priv = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+		pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+		KeyTools.testKey(priv, pub, catoken.getCryptoToken().getSignProviderName());
+		assertEquals(1024, KeyTools.getKeyLength(pub));
+		assertEquals("DSA", AlgorithmTools.getKeyAlgorithm(pub));
+	}
+	
 	protected void doCaTokenECC(CryptoToken cryptoToken) throws KeyStoreException,
 	NoSuchAlgorithmException, CertificateException, IOException,
 	CryptoTokenOfflineException, NoSuchProviderException,
@@ -239,6 +291,7 @@ public abstract class CATokenTestBase {
 		pub = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 		KeyTools.testKey(priv, pub, catoken.getCryptoToken().getSignProviderName());
 		assertEquals(256, KeyTools.getKeyLength(pub));
+		assertEquals("ECDSA", AlgorithmTools.getKeyAlgorithm(pub));
 		keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 		// There should exist an encryption key when we have generated keys with renew = false
 		// Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA
