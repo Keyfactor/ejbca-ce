@@ -189,7 +189,15 @@ public class KeyStoreTools {
         		keyPairGenerator.initialize(keyPairGenerationSpec);
 				*/
         	} else {
-                kpg.initialize(new ECGenParameterSpec(name));        		
+        		ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
+        		if (StringUtils.equals(name,"implicitlyCA")) {
+        			log.debug("Generating implicitlyCA encoded ECDSA key pair");
+        			// If the keySpec is null, we have "implicitlyCA" defined EC parameters
+        			// The parameters were already installed when we installed the provider
+        			// We just make sure that ecSpec == null here
+        			ecSpec = null;
+        		}
+        		kpg.initialize(ecSpec);        		
         	}
         } catch( InvalidAlgorithmParameterException e ) {
             log.debug("EC name "+name+" not supported.");
@@ -235,14 +243,15 @@ public class KeyStoreTools {
      */
     public void generateKeyPair( final String keySpec,
                             final String keyEntryName) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, KeyStoreException, CertificateException, IOException {
-    	if (keySpec.toUpperCase ().startsWith ("DSA")) {
+    	if (keySpec.toUpperCase().startsWith ("DSA")) {
     		generateDSA (Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
+    	} else {
+            try {
+                generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
+            } catch (NumberFormatException e) {
+                generateEC(keySpec, keyEntryName);
+            }    		
     	}
-        try {
-            generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
-        } catch (NumberFormatException e) {
-            generateEC(keySpec, keyEntryName);
-        }
     }
     
     /** Generates symmetric keys in the Keystore token.

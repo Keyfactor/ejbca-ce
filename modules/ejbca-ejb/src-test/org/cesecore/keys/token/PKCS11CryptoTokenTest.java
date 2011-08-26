@@ -61,7 +61,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	@Test
     public void testCryptoTokenECC() throws Exception {
     	CryptoToken catoken = createPKCS11Token();
-        doCryptoTokenECC(catoken);
+        doCryptoTokenECC(catoken, "secp256r1", 256, "secp384r1", 384);
     }
 
 	@Test

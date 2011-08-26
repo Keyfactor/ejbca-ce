@@ -56,9 +56,21 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 	@Test
     public void testCryptoTokenECC() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
-        doCryptoTokenECC(catoken);
+        doCryptoTokenECC(catoken, "secp256r1", 256, "secp384r1", 384);
     }
 
+	@Test
+    public void testCryptoTokenECCImplicitlyCA() throws Exception {
+    	CryptoToken catoken = createSoftToken(true);
+        doCryptoTokenECC(catoken, "implicitlyCA", 0, "prime192v1", 192);
+    }
+
+	@Test
+    public void testCryptoTokenDSA() throws Exception {
+    	CryptoToken catoken = createSoftToken(true);
+        doCryptoTokenDSA(catoken);
+    }
+	
 	@Test
     public void testActivateDeactivate() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
