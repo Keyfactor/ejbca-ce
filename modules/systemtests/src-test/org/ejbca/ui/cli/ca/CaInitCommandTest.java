@@ -1,6 +1,7 @@
 package org.ejbca.ui.cli.ca;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -11,9 +12,11 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * System test class for CaInitCommandTest
@@ -21,7 +24,7 @@ import org.ejbca.util.InterfaceCache;
  * @author mikek
  * @version $Id$
  */
-public class CaInitCommandTest extends TestCase {
+public class CaInitCommandTest {
 
     private static final String CA_NAME = "1327ca2";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
@@ -35,9 +38,20 @@ public class CaInitCommandTest extends TestCase {
     private CaInitCommand caInitCommand;
     private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSessionRemote = InterfaceCache.getCertificateProfileSession();
+
+    @Before
+    public void setUp() throws Exception {
+        caInitCommand = new CaInitCommand();
+        if (caSession.getCAInfo(admin, CA_NAME) != null) {
+            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+        }
+    }
+
+    @After
+    public void tearDown() throws Exception {
+    }
 
     /**
      * Test trivial happy path for execute, i.e, create an ordinary CA.
@@ -45,6 +59,7 @@ public class CaInitCommandTest extends TestCase {
      * @throws Exception
      * @throws AuthorizationDeniedException
      */
+    @Test
     public void testExecuteHappyPath() throws Exception {
         try {
             caInitCommand.execute(HAPPY_PATH_ARGS);
@@ -54,6 +69,7 @@ public class CaInitCommandTest extends TestCase {
         }
     }
 
+    @Test
     public void testExecuteWithRootCACertificateProfile() throws Exception {
         try {
             caInitCommand.execute(ROOT_CA_ARGS);
@@ -63,6 +79,7 @@ public class CaInitCommandTest extends TestCase {
         }
     }
 
+    @Test
     public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, ErrorAdminCommandException, AuthorizationDeniedException, CADoesntExistsException {
         if (certificateProfileSessionRemote.getCertificateProfile(CERTIFICATE_PROFILE_NAME) == null) {
             CertificateProfile certificateProfile = new CertificateProfile();
@@ -78,13 +95,4 @@ public class CaInitCommandTest extends TestCase {
         }
     }
 
-    public void setUp() throws Exception {
-        caInitCommand = new CaInitCommand();
-        if (caSession.getCAInfo(admin, CA_NAME) != null) {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
-        }
-    }
-
-    public void tearDown() throws Exception {
-    }
 }
