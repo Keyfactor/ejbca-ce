@@ -119,11 +119,17 @@ public final class PurposeMapping {
         if ( s!=null && s.length()>0 ) {
             return s;
         }
-        return defaultKeyS;
+        // Special handling of these two key purposes, because if they do not exist, very strange things can happen 
+        // if we claim that our "defaultKey" is the previous or next signing key, when it in fact is not.
+        if ((purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS) && (purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)) {
+        	return defaultKeyS;
+        }
+        return null;
     }
     /** Returns which property key is used for a certain key purpose. 
      * For example for CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN would either CAKEYPURPOSE_CERTSIGN_STRING (certSignKey) 
      * or CAKEYPURPOSE_DEFAULT_STRING (defaultKey) be returned.
+     * Special handling is for CERTSIGN_PREVIOUS and CERTSIGN_NEXT. If they can not be found, the defaultKey is _not_ returned.
      */ 
     public String getPurposeProperty(final int purpose) {
         String s;
@@ -135,7 +141,12 @@ public final class PurposeMapping {
         if ( s!=null && s.length()>0 ) {
             return s;
         }
-        return CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING;
+        // Special handling of these two key purposes, because if they do not exist, very strange things can happen 
+        // if we claim that our "defaultKey" is the previous or next signing key, when it in fact is not.
+        if ((purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS) && (purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)) {
+        	return CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING;
+        }
+        return null;
     }
     
     /** Returns an array with all key aliases that have been registered in this mapping.
