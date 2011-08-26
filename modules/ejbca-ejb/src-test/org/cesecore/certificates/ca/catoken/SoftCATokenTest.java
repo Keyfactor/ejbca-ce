@@ -43,6 +43,13 @@ public class SoftCATokenTest extends CATokenTestBase {
         doCaTokenRSA(cryptoToken);
     }
 
+    @Test
+    public void testCATokenDSA() throws Exception {
+    	CryptoToken cryptoToken = createSoftToken("dsatest00000", "1024", true);
+
+        doCaTokenDSA(cryptoToken);
+    }
+
 	@Test
     public void testCATokenECC() throws Exception {
     	CryptoToken cryptoToken = createSoftToken("ecctest00000", "secp256r1", true);
