@@ -722,18 +722,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // in, i.e. do nothing.
                 try {
                     returnval = ca.signRequest(request, usepreviouskey, createlinkcert);
-                } catch (RuntimeException e) {
-                    Throwable cause = e.getCause();
-                    // If this is an IllegalKeyException we it's possible that
-                    // we did not have a previous key, then just skip and make
-                    // it authenticated
+                } catch (CryptoTokenOfflineException e) {
+                    // If this is an CryptoTokenOfflineException we it's possible that
+                    // we did not have a previous key, then just skip and make it un-authenticated
                     // and return the request message as is
-                    if (cause instanceof InvalidKeyException) {
-                        log.info("Failed to sign CVC request with previous key (does it exist?). Returning unauthenticated request.", e);
-                        returnval = request;
-                    } else {
-                        throw e;
-                    }
+                	log.info("Failed to sign CVC request with previous key (does it exist?). Returning unauthenticated request.", e);
+                	returnval = request;
                 }
             } else {
                 returnval = request;

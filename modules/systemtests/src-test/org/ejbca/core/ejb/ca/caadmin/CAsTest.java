@@ -1105,12 +1105,10 @@ public class CAsTest extends CaTestCase {
         assertEquals("SETESTCVCA00001", cvcert1.getCVCertificate().getCertificateBody().getHolderReference().getConcatenated());
         byte[] request = caAdminSession.makeRequest(admin, cvcainfo.getCAId(), cachain, false, false, false, null);
         CVCObject obj = CertificateParser.parseCVCObject(request);
-        // We should have created an authenticated request signed by the default
-        // key, we intended to have it signed by the old key,
+        // We should have created an authenticated request signed by the the old key,
         // but since the CVCA is not renewed, and no old key exists, it will be
-        // the "defaultKey", but we won't know the difference in this test.
-        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest) obj;
-        CVCertificate reqcert = authreq.getRequest();
+        // an un-authenticated request instead.
+        CVCertificate reqcert = (CVCertificate)obj;
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getHolderReference().getConcatenated());
         assertEquals("SETESTCVCA00001", reqcert.getCertificateBody().getAuthorityReference().getConcatenated());
 
@@ -1118,9 +1116,8 @@ public class CAsTest extends CaTestCase {
         cachain = dvdcainfo.getCertificateChain();
         request = caAdminSession.makeRequest(admin, dvdcainfo.getCAId(), cachain, true, false, true, "foo123");
         obj = CertificateParser.parseCVCObject(request);
-        // We should have created an authenticated request signed by the old
-        // certificate
-        authreq = (CVCAuthenticatedRequest) obj;
+        // We should have created an authenticated request signed by the old certificate
+        CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest) obj;
         reqcert = authreq.getRequest();
         assertEquals("SETESTDV-D00002", reqcert.getCertificateBody().getHolderReference().getConcatenated());
         // This request is made from the DV targeted for the DV, so the old DV
