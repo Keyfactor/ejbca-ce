@@ -52,6 +52,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.StringTools;
 import org.cesecore.util.ValidityDate;
 
 /**
@@ -334,8 +335,16 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             ret = new CAToken(tokendata, caid);
             String signaturealg = (String) tokendata.get(CAToken.SIGNATUREALGORITHM);
             String encryptionalg = (String) tokendata.get(CAToken.ENCRYPTIONALGORITHM);
-            String keysequence = (String) tokendata.get(CAToken.SEQUENCE);
-            int keysequenceformat = (Integer) tokendata.get(CAToken.SEQUENCE_FORMAT);
+            String keysequence = CAToken.DEFAULT_KEYSEQUENCE;
+            Object seqo = tokendata.get(CAToken.SEQUENCE);
+            if (seqo != null) {
+                keysequence = (String)seqo;            	
+            }
+            int keysequenceformat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
+            Object seqfo = tokendata.get(CAToken.SEQUENCE_FORMAT);
+            if (seqfo != null) {
+            	keysequenceformat = (Integer)seqfo;            	
+            }
             // Set values for new CA token
             ret.setSignatureAlgorithm(signaturealg);
             ret.setEncryptionAlgorithm(encryptionalg);
