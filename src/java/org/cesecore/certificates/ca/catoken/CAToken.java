@@ -251,6 +251,10 @@ public class CAToken extends UpgradeableDataHashMap {
      */
     public PublicKey getPublicKey(final int purpose) throws CryptoTokenOfflineException {
         final String alias = this.keyStrings.getAlias(purpose);
+        if (log.isTraceEnabled()) {
+        	log.trace("Found alias '"+alias+"' for purpose "+purpose);
+        	log.trace(keyStrings.toString());
+        }
         if (alias == null) {
             throw new CryptoTokenOfflineException("No alias for key purpose " + purpose);
         }
@@ -670,7 +674,11 @@ public class CAToken extends UpgradeableDataHashMap {
             properties.setProperty(CryptoToken.NEXT_SEQUENCE_PROPERTY, newSequence);
         } else {
             properties.setProperty(certsignkeystr, newKeyLabel);
-            properties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, keyLabel);
+            // Only set previous sign key, if we have a previous sign key. If the keyLabels are the same, we don't have a 
+            // an old key, and so we can of course not have a previous signing key 
+            if (!StringUtils.equals(keyLabel, newKeyLabel)) {
+                properties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, keyLabel);            	
+            }
             // If the key strings are not equal, i.e. crtSignKey and crlSignKey was used instead of just defaultKey
             // and the keys are the same. Then we need to set both keys to use the new key label
             if (!StringUtils.equals(certsignkeystr, crlsignkeystr) && StringUtils.equals(keyLabel, crlKeyLabel)) {
