@@ -638,10 +638,13 @@ public class CAToken extends UpgradeableDataHashMap {
         }
         CryptoToken token = getCryptoToken();
         if (keyspec != null) {
-        	// We have to tread DSA specially
-        	String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(getSignatureAlgorithm());
-        	if ("DSA".equals(keyAlg) && (!keyspec.startsWith("DSA"))) {
-        		keyspec = "DSA"+keyspec;
+        	// We have to treat DSA specially
+        	String sigAlg = getSignatureAlgorithm();
+        	if (sigAlg != null) {
+            	String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(sigAlg);
+            	if ("DSA".equals(keyAlg) && (!keyspec.startsWith("DSA"))) {
+            		keyspec = "DSA"+keyspec;
+            	}        		
         	}
             if(log.isDebugEnabled()) {
                 log.debug("Generating from string keyspec: " + keyspec);                
