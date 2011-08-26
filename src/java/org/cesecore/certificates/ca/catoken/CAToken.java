@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.IUpgradeableData;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
@@ -637,6 +638,11 @@ public class CAToken extends UpgradeableDataHashMap {
         }
         CryptoToken token = getCryptoToken();
         if (keyspec != null) {
+        	// We have to tread DSA specially
+        	String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(getSignatureAlgorithm());
+        	if ("DSA".equals(keyAlg) && (!keyspec.startsWith("DSA"))) {
+        		keyspec = "DSA"+keyspec;
+        	}
             if(log.isDebugEnabled()) {
                 log.debug("Generating from string keyspec: " + keyspec);                
             }

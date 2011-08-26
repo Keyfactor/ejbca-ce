@@ -164,6 +164,99 @@ public abstract class CryptoTokenTestBase {
 			    catoken.deleteEntry(tokenpin.toCharArray(), "rsatest00003");
 			}
 
+	protected void doCryptoTokenDSA(CryptoToken catoken) throws KeyStoreException,
+	NoSuchAlgorithmException, CertificateException, IOException,
+	CryptoTokenOfflineException, NoSuchProviderException,
+	InvalidKeyException, SignatureException,
+	CryptoTokenAuthenticationFailedException,
+	InvalidAlgorithmParameterException {
+		// We have not activated the token so status should be offline
+	    assertEquals(CryptoToken.STATUS_OFFLINE, catoken.getTokenStatus());
+	    assertEquals(getProvider(), catoken.getSignProviderName());
+	
+	    // First we start by deleting all old entries
+	    try {
+	    	catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00001");
+	    	assertTrue("Should throw", false);
+	    } catch (CryptoTokenOfflineException e) {
+	    	// NOPMD
+	    }
+	    catoken.activate(tokenpin.toCharArray());
+	    // Should still be ACTIVE now, because we run activate
+	    assertEquals(CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
+	    catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00001");
+	    catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00002");
+	    catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00003");
+	
+	    // Try to delete something that surely does not exist, it should work without error
+	    catoken.deleteEntry(tokenpin.toCharArray(), "sdkfjhsdkfjhsd777");
+	
+	    // Generate the first key
+	    catoken.generateKeyPair("DSA1024", "dsatest00001");
+	    PrivateKey priv = catoken.getPrivateKey("dsatest00001");
+	    PublicKey pub = catoken.getPublicKey("dsatest00001");
+	    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
+	    assertEquals(1024, KeyTools.getKeyLength(pub));
+	    String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	
+	    // Make sure keys are or are not extractable, according to what is allowed by the token
+	    catoken.testKeyPair(priv, pub);
+//	    System.out.println(priv);
+//	    System.out.println(pub);
+	    
+	    // Generate new keys again
+	    catoken.generateKeyPair("DSA1024", "dsatest00002");
+	    priv = catoken.getPrivateKey("dsatest00002");
+	    pub = catoken.getPublicKey("dsatest00002");
+	    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
+	    assertEquals(1024, KeyTools.getKeyLength(pub));
+	    String newkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	    assertFalse("New keys are same as old keys, should not be...", keyhash.equals(newkeyhash));
+	    priv = catoken.getPrivateKey("dsatest00001");
+	    pub = catoken.getPublicKey("dsatest00001");
+	    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
+	    assertEquals(1024, KeyTools.getKeyLength(pub));
+	    String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
+	    assertEquals(keyhash, previouskeyhash);
+	
+	    // Delete a key pair
+	    catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00001");
+	    try {
+	    	priv = catoken.getPrivateKey("dsatest00001");
+	    	assertTrue("Should throw", false);
+	    } catch (CryptoTokenOfflineException e) {
+	    	// NOPMD
+	    }
+	    try {
+	        pub = catoken.getPublicKey("dsatest00001");        
+	    	assertTrue("Should throw", false);
+	    } catch (CryptoTokenOfflineException e) {
+	    	// NOPMD
+	    }
+	    // the other keys should still be there
+	    priv = catoken.getPrivateKey("dsatest00002");
+	    pub = catoken.getPublicKey("dsatest00002");
+	    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
+	    assertEquals(1024, KeyTools.getKeyLength(pub));
+	    String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
+	    assertEquals(newkeyhash, newkeyhash2);
+	    
+	    // Create keys using AlgorithmParameterSpec
+	    AlgorithmParameterSpec paramspec = KeyTools.getKeyGenSpec(pub);
+	    catoken.generateKeyPair(paramspec, "dsatest00003");
+	    priv = catoken.getPrivateKey("dsatest00003");
+	    pub = catoken.getPublicKey("dsatest00003");
+	    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
+	    assertEquals(1024, KeyTools.getKeyLength(pub));
+	    String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
+	    // Make sure it's not the same key
+	    assertFalse(newkeyhash2.equals(newkeyhash3));
+
+	    // Clean up and delete our generated keys
+	    catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00002");
+	    catoken.deleteEntry(tokenpin.toCharArray(), "dsatest00003");
+	}
+
 	/**
 	 * @param catoken
 	 * @throws KeyStoreException
@@ -177,7 +270,7 @@ public abstract class CryptoTokenTestBase {
 	 * @throws CryptoTokenAuthenticationFailedException
 	 * @throws InvalidAlgorithmParameterException
 	 */
-	protected void doCryptoTokenECC(CryptoToken catoken) throws KeyStoreException,
+	protected void doCryptoTokenECC(CryptoToken catoken, String curve1, int keyLen1, String curve2, int keyLen2) throws KeyStoreException,
 			NoSuchAlgorithmException, CertificateException, IOException,
 			CryptoTokenOfflineException, NoSuchProviderException,
 			InvalidKeyException, SignatureException,
@@ -205,28 +298,28 @@ public abstract class CryptoTokenTestBase {
 			    catoken.deleteEntry(tokenpin.toCharArray(), "sdkfjhsdkfjhsd777");
 			
 			    // Generate the first key
-			    catoken.generateKeyPair("secp256r1", "ecctest00001");
+			    catoken.generateKeyPair(curve1, "ecctest00001");
 			    PrivateKey priv = catoken.getPrivateKey("ecctest00001");
 			    PublicKey pub = catoken.getPublicKey("ecctest00001");
 			    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
-			    assertEquals(256, KeyTools.getKeyLength(pub));
+			    assertEquals(keyLen1, KeyTools.getKeyLength(pub));
 			    String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 			
 			    // Make sure keys are or are not extractable, according to what is allowed by the token
 			    catoken.testKeyPair(priv, pub);
 			    
 			    // Generate new keys again
-			    catoken.generateKeyPair("secp384r1", "ecctest00002");
+			    catoken.generateKeyPair(curve2, "ecctest00002");
 			    priv = catoken.getPrivateKey("ecctest00002");
 			    pub = catoken.getPublicKey("ecctest00002");
 			    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
-			    assertEquals(384, KeyTools.getKeyLength(pub));
+			    assertEquals(keyLen2, KeyTools.getKeyLength(pub));
 			    String newkeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 			    assertFalse("New keys are same as old keys, should not be...", keyhash.equals(newkeyhash));
 			    priv = catoken.getPrivateKey("ecctest00001");
 			    pub = catoken.getPublicKey("ecctest00001");
 			    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
-			    assertEquals(256, KeyTools.getKeyLength(pub));
+			    assertEquals(keyLen1, KeyTools.getKeyLength(pub));
 			    String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 			    assertEquals(keyhash, previouskeyhash);
 			
@@ -248,7 +341,7 @@ public abstract class CryptoTokenTestBase {
 			    priv = catoken.getPrivateKey("ecctest00002");
 			    pub = catoken.getPublicKey("ecctest00002");
 			    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
-			    assertEquals(384, KeyTools.getKeyLength(pub));
+			    assertEquals(keyLen2, KeyTools.getKeyLength(pub));
 			    String newkeyhash2 = CertTools.getFingerprintAsString(pub.getEncoded());
 			    assertEquals(newkeyhash, newkeyhash2);
 			    
@@ -258,7 +351,7 @@ public abstract class CryptoTokenTestBase {
 			    priv = catoken.getPrivateKey("ecctest00003");
 			    pub = catoken.getPublicKey("ecctest00003");
 			    KeyTools.testKey(priv, pub, catoken.getSignProviderName());
-			    assertEquals(384, KeyTools.getKeyLength(pub));
+			    assertEquals(keyLen2, KeyTools.getKeyLength(pub));
 			    String newkeyhash3 = CertTools.getFingerprintAsString(pub.getEncoded());
 			    // Make sure it's not the same key
 			    assertFalse(newkeyhash2.equals(newkeyhash3));
