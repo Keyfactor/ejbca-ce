@@ -36,7 +36,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -79,9 +78,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 
 /**
  * This class represents an abstract class for all tests which require testing CAs.
@@ -106,7 +103,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     protected TestX509CertificateAuthenticationToken caAdmin;
 
-    @Before
     public void setUp() throws Exception {
         super.setUpAuthTokenAndRole(roleName);
         removeTestCA(); // We cant be sure this CA was not left over from
@@ -139,7 +135,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     }
 
-    @After
     public void tearDown() throws Exception {
         super.tearDownRemoveRole();
         removeTestCA();

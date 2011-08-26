@@ -51,8 +51,6 @@ import java.util.Random;
 
 import javax.servlet.http.HttpServletResponse;
 
-import junit.framework.TestSuite;
-
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -162,10 +160,6 @@ public class ProtocolScepHttpTest extends CaTestCase {
         } catch (Exception e) {
             throw new Error(e);
         }
-    }
-
-    public static TestSuite suite() {
-        return new TestSuite(ProtocolScepHttpTest.class);
     }
 
     @Before
