@@ -225,8 +225,8 @@ public class CAToken extends UpgradeableDataHashMap {
      * Returns the private key (if possible) of token.
      * 
      * @param purpose
-     *            should be CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN, CryptoTokenConstants.CAKEYPURPOSE_CRLSIGN or
-     *            CryptoTokenConstants.CAKEYPURPOSE_KEYENCRYPT
+     *            should be CATokenConstants.CAKEYPURPOSE_CERTSIGN, CATokenConstants.CAKEYPURPOSE_CRLSIGN or
+     *            CATokenConstants.CAKEYPURPOSE_KEYENCRYPT
      * @throws CryptoTokenOfflineException
      *             if Crypto Token is not available or connected.
      * @return PrivateKey object
