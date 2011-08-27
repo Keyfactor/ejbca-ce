@@ -21,7 +21,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.certificates.certificate.certextensions.standard.AuthorityInformationAccess;
 import org.cesecore.certificates.certificate.certextensions.standard.AuthorityKeyIdentifier;
@@ -33,6 +32,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.FreshestCrl
 import org.cesecore.certificates.certificate.certextensions.standard.KeyUsage;
 import org.cesecore.certificates.certificate.certextensions.standard.MsTemplate;
 import org.cesecore.certificates.certificate.certextensions.standard.OcspNoCheck;
+import org.cesecore.certificates.certificate.certextensions.standard.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.certextensions.standard.SeisCardNumber;
 import org.cesecore.certificates.certificate.certextensions.standard.StandardCertificateExtension;
