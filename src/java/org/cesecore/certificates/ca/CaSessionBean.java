@@ -258,14 +258,40 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
             throw new AuthorizationDeniedException(msg);
         }
-        return getCAInternal(caid, null);
+        return getCAInternal(caid, null, true);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CA getCA(final AuthenticationToken admin, final String name) throws CADoesntExistsException, AuthorizationDeniedException {
 
-        CA ca = getCAInternal(-1, name);
+        CA ca = getCAInternal(-1, name, true);
+
+        if (!authorizedToCA(admin, ca.getCAId())) {
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), name);
+            throw new AuthorizationDeniedException(msg);
+        }
+        return ca;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public CA getCAForEdit(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
+
+        CA ca = getCAInternal(caid, null, false);
+
+        if (!authorizedToCA(admin, ca.getCAId())) {
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
+            throw new AuthorizationDeniedException(msg);
+        }
+        return ca;
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public CA getCAForEdit(final AuthenticationToken admin, final String name) throws CADoesntExistsException, AuthorizationDeniedException {
+
+        CA ca = getCAInternal(-1, name, false);
 
         if (!authorizedToCA(admin, ca.getCAId())) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), name);
@@ -379,7 +405,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	 * @throws CADoesntExistsException
 	 *             if no CA was found
 	 */
-	private CA getCAInternal(final int caid, final String name) throws CADoesntExistsException {
+	private CA getCAInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException {
 	    if (log.isTraceEnabled()) {
 	        log.trace(">getCAInternal: " + caid + ", " + name);
 	    }
@@ -404,7 +430,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	            // this method checks CA data row timestamp to see if CA was
 	            // updated by any other cluster nodes
 	            // also fills the CACacheManager cache if the CA is not in there
-	            ca = cadata.getCA();
+	            if (fromCache) {
+	            	ca = cadata.getCA();
+	            } else {
+	            	ca = cadata.getCAFromDatabase();
+	            }
 	        } catch (UnsupportedEncodingException uee) {
 	            throw new EJBException(uee);
 	        } catch (IllegalCryptoTokenException e) {

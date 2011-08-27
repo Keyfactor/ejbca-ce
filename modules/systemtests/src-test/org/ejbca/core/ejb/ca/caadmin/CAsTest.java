@@ -112,8 +112,6 @@ public class CAsTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-    private static Collection<Certificate> rootcacertchain = null;
-
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
@@ -149,7 +147,7 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test01AddRSACA() throws Exception {
 
-        final String caName = "TEST";
+        final String caName = getTestCAName();
 
         // Preemptively remove the CA if it exists.
         try {
@@ -223,9 +221,9 @@ public class CAsTest extends CaTestCase {
 
         caAdminSession.createCA(caAdmin, cainfo);
 
-        CAInfo info = caSession.getCAInfo(caAdmin, "TEST");
+        CAInfo info = caSession.getCAInfo(caAdmin, getTestCAName());
 
-        rootcacertchain = info.getCertificateChain();
+        Collection<Certificate> rootcacertchain = info.getCertificateChain();
         X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
         String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
@@ -267,8 +265,8 @@ public class CAsTest extends CaTestCase {
 
         boolean ret = false;
         try {
-            caSession.renameCA(admin, "TEST", "TEST2");
-            caSession.renameCA(admin, "TEST2", "TEST");
+            caSession.renameCA(admin, getTestCAName(), "TEST2");
+            caSession.renameCA(admin, "TEST2", getTestCAName());
             ret = true;
         } catch (CAExistsException cee) {
         }
@@ -286,10 +284,10 @@ public class CAsTest extends CaTestCase {
     public void test03EditCA() throws Exception {
         log.trace(">test03EditCA()");
 
-        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(admin, "TEST");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(admin, getTestCAName());
         info.setCRLPeriod(33);
         caAdminSession.editCA(admin, info);
-        X509CAInfo info2 = (X509CAInfo) caSession.getCAInfo(admin, "TEST");
+        X509CAInfo info2 = (X509CAInfo) caSession.getCAInfo(admin, getTestCAName());
         assertTrue("Editing CA failed", info2.getCRLPeriod() == 33);
 
         log.trace("<test03EditCA()");
@@ -1556,10 +1554,7 @@ public class CAsTest extends CaTestCase {
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", SecConst.CA_ACTIVE, new Date(), "",
                     SecConst.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
-                    CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by
-                    // the first
-                    // TEST CA we
-                    // created
+                    CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
                     (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1601,8 +1596,9 @@ public class CAsTest extends CaTestCase {
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
-            // Generate a certificate request from the CA and send to the TEST
-            // CA
+            // Generate a certificate request from the CA and send to the TEST CA
+            CAInfo rootinfo = caSession.getCAInfo(caAdmin, getTestCAName());
+            Collection<Certificate> rootcacertchain = rootinfo.getCertificateChain();
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, false, false, false, null);
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
             assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
@@ -1735,7 +1731,7 @@ public class CAsTest extends CaTestCase {
 
             CAInfo info = caSession.getCAInfo(admin, "TESTDSA");
 
-            rootcacertchain = info.getCertificateChain();
+            Collection<Certificate> rootcacertchain = info.getCertificateChain();
             X509Certificate cert = (X509Certificate) rootcacertchain.iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
             assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, sigAlg);
@@ -1980,7 +1976,7 @@ public class CAsTest extends CaTestCase {
             // Expected
         }
         // Try to create a CA where the CA Id already exists (but not the name)
-        CAInfo caInfoTest = caSession.getCAInfo(admin, "TEST");
+        CAInfo caInfoTest = caSession.getCAInfo(admin, getTestCAName());
         setPrivateFieldInSuper(cainfo, "caid", caInfoTest.getCAId());
         try {
             caAdminSession.createCA(admin, cainfo);
@@ -1994,7 +1990,7 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test17InvalidEditCaActions() throws Exception {
         log.trace(">test17InvalidEditCaActions()");
-        CAInfo caInfoTest = caSession.getCAInfo(admin, "TEST");
+        CAInfo caInfoTest = caSession.getCAInfo(admin, getTestCAName());
         // Try to edit the CA as an unprivileged user
 
         Set<Principal> principals = new HashSet<Principal>();
@@ -2040,7 +2036,7 @@ public class CAsTest extends CaTestCase {
 
         // Try to get CAInfo as an unprivileged user using remote EJB
         try {
-            caSession.getCAInfo(unpriviledgedUser, "TEST");
+            caSession.getCAInfo(unpriviledgedUser, getTestCAName());
             fail("Was able to get CA info from remote EJB/CLI pretending to be an unpriviledged user");
         } catch (AuthorizationDeniedException ignored) {
             // OK
@@ -2056,7 +2052,7 @@ public class CAsTest extends CaTestCase {
 
         // Try to get CAInfo pretending to be an privileged user using remote EJB
         try {
-            CAInfo info = caSession.getCAInfo(admin, "TEST");
+            CAInfo info = caSession.getCAInfo(admin, getTestCAName());
             System.out.println("info: " + info);
             fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
         } catch (CADoesntExistsException ignored) {
@@ -2115,7 +2111,7 @@ public class CAsTest extends CaTestCase {
         }
         try {
             ResponseMessage resp = new X509ResponseMessage();
-            resp.setCertificate(caSession.getCAInfo(admin, "TEST").getCertificateChain().iterator().next());
+            resp.setCertificate(caSession.getCAInfo(admin, getTestCAName()).getCertificateChain().iterator().next());
             caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), resp, null, null);
             fail("Was able to receiveResponse for a CA that is not 'signed by external'.");
         } catch (EjbcaException e) {
@@ -2127,7 +2123,7 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test21UnprivilegedCaProcessRequest() throws Exception {
         log.trace(">test21UnprivilegedCaProcessRequest()");
-        CAInfo caInfo = caSession.getCAInfo(admin, "TEST");
+        CAInfo caInfo = caSession.getCAInfo(admin, getTestCAName());
         try {
             // Try to process a request for a CA with an unprivileged user.
             caAdminSession.processRequest(roleMgmgToken, caInfo, null);

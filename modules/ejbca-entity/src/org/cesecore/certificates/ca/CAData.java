@@ -140,17 +140,35 @@ public class CAData extends ProtectedData implements Serializable {
 	}
 
 	/** 
-	 * Method that retrieves the CA from the database.
-     * @return CA
-     * @throws java.io.UnsupportedEncodingException
-     * @throws IllegalKeyStoreException 
+	 * Method that retrieves the CA from the CA cache, reading from the database if the CA does not exist in cache or cache expired. 
+	 * This method will return a CA object which is in the CA cache.
+	 * This means that the object retrieved should not be altered, as it will be changed when the CA cache is updated.
+	 * 
+     * @return CA from cache, a shared cached object, _not_ a cloned object.
+     * @throws UnsupportedEncodingException
+     * @throws IllegalCryptoTokenException 
 	 */
 	@Transient
-	public CA getCA() throws java.io.UnsupportedEncodingException, IllegalCryptoTokenException {
+	public CA getCA() throws UnsupportedEncodingException, IllegalCryptoTokenException {
     	// Because get methods are marked as read-only above, this method will actually not be able to upgrade
     	// use upgradeCA above for that.
 		// TODO: Mark as read only?
     	return readAndUpgradeCAInternal();
+	}
+
+	/** 
+	 * Method that retrieves the CA from the database. This method does not return an object from the CA cache, but returns a new object read from the database.
+	 * This method is suitable to use if you plan to edit the CA object and does not want your edits to be overwritten by another thread.
+     * @return CA a new CA object read from the database
+     * @throws UnsupportedEncodingException
+     * @throws IllegalCryptoTokenException 
+	 */
+	@Transient
+	public CA getCAFromDatabase() throws UnsupportedEncodingException, IllegalCryptoTokenException {
+    	// Because get methods are marked as read-only above, this method will actually not be able to upgrade
+    	// use upgradeCA above for that.
+		// TODO: Mark as read only?
+    	return readAndUpgradeCAFromDatabase();
 	}
 
     public void upgradeCA() throws java.io.UnsupportedEncodingException, IllegalCryptoTokenException {
@@ -188,38 +206,44 @@ public class CAData extends ProtectedData implements Serializable {
         	if (log.isDebugEnabled()) {
         		log.debug("Re-reading CA from database: "+getCaId().intValue());
         	}
-        	final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-        	Object o = decoder.readObject();
-        	final Map h = (Map)o;
-            decoder.close();
-            // Handle Base64 encoded string values
-            final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);
-            
-            // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
-            // and perhaps upgrading
-            final float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
-            switch(((Integer)(data.get(CA.CATYPE))).intValue()){
-                case CAInfo.CATYPE_X509:
-                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
-                    break;
-                case CAInfo.CATYPE_CVC:
-                    ca = new CVCCA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
-                    break;
-            }
-            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-            // Compare old version with current version and save the data if there has been a change
-            if ( ((ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0)) || upgradedExtendedService) {
-            	// Make sure we upgrade the CAToken as well, if needed
-                ca.getCAToken();
-                setCA(ca);
-                log.debug("Stored upgraded CA ('"+ca.getName()+"', "+getCaId().intValue()+") with version "+ca.getVersion());
-            }
+        	ca = readAndUpgradeCAFromDatabase();
             // We have to do the same if CAToken was upgraded
             // Add CA to the cache
             CACacheManager.instance().addCA(getCaId().intValue(), ca);
         }
         return ca;              
     }
+
+	private CA readAndUpgradeCAFromDatabase()
+			throws UnsupportedEncodingException, IllegalCryptoTokenException {
+		final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+    	final Map h = (Map)decoder.readObject();
+		decoder.close();
+		// Handle Base64 encoded string values
+		final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);
+		
+		// If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
+		// and perhaps upgrading
+		CA ca = null;
+		final float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+		switch(((Integer)(data.get(CA.CATYPE))).intValue()){
+		    case CAInfo.CATYPE_X509:
+		        ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
+		        break;
+		    case CAInfo.CATYPE_CVC:
+		        ca = new CVCCA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
+		        break;
+		}
+		final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+		// Compare old version with current version and save the data if there has been a change
+		if ( ((ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0)) || upgradedExtendedService) {
+			// Make sure we upgrade the CAToken as well, if needed
+		    ca.getCAToken();
+		    setCA(ca);
+		    log.debug("Stored upgraded CA ('"+ca.getName()+"', "+getCaId().intValue()+") with version "+ca.getVersion());
+		}
+		return ca;
+	}
 
 	/** 
 	 * Method that saves the CA to database.
