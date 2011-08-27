@@ -21,14 +21,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -42,7 +37,6 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
@@ -64,7 +58,6 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
-import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -158,13 +151,13 @@ public class SignSessionTest extends CaTestCase {
     private static final String USER_PRIVKEYUSAGEPERIOD = "fooprivkeyusageperiod";
     private static final String DN_PRIVKEYUSAGEPERIOD = "C=SE,CN=testprivatekeyusage";
     
-    private KeyPair rsakeys = null;
-    private KeyPair rsakeys2 = null;
-    private KeyPair rsakeyPrivKeyUsagePeriod;
-    private KeyPair ecdsakeys = null;
-    private KeyPair ecdsasecpkeys = null;
-    private KeyPair ecdsaimplicitlyca = null;
-    private KeyPair dsakeys = null;
+    private static KeyPair rsakeys = null;
+    private static KeyPair rsakeys2 = null;
+    private static KeyPair rsakeyPrivKeyUsagePeriod;
+    private static KeyPair ecdsakeys = null;
+    private static KeyPair ecdsasecpkeys = null;
+    private static KeyPair ecdsaimplicitlyca = null;
+    private static KeyPair dsakeys = null;
     private int rsacaid = 0;
     private int rsareversecaid = 0;
     private int ecdsacaid = 0;
@@ -201,6 +194,7 @@ public class SignSessionTest extends CaTestCase {
     public static void beforeClass() {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
+        
     }
     
     @Before
@@ -209,6 +203,7 @@ public class SignSessionTest extends CaTestCase {
        
         if (rsakeys == null) {
             rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            System.out.println("generating RSA keys...");
         }
         if (rsakeys2 == null) {
             rsakeys2 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -310,8 +305,14 @@ public class SignSessionTest extends CaTestCase {
             certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
         } catch (Exception e) { /* ignore */
         }
-        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
-        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+        try {
+        	endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+        	certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+        } catch (Exception e) { /* ignore */
+        }
         // delete users that we know...
         try {
             userAdminSession.deleteUser(admin, "foo");
@@ -324,8 +325,18 @@ public class SignSessionTest extends CaTestCase {
         } catch (Exception e) { /* ignore */
         }
         try {
+            userAdminSession.deleteUser(admin, "foorev");
+            log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
             userAdminSession.deleteUser(admin, "fooecdsaimpca");
             log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (Exception e) { /* ignore */
+        }
+        try {
+            userAdminSession.deleteUser(admin, "foorsamgf1ca");
+            log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
@@ -350,129 +361,114 @@ public class SignSessionTest extends CaTestCase {
         }
     }
 
-    /** creates new user 
-     */
-    @Test
-    public void test01CreateNewUser() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, FinderException, CertificateProfileExistsException {
-        log.trace(">test01CreateNewUser()");
-
-        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+    private void createUsers() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileExistsException, PersistenceException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowKeyUsageOverride(true);
         certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
 
-        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
         endEntityProfileSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
         final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
 
-        // Make user that we know...
-        if (!userAdminSession.existsUser(admin, "foo")) {
-            userAdminSession.addUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-            if (log.isDebugEnabled()) {
-                log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
-            }
-        } else {
-            log.info("User foo already exists, resetting status.");
-            userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
-            if (log.isDebugEnabled()) {
-                log.debug("Reset status to NEW");
-            }
-        }
+    	// Make user that we know...
+    	if (!userAdminSession.existsUser(admin, "foo")) {
+    		userAdminSession.addUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
+    				SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+    		if (log.isDebugEnabled()) {
+    			log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+    		}
+    	} else {
+    		log.info("User foo already exists, resetting status.");
+    		userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
+    				SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+    		if (log.isDebugEnabled()) {
+    			log.debug("Reset status to NEW");
+    		}
+    	}
 
-        if (!userAdminSession.existsUser(admin, "foorev")) {
-            userAdminSession.addUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
-            log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
-        } else {
-            log.info("User foorev already exists, resetting status.");
-            userAdminSession.changeUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
-            log.debug("Reset status to NEW");
-        }
+    	if (!userAdminSession.existsUser(admin, "foorev")) {
+    		userAdminSession.addUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
+    		log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
+    	} else {
+    		log.info("User foorev already exists, resetting status.");
+    		userAdminSession.changeUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
+    		log.debug("Reset status to NEW");
+    	}
 
-        if (!userAdminSession.existsUser(admin, "fooecdsa")) {
-            userAdminSession.addUser(admin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
-            log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
-        } else {
-            log.info("User fooecdsa already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
+    	if (!userAdminSession.existsUser(admin, "fooecdsa")) {
+    		userAdminSession.addUser(admin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
+    		log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
+    	} else {
+    		log.info("User fooecdsa already exists, resetting status.");
+    		userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
+    		log.debug("Reset status to NEW");
+    	}
 
-        if (!userAdminSession.existsUser(admin, "fooecdsaimpca")) {
-            userAdminSession.addUser(admin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
-                    ecdsaimplicitlycacaid);
-            log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
-        } else {
-            log.info("User fooecdsaimpca already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
+    	if (!userAdminSession.existsUser(admin, "fooecdsaimpca")) {
+    		userAdminSession.addUser(admin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
+    				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+    				ecdsaimplicitlycacaid);
+    		log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
+    	} else {
+    		log.info("User fooecdsaimpca already exists, resetting status.");
+    		userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
+    		log.debug("Reset status to NEW");
+    	}
 
-        if (!userAdminSession.existsUser(admin, "foorsamgf1ca")) {
-            userAdminSession.addUser(admin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
-            log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
-        } else {
-            log.info("User foorsamgf1ca already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
+    	if (!userAdminSession.existsUser(admin, "foorsamgf1ca")) {
+    		userAdminSession.addUser(admin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
+    				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
+    		log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
+    	} else {
+    		log.info("User foorsamgf1ca already exists, resetting status.");
+    		userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
+    		log.debug("Reset status to NEW");
+    	}
 
-        if (!userAdminSession.existsUser(admin, "foodsa")) {
-            userAdminSession.addUser(admin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
-            log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
-        } else {
-            log.info("User foodsa already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
-        
-        if (!userAdminSession.existsUser(admin, USER_PRIVKEYUSAGEPERIOD)) {
-            userAdminSession.addUser(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-            log.debug("created user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
-        } else {
-            log.info("User " + USER_PRIVKEYUSAGEPERIOD + " already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, USER_PRIVKEYUSAGEPERIOD, UserDataConstants.STATUS_NEW);
-            log.debug("Reset status to NEW");
-        }
+    	if (!userAdminSession.existsUser(admin, "foodsa")) {
+    		userAdminSession.addUser(admin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
+    		log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
+    	} else {
+    		log.info("User foodsa already exists, resetting status.");
+    		userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
+    		log.debug("Reset status to NEW");
+    	}
+
+    	if (!userAdminSession.existsUser(admin, USER_PRIVKEYUSAGEPERIOD)) {
+    		userAdminSession.addUser(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+    		log.debug("created user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
+    	} else {
+    		log.info("User " + USER_PRIVKEYUSAGEPERIOD + " already exists, resetting status.");
+    		userAdminSession.setUserStatus(admin, USER_PRIVKEYUSAGEPERIOD, UserDataConstants.STATUS_NEW);
+    		log.debug("Reset status to NEW");
+    	}
+    } // createUsers
+
+
+    @Test
+    public void test01CreateNewUser() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
+            WaitingForApprovalException, EjbcaException, EndEntityProfileExistsException, FinderException, CertificateProfileExistsException {
+        log.trace(">test01CreateNewUser()");
+
+        createUsers();
         
         if (log.isTraceEnabled()) {
             log.trace("<test01CreateNewUser()");
         }
     }
 
-    /**
-     * creates cert
-     * 
-     * @throws EjbcaException
-     * @throws ObjectNotFoundException
-     * @throws SignatureException
-     * @throws NoSuchProviderException
-     * @throws NoSuchAlgorithmException
-     * @throws CertificateException
-     * @throws InvalidKeyException
-     * @throws CesecoreException 
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
-     * 
-     * @throws Exception
-     *             if en error occurs...
-     */
     @Test
-    public void test02SignSession() throws ObjectNotFoundException, EjbcaException, InvalidKeyException, CertificateException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignatureException, CADoesntExistsException, AuthorizationDeniedException, CesecoreException {
+    public void test02SignSession() throws Exception {
         log.trace(">test02SignSession()");
+
+        createUsers();
 
         // user that we know exists...
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
@@ -512,6 +508,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test03TestBCPKCS10() throws Exception {
         log.trace(">test03TestBCPKCS10()");
+        
+        createUsers();
+        
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -559,6 +558,8 @@ public class SignSessionTest extends CaTestCase {
     public void test04TestKeytoolPKCS10() throws Exception {
         log.trace(">test04TestKeytoolPKCS10()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
@@ -582,6 +583,8 @@ public class SignSessionTest extends CaTestCase {
     public void test05TestIEPKCS10() throws Exception {
         log.trace(">test05TestIEPKCS10()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
@@ -603,6 +606,8 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test06KeyUsage() throws Exception {
         log.trace(">test06KeyUsage()");
+
+        createUsers();
 
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
@@ -644,6 +649,8 @@ public class SignSessionTest extends CaTestCase {
     public void test07DSAKey() throws Exception {
         log.trace(">test07DSAKey()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
@@ -672,6 +679,8 @@ public class SignSessionTest extends CaTestCase {
     public void test08SwedeChars() throws Exception {
         log.trace(">test08SwedeChars()");
         // Make user that we know...
+
+        createUsers();
 
         if (!userAdminSession.existsUser(admin, "swede")) {
             // We use unicode encoding for the three swedish character åäö
@@ -706,6 +715,8 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test09TestMultipleAltNames() throws Exception {
         log.trace(">test09TestMultipleAltNames()");
+
+        createUsers();
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
@@ -789,6 +800,8 @@ public class SignSessionTest extends CaTestCase {
     public void test10TestQcCert() throws Exception {
         log.trace(">test10TestQcCert()");
 
+        createUsers();
+
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -848,6 +861,8 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test11TestValidityOverride() throws Exception {
         log.trace(">test11TestValidityOverrideAndCardNumber()");
+
+        createUsers();
 
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
@@ -995,6 +1010,8 @@ public class SignSessionTest extends CaTestCase {
     public void test12SignSessionECDSAWithRSACA() throws Exception {
         log.trace(">test12SignSessionECDSAWithRSACA()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
@@ -1033,6 +1050,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test13TestBCPKCS10ECDSAWithRSACA() throws Exception {
         log.trace(">test13TestBCPKCS10ECDSAWithRSACA()");
+
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -1083,6 +1103,8 @@ public class SignSessionTest extends CaTestCase {
     public void test14SignSessionECDSAWithECDSACA() throws Exception {
         log.trace(">test14SignSessionECDSAWithECDSACA()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsa' to NEW");
         // user that we know exists...
@@ -1121,6 +1143,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test15TestBCPKCS10ECDSAWithECDSACA() throws Exception {
         log.trace(">test15TestBCPKCS10ECDSAWithECDSACA()");
+
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -1171,6 +1196,8 @@ public class SignSessionTest extends CaTestCase {
     public void test16SignSessionECDSAWithECDSAImplicitlyCACA() throws Exception {
         log.trace(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsaimpca' to NEW");
         // user that we know exists...
@@ -1209,6 +1236,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA() throws Exception {
         log.trace(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
+        
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -1258,6 +1288,8 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test18SignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
+
+        createUsers();
 
         userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
@@ -1310,6 +1342,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test19TestBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
+        
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
@@ -1368,6 +1403,8 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test20MultiRequests() throws Exception {
         log.trace(">test20MultiRequests()");
+
+        createUsers();
 
         // Test that it works correctly with end entity profiles using the
         // counter
@@ -1458,6 +1495,8 @@ public class SignSessionTest extends CaTestCase {
     public void test21CVCertificate() throws Exception {
         log.trace(">test21CVCertificate()");
 
+        createUsers();
+
         EndEntityInformation user = new EndEntityInformation("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("cvc");
@@ -1544,6 +1583,8 @@ public class SignSessionTest extends CaTestCase {
     public void test22DnOrder() throws Exception {
         log.trace(">test22DnOrder()");
 
+        createUsers();
+
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1601,6 +1642,8 @@ public class SignSessionTest extends CaTestCase {
     public void test23SignSessionDSAWithRSACA() throws Exception {
         log.trace(">test23SignSessionDSAWithRSACA()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
@@ -1637,6 +1680,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test24TestBCPKCS10DSAWithRSACA() throws Exception {
         log.trace(">test24TestBCPKCS10DSAWithRSACA()");
+        
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
@@ -1685,6 +1731,8 @@ public class SignSessionTest extends CaTestCase {
     public void test25SignSessionDSAWithDSACA() throws Exception {
         log.trace(">test25SignSessionDSAWithDSACA()");
 
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         // user that we know exists...
@@ -1721,6 +1769,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test26TestBCPKCS10DSAWithDSACA() throws Exception {
         log.trace(">test26TestBCPKCS10DSAWithDSACA()");
+        
+        createUsers();
+
         userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         // Create certificate request
@@ -1769,6 +1820,8 @@ public class SignSessionTest extends CaTestCase {
     public void test27IssuanceRevocationReason() throws Exception {
         log.trace(">test27IssuanceRevocationReason()");
 
+        createUsers();
+
         // Test that it works correctly with end entity profiles using the
         // counter
         int pid = 0;
@@ -1814,6 +1867,9 @@ public class SignSessionTest extends CaTestCase {
 
     @Test
     public void test28TestDNOverride() throws Exception {
+    	
+        createUsers();
+
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1878,6 +1934,9 @@ public class SignSessionTest extends CaTestCase {
 
     @Test
     public void test29TestExtensionOverride() throws Exception {
+    	
+        createUsers();
+
         final String altnames = "dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE");
@@ -1980,6 +2039,9 @@ public class SignSessionTest extends CaTestCase {
     } // test29TestExtensionOverride
     @Test
     public void test30OfflineCA() throws Exception {
+    	
+        createUsers();
+
         // user that we know exists...
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
@@ -2004,6 +2066,9 @@ public class SignSessionTest extends CaTestCase {
 
     @Test
     public void test31TestProfileSignatureAlgorithm() throws Exception {
+    	
+        createUsers();
+
         // Create a good certificate profile (good enough), using QC statement
         certificateProfileSession.removeCertificateProfile(admin, "TESTSIGALG");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -2062,6 +2127,8 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test32TestCertReqHistory() throws Exception {
 
+        createUsers();
+
         // Configure CA not to store certreq history
         CAInfo cainfo = caSession.getCAInfo(admin, rsacaid);
         cainfo.setUseCertReqHistory(true);
@@ -2108,6 +2175,9 @@ public class SignSessionTest extends CaTestCase {
     @Test
     public void test33certCreationErrorHandling() throws Exception {
         log.trace(">test33certCreationErrorHandling");
+        
+        createUsers();
+
         log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
         userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
         final X509Certificate notSelfSignedCert = CertTools.genSelfCert("CN=notSelfSigned", 1, null, rsakeys.getPrivate(), rsakeys2.getPublic(),
@@ -2138,6 +2208,8 @@ public class SignSessionTest extends CaTestCase {
      */
     @Test
     public void test35privateKeyUsagePeriod_notBefore() throws Exception {
+        createUsers();
+
     	// A: Only PrivateKeyUsagePeriod.notBefore with same as cert
     	privateKeyUsageTestStartOffset(0L);
     	
@@ -2166,6 +2238,8 @@ public class SignSessionTest extends CaTestCase {
      */
     @Test
     public void test36privateKeyUsagePeriod_notAfter() throws Exception {
+        createUsers();
+
         // 1: Only PrivateKeyUsagePeriod.notAfter 33 days after issuance
     	privateKeyUsageTestValidityLength(33 * 24 * 3600L);
     	
@@ -2185,6 +2259,8 @@ public class SignSessionTest extends CaTestCase {
      */
     @Test
     public void test37privateKeyUsagePeriod_both() throws Exception {
+        createUsers();
+
     	// A: 1, 2, 3, 4
     	privateKeyUsageTestBoth(0L, 33 * 24 * 3600L);
     	privateKeyUsageTestBoth(0L, 5 * 365 * 24 * 3600L);
@@ -2230,7 +2306,7 @@ public class SignSessionTest extends CaTestCase {
     
     private void privateKeyUsageTestStartOffset(final long startOffset) throws Exception {
     	X509Certificate cert = privateKeyUsageGetCertificate(true, startOffset, false, 0L);        
-        assertNotNull("Has the extension", cert.getExtensionValue("2.5.29.16"));
+        assertNotNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
         assertTrue("Extension is non-critical", cert.getNonCriticalExtensionOIDs().contains("2.5.29.16"));
         PrivateKeyUsagePeriod ext = PrivateKeyUsagePeriod.getInstance(X509ExtensionUtil.fromExtensionValue(cert.getExtensionValue("2.5.29.16")));
         assertNotNull("Has notBefore", ext.getNotBefore());
@@ -2260,6 +2336,7 @@ public class SignSessionTest extends CaTestCase {
     }
     
     private X509Certificate privateKeyUsageGetCertificate(final boolean useStartOffset, final long startOffset, final boolean usePeriod, final long period) throws Exception {
+    	
     	certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
     	final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	certProfile.setUsePrivateKeyUsagePeriodNotBefore(useStartOffset);
@@ -2292,24 +2369,5 @@ public class SignSessionTest extends CaTestCase {
         assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));
         return cert;
     }
-    
 
-
-    /**
-     * Tests scep message
-     */
-    /*
-     * public void test10TestOpenScep() throws Exception {
-     * log.trace(">test10TestOpenScep()"); UserDataPK pk = new
-     * UserDataPK("foo"); UserDataRemote data = userhome.findByPrimaryKey(pk);
-     * data.setStatus(UserDataRemote.STATUS_NEW);
-     * log.debug("Reset status of 'foo' to NEW"); ResponseMessage resp =
-     * remote.createCertificate(admin, new ScepRequestMessage(openscep), -1,
-     * Class.forName("org.ejbca.core.protocol.ScepResponseMessage"));
-     * assertNotNull("Failed to create certificate", resp); byte[] msg =
-     * resp.getResponseMessage(); log.debug("Message: "+new
-     * String(Base64.encode(msg,true)));
-     * assertNotNull("Failed to get encoded response message", msg);
-     * log.trace("<test10TestOpenScep()"); }
-     */
 }
