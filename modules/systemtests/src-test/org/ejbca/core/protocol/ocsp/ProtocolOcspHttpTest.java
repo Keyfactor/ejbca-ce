@@ -207,7 +207,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public static void beforeClass(String name) throws CertificateException {   
+    public static void beforeClass() throws CertificateException {   
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
     }

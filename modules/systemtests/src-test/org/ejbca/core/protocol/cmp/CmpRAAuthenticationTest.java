@@ -161,7 +161,6 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
      * Sends a certificate request message and verifies result. Sends a confirm message and verifies result. Sends a revocation message and verifies
      * result.
      */
-    @Test
     private void testIssueConfirmRevoke(X509Certificate caCertificate, String pbeSecret, String keyId) throws Exception {
         LOG.trace(">testIssueConfirmRevoke");
         // Generate and send certificate request

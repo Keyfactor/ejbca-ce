@@ -76,7 +76,7 @@ public class CertRequestHttpTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public static void beforeClass(String name) {
+    public static void beforeClass() {
         
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();

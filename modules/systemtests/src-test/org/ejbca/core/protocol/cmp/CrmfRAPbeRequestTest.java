@@ -133,9 +133,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception{
         CryptoProviderTools.installBCProvider();
-        
-        
-        
     }
     
     @Before
@@ -217,6 +214,21 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+
+        boolean cleanUpOk = true;
+        try {
+            userAdminSession.deleteUser(admin, "cmptest");
+        } catch (NotFoundException e) {
+            // A test probably failed before creating the entity
+            log.error("Failed to delete user \"cmptest\".");
+            cleanUpOk = false;
+        }
+        endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
+        certificateProfileSession.removeCertificateProfile(admin, CPNAME);
+        if (!configurationSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
 
     @Test
@@ -425,25 +437,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
     } // test04RevocationApprovals
 
-    @AfterClass
-    public void cleanUp() throws Exception {
-    	log.trace(">testZZZCleanUp");
-    	boolean cleanUpOk = true;
-		try {
-			userAdminSession.deleteUser(admin, "cmptest");
-		} catch (NotFoundException e) {
-			// A test probably failed before creating the entity
-        	log.error("Failed to delete user \"cmptest\".");
-        	cleanUpOk = false;
-		}
-		endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
-		certificateProfileSession.removeCertificateProfile(admin, CPNAME);
-		if (!configurationSession.restoreConfiguration()) {
-			cleanUpOk = false;
-		}
-        assertTrue("Unable to clean up properly.", cleanUpOk);
-    	log.trace("<testZZZCleanUp");
-    }
 
     /**
      *      Find all certificates for a user and approve any outstanding revocation. 
