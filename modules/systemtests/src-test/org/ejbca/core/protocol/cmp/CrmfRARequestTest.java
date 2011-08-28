@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.InterfaceCache;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -293,8 +293,9 @@ public class CrmfRARequestTest extends CmpTestCase {
         }
     }
 
-    @AfterClass
-    public void testZZZCleanUp() throws Exception {
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
         log.trace(">testZZZCleanUp");
         Assert.assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
         // Remove test profiles

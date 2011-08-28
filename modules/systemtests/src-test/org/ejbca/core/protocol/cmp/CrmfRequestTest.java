@@ -72,36 +72,36 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * 
  * @author tomas
  * @version $Id$
- *
+ * 
  */
 public class CrmfRequestTest extends CmpTestCase {
-	
+
     private static final Logger log = Logger.getLogger(CrmfRequestTest.class);
 
-    private static String user = "abc123rry"+new Random().nextLong();
-    private static String userDN = "CN="+user+", O=PrimeKey Solutions AB, C=SE";
+    private static String user = "abc123rry" + new Random().nextLong();
+    private static String userDN = "CN=" + user + ", O=PrimeKey Solutions AB, C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-    private KeyPair keys = null;  
+    private KeyPair keys = null;
 
     private static int caid = 0;
     private static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
-    
+
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-	public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
+    public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
 
         CryptoProviderTools.installBCProvider();
-      
+
     }
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        
+
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
@@ -109,13 +109,13 @@ public class CrmfRequestTest extends CmpTestCase {
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 caid = iter.next().intValue();
-            }           
+            }
         } else {
-                caid = adminca1.getCAId();
+            caid = adminca1.getCAId();
         }
         if (caid == 0) {
-                assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }               
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
         CAInfo cainfo = caSession.getCAInfo(admin, caid);
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -135,7 +135,7 @@ public class CrmfRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
         updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
-        
+
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         }
@@ -144,17 +144,29 @@ public class CrmfRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        boolean cleanUpOk = true;
+        try {
+            userAdminSession.deleteUser(admin, "cmptest");
+        } catch (NotFoundException e) {
+            // A test probably failed before creating the entity
+            log.error("Failed to delete user \"cmptest\".");
+            cleanUpOk = false;
+        }
+        if (!configurationSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
 
-    //client mode
+    // client mode
     @Test
     public void test01CrmfHttpUnknowUser() throws Exception {
-    	log.trace(">test01CrmfHttpUnknowUser");
+        log.trace(">test01CrmfHttpUnknowUser");
         // A name that does not exist
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        //userDN = userDN + ", serialNumber=01234567";
+        // userDN = userDN + ", serialNumber=01234567";
         PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null);
         assertNotNull(req);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -162,12 +174,12 @@ public class CrmfRequestTest extends CmpTestCase {
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
-        
-        //org.bouncycastle.util.encoders.Base64 base = new org.bouncycastle.util.encoders.Base64();
-        //File file = new File("/home/aveen/Desktop/cmpreq.req");
-        //FileOutputStream outs = new FileOutputStream(file);
-        //base.encode(ba, outs);
-        //outs.close();
+
+        // org.bouncycastle.util.encoders.Base64 base = new org.bouncycastle.util.encoders.Base64();
+        // File file = new File("/home/aveen/Desktop/cmpreq.req");
+        // FileOutputStream outs = new FileOutputStream(file);
+        // base.encode(ba, outs);
+        // outs.close();
 
         // Send request and receive response
         /*
@@ -177,11 +189,12 @@ public class CrmfRequestTest extends CmpTestCase {
          */
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
-        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
-    	log.trace("<test01CrmfHttpUnknowUser");
+        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
+                                                                                // FailInfo.INCORRECT_DATA
+        log.trace("<test01CrmfHttpUnknowUser");
     }
 
-    //client mode
+    // client mode
     @Test
     public void test02CrmfHttpUnknowUserSignedMessage() throws Exception {
         // A name that does not exist
@@ -192,7 +205,7 @@ public class CrmfRequestTest extends CmpTestCase {
         assertNotNull(req);
         X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
         CmpMessageHelper.signPKIMessage(req, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
-        //PKIMessage req = protectPKIMessage(req1, false, "foo123", "mykeyid", 567);
+        // PKIMessage req = protectPKIMessage(req1, false, "foo123", "mykeyid", 567);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -206,12 +219,13 @@ public class CrmfRequestTest extends CmpTestCase {
          */
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
-        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error FailInfo.INCORRECT_DATA
+        checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
+                                                                                // FailInfo.INCORRECT_DATA
     }
 
     @Test
     public void test03CrmfHttpOkUser() throws Exception {
-    	log.trace(">test02CrmfHttpOkUser");
+        log.trace(">test02CrmfHttpOkUser");
         // Create a new good user
         createCmpUser();
 
@@ -256,21 +270,22 @@ public class CrmfRequestTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpFailMessage(resp, "No PKI protection to verify.", 23, reqId, 1);
-    	log.trace("<test02CrmfHttpOkUser");
+        log.trace("<test02CrmfHttpOkUser");
     }
 
     @Test
     public void test04BlueXCrmf() throws Exception {
-    	log.trace(">test03BlueXCrmf");
+        log.trace(">test03BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
-        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP, 64=WRONG_AUTHORITY
-    	log.trace("<test03BlueXCrmf");
+        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP,
+                                                                                                               // 64=WRONG_AUTHORITY
+        log.trace("<test03BlueXCrmf");
     }
 
     @Test
     public void test05BadBytes() throws Exception {
-    	log.trace(">test04BadBytes");
+        log.trace(">test04BadBytes");
         byte[] msg = bluexir;
         // Change some bytes to make the message bad
         msg[10] = 0;
@@ -281,12 +296,13 @@ public class CrmfRequestTest extends CmpTestCase {
         // Bad request will return HTTP 400 (bad request)
         byte[] resp = sendCmpHttp(msg, 400);
         assertNull(resp);
-    	log.trace("<test04BadBytes");
+        log.trace("<test04BadBytes");
     }
+
     /*
     public void test06TelefonicaGermany() throws Exception {
     	log.trace(">test05TelefonicaGermany");
- 
+    
     	HexBinaryAdapter adapter = new HexBinaryAdapter();
         byte[] nonce = adapter.unmarshal("219F0452");			//CmpMessageHelper.createSenderNonce();
         byte[] transid = adapter.unmarshal("46E72888");			//CmpMessageHelper.createSenderNonce();
@@ -330,58 +346,32 @@ public class CrmfRequestTest extends CmpTestCase {
     	log.trace("<test05TelefonicaGermany");
     }
     */
-    
+
     @Test
     public void test07SignedConfirmationMessage() throws Exception {
-    	log.trace(">test07SignedConfirmationMessage()");
+        log.trace(">test07SignedConfirmationMessage()");
         CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
         cmpConfRes.setSignKeyInfo(cacert, keys.getPrivate(), null);
         cmpConfRes.setSender(new GeneralName(new X509Name(userDN)));
-		cmpConfRes.setRecipient(new GeneralName(new X509Name("CN=cmpRecipient, O=TEST")));
+        cmpConfRes.setRecipient(new GeneralName(new X509Name("CN=cmpRecipient, O=TEST")));
         cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW");
         cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY");
         cmpConfRes.setTransactionId("DAxFS");
         cmpConfRes.create();
         byte[] resp = cmpConfRes.getResponseMessage();
-        PKIMessage msg = new PKIMessage(ASN1Sequence.getInstance(ASN1Sequence.fromByteArray(resp)));        
+        PKIMessage msg = new PKIMessage(ASN1Sequence.getInstance(ASN1Sequence.fromByteArray(resp)));
         boolean veriStatus = CmpMessageHelper.verifyCertBasedPKIProtection(msg, keys.getPublic());
         assertTrue("Verification failed.", veriStatus);
-    	log.trace("<test07SignedConfirmationMessage()");
-    }
- 
-    
-    @AfterClass
-    public void cleanUp() throws Exception {
-    	log.trace(">testZZZCleanUp");
-    	boolean cleanUpOk = true;
-		try {
-			userAdminSession.deleteUser(admin, "cmptest");
-		} catch (NotFoundException e) {
-			// A test probably failed before creating the entity
-        	log.error("Failed to delete user \"cmptest\".");
-        	cleanUpOk = false;
-		}
-		if (!configurationSession.restoreConfiguration()) {
-			cleanUpOk = false;
-		}
-        assertTrue("Unable to clean up properly.", cleanUpOk);
-    	log.trace("<testZZZCleanUp");
+        log.trace("<test07SignedConfirmationMessage()");
     }
 
-    //
-    // Private helper methods
-    //
-
-    //
-    // Private helper methods
-    //
     private void createCmpUser() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             EjbcaException, FinderException, CADoesntExistsException {
         // Make user that we know...
         boolean userExists = false;
         userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", SecConst.USER_ENDUSER,
+                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {
             userAdminSession.addUser(admin, user, false);
@@ -406,10 +396,7 @@ public class CrmfRequestTest extends CmpTestCase {
             + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
             + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
             + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
-    
-    
-    
-    
+
     /*
      *	header:
      *		pvno: cmp2000 (cmp.pvno = 2)
@@ -600,87 +587,86 @@ public class CrmfRequestTest extends CmpTestCase {
      *					Padding: 0
      *					encrypted: 000B6246A8239D21F35786BBE6E6E96E8E7D7C17C7679C87...
      */
-    static byte[] telefonica = Base64.decode(("MIIRmTCB8gIBAqRuMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdp" +
-    										  "cmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAx" +
-    										  "MiBlTm9kZUKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYD" +
-    										  "VQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaEPMA0GCSqGSIb3DQEBBQUApAYE" +
-    										  "BEbnKIilBgQEIZ8EUqYGBAQAAAAAoIIC5DCCAuAwggLcMIIBwAICAWMwggG4gAECpCKgDxcNMTAw" +
-    										  "NjAxMDk0NDAxWqEPFw0xMTA2MDEwOTQ0MDFapSgwJjEkMCIGA1UEAwwbMjEwMzA1MzM2MTAwMDAw" +
-    										  "MDAwMTIgZU5vZGVCpoIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnCvNB8uwzyuLdQYm" +
-    										  "aNZPP3jAZ0DL+9iPzJPaHUdQi2qG5tkoYy6UcH/WlJM90QIgr+XHK6rLCLWnk07APf/F9UDxhCpn" +
-    										  "9BWM51c4MwSDnoSvFIdqOwsTSAirvkUAscF3OeW34RrXZRCmsl5jSND4MuRyUsDQcty1U/bj1U4g" +
-    										  "lQdC+RwjwBYFK2K580ugEuz/x4nUtfqyjv7FFPY1ct2e5dQ/9Pbg/tq06oxMLuWO53IVRZ0WwACQ" +
-    										  "bUIcr0bdlfwm7WqkHJEU51SdEDisfS/SyiK5NYfjEa2D/ZiGLREUgUx5uDc4NNjdHOycQ/0L1i9z" +
-    										  "aOoyKbadUZFITdcglHaS4wIDAQABqT8wDgYDVR0PAQH/BAQDAgO4MC0GA1UdEQEB/wQjMCGCHzIx" +
-    										  "MDMwNTMzNjEwMDAwMDAwMDEyLmh1YXdlaS5jb22hggEUMA0GCSqGSIb3DQEBBQUAA4IBAQBAPyx8" +
-    										  "Shx3fT8JEy+7rD/KBYzU7h9GHyQ9fvdvUmVuqCvIVncbXwEDk+vInvkiCoBRgJxI2tmiwguJT4mQ" +
-    										  "yIq4TBdunabLqEbL7Me36cYQH3mY68v4YzAnHYcM7eAcdxXDivxFuKwSxQ2yoVrncaPb8/tHmQdx" +
-    										  "XOzi0MmkksFe3IR25qh6G9Jz+TRmGWtTuzEuF87oyUyUb8boCLeMJ5FUKidavI/fmqSKa+iX0vVW" +
-    										  "T069pXCdtWdOZA4dc6ya7AEIifNUTLon03a/rtWXat+J4qnH1u2u2UgmItoiXjcur2tEGnPiGpxl" +
-    										  "GiP+qbWQBzNM0GRIO7ldjbMztsLYSGd2oIGEA4GBAHP+pQWFVw8bPNFuOnRFRiUdDCBvxnslVOHD" +
-    										  "2e5864lisPtoeSUXsLM/6Dqfa8Q8WDiKRht4t7X5QEr8aYv/Q7g4g9Q7MBl3UgV2xt44XS2c1ZXA" +
-    										  "cbVvE6KzTFKlq5LtVsVsTFfnO1OiGrdwXzxeTNu94QUcLg7MkvhT4AON/QzwoYINMTCCDS0wggMk" +
-    										  "MIICDKADAgECAhEAutVbOUfLh23Dkfd5hDjSpTANBgkqhkiG9w0BAQUFADBzMQswCQYDVQQGEwJD" +
-    										  "TjEPMA0GA1UEChMGSHVhd2VpMSYwJAYDVQQLEx1XaXJlbGVzcyBOZXR3b3JrIFByb2R1Y3QgTGlu" +
-    										  "ZTErMCkGA1UEAxMiSHVhd2VpIFdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBDQTAeFw0xMDExMTIw" +
-    										  "NzM5MzhaFw0zNDEwMTcwOTAwMzVaMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAk" +
-    										  "BgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYx" +
-    										  "MDAwMDAwMDAxMiBlTm9kZUIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAL6IgLVod8RPMA6r" +
-    										  "glwZi4/zrgSSh1+04JLuB7Xbm3dGFmK8BoqUMqMBOtaE5x+apY6x8ZfJYLpLZQ1GfnsEEwJtUIh3" +
-    										  "9zsGXKW8m5nCsXK6z0j7/t1a9ZdD1/4cAVN5bap6HLxC2bLKIsiiXsMr/6bvq5hCmoHLzHEG6TAP" +
-    										  "I6qHAgMBAAGjPjA8MA4GA1UdDwEB/wQEAwIAuDAqBgNVHREEIzAhgh8yMTAzMDUzMzYxMDAwMDAw" +
-    										  "MDAxMi5IdWF3ZWkuY29tMA0GCSqGSIb3DQEBBQUAA4IBAQB0hZ1CqMQLWzyYmxB/2X5s8BWX32zM" +
-    										  "dk5M0X9xe7k4TuNyCCcv7GjYEVdda95VS0GPkYs8tUxaVPb2SQv7W5uNXy7sz6hr56xPJlbpkt01" +
-    										  "yJYknlXFK4L+nEG7tszuSdu+1Q2gcO9OUOrkrm4I9Nx7KNhJuYtXjAtrs8DSmGITKtY1r3d63CAo" +
-    										  "JuOGeBirRmMeiXCYlEZjLYrd14b0cp51FuKcj883DESTjHysc7Z3fHujqY3ZRhwaUqItYyGYSufN" +
-    										  "wPmbmzZ5vBH813qekKeTh+4nK3pUTwSx4exXhIOqpWHyx9WGsLrDJ38EC8Mw1DJh4zMyfKGuGsKH" +
-    										  "CukbJWkTMIIEmjCCAoKgAwIBAgIRALLINFPpW33xRvlnKb3XFywwDQYJKoZIhvcNAQEFBQAwPDEL" +
-    										  "MAkGA1UEBhMCQ04xDzANBgNVBAoTBkh1YXdlaTEcMBoGA1UEAxMTSHVhd2VpIEVxdWlwbWVudCBD" +
-    										  "QTAeFw0wOTEwMTkwOTMwMzRaFw0zNDEwMTgwOTAwMzVaMHMxCzAJBgNVBAYTAkNOMQ8wDQYDVQQK" +
-    										  "EwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSswKQYDVQQD" +
-    										  "EyJIdWF3ZWkgV2lyZWxlc3MgTmV0d29yayBQcm9kdWN0IENBMIIBIjANBgkqhkiG9w0BAQEFAAOC" +
-    										  "AQ8AMIIBCgKCAQEAwTf104dxZ++hzt0x0n+uRZahqaQYMO9qr7trvKo8XE+1mrxGbfbR3Yc8ArOJ" +
-    										  "FQvfxq+ylI9L7qyunHEHiAfAFpWprq7ovP4lhWuzxh6At4DYKBPq0IqGZ9qVfM5Wq96uK6Vrltjj" +
-    										  "QwS0nuAZC3b1MRYoumHbtRemjorLssD8Vh8TgCJd87wOXf4mSmPhdLqGbbeUksbQROHwtnbZuhL2" +
-    										  "HGc+CqE6wBVE0oWD2JztJENj0myVQqq7fmBvs4zCb3Wh7M5AYUq8SeTmizboRML+wIF5kNUSV/wS" +
-    										  "GG7GDx2sJDmB+AXg/jIMawL3ml7GBaeFZiB6QIDBsyxhsVx+AHl35wIDAQABo2AwXjAMBgNVHRME" +
-    										  "BTADAQH/MA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUXnAX3G+kB0gDN4f+PbTHINY2uNAwHwYD" +
-    										  "VR0jBBgwFoAUKvgQWSeANR+nfLo7nyrkSqqbkuowDQYJKoZIhvcNAQEFBQADggIBAJMfxn6GXhlp" +
-    										  "4isppcV4oOu3nloK4p7IiMrlS53363z1SQpcvCo92gzGM3qePajCTTvnRDaggOi+xcpbfJbMG62z" +
-    										  "+e9qqKiJ53bMk+VSs3rMTRkLIhoRHmu5rIx+5r6apS4X8+g5DykaODye+sMmT0jS9OWuo8q3Ne9u" +
-    										  "XELSwkXjcJSy3j4n+IKC+GfY8gzM130OsHcg2rzesRxNhjc2BztYdq4tge9X0Uh5dXgjTXJnu2/Q" +
-    										  "hNvAqjJZVy7rbAHzl7DbRjQk9bFL2Snzawq/0IapfnywRD64bGoo/GRvW9Igs7eplFAhwiIRvw9u" +
-    										  "qgEGqsk9GiduIqgTtOOT/puH/5My2DEb+faN7uEqqQT6YYH/draE5R8zYWnCHqE2yXNOyqolwP9L" +
-    										  "OZJQunA8YBv/2rqiimvEZGR5q9F6lXpxrGAJn9tMZFNn7GmJ33Q2BrgCBkOUj+HNcXUzVzKTo/GU" +
-    										  "O6LimPiI367viVY5IJQlQd/WHJYjK0h7OYBLCvcTXSvUt9jNoUsah9S8SqM0vyW5QvnN9KTWuUXc" +
-    										  "XHkE3TRO0eem1viZVhcD/5V7b05Ib9vWfHONWs66JjUa83vfvajqciFdzXftDedfe0AejkKb30/J" +
-    										  "aBKRhSo9P8l0Yiwh8t/5Wxdoar2CiEneTH7HmkbmTcTKwDqOoODA18AGnUtTmymqMIIFYzCCA0ug" +
-    										  "AwIBAgIRAPL/UcxlhPGYCCTZhLPNvVswDQYJKoZIhvcNAQEFBQAwPDELMAkGA1UEBhMCQ04xDzAN" +
-    										  "BgNVBAoTBkh1YXdlaTEcMBoGA1UEAxMTSHVhd2VpIEVxdWlwbWVudCBDQTAeFw0wOTEwMTkwOTAw" +
-    										  "MjhaFw0zNDEwMTkwOTAwMDBaMDwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxHDAaBgNV" +
-    										  "BAMTE0h1YXdlaSBFcXVpcG1lbnQgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCi" +
-    										  "iYQnC/Mp9obmAnXmu/Nj6rccSkEQJXlZipOv8tIjvr0B8ObpFUnU+qLojZUYlNmXH8RgRgFB1sBS" +
-    										  "yOuGiiP0uNtJ0lPLbylsc+2fr2Rlt/qbYs1oQGz+oNl+UdAOtm/lPzggUOVVst15Ovf0Yf6LQ3CQ" +
-    										  "alN2VJWgKpFUudDKWQ2fzbFT5YSfvhFxvtvWfgdntKAJt3sFvkKr9Qw+0EYNpQiw5EALeLWCZSYU" +
-    										  "7A939puqYR6aNA447S1K8SgWoav82P4UY/ykLXjcgTeCnvRRtUga1gdIwm5d/vRlB5il5wspGLLe" +
-    										  "s4SomzUYrvnvHio555NZPpvmpIXNolwvYW5opAyYzE05pVSOmHf/RY/dHto8XWexOJq/UAFBMyiH" +
-    										  "4NT4cZpWjYWR7W9GxRXApmQrrLXte1CF/IzXWBMA2tSL0WnRJz5HRcKzsOC6FksiqsYstFjcCE7J" +
-    										  "7Nicr3Bwq5FrZiqGSdLmLRn97XqVlWdN31HX16fzRhZMiOkvQe+uYT+BXbhU1fZIh6RRAH3V1APo" +
-    										  "bVlCXh5PDq8Ca4dClHNHYp5RP0Pb5zBowTqBzSv7ssHrNceQsWDeNjX9t59NwviaIlXIlPiWEEJc" +
-    										  "22XtMm4sc/+8mgOFMNXr4FWu8vdG2fgRpeWJO0E035D6TClu4So2GlN/fIccp5wVYAWF1WhxSQID" +
-    										  "AQABo2AwXjAOBgNVHQ8BAf8EBAMCAYYwDAYDVR0TBAUwAwEB/zAdBgNVHQ4EFgQUKvgQWSeANR+n" +
-    										  "fLo7nyrkSqqbkuowHwYDVR0jBBgwFoAUKvgQWSeANR+nfLo7nyrkSqqbkuowDQYJKoZIhvcNAQEF" +
-    										  "BQADggIBAAALYkaoI50h81eGu+bm6W6OfXwXx2ech9r/JkYiv8NDE1gXFaqbqVTgmTMVAWIIyiYF" +
-    										  "zFedILyhnva4zIqtBUKVTM1WU8Bx0TqLRp2/KRSX9q2AIHA7cKTYUn6XGzV4amqa3nXJ/v0q9Sty" +
-    										  "rYqY9piARqoOTseAu4WhMQvyPgTkQ7lFJ97HOvDBM/BNFoPo9DrdLJlBaNIUngjB1c/ZkvXfDUhP" +
-    										  "B7fegH8dY2hkGD/We0jnkEQA6ch6h/c24wJzVA9VZK6UX2KikYvFS9yipdS5ry6chRSt29UtbTEO" +
-    										  "q4airI3U/IuxkSAEiVuasLLkGTQTJgTfroFIE0/MiTsyfmxHiMZM0vN2gaPjW+zfkxpqcQcGeNRR" +
-    										  "jMC2Kh/bMN1is5rzoh3jWADG8tWBQjlSghxNFwAgPMV6ui3SIgNPd07LVwzMQIpMzSn670CtpGKu" +
-    										  "KB3wchnW2JjEGd9Zb49aP1a+83pBvgUVHaZ5KTlV4lrSe/s8e3SFMiV/6p+KAnV5/cnSnuNJfl0u" +
-    										  "Tjavw7DEqcXV6UN0Eg571WLRZvnsmCWAHncBMQ7prVDTdnc7OVsZw0TnTzcBYZtYl2mdxsR3tb3k" +
-    										  "YngXwIxzWROeEFWpNvWnuSzEH+Vv939rdvgLzHrcYgZuvknyWx5Vp9c+ezA58JWYo/nNBFzb0/U1" +
-    										  "OZck9LLi").getBytes());
-    
+    static byte[] telefonica = Base64.decode(("MIIRmTCB8gIBAqRuMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdp"
+            + "cmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAx"
+            + "MiBlTm9kZUKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYD"
+            + "VQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaEPMA0GCSqGSIb3DQEBBQUApAYE"
+            + "BEbnKIilBgQEIZ8EUqYGBAQAAAAAoIIC5DCCAuAwggLcMIIBwAICAWMwggG4gAECpCKgDxcNMTAw"
+            + "NjAxMDk0NDAxWqEPFw0xMTA2MDEwOTQ0MDFapSgwJjEkMCIGA1UEAwwbMjEwMzA1MzM2MTAwMDAw"
+            + "MDAwMTIgZU5vZGVCpoIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnCvNB8uwzyuLdQYm"
+            + "aNZPP3jAZ0DL+9iPzJPaHUdQi2qG5tkoYy6UcH/WlJM90QIgr+XHK6rLCLWnk07APf/F9UDxhCpn"
+            + "9BWM51c4MwSDnoSvFIdqOwsTSAirvkUAscF3OeW34RrXZRCmsl5jSND4MuRyUsDQcty1U/bj1U4g"
+            + "lQdC+RwjwBYFK2K580ugEuz/x4nUtfqyjv7FFPY1ct2e5dQ/9Pbg/tq06oxMLuWO53IVRZ0WwACQ"
+            + "bUIcr0bdlfwm7WqkHJEU51SdEDisfS/SyiK5NYfjEa2D/ZiGLREUgUx5uDc4NNjdHOycQ/0L1i9z"
+            + "aOoyKbadUZFITdcglHaS4wIDAQABqT8wDgYDVR0PAQH/BAQDAgO4MC0GA1UdEQEB/wQjMCGCHzIx"
+            + "MDMwNTMzNjEwMDAwMDAwMDEyLmh1YXdlaS5jb22hggEUMA0GCSqGSIb3DQEBBQUAA4IBAQBAPyx8"
+            + "Shx3fT8JEy+7rD/KBYzU7h9GHyQ9fvdvUmVuqCvIVncbXwEDk+vInvkiCoBRgJxI2tmiwguJT4mQ"
+            + "yIq4TBdunabLqEbL7Me36cYQH3mY68v4YzAnHYcM7eAcdxXDivxFuKwSxQ2yoVrncaPb8/tHmQdx"
+            + "XOzi0MmkksFe3IR25qh6G9Jz+TRmGWtTuzEuF87oyUyUb8boCLeMJ5FUKidavI/fmqSKa+iX0vVW"
+            + "T069pXCdtWdOZA4dc6ya7AEIifNUTLon03a/rtWXat+J4qnH1u2u2UgmItoiXjcur2tEGnPiGpxl"
+            + "GiP+qbWQBzNM0GRIO7ldjbMztsLYSGd2oIGEA4GBAHP+pQWFVw8bPNFuOnRFRiUdDCBvxnslVOHD"
+            + "2e5864lisPtoeSUXsLM/6Dqfa8Q8WDiKRht4t7X5QEr8aYv/Q7g4g9Q7MBl3UgV2xt44XS2c1ZXA"
+            + "cbVvE6KzTFKlq5LtVsVsTFfnO1OiGrdwXzxeTNu94QUcLg7MkvhT4AON/QzwoYINMTCCDS0wggMk"
+            + "MIICDKADAgECAhEAutVbOUfLh23Dkfd5hDjSpTANBgkqhkiG9w0BAQUFADBzMQswCQYDVQQGEwJD"
+            + "TjEPMA0GA1UEChMGSHVhd2VpMSYwJAYDVQQLEx1XaXJlbGVzcyBOZXR3b3JrIFByb2R1Y3QgTGlu"
+            + "ZTErMCkGA1UEAxMiSHVhd2VpIFdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBDQTAeFw0xMDExMTIw"
+            + "NzM5MzhaFw0zNDEwMTcwOTAwMzVaMGwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxJjAk"
+            + "BgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSQwIgYDVQQDExsyMTAzMDUzMzYx"
+            + "MDAwMDAwMDAxMiBlTm9kZUIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAL6IgLVod8RPMA6r"
+            + "glwZi4/zrgSSh1+04JLuB7Xbm3dGFmK8BoqUMqMBOtaE5x+apY6x8ZfJYLpLZQ1GfnsEEwJtUIh3"
+            + "9zsGXKW8m5nCsXK6z0j7/t1a9ZdD1/4cAVN5bap6HLxC2bLKIsiiXsMr/6bvq5hCmoHLzHEG6TAP"
+            + "I6qHAgMBAAGjPjA8MA4GA1UdDwEB/wQEAwIAuDAqBgNVHREEIzAhgh8yMTAzMDUzMzYxMDAwMDAw"
+            + "MDAxMi5IdWF3ZWkuY29tMA0GCSqGSIb3DQEBBQUAA4IBAQB0hZ1CqMQLWzyYmxB/2X5s8BWX32zM"
+            + "dk5M0X9xe7k4TuNyCCcv7GjYEVdda95VS0GPkYs8tUxaVPb2SQv7W5uNXy7sz6hr56xPJlbpkt01"
+            + "yJYknlXFK4L+nEG7tszuSdu+1Q2gcO9OUOrkrm4I9Nx7KNhJuYtXjAtrs8DSmGITKtY1r3d63CAo"
+            + "JuOGeBirRmMeiXCYlEZjLYrd14b0cp51FuKcj883DESTjHysc7Z3fHujqY3ZRhwaUqItYyGYSufN"
+            + "wPmbmzZ5vBH813qekKeTh+4nK3pUTwSx4exXhIOqpWHyx9WGsLrDJ38EC8Mw1DJh4zMyfKGuGsKH"
+            + "CukbJWkTMIIEmjCCAoKgAwIBAgIRALLINFPpW33xRvlnKb3XFywwDQYJKoZIhvcNAQEFBQAwPDEL"
+            + "MAkGA1UEBhMCQ04xDzANBgNVBAoTBkh1YXdlaTEcMBoGA1UEAxMTSHVhd2VpIEVxdWlwbWVudCBD"
+            + "QTAeFw0wOTEwMTkwOTMwMzRaFw0zNDEwMTgwOTAwMzVaMHMxCzAJBgNVBAYTAkNOMQ8wDQYDVQQK"
+            + "EwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5lMSswKQYDVQQD"
+            + "EyJIdWF3ZWkgV2lyZWxlc3MgTmV0d29yayBQcm9kdWN0IENBMIIBIjANBgkqhkiG9w0BAQEFAAOC"
+            + "AQ8AMIIBCgKCAQEAwTf104dxZ++hzt0x0n+uRZahqaQYMO9qr7trvKo8XE+1mrxGbfbR3Yc8ArOJ"
+            + "FQvfxq+ylI9L7qyunHEHiAfAFpWprq7ovP4lhWuzxh6At4DYKBPq0IqGZ9qVfM5Wq96uK6Vrltjj"
+            + "QwS0nuAZC3b1MRYoumHbtRemjorLssD8Vh8TgCJd87wOXf4mSmPhdLqGbbeUksbQROHwtnbZuhL2"
+            + "HGc+CqE6wBVE0oWD2JztJENj0myVQqq7fmBvs4zCb3Wh7M5AYUq8SeTmizboRML+wIF5kNUSV/wS"
+            + "GG7GDx2sJDmB+AXg/jIMawL3ml7GBaeFZiB6QIDBsyxhsVx+AHl35wIDAQABo2AwXjAMBgNVHRME"
+            + "BTADAQH/MA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUXnAX3G+kB0gDN4f+PbTHINY2uNAwHwYD"
+            + "VR0jBBgwFoAUKvgQWSeANR+nfLo7nyrkSqqbkuowDQYJKoZIhvcNAQEFBQADggIBAJMfxn6GXhlp"
+            + "4isppcV4oOu3nloK4p7IiMrlS53363z1SQpcvCo92gzGM3qePajCTTvnRDaggOi+xcpbfJbMG62z"
+            + "+e9qqKiJ53bMk+VSs3rMTRkLIhoRHmu5rIx+5r6apS4X8+g5DykaODye+sMmT0jS9OWuo8q3Ne9u"
+            + "XELSwkXjcJSy3j4n+IKC+GfY8gzM130OsHcg2rzesRxNhjc2BztYdq4tge9X0Uh5dXgjTXJnu2/Q"
+            + "hNvAqjJZVy7rbAHzl7DbRjQk9bFL2Snzawq/0IapfnywRD64bGoo/GRvW9Igs7eplFAhwiIRvw9u"
+            + "qgEGqsk9GiduIqgTtOOT/puH/5My2DEb+faN7uEqqQT6YYH/draE5R8zYWnCHqE2yXNOyqolwP9L"
+            + "OZJQunA8YBv/2rqiimvEZGR5q9F6lXpxrGAJn9tMZFNn7GmJ33Q2BrgCBkOUj+HNcXUzVzKTo/GU"
+            + "O6LimPiI367viVY5IJQlQd/WHJYjK0h7OYBLCvcTXSvUt9jNoUsah9S8SqM0vyW5QvnN9KTWuUXc"
+            + "XHkE3TRO0eem1viZVhcD/5V7b05Ib9vWfHONWs66JjUa83vfvajqciFdzXftDedfe0AejkKb30/J"
+            + "aBKRhSo9P8l0Yiwh8t/5Wxdoar2CiEneTH7HmkbmTcTKwDqOoODA18AGnUtTmymqMIIFYzCCA0ug"
+            + "AwIBAgIRAPL/UcxlhPGYCCTZhLPNvVswDQYJKoZIhvcNAQEFBQAwPDELMAkGA1UEBhMCQ04xDzAN"
+            + "BgNVBAoTBkh1YXdlaTEcMBoGA1UEAxMTSHVhd2VpIEVxdWlwbWVudCBDQTAeFw0wOTEwMTkwOTAw"
+            + "MjhaFw0zNDEwMTkwOTAwMDBaMDwxCzAJBgNVBAYTAkNOMQ8wDQYDVQQKEwZIdWF3ZWkxHDAaBgNV"
+            + "BAMTE0h1YXdlaSBFcXVpcG1lbnQgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCi"
+            + "iYQnC/Mp9obmAnXmu/Nj6rccSkEQJXlZipOv8tIjvr0B8ObpFUnU+qLojZUYlNmXH8RgRgFB1sBS"
+            + "yOuGiiP0uNtJ0lPLbylsc+2fr2Rlt/qbYs1oQGz+oNl+UdAOtm/lPzggUOVVst15Ovf0Yf6LQ3CQ"
+            + "alN2VJWgKpFUudDKWQ2fzbFT5YSfvhFxvtvWfgdntKAJt3sFvkKr9Qw+0EYNpQiw5EALeLWCZSYU"
+            + "7A939puqYR6aNA447S1K8SgWoav82P4UY/ykLXjcgTeCnvRRtUga1gdIwm5d/vRlB5il5wspGLLe"
+            + "s4SomzUYrvnvHio555NZPpvmpIXNolwvYW5opAyYzE05pVSOmHf/RY/dHto8XWexOJq/UAFBMyiH"
+            + "4NT4cZpWjYWR7W9GxRXApmQrrLXte1CF/IzXWBMA2tSL0WnRJz5HRcKzsOC6FksiqsYstFjcCE7J"
+            + "7Nicr3Bwq5FrZiqGSdLmLRn97XqVlWdN31HX16fzRhZMiOkvQe+uYT+BXbhU1fZIh6RRAH3V1APo"
+            + "bVlCXh5PDq8Ca4dClHNHYp5RP0Pb5zBowTqBzSv7ssHrNceQsWDeNjX9t59NwviaIlXIlPiWEEJc"
+            + "22XtMm4sc/+8mgOFMNXr4FWu8vdG2fgRpeWJO0E035D6TClu4So2GlN/fIccp5wVYAWF1WhxSQID"
+            + "AQABo2AwXjAOBgNVHQ8BAf8EBAMCAYYwDAYDVR0TBAUwAwEB/zAdBgNVHQ4EFgQUKvgQWSeANR+n"
+            + "fLo7nyrkSqqbkuowHwYDVR0jBBgwFoAUKvgQWSeANR+nfLo7nyrkSqqbkuowDQYJKoZIhvcNAQEF"
+            + "BQADggIBAAALYkaoI50h81eGu+bm6W6OfXwXx2ech9r/JkYiv8NDE1gXFaqbqVTgmTMVAWIIyiYF"
+            + "zFedILyhnva4zIqtBUKVTM1WU8Bx0TqLRp2/KRSX9q2AIHA7cKTYUn6XGzV4amqa3nXJ/v0q9Sty"
+            + "rYqY9piARqoOTseAu4WhMQvyPgTkQ7lFJ97HOvDBM/BNFoPo9DrdLJlBaNIUngjB1c/ZkvXfDUhP"
+            + "B7fegH8dY2hkGD/We0jnkEQA6ch6h/c24wJzVA9VZK6UX2KikYvFS9yipdS5ry6chRSt29UtbTEO"
+            + "q4airI3U/IuxkSAEiVuasLLkGTQTJgTfroFIE0/MiTsyfmxHiMZM0vN2gaPjW+zfkxpqcQcGeNRR"
+            + "jMC2Kh/bMN1is5rzoh3jWADG8tWBQjlSghxNFwAgPMV6ui3SIgNPd07LVwzMQIpMzSn670CtpGKu"
+            + "KB3wchnW2JjEGd9Zb49aP1a+83pBvgUVHaZ5KTlV4lrSe/s8e3SFMiV/6p+KAnV5/cnSnuNJfl0u"
+            + "Tjavw7DEqcXV6UN0Eg571WLRZvnsmCWAHncBMQ7prVDTdnc7OVsZw0TnTzcBYZtYl2mdxsR3tb3k"
+            + "YngXwIxzWROeEFWpNvWnuSzEH+Vv939rdvgLzHrcYgZuvknyWx5Vp9c+ezA58JWYo/nNBFzb0/U1" + "OZck9LLi").getBytes());
+
     /*
      *header
      *	pvno: cmp2000 (2)
@@ -825,59 +811,59 @@ public class CrmfRequestTest extends CmpTestCase {
      *				Padding: 0
      *				encrypted: 7BD35EC086CBC4C2BF3DC891FD60341D6E3938B8ED26C4AD...
      */
-    static byte[] telefonica2 = Base64.decode(("MIILtTCCARECAQKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQsw" +
-    										"CQYDVQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaRuMGwxCzAJBgNVBAYTAkNO" +
-    										"MQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5l" +
-    										"MSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUKgERgPMjAxMTAyMjIxNzU2MDFa" +
-    										"oQ8wDQYJKoZIhvcNAQEFBQCkBgQERucoiKUSBBATrD26fYGHOwYhgJaiquBEpgYEBCGfBFKhggVD" +
-    										"MIIFP6GCAmgwggJkMIICYDCCAcmgAwIBAgIJALJSzpNbH+s6MA0GCSqGSIb3DQEBBQUAMFQxCzAJ" +
-    										"BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL" +
-    										"EwNsdGUxEDAOBgNVBAMTB2VuYnJvb3QwHhcNMTAwNjAzMDgzMzI4WhcNMTEwNjAzMDgzMzI4WjBS" +
-    										"MQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYDVQQKEwJ3bDEMMAoG" +
-    										"A1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAzIwN" +
-    										"8oP7/TcXeFpDmXZZlKkeZ4/PAzRancAj6mmdhbeZY+lvgOt/KmQyolu1jPkUUDDy2nxzyuuADAQe" +
-    										"C9o6VHgteppQzT2XC75ol5YUc1BtCaU2CD7MmpqFC9NB/UWCP++r1mRPXWzdI/rkhAqudfberNRX" +
-    										"ouSmmHXqF0KQY+UCAwEAAaM8MDowHQYDVR0OBBYEFExg23UkAFE/LF9llJj7VRVeIwBFMAwGA1Ud" +
-    										"EwQFMAMBAf8wCwYDVR0PBAQDAgH2MA0GCSqGSIb3DQEBBQUAA4GBACppwv0KgJOD6st8oW5IyKuz" +
-    										"5AOKT6KIubIDsv8tRUHsodUku1ujedyMY6dzPytNHea87P3nz5Bx4gEUS7ItVmAPS1oCVrzOlrw8" +
-    										"Mfd22n7w+OqL4R+9Tf3vyxIzYHCa3cR5ACgLn2p8/iRx7D+IePYz0wnrRjV3RU/JzjGY2pJQMIIC" +
-    										"zzCCAssCAgFjMAMCAQAwggK+oIICujCCArYwggIfoAMCAQICBPeOwkYwDQYJKoZIhvcNAQEFBQAw" +
-    										"UjELMAkGA1UEBhMCY24xCzAJBgNVBAgTAnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAK" +
-    										"BgNVBAsTA2x0ZTEOMAwGA1UEAxMFZW5iY2EwHhcNMTEwMjIyMTc1NjAxWhcNMTEwNjAzMDgzMzI4" +
-    										"WjAmMSQwIgYDVQQDDBsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUIwggEiMA0GCSqGSIb3DQEB" +
-    										"AQUAA4IBDwAwggEKAoIBAQCcK80Hy7DPK4t1BiZo1k8/eMBnQMv72I/Mk9odR1CLaobm2ShjLpRw" +
-    										"f9aUkz3RAiCv5ccrqssItaeTTsA9/8X1QPGEKmf0FYznVzgzBIOehK8Uh2o7CxNICKu+RQCxwXc5" +
-    										"5bfhGtdlEKayXmNI0Pgy5HJSwNBy3LVT9uPVTiCVB0L5HCPAFgUrYrnzS6AS7P/HidS1+rKO/sUU" +
-    										"9jVy3Z7l1D/09uD+2rTqjEwu5Y7nchVFnRbAAJBtQhyvRt2V/CbtaqQckRTnVJ0QOKx9L9LKIrk1" +
-    										"h+MRrYP9mIYtERSBTHm4Nzg02N0c7JxD/QvWL3No6jIptp1RkUhN1yCUdpLjAgMBAAGjQTA/MA4G" +
-    										"A1UdDwEB/wQEAwIDuDAtBgNVHREBAf8EIzAhgh8yMTAzMDUzMzYxMDAwMDAwMDAxMi5odWF3ZWku" +
-    										"Y29tMA0GCSqGSIb3DQEBBQUAA4GBAGS3N6ivCifLGdZtM1fTW2Ls/qJsSlict/WtdEVtThyZ51yX" +
-    										"50AJsvjmQtduU4Qbj0vOPETlP9+L35j3j5Lo+RRkLFTJ4FSWZzJ6ZZSF5u3eWnMZRF74wrBg32Ip" +
-    										"I9g5MA5IvyYdJb45Zcjs07QVZNQXzjBjcESwglCHC3vu4vyooIGEA4GBAHyVEwA05nqeh7BbJGm0" +
-    										"/lUjwCE6c6MsGyAV6ticmTbp+BFx6fHGk1tHNNhCcJxQxSdAv9nEsClExrhuXiBSG/SdBmrAs6lh" +
-    										"odMrRkMTQO/FooMiwDjRX7zNBGnVHBQYnXY/cGtTIAQWhwhFgBrq3HX31ogkEPOmBsTFeoxzYvxn" +
-    										"oYIEzjCCBMowggJgMIIByaADAgECAgkAslLOk1sf6zowDQYJKoZIhvcNAQEFBQAwVDELMAkGA1UE" +
-    										"BhMCY24xCzAJBgNVBAgTAnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAKBgNVBAsTA2x0" +
-    										"ZTEQMA4GA1UEAxMHZW5icm9vdDAeFw0xMDA2MDMwODMzMjhaFw0xMTA2MDMwODMzMjhaMFIxCzAJ" +
-    										"BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL" +
-    										"EwNsdGUxDjAMBgNVBAMTBWVuYmNhMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMjA3yg/v9" +
-    										"Nxd4WkOZdlmUqR5nj88DNFqdwCPqaZ2Ft5lj6W+A638qZDKiW7WM+RRQMPLafHPK64AMBB4L2jpU" +
-    										"eC16mlDNPZcLvmiXlhRzUG0JpTYIPsyamoUL00H9RYI/76vWZE9dbN0j+uSECq519t6s1Fei5KaY" +
-    										"deoXQpBj5QIDAQABozwwOjAdBgNVHQ4EFgQUTGDbdSQAUT8sX2WUmPtVFV4jAEUwDAYDVR0TBAUw" +
-    										"AwEB/zALBgNVHQ8EBAMCAfYwDQYJKoZIhvcNAQEFBQADgYEAKmnC/QqAk4Pqy3yhbkjIq7PkA4pP" +
-    										"ooi5sgOy/y1FQeyh1SS7W6N53Ixjp3M/K00d5rzs/efPkHHiARRLsi1WYA9LWgJWvM6WvDwx93ba" +
-    										"fvD46ovhH71N/e/LEjNgcJrdxHkAKAufanz+JHHsP4h49jPTCetGNXdFT8nOMZjaklAwggJiMIIB" +
-    										"y6ADAgECAgkAoa4qOygA2w4wDQYJKoZIhvcNAQEFBQAwVDELMAkGA1UEBhMCY24xCzAJBgNVBAgT" +
-    										"AnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAKBgNVBAsTA2x0ZTEQMA4GA1UEAxMHZW5i" +
-    										"cm9vdDAeFw0xMDA2MDMwODMyNTVaFw0xMTA2MDMwODMyNTVaMFQxCzAJBgNVBAYTAmNuMQswCQYD" +
-    										"VQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQLEwNsdGUxEDAOBgNVBAMT" +
-    										"B2VuYnJvb3QwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALUuMfg5IOrHcKnlFqlT5fFiKM4D" +
-    										"RfpVznugWDrJtKrgr8rf9SoybAPi4JiwYHfWRAjNkutR9/h4KWbcrz1vBpooklEixtPzSUHJ4xfc" +
-    										"Rz39AI0bC/qzm2ru9l1qTXMfRA2qydb0Y/Q8m2S+DyJCaiP1eNinny6u4oWxx8A6Y8mLAgMBAAGj" +
-    										"PDA6MB0GA1UdDgQWBBQzxWO7ramZAXNGE7cOJAFPUUXjxzAMBgNVHRMEBTADAQH/MAsGA1UdDwQE" +
-    										"AwIB9jANBgkqhkiG9w0BAQUFAAOBgQB7017AhsvEwr89yJH9YDQdbjk4uO0mxK2SKowiYNj5BoMk" +
-    										"tAyjcA7hgNX00Wg7qLQe9IuoOCy2fdldmP+s7sLouXi1oh7OjOxk50TANQg4V28vPhfdgxAgGowi" +
-    										"GCsbCtLscLeYallqTuvg/0O2zZITN5wcoQOjackHjIJg3eAz8A==").getBytes());
-
+    static byte[] telefonica2 = Base64
+            .decode(("MIILtTCCARECAQKkVDBSMQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQsw"
+                    + "CQYDVQQKEwJ3bDEMMAoGA1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYaRuMGwxCzAJBgNVBAYTAkNO"
+                    + "MQ8wDQYDVQQKEwZIdWF3ZWkxJjAkBgNVBAsTHVdpcmVsZXNzIE5ldHdvcmsgUHJvZHVjdCBMaW5l"
+                    + "MSQwIgYDVQQDExsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUKgERgPMjAxMTAyMjIxNzU2MDFa"
+                    + "oQ8wDQYJKoZIhvcNAQEFBQCkBgQERucoiKUSBBATrD26fYGHOwYhgJaiquBEpgYEBCGfBFKhggVD"
+                    + "MIIFP6GCAmgwggJkMIICYDCCAcmgAwIBAgIJALJSzpNbH+s6MA0GCSqGSIb3DQEBBQUAMFQxCzAJ"
+                    + "BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL"
+                    + "EwNsdGUxEDAOBgNVBAMTB2VuYnJvb3QwHhcNMTAwNjAzMDgzMzI4WhcNMTEwNjAzMDgzMzI4WjBS"
+                    + "MQswCQYDVQQGEwJjbjELMAkGA1UECBMCc2gxCzAJBgNVBAcTAnFjMQswCQYDVQQKEwJ3bDEMMAoG"
+                    + "A1UECxMDbHRlMQ4wDAYDVQQDEwVlbmJjYTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAzIwN"
+                    + "8oP7/TcXeFpDmXZZlKkeZ4/PAzRancAj6mmdhbeZY+lvgOt/KmQyolu1jPkUUDDy2nxzyuuADAQe"
+                    + "C9o6VHgteppQzT2XC75ol5YUc1BtCaU2CD7MmpqFC9NB/UWCP++r1mRPXWzdI/rkhAqudfberNRX"
+                    + "ouSmmHXqF0KQY+UCAwEAAaM8MDowHQYDVR0OBBYEFExg23UkAFE/LF9llJj7VRVeIwBFMAwGA1Ud"
+                    + "EwQFMAMBAf8wCwYDVR0PBAQDAgH2MA0GCSqGSIb3DQEBBQUAA4GBACppwv0KgJOD6st8oW5IyKuz"
+                    + "5AOKT6KIubIDsv8tRUHsodUku1ujedyMY6dzPytNHea87P3nz5Bx4gEUS7ItVmAPS1oCVrzOlrw8"
+                    + "Mfd22n7w+OqL4R+9Tf3vyxIzYHCa3cR5ACgLn2p8/iRx7D+IePYz0wnrRjV3RU/JzjGY2pJQMIIC"
+                    + "zzCCAssCAgFjMAMCAQAwggK+oIICujCCArYwggIfoAMCAQICBPeOwkYwDQYJKoZIhvcNAQEFBQAw"
+                    + "UjELMAkGA1UEBhMCY24xCzAJBgNVBAgTAnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAK"
+                    + "BgNVBAsTA2x0ZTEOMAwGA1UEAxMFZW5iY2EwHhcNMTEwMjIyMTc1NjAxWhcNMTEwNjAzMDgzMzI4"
+                    + "WjAmMSQwIgYDVQQDDBsyMTAzMDUzMzYxMDAwMDAwMDAxMiBlTm9kZUIwggEiMA0GCSqGSIb3DQEB"
+                    + "AQUAA4IBDwAwggEKAoIBAQCcK80Hy7DPK4t1BiZo1k8/eMBnQMv72I/Mk9odR1CLaobm2ShjLpRw"
+                    + "f9aUkz3RAiCv5ccrqssItaeTTsA9/8X1QPGEKmf0FYznVzgzBIOehK8Uh2o7CxNICKu+RQCxwXc5"
+                    + "5bfhGtdlEKayXmNI0Pgy5HJSwNBy3LVT9uPVTiCVB0L5HCPAFgUrYrnzS6AS7P/HidS1+rKO/sUU"
+                    + "9jVy3Z7l1D/09uD+2rTqjEwu5Y7nchVFnRbAAJBtQhyvRt2V/CbtaqQckRTnVJ0QOKx9L9LKIrk1"
+                    + "h+MRrYP9mIYtERSBTHm4Nzg02N0c7JxD/QvWL3No6jIptp1RkUhN1yCUdpLjAgMBAAGjQTA/MA4G"
+                    + "A1UdDwEB/wQEAwIDuDAtBgNVHREBAf8EIzAhgh8yMTAzMDUzMzYxMDAwMDAwMDAxMi5odWF3ZWku"
+                    + "Y29tMA0GCSqGSIb3DQEBBQUAA4GBAGS3N6ivCifLGdZtM1fTW2Ls/qJsSlict/WtdEVtThyZ51yX"
+                    + "50AJsvjmQtduU4Qbj0vOPETlP9+L35j3j5Lo+RRkLFTJ4FSWZzJ6ZZSF5u3eWnMZRF74wrBg32Ip"
+                    + "I9g5MA5IvyYdJb45Zcjs07QVZNQXzjBjcESwglCHC3vu4vyooIGEA4GBAHyVEwA05nqeh7BbJGm0"
+                    + "/lUjwCE6c6MsGyAV6ticmTbp+BFx6fHGk1tHNNhCcJxQxSdAv9nEsClExrhuXiBSG/SdBmrAs6lh"
+                    + "odMrRkMTQO/FooMiwDjRX7zNBGnVHBQYnXY/cGtTIAQWhwhFgBrq3HX31ogkEPOmBsTFeoxzYvxn"
+                    + "oYIEzjCCBMowggJgMIIByaADAgECAgkAslLOk1sf6zowDQYJKoZIhvcNAQEFBQAwVDELMAkGA1UE"
+                    + "BhMCY24xCzAJBgNVBAgTAnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAKBgNVBAsTA2x0"
+                    + "ZTEQMA4GA1UEAxMHZW5icm9vdDAeFw0xMDA2MDMwODMzMjhaFw0xMTA2MDMwODMzMjhaMFIxCzAJ"
+                    + "BgNVBAYTAmNuMQswCQYDVQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQL"
+                    + "EwNsdGUxDjAMBgNVBAMTBWVuYmNhMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMjA3yg/v9"
+                    + "Nxd4WkOZdlmUqR5nj88DNFqdwCPqaZ2Ft5lj6W+A638qZDKiW7WM+RRQMPLafHPK64AMBB4L2jpU"
+                    + "eC16mlDNPZcLvmiXlhRzUG0JpTYIPsyamoUL00H9RYI/76vWZE9dbN0j+uSECq519t6s1Fei5KaY"
+                    + "deoXQpBj5QIDAQABozwwOjAdBgNVHQ4EFgQUTGDbdSQAUT8sX2WUmPtVFV4jAEUwDAYDVR0TBAUw"
+                    + "AwEB/zALBgNVHQ8EBAMCAfYwDQYJKoZIhvcNAQEFBQADgYEAKmnC/QqAk4Pqy3yhbkjIq7PkA4pP"
+                    + "ooi5sgOy/y1FQeyh1SS7W6N53Ixjp3M/K00d5rzs/efPkHHiARRLsi1WYA9LWgJWvM6WvDwx93ba"
+                    + "fvD46ovhH71N/e/LEjNgcJrdxHkAKAufanz+JHHsP4h49jPTCetGNXdFT8nOMZjaklAwggJiMIIB"
+                    + "y6ADAgECAgkAoa4qOygA2w4wDQYJKoZIhvcNAQEFBQAwVDELMAkGA1UEBhMCY24xCzAJBgNVBAgT"
+                    + "AnNoMQswCQYDVQQHEwJxYzELMAkGA1UEChMCd2wxDDAKBgNVBAsTA2x0ZTEQMA4GA1UEAxMHZW5i"
+                    + "cm9vdDAeFw0xMDA2MDMwODMyNTVaFw0xMTA2MDMwODMyNTVaMFQxCzAJBgNVBAYTAmNuMQswCQYD"
+                    + "VQQIEwJzaDELMAkGA1UEBxMCcWMxCzAJBgNVBAoTAndsMQwwCgYDVQQLEwNsdGUxEDAOBgNVBAMT"
+                    + "B2VuYnJvb3QwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALUuMfg5IOrHcKnlFqlT5fFiKM4D"
+                    + "RfpVznugWDrJtKrgr8rf9SoybAPi4JiwYHfWRAjNkutR9/h4KWbcrz1vBpooklEixtPzSUHJ4xfc"
+                    + "Rz39AI0bC/qzm2ru9l1qTXMfRA2qydb0Y/Q8m2S+DyJCaiP1eNinny6u4oWxx8A6Y8mLAgMBAAGj"
+                    + "PDA6MB0GA1UdDgQWBBQzxWO7ramZAXNGE7cOJAFPUUXjxzAMBgNVHRMEBTADAQH/MAsGA1UdDwQE"
+                    + "AwIB9jANBgkqhkiG9w0BAQUFAAOBgQB7017AhsvEwr89yJH9YDQdbjk4uO0mxK2SKowiYNj5BoMk"
+                    + "tAyjcA7hgNX00Wg7qLQe9IuoOCy2fdldmP+s7sLouXi1oh7OjOxk50TANQg4V28vPhfdgxAgGowi"
+                    + "GCsbCtLscLeYallqTuvg/0O2zZITN5wcoQOjackHjIJg3eAz8A==").getBytes());
 
 }

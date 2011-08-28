@@ -119,8 +119,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
      * Sends a certificate request message and verifies result. Sends a confirm message and verifies result. Sends a revocation message and verifies
      * result. (If we save certificate data!)
      */
-    @Test
-    public void testIssueConfirmRevoke(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws Exception {
+    private void testIssueConfirmRevoke(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws Exception {
         LOG.trace(">testIssueConfirmRevoke");
         LOG.info("useCertReqHistory=" + useCertReqHistory + " useUserStorage=" + useUserStorage + " useCertificateStorage=" + useCertificateStorage);
         // Generate and send certificate request
