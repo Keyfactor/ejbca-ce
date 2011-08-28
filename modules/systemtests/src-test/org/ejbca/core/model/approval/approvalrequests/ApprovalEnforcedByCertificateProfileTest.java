@@ -70,14 +70,13 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests approvals which are required by the certificate profile and not only by
- * the CA or instead of by the CA.
+ * Tests approvals which are required by the certificate profile and not only by the CA or instead of by the CA.
  * 
  * @author Markus Kilås
  * @version $Id$
@@ -127,16 +126,11 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
-    
+
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-       
-    }
-
-    @Test
-    public void test00SetupDatabase() throws Exception {
         log.info("test00SetupDatabase");
 
         // Create admin end entity
@@ -144,24 +138,25 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         createUser(admin1, adminUsername, caid, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER);
 
         // Create new CA
-        approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {}, caAdminSession, caSession,
-                SecConst.CERTPROFILE_FIXED_ROOTCA);
+        approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {},
+                caAdminSession, caSession, SecConst.CERTPROFILE_FIXED_ROOTCA);
 
         // Create certificate profiles
         certProfileIdNoApprovals = createCertificateProfile(admin1, CERTPROFILE1, new Integer[] {}, CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdEndEntityApprovals = createCertificateProfile(admin1, CERTPROFILE2, new Integer[] { CAInfo.REQ_APPROVAL_ADDEDITENDENTITY },
-        		CertificateConstants.CERTTYPE_ENDENTITY);
-        certProfileIdActivateCATokensApprovals = createCertificateProfile(admin1, CERTPROFILE3, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN },
-        		CertificateConstants.CERTTYPE_ROOTCA);
+                CertificateConstants.CERTTYPE_ENDENTITY);
+        certProfileIdActivateCATokensApprovals = createCertificateProfile(admin1, CERTPROFILE3,
+                new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN }, CertificateConstants.CERTTYPE_ROOTCA);
         certProfileIdKeyRecoveryApprovals = createCertificateProfile(admin1, CERTPROFILE4, new Integer[] { CAInfo.REQ_APPROVAL_KEYRECOVER },
-        		CertificateConstants.CERTTYPE_ENDENTITY);
+                CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdAllApprovals = createCertificateProfile(admin1, CERTPROFILE5, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN,
-                CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, CAInfo.REQ_APPROVAL_KEYRECOVER, CAInfo.REQ_APPROVAL_REVOCATION }, CertificateConstants.CERTTYPE_ENDENTITY);
+                CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, CAInfo.REQ_APPROVAL_KEYRECOVER, CAInfo.REQ_APPROVAL_REVOCATION },
+                CertificateConstants.CERTTYPE_ENDENTITY);
         // Other CAs
-        anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {}, caAdminSession, caSession,
-                SecConst.CERTPROFILE_FIXED_ROOTCA);
-        anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {}, caAdminSession, caSession,
-                certProfileIdActivateCATokensApprovals);
+        anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {},
+                caAdminSession, caSession, SecConst.CERTPROFILE_FIXED_ROOTCA);
+        anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {},
+                caAdminSession, caSession, certProfileIdActivateCATokensApprovals);
 
         // Create an end entity profile with the certificate profiles
         endEntityProfileId = createEndEntityProfile(admin1, ENDENTITYPROFILE, new int[] { certProfileIdNoApprovals, certProfileIdEndEntityApprovals,
@@ -294,7 +289,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             fail();
         }
     }
-    
+
     @Test
     public void test04KeyRecovery() throws Exception {
         log.info("test04KeyRecovery");
@@ -322,7 +317,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin1, username1));
             KeyRecoveryData data = keyRecoverySession.keyRecovery(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
-            assertTrue("Couldn't recover keys from database", Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
+            assertTrue("Couldn't recover keys from database",
+                    Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
         }
@@ -350,9 +346,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         }
     }
 
-    @AfterClass
-    public void test99RemoveCreated() throws AuthorizationDeniedException {
-        log.info("test99RemoveCreated");
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
 
         // Remove users
         for (Object o : createdUsers) {
@@ -369,9 +365,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         removeCA(approvalCAID);
 
         // Remove end entity profile
-    
-            endEntityProfileSession.removeEndEntityProfile(admin1, ENDENTITYPROFILE);
-        
+
+        endEntityProfileSession.removeEndEntityProfile(admin1, ENDENTITYPROFILE);
 
         // Remove certificate profiles
         removeCertificateProfile(CERTPROFILE1);
@@ -415,8 +410,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return certProfileId;
     }
 
-    public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes, CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId)
-            throws Exception {
+    public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes,
+            CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId) throws Exception {
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -426,11 +421,11 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);
 
-        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(System
-                .currentTimeMillis()
-                + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10,
-                0, new ArrayList<Integer>(), true, false, true, false, "", "", "", "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1, false, true, false, false,
-                true, true, true, false, true, true, true, null);
+        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(
+                System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo,
+                "Used for testing approvals", -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", "", true,
+                new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1, false, true, false, false, true, true, true, false, true, true,
+                true, null);
         int caID = cainfo.getCAId();
         try {
             caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -446,11 +441,12 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         return caID;
     }
 
-    private void createUser(AuthenticationToken admin, String username, int caID, int endEntityProfileId, int certProfileId) throws PersistenceException,
-            AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
+    private void createUser(AuthenticationToken admin, String username, int caID, int endEntityProfileId, int certProfileId)
+            throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
+            WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
-                null);
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId,
+                SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         // userdata.setKeyRecoverable(true);
         createUser(admin, userdata);
@@ -475,19 +471,21 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull(userdata);
         userdata.setDN(newDN);
-        log.debug("changeUser: username=" + username + ", DN="+userdata.getDN()+", password="+userdata.getPassword()+", certProfileId=" + userdata.getCertificateProfileId());
+        log.debug("changeUser: username=" + username + ", DN=" + userdata.getDN() + ", password=" + userdata.getPassword() + ", certProfileId="
+                + userdata.getCertificateProfileId());
         userAdminSession.changeUser(admin, userdata, true);
     }
 
     private void changeUserCertProfile(AuthenticationToken admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
-    UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
+            UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
         EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull("findUser: " + username, userdata);
         userdata.setCertificateProfileId(newCertProfileId);
         userAdminSession.changeUser(admin, userdata, true);
     }
 
-    private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, int[] certProfiles) throws EndEntityProfileExistsException {
+    private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, int[] certProfiles)
+            throws EndEntityProfileExistsException {
         EndEntityProfile profile;
         endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
 
