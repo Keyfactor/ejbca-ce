@@ -343,12 +343,6 @@ EJBCA should run on any on any JEE5 compliant application server in theory. In r
 </p>
 
 <subsection name="JBoss">
-<subsubsection name="JBoss 6 logging">
-<p>
-On JBoss 6 logging is not included in the regular server.log file (because JBoss does not use log4j anymore).
-<br/>Configure <i>conf/log4j-jboss6-xml</i> for logging level and log file locations (default works as well). A sample file is provided.
-</p>
-</subsubsection>
 <subsubsection name="JBoss and OracleJVM bug">
 <p>
 If you are using Oracle's JDK and JBoss 5.1.x you need to copy EJBCA_HOME/lib/bc*.jar to JBOSS_HOME/server/default/lib/.
@@ -378,26 +372,27 @@ to force the location to be generated with info from the WSDL request.
 If this is not done you will get "HTTP 302 Moved Temporarily" errors when running the WS client.  
 </p>
 </subsubsection>
-<subsubsection name="Memory configuration">
-<p>
-The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
-a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
-configuration of java memory arguments to set them to
-at least '-Xms128m -Xmx512m -XX:MaxPermSize=256m'. 
-For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
-</p>
-<source>
-JAVA_OPTS="-server -Xms128m -Xmx512m -XX:MaxPermSize=256m"
-</source>
-<p>
-can be changed.
-</p>
-</subsubsection>
 <subsubsection name="JBoss 5 and multiple mail configuration">
 <p>
 JBoss 5.1.x has a bug with multiple mail configurations. If you will be using mail notifications see conf/mail.properties.sample
 for configuration instructions. Tracked by JBoss as <a href="https://issues.jboss.org/browse/JBPAPP-3766">JBPAPP-3766</a>.
 This should be resolved in JBoss EAP 5.1.
+</p>
+</subsubsection>
+<subsubsection name="JBoss 6 logging">
+<p>
+On JBoss 6 logging is not included in the regular server.log file (because JBoss does not use log4j anymore).
+<br/>Configure <i>conf/log4j-jboss6-xml</i> for logging level and log file locations (default works as well). A sample file is provided.
+</p>
+</subsubsection>
+<subsubsection name="JBoss 6 WS warning during startup">
+<p>
+On JBoss 6 some warnings related to WebServices are logged during startup.
+</p>
+<source>
+...duplicate class definition bug occured? Please report this...
+</source>
+<p>This is harmless and dure to a bug in OpenJDK/Jax-WS. See <a href="https://jira.primekey.se/browse/ECA-2163">ECA-2163</a>.
 </p>
 </subsubsection>
 <subsubsection name="JBoss 6 Schema validation">
@@ -412,6 +407,21 @@ You can luckily turn of schema validation. Here is RedHat's <a href="http://docs
 &lt;!-- in case xml validation is disabled, it's also better to turn off schema validation
 &lt;property name="useSchemaValidation"&gt;false&lt;/property --&gt;
 </source>
+</subsubsection>
+<subsubsection name="Memory configuration">
+<p>
+The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
+a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
+configuration of java memory arguments to set them to
+at least '-Xms128m -Xmx512m -XX:MaxPermSize=256m'. 
+For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
+</p>
+<source>
+JAVA_OPTS="-server -Xms128m -Xmx512m -XX:MaxPermSize=256m"
+</source>
+<p>
+can be changed.
+</p>
 </subsubsection>
 <subsubsection name="Using JBoss/Tomcat native SSL connector">
 <p>Instead of the regular Tomcat SSL connector you can configure to use the native connector, which is supposed to 
