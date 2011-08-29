@@ -48,4 +48,9 @@ public enum StandardRules {
 	public String resource() {
 		return this.resource;
 	}
+	
+	public String toString() {
+		return this.resource;
+	}
+
 }
