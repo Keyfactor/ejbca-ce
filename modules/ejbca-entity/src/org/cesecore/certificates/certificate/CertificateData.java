@@ -53,7 +53,7 @@ import org.cesecore.util.ValueExtractor;
  * 
  * Based on EJBCA version: CertificateData.java 11168 2011-01-12 15:05:15Z jeklund
  * 
- * @version $Id: CertificateData.java 856 2011-05-24 16:01:34Z johane $
+ * @version $Id: CertificateData.java 1009 2011-08-18 15:31:53Z mikek $
  */
 @Entity
 @Table(name = "CertificateData")
@@ -1024,17 +1024,18 @@ public class CertificateData extends ProtectedData implements Serializable {
         return query.getResultList();
     }
 
-    /** @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
-    public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, String certificateTypes) {
+    /**
+     * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
+    public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, Collection<Integer> certificateTypes) {
         final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
         // because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
         final Query query = entityManager
-                .createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (" + certificateTypes
-                        + ")");
+                .createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes)");
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("ctypes", certificateTypes);
         final List<String> base64CertificateList = query.getResultList();
         for (String base64Certificate : base64CertificateList) {
             try {
@@ -1051,14 +1052,14 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given
      *         issuer.
      */
-    public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, String certificateTypes, String issuerDN) {
+    public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, final Collection<Integer> certificateTypes, String issuerDN) {
         final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
         // because comparisons are not supported for that type.
         // Since two certificates in the database should never be the same, "SELECT DISTINCT ..." was changed to "SELECT ..." here.
         final Query query = entityManager
-                .createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (" + certificateTypes
-                        + ") AND a.issuerDN=:issuerDN");
+                .createQuery("SELECT a.base64Cert FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.issuerDN=:issuerDN");
+        query.setParameter("ctypes", certificateTypes);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         query.setParameter("issuerDN", issuerDN);
@@ -1079,14 +1080,13 @@ public class CertificateData extends ProtectedData implements Serializable {
      * 
      * @return [0] = (String) fingerprint, [1] = (String) username
      */
-    public static List<Object[]> findExpirationInfo(EntityManager entityManager, String cASelectString, long activeNotifiedExpireDateMin,
+    public static List<Object[]> findExpirationInfo(EntityManager entityManager, Collection<String> cas, long activeNotifiedExpireDateMin,
             long activeNotifiedExpireDateMax, long activeExpireDateMin) {
-        // We can not select the base64 certificate data here, because it may be a LONG data type which we can't simply select.
-        // TODO: Still true for JPA?
-        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE ("
-                + cASelectString + ") AND " + "(expireDate>:activeNotifiedExpireDateMin) AND "
+        // We don't select the base64 certificate data here, because it may be a LONG data type which we can't simply select, or we don't want to read all the data.
+        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE issuerDN IN (:cas) AND " + "(expireDate>:activeNotifiedExpireDateMin) AND "
                 + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1" + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR "
                 + "status=:status3)", "FingerprintUsernameSubset");
+        query.setParameter("cas", cas);
         query.setParameter("activeNotifiedExpireDateMin", activeNotifiedExpireDateMin);
         query.setParameter("activeNotifiedExpireDateMax", activeNotifiedExpireDateMax);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);

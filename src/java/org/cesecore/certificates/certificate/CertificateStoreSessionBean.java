@@ -62,7 +62,7 @@ import org.ejbca.cvc.PublicKeyEC;
 /**
  * Based on EJBCA version: CertificateStoreSessionBean.java 11170 2011-01-12 17:08:32Z anatom
  * 
- * @version $Id: CertificateStoreSessionBean.java 972 2011-08-03 09:12:39Z tomas $
+ * @version $Id: CertificateStoreSessionBean.java 1026 2011-08-23 15:00:31Z mikek $
  * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
@@ -490,7 +490,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     public Collection<Certificate> findCertificatesBySubjectKeyId(byte[] subjectKeyId) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectKeyId=:subjectKeyId");
         query.setParameter("subjectKeyId", new String(Base64.encode(subjectKeyId, false)));
-        return query.getResultList();
+        
+        Collection<Certificate> result = new ArrayList<Certificate>();
+        for(CertificateData certificateData : (Collection<CertificateData>) query.getResultList()) {
+            result.add(certificateData.getCertificate());
+        }
+        return result;
     }
 
     @Override
@@ -502,27 +507,21 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
                 || type > CertificateConstants.CERTTYPE_SUBCA + CertificateConstants.CERTTYPE_ENDENTITY + CertificateConstants.CERTTYPE_ROOTCA) {
             throw new IllegalArgumentException();
         }
-        final StringBuilder ctypes = new StringBuilder();
+        Collection<Integer> ctypes = new ArrayList<Integer>();
         if ((type & CertificateConstants.CERTTYPE_SUBCA) > 0) {
-            ctypes.append(CertificateConstants.CERTTYPE_SUBCA);
+            ctypes.add(CertificateConstants.CERTTYPE_SUBCA);
         }
         if ((type & CertificateConstants.CERTTYPE_ENDENTITY) > 0) {
-            if (ctypes.length() > 0) {
-                ctypes.append(", ");
-            }
-            ctypes.append(CertificateConstants.CERTTYPE_ENDENTITY);
+            ctypes.add(CertificateConstants.CERTTYPE_ENDENTITY);
         }
         if ((type & CertificateConstants.CERTTYPE_ROOTCA) > 0) {
-            if (ctypes.length() > 0) {
-                ctypes.append(", ");
-            }
-            ctypes.append(CertificateConstants.CERTTYPE_ROOTCA);
+            ctypes.add(CertificateConstants.CERTTYPE_ROOTCA);
         }
         List<Certificate> ret;
         if (null != issuerDN && issuerDN.length() > 0) {
-            ret = CertificateData.findActiveCertificatesByTypeAndIssuer(entityManager, ctypes.toString(), CertTools.stringToBCDNString(issuerDN));
+            ret = CertificateData.findActiveCertificatesByTypeAndIssuer(entityManager, ctypes, CertTools.stringToBCDNString(issuerDN));
         } else {
-            ret = CertificateData.findActiveCertificatesByType(entityManager, ctypes.toString());
+            ret = CertificateData.findActiveCertificatesByType(entityManager, ctypes);
         }
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesByType()");
@@ -587,7 +586,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
         
     	int caid = CertTools.getIssuerDN(certificate).hashCode(); // used for logging
-    	
+
         String fp = CertTools.getFingerprintAsString(certificate);
         CertificateData rev = CertificateData.findByFingerprint(entityManager, fp);
         if (rev == null) {
@@ -822,9 +821,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public List<Object[]> findExpirationInfo(String cASelectString, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax,
+    public List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax,
             long activeExpireDateMin) {
-        return CertificateData.findExpirationInfo(entityManager, cASelectString, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax,
+        return CertificateData.findExpirationInfo(entityManager, cas, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax,
                 activeExpireDateMin);
     }
 

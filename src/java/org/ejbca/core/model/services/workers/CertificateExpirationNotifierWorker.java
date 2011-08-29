@@ -67,7 +67,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
 
         // Build Query
-        String cASelectString = "";
+        Collection<String> cas = new ArrayList<String>();
         Collection<Integer> ids = getCAIdsToCheck(false);
         if (ids.size() > 0) {
             Iterator<Integer> iter = ids.iterator();
@@ -86,11 +86,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                     continue;
 				}
                 String cadn = caInfo.getSubjectDN();
-                if (cASelectString.equals("")) {
-                    cASelectString = "issuerDN='" + cadn + "' ";
-                } else {
-                    cASelectString += " OR issuerDN='" + cadn + "' ";
-                }
+                cas.add(cadn);
             }
 
             /*
@@ -134,9 +130,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
 
             long thresHold = getTimeBeforeExpire();
             long now = new Date().getTime();
-            if (!cASelectString.equals("")) {
+            if (!cas.isEmpty()) {
                 try {
-                    List<Object[]> fingerprintUsernameList = certificateStoreSession.findExpirationInfo(cASelectString, now, (nextRunTimeStamp + thresHold), (runTimeStamp + thresHold));
+                    List<Object[]> fingerprintUsernameList = certificateStoreSession.findExpirationInfo(cas, now, (nextRunTimeStamp + thresHold), (runTimeStamp + thresHold));
                     int count = 0;
                     for (Object[] next : fingerprintUsernameList) {
                         count++;
@@ -196,8 +192,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                 if (isSendToAdmins()) {
                     sendEmails(adminEmailQueue, ejbs);
                 }
+            } else {
+            	log.info("CAs select collection is empty, there were ids but no names?");
             }
-
         } else {
             log.debug("No CAs to check");
         }

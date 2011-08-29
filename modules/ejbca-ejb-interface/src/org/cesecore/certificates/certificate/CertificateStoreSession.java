@@ -330,12 +330,6 @@ public interface CertificateStoreSession {
     CertificateStatus getStatus(String issuerDN, BigInteger serno);
 
     /**
-     * Fetch a List of all certificate fingerprints and corresponding username
-     * @return [0] = (String) fingerprint, [1] = (String) username
-     */
-    List<Object[]> findExpirationInfo(String cASelectString, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
-    
-    /**
      * Update the status of a cert in the database.
      * @param fingerprint
      * @param status one of CertificateConstants.CERT_...

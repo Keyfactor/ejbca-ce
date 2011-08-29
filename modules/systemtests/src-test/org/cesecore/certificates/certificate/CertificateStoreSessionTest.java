@@ -546,8 +546,69 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	} finally {
     		internalCertStoreSession.removeCertificate(cert);
     	}
-
 	}
+	
+	@Test
+	public void test11FindByType() throws Exception {
+    	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+    	try {
+    		String issuerDN = CertTools.getIssuerDN(cert);
+    		String fp = CertTools.getFingerprintAsString(cert);
+    		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+    		assertNotNull("Failed to find cert", data3);
+    		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
+    		Collection<Certificate> fcert = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, issuerDN);
+    		assertNotNull("Cant find by issuer and type", fcert);
+    		assertEquals("Should be one ee cert", 1, fcert.size());
+    		// Test a query with no issuerDN as well
+    		Collection<Certificate> tcert = certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY, null);
+    		assertNotNull("Cant find by type", tcert);
+    		assertTrue("Should be more than one ee cert", tcert.size()>0);
+    	} finally {
+    		internalCertStoreSession.removeCertificate(cert);    		
+    	}
+	}
+
+	@Test
+	public void test12FindExpirationInfo() throws Exception {
+    	Certificate cert = generateCert(roleMgmgToken, CertificateConstants.CERT_ACTIVE);
+    	try {
+    		String issuerDN = CertTools.getIssuerDN(cert);
+    		String fp = CertTools.getFingerprintAsString(cert);
+    		CertificateInfo data3 = certificateStoreSession.getCertificateInfo(fp);
+    		assertNotNull("Failed to find cert", data3);
+    		log.debug("Looking for cert with type:" + CertificateConstants.CERTTYPE_ENDENTITY + " and issuerDN " + issuerDN);
+    		Collection<String> cas = new ArrayList<String>();
+    		cas.add(issuerDN);
+    		List<Object[]> fcert = internalCertStoreSession.findExpirationInfo(cas, System.currentTimeMillis(), Long.MAX_VALUE, Long.MAX_VALUE);
+    		assertNotNull("Cant find any expiration info", fcert);
+    		assertEquals("Should be one ee cert", 1, fcert.size());
+    		// Try add another CA that does not exist
+    		cas.add("CN=This CA does not exist, I hope");
+    		fcert = internalCertStoreSession.findExpirationInfo(cas, System.currentTimeMillis(), Long.MAX_VALUE, Long.MAX_VALUE);
+    		assertNotNull("Cant find any expiration info", fcert);
+    		assertEquals("Should be one ee cert", 1, fcert.size());
+    	} finally {
+    		internalCertStoreSession.removeCertificate(cert);    		
+    	}
+	}
+
+//	@Test
+//    public void testBlindSQLInjection_findExpirationInfo() throws Exception {
+//		/* Vulnerability type : Blind SQL Injection
+//	    First, certificatedata table in the database should not be empty in order to exploit the vulnerability
+//		The PoC is : We inject a test checking if the database port is set to 3306 (@@global.port = 3306), the sub-query return TRUE and the query isn't affected. It will return some results. If we test a bad port value (@@global.port <> 3306), the full SQL query return null.*
+//		
+//		Replacing the basic port test by SELECT queries permit the attacker to dump the database.
+//		*/
+//		// Listing without cASelectString should return nothing
+//		List<Object[]> result = certificateStoreSession.findExpirationInfo(null, 1, 1, 1);
+//		assertEquals("Result not returned", 0, result.size());
+//		// Injecting our "always true" SQL returns values
+//		result = certificateStoreSession.findExpirationInfo("1=1) OR (1=1", 1, 1, 1);
+//		assertTrue("Result returned", result.size()>0);
+//	}
+	
     private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             SignatureException, InvalidKeyException, CertificateEncodingException, CreateException, AuthorizationDeniedException {
         // create a new self signed certificate

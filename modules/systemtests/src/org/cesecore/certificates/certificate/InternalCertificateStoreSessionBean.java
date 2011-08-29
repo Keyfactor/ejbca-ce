@@ -15,7 +15,9 @@ package org.cesecore.certificates.certificate;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.List;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -36,6 +38,9 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
+    @EJB
+    CertificateStoreSessionLocal certStore;
+    
     @Override
     public void removeCertificate(BigInteger serno) {
     	if (serno != null) {
@@ -65,4 +70,10 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 	        }
 		}
     }
+	
+	@Override
+    public List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
+    	return certStore.findExpirationInfo(cas, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax, activeExpireDateMin);
+    }
+
 }

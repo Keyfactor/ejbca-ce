@@ -14,7 +14,9 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.Local;
@@ -26,7 +28,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * Local interface for CertificateStoreSession.
  * Based on EJBCA version: CertificateStoreSessionLocal.java 11278 2011-01-28 14:06:19Z anatom
  * 
- * @version $Id: CertificateStoreSessionLocal.java 972 2011-08-03 09:12:39Z tomas $
+ * @version $Id: CertificateStoreSessionLocal.java 979 2011-08-04 16:55:49Z tomas $
  */
 @Local
 public interface CertificateStoreSessionLocal extends CertificateStoreSession {
@@ -37,7 +39,6 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
      * the CA issuing the certificate has already been checked. For efficiency this method can then be used.
-     * This is why it is important that this method is _local only_. 
      * 
      * @param incert The certificate to be stored.
      * @param cafp Fingerprint (hex) of the CAs certificate.
@@ -67,5 +68,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     boolean setRevokeStatusNoAuth(AuthenticationToken admin, Certificate certificate, Date revokedDate, int reason, String userDataDN)
     	throws CertificateRevokeException, AuthorizationDeniedException;
+
+    /**
+     * Fetch a List of all certificate fingerprints and corresponding username
+     * @return [0] = (String) fingerprint, [1] = (String) username
+     */
+    List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
+    
 
 }
