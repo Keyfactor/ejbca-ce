@@ -13,10 +13,12 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Date;
-
-import junit.framework.TestCase;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -26,6 +28,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -39,6 +42,10 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests for the Soft catoken removal functionality.
@@ -50,7 +57,7 @@ import org.ejbca.util.InterfaceCache;
  * @author Markus Kilås
  * @version $Id$
  */
-public class CAKeystoreExportRemoveRestoreTest extends TestCase {
+public class CAKeystoreExportRemoveRestoreTest {
 
     private static final Logger log = Logger.getLogger(CAKeystoreExportRemoveRestoreTest.class);
 
@@ -59,8 +66,8 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
 
-    public CAKeystoreExportRemoveRestoreTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void installProvider() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
@@ -69,6 +76,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Before
     public void setUp() throws Exception {
     }
 
@@ -77,6 +85,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @After
     public void tearDown() throws Exception {
     }
 
@@ -86,19 +95,43 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test01ExportRemoveRestoreSHA1WithRSA() throws Exception {
         log.trace("<test01ExportRemoveRestoreSHA1WithRSA()");
 
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         exportRemoveRestore(catokeninfo);
 
         log.trace("<test01ExportRemoveRestoreSHA1WithRSA()");
     }
+
+	/**
+	 * @return
+	 */
+	private CATokenInfo createCaTokenInfo(String sigAlg, String encAlg) {
+		CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setSignatureAlgorithm(sigAlg);
+        catokeninfo.setEncryptionAlgorithm(encAlg);
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+		return catokeninfo;
+	}
 
     /**
      * Tries to export, remove and restore with a CA that is using SHA256withRSA
@@ -107,15 +140,11 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test02ExportRemoveRestoreSHA256WithRSAForSigning() throws Exception {
         log.trace(">test02ExportRemoveRestoreSHA256WithRSAForSigning()");
 
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         exportRemoveRestore(catokeninfo);
 
         log.trace("<test02ExportRemoveRestoreSHA256WithRSAForSigning()");
@@ -128,15 +157,11 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test03ExportRemoveRestoreSHA1WithECDSAForSigning() throws Exception {
         log.trace(">test03ExportRemoveRestoreSHA1WithECDSAForSigning()");
 
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         exportRemoveRestore(catokeninfo);
 
         log.trace("<test03ExportRemoveRestoreSHA1WithECDSAForSigning()");
@@ -149,15 +174,11 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test04ExportRemoveRestoreSHA1WithDSAForSigning() throws Exception {
         log.trace(">test04ExportRemoveRestoreSHA1WithDSAForSigning()");
 
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         exportRemoveRestore(catokeninfo);
 
         log.trace("<test04ExportRemoveRestoreSHA1WithDSAForSigning()");
@@ -168,6 +189,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test05RestoreWrong() throws Exception {
         log.trace(">test05RestoreWrong()");
 
@@ -179,32 +201,17 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // CA using SHA1withRSA and 2048 bit RSA KEY
         String caname1 = "TestExportRemoveRestoreCA1";
-        CATokenInfo catokeninfo1 = new CATokenInfo();
-        catokeninfo1.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo1.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo1.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo1 = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         X509CAInfo cainfo1 = getNewCAInfo(caname1, catokeninfo1);
 
         // This CA uses DSA instead
         String caname2 = "TestExportRemoveRestoreCA2";
-        CATokenInfo catokeninfo2 = new CATokenInfo();
-        catokeninfo2.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-        catokeninfo2.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo2.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo2.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo2.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo2 = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         X509CAInfo cainfo2 = getNewCAInfo(caname2, catokeninfo2);
 
         // This CA uses RSA but with 1024 bits
         String caname3 = "TestExportRemoveRestoreCA3";
-        CATokenInfo catokeninfo3 = new CATokenInfo();
-        catokeninfo3.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo3.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo3.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo3.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo3.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo3 = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         X509CAInfo cainfo3 = getNewCAInfo(caname3, catokeninfo3);
 
         // Remove CAs if they already exists
@@ -320,6 +327,7 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void test06RestoreNotRemoved() throws Exception {
         log.trace(">test06RestoreNotRemoved()");
 
@@ -329,13 +337,8 @@ public class CAKeystoreExportRemoveRestoreTest extends TestCase {
 
         // CA1
         String caname1 = "TestExportRemoveRestoreCA1";
-        CATokenInfo catokeninfo1 = new CATokenInfo();
-        catokeninfo1.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo1.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo1.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo1.setClassPath(SoftCryptoToken.class.getName());
-        X509CAInfo cainfo1 = getNewCAInfo(caname1, catokeninfo1);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        X509CAInfo cainfo1 = getNewCAInfo(caname1, catokeninfo);
 
         // Remove if they already exists
         try {
