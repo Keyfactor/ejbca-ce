@@ -13,6 +13,10 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -24,11 +28,10 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -39,11 +42,13 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -51,13 +56,17 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests CA import and export.
  * 
  * @version $Id$
  */
-public class CAImportExportTest extends TestCase  {
+public class CAImportExportTest  {
     private static Logger log = Logger.getLogger(CAImportExportTest.class);
     private static X509CAInfo cainfo = null;
     
@@ -65,22 +74,10 @@ public class CAImportExportTest extends TestCase  {
     private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
 
-    private AuthenticationToken adminTokenNoAuth;
-    
-    /**
-     * Creates a new TestCAImportExport object.
-     *
-     * @param name name
-     * @throws InvalidAlgorithmParameterException 
-     * @throws NoSuchProviderException 
-     * @throws NoSuchAlgorithmException 
-     * @throws IllegalStateException 
-     * @throws SignatureException 
-     * @throws CertificateEncodingException 
-     * @throws InvalidKeyException 
-     */
-    public CAImportExportTest(String name) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException {
-        super(name);
+    private static AuthenticationToken adminTokenNoAuth;
+
+    @BeforeClass
+    public static void beforeTest() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
@@ -92,21 +89,38 @@ public class CAImportExportTest extends TestCase  {
 
         adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
     }
-    
-    /**
-     * Setup test environment.
-     *
-     * @throws Exception
-     */
+
+    @Before
     public void setUp() throws Exception {
     }
-    
-    /**
-     * Tear down test environment. Does nothing.
-     *
-     * @throws Exception
-     */
+
+    @After
     public void tearDown() throws Exception {
+    }
+    
+    private CATokenInfo createCaTokenInfo(String sigAlg, String encAlg) {
+    	CATokenInfo catokeninfo = new CATokenInfo();
+    	catokeninfo.setSignatureAlgorithm(sigAlg);
+    	catokeninfo.setEncryptionAlgorithm(encAlg);
+    	catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+    	catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+    	catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+    	Properties prop = catokeninfo.getProperties();
+    	// Set some CA token properties if they are not set already
+    	if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+    		prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+    	}
+    	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+    		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+    	}
+    	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+    		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+    	}
+    	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+    		prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+    	}
+    	catokeninfo.setProperties(prop);
+    	return catokeninfo;
     }
     
     /**
@@ -114,14 +128,10 @@ public class CAImportExportTest extends TestCase  {
      *
      * @throws Exception
      */
+    @Test
 	public void test01ImportExportSHA1withRSA() throws Exception {
 	    log.trace("<test01ImportExport..()");
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test01ImportExport()");
 	} // test01ImportExport
@@ -131,14 +141,10 @@ public class CAImportExportTest extends TestCase  {
      *
      * @throws Exception
      */
+    @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test02ImportExport()");
 	} // test02ImportExport
@@ -148,14 +154,10 @@ public class CAImportExportTest extends TestCase  {
      *
      * @throws Exception
      */
+    @Test
 	public void test03ImportExportSHA256withRSA() throws Exception {
 	    log.trace("<test03ImportExport..()");
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test03ImportExport()");
 	} // test03ImportExport
@@ -165,14 +167,10 @@ public class CAImportExportTest extends TestCase  {
      *
      * @throws Exception
      */
+    @Test
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
-	    CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test04ImportExport()");
 	} // test04ImportExport
@@ -184,15 +182,10 @@ public class CAImportExportTest extends TestCase  {
      *
      * @throws Exception
      */
+    @Test
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
-	    CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-        
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 		subTestPublicAccess(catokeninfo, adminTokenNoAuth);
 	    log.trace("<test05ImportExport()");
 	} // test05ImportExport
@@ -202,14 +195,10 @@ public class CAImportExportTest extends TestCase  {
      *
      * @throws Exception
      */
+    @Test
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test06ImportExport()");
 	} // test02ImportExport
