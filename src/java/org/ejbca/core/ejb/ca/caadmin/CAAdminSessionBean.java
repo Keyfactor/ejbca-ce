@@ -2618,7 +2618,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         Iterator<ExtendedCAServiceInfo> iter = extendedCAServiceInfos.iterator();
         while (iter.hasNext()) {
             ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
-            ArrayList<Certificate> certificate = new ArrayList<Certificate>();
+            ArrayList<Certificate> certificates = new ArrayList<Certificate>();
             if (info instanceof OCSPCAServiceInfo) {
                 try {
                     ca.initExtendedService(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE, ca);
@@ -2633,7 +2633,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (info instanceof XKMSCAServiceInfo) {
                 try {
                     ca.initExtendedService(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE, ca);
-                    certificate.add(((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE))
+                    certificates.add(((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE))
                             .getXKMSSignerCertificatePath().get(0));
                 } catch (Exception fe) {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "XKMSCAService");
@@ -2644,7 +2644,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (info instanceof CmsCAServiceInfo) {
                 try {
                     ca.initExtendedService(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE, ca);
-                    certificate.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE))
+                    certificates.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE))
                             .getCertificatePath().get(0));
                 } catch (Exception fe) {
                     String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "CMSCAService");
@@ -2658,8 +2658,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
                 publishers = ca.getCRLPublishers();
             }
-            if ((!certificate.isEmpty())) {
-                publishCACertificate(admin, certificate, publishers, ca.getSubjectDN());
+            if ((!certificates.isEmpty())) {
+                publishCACertificate(admin, certificates, publishers, ca.getSubjectDN());
             }
         }
     }
