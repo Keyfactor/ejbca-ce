@@ -48,8 +48,14 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
@@ -61,6 +67,14 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceTypes;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAService;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAService;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAService;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.SqlExecutor;
 
@@ -84,6 +98,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
+    @EJB
+    private CaSessionLocal caSession;
     @EJB
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
@@ -308,14 +324,99 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * 
      */
     private boolean migrateDatabase500() {
-    	
-    	// TODO: upgrade "fix CAs that don't have classpath for extended CA services"
-
     	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
     	
-    	// Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.
     	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
+
+    	// fix CAs that don't have classpath for extended CA services
+    	Collection<Integer> caids = caSession.getAvailableCAs();
+    	for (Integer caid : caids) {
+    		try {
+				CA ca = caSession.getCAForEdit(admin, caid);
+				if (ca.getCAType() == CAInfo.CATYPE_X509) {
+					Collection<Integer> extendedServiceTypes = ca.getExternalCAServiceTypes();
+					for (Integer type : extendedServiceTypes) {
+						ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
+						if (info == null) {
+							HashMap data = ca.getExtendedCAServiceData(type);
+							switch (type) {
+							case ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE:
+								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, OCSPCAService.class.getName());
+								ca.setExtendedCAServiceData(type, data);
+								log.info("Updating extended CA service of type "+type+" with implementation class "+OCSPCAService.class.getName());
+								break;
+							case ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE:
+								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, XKMSCAService.class.getName());
+								ca.setExtendedCAServiceData(type, data);
+								log.info("Updating extended CA service of type "+type+" with implementation class "+XKMSCAService.class.getName());
+								break;
+							case ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE:
+								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, CmsCAService.class.getName());
+								ca.setExtendedCAServiceData(type, data);
+								log.info("Updating extended CA service of type "+type+" with implementation class "+CmsCAService.class.getName());
+								break;
+							case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
+								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, HardTokenEncryptCAService.class.getName());
+								ca.setExtendedCAServiceData(type, data);
+								log.info("Updating extended CA service of type "+type+" with implementation class "+HardTokenEncryptCAService.class.getName());
+								break;
+							case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
+								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, KeyRecoveryCAService.class.getName());
+								ca.setExtendedCAServiceData(type, data);
+								log.info("Updating extended CA service of type "+type+" with implementation class "+KeyRecoveryCAService.class.getName());
+								break;
+							default:
+								break;
+							}
+						} else {
+							// If we can't get info for the HardTokenEncrypt or KeyRecovery service it means they don't exist 
+							// as such in the database, but was hardcoded before. We need to create them from scratch
+							switch (type) {
+							case ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE:
+								HardTokenEncryptCAServiceInfo htinfo = new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE);
+								HardTokenEncryptCAService htservice = new HardTokenEncryptCAService(htinfo);
+								log.info("Creating extended CA service of type "+type+" with implementation class "+HardTokenEncryptCAService.class.getName());
+								ca.setExtendedCAService(htservice);
+								break;
+							case ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE:
+								KeyRecoveryCAServiceInfo krinfo = new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE);
+								KeyRecoveryCAService krservice = new KeyRecoveryCAService(krinfo);
+								log.info("Creating extended CA service of type "+type+" with implementation class "+KeyRecoveryCAService.class.getName());
+								ca.setExtendedCAService(krservice);
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					// If key recovery and hard token encrypt service does not exist, we have to create them
+					CAInfo cainfo = ca.getCAInfo();
+					Collection<ExtendedCAServiceInfo> extendedcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+					if (!extendedServiceTypes.contains(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE)) {
+						log.info("Adding new extended CA service of type "+ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE+" with implementation class "+HardTokenEncryptCAService.class.getName());
+						extendedcaserviceinfos.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+					}
+					if (!extendedServiceTypes.contains(ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE)) {
+						log.info("Adding new extended CA service of type "+ExtendedCAServiceTypes.TYPE_KEYRECOVERYEXTENDEDSERVICE+" with implementation class "+KeyRecoveryCAService.class.getName());							
+						extendedcaserviceinfos.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+					}
+					if (!extendedcaserviceinfos.isEmpty()) {
+						cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
+						ca.updateCA(cainfo);
+					}
+					// Finally store the upgraded CA
+					caSession.editCA(admin, ca, true);
+				}
+			} catch (CADoesntExistsException e) {
+				log.error("CA does not exist during upgrade: "+caid, e);
+			} catch (AuthorizationDeniedException e) {
+				log.error("Authorization denied to CA during upgrade: "+caid, e);
+			} catch (IllegalCryptoTokenException e) {
+				log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
+			}
+    	}
+    	// Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.
     	Collection<RoleData> roles = roleAccessSession.getAllRoles();
     	for (RoleData role : roles) {
     		Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
@@ -324,19 +425,23 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     			if (StringUtils.equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, rule.getAccessRuleName()) && 
     					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
     				// Now we add a new rule
-    				log.info("Adding new access rule of '/' on role: "+role.getRoleName());
     		    	AccessRuleData slashrule = new AccessRuleData(role.getRoleName(), "/", AccessRuleState.RULE_ACCEPT, true);
-    	        	Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
-    	        	newrules.add(slashrule);
-    	    		try {
-						roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
-					} catch (AccessRuleNotFoundException e) {
-						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-					} catch (RoleNotFoundException e) {
-						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-					} catch (AuthorizationDeniedException e) {
-						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-					}
+    		    	// Only add the rule if it does not already exist
+    		    	if (!rulemap.containsKey(slashrule.getPrimaryKey())) {
+        				log.info("Adding new access rule of '/' on role: "+role.getRoleName());
+        	        	Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
+        	        	newrules.add(slashrule);
+        	    		try {
+    						roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
+    					} catch (AccessRuleNotFoundException e) {
+    						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    					} catch (RoleNotFoundException e) {
+    						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    					} catch (AuthorizationDeniedException e) {
+    						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    					}    		    		
+    		    	}
+					break; // no need to continue with this role
     			}
     		}
 		}
