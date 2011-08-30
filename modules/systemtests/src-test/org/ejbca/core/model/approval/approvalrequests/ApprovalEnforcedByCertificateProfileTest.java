@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import javax.persistence.PersistenceException;
@@ -40,6 +41,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -49,6 +51,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -241,13 +244,19 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID1);
+            CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
+            assertEquals("CA should be offline", SecConst.CA_OFFLINE, cainfo.getStatus());
             caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", globalConfigurationSession.getCachedGlobalConfiguration(admin1));
+            cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
+            assertEquals("CA should be online", SecConst.CA_ACTIVE, cainfo.getStatus());
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
         }
 
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID2);
+            CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID2);
+            assertEquals("CA should be offline", SecConst.CA_OFFLINE, cainfo.getStatus());
             caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration(admin1));
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
@@ -303,16 +312,12 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username1 = genRandomUserName("test04_1");
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, /*
-                                                                                                 * "rfc822name="
-                                                                                                 * +
-                                                                                                 * email
-                                                                                                 */null, email, false, endEntityProfileId,
+            userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
+            		/*"rfc822name="+email*/null, email, false, endEntityProfileId,
                     certProfileIdNoApprovals, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
-
+            assertNotNull("Cert should have been created.", cert);
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
-
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(admin1, username1));
             userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin1, username1));
@@ -418,6 +423,12 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        Properties prop = catokeninfo.getProperties();
+        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        catokeninfo.setProperties(prop);
         List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);
 

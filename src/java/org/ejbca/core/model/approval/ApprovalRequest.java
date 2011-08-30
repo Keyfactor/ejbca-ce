@@ -28,7 +28,9 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -319,11 +321,19 @@ public abstract class ApprovalRequest implements Externalizable {
         if (version == 2) {
             final Admin admin = (Admin) in.readObject();
             final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
-            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(x509cert);
-            Set<X500Principal> principals = new HashSet<X500Principal>();
-            principals.add(x509cert.getSubjectX500Principal());
-            this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            AuthenticationToken token = null;
+            if (x509cert == null) {
+            	if (admin.getAdminInformation().isSpecialUser() && (admin.getUsername() != null)) {
+            		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
+            	}
+            } else {
+                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                credentials.add(x509cert);
+                Set<X500Principal> principals = new HashSet<X500Principal>();
+                principals.add(x509cert.getSubjectX500Principal());
+                token = new X509CertificateAuthenticationToken(principals, credentials);
+            }
+            this.requestAdmin = token;
             this.requestAdmin = null;
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
@@ -336,11 +346,19 @@ public abstract class ApprovalRequest implements Externalizable {
         	// Version 2 and 3 only care about the certificate from the old Admin object
             final Admin admin = (Admin) in.readObject();
             final X509Certificate x509cert = (X509Certificate)admin.getAdminInformation().getX509Certificate();
-            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(x509cert);
-            Set<X500Principal> principals = new HashSet<X500Principal>();
-            principals.add(x509cert.getSubjectX500Principal());
-            this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            AuthenticationToken token = null;
+            if (x509cert == null) {
+            	if (admin.getAdminInformation().isSpecialUser() && (admin.getUsername() != null)) {
+            		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
+            	}
+            } else {
+                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                credentials.add(x509cert);
+                Set<X500Principal> principals = new HashSet<X500Principal>();
+                principals.add(x509cert.getSubjectX500Principal());
+                token = new X509CertificateAuthenticationToken(principals, credentials);
+            }
+            this.requestAdmin = token;
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();
