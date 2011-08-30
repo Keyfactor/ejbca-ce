@@ -71,9 +71,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -2230,8 +2228,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Get CA also check authorization for this specific CA
-        CA ca = caSession.getCA(admin, caid);
-        CAInfo cainfo = ca.getCAInfo();
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
         if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
             String msg = intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid));
             log.info(msg);
@@ -2252,27 +2249,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new CryptoTokenAuthenticationFailedException(msg);
         }
         boolean cATokenDisconnected = false;
-        try {
-            if ((ca.getCAToken().getTokenInfo()).getTokenStatus() == CryptoToken.STATUS_OFFLINE) {
-                cATokenDisconnected = true;
-            }
-        } catch (IllegalCryptoTokenException e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorreadingtoken", Integer.valueOf(caid));
-            log.error(msg, e);
+        if ((cainfo.getCATokenInfo()).getTokenStatus() == CryptoToken.STATUS_OFFLINE) {
+        	cATokenDisconnected = true;
         }
-        if (ca.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected) {
+        if (cainfo.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected) {
             try {
                 // CA Token session also handles audit
                 caTokenSession.activateCAToken(admin, caid, authorizationcode.toCharArray());
                 // If the CA was off-line, this is activation of the CA, if
                 // only the token was disconnected we only connect the token
-                // If CA is waiting for certificate response we can not
+                // If CA is waiting for certificate response, expired or revoked we can not
                 // change this status just by activating the token.
-                if (ca.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE) {
+                if ((cainfo.getStatus() == SecConst.CA_OFFLINE)) {
+                	CA ca = caSession.getCAForEdit(admin, caid);
                     ca.setStatus(SecConst.CA_ACTIVE);
+                    caSession.editCA(admin, ca, false);
                 }
             } catch (CryptoTokenAuthenticationFailedException e) {
-                String msg = intres.getLocalizedMessage("caadmin.badcaactivationcode", ca.getName());
+                String msg = intres.getLocalizedMessage("caadmin.badcaactivationcode", cainfo.getName());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EventTypes.CA_TOKENACTIVATE, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
@@ -2282,7 +2276,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new EJBException(e);
             }
         } else {
-            String msg = intres.getLocalizedMessage("caadmin.errornotoffline", ca.getName());
+            String msg = intres.getLocalizedMessage("caadmin.errornotoffline", cainfo.getName());
             log.info(msg);
             throw new CryptoTokenAuthenticationFailedException(msg);
         }
@@ -2305,6 +2299,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // CA Token session also handles audit
         caTokenSession.deactivateCAToken(admin, caid);
+        // Setting CA token to offline, makes the CA offline
+		CA ca = caSession.getCAForEdit(admin, caid);
+		ca.setStatus(SecConst.CA_OFFLINE);
+		caSession.editCA(admin, ca, false);
     }
 
     /** Method used to check if certificate profile id exists in any CA. */
@@ -2544,7 +2542,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Get CA that will process request
         CA ca = caSession.getCA(admin, caid);
         if (log.isDebugEnabled()) {
-            log.debug("Exteneded service with request class '" + request.getClass().getName() + "' called for CA '" + ca.getName() + "'");
+            log.debug("Extended service with request class '" + request.getClass().getName() + "' called for CA '" + ca.getName() + "'");
         }
         return ca.extendedService(request);
     }
