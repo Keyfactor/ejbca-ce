@@ -98,7 +98,7 @@ public class CAImportExportTest  {
     public void tearDown() throws Exception {
     }
     
-    private CATokenInfo createCaTokenInfo(String sigAlg, String encAlg) {
+    private CATokenInfo createCaTokenInfo(String sigAlg, String signKeySpec, String encAlg) {
     	CATokenInfo catokeninfo = new CATokenInfo();
     	catokeninfo.setSignatureAlgorithm(sigAlg);
     	catokeninfo.setEncryptionAlgorithm(encAlg);
@@ -108,7 +108,7 @@ public class CAImportExportTest  {
     	Properties prop = catokeninfo.getProperties();
     	// Set some CA token properties if they are not set already
     	if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-    		prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+    		prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, signKeySpec);
     	}
     	if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
     		prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -131,7 +131,7 @@ public class CAImportExportTest  {
     @Test
 	public void test01ImportExportSHA1withRSA() throws Exception {
 	    log.trace("<test01ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test01ImportExport()");
 	} // test01ImportExport
@@ -144,7 +144,7 @@ public class CAImportExportTest  {
     @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, "prime192v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test02ImportExport()");
 	} // test02ImportExport
@@ -157,7 +157,7 @@ public class CAImportExportTest  {
     @Test
 	public void test03ImportExportSHA256withRSA() throws Exception {
 	    log.trace("<test03ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, "2048", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test03ImportExport()");
 	} // test03ImportExport
@@ -170,7 +170,7 @@ public class CAImportExportTest  {
     @Test
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "prime192v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test04ImportExport()");
 	} // test04ImportExport
@@ -185,7 +185,7 @@ public class CAImportExportTest  {
     @Test
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "prime192v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 		subTestPublicAccess(catokeninfo, adminTokenNoAuth);
 	    log.trace("<test05ImportExport()");
 	} // test05ImportExport
@@ -198,7 +198,7 @@ public class CAImportExportTest  {
     @Test
 	public void test06ImportExportSHA1withDSA() throws Exception {
 	    log.trace("<test06ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_DSA, "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test06ImportExport()");
 	} // test02ImportExport
@@ -274,49 +274,65 @@ public class CAImportExportTest  {
 
     	try {
 		    caSession.removeCA(admin, cainfo.getCAId());
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		boolean ret = false;
 		try {
 			caadminsession.createCA(admin, cainfo);
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertEquals("Could not create CA \"" + caname + "\" for testing.", ret, defaultRetValue);
 		ret = false;
 		try {
 			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertEquals("Could not get key fingerprint for \"" + caname + "\".", ret, defaultRetValue);
 		ret = false;
 		try {
 			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertEquals("Could not export CA.", ret, defaultRetValue);
 		ret = false;
 		try {
 		    caSession.removeCA(admin, cainfo.getCAId());
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertEquals("Could not remove CA.", ret, defaultRetValue);
 		ret = false;
 		try {
 			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertEquals("Could not import CA.", ret, defaultRetValue);
 		ret = false;
 		try {
 			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
 				ret = true;
 			}
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertEquals("Fingerprint does not match for \"" + caname + "\".", ret, defaultRetValue);
 		ret = false;
 		try {
 		    caSession.removeCA(admin, cainfo.getCAId());
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertEquals("Could not remove CA.", ret, defaultRetValue);
 	}
 
@@ -335,74 +351,89 @@ public class CAImportExportTest  {
         AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 		try {
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		boolean ret = false;
+		try {
+			caadminsession.createCA(admin, cainfo);
+			ret = true;
+		} catch (Exception e) { 
+			// NOPMD
+		}
+		assertFalse("Could create CA \"" + caname + "\".", ret);
+		ret = false;
 		try {
 			caadminsession.createCA(internalAdmin, cainfo);
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertTrue("Could not create CA \"" + caname + "\" for testing.", ret);
 		ret = false;
 		try {
 			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
 			ret = true;
-		} catch (Exception e) {}
-		assertFalse("Could get key fingerprint for \"" + caname + "\".", ret);
-		ret = false;
-		try {
-			keyFingerPrint = catestsession.getKeyFingerPrint(caname);
-			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertTrue("Could not get key fingerprint for \"" + caname + "\".", ret);
 		ret = false;
 		try {
 			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD
+		}
 		assertFalse("Could export CA.", ret);
 		ret = false;
 		try {
 			keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertTrue("Could not export CA.", ret);
 		ret = false;
 		try {
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertTrue("Could not remove CA.", ret);
 		ret = false;
 		try {
 			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD
+		}
 		assertFalse("Could import CA.", ret);
 		ret = false;
 		try {
 			caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			log.info("Error: ", e);
+		}
 		assertTrue("Could not import CA.", ret);
 		ret = false;
 		try {
 			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
 				ret = true;
 			}
-		} catch (Exception e) { }
-		assertFalse("Fingerprint does match for \"" + caname + "\".", ret);
-		ret = false;
-		try {
-			if ( keyFingerPrint.equals(catestsession.getKeyFingerPrint(caname)) ) {
-				ret = true;
-			}
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertTrue("Fingerprint does not match for \"" + caname + "\".", ret);
 		ret = false;
 		try {
 		    caSession.removeCA(internalAdmin, cainfo.getCAId());
 			ret = true;
-		} catch (Exception e) { }
+		} catch (Exception e) { 
+			// NOPMD:			
+		}
 		assertTrue("Could not remove CA.", ret);
 	}
 }

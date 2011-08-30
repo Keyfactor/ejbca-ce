@@ -85,6 +85,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.catoken.CaTokenSessionLocal;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -1791,6 +1792,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             PrivateKey privateEncryptionKey, PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain, int tokenId)
             throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException {
 
+    	if (tokenProperties == null) {
+    		tokenProperties = new Properties();
+    	}
         // If we don't give an authentication code, perhaps we have autoactivation enabled
         char[] authCode;
         if (StringUtils.isEmpty(authenticationCode)) {
@@ -1821,20 +1825,19 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
 
             // import sign keys.
-            String keyspec = AlgorithmTools.getKeySpecification(publickey);
-            Certificate[] certchain = new Certificate[1];
+            final Certificate[] certchain = new Certificate[1];
             certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, privatekey, publickey, signatureAlgorithm, true);
 
             keystore.setKeyEntry(CAToken.SOFTPRIVATESIGNKEYALIAS, privatekey, null, certchain);
 
             // generate enc keys.
             // Encryption keys must be RSA still
-            String encryptionAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm);
+            final String encryptionAlgorithm = AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm);
             keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(encryptionAlgorithm);
-            keyspec = "2048";
+            final String enckeyspec = "2048";
             KeyPair enckeys = null;
             if (publicEncryptionKey == null || privateEncryptionKey == null) {
-                enckeys = KeyTools.genKeys(keyspec, keyAlg);
+                enckeys = KeyTools.genKeys(enckeyspec, keyAlg);
             } else {
                 enckeys = new KeyPair(publicEncryptionKey, privateEncryptionKey);
             }
@@ -1842,14 +1845,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), encryptionAlgorithm, true);
             keystore.setKeyEntry(CAToken.SOFTPRIVATEDECKEYALIAS, enckeys.getPrivate(), null, certchain);
 
+            // Set the token properties
+            final String sigkeyspec = AlgorithmTools.getKeySpecification(publickey);
+            tokenProperties.setProperty(CryptoToken.KEYSPEC_PROPERTY, sigkeyspec);
+            tokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            tokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            tokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+
             // Write the keystore to byte[] that we can feed to crypto token factory
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keystore.store(baos, authCode);
 
             // Now we have the PKCS12 keystore, from this we can create the CAToken
-            CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), tokenProperties, baos.toByteArray(),
+            final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), tokenProperties, baos.toByteArray(),
                     tokenId);
-            CAToken catoken = new CAToken(cryptoToken);
+            final CAToken catoken = new CAToken(cryptoToken);
             // If this is a CVC CA we need to find out the sequence
             String sequence = CAToken.DEFAULT_KEYSEQUENCE;
             if (cacert instanceof CardVerifiableCertificate) {
@@ -2104,6 +2114,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 details.put("msg", msg);
                 auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), caname, null,
                         null, details);
+                throw new AuthorizationDeniedException(msg);
             }
             // Fetch keys
             // This is a way of verifying the password. If activate fails, we
