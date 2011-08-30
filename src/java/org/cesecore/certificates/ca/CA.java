@@ -645,6 +645,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             ExtendedCAServiceInfo info = iter.next();
             ExtendedCAService service = this.getExtendedCAService(info.getType());
             if (service == null) {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Creating new extended CA service of type: "+info.getType());
+            	}
                 createExtendedCAService(info);
                 extendedservicetypes.add(info.getType());
             } else {
@@ -807,12 +810,21 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return service.extendedService(request);
     }
 
+    public HashMap getExtendedCAServiceData(int type) {
+        HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type); 
+        return serviceData;
+    }
+
+    public void setExtendedCAServiceData(int type, HashMap serviceData) {
+        data.put(EXTENDEDCASERVICE + type, serviceData);
+    }
+
     protected ExtendedCAService getExtendedCAService(int type) {
         ExtendedCAService returnval = null;
         try {
             returnval = (ExtendedCAService) extendedcaservicemap.get(Integer.valueOf(type));
             if (returnval == null) {
-                HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type);
+            	HashMap serviceData = getExtendedCAServiceData(type);
                 if (serviceData != null) {
                     // We must have run upgrade on the extended CA services for this to work
                     String implClassname = (String) serviceData.get(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS);
@@ -820,7 +832,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                     	log.error("implementation classname is null for extended service type: "+type+". Service not created.");
                     } else {
                     	if (log.isDebugEnabled()) {
-                    		log.error("implementation classname for extended service type: "+type+" is "+implClassname);
+                    		log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
                     	}
                         Class<?> implClass = Class.forName(implClassname);
                         returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
@@ -848,9 +860,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return returnval;
     }
 
-    protected void setExtendedCAService(ExtendedCAService extendedcaservice) {
+    public void setExtendedCAService(ExtendedCAService extendedcaservice) {
         ExtendedCAServiceInfo info = extendedcaservice.getExtendedCAServiceInfo();
-        data.put(EXTENDEDCASERVICE + info.getType(), extendedcaservice.saveData());
+        setExtendedCAServiceData(info.getType(), (HashMap)extendedcaservice.saveData());
         extendedcaservicemap.put(Integer.valueOf(info.getType()), extendedcaservice);
     }
 
