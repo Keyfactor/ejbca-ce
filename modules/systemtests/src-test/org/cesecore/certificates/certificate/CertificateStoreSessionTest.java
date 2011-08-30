@@ -593,6 +593,9 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	}
 	}
 
+	// Commented out code.
+	// Keep it here, because it can be nice to have as a reference how this can be done.
+	// Commented out though, since the issue is fixed and the method not available anymore.
 //	@Test
 //    public void testBlindSQLInjection_findExpirationInfo() throws Exception {
 //		/* Vulnerability type : Blind SQL Injection
