@@ -46,6 +46,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleData;
@@ -171,6 +172,8 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
             caSession.addCA(roleMgmgToken, testx509ca);
 
             caTokenSession.activateCAToken(roleMgmgToken, testx509ca.getCAId(), "userpin1".toCharArray());
+            CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+            assertEquals("CA Token should be active", CryptoToken.STATUS_ACTIVE, cainfo.getCATokenInfo().getTokenStatus());
         	// See that we can do something with the CAs to verify that everything was stored as we think
         	EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,
         			0, EndEntityConstants.TOKEN_USERGEN, 0, null);
@@ -189,6 +192,8 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
 
         	// Deactivate CA
         	caTokenSession.deactivateCAToken(roleMgmgToken, testx509ca.getCAId());
+            cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+            assertEquals("CA Token should be offline", CryptoToken.STATUS_OFFLINE, cainfo.getCATokenInfo().getTokenStatus());
         	try {
         		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
         		cert = resp.getCertificate();
@@ -201,6 +206,8 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
 
         	try {
         		caTokenSession.activateCAToken(roleMgmgToken, testx509ca.getCAId(), "userpin1".toCharArray());
+                cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+                assertEquals("CA Token should be active", CryptoToken.STATUS_ACTIVE, cainfo.getCATokenInfo().getTokenStatus());
         		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
         		cert = resp.getCertificate();
         		assertNotNull("Failed to create certificate", cert);
