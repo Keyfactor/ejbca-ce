@@ -797,6 +797,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
         ExtendedCAService service = getExtendedCAService(request.getServiceType());
+        if (service == null) {
+        	final String msg = "Extended CA service is null for service request: "+request.getClass().getName();
+        	log.error(msg);
+        	throw new IllegalExtendedCAServiceRequestException();
+        }
         // Enrich request with CA in order for the service to be able to use CA keys and certificates
         service.setCA(this);
         return service.extendedService(request);
@@ -814,10 +819,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                     if (implClassname == null) {
                     	log.error("implementation classname is null for extended service type: "+type+". Service not created.");
                     } else {
+                    	if (log.isDebugEnabled()) {
+                    		log.error("implementation classname for extended service type: "+type+" is "+implClassname);
+                    	}
                         Class<?> implClass = Class.forName(implClassname);
                         returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(new Object[] { serviceData });
                         extendedcaservicemap.put(Integer.valueOf(type), returnval);                    	
                     }
+                } else {
+                	log.error("Servicedata is null for extended CA service of type: "+type);                	
                 }
             }
         } catch (ClassNotFoundException e) {
