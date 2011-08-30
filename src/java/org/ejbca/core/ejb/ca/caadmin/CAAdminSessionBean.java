@@ -946,7 +946,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 while (iter.hasNext()) {
                     int type = iter.next().intValue();
                     try {
-                        ca.initExternalService(type, ca);
+                        ca.initExtendedService(type, ca);
                         ArrayList<Certificate> extcacertificate = new ArrayList<Certificate>();
                         ExtendedCAServiceInfo info = null;
                         if (type == ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE) {
@@ -2621,7 +2621,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ArrayList<Certificate> certificate = new ArrayList<Certificate>();
             if (info instanceof OCSPCAServiceInfo) {
                 try {
-                    ca.initExternalService(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE, ca);
+                    ca.initExtendedService(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE, ca);
                     // The OCSP certificate is the same as the CA signing
                     // certificate
                 } catch (Exception fe) {
@@ -2632,7 +2632,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             if (info instanceof XKMSCAServiceInfo) {
                 try {
-                    ca.initExternalService(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE, ca);
+                    ca.initExtendedService(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE, ca);
                     certificate.add(((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_XKMSEXTENDEDSERVICE))
                             .getXKMSSignerCertificatePath().get(0));
                 } catch (Exception fe) {
@@ -2643,7 +2643,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             if (info instanceof CmsCAServiceInfo) {
                 try {
-                    ca.initExternalService(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE, ca);
+                    ca.initExtendedService(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE, ca);
                     certificate.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE))
                             .getCertificatePath().get(0));
                 } catch (Exception fe) {

@@ -771,7 +771,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param info contains information used to activate the service.
      */
-    public void initExternalService(int type, CA ca) throws Exception {
+    public void initExtendedService(int type, CA ca) throws Exception {
         ExtendedCAService service = getExtendedCAService(type);
         if (service != null) {
             service.init(ca);
