@@ -96,6 +96,7 @@ public class RequestInstance {
 		this.keyRecoverySession = keyRecoverySession;
 		this.signSession = signSession;
 		this.userAdminSession = userAdminSession;
+		this.endEntityAccessSession = endEntityAccessSession;
 		this.globalConfigurationSession = globalConfigurationSession;
 	}
 

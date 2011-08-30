@@ -50,6 +50,7 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
@@ -70,7 +71,6 @@ public class CertRequestHttpTest extends CaTestCase {
 
     private int caid = getTestCAId();
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    private static X509Certificate cacert = null;
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
@@ -88,12 +88,15 @@ public class CertRequestHttpTest extends CaTestCase {
         super.setUp();
         httpReqPath = "http://127.0.0.1:" + configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080") + "/ejbca";
         resourceReq = "certreq";
-        cacert = (X509Certificate) getTestCACert();    
     }
 
     @After
     public void tearDown() throws Exception {
-        userAdminSession.deleteUser(admin, "reqtest");
+    	try {
+    		userAdminSession.deleteUser(admin, "reqtest");
+    	} catch (NotFoundException e) {
+    		// NOPMD:ignore if the user was not created
+    	}
     }
 
     /**
