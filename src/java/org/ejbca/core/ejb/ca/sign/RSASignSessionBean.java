@@ -226,7 +226,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } else {
         	ca = caSession.getCA(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
         }
-        try {            
+        try {
+            // See if we need some key material to decrypt request
+        	decryptAndVerify(req, ca);
             if (ca.isUseUserStorage() && req.getUsername() == null) {
             	String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
                 throw new SignRequestException(msg);
@@ -348,16 +350,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         CA ca = getCAFromRequest(admin, req);
         try {
             CAToken catoken = ca.getCAToken();
-            // See if we need some key material to decrypt request
-            if (req.requireKeyInfo()) {
-                // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
-            }
-            // Verify the request
-            if (req.verify() == false) {
-            	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-                throw new SignRequestSignatureException(msg);
-            }
+            decryptAndVerify(req, ca);
             //Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
@@ -386,24 +379,15 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
+    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">decryptAndVerifyRequest(IRequestMessage)");
     	}
         // Get CA that will receive request
         CA ca = getCAFromRequest(admin, req);
         try {
-            CAToken catoken = ca.getCAToken();
             // See if we need some key material to decrypt request
-            if (req.requireKeyInfo()) {
-                // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
-            }
-            // Verify the request
-            if (req.verify() == false) {
-            	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-                throw new SignRequestSignatureException(msg);
-            }
+            decryptAndVerify(req, ca);
         } catch (IllegalCryptoTokenException e) {
             throw new IllegalKeyException(e);
         } catch (NoSuchProviderException e) {
@@ -422,6 +406,33 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         return req;
     }
+
+	/**
+	 * @param req
+	 * @param ca
+	 * @param catoken
+	 * @throws CryptoTokenOfflineException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchProviderException
+	 * @throws SignRequestSignatureException
+	 * @throws IllegalCryptoTokenException 
+	 */
+	private void decryptAndVerify(RequestMessage req, final CA ca)
+			throws CryptoTokenOfflineException, InvalidKeyException,
+			NoSuchAlgorithmException, NoSuchProviderException,
+			SignRequestSignatureException, IllegalCryptoTokenException {
+		CAToken catoken = ca.getCAToken();
+		if (req.requireKeyInfo()) {
+		    // You go figure...scep encrypts message with the public CA-cert
+		    req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
+		}
+		// Verify the request
+		if (req.verify() == false) {
+			String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
+		    throw new SignRequestSignatureException(msg);
+		}
+	}
     
     @Override
     public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException {
