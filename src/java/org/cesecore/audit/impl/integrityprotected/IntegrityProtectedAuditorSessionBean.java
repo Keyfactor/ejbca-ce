@@ -135,7 +135,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public int deleteRows(final AuthenticationToken token, final Date timestamp, final Properties properties) {
         final Map<String, Object> detailsDelete = new LinkedHashMap<String, Object>();
-        detailsDelete.put("timestamp", FastDateFormat.getTimeInstance(FastDateFormat.FULL, TimeZone.getTimeZone("GMT")).format(timestamp));
+        detailsDelete.put("timestamp", FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(timestamp));
         securityEventsLogger.log(EventTypes.LOG_DELETE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, token.toString(), null, null, null, detailsDelete);
         // Delete all the exported logs (from all nodes)
 		final QueryCriteria queryCriteria = QueryCriteria.where().leq("timeStamp", timestamp.getTime()).order("sequenceNumber", QueryCriteria.ORDER_ASC);

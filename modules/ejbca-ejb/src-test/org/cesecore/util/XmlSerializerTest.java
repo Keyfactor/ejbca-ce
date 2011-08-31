@@ -47,6 +47,14 @@ public class XmlSerializerTest {
 		log.trace("<serializeSpecialChars");
 	}
 	
+	@Test
+	public void serializeSpecialXmlChars() {
+		log.trace(">serializeSpecialXmlChars");
+		final String VALUE = "</string>";
+		Assert.assertEquals(VALUE, encDecAsXml(VALUE));
+		log.trace("<serializeSpecialXmlChars");
+	}
+	
 	/** Make a round trip using a xml enc and dec. */
 	private Object encDecAsXml(String value) {
 		final String KEY = "SomeKey";

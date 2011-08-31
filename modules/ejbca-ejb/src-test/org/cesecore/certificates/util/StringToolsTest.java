@@ -15,6 +15,7 @@ package org.cesecore.certificates.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -253,4 +254,19 @@ public class StringToolsTest {
 		assertEquals(Arrays.asList("aa;a", "bb;;;b", "cc"), StringTools.splitURIs("\"aa;a\";\"bb;;;b\";\"cc")); 	// No ending quote
 	}
 
+	@Test
+	public void testB64() {
+		assertNull(StringTools.getBase64String(null));
+		assertEquals("", StringTools.getBase64String(""));
+		assertEquals("B64:", StringTools.getBase64String("B64:"));
+		assertEquals("b64:", StringTools.getBase64String("b64:"));
+		assertEquals("test", StringTools.getBase64String(StringTools.putBase64String("test")));
+		assertEquals("test~!\"#%&/()", StringTools.putBase64String("test~!\"#%&/()", true));
+		assertEquals("test~!\"#%&/()", StringTools.getBase64String(StringTools.putBase64String("test~!\"#%&/()", true)));
+		assertEquals("test~!\"#%&/()", StringTools.getBase64String(StringTools.putBase64String("test~!\"#%&/()", false)));
+		assertEquals("B64:w4PCpcODwqTDg8K2w4PCvA==", StringTools.putBase64String("åäöü"));
+		assertEquals("B64:w4PCpcODwqTDg8K2w4PCvA==", StringTools.putBase64String("åäöü", true));
+		assertEquals("åäöü", StringTools.getBase64String(StringTools.putBase64String("åäöü", true)));
+		assertEquals("åäöü", StringTools.getBase64String(StringTools.putBase64String("åäöü", false)));
+	}
 }
