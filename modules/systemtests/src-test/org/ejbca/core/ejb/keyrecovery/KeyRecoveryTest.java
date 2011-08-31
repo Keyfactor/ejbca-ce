@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.keyrecovery;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -41,7 +42,7 @@ import org.junit.Test;
 
 /**
  * Tests the key recovery modules.
- *
+ * 
  * @version $Id$
  */
 public class KeyRecoveryTest extends CaTestCase {
@@ -54,11 +55,11 @@ public class KeyRecoveryTest extends CaTestCase {
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    
+
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
-        
+
     }
 
     @Before
@@ -74,64 +75,45 @@ public class KeyRecoveryTest extends CaTestCase {
 
     /**
      * tests adding a keypair and checks if it can be read again.
-     *
+     * 
      * @throws Exception error
      */
     @Test
-    public void test01AddKeyPair() throws Exception {
+    public void testAddAndRemoveKeyPair() throws Exception {
         log.trace(">test01AddKeyPair()");
         // Generate test keypair and certificate.
         try {
-            String email = "test@test.se";
-            if (!userAdminSession.existsUser(admin, user)) {
-                keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-                userAdminSession.addUser(admin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, getTestCAId());
-                cert = (X509Certificate) signSession.createCertificate(admin, user, "foo123", keypair.getPublic());
+            try {
+                String email = "test@test.se";
+                if (!userAdminSession.existsUser(admin, user)) {
+                    keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+                    userAdminSession.addUser(admin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false,
+                            SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
+                            getTestCAId());
+                    cert = (X509Certificate) signSession.createCertificate(admin, user, "foo123", keypair.getPublic());
+                }
+            } catch (Exception e) {
+                log.error("Exception generating keys/cert: ", e);
+                fail("Exception generating keys/cert");
             }
-        } catch (Exception e) {
-            log.error("Exception generating keys/cert: ", e);
-            assertTrue("Exception generating keys/cert", false);            
+            keyRecoverySession.addKeyRecoveryData(admin, cert, user, keypair);
+            assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(admin, cert));
+            log.trace("<test01AddKeyPair()");
+            log.trace(">test02MarkAndRecoverKeyPair()");
+            assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin, user));
+            userAdminSession.prepareForKeyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
+            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin, user));
+            KeyRecoveryData data = keyRecoverySession.keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+
+            assertTrue("Couldn't recover keys from database",
+                    Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
+            log.trace("<test02MarkAndRecoverKeyPair()");
+        } finally {
+            log.trace(">test03RemoveKeyPair()");
+            keyRecoverySession.removeKeyRecoveryData(admin, cert);
+            assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(admin, cert));
+            log.trace("<test03RemoveKeyPair()");
         }
-        keyRecoverySession.addKeyRecoveryData(admin, cert, user, keypair);
-        assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(admin, cert));
-        log.trace("<test01AddKeyPair()");
     }
-
-    /**
-     * tests marks the keypair in database and recovers it.
-     *
-     * @throws Exception error
-     */
-    @Test
-    public void test02MarkAndRecoverKeyPair() throws Exception {
-        log.error("User:::: " + user);
-        log.trace(">test02MarkAndRecoverKeyPair()");
-        CryptoProviderTools.installBCProvider();
-        assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin, user));
-        userAdminSession.prepareForKeyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
-        assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin, user));
-        KeyRecoveryData data = keyRecoverySession.keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
-
-        assertTrue("Couldn't recover keys from database", Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
-
-        log.trace("<test02MarkAndRecoverKeyPair()");
-    }
-
-    /**
-     * tests removes all keydata.
-     *
-     * @throws Exception error
-     */
-    @Test
-    public void test03RemoveKeyPair() throws Exception {
-        log.error("User:::: " + user);
-        log.trace(">test03RemoveKeyPair()");
-        CryptoProviderTools.installBCProvider();
-        keyRecoverySession.removeKeyRecoveryData(admin, cert);
-        assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(admin, cert));
-
-        log.trace("<test03RemoveKeyPair()");
-    }
-
 
 }
