@@ -183,7 +183,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
     
     /** Checks CA authorization and logs an official error if not and throws and AuthorizationDeniedException */
-    private void assertAuthorizedToCA(final AuthenticationToken admin, final int caid, final String username, final int logEvent) throws AuthorizationDeniedException {
+    private void assertAuthorizedToCA(final AuthenticationToken admin, final int caid, final String username) throws AuthorizationDeniedException {
         if (!authorizedToCA(admin, caid)) {
             final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -254,7 +254,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final int caid = endEntity.getCAId();
         final String username = StringTools.strip(endEntity.getUsername());
         // Check if administrator is authorized to add user to CA.
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_ERROR_ADDEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to add user.
@@ -456,7 +456,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final int caid = userDataVO.getCAId();
         final String username = userDataVO.getUsername();
         // Check if administrator is authorized to edit user to CA.
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
@@ -656,7 +656,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_ERROR_DELETEENDENTITY);
+            assertAuthorizedToCA(admin, caid, username);
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_DELETEENDENTITY);
             }
@@ -708,7 +708,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     	final UserData data1 = UserData.findByUsername(entityManager, username);
     	if (data1 != null) {
     		caid = data1.getCaId();
-    		assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+    		assertAuthorizedToCA(admin, caid, username);
     		final ExtendedInformation ei = data1.getExtendedInformation();
     		if (ei != null) {
     			resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
@@ -756,7 +756,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+            assertAuthorizedToCA(admin, caid, username);
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
             	counter = ei.getRemainingLoginAttempts();
@@ -814,7 +814,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+            assertAuthorizedToCA(admin, caid, username);
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
             }
@@ -924,7 +924,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Check if administrator is authorized to edit user.
             UserData data1 = UserData.findByUsername(entityManager, username);
             if (data1 != null) {
-                assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+                assertAuthorizedToCA(admin, caid, username);
                 if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
                 }
@@ -964,7 +964,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         // Check authorization
         final int caid = data.getCaId();
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
         	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
         }
@@ -1079,7 +1079,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Check if administrator is authorized to edit user.
         	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
         }
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         try {
         	final Date now = new Date();
             if ((newpasswd == null) && (cleartext)) {
@@ -1123,7 +1123,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Check if administrator is authorized to edit user.
         	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
         }
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         try {
             ret = data.comparePassword(password);
         } catch (NoSuchAlgorithmException nsae) {
@@ -1148,7 +1148,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         // Authorized?
         final int caid = data.getCaId();
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
         	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
         }
@@ -1191,7 +1191,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new FinderException("Could not find user " + username);
         }
         final int caid = userData.getCaId();
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
         	assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
         }
@@ -1270,7 +1270,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         final int caid = info.getIssuerDN().hashCode();
         final String username = info.getUsername();
-        assertAuthorizedToCA(admin, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
+        assertAuthorizedToCA(admin, caid, username);
         int certificateProfileId = info.getCertificateProfileId();
         String userDataDN = info.getSubjectDN();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(admin, certserno, issuerdn);

@@ -53,9 +53,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -127,8 +125,6 @@ public class ApprovalSessionTest extends CaTestCase {
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
-
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
@@ -142,7 +138,7 @@ public class ApprovalSessionTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        // An if on a static thing here, ust so we don't have to batch generate new certs for every test
+        // An if on a static thing here, just so we don't have to batch generate new certs for every test
         if (adminusername1 == null) {
             adminusername1 = genRandomUserName();
             adminusername2 = adminusername1 + "2";
