@@ -11,9 +11,8 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
- // Original version by Philip Vendil.
- 
+
+ // Version: $Id$
 %>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
@@ -31,12 +30,15 @@
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script language="javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
-
 <body>
 
 <h1><h:outputText value="#{web.text.AUDITHEADER}" /></h1>
 
-<div>
+<%
+	//TODO: Clean up style-mess. Fix transalation keys.
+%>
+
+<div id="home" class="app">
 	<p><h:messages layout="table" errorClass="alert"/></p>
 
 	<h:form id="search">
@@ -52,7 +54,8 @@
 	<h:inputText id="startIndex" value="#{auditor.startIndex}"><f:convertNumber type="number"/></h:inputText>
 
 	<p>
-	<h:dataTable value="#{auditor.conditions}" var="condition" headerClass="listHeader" styleClass="results" rowClasses="listRow1,listRow2" rendered="#{not empty auditor.conditions}">
+   	<h:dataTable value="#{auditor.conditions}" var="condition" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="listHeader" styleClass="grid" rowClasses="a" rendered="#{not empty auditor.conditions}">
+		<f:facet name="caption"><h:outputText value="Current conditions"/></f:facet>
 		<h:column><f:facet name="header"><h:outputText value="operation"/></f:facet><h:outputText value="#{condition.operation}"></h:outputText></h:column>
 		<h:column><f:facet name="header"><h:outputText value="column"/></f:facet><h:outputText value="#{condition.column}"></h:outputText></h:column>
 		<h:column><f:facet name="header"><h:outputText value="condition"/></f:facet><h:outputText value="#{condition.condition}"></h:outputText></h:column>
@@ -76,28 +79,32 @@
 	</p>
 	<br/>
 	<p>
+		<h:commandLink action="#{auditor.previous}" styleClass="commandLink" title="#{web.text.PREVIOUS}"><h:outputText value="#{web.text.PREVIOUS}" rendered="#{auditor.startIndex != 1}"/></h:commandLink>
 		<h:commandLink action="#{auditor.reload}" styleClass="commandLink" title="#{web.text.RELOAD}"><h:outputText value="#{web.text.RELOAD}"/></h:commandLink>
 		<h:commandLink action="#{auditor.next}" styleClass="commandLink" title="#{web.text.NEXT}"><h:outputText value="#{web.text.NEXT}" rendered="#{not empty auditor.results}"/></h:commandLink>
-		<h:commandLink action="#{auditor.previous}" styleClass="commandLink" title="#{web.text.PREVIOUS}"><h:outputText value="#{web.text.PREVIOUS}" rendered="#{auditor.startIndex != 1}"/></h:commandLink>
 	</p>
 
-	<h:dataTable value="#{auditor.results}" var="auditLogEntry" headerClass="listHeader" styleClass="results" rowClasses="listRow1,listRow2" rendered="#{not empty auditor.results}">
-		<f:facet name="header"><h:outputText value="Search results"/></f:facet>
+	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="listHeader" styleClass="grid" rowClasses="a" rendered="#{not empty auditor.results}">
+		<f:facet name="caption"><h:outputText value="Search results"/></f:facet>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.TIME}"/></f:facet><h:outputText value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText></h:column>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.EVENT}"/></f:facet><h:outputText value="#{auditLogEntry.eventTypeValue}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="eventStatus"/></f:facet><h:outputText value="#{auditLogEntry.eventStatusValue}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.ADMINISTRATOR}"/></f:facet><h:outputText value="#{auditLogEntry.authToken}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="service"/></f:facet><h:outputText value="#{auditLogEntry.serviceTypeValue}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.MODULE}"/></f:facet><h:outputText value="#{auditLogEntry.moduleTypeValue}"/></h:column>
-		<h:column><f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet><h:outputText value="#{auditLogEntry.customId}"/></h:column>
-		<h:column><f:facet name="header"><h:outputText value="#{web.text.CERTIFICATENR}"/></f:facet><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:column>
-		<h:column><f:facet name="header"><h:outputText value="#{web.text.USERNAME_ABBR}"/></f:facet><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:column>
+		<h:column><f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?cadn=#{auditLogEntry.customId}"><h:outputText value="#{auditLogEntry.customId}"/></h:outputLink>
+		</h:column>
+		<h:column><f:facet name="header"><h:outputText value="#{web.text.CERTIFICATENR}"/></f:facet>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&issuer=#{auditLogEntry.customId}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
+		</h:column>
+		<h:column><f:facet name="header"><h:outputText value="#{web.text.USERNAME_ABBR}"/></f:facet>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?username=#{auditLogEntry.searchDetail2}"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
+		</h:column>
 		<h:column><f:facet name="header"><h:outputText value="nodeId"/></f:facet><h:outputText value="#{auditLogEntry.nodeId}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="sequenceNumber"/></f:facet><h:outputText value="#{auditLogEntry.sequenceNumber}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="additionalDetails"/></f:facet><h:outputText value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText></h:column>
 	</h:dataTable>
-	
-	<p><h:commandLink action="#{auditor.log}" styleClass="commandLink"><h:outputText value="Test log insert"/></h:commandLink></p>
 	</h:form >
 </div>
 

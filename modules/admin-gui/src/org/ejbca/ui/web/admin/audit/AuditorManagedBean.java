@@ -17,10 +17,9 @@ import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
@@ -33,7 +32,6 @@ import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -41,12 +39,21 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryCriteria;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /**
+ * JSF Backing bean for viewing security audit logs.
+ * 
+ * Reloads the data lazily if when requested if something was cause for an update (first time, user has invoked reload etc).
+ * 
+ * getConditions() will handle special cases when HTTP GET parameters are passed (e.g. show history for a username).
+ * 
  * @version $Id$
  */
 public class AuditorManagedBean implements Serializable {
@@ -55,9 +62,9 @@ public class AuditorManagedBean implements Serializable {
 	private static final Logger log = Logger.getLogger(AuditorManagedBean.class);
 
 	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
-	private final SecurityEventsLoggerSessionLocal securityEventsLoggerSession = new EjbLocalHelper().getSecurityEventsLoggerSession();
 	private final CAAdminSessionLocal caAdminSession = new EjbLocalHelper().getCaAdminSession();
 	
+	private boolean reloadResultsNextView = true;
 	private String device;
 	private String sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
 	private boolean sortOrder = QueryCriteria.ORDER_DESC;
@@ -68,12 +75,16 @@ public class AuditorManagedBean implements Serializable {
 	private final List<SelectItem> sortOrders = new ArrayList<SelectItem>();
 	private List<? extends AuditLogEntry> results;
 
-	private final List<SelectItem> definedOperations = new ArrayList<SelectItem>();
-	private final List<SelectItem> definedConditions = new ArrayList<SelectItem>();
+	private final List<SelectItem> eventStatusOptions = new ArrayList<SelectItem>();
+	private final List<SelectItem> eventTypeOptions = new ArrayList<SelectItem>();
+	private final List<SelectItem> moduleTypeOptions = new ArrayList<SelectItem>();
+	private final List<SelectItem> serviceTypeOptions = new ArrayList<SelectItem>();
+	private final List<SelectItem> operationsOptions = new ArrayList<SelectItem>();
+	private final List<SelectItem> conditionsOptions = new ArrayList<SelectItem>();
 	private String conditionColumn;
 	private AuditSearchCondition conditionToAdd;
 	private List<AuditSearchCondition> conditions = new ArrayList<AuditSearchCondition>();
-
+	
 	public AuditorManagedBean() {
 		final EjbcaWebBean ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
 		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR")));
@@ -91,12 +102,37 @@ public class AuditorManagedBean implements Serializable {
 		columns.add(new SelectItem(AuditLogEntry.FIELD_ADDITIONAL_DETAILS));
 		sortOrders.add(new SelectItem(QueryCriteria.ORDER_ASC, "ASC"));
 		sortOrders.add(new SelectItem(QueryCriteria.ORDER_DESC, "DESC"));
+		// If no device is chosen we select the first available as default
+		if (getDevices().size()>0) {
+			device = (String) getDevices().get(0).getValue();
+		}
 		// We can't use enums directly in JSF 1.2
 		for (Operation current : Operation.values()) {
-			definedOperations.add(new SelectItem(current));
+			operationsOptions.add(new SelectItem(current));
 		}
 		for (Condition current : Condition.values()) {
-			definedConditions.add(new SelectItem(current));
+			conditionsOptions.add(new SelectItem(current));
+		}
+		for (EventStatus current : EventStatus.values()) {
+			eventStatusOptions.add(new SelectItem(current));
+		}
+		for (EventType current : EventTypes.values()) {
+			eventTypeOptions.add(new SelectItem(current));
+		}
+		for (EventType current : EjbcaEventTypes.values()) {
+			eventTypeOptions.add(new SelectItem(current));
+		}
+		for (ModuleType current : ModuleTypes.values()) {
+			moduleTypeOptions.add(new SelectItem(current));
+		}
+		for (ModuleType current : EjbcaModuleTypes.values()) {
+			moduleTypeOptions.add(new SelectItem(current));
+		}
+		for (ServiceType current : ServiceTypes.values()) {
+			serviceTypeOptions.add(new SelectItem(current));
+		}
+		for (ServiceType current : EjbcaServiceTypes.values()) {
+			serviceTypeOptions.add(new SelectItem(current));
 		}
 	}
 
@@ -128,7 +164,11 @@ public class AuditorManagedBean implements Serializable {
 		return device;
 	}
 	
-	public List<? extends AuditLogEntry> getResults() {
+	public List<? extends AuditLogEntry> getResults() throws AuthorizationDeniedException {
+		if (getDevice() != null && reloadResultsNextView) {
+			reloadResults();
+			reloadResultsNextView = false;
+		}
 		return results;
 	}
 
@@ -141,11 +181,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public void setMaxResults(final int maxResults) {
-		if (maxResults<0) {
-			this.maxResults = 0;
-		} else {
-			this.maxResults = maxResults;
-		}
+		this.maxResults = Math.max(0, maxResults);
 	}
 
 	public int getMaxResults() {
@@ -153,11 +189,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public void setStartIndex(final int startIndex) {
-		if (startIndex<1) {
-			this.startIndex = 1;
-		} else {
-			this.startIndex = startIndex;
-		}
+		this.startIndex = Math.max(1, startIndex);
 	}
 
 	public int getStartIndex() {
@@ -203,41 +235,19 @@ public class AuditorManagedBean implements Serializable {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
 			List<SelectItem> caSubjects = new ArrayList<SelectItem>();
-			// TODO: Temporary for PoC
-			caSubjects.add(new SelectItem("CN=FakeCA1"));
-			caSubjects.add(new SelectItem("CN=FakeCA2"));
 			// TODO: This is a slow way of doing it..
 			for (Certificate caCert : caAdminSession.getAllCACertificates()) {
 				caSubjects.add(new SelectItem(CertTools.getSubjectDN(caCert)));
 			}
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, caSubjects));
 		} else if (AuditLogEntry.FIELD_EVENTSTATUS.equals(conditionColumn)) {
-			final List<SelectItem> options = new ArrayList<SelectItem>();	// TODO: Create at init
-			for (EventStatus current : EventStatus.values()) {
-				options.add(new SelectItem(current));
-			}
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, options));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, eventStatusOptions));
 		} else if (AuditLogEntry.FIELD_EVENTTYPE.equals(conditionColumn)) {
-			final List<SelectItem> options = new ArrayList<SelectItem>();	// TODO: Create at init
-			for (EventType current : EventTypes.values()) {
-				options.add(new SelectItem(current));
-			}
-			// TODO: Add EJBCA specific enums also
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, options));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, eventTypeOptions));
 		} else if (AuditLogEntry.FIELD_MODULE.equals(conditionColumn)) {
-			final List<SelectItem> options = new ArrayList<SelectItem>();	// TODO: Create at init
-			for (ModuleType current : ModuleTypes.values()) {
-				options.add(new SelectItem(current));
-			}
-			// TODO: Add EJBCA specific enums also
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, options));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, moduleTypeOptions));
 		} else if (AuditLogEntry.FIELD_SERVICE.equals(conditionColumn)) {
-			final List<SelectItem> options = new ArrayList<SelectItem>();	// TODO: Create at init
-			for (ServiceType current : ServiceTypes.values()) {
-				options.add(new SelectItem(current));
-			}
-			// TODO: Add EJBCA specific enums also
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, options));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, serviceTypeOptions));
 		} else if (AuditLogEntry.FIELD_TIMESTAMP.equals(conditionColumn)) {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER)));
 		}
@@ -252,8 +262,12 @@ public class AuditorManagedBean implements Serializable {
 		setConditionToAdd(null);
 	}
 
+	public void reload()  {
+		reloadResultsNextView = true;
+	}
+
 	// TODO: Not the safest way to send user input to the database..
-	public void reload() throws AuthorizationDeniedException {
+	private void reloadResults() throws AuthorizationDeniedException {
 		log.info("Reloading audit load. selectedDevice=" + device);
 		QueryCriteria criteria = QueryCriteria.where();
 		boolean first = true;
@@ -294,34 +308,20 @@ public class AuditorManagedBean implements Serializable {
 			}
 		}
 
-	
 		AuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Reload action from AuditorManagedBean"));
-		
 		results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
 	}
 
 	public void next() throws AuthorizationDeniedException {
 		log.info("Next button pressed.");
 		setStartIndex(startIndex + maxResults);
-		reload();
+		reloadResultsNextView = true;
 	}
 
 	public void previous() throws AuthorizationDeniedException {
 		log.info("Previous button pressed.");
 		setStartIndex(startIndex - maxResults);
-		reload();
-	}
-
-	public void log() {
-		log.info("Log button pressed.");
-		// Test long format
-		final Map<String,Object> additionalDetails = new HashMap<String,Object>();
-		additionalDetails.put("detail1", "value1");
-		additionalDetails.put("detail2", "value2");
-		// TODO: Is the format we want for certificate serialnumbers??
-		securityEventsLoggerSession.log(EventTypes.ACCESS_CONTROL, EventStatus.VOID, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE, "authToken1", "CN=FakeCA1", "7fffffffffffffff", "user1", additionalDetails);
-		// Test short format
-		securityEventsLoggerSession.log(EventTypes.ACCESS_CONTROL, EventStatus.VOID, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE, "authToken2");
+		reloadResultsNextView = true;
 	}
 
 	public void setConditions(List<AuditSearchCondition> conditions) {
@@ -329,14 +329,27 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public List<AuditSearchCondition> getConditions() {
+		// Special case when we supply "username" as parameter to allow view of a user's history
+		final String searchDetail2String = getHttpParameter("username");
+		if (searchDetail2String!=null) {
+			reloadResultsNextView = true;
+			conditions.clear();
+			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, searchDetail2String));
+			sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
+			sortOrder = QueryCriteria.ORDER_DESC;
+		}
 		return conditions;
 	}
 
 	public List<SelectItem> getDefinedOperations() {
-		return definedOperations;
+		return operationsOptions;
 	}
 
 	public List<SelectItem> getDefinedConditions() {
-		return definedConditions;
+		return conditionsOptions;
+	}
+
+	private String getHttpParameter(String key) {
+		return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
 	}
 }

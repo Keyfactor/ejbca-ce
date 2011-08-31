@@ -397,8 +397,8 @@ function confirmrevocation(){
          try{ 
            if((rabean.authorizedToViewHistory(users[i].getEndEntityProfileId()) || !globalconfiguration.getEnableEndEntityProfileLimitations()) 
                && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_HISTORY_RIGHTS)){ %>
-        <A  style="cursor:pointer;" onclick='viewhistory(<%= i %>)'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWHISTORY\") %>"/></u> </A>
+         <a href='<%= ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() %>audit/search.jsf?username=<%= users[i].getUsername() %>'>
+        <u><c:out value="<%= ejbcawebbean.getText(\"VIEWHISTORY\") %>"/></u> </a>
         <%   } 
            }catch(AuthorizationDeniedException ade){} %>
       </td>
