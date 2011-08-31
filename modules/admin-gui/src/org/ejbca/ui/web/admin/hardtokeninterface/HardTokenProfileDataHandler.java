@@ -194,6 +194,7 @@ public class HardTokenProfileDataHandler implements Serializable {
                 HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
                 HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
                 if (profile instanceof EIDProfile) {
+                authorizedcertprofiles.add(new Integer(SecConst.CERTPROFILE_NO_PROFILE));
                     if (authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())
                             && authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())) {
                         returnval = true;

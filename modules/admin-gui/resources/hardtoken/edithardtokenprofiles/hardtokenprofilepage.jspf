@@ -4,6 +4,7 @@
 
   TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();
   TreeMap authorizedcertprofiles = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
+  authorizedcertprofiles.put("No Certificate", SecConst.CERTPROFILE_NO_PROFILE);
  
   Map caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
