@@ -160,6 +160,13 @@ public class EndEntityInformation implements Serializable {
         	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
     	}
     }
+    
+    /** User DN as stored in the database. If the registered DN has unused DN fields the empty ones are kept, i.e.
+     * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
+     * Use method getCertificateDN() to get the DN stripped from empty fields.
+     * @see #getCertificateDN()
+     * @return String with DN, might contain empty fields, use getCertificateDN to get without empty fields
+     */
     public String getDN() {return StringTools.getBase64String(subjectDN);}
     public int getCAId(){return this.caid;}
     public void setCAId(int caid){this.caid=caid;}
@@ -299,8 +306,14 @@ public class EndEntityInformation implements Serializable {
     	return ret;
     }
 
-    /** @return the DN to be used when creating a certificate (without empty fields). */
-    public String getCertificateDN() throws Exception {
+    /** @return the DN to be used when creating a certificate (without empty fields).
+     * If the registered DN has unused DN fields the empty ones are kept, i.e.
+     * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
+     * Use method getCertificateDN() to get the DN stripped from empty fields, getDN() returns DN with empty fields.
+     * @see #getDN()
+     * @return String with DN, with no empty fields, use getDN to get including empty fields
+     */
+    public String getCertificateDN() {
     	if (subjectDNClean == null) {
     		// This might be fetched from database serialization so we need to perform the cleaning all over again
     		return DNFieldsUtil.removeAllEmpties(getDN());
