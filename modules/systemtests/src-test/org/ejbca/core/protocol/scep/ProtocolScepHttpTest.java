@@ -492,7 +492,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
         str = DERPrintableString.getInstance((values.getObjectAt(0)));
-        assertEquals(ResponseStatus.SUCCESS.getValue(), str.getString());
+        assertEquals(ResponseStatus.SUCCESS.getStringValue(), str.getString());
         // --SenderNonce
         attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_senderNonce));
         assertNotNull(attr);
