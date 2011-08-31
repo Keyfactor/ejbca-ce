@@ -326,7 +326,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final String caSubjectDN = CertTools.getSubjectDN(cacert);
             if (ca.isDoEnforceUniqueDistinguishedName()) {
                 if (ca.isUseCertificateStorage()) {
-                    final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(caSubjectDN, data.getDN());
+            		final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(caSubjectDN, data.getCertificateDN());
                     if (users.size() > 0 && !users.contains(data.getUsername())) {
                         final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + data.getUsername() + "'",
                                 listUsers(users));

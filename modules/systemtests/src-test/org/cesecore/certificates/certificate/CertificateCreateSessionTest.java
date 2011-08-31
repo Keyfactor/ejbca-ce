@@ -28,6 +28,8 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -36,6 +38,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
@@ -67,7 +70,7 @@ import org.junit.Test;
  *
  * Based on EJBCA version: ExtendedKeyUsageTest.java 11280 2011-01-28 15:42:09Z jeklund
  * 
- * @version $Id: CertificateCreateSessionTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id: CertificateCreateSessionTest.java 1063 2011-08-31 08:16:03Z tomas $
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
     
@@ -304,8 +307,95 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             assertEquals(RevokedCertInfo.NOT_REVOKED, rev.revocationReason);
             rev = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert2), CertTools.getSerialNumber(cert2));
             assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
+            
+    		// Make the same test but have some empty fields in the DN to get ECA-1841 DNs in userdata
+    		user.setDN("CN=noUserData,OU=,OU=FooOU,O=PrimeKey,C=SE");
+    		assertEquals("CN=noUserData,OU=,OU=FooOU,O=PrimeKey,C=SE", user.getDN());
+    		assertEquals("CN=noUserData,OU=FooOU,O=PrimeKey,C=SE", user.getCertificateDN());
+    		// Create cert again
+        	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+        	assertNotNull("Failed to get response", resp);
+        	Certificate cert3 = (X509Certificate)resp.getCertificate();
+    		assertNotNull("Failed to create cert", cert3);
+    		assertEquals(user.getCertificateDN(), CertTools.getSubjectDN(cert3));
+    		// Check that it is revoked
+            isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert3), CertTools.getSerialNumber(cert3));
+            assertTrue(isRevoked);
+    		rev = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert3), CertTools.getSerialNumber(cert3));
+    		assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
+
         } finally {
         	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
+        	internalCertStoreSession.removeCertificate(fp1);
+        	internalCertStoreSession.removeCertificate(fp2);
+        }
+    }
+
+    @Test
+    public void test38UniqueSubjectDN() throws Exception {
+    	// Make sure that the CA requires unique subject DN
+    	CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
+    	boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();
+    	// We don't want to use this for simplicity of the test
+    	boolean enforceuniquekey = cainfo.isDoEnforceUniquePublicKeys();
+    	cainfo.setDoEnforceUniqueDistinguishedName(true);
+    	cainfo.setDoEnforceUniquePublicKeys(false);
+        String fp1 = null;
+        String fp2 = null;
+        try {
+        	caSession.editCA(roleMgmgToken, cainfo);
+
+            // Change already existing user
+        	EndEntityInformation user1 = new EndEntityInformation();
+        	user1.setType(EndEntityConstants.USER_ENDUSER);
+        	user1.setUsername("unique1");
+        	user1.setDN("CN=foounique,O=PrimeKey,C=SE");
+        	user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        	EndEntityInformation user2 = new EndEntityInformation();
+        	user2.setType(EndEntityConstants.USER_ENDUSER);
+        	user2.setUsername("unique2");
+        	user2.setDN("CN=foounique,O=PrimeKey,C=SE");
+        	user2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            // create first cert
+        	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "certcreatereq", "foo123");
+        	req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
+        	req.setRequestDN("CN=foounique,O=PrimeKey,C=SE");
+        	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user1, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            assertNotNull("Failed to create cert", resp);
+        	fp1 = CertTools.getFingerprintAsString(resp.getCertificate());
+            // Create second cert, should not work with the same DN
+            try {
+            	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user2, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            	assertTrue("Should not work to create same DN with another username", false);
+            } catch (CesecoreException e) {
+            	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
+            }
+            
+            // Make the same test but have some empty fields in the DN to get ECA-1841 DNs in userdata
+            // Set a different DN, EJBCA should detect this as "non unique DN" even though there is an empty OU=
+            user1.setDN("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE");
+            assertEquals("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE", user1.getDN());
+            assertEquals("CN=foounique,OU=FooOU,O=PrimeKey,C=SE", user1.getCertificateDN());
+            // Create cert again, should work now, first time with unique DN
+        	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user1, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            assertNotNull("Failed to create cert", resp);
+        	fp2 = CertTools.getFingerprintAsString(resp.getCertificate());
+            // Now the second user, should not work to issue the cert with the same DN
+            user2.setDN("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE");
+            assertEquals("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE", user2.getDN());
+            assertEquals("CN=foounique,OU=FooOU,O=PrimeKey,C=SE", user2.getCertificateDN());
+            // Create cert again
+            try {
+            	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user2, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            	assertTrue("Should not work to create same DN with another username", false);
+            } catch (CesecoreException e) {
+            	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
+            }
+        } finally {
+            // Finally configure the CA as it was before the test
+        	cainfo.setDoEnforceUniqueDistinguishedName(enforceuniquesubjectdn);
+        	cainfo.setDoEnforceUniquePublicKeys(enforceuniquekey);
+        	caSession.editCA(roleMgmgToken, cainfo);
         	internalCertStoreSession.removeCertificate(fp1);
         	internalCertStoreSession.removeCertificate(fp2);
         }
