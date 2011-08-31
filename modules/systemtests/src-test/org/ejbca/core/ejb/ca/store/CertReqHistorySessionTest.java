@@ -13,14 +13,19 @@
 
 package org.ejbca.core.ejb.ca.store;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -28,17 +33,22 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Tests certificate store.
  *
  * @version $Id$
  */
-public class CertReqHistorySessionTest extends TestCase {
+public class CertReqHistorySessionTest {
 
     private static final Logger log = Logger.getLogger(CertReqHistorySessionTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
@@ -49,20 +59,17 @@ public class CertReqHistorySessionTest extends TestCase {
 
     private CertReqHistorySessionRemote certReqHistorySession = InterfaceCache.getCertReqHistorySession();
 
-    /**
-     * Creates a new TestCertificateData object.
-     * 
-     * @param name
-     *            name
-     */
-    public CertReqHistorySessionTest(String name) {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         CryptoProviderTools.installBCProvider();
+        keyPair = KeyTools.genKeys("512", "RSA");
     }
 
+    @Before
     public void setUp() throws Exception {
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
@@ -70,6 +77,7 @@ public class CertReqHistorySessionTest extends TestCase {
      * Adds two certificate request history data to the database.
      * 
      */
+    @Test
     public void test01addCertReqHist() throws Exception {
         log.trace(">test09addCertReqHist()");
 
@@ -99,6 +107,7 @@ public class CertReqHistorySessionTest extends TestCase {
      * String issuerDN) returns the right data.
      * 
      */
+    @Test
     public void test02getCertReqHistByIssuerDNAndSerial() throws Exception {
         log.trace(">test10getCertReqHistByIssuerDNAndSerial()");
 
@@ -118,6 +127,7 @@ public class CertReqHistorySessionTest extends TestCase {
      * the two CertReqHistory object previously stored.
      * 
      */
+    @Test
     public void test03getCertReqHistByUsername() throws Exception {
         log.trace(">test11getCertReqHistByUsername()");
         Collection<CertReqHistory> result = certReqHistorySession.retrieveCertReqHistory(admin, username);
@@ -136,6 +146,7 @@ public class CertReqHistorySessionTest extends TestCase {
      * Removes all the previously stored certreqhist data.
      * 
      */
+    @Test
     public void test04removeCertReqHistData() throws Exception {
         log.trace(">test12removeCertReqHistData()");
 
