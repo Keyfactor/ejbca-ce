@@ -58,6 +58,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -92,6 +93,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -186,6 +188,7 @@ public class SignSessionTest extends CaTestCase {
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private EndEntityAccessSessionRemote userAccessSession = InterfaceCache.getEndEntityAccessSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
     private CAInfo inforsa;
@@ -1810,59 +1813,91 @@ public class SignSessionTest extends CaTestCase {
         log.trace("<test26TestBCPKCS10DSAWithDSACA()");
     }
 
-    /**
-     * creates cert
-     * 
-     * @throws Exception
-     *             if en error occurs...
-     */
     @Test
     public void test27IssuanceRevocationReason() throws Exception {
-        log.trace(">test27IssuanceRevocationReason()");
+    	log.trace(">test27IssuanceRevocationReason()");
 
-        createUsers();
+    	createUsers();
+        String username = "foorevreason";
+    	try {
+    		// Test that it works correctly with end entity profiles using the counter
+    		int pid = 0;
 
-        // Test that it works correctly with end entity profiles using the
-        // counter
-        int pid = 0;
+    		EndEntityProfile profile = new EndEntityProfile();
+    		profile.addField(DnComponents.ORGANIZATION);
+    		profile.addField(DnComponents.COUNTRY);
+    		profile.addField(DnComponents.COMMONNAME);
+    		profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
+    		profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+    		profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+    		endEntityProfileSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
+    		pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
 
-        EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(DnComponents.ORGANIZATION);
-        profile.addField(DnComponents.COUNTRY);
-        profile.addField(DnComponents.COMMONNAME);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
-        profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
-        profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
-        pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTISSUANCEREVREASON");
+    		// Change already existing user
+    		EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=foorevreason", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
+    				SecConst.TOKEN_SOFT_PEM, 0, null);
+    		user.setPassword("foo123");
+    		userAdminSession.addUser(admin, user, false);
+    		userAdminSession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+    		// create first cert
+    		X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+    		assertNotNull("Failed to create cert", cert);
 
-        // Change already existing user
-        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_PEM, 0, null);
-        userAdminSession.changeUser(admin, user, false);
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        // create first cert
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
-        assertNotNull("Failed to create cert", cert);
+    		// Check that it is active
+    		boolean isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+    		assertFalse(isRevoked);
 
-        // Check that it is active
-        boolean isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-        assertFalse(isRevoked);
+    		// Now add extended information with the revocation reason
+    		ExtendedInformation ei = new ExtendedInformation();
+    		ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+    		user.setExtendedinformation(ei);
+    		userAdminSession.changeUser(admin, user, false);
+    		userAdminSession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+    		// create first cert
+    		cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+    		assertNotNull("Failed to create cert", cert);
 
-        // Now add extended information with the revocation reason
-        ExtendedInformation ei = new ExtendedInformation();
-        ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
-        user.setExtendedinformation(ei);
-        userAdminSession.changeUser(admin, user, false);
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        // create first cert
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
-        assertNotNull("Failed to create cert", cert);
+    		// Check that it is revoked
+    		CertificateStatus rev = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+    		assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
 
-        // Check that it is revoked
-        CertificateStatus rev = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
-        assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
-        log.trace("<test27IssuanceRevocationReason()");
+    		// Make the same test but have some empty fields in the DN to get ECA-1841 DNs in userdata
+    		profile = new EndEntityProfile();
+    		profile.addField(DnComponents.COUNTRY);
+    		profile.addField(DnComponents.ORGANIZATION);
+    		profile.addField(DnComponents.ORGANIZATIONUNIT);
+    		profile.addField(DnComponents.ORGANIZATIONUNIT);
+    		profile.addField(DnComponents.COMMONNAME);
+    		profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
+    		profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
+    		profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+    		endEntityProfileSession.changeEndEntityProfile(admin, "TESTISSUANCEREVREASON", profile);
+    		user.setDN("CN=foorevreason,OU=,OU=FooOU,O=PrimeKey,C=SE");
+    		userAdminSession.changeUser(admin, user, false);
+    		userAdminSession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+    		EndEntityInformation udata = userAccessSession.findUser(admin, username);
+    		assertEquals("CN=foorevreason,OU=,OU=FooOU,O=PrimeKey,C=SE", udata.getDN());
+    		assertEquals("CN=foorevreason,OU=FooOU,O=PrimeKey,C=SE", udata.getCertificateDN());
+    		// Create cert again
+    		cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+    		assertNotNull("Failed to create cert", cert);
+    		assertEquals(udata.getCertificateDN(), CertTools.getSubjectDN(cert));
+    		// Check that it is revoked
+    		rev = certificateStoreSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
+    		assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, rev.revocationReason);
+    	} finally {
+    		// Clean up removing EE profile and user
+    		try {
+    			endEntityProfileSession.removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
+    		} catch (Exception e) { /* ignore */
+    		}
+    		try {
+    			userAdminSession.deleteUser(admin, username);
+    			log.debug("deleted user: foorevreason, foo123, C=SE, O=AnaTom, CN=foo");
+    		} catch (Exception e) { /* ignore */
+    		}
+    	}
+    	log.trace("<test27IssuanceRevocationReason()");
     }
 
     @Test
@@ -2368,6 +2403,114 @@ public class SignSessionTest extends CaTestCase {
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));
         return cert;
+    }
+
+    @Test
+    public void test38UniqueSubjectDN() throws Exception {
+        log.trace(">test38UniqueSubjectDN()");
+
+        String username1 = "foounique1";
+        String username2 = "foounique2";
+        String profilename = "TESTUNIQUESUBJECTDN";
+    	// Make sure that the CA requires unique subject DN
+    	CAInfo cainfo = caSession.getCAInfo(admin, rsacaid);
+    	boolean enforceuniquesubjectdn = cainfo.isDoEnforceUniqueDistinguishedName();
+    	// We don't want to use this for simplicity of the test
+    	boolean enforceuniquekey = cainfo.isDoEnforceUniquePublicKeys();
+    	cainfo.setDoEnforceUniqueDistinguishedName(true);
+    	cainfo.setDoEnforceUniquePublicKeys(false);
+        try {
+        	caAdminSession.editCA(admin, cainfo);
+            // Test that it works correctly with end entity profiles using the counter
+            int pid = 0;
+
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.ORGANIZATION);
+            profile.addField(DnComponents.COUNTRY);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
+            endEntityProfileSession.addEndEntityProfile(admin, profilename, profile);
+            pid = endEntityProfileSession.getEndEntityProfileId(admin, profilename);
+
+            // Change already existing user
+            EndEntityInformation user1 = new EndEntityInformation(username1, "CN=foounique,O=PrimeKey,C=SE", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, null);
+            user1.setPassword("foo123");
+            userAdminSession.addUser(admin, user1, false);
+            userAdminSession.setUserStatus(admin, username1, UserDataConstants.STATUS_NEW);
+            EndEntityInformation user2 = new EndEntityInformation(username2, "CN=foounique,O=PrimeKey,C=SE", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, null);
+            user2.setPassword("foo123");
+            userAdminSession.addUser(admin, user2, false);
+            userAdminSession.setUserStatus(admin, username2, UserDataConstants.STATUS_NEW);
+            // create first cert
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username1, "foo123", rsakeys.getPublic());
+            assertNotNull("Failed to create cert", cert);
+            // Create second cert, should not work with the same DN
+            try {
+            	cert = (X509Certificate) signSession.createCertificate(admin, username2, "foo123", rsakeys.getPublic());
+            	assertTrue("Should not work to create same DN with another username", false);
+            } catch (EjbcaException e) {
+            	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
+            }
+            
+            // Make the same test but have some empty fields in the DN to get ECA-1841 DNs in userdata
+            profile = new EndEntityProfile();
+            profile.addField(DnComponents.COUNTRY);
+            profile.addField(DnComponents.ORGANIZATION);
+            profile.addField(DnComponents.ORGANIZATIONUNIT);
+            profile.addField(DnComponents.ORGANIZATIONUNIT);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
+            endEntityProfileSession.changeEndEntityProfile(admin, profilename, profile);
+
+            // Set a different DN, EJBCA should detect this as "non unique DN" even though there is an empty OU=
+            user1.setDN("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE");
+            userAdminSession.changeUser(admin, user1, false);
+            userAdminSession.setUserStatus(admin, username1, UserDataConstants.STATUS_NEW);
+            EndEntityInformation udata = userAccessSession.findUser(admin, username1);
+            assertEquals("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE", udata.getDN());
+            assertEquals("CN=foounique,OU=FooOU,O=PrimeKey,C=SE", udata.getCertificateDN());
+            // Create cert again, should work now, first time with unique DN
+            cert = (X509Certificate) signSession.createCertificate(admin, username1, "foo123", rsakeys.getPublic());
+            assertNotNull("Failed to create cert", cert);
+            assertEquals(udata.getCertificateDN(), CertTools.getSubjectDN(cert));
+            // Now the second user, should not work to issue the cert with the same DN
+            user2.setDN("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE");
+            userAdminSession.changeUser(admin, user2, false);
+            userAdminSession.setUserStatus(admin, username2, UserDataConstants.STATUS_NEW);
+            udata = userAccessSession.findUser(admin, username2);
+            assertEquals("CN=foounique,OU=,OU=FooOU,O=PrimeKey,C=SE", udata.getDN());
+            assertEquals("CN=foounique,OU=FooOU,O=PrimeKey,C=SE", udata.getCertificateDN());
+            // Create cert again
+            try {
+            	cert = (X509Certificate) signSession.createCertificate(admin, username2, "foo123", rsakeys.getPublic());
+            	assertTrue("Should not work to create same DN with another username", false);
+            } catch (EjbcaException e) {
+            	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
+            }
+        } finally {
+        	// Clean up removing EE profile and user
+            try {
+                endEntityProfileSession.removeEndEntityProfile(admin, profilename);
+            } catch (Exception e) { /* NOPMD: ignore */
+            }
+            try {
+                userAdminSession.deleteUser(admin, username1);
+                log.debug("deleted user: foounique1");
+            } catch (Exception e) { /* NOPMD: ignore */
+            }
+            try {
+                userAdminSession.deleteUser(admin, username2);
+                log.debug("deleted user: foounique2");
+            } catch (Exception e) { /* NOPMD: ignore */
+            }
+            // Finally configure the CA as it was before the test
+        	cainfo.setDoEnforceUniqueDistinguishedName(enforceuniquesubjectdn);
+        	cainfo.setDoEnforceUniquePublicKeys(enforceuniquekey);
+        	caAdminSession.editCA(admin, cainfo);
+        }
+        log.trace("<test38UniqueSubjectDN()");
     }
 
 }

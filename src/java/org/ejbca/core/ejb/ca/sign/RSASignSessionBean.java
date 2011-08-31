@@ -620,7 +620,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (ei != null) {
             	revreason = ei.getIssuanceRevocationReason();
             }
-            publisherSession.storeCertificate(admin, publishers, cert, username, data.getPassword(), data.getDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId, updateTime, data.getExtendedinformation());
+            publisherSession.storeCertificate(admin, publishers, cert, username, data.getPassword(), data.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId, updateTime, data.getExtendedinformation());
     	}
     	if (log.isTraceEnabled()) {
     		log.trace("<createCertificate(pk, ku, notAfter)");

@@ -176,6 +176,9 @@ CA. This means that a user is allowed to have multiple certificates (e.g. for di
 as long as the same 'username' is used, but two users can not share the same Subject DN. The check is only performed
 when new certificates are issued.
 </p>
+<p>
+The check only affects <i>new</i> users, i.e. if you have two users with the same DN before enabling the limitation, these old users can still share the same DN and get new certificates.
+</p>
 <p>To use this feature efficiently you should have a database index over (subjectDN,issuerDN) on the table CertificateData. 
 See doc/sql-scripts for index scripts.
 </p>

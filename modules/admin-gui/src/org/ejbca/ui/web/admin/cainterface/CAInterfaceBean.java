@@ -402,7 +402,7 @@ public class CAInterfaceBean implements Serializable {
 			certificateProfileId = certreqhist.getUserDataVO().getCertificateProfileId();
 			username = certreqhist.getUserDataVO().getUsername();
 			password = certreqhist.getUserDataVO().getPassword();
-			dn = certreqhist.getUserDataVO().getDN();
+			dn = certreqhist.getUserDataVO().getCertificateDN();
 			ei = certreqhist.getUserDataVO().getExtendedinformation();
 		}
 		final CertificateInfo certinfo = certificatesession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));

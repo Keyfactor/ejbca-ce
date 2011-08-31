@@ -167,7 +167,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
         try {
             String fingerprint = CertTools.getFingerprintAsString(cert);
             CertificateInfo certinfo = ejb.getCertStoreSession().getCertificateInfo(fingerprint);
-            final String userDataDN = data.getDN();
+            final String userDataDN = data.getCertificateDN();
             ejb.getPublisherSession().storeCertificate(getAdmin(), certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN,
                     fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo
                             .getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
