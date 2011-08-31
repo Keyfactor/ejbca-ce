@@ -1605,6 +1605,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void removeCAKeyStore(AuthenticationToken admin, String caname) throws EJBException {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">removeCAKeyStore");
+    	}
         try {
             // check authorization
             if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
@@ -1614,8 +1617,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), caname, null,
                         null, details);
             }
-            CAData caData = CAData.findByNameOrThrow(entityManager, caname);
-            CA thisCa = caData.getCAFromDatabase();
+            CA thisCa = caSession.getCAForEdit(admin, caname);
             CAToken thisCAToken = thisCa.getCAToken();
             if (!(thisCAToken.getCryptoToken() instanceof SoftCryptoToken)) {
                 throw new Exception("Cannot export anything but a soft token.");
@@ -1624,7 +1626,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CryptoToken cryptotoken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), thisCAToken.getCryptoToken()
                     .getProperties(), null, thisCAToken.getCryptoToken().getId());
             cryptotoken.deactivate(); // Sets status to offline
-            // CATokenContainer emptyToken = new CATokenContainerImpl(thisCATokenInfo, caData.getCaId());
             CAToken catoken = new CAToken(cryptotoken);
             catoken.setKeySequence(catoken.getKeySequence());
             catoken.setKeySequenceFormat(catoken.getKeySequenceFormat());
@@ -1632,7 +1633,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             catoken.setEncryptionAlgorithm(catoken.getTokenInfo().getEncryptionAlgorithm());
             thisCa.setCAToken(catoken);
             // Save to database
-            caData.setCA(thisCa);
+            caSession.editCA(admin, thisCa, false);
             // Log
             String msg = intres.getLocalizedMessage("caadmin.removedcakeystore", Integer.valueOf(thisCa.getCAId()));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -1647,11 +1648,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, details);
             throw new EJBException(e);
         }
+    	if (log.isTraceEnabled()) {
+    		log.trace("<removeCAKeyStore");
+    	}
     }
 
     @Override
     public void restoreCAKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
             String privateSignatureKeyAlias, String privateEncryptionKeyAlias) {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">restoreCAKeyStore");
+    	}
         try {
             // check authorization
             if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
@@ -1753,6 +1760,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, details);
             throw new EJBException(e);
         }
+    	if (log.isTraceEnabled()) {
+    		log.trace("<restoreCAKeyStore");
+    	}        
     }
 
     @Override
