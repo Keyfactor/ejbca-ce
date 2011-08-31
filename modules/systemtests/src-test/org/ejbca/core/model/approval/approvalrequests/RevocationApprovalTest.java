@@ -17,20 +17,24 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -38,13 +42,16 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
@@ -59,6 +66,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
@@ -74,7 +82,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private static String adminUsername = null;
 
     private static final AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    private static AuthenticationToken reuestingAdmin = null;
+    private static AuthenticationToken requestingAdmin = null;
     private static AuthenticationToken approvingAdmin = null;
     private static ArrayList<AccessUserAspectData> adminentities;
     
@@ -99,54 +107,72 @@ public class RevocationApprovalTest extends CaTestCase {
         
     }
 
-    private X509CertificateAuthenticationToken createAuthenticationToken(X509Certificate certificate) {
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-        X509CertificateAuthenticationToken authenticationToken = new X509CertificateAuthenticationToken(principals, credentials);
-        return authenticationToken;
-    }
-
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        adminUsername = genRandomUserName("revocationTestAdmin");
-        requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
-        EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
-        userdata.setPassword("foo123");
-        userAdminSession.addUser(internalAdmin, userdata, true);
-        EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
-        userdata2.setPassword("foo123");
-        userAdminSession.addUser(internalAdmin, userdata2, true);
-        BatchMakeP12 makep12 = new BatchMakeP12();
-        File tmpfile = File.createTempFile("ejbca", "p12");
-        makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
+        // An if on a static thing here, just so we don't have to batch generate new certs for every test
+        if (adminUsername == null) {
+        	adminUsername = genRandomUserName("revocationTestAdmin");
+        	requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
+        	EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+        			SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        	userdata.setPassword("foo123");
+        	userAdminSession.addUser(internalAdmin, userdata, true);
+        	EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+        			SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        	userdata2.setPassword("foo123");
+        	userAdminSession.addUser(internalAdmin, userdata2, true);
+        	BatchMakeP12 makep12 = new BatchMakeP12();
+        	File tmpfile = File.createTempFile("ejbca", "p12");
+        	makep12.setMainStoreDir(tmpfile.getParent());
+        	makep12.createAllNew();
+        }
+        RoleData role = roleAccessSession.findRole(roleName);
+        if (role == null) {
+        	role = roleManagementSession.create(internalAdmin, roleName);
+        }
+        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
         adminentities = new ArrayList<AccessUserAspectData>();
         adminentities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
         adminentities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
-        roleManagementSession.addSubjectsToRole(internalAdmin, roleAccessSession.findRole(roleName), adminentities);
+        roleManagementSession.addSubjectsToRole(internalAdmin, role, adminentities);
         accessControlSession.forceCacheExpire();
      
         X509Certificate admincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminUsername).iterator().next();
-        X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(requestingAdminUsername).iterator()
-                .next();
-        approvingAdmin = createAuthenticationToken(admincert); //TODO for Admin also username was used? (, adminUsername, null);
-        reuestingAdmin = createAuthenticationToken(reqadmincert); // new Admin(reqadmincert, requestingAdminUsername, null);
+        X509Certificate reqadmincert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(requestingAdminUsername).iterator().next();
+        approvingAdmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(admincert));
+        requestingAdmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(reqadmincert));
         // Create new CA using approvals
         String caname = RevocationApprovalTest.class.getSimpleName();
         approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
     }
 
+    private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(certificate.getSubjectX500Principal());
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certificate);
+
+        return new AuthenticationSubject(principals, credentials);
+    }
+
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        userAdminSession.deleteUser(internalAdmin, adminUsername);
-        userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
-        roleManagementSession.removeSubjectsFromRole(internalAdmin, roleAccessSession.findRole(roleName), adminentities);
+        try {
+        	userAdminSession.deleteUser(internalAdmin, adminUsername);
+        } catch (Exception e) {
+        	// NOPMD:
+        }
+        try {
+        	userAdminSession.deleteUser(internalAdmin, requestingAdminUsername);
+        } catch (Exception e) {
+        	// NOPMD:
+        }
         caSession.removeCA(internalAdmin, approvalCAID);
     }
 
@@ -180,6 +206,12 @@ public class RevocationApprovalTest extends CaTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        Properties prop = catokeninfo.getProperties();
+        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("512"));
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        catokeninfo.setProperties(prop);
         ArrayList<Integer> approvalSettings = new ArrayList<Integer>();
         approvalSettings.add(approvalRequirementType);
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, new Date(
@@ -217,14 +249,14 @@ public class RevocationApprovalTest extends CaTestCase {
         try {
             createUser(internalAdmin, username, approvalCAID);
             try {
-                userAdminSession.revokeUser(reuestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 assertTrue("Approval code never interrupted run.", false);
             } catch (ApprovalException e) {
                 assertTrue("Reporting that approval request exists, when it does not.", false);
             } catch (WaitingForApprovalException e) {
             }
             try {
-                userAdminSession.revokeUser(reuestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 assertTrue("Approval code never interrupted run.", false);
             } catch (ApprovalException e) {
             } catch (WaitingForApprovalException e) {
@@ -246,14 +278,14 @@ public class RevocationApprovalTest extends CaTestCase {
         try {
             createUser(internalAdmin, username, approvalCAID);
             try {
-                userAdminSession.revokeAndDeleteUser(reuestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeAndDeleteUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 assertTrue("Approval code never interrupted run.", false);
             } catch (ApprovalException e) {
                 assertTrue("Reporting that approval request exists, when it does not.", false);
             } catch (WaitingForApprovalException e) {
             }
             try {
-                userAdminSession.revokeAndDeleteUser(reuestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+                userAdminSession.revokeAndDeleteUser(requestingAdmin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
                 assertTrue("Approval code never interrupted run.", false);
             } catch (ApprovalException e) {
             } catch (WaitingForApprovalException e) {
@@ -280,14 +312,14 @@ public class RevocationApprovalTest extends CaTestCase {
             createUser(internalAdmin, username, approvalCAID);
             X509Certificate usercert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(username).iterator().next();
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+                userAdminSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
                 assertTrue(ERRORNONEXISTINGAPPROVALREPORTED, false);
             } catch (WaitingForApprovalException e) {
             }
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
+                userAdminSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
                         RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
@@ -298,14 +330,14 @@ public class RevocationApprovalTest extends CaTestCase {
                     ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
             // Unrevoke
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
+                userAdminSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
                 assertTrue(ERRORNONEXISTINGAPPROVALREPORTED, false);
             } catch (WaitingForApprovalException e) {
             }
             try {
-                userAdminSession.revokeCert(reuestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
+                userAdminSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
                 assertTrue(ERRORNOTSENTFORAPPROVAL, false);
             } catch (ApprovalException e) {
             } catch (WaitingForApprovalException e) {
