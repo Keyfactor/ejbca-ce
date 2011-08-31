@@ -38,8 +38,6 @@
                                                   + "/edithardtokenissuers.jsp";
   final String HT_EDITHARDTOKENPROFILES_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
                                                   + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
-  final String LOG_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
-                                                  + "/viewlog.jsp";
   final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
   final String LOG_CONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/logconfiguration/logconfiguration.jsp";
@@ -269,7 +267,6 @@
               out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
               logheaderprinted=true;
             }  %>
-				<li><a href="<%= LOG_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("VIEWLOG") %></a></li>
 				<li><a href="<%= AUDIT_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("VIEWLOG") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 

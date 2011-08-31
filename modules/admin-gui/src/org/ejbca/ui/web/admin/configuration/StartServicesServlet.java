@@ -51,7 +51,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.log.LogConstants;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
@@ -185,7 +184,7 @@ public class StartServicesServlet extends HttpServlet {
         // Make a log row that EJBCA is starting
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", iMsg);
-        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), Integer.valueOf(LogConstants.INTERNALCAID).toString(), null, null, details);				
+        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);				
 
         log.trace(">init calling ServiceSession.load");
         try {

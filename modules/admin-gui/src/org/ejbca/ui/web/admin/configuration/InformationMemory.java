@@ -53,7 +53,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.cainterface.CAAuthorization;
 import org.ejbca.ui.web.admin.cainterface.CertificateProfileNameProxy;
 import org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization;
-import org.ejbca.ui.web.admin.loginterface.LogAuthorization;
 import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
 
 /**
@@ -77,7 +76,6 @@ public class InformationMemory implements Serializable {
     private ComplexAccessControlSession complexAccessControlSession;
 
     // Memory variables.
-    LogAuthorization logauthorization = null;
     RAAuthorization raauthorization = null;
     CAAuthorization caauthorization = null;
     HardTokenAuthorization hardtokenauthorization = null;
@@ -112,7 +110,6 @@ public class InformationMemory implements Serializable {
         this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
                 caSession, endEntityProfileSession);
         this.caauthorization = new CAAuthorization(administrator, caadminsession, caSession, authorizationsession, certificateProfileSession);
-        this.logauthorization = new LogAuthorization(administrator, authorizationsession, caSession);
         this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, complexAccessControlSession);
         this.complexAccessControlSession = complexAccessControlSession;
     }
@@ -206,27 +203,6 @@ public class InformationMemory implements Serializable {
      */
     public TreeMap<String, Integer> getAllCANames() {
         return this.caauthorization.getAllCANames();
-    }
-
-    /**
-     * Returns string used in view log queries.
-     */
-    public String getViewLogQueryString() {
-        return this.logauthorization.getViewLogRights();
-    }
-
-    /**
-     * Returns string used in view log queries.
-     */
-    public String getViewLogCAIdString() {
-        return this.logauthorization.getCARights();
-    }
-
-    /**
-     * Returns a collection of module ids the administrator is authorized to view log of.
-     */
-    public Collection<Integer> getAuthorizedModules() {
-        return this.logauthorization.getAuthorizedModules();
     }
 
     /**
@@ -462,7 +438,6 @@ public class InformationMemory implements Serializable {
         caidtonamemap = null;
         endentityavailablecas = null;
         authorizedaccessrules = null;
-        logauthorization.clear();
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();
@@ -504,7 +479,6 @@ public class InformationMemory implements Serializable {
         endentityavailablecas = null;
         authgroups = null;
         admingrpidmap = null;
-        logauthorization.clear();
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();
@@ -522,7 +496,6 @@ public class InformationMemory implements Serializable {
      */
     public void systemConfigurationEdited(GlobalConfiguration globalconfiguration) {
         this.globalconfiguration = globalconfiguration;
-        logauthorization.clear();
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();

@@ -221,14 +221,12 @@ public class EjbcaWebBean implements Serializable {
             final String issuerDN = CertTools.getIssuerDN(certificates[0]);
             final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
             userAdminSession.checkIfCertificateBelongToUser(administrator, CertTools.getSerialNumber(certificates[0]), issuerDN);
-            String comment = "";
-            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(certificates[0])) == null) {
-                comment = "Logging in : Administrator Certificate is issued by external CA";
-            }
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", comment);
+            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(certificates[0])) == null) {
+            	details.put("msg", "Logging in : Administrator Certificate is issued by external CA");
+            }
             auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                    administrator.toString(), String.valueOf(issuerDN.hashCode()), null, sernostr, details);
+                    administrator.toString(), issuerDN, sernostr, null, details);
         }
 
         try {
