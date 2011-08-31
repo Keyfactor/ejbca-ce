@@ -35,6 +35,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
@@ -102,6 +103,10 @@ public class InterfaceCache {
 
 	public static UserAdminSessionRemote getUserAdminSession() {
 		return getEjb().getUserAdminSession();
+	}
+
+	public static EndEntityAccessSessionRemote getEndEntityAccessSession() {
+		return getEjb().getEndEntityAccessSession();
 	}
 
 	public static KeyRecoverySessionRemote getKeyRecoverySession() {

@@ -2059,7 +2059,7 @@ public class EjbcaWS implements IEjbcaWS {
 				if(certprofile != null){
 					CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(certreqhist.getFingerprint());
 					if(certprofile.getPublisherList().size() > 0){
-						if(publisherSession.storeCertificate(admin, certprofile.getPublisherList(), cert, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getDN(),
+						if(publisherSession.storeCertificate(admin, certprofile.getPublisherList(), cert, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(), certreqhist.getUserDataVO().getCertificateDN(),
 								certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), certreqhist.getUserDataVO().getExtendedinformation())){
 						}else{
 							throw new PublisherException("Error: publication failed to at least one of the defined publishers.");

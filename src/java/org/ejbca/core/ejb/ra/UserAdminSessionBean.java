@@ -1284,7 +1284,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Get the EEP that was used in the original issuance, if we can find it
         	endEntityProfileId = certReqHistory.getUserDataVO().getEndEntityProfileId();
             // Republish with the same user DN that was used in the original publication, if we can find it
-            userDataDN = certReqHistory.getUserDataVO().getDN();
+            userDataDN = certReqHistory.getUserDataVO().getCertificateDN();
             // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 certificateProfileId = certReqHistory.getUserDataVO().getCertificateProfileId();
@@ -1293,7 +1293,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         	// Get the EEP that is currently used as a fallback, if we can find it
         	endEntityProfileId = data.getEndEntityProfileId();
         	// Republish with the same user DN that is currently used as a fallback, if we can find it
-        	userDataDN = data.getSubjectDN();
+        	userDataDN = data.toUserDataVO().getCertificateDN();
             // If for some reason the certificate profile id was not set in the certificate data, try to get it from current userdata
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                 certificateProfileId = data.getCertificateProfileId();
