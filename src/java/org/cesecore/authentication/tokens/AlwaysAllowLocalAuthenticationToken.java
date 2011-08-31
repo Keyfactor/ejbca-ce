@@ -50,10 +50,12 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
 
     @Override
     public boolean equals(Object authenticationToken) {
-        if (this == authenticationToken)
+        if (this == authenticationToken) {
             return true;
-        if (authenticationToken == null)
+        }
+        if (authenticationToken == null) {
             return false;
+        }
         if (getClass() != authenticationToken.getClass()) {
             return false;
         } else {
