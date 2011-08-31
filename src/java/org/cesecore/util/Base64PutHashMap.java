@@ -44,7 +44,7 @@ public class Base64PutHashMap extends LinkedHashMap {
             return super.put(key, value);
         }
         if (value instanceof String) {
-            String s = StringTools.putBase64String((String) value);
+            String s = StringTools.putBase64String((String) value, true);
             return super.put(key, s);
         }
         return super.put(key, value);
