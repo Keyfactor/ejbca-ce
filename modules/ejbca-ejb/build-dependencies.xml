@@ -1014,6 +1014,15 @@
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*SessionBean.java"/>
 					<include name="org/ejbca/util/SqlExecutor.java"/>
+					<!-- Upgrade of extended CA services in EJBCA 5.0 -->
+					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
+					<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
+					<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>
+					<include name="org/ejbca/core/protocol/certificatestore/ICertificateCache.java"/>
+					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
+					<include name="org/ejbca/config/*Configuration.java"/>
+					<include name="org/cesecore/config/*Configuration.java"/>
+					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"
