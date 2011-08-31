@@ -86,7 +86,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         CA ca = caSession.getCA(admin, caid);
         ca.getCAToken().getCryptoToken().deactivate();
         // Update CA tokeninfo 
-        int tokenstatus = ca.getCAToken().getCryptoToken().getTokenStatus();
+        int tokenstatus = ca.getCAToken().getTokenStatus();
         ca.getCAInfo().getCATokenInfo().setTokenStatus(tokenstatus);
         String msg = intres.getLocalizedMessage("catoken.deactivated", caid);
         Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -106,7 +106,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         CA ca = caSession.getCA(admin, caid);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
         // Update CA tokeninfo 
-        int tokenstatus = ca.getCAToken().getCryptoToken().getTokenStatus();
+        int tokenstatus = ca.getCAToken().getTokenStatus();
         ca.getCAInfo().getCATokenInfo().setTokenStatus(tokenstatus);
         String msg = intres.getLocalizedMessage("catoken.activated", caid);
         Map<String, Object> details = new LinkedHashMap<String, Object>();
