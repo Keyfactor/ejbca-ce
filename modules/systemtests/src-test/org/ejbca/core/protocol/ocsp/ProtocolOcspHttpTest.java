@@ -242,11 +242,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         removeECDSACA();
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
-        try {
-        	userAdminSession.deleteUser(admin, "ocsptest");
-        } catch (Exception e) {
-        	// NOPMD: ignore
-        }
+
     }
 
     @Test
@@ -357,117 +353,121 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // change status of cert to bad status
         // send OCSP req and get bad status
         // (send crap message and get good error)
-
-        KeyPair keys = createUserCert(caid);
-
-        // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        X509Certificate chain[] = new X509Certificate[2];
-        chain[0] = ocspTestCert;
-        chain[1] = cacert;
-        gen.setRequestorName(ocspTestCert.getSubjectX500Principal());
-        OCSPReq req = gen.generate("SHA1WithRSA", keys.getPrivate(), chain, "BC");
-
-        // First test with a signed OCSP request that can be verified
-        Collection<Certificate> cacerts = new ArrayList<Certificate>();
-        cacerts.add(cacert);
-        ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
-        X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
-        assertNotNull(signer);
-        assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
-
-        // Try with an unsigned request, we should get a SignRequestException
-        req = gen.generate();
-        boolean caught = false;
         try {
-            signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
-        } catch (SignRequestException e) {
-            caught = true;
-        }
-        assertTrue(caught);
+            KeyPair keys = createUserCert(caid);
 
-        // sign with a keystore where the CA-certificate is not known
-        KeyStore store = KeyStore.getInstance("PKCS12", "BC");
-        ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
-        store.load(fis, "foo123".toCharArray());
-        Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
-        chain[0] = (X509Certificate) certs[0];
-        chain[1] = (X509Certificate) certs[1];
-        PrivateKey pk = (PrivateKey) store.getKey("privateKey", "foo123".toCharArray());
-        req = gen.generate("SHA1WithRSA", pk, chain, "BC");
-        // Send the request and receive a singleResponse, this response should
-        // throw an SignRequestSignatureException
-        caught = false;
-        try {
-            signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
-        } catch (SignRequestSignatureException e) {
-            caught = true;
-        }
-        assertTrue(caught);
+            // And an OCSP request
+            OCSPReqGenerator gen = new OCSPReqGenerator();
+            gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+            Hashtable exts = new Hashtable();
+            X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+            exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+            gen.setRequestExtensions(new X509Extensions(exts));
+            X509Certificate chain[] = new X509Certificate[2];
+            chain[0] = ocspTestCert;
+            chain[1] = cacert;
+            gen.setRequestorName(ocspTestCert.getSubjectX500Principal());
+            OCSPReq req = gen.generate("SHA1WithRSA", keys.getPrivate(), chain, "BC");
 
-        // sign with a keystore where the signing certificate has expired
-        store = KeyStore.getInstance("PKCS12", "BC");
-        fis = new ByteArrayInputStream(ksexpired);
-        store.load(fis, "foo123".toCharArray());
-        certs = KeyTools.getCertChain(store, "ocspclient");
-        chain[0] = (X509Certificate) certs[0];
-        chain[1] = (X509Certificate) certs[1];
-        pk = (PrivateKey) store.getKey("ocspclient", "foo123".toCharArray());
-        req = gen.generate("SHA1WithRSA", pk, chain, "BC");
-        // Send the request and receive a singleResponse, this response should
-        // throw an SignRequestSignatureException
-        caught = false;
-        try {
-            signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
-        } catch (SignRequestSignatureException e) {
-            caught = true;
+            // First test with a signed OCSP request that can be verified
+            Collection<Certificate> cacerts = new ArrayList<Certificate>();
+            cacerts.add(cacert);
+            ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
+            X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+            assertNotNull(signer);
+            assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
+
+            // Try with an unsigned request, we should get a SignRequestException
+            req = gen.generate();
+            boolean caught = false;
+            try {
+                signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+            } catch (SignRequestException e) {
+                caught = true;
+            }
+            assertTrue(caught);
+
+            // sign with a keystore where the CA-certificate is not known
+            KeyStore store = KeyStore.getInstance("PKCS12", "BC");
+            ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
+            store.load(fis, "foo123".toCharArray());
+            Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
+            chain[0] = (X509Certificate) certs[0];
+            chain[1] = (X509Certificate) certs[1];
+            PrivateKey pk = (PrivateKey) store.getKey("privateKey", "foo123".toCharArray());
+            req = gen.generate("SHA1WithRSA", pk, chain, "BC");
+            // Send the request and receive a singleResponse, this response should
+            // throw an SignRequestSignatureException
+            caught = false;
+            try {
+                signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+            } catch (SignRequestSignatureException e) {
+                caught = true;
+            }
+            assertTrue(caught);
+
+            // sign with a keystore where the signing certificate has expired
+            store = KeyStore.getInstance("PKCS12", "BC");
+            fis = new ByteArrayInputStream(ksexpired);
+            store.load(fis, "foo123".toCharArray());
+            certs = KeyTools.getCertChain(store, "ocspclient");
+            chain[0] = (X509Certificate) certs[0];
+            chain[1] = (X509Certificate) certs[1];
+            pk = (PrivateKey) store.getKey("ocspclient", "foo123".toCharArray());
+            req = gen.generate("SHA1WithRSA", pk, chain, "BC");
+            // Send the request and receive a singleResponse, this response should
+            // throw an SignRequestSignatureException
+            caught = false;
+            try {
+                signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+            } catch (SignRequestSignatureException e) {
+                caught = true;
+            }
+            assertTrue(caught);
+        } finally {
+            userAdminSession.deleteUser(admin, "ocsptest");
         }
-        assertTrue(caught);
 
     } // test07SignedOcsp
 
     /**
      * Tests ocsp message
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test08OcspEcdsaGood() throws Exception {
-        assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
-                .getResponseCode() == 200);
+        assertTrue("This test can only be run on a full EJBCA installation.",
+                ((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
 
         int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
         helper.reloadKeys();
+        try {
+            // Make user and ocspTestCert that we know...
+            createUserCert(ecdsacaid);
 
-        // Make user and ocspTestCert that we know...
-        createUserCert(ecdsacaid);
+            // And an OCSP request
+            OCSPReqGenerator gen = new OCSPReqGenerator();
+            gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
+            Hashtable exts = new Hashtable();
+            X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+            exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+            gen.setRequestExtensions(new X509Extensions(exts));
+            OCSPReq req = gen.generate();
 
-        // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+            // Send the request and receive a singleResponse
+            SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
+            assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+            SingleResp singleResp = singleResps[0];
 
-        // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
-        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
-        SingleResp singleResp = singleResps[0];
-
-        CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
-        Object status = singleResp.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
-
+            CertificateID certId = singleResp.getCertID();
+            assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+            Object status = singleResp.getCertStatus();
+            assertEquals("Status is not null (good)", status, null);
+        } finally {
+            userAdminSession.deleteUser(admin, "ocsptest");
+        }
     } // test08OcspEcdsaGood
 
     /**
@@ -484,29 +484,31 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
         helper.reloadKeys();
+        try {
+            // Make user and ocspTestCert that we know...
+            createUserCert(ecdsacaid);
 
-        // Make user and ocspTestCert that we know...
-        createUserCert(ecdsacaid);
+            // And an OCSP request
+            OCSPReqGenerator gen = new OCSPReqGenerator();
+            gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
+            Hashtable exts = new Hashtable();
+            X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+            exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+            gen.setRequestExtensions(new X509Extensions(exts));
+            OCSPReq req = gen.generate();
 
-        // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+            // Send the request and receive a singleResponse
+            SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
+            assertEquals("No of SingResps should be 1.", 1, singleResps.length);
+            SingleResp singleResp = singleResps[0];
 
-        // Send the request and receive a singleResponse
-        SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", 0, 200);
-        assertEquals("No of SingResps should be 1.", 1, singleResps.length);
-        SingleResp singleResp = singleResps[0];
-
-        CertificateID certId = singleResp.getCertID();
-        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
-        Object status = singleResp.getCertStatus();
-        assertEquals("Status is not null (good)", status, null);
-
+            CertificateID certId = singleResp.getCertID();
+            assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+            Object status = singleResp.getCertStatus();
+            assertEquals("Status is not null (good)", status, null);
+        } finally {
+            userAdminSession.deleteUser(admin, "ocsptest");
+        }
     } // test09OcspEcdsaImplicitlyCAGood
 
     @Test
@@ -593,7 +595,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         int dsacaid = "CN=OCSPDSATEST".hashCode();
         X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "1024");
         helper.reloadKeys();
-
+        try {
         // Make user and ocspTestCert that we know...
         createUserCert(dsacaid);
 
@@ -615,7 +617,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-
+        } finally {
+            
+        }
     } // test16OcspDsaGood
 
     /**
