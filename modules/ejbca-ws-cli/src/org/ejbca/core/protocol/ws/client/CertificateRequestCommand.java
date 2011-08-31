@@ -83,9 +83,8 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             String encoding = getEncoding(args[ARG_ENCODING]);
             String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
 
-            
             String outputPath = null;
-            if(args.length == 7){
+            if(args.length > 10){
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
             
@@ -211,7 +210,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	protected void usage() {
 		getPrintStream().println("Command used to generate a users certificate");
 		getPrintStream().println("Usage : certreq <username> <subjectdn> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
-        getPrintStream().println("outputpath : directory where certificate is written in form username+.cer|.pem ");
+        getPrintStream().println("outputpath : directory where certificate is written in form outputpath/username+.cer|.pem ");
    }
 
 
