@@ -56,7 +56,7 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
     private static final long serialVersionUID = -5788194519235705323L;
 
     static {
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     /**
@@ -64,52 +64,65 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
      */
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
-        KeyPair keys = null;
-        try {
-            keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        } catch (NoSuchAlgorithmException e) {
-            throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
-        } catch (NoSuchProviderException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
-        }
 
-        /*
-         * TODO: Document the bellow try/catch better.
-         */
-        String dn = "C=SE,O=Test,CN=Test"; // default
-        // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
-        if (subject != null) {
-        	Set<Principal> principals = subject.getPrincipals();
-        	if ((principals != null) && (principals.size() > 0)) {
-        		Principal p = principals.iterator().next();
-        		if (p instanceof X500Principal) {
-					X500Principal xp = (X500Principal)p;
-					dn = xp.getName();
-				}
-        	}
-        }
         X509Certificate certificate = null;
-        try {
-            certificate = CertTools.genSelfCert(dn, 365, null, keys.getPrivate(), keys.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
-        } catch (InvalidKeyException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
-        } catch (CertificateEncodingException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
-        } catch (SignatureException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
-        } catch (IllegalStateException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
-        } catch (NoSuchProviderException e) {
-            throw new CertificateCreationException("Error encountered when creating certificate", e);
-        }
-
+        // If we have a certificate as input, use that, otherwise generate a self signed certificate
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        Set<?> inputcreds = subject.getCredentials();
+        if (inputcreds != null) {
+            for (Object object : inputcreds) {
+    			if (object instanceof X509Certificate) {
+    				certificate = (X509Certificate) object;
+    			}
+    		}        	
+        }
+        
+        // If there was no certificate input, create a self signed
+        if (certificate == null) {
+            /*
+             * TODO: Document the bellow try/catch better.
+             */
+            String dn = "C=SE,O=Test,CN=Test"; // default
+            // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
+            if (subject != null) {
+            	Set<Principal> principals = subject.getPrincipals();
+            	if ((principals != null) && (principals.size() > 0)) {
+            		Principal p = principals.iterator().next();
+            		if (p instanceof X500Principal) {
+    					X500Principal xp = (X500Principal)p;
+    					dn = xp.getName();
+    				}
+            	}
+            }
+            KeyPair keys = null;
+            try {
+                keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            } catch (NoSuchAlgorithmException e) {
+                throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
+            } catch (NoSuchProviderException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
+            }
+            try {
+                certificate = CertTools.genSelfCert(dn, 365, null, keys.getPrivate(), keys.getPublic(),
+                        AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+            } catch (InvalidKeyException e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            } catch (CertificateEncodingException e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            } catch (NoSuchAlgorithmException e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            } catch (SignatureException e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            } catch (IllegalStateException e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            } catch (NoSuchProviderException e) {
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
+            }        	
+        }
+        // Add the credentials and new principal
         credentials.add(certificate);
         Set<X500Principal> principals = new HashSet<X500Principal>();
         principals.add(certificate.getSubjectX500Principal());

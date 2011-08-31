@@ -239,7 +239,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         removeECDSACA();
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
-        userAdminSession.deleteUser(admin, "ocsptest");
+        try {
+        	userAdminSession.deleteUser(admin, "ocsptest");
+        } catch (Exception e) {
+        	// NOPMD: ignore
+        }
     }
 
     @Test
@@ -301,6 +305,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     @Test
     public void test03OcspRevoked() throws Exception {
         log.trace(">test03OcspRevoked()");
+        loadUserCert(caid);
         // Now revoke the certificate and try again
         revocationSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
         // And an OCSP request
