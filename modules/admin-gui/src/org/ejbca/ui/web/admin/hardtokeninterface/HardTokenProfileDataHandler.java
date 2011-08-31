@@ -193,8 +193,8 @@ public class HardTokenProfileDataHandler implements Serializable {
             if (editcheck && authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles")) {      
                 HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
                 HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
-                if (profile instanceof EIDProfile) {
                 authorizedcertprofiles.add(new Integer(SecConst.CERTPROFILE_NO_PROFILE));
+                if (profile instanceof EIDProfile) {
                     if (authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())
                             && authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())) {
                         returnval = true;

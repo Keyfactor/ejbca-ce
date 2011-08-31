@@ -254,7 +254,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-        authorizedcertprofiles.add(new Integer(SecConst.CERTPROFILE_NO_PROFILE));
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
             throw new HardTokenProfileExistsException();
         }
@@ -265,6 +264,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     public Collection<Integer> getAuthorizedHardTokenProfileIds(AuthenticationToken admin) {
         ArrayList<Integer> returnval = new ArrayList<Integer>();
         HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_HARDTOKEN, caSession.getAvailableCAs(admin)));
+        authorizedcertprofiles.add(new Integer(SecConst.CERTPROFILE_NO_PROFILE));
         HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
         Iterator<HardTokenProfileData> i = result.iterator();
