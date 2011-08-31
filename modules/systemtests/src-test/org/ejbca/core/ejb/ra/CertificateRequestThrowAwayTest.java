@@ -99,7 +99,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public void setupBeforeClass() throws CADoesntExistsException, AuthorizationDeniedException {
+    public static void setupBeforeClass() throws CADoesntExistsException, AuthorizationDeniedException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
     
