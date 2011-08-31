@@ -254,6 +254,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+        authorizedcertprofiles.add(new Integer(SecConst.CERTPROFILE_NO_PROFILE));
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
             throw new HardTokenProfileExistsException();
         }
