@@ -107,19 +107,19 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             String msg = intres.getLocalizedMessage("approval.approved", approvalId);            	
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(approval.getAdminCertIssuerDN().hashCode()), null, String.valueOf(approvalId), details);
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(adl.getCaid()), null, String.valueOf(approvalId), details);
         } catch (ApprovalRequestExpiredException e) {
             String msg = intres.getLocalizedMessage("approval.expired", approvalId);            	
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(approval.getAdminCertIssuerDN().hashCode()), null, String.valueOf(approvalId), details);
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(adl.getCaid()), null, String.valueOf(approvalId), details);
             throw e;
         } catch (ApprovalRequestExecutionException e) {
             String msg = intres.getLocalizedMessage("approval.errorexecuting", approvalId);            	
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(approval.getAdminCertIssuerDN().hashCode()), null, String.valueOf(approvalId), details);
+            auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(adl.getCaid()), null, String.valueOf(approvalId), details);
             throw e;
         }
         log.trace("<approve");

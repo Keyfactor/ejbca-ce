@@ -98,7 +98,7 @@ public class CAImportExportTest  {
     public void tearDown() throws Exception {
     }
     
-    private CATokenInfo createCaTokenInfo(String sigAlg, String signKeySpec, String encAlg) {
+    protected static CATokenInfo createCaTokenInfo(String sigAlg, String signKeySpec, String encAlg) {
     	CATokenInfo catokeninfo = new CATokenInfo();
     	catokeninfo.setSignatureAlgorithm(sigAlg);
     	catokeninfo.setEncryptionAlgorithm(encAlg);

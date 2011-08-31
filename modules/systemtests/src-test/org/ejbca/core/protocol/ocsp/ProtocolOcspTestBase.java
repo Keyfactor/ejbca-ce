@@ -100,9 +100,9 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * @throws Exception
      *             error
      */
-    @Test
     public void test04OcspUnknown() throws Exception {
         log.trace(">test04OcspUnknown()");
+        loadUserCert(caid);
         // An OCSP request for an unknown certificate (not exist in db)
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
@@ -127,9 +127,9 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * @throws Exception
      *             error
      */
-    @Test
     public void test05OcspUnknownCA() throws Exception {
         log.trace(">test05OcspUnknownCA()");
+        loadUserCert(caid);
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
@@ -148,8 +148,8 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         log.trace("<test05OcspUnknownCA()");
     }
 
-    @Test
     public void test06OcspSendWrongContentType() throws Exception {
+        loadUserCert(caid);
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
@@ -168,10 +168,10 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     
     }
 
-    @Test
     public void test10MultipleRequests() throws Exception {
         // Tests that we handle multiple requests in one OCSP request message
     
+        loadUserCert(caid);
         // An OCSP request for a certificate from an unknown CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
@@ -212,8 +212,8 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * OCSPResponse ::= SEQUENCE { responseStatus OCSPResponseStatus,
      * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
      */
-    @Test
     public void test11MalformedRequest() throws Exception {
+        loadUserCert(caid);
         OCSPReqGenerator gen = new OCSPReqGenerator();
         // Add 101 OCSP requests.. the Servlet will consider a request with more
         // than 100 malformed..
@@ -234,10 +234,9 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         assertNull("No SingleResps should be returned.", singleResps);
     }
 
-    @Test
     public void test12CorruptRequests() throws Exception {
         log.trace(">test12CorruptRequests()");
-    
+        loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -307,8 +306,8 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     /**
      * Just verify that a simple GET works.
      */
-    @Test
     public void test13GetRequests() throws Exception {
+        loadUserCert(caid);
         // See if the OCSP Servlet can read non-encoded requests
         final String plainReq = httpReqPath
                 + '/'
@@ -352,7 +351,6 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     /**
      * Send a bunch of faulty requests
      */
-    @Test
     public void test14CorruptGetRequests() throws Exception {
         // An array of zeros cannot be right..
         helper.sendOCSPGet(new byte[4096], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
@@ -379,7 +377,6 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * clients from this, but the server should be RFC 2560 compatible and
      * support this as long as the total request URL is smaller than 256 bytes.
      */
-    @Test
     public void test15MultipleGetRequests() throws Exception {
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests

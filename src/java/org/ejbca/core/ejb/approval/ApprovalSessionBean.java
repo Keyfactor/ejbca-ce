@@ -97,7 +97,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc)
             throws ApprovalException {
-        log.trace(">addApprovalRequest");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">addApprovalRequest");
+    	}
         int approvalId = approvalRequest.generateApprovalId();
 
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
@@ -144,7 +146,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                         admin.toString(), String.valueOf(approvalRequest.getCAId()), null, String.valueOf(approvalId), details);
             }
         }
-        log.trace("<addApprovalRequest");
+        if (log.isTraceEnabled()) {
+        	log.trace("<addApprovalRequest");
+        }
     }
 
     @Override

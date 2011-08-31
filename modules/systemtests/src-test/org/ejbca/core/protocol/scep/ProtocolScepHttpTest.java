@@ -175,11 +175,18 @@ public class ProtocolScepHttpTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         // remove user
-        userAdminSession.deleteUser(admin, userName1);
-        log.debug("deleted user: " + userName1);
-        userAdminSession.deleteUser(admin, userName2);
-        log.debug("deleted user: " + userName2);
-
+        try {
+        	userAdminSession.deleteUser(admin, userName1);
+        	log.debug("deleted user: " + userName1);
+        } catch (Exception e) {
+        	// NOPMD: ignore
+        }
+        try {
+        	userAdminSession.deleteUser(admin, userName2);
+        	log.debug("deleted user: " + userName2);
+        } catch (Exception e) {
+        	// NOPMD: ignore
+        }        
     }
 
     @Test

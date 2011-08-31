@@ -240,13 +240,19 @@ public abstract class ApprovalRequest implements Externalizable {
     }
 
     /**
-     * Returns the certificate of the request admin.
+     * Returns the certificate of the request admin, if there is any. 
+     * Walks through credentials of the request admins AuthenticationToken and returns the first certifciate encountered.
+     * @return returns Certificate or null
      */
     public Certificate getRequestAdminCert() {
-    	if (requestAdmin instanceof X509CertificateAuthenticationToken) {
-			X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) requestAdmin;
-			return xtok.getCertificate();
-		}
+    	Set<?> credentials = requestAdmin.getCredentials();
+    	if (credentials != null) {
+        	for (Object credential : credentials) {
+        		if (credential instanceof Certificate) {
+    				return (Certificate) credential;
+    			}
+        	}    		
+    	}
         return null;
     }
 

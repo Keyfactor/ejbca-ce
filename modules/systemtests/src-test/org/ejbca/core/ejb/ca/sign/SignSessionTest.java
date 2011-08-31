@@ -58,6 +58,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -1840,7 +1841,8 @@ public class SignSessionTest extends CaTestCase {
     		userAdminSession.addUser(admin, user, false);
     		userAdminSession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
     		// create first cert
-    		X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+    		KeyPair keys = KeyTools.genKeys("512", "RSA");
+    		X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
     		assertNotNull("Failed to create cert", cert);
 
     		// Check that it is active
@@ -1854,7 +1856,7 @@ public class SignSessionTest extends CaTestCase {
     		userAdminSession.changeUser(admin, user, false);
     		userAdminSession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
     		// create first cert
-    		cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+    		cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
     		assertNotNull("Failed to create cert", cert);
 
     		// Check that it is revoked
@@ -1879,7 +1881,7 @@ public class SignSessionTest extends CaTestCase {
     		assertEquals("CN=foorevreason,OU=,OU=FooOU,O=PrimeKey,C=SE", udata.getDN());
     		assertEquals("CN=foorevreason,OU=FooOU,O=PrimeKey,C=SE", udata.getCertificateDN());
     		// Create cert again
-    		cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+    		cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
     		assertNotNull("Failed to create cert", cert);
     		assertEquals(udata.getCertificateDN(), CertTools.getSubjectDN(cert));
     		// Check that it is revoked
@@ -2450,7 +2452,7 @@ public class SignSessionTest extends CaTestCase {
             try {
             	cert = (X509Certificate) signSession.createCertificate(admin, username2, "foo123", rsakeys.getPublic());
             	assertTrue("Should not work to create same DN with another username", false);
-            } catch (EjbcaException e) {
+            } catch (CesecoreException e) {
             	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
             }
             
@@ -2486,7 +2488,7 @@ public class SignSessionTest extends CaTestCase {
             try {
             	cert = (X509Certificate) signSession.createCertificate(admin, username2, "foo123", rsakeys.getPublic());
             	assertTrue("Should not work to create same DN with another username", false);
-            } catch (EjbcaException e) {
+            } catch (CesecoreException e) {
             	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
             }
         } finally {
