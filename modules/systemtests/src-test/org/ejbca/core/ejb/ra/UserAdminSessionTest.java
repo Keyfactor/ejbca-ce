@@ -97,6 +97,10 @@ public class UserAdminSessionTest extends CaTestCase {
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        // Make user that we know later...
+        username = genRandomUserName();
+        pwd = genRandomPwd();
     }
 
     @Before
@@ -139,13 +143,10 @@ public class UserAdminSessionTest extends CaTestCase {
      * 
      * @throws Exception error
      */
-    @Test
-    public void test01AddUser() throws Exception {
+    private void addUser() throws Exception {
         log.trace(">test01AddUser()");
 
-        // Make user that we know later...
-        username = genRandomUserName();
-        pwd = genRandomPwd();
+
         String email = username + "@anatom.se";
         userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
@@ -199,7 +200,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
-    public void test02AddUserWithUniqueDNSerialnumber() throws Exception {
+    public void test02AddUserWithUniqueDNSerialnumberAndChange() throws Exception {
         log.trace(">test02AddUserWithUniqueDNSerialnumber()");
 
         // Make user that we know later...
@@ -243,53 +244,49 @@ public class UserAdminSessionTest extends CaTestCase {
         caAdminSession.editCA(admin, cainfo);
 
         log.trace("<test02AddUserWithUniqueDNSerialnumber()");
-    }
-
-    @Test
-    public void test03ChangeUserWithUniqueDNSerialnumber() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
-            WaitingForApprovalException, EjbcaException, CADoesntExistsException {
-        log.trace(">test03ChangeUserWithUniqueDNSerialnumber()");
+    
 
         // Make user that we know later...
-        String thisusername;
+        String secondUserName;
         if (usernames.size() > 1) {
-            thisusername = (String) usernames.get(1);
+            secondUserName = (String) usernames.get(1);
         } else {
-            thisusername = username;
+            secondUserName = username;
         }
-        String email = thisusername + username + "@anatomanatom.se";
+        String secondEmail = secondUserName + username + "@anatomanatom.se";
 
-        CAInfo cainfo = caSession.getCAInfo(admin, caid);
-        boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
+        CAInfo secondCainfo = caSession.getCAInfo(admin, caid);
+        boolean secondRequiredUniqueSerialnumber = secondCainfo.isDoEnforceUniqueSubjectDNSerialnumber();
 
         // Set the CA to enforce unique serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
         caAdminSession.editCA(admin, cainfo);
         try {
-            userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
+            userAdminSession.changeUser(admin, secondUserName, pwd, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, "rfc822name=" + secondEmail, secondEmail,
                     false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
                     UserDataConstants.STATUS_NEW, caid);
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
-        assertTrue("The user '" + thisusername + "' was changed eventhough the serialnumber already exists.",
-                endEntityAccessSession.findUserByEmail(admin, email).size() == 0);
+        assertTrue("The user '" + secondUserName + "' was changed even though the serialnumber already exists.",
+                endEntityAccessSession.findUserByEmail(admin, secondEmail).size() == 0);
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
-        userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
+        userAdminSession.changeUser(admin, secondUserName, pwd, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, "rfc822name=" + secondEmail, secondEmail,
                 false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
                 UserDataConstants.STATUS_NEW, caid);
         assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", endEntityAccessSession
-                .findUserByEmail(admin, email).size() > 0);
+                .findUserByEmail(admin, secondEmail).size() > 0);
 
         // Set the CA back to its original settings of enforcing unique
         // subjectDN serialnumber.
-        cainfo.setDoEnforceUniqueSubjectDNSerialnumber(requiredUniqueSerialnumber);
-        caAdminSession.editCA(admin, cainfo);
+        cainfo.setDoEnforceUniqueSubjectDNSerialnumber(secondRequiredUniqueSerialnumber);
+        caAdminSession.editCA(admin, secondCainfo);
 
         log.trace("<test03ChangeUserWithUniqueDNSerialnumber()");
+
     }
 
     /**
@@ -299,6 +296,8 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     @Test
     public void test03FindUser() throws Exception {
+        addUser();
+
         log.trace(">test03FindUser()");
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data);
@@ -312,6 +311,7 @@ public class UserAdminSessionTest extends CaTestCase {
         data = endEntityAccessSession.findUser(admin, notexistusername);
         assertNull(data);
         log.trace("<test03FindUser()");
+
     }
 
     /**
@@ -321,6 +321,8 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     @Test
     public void test03_1QueryUser() throws Exception {
+        addUser();
+
         log.trace(">test03_1QueryUser()");
         Query query = new Query(Query.TYPE_USERQUERY);
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
@@ -330,6 +332,7 @@ public class UserAdminSessionTest extends CaTestCase {
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");
+
     }
 
     /**
@@ -339,6 +342,8 @@ public class UserAdminSessionTest extends CaTestCase {
      */
     @Test
     public void test04ChangeUser() throws Exception {
+        addUser();
+
         log.trace(">test04ChangeUser()");
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data);
@@ -367,6 +372,8 @@ public class UserAdminSessionTest extends CaTestCase {
 
     @Test
     public void test05RevokeCert() throws Exception {
+        addUser();
+
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
 
         EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
@@ -423,7 +430,9 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
-    public void test05DeleteUser() throws Exception {
+    public void testDeleteUser() throws Exception {
+        addUser();
+
         log.trace(">test05DeleteUser()");
         userAdminSession.deleteUser(admin, username);
         log.debug("deleted user: " + username);
