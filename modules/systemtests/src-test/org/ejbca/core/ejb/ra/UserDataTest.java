@@ -55,12 +55,15 @@ public class UserDataTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserDataTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
+    private static final String PROFILE_CACHE_NAME_1 = "TESTEEPROFCACHE1";
+    private static final String PROFILE_CACHE_NAME_2 = "TESTEEPROFCACHE2";
+    
     private int caid = getTestCAId();
 
     private static String username;
-    private static String username1;
+
     private static String pwd;
-    private static String pwd1;
 
     /** variable used to hold a flag value so we can reset it after we have done the tests */
     private static boolean gcEELimitations;
@@ -80,54 +83,39 @@ public class UserDataTest extends CaTestCase {
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
         globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
+        createNewUser();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
         globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
 
         // Delete test users we created
-        try {
-            userAdminSession.deleteUser(admin, username);
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            userAdminSession.deleteUser(admin, username1);
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
-        } catch (Exception e) { /* ignore */
-        }
-        try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE2");
-        } catch (Exception e) { /* ignore */
-        }
+
+        userAdminSession.deleteUser(admin, username);
+
+        endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+
+        endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
+
+        endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
 
     }
 
-    @Test
-    public void test01CreateNewUser() throws Exception {
-        log.trace(">test01CreateNewUser()");
+    public void createNewUser() throws Exception {
         username = genRandomUserName();
         pwd = genRandomPwd();
         userAdminSession.addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
-        log.debug("created it!");
-        log.trace("<test01CreateNewUser()");
     }
 
     @Test
-    public void test02LookupAndChangeUser() throws Exception {
+    public void testLookupAndChangeUser() throws Exception {
         log.trace(">test02LookupAndChangeUser()");
 
         log.debug("username=" + username);
@@ -152,11 +140,6 @@ public class UserDataTest extends CaTestCase {
                 UserDataConstants.STATUS_GENERATED, caid);
         log.debug("Changed it");
         log.trace("<test02LookupAndChangeUser()");
-    }
-
-    @Test
-    public void test03LookupChangedUser() throws Exception {
-        log.trace(">test03LookupChangedUser()");
 
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         log.debug("found by key! =" + data);
@@ -180,13 +163,8 @@ public class UserDataTest extends CaTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
                 UserDataConstants.STATUS_GENERATED, caid);
         log.trace("<test03LookupChangedUser()");
-    }
 
-    @Test
-    public void test03LookupChangedUser2() throws Exception {
-        log.trace(">test03LookupChangedUser2()");
-
-        EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
+        data = endEntityAccessSession.findUser(admin, username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -207,20 +185,9 @@ public class UserDataTest extends CaTestCase {
         userAdminSession.setPassword(admin, username, "foo234");
         log.trace("<test03LookupChangedUser2()");
     }
-
+    
     @Test
-    public void test04CreateNewUser() throws Exception {
-        log.trace(">test04CreateNewUser()");
-        username1 = genRandomUserName();
-        pwd1 = genRandomPwd();
-        userAdminSession.addUser(admin, username1, pwd1, "C=SE,O=AnaTom,CN=" + username1, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
-        log.debug("created it again!");
-        log.trace("<test04CreateNewUser()");
-    }
-
-    @Test
-    public void test05ListNewUser() throws Exception {
+    public void testListNewUser() throws Exception {
         log.trace(">test05ListNewUser()");
 
         Collection<EndEntityInformation> coll = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
@@ -239,7 +206,7 @@ public class UserDataTest extends CaTestCase {
     }
 
     @Test
-    public void test06RequestCounter() throws Exception {
+    public void testRequestCounter() throws Exception {
         log.trace(">test06RequestCounter()");
 
         // Change already existing user to add extended information with counter
@@ -490,17 +457,18 @@ public class UserDataTest extends CaTestCase {
         log.trace("<test06RequestCounter()");
     }
 
-    public void test07EndEntityProfileMappings() throws Exception {
+    @Test
+    public void testEndEntityProfileMappings() throws Exception {
         // Add a couple of profiles and verify that the mappings and get functions work
         EndEntityProfile profile1 = new EndEntityProfile();
         profile1.setPrinterName("foo");
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTEEPROFCACHE1", profile1);
+        endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_1, profile1);
         EndEntityProfile profile2 = new EndEntityProfile();
         profile2.setPrinterName("bar");
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTEEPROFCACHE2", profile2);
-        int pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
+        endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
+        int pid = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
         String name = endEntityProfileSession.getEndEntityProfileName(admin, pid);
-        int pid1 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
+        int pid1 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
         String name1 = endEntityProfileSession.getEndEntityProfileName(admin, pid1);
         assertEquals(pid, pid1);
         assertEquals(name, name1);
@@ -509,7 +477,7 @@ public class UserDataTest extends CaTestCase {
         profile = endEntityProfileSession.getEndEntityProfile(admin, name);
         assertEquals("foo", profile.getPrinterName());
 
-        int pid2 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2");
+        int pid2 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_2);
         String name2 = endEntityProfileSession.getEndEntityProfileName(admin, pid2);
         profile = endEntityProfileSession.getEndEntityProfile(admin, pid2);
         assertEquals("bar", profile.getPrinterName());
@@ -519,7 +487,7 @@ public class UserDataTest extends CaTestCase {
         // flush caches and make sure it is read correctly again
         endEntityProfileSession.flushProfileCache();
 
-        int pid3 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
+        int pid3 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
         String name3 = endEntityProfileSession.getEndEntityProfileName(admin, pid3);
         assertEquals(pid1, pid3);
         assertEquals(name1, name3);
@@ -528,7 +496,7 @@ public class UserDataTest extends CaTestCase {
         profile = endEntityProfileSession.getEndEntityProfile(admin, name3);
         assertEquals("foo", profile.getPrinterName());
 
-        int pid4 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2");
+        int pid4 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_2);
         String name4 = endEntityProfileSession.getEndEntityProfileName(admin, pid4);
         assertEquals(pid2, pid4);
         assertEquals(name2, name4);
@@ -538,16 +506,16 @@ public class UserDataTest extends CaTestCase {
         assertEquals("bar", profile.getPrinterName());
 
         // Remove a profile and make sure it is not cached still
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTEEPROFCACHE1");
+        endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
         profile = endEntityProfileSession.getEndEntityProfile(admin, pid1);
         assertNull(profile);
-        int pid5 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE1");
+        int pid5 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
         assertEquals(0, pid5);
         String name5 = endEntityProfileSession.getEndEntityProfileName(admin, pid5);
         assertNull(name5);
 
         // But the other, non-removed profile should still be there
-        int pid6 = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEEPROFCACHE2");
+        int pid6 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_2);
         String name6 = endEntityProfileSession.getEndEntityProfileName(admin, pid6);
         assertEquals(pid2, pid6);
         assertEquals(name2, name6);
@@ -561,16 +529,21 @@ public class UserDataTest extends CaTestCase {
      * Test of the cache of end entity profiles. This test depends on the default cache time of 1 second being used. If you changed this config,
      * eeprofiles.cachetime, this test may fail.
      */
-    public void test08EndEntityProfileCache() throws Exception {
+    @Test
+    public void testEndEntityProfileCache() throws Exception {
+        EndEntityProfile profile2 = new EndEntityProfile();
+        profile2.setPrinterName("bar");
+        endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
+        
         // First a check that we have the correct configuration, i.e. default
         long cachetime = EjbcaConfiguration.getCacheEndEntityProfileTime();
         assertEquals(1000, cachetime);
         // Make sure profile has the right value from the beginning
-        EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
         eep.setAllowMergeDnWebServices(false);
-        endEntityProfileSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
+        endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
         // Read profile
-        eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
         boolean value = eep.getAllowMergeDnWebServices();
         assertFalse(value);
 
@@ -578,18 +551,18 @@ public class UserDataTest extends CaTestCase {
         endEntityProfileSession.flushProfileCache();
         // Change profile, not flushing cache
         eep.setAllowMergeDnWebServices(true);
-        endEntityProfileSession.internalChangeEndEntityProfileNoFlushCache(admin, "TESTEEPROFCACHE2", eep);
+        endEntityProfileSession.internalChangeEndEntityProfileNoFlushCache(admin, PROFILE_CACHE_NAME_2, eep);
 
         // Wait 2 seconds and try again, now the cache should have been updated
         Thread.sleep(2000);
-        eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
         value = eep.getAllowMergeDnWebServices();
         assertTrue(value);
 
         // Changing using the regular method however should immediately flush the cache
         eep.setAllowMergeDnWebServices(false);
-        endEntityProfileSession.changeEndEntityProfile(admin, "TESTEEPROFCACHE2", eep);
-        eep = endEntityProfileSession.getEndEntityProfile(admin, "TESTEEPROFCACHE2");
+        endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
+        eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
         value = eep.getAllowMergeDnWebServices();
         assertFalse(value);
     }
@@ -597,7 +570,8 @@ public class UserDataTest extends CaTestCase {
     /**
      * Verify that there can be two different users with the same name, but in different case.
      */
-    public void test09VerifyUserNameCaseSensitivity() throws Exception {
+    @Test
+    public void testVerifyUserNameCaseSensitivity() throws Exception {
         String rnd = "sens" + genRandomUserName();
         String username1 = rnd.toLowerCase();
         String username2 = rnd.toUpperCase();
@@ -622,7 +596,8 @@ public class UserDataTest extends CaTestCase {
     /**
      * Verify that there can't be two different users with the same username.
      */
-    public void test10VerifySameUserName() throws Exception {
+    @Test
+    public void testVerifySameUserName() throws Exception {
         String username = "sameun" + genRandomUserName();
         String pwd = genRandomPwd();
         userAdminSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
@@ -641,18 +616,5 @@ public class UserDataTest extends CaTestCase {
             ok = false;
         }
         assertTrue("Two user with the same name were allowed!", ok);
-    }
-
-    /**
-     * Cleans up after test JUnit tests, i.e. deletes users and CAs that we created and resets any configuration changes.
-     * 
-     * @throws Exception on fatal error
-     */
-    public void test99CleanUp() throws Exception {
-        log.trace(">test99CleanUp()");
-
-
-    
-        log.trace("<test99CleanUp()");
     }
 }
