@@ -20,8 +20,8 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * Class managing internal localization of texts such as notification messages
@@ -47,8 +47,8 @@ public class InternalEjbcaResources extends InternalResources {
      */
     private static final long serialVersionUID = -1001L;
 
-    public static final String PREFEREDINTERNALRESOURCES = EjbcaConfiguration.getInternalResourcesPreferredLanguage();
-    public static final String SECONDARYINTERNALRESOURCES = EjbcaConfiguration.getInternalResourcesSecondaryLanguage();
+    public static final String PREFEREDINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesPreferredLanguage();
+    public static final String SECONDARYINTERNALRESOURCES = CesecoreConfiguration.getInternalResourcesSecondaryLanguage();
 
     protected static InternalEjbcaResources instance = null;
 
