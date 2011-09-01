@@ -43,13 +43,6 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Password used to protect CA keystores in the database.
-     */
-    public static String getCaKeyStorePass() {
-        return EjbcaConfigurationHolder.getExpandedString("ca.keystorepass", "foo123");
-    }
-
-    /**
      * Password used to protect XKMS keystores in the database.
      */
     public static String getCaXkmsKeyStorePass() {
@@ -61,53 +54,6 @@ public final class EjbcaConfiguration {
      */
     public static String getCaCmsKeyStorePass() {
         return EjbcaConfigurationHolder.getExpandedString("ca.cmskeystorepass", "foo123");
-    }
-
-    /**
-     * The length in octets of certificate serial numbers generated. 8 octets is a 64 bit serial number.
-     */
-    public static int getCaSerialNumberOctetSize() {
-        String value = EjbcaConfigurationHolder.getString("ca.serialnumberoctetsize", "8");
-        if (!"8".equals(value) && !"4".equals(value)) {
-            value = "8";
-        }
-        return Integer.parseInt(value);
-    }
-
-    /**
-     * The date and time from which an expire date of a certificate is to be considered to be too far in the future.
-     */
-    public static String getCaTooLateExpireDate() {
-        return EjbcaConfigurationHolder.getExpandedString("ca.toolateexpiredate", "");
-    }
-
-    /**
-     * @return true if it is permitted to use an extractable private key in a HSM.
-     */
-    public static boolean doPermitExtractablePrivateKeys() {
-        final String value = EjbcaConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys", null);
-        return value != null && value.trim().equalsIgnoreCase(TRUE);
-    }
-
-    /**
-     * The algorithm that should be used to generate random numbers (Random Number Generator Algorithm)
-     */
-    public static String getRNGAlgorithm() {
-        return EjbcaConfigurationHolder.getString("ca.rngalgorithm", "SHA1PRNG");
-    }
-
-    /**
-     * The language that should be used internally for logging, exceptions and approval notifications.
-     */
-    public static String getInternalResourcesPreferredLanguage() {
-        return EjbcaConfigurationHolder.getExpandedString("intresources.preferredlanguage", "EN");
-    }
-
-    /**
-     * The language used internally if a resource not found in the preferred language
-     */
-    public static String getInternalResourcesSecondaryLanguage() {
-        return EjbcaConfigurationHolder.getExpandedString("intresources.secondarylanguage", "SE");
     }
 
     /**
@@ -241,65 +187,6 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaQ() {
-        return EjbcaConfigurationHolder.getExpandedString("ecdsa.implicitlyca.q",
-                "883423532389192164791648750360308885314476597252960362792450860609699839");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaA() {
-        return EjbcaConfigurationHolder.getExpandedString("ecdsa.implicitlyca.a", "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaB() {
-        return EjbcaConfigurationHolder.getExpandedString("ecdsa.implicitlyca.b", "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaG() {
-        return EjbcaConfigurationHolder.getExpandedString("ecdsa.implicitlyca.g", "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf");
-    }
-
-    /**
-     * Sets pre-defined EC curve parameters for the implicitlyCA facility.
-     */
-    public static String getEcdsaImplicitlyCaN() {
-        return EjbcaConfigurationHolder.getExpandedString("ecdsa.implicitlyca.n",
-                "883423532389192164791648750360308884807550341691627752275345424702807307");
-    }
-
-    /**
-     * Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot this is needed so you
-     * don't have to restart JBoss all the time. In production it may cause failures because the BC provider may get removed just when another thread
-     * wants to use it. Therefore the default value is false.
-     */
-    public static boolean getDevelopmentProviderInstallation() {
-        return TRUE.equalsIgnoreCase(EjbcaConfigurationHolder.getString("development.provider.installation", "false"));
-    }
-
-    /**
-     * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long.
-     */
-    public static long getCacheCaTimeInCaAdminSession() {
-        long time = -1; // don't cache at all is the default
-        try {
-            time = Long.valueOf(EjbcaConfigurationHolder.getString("cainfo.cachetime", "-1"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in cainfo.cachetime, must be decimal number (milliseconds to cache CA info): " + e.getMessage());
-        }
-        return time;
-    }
-
-    /**
      * Parameter to specify if retrieving endEntity profiles in RAAdminSession should be cached, and in that case for how long.
      */
     public static long getCacheEndEntityProfileTime() {
@@ -308,20 +195,6 @@ public final class EjbcaConfiguration {
             time = Long.valueOf(EjbcaConfigurationHolder.getString("eeprofiles.cachetime", "1000"));
         } catch (NumberFormatException e) {
             log.error("Invalid value in eeprofiles.cachetime, must be decimal number (milliseconds to cache EndEntity profiles): " + e.getMessage());
-        }
-        return time;
-    }
-
-    /**
-     * Parameter to specify if retrieving Certificate profiles in StoreSession should be cached, and in that case for how long.
-     */
-    public static long getCacheCertificateProfileTime() {
-        long time = 1000; // cache 1 second is the default
-        try {
-            time = Long.valueOf(EjbcaConfigurationHolder.getString("certprofiles.cachetime", "1000"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in certprofiles.cachetime, must be decimal number (milliseconds to cache Certificate profiles): "
-                    + e.getMessage());
         }
         return time;
     }
@@ -340,32 +213,6 @@ public final class EjbcaConfiguration {
         return time;
     }
 
-    /**
-     * Parameter to specify if retrieving Authorization Access Rules (in AuthorizationSession) should be cached, and in that case for how long.
-     */
-    public static long getCacheAuthorizationTime() {
-        long time = 30000; // cache 30 seconds is the default
-        try {
-            time = Long.valueOf(EjbcaConfigurationHolder.getString("authorization.cachetime", "30000"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in authorization.cachetime, must be decimal number (milliseconds to cache authorization): " + e.getMessage());
-        }
-        return time;
-    }
-
-    /**
-     * Parameter to specify if retrieving LogConfiguration (in LogSession) should be cached, and in that case for how long.
-     */
-    public static long getCacheLogConfigurationTime() {
-        long time = 5000; // cache 5 seconds is the default
-        try {
-            time = Long.valueOf(EjbcaConfigurationHolder.getString("logconfiguration.cachetime", "5000"));
-        } catch (NumberFormatException e) {
-            log.error("Invalid value in logconfiguration.cachetime, must be decimal number (milliseconds to cache configuration): " + e.getMessage());
-        }
-        return time;
-    }
-    
     /** Custom Available Access Rules. */
     public static String[] getCustomAvailableAccessRules() {
     	return StringUtils.split(EjbcaConfigurationHolder.getString("ejbca.customavailableaccessrules", ""), ';');

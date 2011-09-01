@@ -109,6 +109,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
@@ -1491,7 +1492,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private String getDefaultKeyStorePassIfSWAndEmpty(final String keystorepass, CryptoToken token) {
         if (token instanceof SoftCryptoToken && StringUtils.isEmpty(keystorepass)) {
             log.debug("Using system default keystore password");
-            final String newKeystorepass = EjbcaConfiguration.getCaKeyStorePass();
+            final String newKeystorepass = CesecoreConfiguration.getCaKeyStorePass();
             return StringTools.passwordDecryption(newKeystorepass, "ca.keystorepass");
         }
         return keystorepass;
