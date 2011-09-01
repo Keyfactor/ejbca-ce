@@ -70,8 +70,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-/** Tests the UserData entity bean and some parts of UserAdminSession.
- *
+/**
+ * Tests the UserData entity bean and some parts of UserAdminSession.
+ * 
  * @version $Id$
  */
 public class UserAdminSessionTest extends CaTestCase {
@@ -95,9 +96,7 @@ public class UserAdminSessionTest extends CaTestCase {
 
     @BeforeClass
     public static void beforeClass() {
- 
-		CryptoProviderTools.installBCProviderIfNotAvailable();        
-
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     @Before
@@ -138,8 +137,7 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests creation of new user and duplicate user
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test01AddUser() throws Exception {
@@ -149,8 +147,8 @@ public class UserAdminSessionTest extends CaTestCase {
         username = genRandomUserName();
         pwd = genRandomPwd();
         String email = username + "@anatom.se";
-        userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+        userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
+                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         usernames.add(username);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
         // Add the same user again
@@ -159,22 +157,23 @@ public class UserAdminSessionTest extends CaTestCase {
             userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         } catch (EJBException ejbException) {
-        	// On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used. 
-        	Exception e = ejbException.getCausedByException();
-           	log.debug("Exception cause thrown: " + e.getClass().getName() + " message: " + e.getMessage());
-        	if (e instanceof PersistenceException) {
-        		userexists = true;	// This is what we want
-        	} else if (e instanceof ServerException) {
-                // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can you believe this?
-        		Throwable t = e.getCause();
-            	if (t != null && t instanceof RemoteException) {
-            		t = t.getCause();
-                	log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
-            		if (t != null && t instanceof PersistenceException) {
-                		userexists = true;	// This is what we want
-            		}
-            	}
-        	}
+            // On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used.
+            Exception e = ejbException.getCausedByException();
+            log.debug("Exception cause thrown: " + e.getClass().getName() + " message: " + e.getMessage());
+            if (e instanceof PersistenceException) {
+                userexists = true; // This is what we want
+            } else if (e instanceof ServerException) {
+                // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can
+                // you believe this?
+                Throwable t = e.getCause();
+                if (t != null && t instanceof RemoteException) {
+                    t = t.getCause();
+                    log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
+                    if (t != null && t instanceof PersistenceException) {
+                        userexists = true; // This is what we want
+                    }
+                }
+            }
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 
@@ -197,8 +196,7 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests creation of new user with unique serialnumber
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test02AddUserWithUniqueDNSerialnumber() throws Exception {
@@ -222,8 +220,9 @@ public class UserAdminSessionTest extends CaTestCase {
         // Add another user with the same serialnumber
         thisusername = genRandomUserName();
         try {
-            userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+            userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
+                    false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
+                    caid);
             usernames.add(thisusername);
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
@@ -246,6 +245,7 @@ public class UserAdminSessionTest extends CaTestCase {
         log.trace("<test02AddUserWithUniqueDNSerialnumber()");
     }
 
+    @Test
     public void test03ChangeUserWithUniqueDNSerialnumber() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,
             WaitingForApprovalException, EjbcaException, CADoesntExistsException {
         log.trace(">test03ChangeUserWithUniqueDNSerialnumber()");
@@ -266,23 +266,23 @@ public class UserAdminSessionTest extends CaTestCase {
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
         caAdminSession.editCA(admin, cainfo);
         try {
-            userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
+            userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
+                    false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
                     UserDataConstants.STATUS_NEW, caid);
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
-        assertTrue("The user '" + thisusername + "' was changed eventhough the serialnumber already exists.", endEntityAccessSession.findUserByEmail(admin, email)
-                .size() == 0);
+        assertTrue("The user '" + thisusername + "' was changed eventhough the serialnumber already exists.",
+                endEntityAccessSession.findUserByEmail(admin, email).size() == 0);
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
-        userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
-                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
+        userAdminSession.changeUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
+                false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
                 UserDataConstants.STATUS_NEW, caid);
-        assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", endEntityAccessSession.findUserByEmail(admin,
-                email).size() > 0);
+        assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", endEntityAccessSession
+                .findUserByEmail(admin, email).size() > 0);
 
         // Set the CA back to its original settings of enforcing unique
         // subjectDN serialnumber.
@@ -295,9 +295,9 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests findUser and existsUser
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
+    @Test
     public void test03FindUser() throws Exception {
         log.trace(">test03FindUser()");
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
@@ -317,8 +317,7 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests query function
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test03_1QueryUser() throws Exception {
@@ -327,7 +326,7 @@ public class UserAdminSessionTest extends CaTestCase {
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         String caauthstring = null;
         String eeprofilestr = null;
-        Collection<EndEntityInformation> col = userAdminSession.query(admin, query, caauthstring, eeprofilestr,0);
+        Collection<EndEntityInformation> col = userAdminSession.query(admin, query, caauthstring, eeprofilestr, 0);
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");
@@ -336,8 +335,7 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests changeUser
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test04ChangeUser() throws Exception {
@@ -367,47 +365,54 @@ public class UserAdminSessionTest extends CaTestCase {
         log.trace("<test04ChangeUser()");
     }
 
+    @Test
     public void test05RevokeCert() throws Exception {
-    	KeyPair keypair = KeyTools.genKeys("512", "RSA");
+        KeyPair keypair = KeyTools.genKeys("512", "RSA");
 
         EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data1);
         data1.setPassword("foo123");
         userAdminSession.changeUser(admin, data1, true);
 
-    	Certificate cert = signSession.createCertificate(admin, username, "foo123", keypair.getPublic());
+        Certificate cert = signSession.createCertificate(admin, username, "foo123", keypair.getPublic());
         CertificateStatus status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
-        // Revoke the certificate, put on hold        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        // Revoke the certificate, put on hold
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
-        // Unrevoke the certificate        
+        // Unrevoke the certificate
         userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.NOT_REVOKED);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
-        // Revoke again certificate        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+        // Revoke again certificate
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
-        // Unrevoke the certificate, but with different code        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+        // Unrevoke the certificate, but with different code
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+                RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
-        // Revoke again certificate permanently        
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
+        // Revoke again certificate permanently
+        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+                RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
 
         // Unrevoke the certificate, should not work
         try {
-        	userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
+            userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+                    RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
             assertTrue(false); // should not reach this
-        } catch (AlreadyRevokedException e) {}
+        } catch (AlreadyRevokedException e) {
+        }
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
     }
@@ -415,8 +420,7 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests deletion of user, and user that does not exist
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test05DeleteUser() throws Exception {
@@ -437,8 +441,7 @@ public class UserAdminSessionTest extends CaTestCase {
     /**
      * tests deletion of user, and user that does not exist
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void test06MergeWithWS() throws Exception {
@@ -456,8 +459,9 @@ public class UserAdminSessionTest extends CaTestCase {
         endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
         int profileId = endEntityProfileSession.getEndEntityProfileId(admin, "TESTMERGEWITHWS");
 
-        EndEntityInformation addUser = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER,
-                profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, 0, null);
+        EndEntityInformation addUser = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
+                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
+                SecConst.TOKEN_SOFT_P12, 0, null);
         addUser.setPassword("foo123");
         userAdminSession.addUserFromWS(admin, addUser, false);
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
@@ -470,6 +474,5 @@ public class UserAdminSessionTest extends CaTestCase {
         // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
     }
-
 
 }
