@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -31,8 +30,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.sun.source.tree.AssertTree;
 
 /**
  * System test class for CaInitCommandTest
