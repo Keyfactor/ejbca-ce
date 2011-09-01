@@ -87,18 +87,14 @@ public class AuthenticationSessionTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-
+        createNewUser();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
         userAdminSession.deleteUser(admin, username1);
-        log.debug("deleted user: " + username1);
-
         userAdminSession.deleteUser(admin, username2);
-        log.debug("deleted user: " + username2);
-
     }
 
     private void createUser(AuthenticationToken admin, String username, String password, int caID, int endEntityProfileId, int certProfileId, int maxFailedLogins)
@@ -117,13 +113,9 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
 
-    /** tests creation of new users */
-    @Test
-    public void test01CreateNewUser() throws Exception {
-        log.trace(">test01CreateNewUser()");
-
+    public void createNewUser() throws Exception {
         // Make user that we know later...
-        username1 = genRandomUserName();
+        username1 = genRandomUserName(); 
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         userAdminSession.addUser(admin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
@@ -135,13 +127,11 @@ public class AuthenticationSessionTest extends CaTestCase {
         pwd2 = genRandomPwd();
         createUser(admin, username2, pwd2, caid, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, MAXFAILEDLOGINS);
         log.debug("created user: " + username2 + ", " + pwd2 + ", C=SE, O=AnaTom, CN=" + username2);
-
-        log.trace("<test01CreateNewUser()");
     }
 
     /** Tests authentication of users */
     @Test
-    public void test02AuthenticateUser() throws Exception {
+    public void testAuthenticateUser() throws Exception {
         log.trace(">test02AuthenticateUser()");
         // user that we know exists...
         log.debug("Username:" + username1 + "\npwd:" + pwd1);
@@ -161,7 +151,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /** Tests filed authentication */
     @Test
-    public void test03FailAuthenticateUser() throws Exception {
+    public void testFailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
         userAdminSession.setUserStatus(admin, username1, UserDataConstants.STATUS_GENERATED);
@@ -178,7 +168,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /** Tests more failed authentication */
     @Test
-    public void test04FailAuthenticateUser() throws Exception {
+    public void testFailAuthenticateUserWithWrongPassword() throws Exception {
         log.trace(">test04FailAuthenticateUser()");
         // user that we know exists... but we issue wrong password
         boolean authfailed = false;
@@ -194,7 +184,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /** Test reset of key recovery mark. */
     @Test
-    public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
+    public void testUnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(admin);
@@ -239,7 +229,7 @@ public class AuthenticationSessionTest extends CaTestCase {
      * is then tested by trying to login using the correct password.
      */
     @Test
-    public void test06MultipleFailedLogins() throws Exception {
+    public void testMultipleFailedLogins() throws Exception {
         log.trace(">test06FailedLoginsThenCorrect()");
 
         assertEquals(MAXFAILEDLOGINS, 4);
