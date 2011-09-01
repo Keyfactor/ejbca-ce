@@ -2386,13 +2386,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
             // Remove from admin group
             RoleData admingroup = roleAccessSession.findRole(roleName);
-            for (AccessUserAspectData accessUserAspect : admingroup.getAccessUsers().values()) {
-                if (accessUserAspect.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
-                    Collection<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-                    list.add(accessUserAspect);
-                    roleManagementSession.removeSubjectsFromRole(intAdmin, roleAccessSession.findRole(roleName), list);
-                    accessControlSession.forceCacheExpire();
-                }
+            if (admingroup != null) {
+                for (AccessUserAspectData accessUserAspect : admingroup.getAccessUsers().values()) {
+                    if (accessUserAspect.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
+                        Collection<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
+                        list.add(accessUserAspect);
+                        roleManagementSession.removeSubjectsFromRole(intAdmin, roleAccessSession.findRole(roleName), list);
+                        accessControlSession.forceCacheExpire();
+                    }
+                }            	
             }
             // Remove user
             userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
