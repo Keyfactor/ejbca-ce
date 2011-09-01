@@ -49,7 +49,7 @@ public interface SecurityEventsLoggerSession {
      * @param module The module where the operation took place.
      * @param service The service (application) that performed the operation.
      * @param authToken The authentication token of the entity that invoked the operation.
-     * @param customId A custom identifier related to this event (e.g. a CA's SubjectDN)
+     * @param customId A custom identifier related to this event (e.g. a CA's identifier)
      * @param searchDetail1 A detail of this event that can be queried for using QueryCriteria (database) searches (e.g. a certificate serialnumber)
      * @param searchDetail2 A detail of this event that can be queried for using QueryCriteria (database) searches (e.g. a username)
      * @param additionalDetails Additional details of this event to be stored in a non-searchable manner.
