@@ -75,21 +75,25 @@ public class CertificateRequestSessionTest extends CaTestCase {
         userdata.setPassword(password);
         byte[] encodedKeyStore = certificateRequestSession.processSoftTokenReq(admin, userdata, null, "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA, true);
-        // Convert encoded KeyStore to the proper return type
-        java.security.KeyStore keyStore = java.security.KeyStore.getInstance("JKS");
-        keyStore.load(new ByteArrayInputStream(encodedKeyStore), userdata.getPassword().toCharArray());
-        assertNotNull(keyStore);
-        Enumeration<String> aliases = keyStore.aliases();
-        String alias = aliases.nextElement();
-        Certificate cert = keyStore.getCertificate(alias);
-        if (CertTools.isSelfSigned(cert)) {
-            // Ignore the CA cert and get another one
-            alias = aliases.nextElement();
-            cert = keyStore.getCertificate(alias);
+        try {
+            // Convert encoded KeyStore to the proper return type
+            java.security.KeyStore keyStore = java.security.KeyStore.getInstance("JKS");
+            keyStore.load(new ByteArrayInputStream(encodedKeyStore), userdata.getPassword().toCharArray());
+            assertNotNull(keyStore);
+            Enumeration<String> aliases = keyStore.aliases();
+            String alias = aliases.nextElement();
+            Certificate cert = keyStore.getCertificate(alias);
+            if (CertTools.isSelfSigned(cert)) {
+                // Ignore the CA cert and get another one
+                alias = aliases.nextElement();
+                cert = keyStore.getCertificate(alias);
+            }
+            assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
+                    CertTools.getSubjectDN(cert), userdata.getDN());
+            keyStore.getKey(alias, password.toCharArray());
+        } finally {
+            userAdminSession.deleteUser(admin, username);
         }
-        assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(), CertTools.getSubjectDN(cert), userdata
-                .getDN());
-        keyStore.getKey(alias, password.toCharArray());
         // Try again with a user that does not exist and use values that we will
         // break certificate generation
         // If the transaction really is rolled back successfully there will be
@@ -104,7 +108,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
             fail("Certificate creation did not fail as expected.");
         } catch (Exception e) {
             log.debug("Got an exception as expected: " + e.getMessage());
-        }
+        } 
         assertFalse("Failed keystore generation request never rolled back created user '" + username2 + "'.", userAdminSession.existsUser(admin, username2));
     }
 
