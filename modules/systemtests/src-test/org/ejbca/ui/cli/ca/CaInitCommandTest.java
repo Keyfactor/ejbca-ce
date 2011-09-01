@@ -14,7 +14,7 @@
 package org.ejbca.ui.cli.ca;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -28,8 +28,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.sun.source.tree.AssertTree;
 
 /**
  * System test class for CaInitCommandTest
@@ -40,24 +43,27 @@ public class CaInitCommandTest {
 
     private static final String CA_NAME = "1327ca2";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
-    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA", "365",
-            "null", "SHA1WithRSA" };
-    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA", "365", "null",
-            "SHA1WithRSA", "-certprofile", "ROOTCA" };
-    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA", "365",
-            "null", "SHA1WithRSA", "-certprofile", CERTIFICATE_PROFILE_NAME };
+    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA",
+            "365", "null", "SHA1WithRSA" };
+    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA",
+            "365", "null", "SHA1WithRSA", "-certprofile", "ROOTCA" };
+    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048",
+            "RSA", "365", "null", "SHA1WithRSA", "-certprofile", CERTIFICATE_PROFILE_NAME };
 
     private CaInitCommand caInitCommand;
     private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    
+
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateProfileSessionRemote certificateProfileSessionRemote = InterfaceCache.getCertificateProfileSession();
 
     @Before
     public void setUp() throws Exception {
         caInitCommand = new CaInitCommand();
-        if (caSession.getCAInfo(admin, CA_NAME) != null) {
+        try {
             caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+        } catch (Exception e) {
+            // Ignore.
+
         }
     }
 
@@ -92,7 +98,8 @@ public class CaInitCommandTest {
     }
 
     @Test
-    public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, ErrorAdminCommandException, AuthorizationDeniedException, CADoesntExistsException {
+    public void testExecuteWithCustomCertificateProfile() throws CertificateProfileExistsException, ErrorAdminCommandException,
+            AuthorizationDeniedException, CADoesntExistsException {
         if (certificateProfileSessionRemote.getCertificateProfile(CERTIFICATE_PROFILE_NAME) == null) {
             CertificateProfile certificateProfile = new CertificateProfile();
             certificateProfileSessionRemote.addCertificateProfile(admin, CERTIFICATE_PROFILE_NAME, certificateProfile);
@@ -101,7 +108,16 @@ public class CaInitCommandTest {
             CertificateProfile apa = certificateProfileSessionRemote.getCertificateProfile(CERTIFICATE_PROFILE_NAME);
             assertNotNull(apa);
             caInitCommand.execute(CUSTOM_PROFILE_ARGS);
-            assertNull("CA was created using created using non ROOTCA or SUBCA certificate profile.", caSession.getCAInfo(admin, CA_NAME));
+
+            // Following line should throw an exception.
+            boolean caught = false;
+            try {
+                caSession.getCAInfo(admin, CA_NAME);              
+            } catch (CADoesntExistsException e) {
+                caught = true;
+            }
+            Assert.assertTrue("CA was created using created using non ROOTCA or SUBCA certificate profile.", caught);
+
         } finally {
             certificateProfileSessionRemote.removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
         }
