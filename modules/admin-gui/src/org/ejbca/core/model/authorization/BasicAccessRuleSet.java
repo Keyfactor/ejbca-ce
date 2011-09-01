@@ -49,9 +49,10 @@ public class BasicAccessRuleSet implements Serializable {
     public static final int OTHER_VIEWLOG = 1;
     public static final int OTHER_ISSUEHARDTOKENS = 2;
     
-   
     public static final String[]  ENDENTITYRULETEXTS =  {"VIEWENDENTITYRULE","VIEWHISTORYRULE","VIEWHARDTOKENRULE","VIEWPUKENDENTITYRULE",
-																						  "APPROVEENDENTITYRULE"};
+        "CREATEENDENTITYRULE","EDITENDENTITYRULE","DELETEENDENTITYRULE",
+		  "REVOKEENDENTITYRULE", "KEYRECOVERENDENTITYRULE",
+		  "APPROVEENDENTITYRULE"};
     		
     public static final String[]  OTHERTEXTS = {"","VIEWLOG","ISSUEHARDTOKENS"};
         
