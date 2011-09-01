@@ -61,7 +61,6 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
 
     @Before
-
     public void setUp() throws Exception {
         super.setUp();
     	enableCLI(true);  	
