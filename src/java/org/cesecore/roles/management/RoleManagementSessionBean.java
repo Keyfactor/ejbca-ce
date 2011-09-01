@@ -99,6 +99,9 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     @Override
     public void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate)
             throws RoleExistsException, RoleNotFoundException {
+    	if (log.isTraceEnabled()) {
+    		log.trace(">initializeAccessWithCert: "+authenticationToken.toString()+", "+roleName);
+    	}
         // Create a role
         RoleData role = createNoAuth(authenticationToken, roleName);
 
@@ -112,6 +115,9 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.EDITROLES.resource(), AccessRuleState.RULE_ACCEPT, true));
         addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);
+    	if (log.isTraceEnabled()) {
+    		log.trace("<initializeAccessWithCert: "+authenticationToken.toString()+", "+roleName);
+    	}
     }
 
     @Override
