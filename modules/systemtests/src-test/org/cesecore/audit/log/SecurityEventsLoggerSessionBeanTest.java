@@ -110,7 +110,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
         innerDetails.put("extra", "bar");
         details.put("foo", innerDetails);
         securityEventsLogger.log(EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, "authToken", "0",
-                "0", "someentityname", details);
+                "7FFFFFFFFFFFFFFF", "someentityname", details);
         log.trace("<test02SecurelogWithAdditionalDetails");
     }
 
