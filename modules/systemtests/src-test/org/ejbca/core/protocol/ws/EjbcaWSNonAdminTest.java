@@ -109,14 +109,15 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     
     @Before
     public void setupAccessRights() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    	roleName = "EjbcaWSTestNonAdmin";
+        super.setUp();
         super.setupAccessRights();
         gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
         assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 
     private void setUpNonAdmin() throws Exception {
-        super.setUp();
-        CryptoProviderTools.installBCProvider();
         if (new File("p12/wsnonadmintest.jks").exists()) {
             String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);

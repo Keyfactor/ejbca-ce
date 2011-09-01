@@ -203,10 +203,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return "AdminCA1";
     }
 
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     protected void setupAccessRights() throws Exception {
         boolean userAdded = false;
 
