@@ -38,6 +38,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -99,6 +100,7 @@ public class RAInterfaceBean implements Serializable {
 
     private AccessControlSessionLocal authorizationsession;
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
+	private CaSessionLocal caSession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
@@ -138,9 +140,10 @@ public class RAInterfaceBean implements Serializable {
     		this.informationmemory = ejbcawebbean.getInformationMemory();
     		userAdminSession = ejb.getUserAdminSession();
     		certificatesession = ejb.getCertificateStoreSession();
+    		caSession = ejb.getCaSession();
     		authorizationsession = ejb.getAccessControlSession();
     		endEntityProfileSession = ejb.getEndEntityProfileSession();
-    		this.profiles = new EndEntityProfileDataHandler(administrator,authorizationsession, ejb.getCaSession(), endEntityProfileSession, informationmemory);
+    		this.profiles = new EndEntityProfileDataHandler(administrator,authorizationsession, caSession, endEntityProfileSession, informationmemory);
     		hardtokensession = ejb.getHardTokenSession();
     		keyrecoverysession = ejb.getKeyRecoverySession();
     		userdatasourcesession = ejb.getUserDataSourceSession();
@@ -648,6 +651,14 @@ public class RAInterfaceBean implements Serializable {
 
     public void loadCACertificates(CertificateView[] cacerts) {
         certificates = cacerts;
+    }
+
+    public void loadCertificates(BigInteger serno, int caId) throws AuthorizationDeniedException {
+    	try {
+			loadCertificates(serno, caSession.getCAInfo(administrator, caId).getSubjectDN());
+		} catch (CADoesntExistsException e) {
+			log.info("Requested CA info for nonexisting CA with id " + caId);
+		}
     }
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws AuthorizationDeniedException {

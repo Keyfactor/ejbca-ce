@@ -13,11 +13,13 @@
 package org.ejbca.ui.web.admin.audit;
 
 import java.io.Serializable;
-import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
@@ -36,7 +38,6 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryCriteria;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -74,6 +75,7 @@ public class AuditorManagedBean implements Serializable {
 	private final List<SelectItem> columns = new ArrayList<SelectItem>();
 	private final List<SelectItem> sortOrders = new ArrayList<SelectItem>();
 	private List<? extends AuditLogEntry> results;
+	private Map<Object, String> caIdToNameMap;
 
 	private final List<SelectItem> eventStatusOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> eventTypeOptions = new ArrayList<SelectItem>();
@@ -234,12 +236,11 @@ public class AuditorManagedBean implements Serializable {
 				|| AuditLogEntry.FIELD_SEQENCENUMBER.equals(conditionColumn)) {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
-			List<SelectItem> caSubjects = new ArrayList<SelectItem>();
-			// TODO: This is a slow way of doing it..
-			for (Certificate caCert : caAdminSession.getAllCACertificates()) {
-				caSubjects.add(new SelectItem(CertTools.getSubjectDN(caCert)));
+			List<SelectItem> caIds = new ArrayList<SelectItem>();
+			for (Entry<Object,String> entry : caIdToNameMap.entrySet()) {
+				caIds.add(new SelectItem(entry.getKey(), entry.getValue()));
 			}
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, caSubjects));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, caIds));
 		} else if (AuditLogEntry.FIELD_EVENTSTATUS.equals(conditionColumn)) {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, eventStatusOptions));
 		} else if (AuditLogEntry.FIELD_EVENTTYPE.equals(conditionColumn)) {
@@ -310,6 +311,20 @@ public class AuditorManagedBean implements Serializable {
 
 		AuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Reload action from AuditorManagedBean"));
 		results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
+		updateCaIdToNameMap();
+	}
+	
+	public Map<Object, String> getCaIdToName() {
+		return caIdToNameMap;
+	}
+
+	private void updateCaIdToNameMap() {
+		final Map<Integer, String> map = caAdminSession.getCAIdToNameMap(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("INTERNAL")));
+		final Map<Object, String> ret = new HashMap<Object, String>();
+		for (final Entry<Integer,String> entry : map.entrySet()) {
+			ret.put(entry.getKey().toString(), entry.getValue());
+		}
+		caIdToNameMap = ret;
 	}
 
 	public void next() throws AuthorizationDeniedException {

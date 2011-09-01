@@ -226,7 +226,7 @@ public class EjbcaWebBean implements Serializable {
             	details.put("msg", "Logging in : Administrator Certificate is issued by external CA");
             }
             auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
-                    administrator.toString(), issuerDN, sernostr, null, details);
+                    administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
         }
 
         try {

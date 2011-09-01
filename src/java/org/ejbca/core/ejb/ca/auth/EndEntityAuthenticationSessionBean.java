@@ -93,7 +93,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 	final String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), username, null, details);
+                    auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.FAILURE, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
                 	throw new AuthLoginException(msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
@@ -102,7 +102,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), username, null, details);
+                auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
             	}

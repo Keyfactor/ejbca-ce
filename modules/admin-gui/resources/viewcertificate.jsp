@@ -97,28 +97,12 @@
      notauthorized = false;
      noparameter = false;
   }
-  if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(ISSUER_PARAMETER) != null) {
+  if (request.getParameter(SERNO_PARAMETER) != null && request.getParameter(CACERT_PARAMETER) != null) {
 		 String certificateSerno = request.getParameter(SERNO_PARAMETER);
-		 String issuerDn = request.getParameter(ISSUER_PARAMETER);
-	     rabean.loadCertificates(new BigInteger(certificateSerno,16), issuerDn); 
+		 caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
+	     rabean.loadCertificates(new BigInteger(certificateSerno,16), caid); 
 	     notauthorized = false;
 	     noparameter = false;
-	  }
-  if (request.getParameter(CADN_PARAMETER ) != null) {
-	     caid = request.getParameter(CADN_PARAMETER).hashCode();
-	     if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
-	       try{  
-	         ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
-	         ejbcawebbean.isAuthorized(StandardRules.CAACCESS.resource() + caid);
-	         rabean.loadCACertificates(cabean.getCACertificates(caid)); 
-	         numberofcertificates = rabean.getNumberOfCertificates();
-	         if(numberofcertificates > 0)
-	          currentindex = 0;     
-	         notauthorized = false;
-	       }catch(AuthorizationDeniedException e){}
-	       noparameter = false;
-	     }
-	     cacerts = true;
 	  }
   if( request.getParameter(CACERT_PARAMETER ) != null){
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
