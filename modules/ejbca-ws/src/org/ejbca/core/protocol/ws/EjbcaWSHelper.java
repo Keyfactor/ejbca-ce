@@ -120,7 +120,7 @@ public class EjbcaWSHelper {
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSession caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
-            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, UserAdminSession userAdminSession) {
+            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, UserAdminSession userAdminSession, WebAuthenticationProviderSessionLocal authenticationSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;
@@ -131,6 +131,7 @@ public class EjbcaWSHelper {
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.userAdminSession = userAdminSession;
 		this.endEntityAccessSession = endEntityAccessSession;
+		this.authenticationSession = authenticationSession;
 	}
 	
 	//
