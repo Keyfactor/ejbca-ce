@@ -136,6 +136,7 @@ public class ServiceServiceTest extends CaTestCase {
         assertFalse("Service should not have run", hasServiceRun(username));
 
         log.trace("<test02PinServiceToOtherNodesOnly()");
+
     }
 
     /**
@@ -175,12 +176,16 @@ public class ServiceServiceTest extends CaTestCase {
         super.tearDown();
         log.trace(">test99CleanUp()");
         for (String username : usernames) {
-            getUserAdminSession().deleteUser(admin, username);
-            log.debug("Removed user: " + username);
+            if(getUserAdminSession().existsUser(admin, username)) {
+                getUserAdminSession().deleteUser(admin, username);            
+                log.debug("Removed user: " + username);
+            }
         }
         for (String service : services) {
-            getServiceSession().removeService(admin, service);
-            log.debug("Removed service: " + service);
+            if(getServiceSession().getService(admin, service) != null) {
+                getServiceSession().removeService(admin, service);
+                log.debug("Removed service: " + service);
+            }           
         }
         for (String caName : cas) {
             removeTestCA(caName);
@@ -223,7 +228,8 @@ public class ServiceServiceTest extends CaTestCase {
         config.setWorkerProperties(workerprop);
 
         getServiceSession().addService(admin, name, config);
-        getServiceSession().activateServiceTimer(admin, name);
+        getServiceSession().activateServiceTimer(admin, name);        
+
     }
 
     private boolean hasServiceRun(final String username) throws Exception {
