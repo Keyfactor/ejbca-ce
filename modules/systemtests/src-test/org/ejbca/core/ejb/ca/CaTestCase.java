@@ -102,7 +102,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
 
-    protected final String roleName = "CaTestCase";
+    protected String roleName = "CaTestCase";
 
     protected TestX509CertificateAuthenticationToken caAdmin;
 
@@ -119,6 +119,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
         RoleData role = roleAccessSession.findRole(roleName);
         if (role == null) {
+        	log.error("Role should not be null here.");
             role = roleManagementSession.create(roleMgmgToken, roleName);
         }
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();

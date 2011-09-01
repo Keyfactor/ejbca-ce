@@ -117,10 +117,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
+    
+
     @Before
     public void setUpAdmin() throws Exception {
-        super.setUp();
         CryptoProviderTools.installBCProviderIfNotAvailable();
+    	roleName = "EjbcaWSTest";
+    	super.setUp();
+        super.setupAccessRights();
         if (new File("p12/wstest.jks").exists()) {
             String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);
@@ -136,10 +140,17 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         }
     }
 
-    @Test
-    public void test00SetupAccessRights() throws Exception {
-        super.setupAccessRights();
+    @After
+    public void cleanUpAdmins() throws Exception {
+        super.cleanUpAdmins();
+        super.tearDown();
     }
+
+
+//    @Test
+//    public void test00SetupAccessRights() throws Exception {
+//        super.setupAccessRights();
+//    }
 
     @Test
     public void test01EditUser() throws Exception {
@@ -648,11 +659,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void testCertificateRequestWithSpecialChars07() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
-    }
-
-    @After
-    public void test99cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins();
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
