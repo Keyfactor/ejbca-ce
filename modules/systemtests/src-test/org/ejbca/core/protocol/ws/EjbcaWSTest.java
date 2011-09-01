@@ -92,7 +92,8 @@ import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -116,9 +117,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    private void setUpAdmin() throws Exception {
+    @Before
+    public void setUpAdmin() throws Exception {
         super.setUp();
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         if (new File("p12/wstest.jks").exists()) {
             String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);
@@ -141,154 +143,128 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test01EditUser() throws Exception {
-        setUpAdmin();
         super.editUser();
     }
 
     @Test
     public void test02FindUser() throws Exception {
-        setUpAdmin();
         findUser();
     }
 
     @Test
     public void test03_1GeneratePkcs10() throws Exception {
-        setUpAdmin();
         generatePkcs10();
     }
 
     @Test
     public void test03_2GenerateCrmf() throws Exception {
-        setUpAdmin();
         generateCrmf();
     }
 
     @Test
     public void test03_3GenerateSpkac() throws Exception {
-        setUpAdmin();
         generateSpkac();
     }
 
     @Test
     public void test03_4GeneratePkcs10Request() throws Exception {
-        setUpAdmin();
         generatePkcs10Request();
     }
 
     @Test
     public void test03_5CertificateRequest() throws Exception {
-        setUpAdmin();
         certificateRequest();
     }
 
     @Test
     public void test03_6EnforcementOfUniquePublicKeys() throws Exception {
-        setUpAdmin();
         enforcementOfUniquePublicKeys();
     }
 
     @Test
     public void test03_6EnforcementOfUniqueSubjectDN() throws Exception {
-        setUpAdmin();
         enforcementOfUniqueSubjectDN();
     }
 
     @Test
     public void test04GeneratePkcs12() throws Exception {
-        setUpAdmin();
         generatePkcs12();
     }
 
     @Test
     public void test05FindCerts() throws Exception {
-        setUpAdmin();
         findCerts();
     }
 
     @Test
     public void test06RevokeCert() throws Exception {
-        setUpAdmin();
         revokeCert();
     }
 
     @Test
     public void test07RevokeToken() throws Exception {
-        setUpAdmin();
         revokeToken();
     }
 
     @Test
     public void test08CheckRevokeStatus() throws Exception {
-        setUpAdmin();
         checkRevokeStatus();
     }
 
     @Test
     public void test09Utf8() throws Exception {
-        setUpAdmin();
         utf8();
     }
 
     @Test
     public void test10GetLastCertChain() throws Exception {
-        setUpAdmin();
         getLastCertChain();
     }
 
     @Test
     public void test11RevokeUser() throws Exception {
-        setUpAdmin();
         revokeUser();
     }
 
     @Test
     public void test12IsAuthorized() throws Exception {
-        setUpAdmin();
-
         // This is a superadmin keystore, improve in the future
         assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));
     }
 
     @Test
     public void test13genTokenCertificates() throws Exception {
-        setUpAdmin();
         genTokenCertificates(false);
     }
 
     @Test
     public void test14getExistsHardToken() throws Exception {
-        setUpAdmin();
         getExistsHardToken();
     }
 
     @Test
     public void test15getHardTokenData() throws Exception {
-        setUpAdmin();
         getHardTokenData("12345678", false);
     }
 
     @Test
     public void test16getHardTokenDatas() throws Exception {
-        setUpAdmin();
         getHardTokenDatas();
     }
 
     @Test
     public void test17CustomLog() throws Exception {
-        setUpAdmin();
         customLog();
     }
 
     @Test
     public void test18GetCertificate() throws Exception {
-        setUpAdmin();
         getCertificate();
     }
 
     @Test
     public void test19RevocationApprovals() throws Exception {
     	log.trace(">test19RevocationApprovals");
-        setUpAdmin();
         final String APPROVINGADMINNAME = "superadmin";
         final String TOKENSERIALNUMBER = "42424242";
         final String TOKENUSERNAME = "WSTESTTOKENUSER3";
@@ -401,44 +377,37 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test20KeyRecoverNewest() throws Exception {
-        setUpAdmin();
         keyRecover();
     }
 
     @Test
     public void test21GetAvailableCAs() throws Exception {
-        setUpAdmin();
         getAvailableCAs();
     }
 
     @Test
     public void test22GetAuthorizedEndEntityProfiles() throws Exception {
-        setUpAdmin();
         getAuthorizedEndEntityProfiles();
     }
 
     @Test
     public void test23GetAvailableCertificateProfiles() throws Exception {
-        setUpAdmin();
         getAvailableCertificateProfiles();
     }
 
     @Test
     public void test24GetAvailableCAsInProfile() throws Exception {
-        setUpAdmin();
         getAvailableCAsInProfile();
     }
     
     @Test
     public void test25GreateCRL() throws Exception {
-        setUpAdmin();
         createCRL();
     }
 
     
     @Test
     public void test26_1CvcRequestRSA() throws Exception {
-        setUpAdmin();
         cvcRequest("CN=WSCVCA,C=SE", "WSTESTCVCA", "CN=WSDVCA,C=SE", "WSTESTDVCA", CA1_WSTESTUSER1CVCRSA, "1024", AlgorithmConstants.KEYALGORITHM_RSA,
                 AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
     }
@@ -451,7 +420,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test26_3CvcRequestECDSA() throws Exception {
-        setUpAdmin();
         cvcRequest("CN=WSCVCAEC,C=SE", "WSTESTCVCAEC", "CN=WSDVCAEC,C=SE", "WSTESTDVCAEC", CA2_WSTESTUSER1CVCEC, "secp256r1",
                 AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
@@ -464,44 +432,37 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test27EjbcaVersion() throws Exception {
-        setUpAdmin();
         ejbcaVersion();
     }
 
     @Test
     public void test29ErrorOnEditUser() throws Exception {
-        setUpAdmin();
         errorOnEditUser();
     }
 
     @Test
     public void test30ErrorOnGeneratePkcs10() throws Exception {
-        setUpAdmin();
         errorOnGeneratePkcs10();
     }
 
     @Test
     public void test31ErrorOnGeneratePkcs12() throws Exception {
-        setUpAdmin();
         errorOnGeneratePkcs12();
     }
 
     @Test
     public void test32OperationOnNonexistingCA() throws Exception {
-        setUpAdmin();
         operationOnNonexistingCA();
     }
 
     @Test
     public void test33CheckQueueLength() throws Exception {
-        setUpAdmin();
         checkQueueLength();
     }
 
     @Test
     public void test34_1CaRenewCertRequestRSA() throws Exception {
     	log.trace(">test34_1CaRenewCertRequestRSA()");
-        setUpAdmin();
         final String cvcaMnemonic = "CVCAEXEC";
         final String dvcaName = "WSTESTDVCARSASIGNEDBYEXTERNAL";
         final String dvcaMnemonic = "WSDVEXECR";
@@ -515,7 +476,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test34_2CaRenewCertRequestECC() throws Exception {
     	log.trace(">test34_2CaRenewCertRequestECC()");
-        setUpAdmin();
         final String cvcaMnemonic = "CVCAEXEC";
         final String dvcaName = "WSTESTDVCAECCSIGNEDBYEXTERNAL";
         final String dvcaMnemonic = "WSDVEXECE";
@@ -530,7 +490,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test35CleanUpCACertRequest() throws Exception {
     	log.trace(">test35CleanUpCACertRequest()");
-        setUpAdmin();
         super.cleanUpCACertRequest();
         log.trace("<test35CleanUpCACertRequest()");
     }
@@ -607,7 +566,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void testEvilFind01() throws Exception {
         log.trace(">testEvilFind01()");
-        setUpAdmin();
         UserMatch usermatch = new UserMatch();
         usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
         usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
@@ -628,7 +586,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars01() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo\\+bar\\\"\\,, C=SE", "CN=test" + rnd + ",O=foo\\+bar\\\"\\,,C=SE");
     }
@@ -639,7 +596,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars02() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo;bar\\;123, C=SE", "CN=test" + rnd + ",O=foo/bar\\;123,C=SE");
     }
@@ -650,7 +606,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars03() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo+bar\\+123, C=SE", "CN=test" + rnd + ",O=foo\\+bar\\+123,C=SE");
     }
@@ -661,7 +616,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars04() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=foo\\=bar, C=SE", "CN=test" + rnd + ",O=foo\\=bar,C=SE");
     }
@@ -672,7 +626,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars05() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo=bar, C=SE\"", "CN=test" + rnd + ",O=foo\\=bar\\, C\\=SE");
     }
@@ -683,7 +636,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars06() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\"foo+b\\+ar, C=SE\"", "CN=test" + rnd + ",O=foo\\+b\\\\\\+ar\\, C\\=SE");
     }
@@ -694,12 +646,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     @Test
     public void testCertificateRequestWithSpecialChars07() throws Exception {
-        setUpAdmin();
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
     }
 
-    @AfterClass
+    @After
     public void test99cleanUpAdmins() throws Exception {
         super.cleanUpAdmins();
     }

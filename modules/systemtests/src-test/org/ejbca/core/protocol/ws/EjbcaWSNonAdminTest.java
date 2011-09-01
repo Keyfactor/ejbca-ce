@@ -74,8 +74,8 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -107,7 +107,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
-    @BeforeClass
+    @Before
     public void setupAccessRights() throws Exception {
         super.setupAccessRights();
         gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
@@ -401,7 +401,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     }
 
-    @AfterClass
+    @After
     public void cleanUpAdmins() throws Exception {
         super.cleanUpAdmins();
     }

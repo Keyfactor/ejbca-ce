@@ -51,13 +51,13 @@
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<pathelement location="${mysql.lib}"/>
+		<pathelement location="${test-interface.jar}"/>
+		<pathelement location="${test-ejb.jar}"/>
 	</path>
 
 	<path id="systemtests.classpath">
 		<path refid="systemtests.classpath.nojee"/>
 		<path refid="lib.jee.classpath"/>
-		<pathelement location="${test-ejb.jar}"/>
-		<pathelement location="${test-interface.jar}"/>
 	</path>
 
 	<path id="interfaces.classpath">
