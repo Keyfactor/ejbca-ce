@@ -16,13 +16,20 @@ package org.ejbca.core.model.authorization;
 import java.io.Serializable;
 
 /**
- * A class containing constats used when configuring Basic Access Rule Set 
+ * A class containing constants used when configuring Basic Access Rule Set 
  *
  * @version $Id$
  */
 public class BasicAccessRuleSet implements Serializable {
 
     private static final long serialVersionUID = 7733775825127915269L;
+
+	public static final int ROLE_NONE                  = 0;
+    public static final int ROLE_SUPERADMINISTRATOR    = 1;
+    public static final int ROLE_CAADMINISTRATOR       = 2;
+    public static final int ROLE_RAADMINISTRATOR       = 3;
+    public static final int ROLE_SUPERVISOR            = 4;
+    public static final int ROLE_HARDTOKENISSUER       = 5;
 
     public static final int ENDENTITY_VIEW             = 2;
     public static final int ENDENTITY_VIEWHISTORY      = 4;

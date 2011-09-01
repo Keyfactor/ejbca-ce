@@ -60,7 +60,7 @@
 	<!-- JSP validation currently only works on JBoss 5.1.0, but not jboss 6 -->
 	<condition property="validatejsp">
 		<and>
-			<equals arg1="jbossX" arg2="${appserver.type}"/>
+			<equals arg1="jboss" arg2="${appserver.type}"/>
 			<available classname="org.apache.jasper.JspC" classpathref="jasper.classpath"/>
 		</and>
 	</condition>
