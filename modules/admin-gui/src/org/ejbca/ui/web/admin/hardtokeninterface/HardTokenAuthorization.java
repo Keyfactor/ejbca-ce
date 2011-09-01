@@ -139,7 +139,7 @@ public class HardTokenAuthorization implements Serializable {
      */
     public Collection<RoleData> getHardTokenIssuingAdminGroups() {
         if (authissueingadmgrps == null) {
-            authissueingadmgrps = complexAccessControlSession.getAuthorizedAdminGroups(null, "/hardtoken_functionality/issue_hardtokens");
+            authissueingadmgrps = complexAccessControlSession.getAuthorizedAdminGroups(admin, "/hardtoken_functionality/issue_hardtokens");
         }
         return authissueingadmgrps;        	
 //            for (RoleData next : roles) {
