@@ -2405,67 +2405,68 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             new File("p12/" + TEST_NONADMIN_USERNAME + ".jks").delete();
         }
 
-        // Remove test user
+        // Remove test user's ignore errors, because it probably is because the user does not exist.
+        // possibly because some of the tests failed.
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         // Remove Key recovery end entity profile
         try {
             endEntityProfileSession.removeEndEntityProfile(intAdmin, "KEYRECOVERY");
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             removeTestCA(CA1);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             removeTestCA(CA2);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
         try {
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
         } catch (Exception e) {
-            log.error("", e);
+        	// NOPMD: ignore
         }
     } // cleanUpAdmins
 
