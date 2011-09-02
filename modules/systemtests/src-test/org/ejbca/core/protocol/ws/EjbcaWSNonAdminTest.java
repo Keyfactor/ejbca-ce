@@ -76,6 +76,7 @@ import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -106,10 +107,14 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+  
+    @BeforeClass
+    public static void beforeClass() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+    }
     
     @Before
-    public void setupAccessRights() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
+    public void setupAccessRights() throws Exception {        
     	roleName = "EjbcaWSTestNonAdmin";
         super.setUp();
         super.setupAccessRights();
@@ -404,6 +409,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     @After
     public void cleanUpAdmins() throws Exception {
+        super.tearDown();
         super.cleanUpAdmins();
     }
 
@@ -411,7 +417,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     // private helper functions
     //
     private void setupApprovals() throws Exception {
-        CryptoProviderTools.installBCProvider();
 
         adminusername1 = genRandomUserName();
 
