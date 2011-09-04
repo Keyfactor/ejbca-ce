@@ -62,7 +62,7 @@ import org.junit.Test;
 /**
  * Tests the CA session bean using soft CA tokens.
  * 
- * @version $Id: CaSessionTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id: CaSessionTest.java 1073 2011-09-04 19:36:38Z tomas $
  */
 public class CaSessionTest extends RoleUsingTestCase {
 
@@ -134,6 +134,12 @@ public class CaSessionTest extends RoleUsingTestCase {
         final String tokenpwd = "thisisatest";
         CA ca = createTestX509CAOptionalGenKeys(cadn, tokenpwd, false, false);
         testBase.addCAUseSessionBeanToGenerateKeys2(ca, cadn, tokenpwd);
+    }
+
+    @Test
+    public void testExtendedCAService() throws Exception {
+        CA ca = createTestX509CAOptionalGenKeys("CN=Test Extended CA servoce", "foo123", false, false);
+        testBase.extendedCAServices(ca);
     }
 
     @Test

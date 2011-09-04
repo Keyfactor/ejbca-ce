@@ -42,6 +42,7 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CaTokenSessionRemote;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.internal.CATokenCacheManager;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -65,7 +66,7 @@ import org.cesecore.util.CertTools;
 /**
  * Tests the CA session bean.
  * 
- * @version $Id: CaSessionTestBase.java 1012 2011-08-19 12:06:02Z tomas $
+ * @version $Id: CaSessionTestBase.java 1073 2011-09-04 19:36:38Z tomas $
  */
 public class CaSessionTestBase extends RoleUsingTestCase {
 
@@ -497,6 +498,52 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         		// Remove it to clean database
                 crlStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(crl));    		
         	}
+    	} finally {
+    		caSession.removeCA(roleMgmgToken, ca.getCAId());
+    		internalCertStoreSession.removeCertificate(cert);
+    	}    	
+    }
+
+    public void extendedCAServices(CA ca) throws Exception {
+    	// Generate CA keys
+    	Certificate cert = null;
+    	try {
+            caSession.addCA(roleMgmgToken, ca);
+            CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, "TEST");
+            ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
+            ExtendedCAServiceInfo myinfo = new TestExtendedCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE);
+            newlist.add(myinfo);
+            cainfo.setExtendedCAServiceInfos(newlist);
+            caSession.editCA(roleMgmgToken, cainfo);
+            cainfo = caSession.getCAInfo(roleMgmgToken, "TEST");
+            Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+            boolean ok = false;
+            for (ExtendedCAServiceInfo info : infos) {
+    			if (info.getType() == TestExtendedCAServiceInfo.type) {
+    				if (info.getStatus() == ExtendedCAServiceInfo.STATUS_INACTIVE) {
+    					ok = true;
+    				}
+    			}
+    		}
+            assertTrue("extended CA service should not have been activated", ok);
+            
+            ArrayList<ExtendedCAServiceInfo> newlist1 = new ArrayList<ExtendedCAServiceInfo>();
+            ExtendedCAServiceInfo myinfo1 = new TestExtendedCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE);
+            newlist1.add(myinfo1);
+            cainfo.setExtendedCAServiceInfos(newlist1);
+            caSession.editCA(roleMgmgToken, cainfo);
+            cainfo = caSession.getCAInfo(roleMgmgToken, "TEST");
+            infos = cainfo.getExtendedCAServiceInfos();
+            ok = false;
+            for (ExtendedCAServiceInfo info : infos) {
+    			if (info.getType() == TestExtendedCAServiceInfo.type) {
+    				if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+    					ok = true;
+    				}
+    			}
+    		}
+            assertTrue("extended CA service should have been activated", ok);
+            
     	} finally {
     		caSession.removeCA(roleMgmgToken, ca.getCAId());
     		internalCertStoreSession.removeCertificate(cert);
