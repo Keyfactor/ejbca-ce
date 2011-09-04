@@ -294,13 +294,13 @@ public class EjbcaWSHelper {
 		final int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
 		if(endentityprofileid == 0){
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
-                "Error End Entity profile " + userdata.getEndEntityProfileName() + " doesn't exists.");
+                "Error End Entity profile " + userdata.getEndEntityProfileName() + " does not exist.");
 		}
 
 		final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS,
-                "Error Certificate profile " + userdata.getCertificateProfileName() + " doesn't exists.");
+                "Error Certificate profile " + userdata.getCertificateProfileName() + " does not exist.");
 		}
 		
 		final int hardtokenissuerid;
@@ -308,7 +308,7 @@ public class EjbcaWSHelper {
          hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(admin,userdata.getHardTokenIssuerName());
 		   if(hardtokenissuerid == 0){
 			  throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS,
-                  "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " doesn't exists.");
+                  "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " does not exist.");
 		   }
 		} else {
 			hardtokenissuerid = 0;
@@ -317,7 +317,7 @@ public class EjbcaWSHelper {
 		final int tokenid = getTokenId(admin,userdata.getTokenType());
 		if(tokenid == 0){
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE,
-                "Error Token Type  " + userdata.getTokenType() + " doesn't exists.");
+                "Error Token Type  " + userdata.getTokenType() + " does not exist.");
 		}
 
 		final ExtendedInformation ei = new ExtendedInformation();
@@ -424,7 +424,7 @@ public class EjbcaWSHelper {
 		dataWS.setUsername(username);
 
 		if(caname == null){
-			String message = "Error CA id " + userdata.getCAId() + " doesn't exists. User: "+username;
+			String message = "Error CA id " + userdata.getCAId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, message);
 		}
@@ -432,7 +432,7 @@ public class EjbcaWSHelper {
 		
 		String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
-			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " doesn't exists. User: "+username;
+			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
 		}
@@ -440,7 +440,7 @@ public class EjbcaWSHelper {
 
 		String certificateprofilename = certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
-			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " doesn't exists. User: "+username;
+			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
 		}
@@ -450,7 +450,7 @@ public class EjbcaWSHelper {
 		if(userdata.getHardTokenIssuerId() != 0){
 		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(admin,userdata.getHardTokenIssuerId());
 		   if(hardtokenissuername == null){
-			   String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " doesn't exists. User: "+username;
+			   String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " does not exist. User: "+username;
 			   log.error(message);
 			   throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
 		   }
@@ -459,7 +459,7 @@ public class EjbcaWSHelper {
 		
 		String tokenname = getTokenName(admin,userdata.getTokenType());
 		if(tokenname == null){
-			String message = "Error Token Type id " + userdata.getTokenType() + " doesn't exists. User: "+username;
+			String message = "Error Token Type id " + userdata.getTokenType() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
 		}

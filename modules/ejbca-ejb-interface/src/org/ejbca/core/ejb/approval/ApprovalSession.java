@@ -62,7 +62,7 @@ public interface ApprovalSession {
      * @return the number of approvals left, 0 if approved otherwise is the
      *         ApprovalDataVO.STATUS constants returned indicating the status.
      * @throws ApprovalException
-     *             if approvalId doesn't exists
+     *             if approvalId does not exist
      * @throws ApprovalRequestExpiredException
      *             Throws this exception one time if one of the approvals have
      *             expired, once notified it wont throw it anymore. But If the
@@ -88,7 +88,7 @@ public interface ApprovalSession {
      * @return the number of approvals left, 0 if approved othervis is the
      *         ApprovalDataVO.STATUS constants returned indicating the status.
      * @throws ApprovalException
-     *             if approvalId doesn't exists
+     *             if approvalId does not exist
      * @throws ApprovalRequestExpiredException
      *             Throws this exception one time if one of the approvals have
      *             expired, once notified it wont throw it anymore. But If the
@@ -104,7 +104,7 @@ public interface ApprovalSession {
      * @param admin
      * @param approvalId
      * @param step in approval to mark
-     * @throws ApprovalException if approvalId doesn't exists,
+     * @throws ApprovalException if approvalId does not exist,
      */
     public void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException;
 

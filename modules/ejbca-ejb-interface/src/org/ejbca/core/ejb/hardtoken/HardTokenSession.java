@@ -111,7 +111,7 @@ public interface HardTokenSession {
 
     /**
      * Updates hard token issuer data
-     * @return false if alias doesn't exists
+     * @return false if alias does not exist
      */
     public boolean changeHardTokenIssuer(AuthenticationToken admin, String alias, HardTokenIssuer issuerdata);
 
@@ -213,7 +213,7 @@ public interface HardTokenSession {
      * @param tokensn The serial number of token.
      * @param hardtokendata the hard token data
      * @throws HardTokenDoesntExistsException
-     *             if tokensn doesn't exists in database.
+     *             if tokensn does not exist in database.
      */
     public void changeHardToken(AuthenticationToken admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException;
 
@@ -223,7 +223,7 @@ public interface HardTokenSession {
      * @param admin the administrator calling the function
      * @param tokensn The serial number of token.
      * @throws HardTokenDoesntExistsException
-     *             if tokensn doesn't exists in database.
+     *             if tokensn does not exist in database.
      */
     public void removeHardToken(AuthenticationToken admin, String tokensn) throws HardTokenDoesntExistsException;
 
@@ -241,7 +241,7 @@ public interface HardTokenSession {
      * 
      * @param admin the administrator calling the function
      * @param tokensn The serial number of token.
-     * @return the hard token data or null if tokensn doesn't exists in database.
+     * @return the hard token data or null if tokensn does not exist in database.
      */
     public HardTokenData getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException;
 

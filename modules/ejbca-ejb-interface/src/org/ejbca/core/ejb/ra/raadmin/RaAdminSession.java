@@ -23,7 +23,7 @@ public interface RaAdminSession {
     
     /**
      * Finds the admin preference belonging to a certificate serialnumber.
-     * Returns null if admin doesn't exists.
+     * Returns null if admin does not exist.
      */
     AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint);
 
@@ -35,13 +35,13 @@ public interface RaAdminSession {
 
     /**
      * Changes the admin preference in the database. Returns false if admin
-     * doesn't exists.
+     * does not exist.
      */
     boolean changeAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
-     * doesn't exists.
+     * does not exist.
      */
     boolean changeAdminPreferenceNoLog(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
 

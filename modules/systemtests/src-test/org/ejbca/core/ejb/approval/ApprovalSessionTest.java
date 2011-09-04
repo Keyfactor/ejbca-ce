@@ -253,7 +253,7 @@ public class ApprovalSessionTest extends CaTestCase {
         List<Integer> cleanUpList = new ArrayList<Integer>();
         
         try {
-            // Test that the approval request doesn't exists.
+            // Test that the approval request does not exist.
             Collection<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
             assertEquals(0, result.size());
             approvalSessionRemote.addApprovalRequest(admin1, nonExecutableRequest, gc);

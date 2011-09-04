@@ -46,7 +46,7 @@ public class EndEntityProfileNameProxy implements java.io.Serializable {
     }
     
     /**
-     * Method that first tries to find profilename in local hashmap and if it doesn't exists looks it up over RMI.
+     * Method that first tries to find profilename in local hashmap and if it does not exist looks it up over RMI.
      *
      * @param profileid the profile id number to look up.
      * @return the profilename or null if no profilename is relatied to the given id

@@ -134,7 +134,7 @@ public interface CertificateProfileSession {
      * Returns a certificate profiles name given it's id.
      * 
      * @param id certificate profile id
-     * @return certificate profile name or null if certificate profile id doesn't exists.
+     * @return certificate profile name or null if certificate profile id does not exist.
      */
     String getCertificateProfileName(int id);
 

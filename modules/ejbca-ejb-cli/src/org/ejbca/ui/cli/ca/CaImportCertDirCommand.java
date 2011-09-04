@@ -89,15 +89,15 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			getLogger().debug("Searching for End Entity Profile " + eeProfile);
 			final int endEntityProfileId = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(), eeProfile);
 			if (endEntityProfileId == 0) {
-				getLogger().error("End Entity Profile " + eeProfile + " doesn't exists.");
-				throw new Exception("End Entity Profile '" + eeProfile + "' doesn't exists.");
+				getLogger().error("End Entity Profile " + eeProfile + " does not exist.");
+				throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.");
 			}
 			// Fetch Certificate Profile info
 			getLogger().debug("Searching for Certificate Profile " + certificateProfile);
 			int certificateProfileId = ejb.getCertificateProfileSession().getCertificateProfileId(certificateProfile);
 			if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-				getLogger().error("Certificate Profile " + certificateProfile + " doesn't exists.");
-				throw new Exception("Certificate Profile '" + certificateProfile + "' doesn't exists.");
+				getLogger().error("Certificate Profile " + certificateProfile + " does not exist.");
+				throw new Exception("Certificate Profile '" + certificateProfile + "' does not exist.");
 			}
 			// Get all files in the directory to import from and try to read and import each as a certificate
 			final File dir = new File(certificateDir);

@@ -51,8 +51,8 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
 		        final int certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certProfileName);
 		        if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-		        	getLogger().error("Certificate Profile " + certProfileName + " doesn't exists.");
-		            throw new Exception("Certificate Profile '" + certProfileName + "' doesn't exists.");
+		        	getLogger().error("Certificate Profile " + certProfileName + " does not exist.");
+		            throw new Exception("Certificate Profile '" + certProfileName + "' does not exist.");
 		        }
                 cainfo.setCertificateProfileId(certificateprofileid);
                 ejb.getCAAdminSession().editCA(getAdmin(), cainfo);

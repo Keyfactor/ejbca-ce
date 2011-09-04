@@ -464,7 +464,7 @@ public interface CAAdminSession {
      *                                 if the request was invalid.
      * @throws ExtendedCAServiceNotActiveException
      *                                 thrown when the service for the given CA isn't activated
-     * @throws CADoesntExistsException The given caid doesn't exists.
+     * @throws CADoesntExistsException The given caid does not exist.
      */
     public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid,
             ExtendedCAServiceRequest request)

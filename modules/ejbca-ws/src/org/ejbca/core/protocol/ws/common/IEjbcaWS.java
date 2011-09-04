@@ -504,7 +504,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param issuerDN 
 	 * @param certificateSN a hexa decimal string
-	 * @return the revocation status or null i certificate doesn't exists.
+	 * @return the revocation status or null if certificate does not exist.
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws EjbcaException
@@ -694,7 +694,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param approvalId unique id for the action
 	 * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the statys.
-	 * @throws ApprovalException if approvalId doesn't exists
+	 * @throws ApprovalException if approvalId does not exist
 	 * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it wount throw it anymore.
 	 * @throws EjbcaException if error occured server side
 	 */
