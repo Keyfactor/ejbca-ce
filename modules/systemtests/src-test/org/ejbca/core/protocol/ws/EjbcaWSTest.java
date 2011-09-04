@@ -94,6 +94,7 @@ import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -117,22 +118,22 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
+    @BeforeClass
+    public static void beforeClass() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();    	
+        System.setProperty("javax.net.ssl.trustStore", "p12/wstest.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
+        System.setProperty("javax.net.ssl.keyStore", "p12/wstest.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
+    }
 
     @Before
     public void setUpAdmin() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
     	roleName = "EjbcaWSTest";
     	super.setUp();
-        super.setupAccessRights();
         if (new File("p12/wstest.jks").exists()) {
-            String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
+            final String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);
-
-            System.setProperty("javax.net.ssl.trustStore", "p12/wstest.jks");
-            System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
-            System.setProperty("javax.net.ssl.keyStore", "p12/wstest.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
-
             QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
             EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
             super.ejbcaraws = service.getEjbcaWSPort();
@@ -141,15 +142,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @After
     public void cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins();
         super.tearDown();
     }
 
 
-//    @Test
-//    public void test00SetupAccessRights() throws Exception {
-//        super.setupAccessRights();
-//    }
+    @Test
+    public void test00SetupAccessRights() throws Exception {
+        super.setupAccessRights();
+    }
 
     @Test
     public void test01EditUser() throws Exception {
@@ -658,6 +658,11 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public void testCertificateRequestWithSpecialChars07() throws Exception {
         long rnd = new SecureRandom().nextLong();
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+    }
+
+    @Test
+    public void test99cleanUpAdmins() throws Exception {
+        super.cleanUpAdmins();
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {

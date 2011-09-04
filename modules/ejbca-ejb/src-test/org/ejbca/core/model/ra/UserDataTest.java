@@ -16,6 +16,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
+
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.UserData;
 import org.junit.Test;
 
@@ -58,4 +61,34 @@ public class UserDataTest {
 
     }
 
+	@Test
+    public void test02UserDataVOToEndEntityInformation() throws Exception {
+		UserDataVO data = new UserDataVO();
+		data.setCAId(111);
+		data.setDN("CN=wstest");
+		data.setAdministrator(true);
+		data.setCertificateProfileId(1);
+		data.setEndEntityProfileId(1);
+		data.setPassword("foo123");
+		data.setStatus(10);
+		Date now = new Date();
+		data.setTimeCreated(now);
+		data.setTimeModified(now);
+		data.setTokenType(3);
+		data.setType(65);
+		data.setUsername("wstest");
+		EndEntityInformation ei = data.toEndEntityInformation();
+		assertEquals("wstest", ei.getUsername());
+		assertEquals(111, ei.getCAId());
+		assertEquals("CN=wstest", ei.getDN());
+		assertEquals(true, ei.getAdministrator());
+		assertEquals(1, ei.getCertificateProfileId());
+		assertEquals(1, ei.getEndEntityProfileId());
+		assertEquals("foo123", ei.getPassword());
+		assertEquals(10, ei.getStatus());
+		assertEquals(now, ei.getTimeCreated());
+		assertEquals(now, ei.getTimeModified());
+		assertEquals(3, ei.getTokenType());
+		assertEquals(65, ei.getType());
+	}
 }

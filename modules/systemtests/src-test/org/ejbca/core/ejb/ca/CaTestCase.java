@@ -111,32 +111,26 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         removeTestCA(); // We cant be sure this CA was not left over from
         createTestCA();
 
-        Set<Principal> principals = new HashSet<Principal>();
+        final Set<Principal> principals = new HashSet<Principal>();
         principals.add(new X500Principal("C=SE,O=CaUser,CN=CaUser"));
         caAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+        final X509Certificate certificate = caAdmin.getCertificate();
         
-        
-
         RoleData role = roleAccessSession.findRole(roleName);
         if (role == null) {
         	log.error("Role should not be null here.");
             role = roleManagementSession.create(roleMgmgToken, roleName);
         }
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(roleName, "/", AccessRuleState.RULE_ACCEPT, true));
         role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
-
-        X509Certificate certificate = caAdmin.getCertificate();
         
-        List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+        final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
         accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(), AccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(certificate), "CN")));
-
         roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
         
         accessControlSession.forceCacheExpire();
-
-
     }
 
     public void tearDown() throws Exception {

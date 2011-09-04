@@ -36,6 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.FixEndOfBrokenXML;
 
 /**
@@ -243,9 +244,19 @@ public class CertReqHistoryData implements Serializable {
 			throw new RuntimeException(e);
 		}
 		final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baXML));
-		final EndEntityInformation useradmindata;
+		EndEntityInformation useradmindata = null;
 		try {
-			useradmindata  = (EndEntityInformation) decoder.readObject();
+			Object o = decoder.readObject();
+			try  {
+				useradmindata  = (EndEntityInformation)o;
+			} catch( ClassCastException e ) {
+				if (log.isTraceEnabled()) {
+					log.trace("Trying to decode old type of CertReqHistoryData: "+e.getMessage());
+				}
+				// It is probably an older object of type UserDataVO
+				UserDataVO olddata = (UserDataVO)o;
+				useradmindata = olddata.toEndEntityInformation();
+			}
 		} catch( Throwable t ) {
 			// try to repair the end of the XML string.
 			// this will only succeed if a limited number of chars is lost in the end of the string
