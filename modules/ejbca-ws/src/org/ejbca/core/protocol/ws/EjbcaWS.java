@@ -319,7 +319,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findUser(org.ejbca.core.protocol.ws.objects.UserMatch)
 	 */
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, CesecoreException {		
+	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {		
     	List<UserDataVOWS> retval = null;
     	if (log.isDebugEnabled()) {
             log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
@@ -337,9 +337,9 @@ public class EjbcaWS implements IEjbcaWS {
         			retval.add(ejbhelper.convertUserDataVO(admin,userdata));
         		}
         	}
-        } catch(AuthorizationDeniedException e) {
-        	logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
-        	throw e;
+        } catch (CesecoreException e) {
+        	// Convert cesecore exception to EjbcaException
+        	EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
         } catch (RuntimeException e) {	// ClassCastException, EJBException ...
         	throw EjbcaWSHelper.getInternalException(e, logger);
         } finally {
@@ -2127,7 +2127,10 @@ public class EjbcaWS implements IEjbcaWS {
 			String comment = type + " : " + msg;
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", comment);
-            String certstring = CertTools.getIssuerDN(logCert)+";"+CertTools.getSerialNumberAsString(logCert)+";"+CertTools.getSubjectDN(logCert);
+            String certstring = null;
+            if (logCert != null) {
+            	certstring = CertTools.getIssuerDN(logCert)+";"+CertTools.getSerialNumberAsString(logCert)+";"+CertTools.getSubjectDN(logCert);
+            }
             auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caId), username, certstring, details);
 			//logSession.log(admin, caId, LogConstants.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
 		} catch (CertificateException e) {
@@ -2479,7 +2482,8 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (IOException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
 		} catch (CesecoreException e) {
-            throw EjbcaWSHelper.getInternalException(e, logger);
+			// Will convert the CESecore exception to an EJBCA exception with the same error code
+			throw EjbcaWSHelper.getEjbcaException(e, null, e.getErrorCode(), null);
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...

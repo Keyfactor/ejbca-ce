@@ -813,7 +813,9 @@ public class EjbcaWSHelper {
 	}
 
 	protected static EjbcaException getEjbcaException(Throwable t, IPatternLogger logger, ErrorCode errorCode, Priority p) {
-        log.log(p, "EJBCA WebService error", t);
+		if (p!=null) {
+	        log.log(p, "EJBCA WebService error", t);			
+		}
         if (logger != null) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), errorCode.toString());        	
         }

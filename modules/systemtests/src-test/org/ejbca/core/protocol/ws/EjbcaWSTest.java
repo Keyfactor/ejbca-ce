@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.net.URL;
 import java.security.KeyPair;
+import java.security.Principal;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -34,7 +35,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.time.FastDateFormat;
@@ -42,8 +42,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -291,9 +291,10 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
             Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(adminCert);
-            Set<X500Principal> principals = new HashSet<X500Principal>();
+            Set<Principal> principals = new HashSet<Principal>();
             principals.add(adminCert.getSubjectX500Principal());
-            AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+            //AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
             //Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 X509Certificate cert = createUserAndCert(username, caID);
