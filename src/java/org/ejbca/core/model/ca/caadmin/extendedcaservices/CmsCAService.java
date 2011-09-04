@@ -124,14 +124,14 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		super(data);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		loadData(data);
-		if (data.get(KEYSTORE) != null) {    
+		if (this.data.get(KEYSTORE) != null) {    
 			// lookup keystore passwords      
 			final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
 			int status = ExtendedCAServiceInfo.STATUS_INACTIVE;
 			try {
 				m_log.debug("Loading CMS keystore");
 				final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-				keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
+				keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) this.data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
 				m_log.debug("Finished loading CMS keystore");
 				this.privKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
 				// Due to a bug in Glassfish v1 (fixed in v2), we used to have to make sure all certificates in this 
@@ -143,11 +143,13 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			} catch (Exception e) {
 				m_log.error("Could not load keystore or certificate for CA CMS service. Perhaps the password was changed? " + e.getMessage());
 			} finally {
-				this.info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)data.get(KEYSPEC), 
-						(String) data.get(KEYALGORITHM), this.certificatechain);
+				this.info = new CmsCAServiceInfo(status, getSubjectDN(), getSubjectAltName(), (String)this.data.get(KEYSPEC), 
+						(String) this.data.get(KEYALGORITHM), this.certificatechain);
 			}
 			data.put(EXTENDEDCASERVICETYPE, Integer.valueOf(ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE));        
-		} 
+		} else {
+			m_log.info("KEYSTORE is null when creating CmsCAService");
+		}
 	}
 
 	@Override

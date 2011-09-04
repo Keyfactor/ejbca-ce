@@ -483,8 +483,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (castatus == SecConst.CA_ACTIVE) {
             // activate External CA Services
             activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
-            // create initial CRLs
             try {
+            	caSession.editCA(admin, ca, false); // store any activates CA services
+            	// create initial CRLs
                 crlCreateSession.forceCRL(admin, ca.getCAId());
                 crlCreateSession.forceDeltaCRL(admin, ca.getCAId());
             } catch (CADoesntExistsException e) {
@@ -503,7 +504,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                         Integer.valueOf(cainfo.getCAId()).toString(), null, null, details);
                 throw new EJBException(e);
-            }
+            } catch (IllegalCryptoTokenException e) {
+                String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                details.put("error", e.getMessage());
+                auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                        Integer.valueOf(cainfo.getCAId()).toString(), null, null, details);
+                throw new EJBException(e);
+			}
         }
 
         // Update local OCSP's CA certificate cache
@@ -576,8 +585,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Certificate xkmscert = (Certificate) info.getXKMSSignerCertificatePath().get(0);
                 ArrayList<Certificate> xkmscertificate = new ArrayList<Certificate>();
                 xkmscertificate.add(xkmscert);
-                // Publish the extended service certificate, but only for active
-                // services
+                // Publish the extended service certificate, but only for active services
                 if ((info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!xkmscertificate.isEmpty())) {
                     publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
                 }
@@ -587,8 +595,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Certificate cmscert = (Certificate) info.getCertificatePath().get(0);
                 ArrayList<Certificate> cmscertificate = new ArrayList<Certificate>();
                 cmscertificate.add(cmscert);
-                // Publish the extended service certificate, but only for active
-                // services
+                // Publish the extended service certificate, but only for active services
                 if ((info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) && (!cmscertificate.isEmpty())) {
                     publishCACertificate(admin, cmscertificate, ca.getCRLPublishers(), ca.getSubjectDN());
                 }
