@@ -66,7 +66,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	}
 
     /**
-     * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
+     * Approval Id is generated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
 	public int generateApprovalId() {					
 		return new String(getApprovalType() + ";" + username + ";" + CertTools.getFingerprintAsString(getRequestAdminCert())).hashCode();

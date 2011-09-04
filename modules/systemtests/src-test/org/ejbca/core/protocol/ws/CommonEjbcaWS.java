@@ -418,8 +418,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue("noneExsisting");
         List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas != null);
-        assertTrue(userdatas.size() == 0);
+        assertNotNull(userdatas);
+        assertEquals(0, userdatas.size());
 
         // Find an exising user
         usermatch = new UserMatch();
@@ -428,8 +428,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchvalue(CA1_WSTESTUSER1);
 
         List<UserDataVOWS> userdatas2 = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas2 != null);
-        assertTrue(userdatas2.size() == 1);
+        assertNotNull(userdatas2);
+        assertEquals(1, userdatas2.size());
 
         // Find by O
         usermatch = new UserMatch();
@@ -437,8 +437,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_BEGINSWITH);
         usermatch.setMatchvalue("2Te");
         List<UserDataVOWS> userdatas3 = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas3 != null);
-        assertTrue(userdatas3.size() == 1);
+        assertNotNull(userdatas3);
+        assertEquals(1, userdatas3.size());
         assertTrue(userdatas3.get(0).getSubjectDN().equals(getDN(CA1_WSTESTUSER2)));
 
         // Find by subjectDN pattern
@@ -456,7 +456,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue("EMPTY");
         List<UserDataVOWS> userdatas5 = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas5 != null);
+        assertNotNull(userdatas5);
         assertTrue(userdatas5.size() > 0);
 
         usermatch = new UserMatch();
@@ -464,7 +464,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue("ENDUSER");
         List<UserDataVOWS> userdatas6 = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas6 != null);
+        assertNotNull(userdatas6);
         assertTrue(userdatas6.size() > 0);
 
         usermatch = new UserMatch();
@@ -472,7 +472,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue(getAdminCAName());
         List<UserDataVOWS> userdatas7 = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas7 != null);
+        assertNotNull(userdatas7);
         assertTrue(userdatas7.size() > 0);
 
         usermatch = new UserMatch();
@@ -480,7 +480,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         List<UserDataVOWS> userdatas8 = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas8 != null);
+        assertNotNull(userdatas8);
         assertTrue(userdatas8.size() > 0);
     }
 
@@ -761,9 +761,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
         usermatch.setMatchvalue(CA1_WSTESTUSER1);
         List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
-        assertTrue(userdatas != null);
-        assertTrue(userdatas.size() == 1);
+        assertNotNull(userdatas);
+        assertEquals(1, userdatas.size());
         userdatas.get(0).setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+        userdatas.get(0).setSubjectDN(getDN(CA1_WSTESTUSER1));
         ejbcaraws.editUser(userdatas.get(0));
 
         exceptionThrown = false;
@@ -931,6 +932,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         userdatas.get(0).setStatus(UserDataVOWS.STATUS_NEW);
         userdatas.get(0).setPassword("foo456");
         userdatas.get(0).setClearPwd(true);
+        userdatas.get(0).setSubjectDN(getDN(CA1_WSTESTUSER1));
         ejbcaraws.editUser(userdatas.get(0));
 
         KeyStore ksenv = null;

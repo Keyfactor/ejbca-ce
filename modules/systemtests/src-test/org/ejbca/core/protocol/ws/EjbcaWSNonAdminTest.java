@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -30,14 +31,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
@@ -111,36 +112,42 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        System.setProperty("javax.net.ssl.trustStore", "p12/wsnonadmintest.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
+        System.setProperty("javax.net.ssl.keyStore", "p12/wsnonadmintest.jks");
+        System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
     }
-    
+
     @Before
-    public void setupAccessRights() throws Exception {        
+    public void setUp() throws Exception {
     	roleName = "EjbcaWSTestNonAdmin";
-        super.setUp();
-        super.setupAccessRights();
-        gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
-        assertNotNull("Unable to fetch GlobalConfiguration.");
+    	super.setUp();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     private void setUpNonAdmin() throws Exception {
         if (new File("p12/wsnonadmintest.jks").exists()) {
             String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);
-
-            System.setProperty("javax.net.ssl.trustStore", "p12/wsnonadmintest.jks");
-            System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
-            System.setProperty("javax.net.ssl.keyStore", "p12/wsnonadmintest.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
-
             QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
             EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
             ejbcaraws = service.getEjbcaWSPort();
-
         }
     }
 
     @Test
-    public void test01checkNonAuthorizatied() throws Exception {
+    public void test00SetupAccessRights() throws Exception {        
+        super.setupAccessRights();
+        gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
+        assertNotNull("Unable to fetch GlobalConfiguration.");
+    }
+
+    @Test
+    public void test01checkNonAuthorized() throws Exception {
         setUpNonAdmin();
 
         // This is a superadmin keystore, improve in the future
@@ -407,9 +414,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     }
 
-    @After
-    public void cleanUpAdmins() throws Exception {
-        super.tearDown();
+    @Test
+    public void test99cleanUpAdmins() throws Exception {
         super.cleanUpAdmins();
     }
 
@@ -451,12 +457,13 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             }
         }
 
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(admincert1);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
+        Set<Principal> principals = new HashSet<Principal>();
         principals.add(admincert1.getSubjectX500Principal());
-        admin1 = new X509CertificateAuthenticationToken(principals, credentials);
-        //admin1 = new Admin(admincert1, adminusername1, null);
+        admin1 = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+
+        Set<Principal> reqprincipals = new HashSet<Principal>();
+        principals.add(reqadmincert.getSubjectX500Principal());
+        reqadmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(reqprincipals, null));
       
     }
 

@@ -114,7 +114,7 @@ public interface IEjbcaWS {
 	 */
 
 	public abstract List<UserDataVOWS> findUser(UserMatch usermatch)
-			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, CesecoreException;
+			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException;
 
 	/**
 	 * Retrieves a collection of certificates generated for a user.
