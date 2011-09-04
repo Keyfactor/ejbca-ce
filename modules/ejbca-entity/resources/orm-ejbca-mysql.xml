@@ -363,7 +363,7 @@
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>
     </entity>
-     <embeddable class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK">
+    <embeddable class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK">
         <attributes>
             <basic name="id"><column name="id" column-definition="VARCHAR(80) BINARY"/></basic>
             <basic name="property"><column name="property" column-definition="VARCHAR(250) BINARY"/></basic>
