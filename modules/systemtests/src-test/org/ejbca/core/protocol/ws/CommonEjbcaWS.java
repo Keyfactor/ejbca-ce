@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -48,12 +49,12 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
@@ -66,6 +67,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleData;
@@ -204,70 +206,66 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void setupAccessRights() throws Exception {
-        boolean userAdded = false;
+
+        EndEntityInformation user1 = new EndEntityInformation();
+        user1.setUsername(TEST_ADMIN_USERNAME);
+        user1.setPassword("foo123");
+        user1.setDN("CN=wstest");
+        CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
+        assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
+        user1.setCAId(cainfo.getCAId());
+        user1.setEmail(null);
+        user1.setSubjectAltName(null);
+        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+        user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+        user1.setType(65);
 
         if (!userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
-            EndEntityInformation user1 = new EndEntityInformation();
-            user1.setUsername(TEST_ADMIN_USERNAME);
-            user1.setPassword("foo123");
-            user1.setDN("CN=wstest");
-            CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
-            assertNotNull("No CA with name " + getAdminCAName() + " was found.", cainfo);
-            user1.setCAId(cainfo.getCAId());
-            user1.setEmail(null);
-            user1.setSubjectAltName(null);
-            user1.setStatus(UserDataVOWS.STATUS_NEW);
-            user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-            user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-            user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-            user1.setType(65);
-
-            userAdminSession.addUser(intAdmin, user1, true);
-            userAdded = true;
-
-            boolean adminExists = false;
-            RoleData role = roleAccessSession.findRole(roleName);
-            for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
-                if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
-                    adminExists = true;
-                }
-            }
-
-            if (!adminExists) {
-                List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-                list.add(new AccessUserAspectData(roleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
-                        TEST_ADMIN_USERNAME));
-                roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(roleName), list);
-                accessControlSession.forceCacheExpire();
-            }
-
+        	userAdminSession.addUser(intAdmin, user1, true);
+        } else {
+        	userAdminSession.changeUser(intAdmin, user1, true);
         }
+        boolean adminExists = false;
+        RoleData role = roleAccessSession.findRole(roleName);
+        for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
+        	if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
+        		adminExists = true;
+        	}
+        }
+
+        if (!adminExists) {
+        	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
+        	list.add(new AccessUserAspectData(roleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+        			TEST_ADMIN_USERNAME));
+        	roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(roleName), list);
+        	accessControlSession.forceCacheExpire();
+        }
+
+        EndEntityInformation user2 = new EndEntityInformation();
+        user2.setUsername(TEST_NONADMIN_USERNAME);
+        user2.setPassword("foo123");
+        user2.setDN("CN=wsnonadmintest");
+        user2.setCAId(cainfo.getCAId());
+        user2.setEmail(null);
+        user2.setSubjectAltName(null);
+        user2.setStatus(UserDataVOWS.STATUS_NEW);
+        user2.setTokenType(SecConst.TOKEN_SOFT_JKS);
+        user2.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
+        user2.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+        user2.setType(1);
 
         if (!userAdminSession.existsUser(intAdmin, TEST_NONADMIN_USERNAME)) {
-            EndEntityInformation user1 = new EndEntityInformation();
-            user1.setUsername(TEST_NONADMIN_USERNAME);
-            user1.setPassword("foo123");
-            user1.setDN("CN=wsnonadmintest");
-            CAInfo cainfo = caSession.getCAInfo(intAdmin, getAdminCAName());
-            user1.setCAId(cainfo.getCAId());
-            user1.setEmail(null);
-            user1.setSubjectAltName(null);
-            user1.setStatus(UserDataVOWS.STATUS_NEW);
-            user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
-            user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-            user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
-            user1.setType(1);
-
-            userAdminSession.addUser(intAdmin, user1, true);
-            userAdded = true;
+        	userAdminSession.addUser(intAdmin, user2, true);
+        } else {
+        	userAdminSession.changeUser(intAdmin, user2, true);
         }
 
-        if (userAdded) {
-            BatchMakeP12 batch = new BatchMakeP12();
-            batch.setMainStoreDir("p12");
-            batch.createAllNew();
-        }
-
+        BatchMakeP12 batch = new BatchMakeP12();
+        batch.setMainStoreDir("p12");
+        batch.createUser(user1.getUsername());
+        batch.createUser(user2.getUsername());
     }
 
     private String getDN(String userName) {
@@ -400,9 +398,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
             profile.setUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, true);
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
             endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
             endEntityProfileSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
         } catch (EndEntityProfileExistsException pee) {
+        	pee.printStackTrace();
             assertTrue("Can not create end entity profile", false);
         }
         editUser(CA1_WSTESTUSER1, CA1);
@@ -1732,7 +1732,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void ejbcaVersion() throws Exception {
 
         String version = ejbcaraws.getEjbcaVersion();
-        assertTrue(version.contains("EJBCA 4")); // We don't know which specific
+        assertTrue("Wrong version: "+version, version.contains("EJBCA 5")); // We don't know which specific
         // version we are testing
     }
 
@@ -2482,6 +2482,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        Properties prop = catokeninfo.getProperties();
+        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        catokeninfo.setProperties(prop);
         // No CA Services.
         List extendedcaservices = new ArrayList();
 
@@ -2567,6 +2573,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        Properties prop = catokeninfo.getProperties();
+        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        catokeninfo.setProperties(prop);
         // No CA Services.
         ArrayList extendedcaservices = new ArrayList();
 
@@ -2625,16 +2637,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private void removeCAIfItExists(String dn) {
         try {
             // Remove CA if it exists
-            if (caSession.getCAInfo(intAdmin, dn.hashCode()) != null) {
-                caSession.removeCA(intAdmin, dn.hashCode());
-            } else {
-                log.error("CA " + dn + " did not exist. Skipping removal.");
-            }
+        	caSession.removeCA(intAdmin, dn.hashCode());
         } catch (Exception e) {
-            if (!(e.getCause() instanceof CADoesntExistsException)) {
-                log.error("", e);
-                assertTrue("Failed to remove CA with SubjectDN '" + dn + "'", false);
-            }
+            log.error("Error removing CA: ", e);
+            assertTrue("Failed to remove CA with SubjectDN '" + dn + "'", false);
         }
     }
 }

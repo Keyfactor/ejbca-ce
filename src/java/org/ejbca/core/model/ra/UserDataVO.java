@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
@@ -322,5 +323,27 @@ public class UserDataVO implements Serializable {
     	} else {
             return StringTools.getBase64String(subjectDNClean);
     	}
+    }
+    
+    /** Helper method to convert this old deprecated type to the new EndEntityInformation
+     * 
+     * @return EndEntityInformation 
+     */
+    public EndEntityInformation toEndEntityInformation() {
+    	org.cesecore.certificates.endentity.ExtendedInformation newee = null;
+    	if (extendedinformation != null) {
+        	newee = new org.cesecore.certificates.endentity.ExtendedInformation();
+        	newee.loadData(extendedinformation.saveData());    		
+    	}
+    	EndEntityInformation eei = new EndEntityInformation(getUsername(), getDN(), caid, getSubjectAltName(), getEmail(), type, 
+    			endentityprofileid, certificateprofileid, tokentype, hardtokenissuerid, newee);
+    	eei.setPassword(getPassword());
+    	eei.setCardNumber(getCardNumber());
+    	eei.setStatus(status);
+    	eei.setTimeCreated(timecreated);
+    	eei.setTimeModified(timemodified);
+    	eei.setTokenType(tokentype);
+    	eei.setHardTokenIssuerId(hardtokenissuerid);
+    	return eei;
     }
 }
