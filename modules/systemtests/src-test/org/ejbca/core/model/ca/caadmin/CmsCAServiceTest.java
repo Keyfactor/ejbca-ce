@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.cert.CertStore;
 import java.util.ArrayList;
@@ -26,7 +27,6 @@ import java.util.Iterator;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -46,6 +46,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceTypes;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
@@ -58,7 +59,6 @@ import org.junit.Test;
  * @version $Id$
  */
 public class CmsCAServiceTest extends CaTestCase {
-    private static Logger log = Logger.getLogger(CmsCAServiceTest.class);
 
     private byte[] doc = "foo123".getBytes();
 
@@ -71,11 +71,11 @@ public class CmsCAServiceTest extends CaTestCase {
     public static void beforeClass() {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
-
     }
 
     @Before
     public void setUp() throws Exception {
+    	roleName = "CmsCAServiceTest";
         super.setUp();
 
     }
@@ -86,35 +86,45 @@ public class CmsCAServiceTest extends CaTestCase {
     }
 
     @Test
-    public void test01CmsCAServiceNotActive() throws Exception {
+    public void testCmsCAServiceNotActive() throws Exception {
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         // First try a request when the service is not active
-        boolean active = true;
         try {
             caAdminSession.extendedService(admin, getTestCAId(), request);
+            fail("extended CA service should not have been active");
         } catch (ExtendedCAServiceNotActiveException e) {
-            active = false;
+        	// NOPMD
         }
-        // By default the CA service is not active
-        assertTrue(!active);
     }
 
-    /**
-	 */
     @Test
-    public void test02ActivateCmsCAService() throws Exception {
+    public void testActivateCmsCAService() throws Exception {
         // Activate the CMS service in the CA
         CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
         ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
         newlist.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, false));
         cainfo.setExtendedCAServiceInfos(newlist);
         caAdminSession.editCA(admin, cainfo);
+        // Did it become active?
+        cainfo = caSession.getCAInfo(admin, "TEST");
+        Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+        boolean ok = false;
+        for (ExtendedCAServiceInfo info : infos) {
+			if (info.getType() == ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE) {
+				if (info.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE) {
+					ok = true;
+				}
+			}
+		}
+        assertTrue("extended CA service should have been activated", ok);
     }
 
-    /**
-	 */
     @Test
-    public void test03CmsCAServiceActive() throws Exception {
+    public void testCmsCAServiceActive() throws Exception {
+    	
+    	// Activate the service first
+    	testActivateCmsCAService();
+    	
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
         CmsCAServiceResponse resp = null;
         // Try the request again
@@ -155,10 +165,11 @@ public class CmsCAServiceTest extends CaTestCase {
         assertEquals(new String(doc), new String(ob));
     }
 
-    /**
-	 */
     @Test
-    public void test03CmsCAEncryptDecrypt() throws Exception {
+    public void testCmsCAEncryptDecrypt() throws Exception {
+    	// Activate the service first
+    	testActivateCmsCAService();
+    	
         CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_ENCRYPT);
         CmsCAServiceResponse resp = null;
         // Try the request again
@@ -196,16 +207,26 @@ public class CmsCAServiceTest extends CaTestCase {
         assertTrue(Arrays.equals(respdoc, doc));
     }
 
-    /**
-	 */
     @Test
-    public void test04DeActivateCmsCAService() throws Exception {
+    public void testDeActivateCmsCAService() throws Exception {
         // Deactivate the CMS service in the CA
         CAInfo cainfo = caSession.getCAInfo(admin, "TEST");
         ArrayList<ExtendedCAServiceInfo> newlist = new ArrayList<ExtendedCAServiceInfo>();
         newlist.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, false));
         cainfo.setExtendedCAServiceInfos(newlist);
         caAdminSession.editCA(admin, cainfo);
+        // Did it become deactive?
+        cainfo = caSession.getCAInfo(admin, "TEST");
+        Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+        boolean ok = false;
+        for (ExtendedCAServiceInfo info : infos) {
+			if (info.getType() == ExtendedCAServiceTypes.TYPE_CMSEXTENDEDSERVICE) {
+				if (info.getStatus() == ExtendedCAServiceInfo.STATUS_INACTIVE) {
+					ok = true;
+				}
+			}
+		}
+        assertTrue("extended CA service should have been activated", ok);
     }
 
 }

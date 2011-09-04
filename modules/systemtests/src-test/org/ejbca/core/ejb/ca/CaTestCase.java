@@ -239,11 +239,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, "CN=XKMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
-        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-        		"CN=CMSCertificate, " + dn,
-        		"",
-        		""+keyStrength,
-                AlgorithmConstants.KEYALGORITHM_RSA));
+        // Set the CMS service non-active by default
+        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+        		"CN=CMSCertificate, " + dn,"",""+keyStrength,AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo cainfo = new X509CAInfo(dn, caName, SecConst.CA_ACTIVE, new Date(), "",

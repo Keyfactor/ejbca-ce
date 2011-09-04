@@ -46,6 +46,7 @@ import org.junit.Test;
 public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
 	private static final AuthenticationToken[] NON_CLI_ADMINS = new AuthenticationToken[] {
+		// This authtoken should not be possible to use remotely
 		new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GlobalConfigurationSessionBeanTest"))
 	}; 
 	
@@ -62,6 +63,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
     @Before
     public void setUp() throws Exception {
+    	roleName = "GlobalConfigurationSessionBeanTest";
         super.setUp();
     	enableCLI(true);  	
 
