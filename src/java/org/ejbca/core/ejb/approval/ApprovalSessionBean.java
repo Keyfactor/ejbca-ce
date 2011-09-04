@@ -291,7 +291,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         int retval = ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
         if (result.size() == 0) {
-            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " doesn't exists");
+            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " does not exist");
         }
         Iterator<ApprovalData> iter = result.iterator();
         while (iter.hasNext()) {
@@ -321,7 +321,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
         Iterator<ApprovalData> iter = result.iterator();
         if (result.size() == 0) {
-            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " doesn't exists");
+            throw new ApprovalException(ErrorCode.APPROVAL_REQUEST_ID_NOT_EXIST, "Approval request with id : " + approvalId + " does not exist");
         }
         while (iter.hasNext()) {
             ApprovalData adl = iter.next();

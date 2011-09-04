@@ -106,8 +106,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				getLogger().debug("Searching for End Entity Profile " + eeprofile);
 				endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(), eeprofile);
 				if (endentityprofileid == 0) {
-					getLogger().error("End Entity Profile " + eeprofile + " doesn't exists.");
-					throw new Exception("End Entity Profile '" + eeprofile + "' doesn't exists.");
+					getLogger().error("End Entity Profile " + eeprofile + " does not exist.");
+					throw new Exception("End Entity Profile '" + eeprofile + "' does not exist.");
 				}
 			}
 			
@@ -116,8 +116,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				getLogger().debug("Searching for Certificate Profile " + certificateprofile);
 				certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certificateprofile);
 				if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-					getLogger().error("Certificate Profile " + certificateprofile + " doesn't exists.");
-					throw new Exception("Certificate Profile '" + certificateprofile + "' doesn't exists.");
+					getLogger().error("Certificate Profile " + certificateprofile + " does not exist.");
+					throw new Exception("Certificate Profile '" + certificateprofile + "' does not exist.");
 				}
 			}
 			

@@ -146,7 +146,7 @@ public interface PublisherSession {
 
     /**
      * Returns a publishers name given its id.
-     * @return the name or null if id doesn't exists
+     * @return the name or null if id does not exist
      */
     public String getPublisherName(AuthenticationToken admin, int id);
 

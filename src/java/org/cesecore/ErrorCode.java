@@ -38,12 +38,12 @@ public class ErrorCode implements Serializable {
     /** Internal error code. */
     private String internalErrorCode = _NOT_SPECIFIED;
 
-    private static final String _CA_NOT_EXISTS = "CA_NOT_EXISTS"; // CA doesn't exists.
+    private static final String _CA_NOT_EXISTS = "CA_NOT_EXISTS"; // CA does not exist.
     private static final String _CA_ID_EQUALS_ZERO = "CA_ID_EQUALS_ZERO"; // CA ID can't be equal to zero.
-    private static final String _EE_PROFILE_NOT_EXISTS = "EE_PROFILE_NOT_EXISTS"; // End Entity profile doesn't exists.
-    private static final String _CERT_PROFILE_NOT_EXISTS = "CERT_PROFILE_NOT_EXISTS"; // Certificate profile doesn't exists.
+    private static final String _EE_PROFILE_NOT_EXISTS = "EE_PROFILE_NOT_EXISTS"; // End Entity profile does not exist.
+    private static final String _CERT_PROFILE_NOT_EXISTS = "CERT_PROFILE_NOT_EXISTS"; // Certificate profile does not exist.
     private static final String _HARD_TOKEN_ISSUER_NOT_EXISTS = "HARD_TOKEN_ISSUER_NOT_EXISTS"; // Hard token issuer doens't exists.
-    private static final String _HARD_TOKEN_NOT_EXISTS = "HARD_TOKEN_NOT_EXISTS"; // Hard token doesn't exists.
+    private static final String _HARD_TOKEN_NOT_EXISTS = "HARD_TOKEN_NOT_EXISTS"; // Hard token does not exist.
     private static final String _UNKOWN_TOKEN_TYPE = "UNKOWN_TOKEN_TYPE"; // Unknown token type.
     private static final String _AUTH_CERT_NOT_RECEIVED = "AUTH_CERT_NOT_RECEIVED"; // Client authentication certificate not received.
     private static final String _USER_NOT_FOUND = "USER_NOT_FOUND"; // User doesn't exist.
@@ -66,7 +66,7 @@ public class ErrorCode implements Serializable {
     private static final String _APPROVAL_WRONG_STATUS = "APPROVAL_WRONG_STATUS"; // Wrong status of approval.
     private static final String _ENOUGH_APPROVAL = "ENOUGH_APPROVAL"; // Already enough approval for this request.
     private static final String _APPROVAL_ALREADY_EXISTS = "APPROVAL_ALREADY_EXISTS"; // Approval already exists.
-    private static final String _APPROVAL_REQUEST_ID_NOT_EXIST = "APPROVAL_REQUEST_ID_NOT_EXIST"; // Approval request with specified ID doesn't exists.
+    private static final String _APPROVAL_REQUEST_ID_NOT_EXIST = "APPROVAL_REQUEST_ID_NOT_EXIST"; // Approval request with specified ID does not exist.
     private static final String _INVALID_LOG_LEVEL = "INVALID_LOG_LEVEL"; // Invalid custom log level.
     private static final String _INTERNAL_ERROR = "INTERNAL_ERROR"; // Technical problem.
     private static final String _NOT_SPECIFIED = "NOT_SPECIFIED"; // No error code specified.
@@ -89,13 +89,13 @@ public class ErrorCode implements Serializable {
         this.internalErrorCode = internalErrorCode;
     }
 
-    /** CA doesn't exists. */
+    /** CA does not exist. */
     public static final ErrorCode CA_NOT_EXISTS = new ErrorCode(_CA_NOT_EXISTS);
     /** CA ID can't be equal to zero. */
     public static final ErrorCode CA_ID_EQUALS_ZERO = new ErrorCode(_CA_ID_EQUALS_ZERO);
-    /** End Entity profile doesn't exists. */
+    /** End Entity profile does not exist. */
     public static final ErrorCode EE_PROFILE_NOT_EXISTS = new ErrorCode(_EE_PROFILE_NOT_EXISTS);
-    /** Certificate profile doesn't exists. */
+    /** Certificate profile does not exist. */
     public static final ErrorCode CERT_PROFILE_NOT_EXISTS = new ErrorCode(_CERT_PROFILE_NOT_EXISTS);
     /** Hard token issuer doens't exists. */
     public static final ErrorCode HARD_TOKEN_ISSUER_NOT_EXISTS = new ErrorCode(_HARD_TOKEN_ISSUER_NOT_EXISTS);
@@ -145,7 +145,7 @@ public class ErrorCode implements Serializable {
     public static final ErrorCode ENOUGH_APPROVAL = new ErrorCode(_ENOUGH_APPROVAL);
     /** Approval already exists. */
     public static final ErrorCode APPROVAL_ALREADY_EXISTS = new ErrorCode(_APPROVAL_ALREADY_EXISTS);
-    /** Approval request with specified ID doesn't exists. */
+    /** Approval request with specified ID does not exist. */
     public static final ErrorCode APPROVAL_REQUEST_ID_NOT_EXIST = new ErrorCode(_APPROVAL_REQUEST_ID_NOT_EXIST);
     /** Invalid custom log level. */
     public static final ErrorCode INVALID_LOG_LEVEL = new ErrorCode(_INVALID_LOG_LEVEL);

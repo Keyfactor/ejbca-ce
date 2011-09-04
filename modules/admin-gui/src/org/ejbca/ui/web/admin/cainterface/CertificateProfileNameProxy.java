@@ -38,7 +38,7 @@ public class CertificateProfileNameProxy implements java.io.Serializable {
     }
     
     /**
-     * Method that first tries to find certificateprofile name in local hashmap and if it doesn't exists looks it up over RMI.
+     * Method that first tries to find certificateprofile name in local hashmap and if it does not exist looks it up over RMI.
      *
      * @param certificateprofileid the certificateprofile id number to look up.
      * @return the certificateprofilename or null if no certificateprofilename is relatied to the given id

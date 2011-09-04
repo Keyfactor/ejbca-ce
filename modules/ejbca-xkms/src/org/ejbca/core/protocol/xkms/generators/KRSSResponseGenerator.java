@@ -611,7 +611,7 @@ public class KRSSResponseGenerator extends
 	
 	/**
 	 * Method returning the revocation code identifier or null
-	 * if it doesn't exists.
+	 * if it does not exist.
 	 * 
 	 * @param req
 	 * @return the RevocationCode or null if it doesn't exist.

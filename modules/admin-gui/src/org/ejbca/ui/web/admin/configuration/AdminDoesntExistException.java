@@ -19,7 +19,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 /**
- * An exception thown when trying to change or remove a user that doesn't exists in the database.
+ * An exception thown when trying to change or remove a user that does not exist in the database.
  *
  * @author Philip Vendil
  * @version $Id$

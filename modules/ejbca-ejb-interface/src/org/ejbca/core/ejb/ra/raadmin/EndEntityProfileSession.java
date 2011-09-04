@@ -104,7 +104,7 @@ public interface EndEntityProfileSession {
 
     /**
      * Returns a end entity profiles name given it's id.
-     * @return profile's name or null if profile id doesn't exists.
+     * @return profile's name or null if profile id does not exist.
      */
     String getEndEntityProfileName(AuthenticationToken admin, int id);
 

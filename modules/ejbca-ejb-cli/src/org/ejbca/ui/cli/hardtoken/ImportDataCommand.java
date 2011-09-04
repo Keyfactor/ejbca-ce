@@ -66,7 +66,7 @@ public class ImportDataCommand extends BaseCommand {
         	String significantIssuerDN = props.getProperty("significantissuerdn");
         	int cAId = significantIssuerDN.hashCode();
         	if(ejb.getCaSession().getCAInfo(getAdmin(), cAId) == null){
-        		throw new IllegalAdminCommandException("Error, the property significantissuerdn '" + significantIssuerDN +  "' doesn't exists as CA in the system.");
+        		throw new IllegalAdminCommandException("Error, the property significantissuerdn '" + significantIssuerDN +  "' does not exist as CA in the system.");
         	}
         	// Create the importer
         	if(props.getProperty("importer.classpath") == null){

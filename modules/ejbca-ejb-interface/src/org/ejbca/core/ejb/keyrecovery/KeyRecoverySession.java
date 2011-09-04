@@ -47,7 +47,7 @@ public interface KeyRecoverySession {
      * @param markedasrecoverable DOCUMENT ME!
      * @param keypair the actual keypair to save.
      *
-     * @return false if certificates keyrecovery data doesn't exists
+     * @return false if certificates keyrecovery data does not exist
      *
      * @throws javax.ejb.EJBException if a communication or other error occurs.
      */

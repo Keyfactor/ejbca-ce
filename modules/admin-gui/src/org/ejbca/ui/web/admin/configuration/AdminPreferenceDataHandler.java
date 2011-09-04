@@ -38,7 +38,7 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 		this.administrator = administrator;
 	}
 
-	/** Retrieves the admin from the database or null if the admin doesn't exists. */
+	/** Retrieves the admin from the database or null if the admin does not exist. */
 	public AdminPreference getAdminPreference(String certificatefingerprint) {
 		AdminPreference returnvalue=null;
 		try {

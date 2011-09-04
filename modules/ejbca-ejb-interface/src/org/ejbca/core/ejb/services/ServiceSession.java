@@ -85,7 +85,7 @@ public interface ServiceSession {
 
     /**
      * Returns a Service name given its id.
-     * @return the name or null if id doesn't exists
+     * @return the name or null if id does not exist
      */
     public String getServiceName(AuthenticationToken admin, int id);
 

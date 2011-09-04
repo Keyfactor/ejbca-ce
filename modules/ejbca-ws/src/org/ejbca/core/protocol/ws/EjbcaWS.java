@@ -1914,7 +1914,7 @@ public class EjbcaWS implements IEjbcaWS {
 						  throw new ApprovalException("");
 					  }
 					}catch(ApprovalException e2){
-						// GenTokenCertificates approval doesn't exists, try a getHardTokenData request
+						// GenTokenCertificates approval does not exist, try a getHardTokenData request
 						if(!WebServiceConfiguration.getApprovalForHardTokenData()){
 							  throw new AuthorizationDeniedException("JaxWS isn't configured for getHardTokenData approvals.");
 						}
