@@ -651,7 +651,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 createExtendedCAService(info);
                 extendedservicetypes.add(info.getType());
             } else {
+            	if (log.isDebugEnabled()) {
+            		log.debug("Updating extended CA service of type: "+info.getType());
+            	}
                 service.update(info, this);
+                setExtendedCAService(service);
             }
         }
         data.put(EXTENDEDCASERVICES, extendedservicetypes);
@@ -778,6 +782,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         ExtendedCAService service = getExtendedCAService(type);
         if (service != null) {
             service.init(ca);
+            setExtendedCAService(service);
         }
     }
 
