@@ -193,21 +193,21 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         boolean returnval = false;
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
                 && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
-            if (authorizationSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+            if (authorizationSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
                 returnval = true;
             } else {
                 log.info("Admin " + admin.toString() + " was not authorized to resource /super_administrator");
             }
         } else {
-            returnval = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights)
-                    && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights)
+                    && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
         return returnval;
     }
     
     private boolean authorizedToCA(AuthenticationToken admin, int caid) {
         boolean returnval = false;
-        returnval = authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid);
+        returnval = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid);
         if (!returnval) {
             log.info("Admin " + admin.toString() + " not authorized to resource " + StandardRules.CAACCESS.resource() + caid);
         }

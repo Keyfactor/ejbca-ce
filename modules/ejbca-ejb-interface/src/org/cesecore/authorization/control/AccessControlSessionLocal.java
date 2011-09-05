@@ -29,12 +29,4 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 @Local
 public interface AccessControlSessionLocal extends AccessControlSession {
    
-     /**
-     * Checks authorization without performing secure audit logging.
-     * 
-     * @param authenticationToken The authentication token to match against.
-     * @param resource The resource to check authorization to.
-     * @return true if authorized.
-     */
-    boolean isAuthorizedNoLog(AuthenticationToken authenticationToken, String resource);
 }

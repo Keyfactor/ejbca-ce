@@ -353,7 +353,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             // Retrieve the certificate profile this user should have, checking for authorization to the profile
             final int certProfileId = data.getCertificateProfileId();
-            final CertificateProfile certProfile = getCertificateProfile(admin, certProfileId, ca.getCAId());
+            final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
 
             // Check that the request public key fulfills policy
             verifyKey(pk, certProfile);
@@ -493,7 +493,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
     }
 
-    private CertificateProfile getCertificateProfile(final AuthenticationToken admin, final int certProfileId, final int caid)
+    private CertificateProfile getCertificateProfile(final int certProfileId, final int caid)
             throws AuthorizationDeniedException {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         // What if certProfile == null?

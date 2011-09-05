@@ -52,23 +52,30 @@ public final class Tuplet<K, V> implements Serializable{
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Tuplet<?, ?> other = (Tuplet<?, ?>) obj;
         if (firstElement == null) {
-            if (other.firstElement != null)
+            if (other.firstElement != null) {
                 return false;
-        } else if (!firstElement.equals(other.firstElement))
+            }
+        } else if (!firstElement.equals(other.firstElement)) {
             return false;
+        }
         if (secondElement == null) {
-            if (other.secondElement != null)
+            if (other.secondElement != null) {
                 return false;
-        } else if (!secondElement.equals(other.secondElement))
+            }
+        } else if (!secondElement.equals(other.secondElement)) {
             return false;
+        }
         return true;
     }
     

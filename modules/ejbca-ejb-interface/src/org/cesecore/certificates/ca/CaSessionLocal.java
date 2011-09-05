@@ -16,8 +16,6 @@ import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 
 /**
@@ -116,8 +114,7 @@ public interface CaSessionLocal extends CaSession {
      * @param auditlog if audit logging of the edit should be done or not, not needed if called from other internal methods that already does audit logging.
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
-     * @throws CryptoTokenOfflineException if the CA token is to be activated but is off line
-     * @throws CryptoTokenAuthenticationFailedException if the CA token is to be activated but the authentication code is wrong
+     * @throws IllegalCryptoTokenException if the CA token is not proper
      */
     public void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException;
 

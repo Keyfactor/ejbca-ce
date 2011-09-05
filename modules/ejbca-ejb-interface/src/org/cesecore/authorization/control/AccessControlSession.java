@@ -19,7 +19,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * 
  * See {@link https://www.cesecore.eu/mediawiki/index.php/Functional_Specifications_(ADV_FSP)#Access_Control_2}
  * 
- * Based on cesecore: AccessControlSession.java 338 2011-02-25 09:46:38Z tomas
+ * Based on cesecore: AccessControlSession.java 956 2011-02-25 09:46:38Z tomas
  * 
  * @version $Id$
  * 
@@ -33,6 +33,15 @@ public interface AccessControlSession {
      * @return True if user is authorized, false if not.
      */
     boolean isAuthorized(AuthenticationToken authenticationToken, String resource);
+
+    /**
+     * Checks if the current user is authorized for the given resource.
+     * Will not create any audit log. 
+     * 
+     * @param resource String identifier of the resource in question.
+     * @return True if user is authorized, false if not. 
+     */
+    boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String resource);
 
     /**
      * Helper method to clear the local access control rule cache. Normally the cache expires after configured time, but when modifying access rules

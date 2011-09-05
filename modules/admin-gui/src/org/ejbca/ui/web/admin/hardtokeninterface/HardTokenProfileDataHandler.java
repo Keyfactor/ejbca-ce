@@ -187,10 +187,10 @@ public class HardTokenProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck) {
         boolean returnval = false;
-        if (authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator")) {
+        if (authorizationsession.isAuthorizedNoLogging(administrator, "/super_administrator")) {
             returnval = true; // yes authorized to everything
         } else {
-            if (editcheck && authorizationsession.isAuthorizedNoLog(administrator, "/hardtoken_functionality/edit_hardtoken_profiles")) {      
+            if (editcheck && authorizationsession.isAuthorizedNoLogging(administrator, "/hardtoken_functionality/edit_hardtoken_profiles")) {      
                 HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));
                 HashSet<Integer> authorizedcertprofiles = new HashSet<Integer>(certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_HARDTOKEN, authorizedcaids));
                 authorizedcertprofiles.add(new Integer(SecConst.CERTPROFILE_NO_PROFILE));

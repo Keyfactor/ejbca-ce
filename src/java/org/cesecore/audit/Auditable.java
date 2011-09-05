@@ -23,7 +23,6 @@ import org.cesecore.audit.audit.AuditLogExporterException;
 import org.cesecore.audit.audit.AuditLogValidationReport;
 import org.cesecore.audit.audit.AuditLogValidatorException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.QueryCriteria;
 
@@ -77,7 +76,6 @@ public interface Auditable {
      * 
      * @return validation report.
      * @throws AuditLogValidatorException
-     * @throws AuthorizationDeniedException 
      */
     AuditLogValidationReport verifyLogsIntegrity(AuthenticationToken token, Date date, Properties properties) throws AuditLogValidatorException;
 

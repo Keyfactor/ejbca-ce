@@ -87,7 +87,7 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws AuthorizationDeniedException when authorization is denied.
      */
     public boolean isAuthorizedNoLog(AuthenticationToken admin, String resource) {
-        return authorizationsession.isAuthorizedNoLog(admin, resource);
+        return authorizationsession.isAuthorizedNoLogging(admin, resource);
     }
 
     /**
@@ -230,7 +230,7 @@ public class AuthorizationDataHandler implements Serializable {
 
     private void authorizedToEditAdministratorPrivileges(RoleData role) throws AuthorizationDeniedException {
         // Authorized to edit administrative privileges
-        if (!authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES)) {
+        if (!authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
                     AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, null);
             throw new AuthorizationDeniedException(msg);

@@ -180,7 +180,7 @@ public class EjbcaWSHelper {
             admin = authenticationSession.authenticate(subject);
             if ((admin == null) && (!allowNonAdmins)) {
 				userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
-				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
 			        throw new AuthorizationDeniedException(msg);
 				}
@@ -205,7 +205,7 @@ public class EjbcaWSHelper {
 		AuthenticationToken admin;
 		try {
 			admin = getAdmin(false);
-			if ((admin != null) && (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR))) {
+			if ((admin != null) && (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR))) {
 				retval = true;
 			}
 		} catch (AuthorizationDeniedException e) {
@@ -222,7 +222,7 @@ public class EjbcaWSHelper {
 
 	protected void isAuthorizedToRepublish(AuthenticationToken admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException {
 		try {
-			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
+			if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
@@ -231,11 +231,11 @@ public class EjbcaWSHelper {
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new EjbcaException(ErrorCode.USER_NOT_FOUND, msg);
 			}
-			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS)) {
+			if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS)) {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.VIEW_RIGHTS, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
-			if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() + caid )){
+			if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid )){
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
@@ -249,7 +249,7 @@ public class EjbcaWSHelper {
 	
 	protected void isAuthorizedToHardTokenData(AuthenticationToken admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
 		try {
-			if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
+			if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWHARDTOKENS, null);
 		        throw new AuthorizationDeniedException(msg);
 			}
@@ -260,19 +260,19 @@ public class EjbcaWSHelper {
 			}
 
 			if(viewPUKData){
-				if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_VIEWPUKS)) {
+				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWPUKS)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWPUKS, null);
 			        throw new AuthorizationDeniedException(msg);
 				}
 			}
 
 			if(userdata != null){
-			    if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS)) {
+			    if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_RIGHTS, null);
 			        throw new AuthorizationDeniedException(msg);
 			    }
 				if(viewPUKData){
-				    if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {	
+				    if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS)) {	
 			            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS, null);
 				        throw new AuthorizationDeniedException(msg);
 				    }
@@ -668,7 +668,7 @@ public class EjbcaWSHelper {
 				final int caid = CertTools.getIssuerDN(next).hashCode();
 				Boolean authorized = authorizationCache.get(caid);
 				if (authorized == null) {
-					authorized = authorizationSession.isAuthorizedNoLog(admin,StandardRules.CAACCESS.resource() +caid);
+					authorized = authorizationSession.isAuthorizedNoLogging(admin,StandardRules.CAACCESS.resource() +caid);
 					authorizationCache.put(caid, authorized);
 				}
 				if (authorized.booleanValue()) {

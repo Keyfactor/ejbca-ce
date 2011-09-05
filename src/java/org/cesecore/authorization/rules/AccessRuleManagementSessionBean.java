@@ -21,7 +21,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
@@ -37,8 +36,6 @@ import org.cesecore.util.QueryResultWrapper;
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessRuleManagementSessionLocal")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AccessRuleManagementSessionBean implements AccessRuleManagementSessionLocal {
-
-    private static final Logger log = Logger.getLogger(AccessRuleManagementSessionBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;

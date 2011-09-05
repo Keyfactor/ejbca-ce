@@ -16,8 +16,6 @@ import java.util.Collection;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 
 /*! \mainpage The CESeCore project
@@ -74,8 +72,7 @@ public interface CaSession {
      * @param cainfo the CAInfo to change values of the CA
      * @throws CADoesntExistsException
      * @throws AuthorizationDeniedException
-     * @throws CryptoTokenOfflineException if the CA token is to be activated but is off line
-     * @throws CryptoTokenAuthenticationFailedException if the CA token is to be activated but the authentication code is wrong
+     * @throws IllegalCryptoTokenException if the CA token is not proper
      */
     public void editCA(final AuthenticationToken admin, final CAInfo cainfo) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException;
 

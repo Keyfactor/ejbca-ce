@@ -166,8 +166,8 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         boolean returnval = false;
         boolean allexists = false;
 
-        if (!editcheck || authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR) ||
-        		(authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null)) {
+        if (!editcheck || authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR) ||
+        		(authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null)) {
             if (profile == null) {
                 returnval = true;
             } else {

@@ -506,7 +506,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (htih != null) {
             int admingroupid = htih.getAdminGroupId();
             
-            returnval = authorizationSession.isAuthorizedNoLog(admin, "/hardtoken_functionality/issue_hardtokens");
+            returnval = authorizationSession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/issue_hardtokens");
 
         }
         log.trace("<getAuthorizedToHardTokenIssuer(" + returnval + ")");

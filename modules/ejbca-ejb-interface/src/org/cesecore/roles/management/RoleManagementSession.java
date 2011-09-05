@@ -18,7 +18,6 @@ import java.util.List;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
@@ -116,7 +115,7 @@ public interface RoleManagementSession {
      * 
      * @param role The role
      * @param accessRules A collection of access rules. These are all presumed to be persisted.
-     * @throws AccessRuleExistsException if an access rule was submitted without being persisted first.
+     * @throws AccessRuleNotFoundException if an access rule was submitted without being persisted first.
      * @throws RoleNotFoundException if the role does not exist
      * @throws AuthorizationDeniedException is authenticationToken not authorized to edit roles
      * 

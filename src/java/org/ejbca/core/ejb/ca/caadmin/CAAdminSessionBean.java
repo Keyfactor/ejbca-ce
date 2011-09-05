@@ -252,7 +252,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         int castatus = SecConst.CA_OFFLINE;
         // Check that administrator has superadminstrator rights.
-        if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", cainfo.getName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -531,7 +531,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         boolean cmsrenewcert = false;
 
         // Check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", cainfo.getName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -640,7 +640,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         byte[] returnval = null;
         // Check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA)) {
+        if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_RENEWCA)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -803,7 +803,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public byte[] signRequest(AuthenticationToken admin, int caid, byte[] request, boolean usepreviouskey, boolean createlinkcert)
             throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException {
-        if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertreq", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -838,7 +838,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         Certificate cacert = null;
         // Check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA)) {
+        if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_RENEWCA)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -1057,7 +1057,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         Collection<Certificate> certchain = null;
         ResponseMessage returnval = null;
         // check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocertresp", cainfo.getName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -1332,7 +1332,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void initExternalCAService(AuthenticationToken admin, int caid, ExtendedCAServiceInfo info) throws CADoesntExistsException,
             AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException {
         // check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -1363,7 +1363,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         Collection<Certificate> cachain = null;
         Certificate cacertificate = null;
         // check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_RENEWCA)) {
+        if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_RENEWCA)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenew", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -1508,7 +1508,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public void revokeCA(AuthenticationToken admin, int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
         // check authorization
-        if (!accessSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorevoke", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -1555,7 +1555,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
         try {
             // check authorization
-            if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtocreateca", caname);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -1618,7 +1618,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     	}
         try {
             // check authorization
-            if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremovecatoken", caname);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -1669,7 +1669,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     	}
         try {
             // check authorization
-            if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorestorecatoken", caname);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -2124,7 +2124,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new IllegalCryptoTokenException("Cannot export anything but a soft token.");
             }
             // Check authorization
-            if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
                 String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoexportcatoken", caname);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -2236,7 +2236,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException,
             WaitingForApprovalException, CADoesntExistsException {
         // Authorize
-        if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA)) {
+        if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_ACTIVATECA)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoactivatetoken", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -2307,7 +2307,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     public void deactivateCAToken(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException,
             IllegalCryptoTokenException {
         // Authorize
-        if (!accessSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_ACTIVATECA)) {
+        if (!accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_ACTIVATECA)) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtodeactivatetoken", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
