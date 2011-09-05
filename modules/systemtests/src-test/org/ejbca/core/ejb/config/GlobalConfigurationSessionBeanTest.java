@@ -17,17 +17,28 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.util.InterfaceCache;
@@ -38,68 +49,77 @@ import org.junit.Test;
 /**
  * Tests the global configuration entity bean.
  * 
- * TODO: Remake this test into a mocked unit test, to allow testing of a multiple instance database.
- * TODO: Add more tests for other remote methods similar to testNonCLIUser_* and testDisabledCLI_*.
+ * TODO: Remake this test into a mocked unit test, to allow testing of a multiple instance database. 
+ * TODO: Add more tests for other remote methods
+ * similar to testNonCLIUser_* and testDisabledCLI_*.
  * 
  * @version $Id$
  */
 public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
-	private static final AuthenticationToken[] NON_CLI_ADMINS = new AuthenticationToken[] {
-		// This authtoken should not be possible to use remotely
-		new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GlobalConfigurationSessionBeanTest"))
-	}; 
-	
-	private Collection<Integer> caids;
-	
-	private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-	
-	private CaSessionRemote caSession = InterfaceCache.getCaSession();
-	private AccessControlSessionRemote authorizationSession = InterfaceCache.getAccessControlSession();
 
-	private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
+    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private AccessControlSessionRemote authorizationSession = InterfaceCache.getAccessControlSession();
+
+    private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private GlobalConfiguration original = null;
+    
+    private AuthenticationToken[] nonCliAdmins;
 
+    private Collection<Integer> caids;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-    	enableCLI(true);  	
+        enableCLI(true);
 
         // First save the original
-        // FIXME: Do this in @BeforeClass in JUnit4
         if (original == null) {
             original = this.globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         }
-    	caids = caSession.getAvailableCAs(administrator);
-    	assertFalse("No CAs exists so this test will not work", caids.isEmpty());
+        caids = caSession.getAvailableCAs(administrator);
+        assertFalse("No CAs exists so this test will not work", caids.isEmpty());
+
+        // Add the credentials and new principal
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        credentials.add(certificate);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(certificate.getSubjectX500Principal());
+        nonCliAdmins = new AuthenticationToken[] {
+        // This authtoken should not be possible to use remotely
+        new X509CertificateAuthenticationToken(principals, credentials) };
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-    	globalConfigurationSession.saveGlobalConfigurationRemote(administrator, original);
-    	enableCLI(true);
+        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, original);
+        enableCLI(true);
         administrator = null;
     }
 
     public String getRoleName() {
         return "GlobalConfigurationSessionBeanTest";
     }
-    
+
     /**
      * Tests adding a global configuration and waiting for the cache to be updated.
      * 
-     * @throws Exception
-     *             error
+     * @throws Exception error
      */
     @Test
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
 
         // Read a value to reset the timer
-    	globalConfigurationSession.getCachedGlobalConfiguration(administrator);
+        globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         setInitialValue();
-        
+
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
@@ -112,109 +132,118 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
     }
 
-	/**
+    /**
      * Set a preliminary value and allows the cache to set it.
+     * 
      * @throws InterruptedException
      */
     private void setInitialValue() throws InterruptedException, AuthorizationDeniedException {
-        
+
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
         globalConfigurationSession.saveGlobalConfigurationRemote(administrator, initial);
     }
-    
+
     /**
-     * Tests that we can not pretend to be something other than command line 
-     * user and call the method getAvailableCAs.
+     * Tests that we can not pretend to be something other than command line user and call the method getAvailableCAs.
+     * 
      * @throws Exception
      */
     @Test
     public void testNonCLIUser_getAvailableCAs() throws Exception {
-    	enableCLI(true);
-    	for (AuthenticationToken admin : NON_CLI_ADMINS) {
-    		operationGetAvailabeCAs(admin);
-    	}
+        enableCLI(true);
+        for (AuthenticationToken admin : nonCliAdmins) {
+            operationGetAvailabeCAs(admin);
+        }
     }
+
     /**
-     * Tests that we can disable the CLI and then that we can not call the 
-     * method getAvailableCAs.
+     * Tests that we can disable the CLI and then that we can not call the method getAvailableCAs.
+     * 
      * @throws Exception
      */
     @Test
     public void testDisabledCLI_getAvailableCAs() throws Exception {
-    	enableCLI(false);
-    	operationGetAvailabeCAs(administrator);
+        enableCLI(false);
+        operationGetAvailabeCAs(administrator);
     }
-    
+
     /**
-     * Tests that we can not pretend to be something other than command line 
-     * user and call the method getAvailableCAs.
+     * Tests that we can not pretend to be something other than command line user and call the method getAvailableCAs.
+     * 
      * @throws Exception
      */
     @Test
     public void testNonCLIUser_getCAInfo() throws Exception {
-    	enableCLI(true);
-    	for (AuthenticationToken admin : NON_CLI_ADMINS) {
-    		operationGetCAInfo(admin, caids);
-    	}
+        enableCLI(true);
+        boolean caught = false;
+        for (AuthenticationToken admin : nonCliAdmins) {
+            try {
+                operationGetCAInfo(admin, caids);
+                fail("AuthorizationDeniedException was not caught");
+            } catch (AuthorizationDeniedException e) {
+                caught = true;
+            }
+        }
+        assertTrue("AuthorizationDeniedException was not caught", caught);
     }
+
     /**
-     * Tests that we can disable the CLI and then that we can not call the 
-     * method getAvailableCAs.
+     * Tests that we can disable the CLI and then that we can not call the method getAvailableCAs.
+     * 
      * @throws Exception
      */
     @Test
     public void testDisabledCLI_getCAInfo() throws Exception {
-    	enableCLI(false);
-    	operationGetCAInfo(administrator, caids);
+        enableCLI(false);
+        operationGetCAInfo(administrator, caids);
     }
-    
-    /** 
-     * Enables/disables CLI and flushes caches unless the property does not
-     * aready have the right value.
+
+    /**
+     * Enables/disables CLI and flushes caches unless the property does not already have the right value.
+     * 
      * @param enable
      */
     private void enableCLI(final boolean enable) {
-    	final GlobalConfiguration config = globalConfigurationSession.flushCache();
-    	final GlobalConfiguration newConfig;
-    	if (config.getEnableCommandLineInterface() == enable) {
-    		newConfig = config;
-    	} else {
-	    	config.setEnableCommandLineInterface(enable);
-	    	globalConfigurationSession.saveGlobalConfigurationRemote(administrator, config);
-	    	newConfig = globalConfigurationSession.flushCache();
-    	}
-    	assertEquals("CLI should have been enabled/disabled",
-    			enable, newConfig.getEnableCommandLineInterface());
-    	authorizationSession.forceCacheExpire();
+        final GlobalConfiguration config = globalConfigurationSession.flushCache();
+        final GlobalConfiguration newConfig;
+        if (config.getEnableCommandLineInterface() == enable) {
+            newConfig = config;
+        } else {
+            config.setEnableCommandLineInterface(enable);
+            globalConfigurationSession.saveGlobalConfigurationRemote(administrator, config);
+            newConfig = globalConfigurationSession.flushCache();
+        }
+        assertEquals("CLI should have been enabled/disabled", enable, newConfig.getEnableCommandLineInterface());
+        authorizationSession.forceCacheExpire();
     }
-    
+
     /**
-     * Try to get available CAs. Test assumes the CLI is disabled or that the admin
-     *  is not authorized.
+     * Try to get available CAs. Test assumes the CLI is disabled or that the admin is not authorized.
+     * 
      * @param admin To perform the operation with.
      */
     private void operationGetAvailabeCAs(final AuthenticationToken admin) {
-    	// Get some CA ids: should be empty now
-    	final Collection<Integer> emptyCaids = caSession.getAvailableCAs(admin);
-    	assertTrue("Should not have got any CAs as admin of type "
-    			+ admin.toString(), emptyCaids.isEmpty());
+        // Get some CA ids: should be empty now
+        final Collection<Integer> emptyCaids = caSession.getAvailableCAs(admin);
+        assertTrue("Should not have got any CAs as admin of type " + admin.toString(), emptyCaids.isEmpty());
     }
-    
+
     /**
-     * Try to get CA infos. Test assumes the CLI is disabled or that the admin
-     *  is not authorized.
+     * Try to get CA infos. Test assumes the CLI is disabled or that the admin is not authorized.
+     * 
      * @param admin to perform the operation with.
      * @param knownCaids IDs to test with.
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
-    private void operationGetCAInfo(final AuthenticationToken admin, final Collection<Integer> knownCaids) throws CADoesntExistsException, AuthorizationDeniedException {
-    	// Get CA infos: We should not get any CA infos even if we know the IDs
-    	for (int caid : knownCaids)  {
-    		final CAInfo ca = caSession.getCAInfo(admin, caid);
-    		assertNull("Got CA " + caid + " as admin of type " + admin.toString(), ca);
-    	}
+    private void operationGetCAInfo(final AuthenticationToken admin, final Collection<Integer> knownCaids) throws CADoesntExistsException,
+            AuthorizationDeniedException {
+        // Get CA infos: We should not get any CA infos even if we know the IDs
+        for (int caid : knownCaids) {
+            final CAInfo ca = caSession.getCAInfo(admin, caid);
+            assertNull("Got CA " + caid + " as admin of type " + admin.toString(), ca);
+        }
     }
 
 }
