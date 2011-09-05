@@ -233,9 +233,16 @@ public class SignSessionTest extends CaTestCase {
         inforsa = caSession.getCAInfo(admin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
-        CAInfo inforsareverse = caSession.getCAInfo(admin, "TESTRSAREVERSE");
+
+        CAInfo inforsareverse = null;
+        try {
+            inforsareverse = caSession.getCAInfo(admin, "TESTRSAREVERSE");
+        } catch (CADoesntExistsException e) {
+            createTestRSAReverseCa(admin);
+        }
         assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", inforsareverse != null);
         rsareversecaid = inforsareverse.getCAId();
+       
         CAInfo infoecdsa = caSession.getCAInfo(admin, "TESTECDSA");
         assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", infoecdsa != null);
         ecdsacaid = infoecdsa.getCAId();

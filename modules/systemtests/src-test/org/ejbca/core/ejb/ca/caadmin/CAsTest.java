@@ -745,97 +745,20 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test08AddRSACAReverseDN() throws Exception {
 
-        removeOldCa("TESTRSAREVERSE");
+        removeOldCa(TEST_RSA_REVERSE_CA_NAME);
 
         log.trace(">test08AddRSACAReverseDN()");
         boolean ret = false;
         try {
-            String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
-            String name = "TESTRSAREVERSE";
-            // adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
+            createTestRSAReverseCa(admin);
 
-            CATokenInfo catokeninfo = new CATokenInfo();
-            catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-            catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-            catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-            catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            // Create and active OSCP CA Service.
-            ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + dn, "", "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA));
-
-            Properties prop = catokeninfo.getProperties();
-            // Set some CA token properties if they are not set already
-            if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
-            }
-            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-            }
-            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-            }
-            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-            }
-            catokeninfo.setProperties(prop);
-
-            X509CAInfo cainfo = new X509CAInfo(
-                    dn,
-                    name,
-                    SecConst.CA_ACTIVE,
-                    new Date(),
-                    "",
-                    SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    365,
-                    null, // Expiretime
-                    CAInfo.CATYPE_X509,
-                    CAInfo.SELFSIGNED,
-                    (Collection<Certificate>) null,
-                    catokeninfo,
-                    "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
-                    -1, null, null, // PolicyId
-                    24, // CRLPeriod
-                    0, // CRLIssueInterval
-                    10, // CRLOverlapTime
-                    0, // Delta CRL period
-                    new ArrayList<Integer>(), true, // Authority Key Identifier
-                    false, // Authority Key Identifier Critical
-                    true, // CRL Number
-                    false, // CRL Number Critical
-                    null, // defaultcrldistpoint
-                    null, // defaultcrlissuer
-                    null, // defaultocsplocator
-                    null, // defaultfreshestcrl
-                    true, // Finish User
-                    extendedcaservices, false, // use default utf8 settings
-                    new ArrayList<Integer>(), // Approvals Settings
-                    1, // Number of Req approvals
-                    false, // Use UTF8 subject DN by default
-                    false, // Use X500 DN order
-                    false, // Use CRL Distribution Point on CRL
-                    false, // CRL Distribution Point on CRL critical
-                    true, // Include in health check
-                    true, // isDoEnforceUniquePublicKeys
-                    true, // isDoEnforceUniqueDistinguishedName
-                    false, // isDoEnforceUniqueSubjectDNSerialnumber
-                    true, // useCertReqHistory
-                    true, // useUserStorage
-                    true, // useCertificateStorage
-                    null // cmpRaAuthSecret
-            );
-
-            caAdminSession.createCA(admin, cainfo);
-
-            CAInfo info = caSession.getCAInfo(admin, name);
+            CAInfo info = caSession.getCAInfo(admin, TEST_RSA_REVERSE_CA_NAME);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
             assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
-            assertEquals("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()), dn);
-            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
+            assertEquals("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()), TEST_RSA_REVSERSE_CA_DN);
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(TEST_RSA_REVSERSE_CA_DN));
             // reverse order
             assertEquals(cert.getSubjectX500Principal().getName(), "CN=TESTRSAReverse,OU=BarFoo,O=FooBar,C=SE");
             PublicKey pk = cert.getPublicKey();

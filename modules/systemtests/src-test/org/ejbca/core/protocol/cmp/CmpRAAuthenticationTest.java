@@ -77,7 +77,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     /** Create CAs and change configuration for the following tests. */
     @Before
     public void setUp() throws Exception {
-        LOG.trace(">test000Setup");
+        super.setUp();
         // Create and configure CAs with different CMP RA secrets
         caCertificate1 = setupCA(CA_NAME_1, PBE_SECRET_1);
         caCertificate2 = setupCA(CA_NAME_2, PBE_SECRET_2);
@@ -89,7 +89,6 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "KeyId");
-        LOG.trace("<test000Setup");
     }
 
     private X509Certificate setupCA(String caName, String pbeSecret) throws Exception {
@@ -213,18 +212,9 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        LOG.trace(">testZZZCleanUp");
-        boolean cleanUpOk = true;
         removeTestCA(CA_NAME_1);
         removeTestCA(CA_NAME_2);
-        cleanUpOk &= InterfaceCache.getConfigurationSession().restoreConfiguration();
-        try {
-            InterfaceCache.getEndEntityProfileSession().removeEndEntityProfile(ADMIN, EEP_1);
-        } catch (Exception e) {
-            LOG.error("", e);
-            cleanUpOk = false;
-        }
-        assertTrue("Clean up unsuccessful.", cleanUpOk);
-        LOG.trace("<testZZZCleanUp");
+        InterfaceCache.getConfigurationSession().restoreConfiguration();
+        InterfaceCache.getEndEntityProfileSession().removeEndEntityProfile(ADMIN, EEP_1);
     }
 }
