@@ -105,8 +105,9 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
                     final Iterator<String> i = sError.iterator();
                     while( i.hasNext() ) {
                         pw.print(i.next());
-                        if ( i.hasNext() )
+                        if ( i.hasNext() ) {
                             pw.print("\" and \"");
+                        }
                     }
                     pw.println("\".");
                 }

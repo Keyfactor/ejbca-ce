@@ -306,8 +306,9 @@ class KeyRenewer {
                 tmpCert = null;
                 continue;
             }
-            if ( keyPair.getPublic().equals(tmpCert.getPublicKey()) )
+            if ( keyPair.getPublic().equals(tmpCert.getPublicKey()) ) {
                 break;
+            }
             tmpCert = null;
         }
         if ( tmpCert==null ) {

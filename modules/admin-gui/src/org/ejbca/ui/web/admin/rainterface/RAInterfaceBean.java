@@ -36,7 +36,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -99,7 +98,6 @@ public class RAInterfaceBean implements Serializable {
     private EndEntityProfileDataHandler    profiles;
 
     private AccessControlSessionLocal authorizationsession;
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
 	private CaSessionLocal caSession;
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
@@ -148,7 +146,6 @@ public class RAInterfaceBean implements Serializable {
     		keyrecoverysession = ejb.getKeyRecoverySession();
     		userdatasourcesession = ejb.getUserDataSourceSession();
     		certificateProfileSession = ejb.getCertificateProfileSession();
-    		this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
     		this.endEntityAccessSession = ejb.getEndEntityAccessSession();
     		complexAccessControlSession = ejb.getComplexAccessControlSession();
 

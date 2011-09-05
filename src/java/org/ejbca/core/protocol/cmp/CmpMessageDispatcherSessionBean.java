@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -34,7 +33,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -86,8 +84,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
-	@EJB
-	private CertificateStoreSessionLocal certificateStoreSession;
 	@EJB
 	private CertificateRequestSessionLocal certificateRequestSession;
 	
@@ -160,7 +156,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, certificateStoreSession, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession);
+				handler = new RevocationMessageHandler(admin, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:

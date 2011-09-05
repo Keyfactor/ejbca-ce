@@ -96,8 +96,9 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
             strBuilder.append("logDevice: ").append(logDeviceId).append("\n");
             for (final AuditLogReportElem error : report.errors()) {
                 strBuilder.append(String.format("invalid sequence: %d %d\n", error.getFirst(), error.getSecond()));
-                for (final String reason : error.getReasons())
+                for (final String reason : error.getReasons()) {
                     strBuilder.append(String.format("Reason: %s\n", reason));
+                }
             }
             assertTrue("validation report: " + strBuilder.toString(), (report.warnings().size() == 1 || report.warnings().size() == 0)
                     && report.errors().size() == 0);

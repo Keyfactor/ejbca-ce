@@ -176,9 +176,9 @@ public class EjbcaWebBean implements Serializable {
         globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, globalConfigurationSession, authorizationSession);
         globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
         if (informationmemory == null) {
-            informationmemory = new InformationMemory(administrator, caAdminSession, caSession, raAdminSession, authorizationSession,
-                    complexAccessControlSession, endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession,
-                    certificateProfileSession, globalConfigurationSession, globalconfiguration);
+            informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
+                    endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
+                    globalConfigurationSession, globalconfiguration);
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
                 authorizationSession, complexAccessControlSession);

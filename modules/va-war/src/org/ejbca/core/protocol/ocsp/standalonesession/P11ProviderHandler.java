@@ -84,33 +84,35 @@ class P11ProviderHandler implements ProviderHandler {
          */
         public void run() {
             String errorMessage ="";
-            while ( true ) try {
-                errorMessage = "";
-                {
-                    final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
-                    while ( i.hasNext() ) {
-                        i.next().clear(); // clear all not useable old keys
-                    }
-                }
-                P11ProviderHandler.this.data.slot.reset();
-                synchronized( this ) {
-                    this.wait(10000); // wait 10 seconds to make system recover before trying again. all threads with ongoing operations has to stop
-                }
-                {
-                    final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
-                    while ( i.hasNext() ) {
-                        PrivateKeyContainer pkf = i.next();
-                        errorMessage = pkf.toString();
-                        m_log.debug("Trying to reload: "+errorMessage);
-                        pkf.set(getKeyStore(P11ProviderHandler.this.data.getP11Pwd(null)));
-                        m_log.info("Reloaded: "+errorMessage);
-                    }
-                }
-                P11ProviderHandler.this.data.setNextKeyUpdate(new Date().getTime()); // since all keys are now reloaded we should wait an whole interval for next key update
-                P11ProviderHandler.this.data.isNotReloadingP11Keys = true;
-                return;
-            } catch ( Throwable t ) {
-                m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
+            while ( true ) {
+            	try {
+            		errorMessage = "";
+            		{
+            			final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
+            			while ( i.hasNext() ) {
+            				i.next().clear(); // clear all not useable old keys
+            			}
+            		}
+            		P11ProviderHandler.this.data.slot.reset();
+            		synchronized( this ) {
+            			this.wait(10000); // wait 10 seconds to make system recover before trying again. all threads with ongoing operations has to stop
+            		}
+            		{
+            			final Iterator<PrivateKeyContainer> i = P11ProviderHandler.this.sKeyContainer.iterator();
+            			while ( i.hasNext() ) {
+            				PrivateKeyContainer pkf = i.next();
+            				errorMessage = pkf.toString();
+            				m_log.debug("Trying to reload: "+errorMessage);
+            				pkf.set(getKeyStore(P11ProviderHandler.this.data.getP11Pwd(null)));
+            				m_log.info("Reloaded: "+errorMessage);
+            			}
+            		}
+            		P11ProviderHandler.this.data.setNextKeyUpdate(new Date().getTime()); // since all keys are now reloaded we should wait an whole interval for next key update
+            		P11ProviderHandler.this.data.isNotReloadingP11Keys = true;
+            		return;
+            	} catch ( Throwable t ) {
+            		m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
+            	}
             }
         }
     }

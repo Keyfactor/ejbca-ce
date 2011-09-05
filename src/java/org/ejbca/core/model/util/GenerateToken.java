@@ -16,7 +16,6 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 

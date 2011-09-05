@@ -54,7 +54,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -98,7 +97,6 @@ public class CmpRAUnidTest extends CmpTestCase {
     private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private X509Certificate cacert;
 
-    private final CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private final CaSessionRemote caSession = InterfaceCache.getCaSession();
     private final CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private final ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();

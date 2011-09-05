@@ -394,7 +394,7 @@ public class CertificateProfileSessionTest extends RoleUsingTestCase {
             profile.setCRLDistributionPointURI("TEST");
             int id = certificateProfileSession.addCertificateProfile(roleMgmgToken, "TESTNOAUTH", profile);
             CertificateProfile cp = certificateProfileSession.getCertificateProfile(id);
-            assertNotNull(id);
+            assertNotNull(cp);
             
             try {
                 certificateProfileSession.addCertificateProfile(adminTokenNoAuth, "TESTNOAUTH1", profile);

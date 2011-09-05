@@ -92,7 +92,6 @@ public class CertificateRetrivalTest {
     private String rootCaFp = null;
     private String subCaFp = null;
     private String endEntityFp = null;
-    private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
 
@@ -165,11 +164,11 @@ public class CertificateRetrivalTest {
     public void test02FindCACertificates() throws Exception {
         log.trace(">test02FindCACertificates()");
         // List all certificates to see
-        Collection certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_SUBCA, null);
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_SUBCA, null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
-        Iterator iter = certfps.iterator();
+        Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
@@ -193,12 +192,12 @@ public class CertificateRetrivalTest {
 
         // List all certificates to see, but only from our test certificates
         // issuer, or we might get OutOfMemmory if there are plenty of certs
-        Collection certfps = certificateStoreSession
+        Collection<Certificate> certfps = certificateStoreSession
                 .findCertificatesByType(SecConst.CERTTYPE_ENDENTITY, "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
-        Iterator iter = certfps.iterator();
+        Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
@@ -222,11 +221,11 @@ public class CertificateRetrivalTest {
         log.trace(">test04FindRootCertificates()");
 
         // List all certificates to see
-        Collection certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, null);
+        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
-        Iterator iter = certfps.iterator();
+        Iterator<Certificate> iter = certfps.iterator();
         boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
