@@ -108,7 +108,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-  
+
+    private final String wsadminRoleName = "WsNonAdminTestRole";
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -144,7 +145,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     @Test
     public void test00SetupAccessRights() throws Exception {        
-        super.setupAccessRights();
+        super.setupAccessRights(wsadminRoleName);
         gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
         assertNotNull("Unable to fetch GlobalConfiguration.");
     }
@@ -418,7 +419,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     @Test
     public void test99cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins();
+        super.cleanUpAdmins(wsadminRoleName);
     }
 
     //
