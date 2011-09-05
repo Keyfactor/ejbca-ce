@@ -13,13 +13,16 @@
 
 package org.ejbca.ui.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 
-import junit.framework.TestCase;
-
 import org.bouncycastle.asn1.DERTags;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.junit.After;
+import org.junit.Test;
 
 /**
  * Series of unit tests for LimitLengthASN1Reader
@@ -27,7 +30,7 @@ import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
  * @author mikek
  * @version $Id$
  */
-public class LimitLengthASN1ReaderTest extends TestCase {
+public class LimitLengthASN1ReaderTest {
 
 	private LimitLengthASN1Reader limitLengthASN1Reader;
 	private InputStream inputStreamStub;
@@ -94,9 +97,9 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 			48, 29, 6, 9, 43, 6, 1, 5, 5, 7, 48, 1, 2, 4, 16, -119, -46, 30, 7,
 			-3, 61, 29, -107, 38, -27, -67, 106, -65, 50, -128, 105 };
 
-	public void setUp() {
-	}
 
+
+	@After
 	public void tearDown() throws IOException {
 		limitLengthASN1Reader = null;
 		inputStreamStub.close();
@@ -105,6 +108,7 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	/**
 	 * Test happy path implementation of readFirstASN1Object.
 	 */
+    @Test
 	public void testReadFirstASN1ObjectHappyPath() throws MalformedRequestException, IOException {
 		inputStreamStub = new InputStreamStub(VALID_STREAM);
 		limitLengthASN1Reader = new LimitLengthASN1Reader(inputStreamStub, VALID_STREAM.length);
@@ -117,6 +121,7 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	/**
 	 * Attempts to process a stream which is incorrectly declared.
 	 */
+    @Test
 	public void testReadFirstASN1ObjectNotASequence() throws IOException {
 		inputStreamStub = new InputStreamStub(NOT_A_SEQUENCE_STREAM);
 		limitLengthASN1Reader = new LimitLengthASN1Reader(inputStreamStub, NOT_A_SEQUENCE_STREAM.length);
@@ -131,6 +136,7 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	 * Tries to process a stream with size larger than specified limit. Sending
 	 * a stream of infinite length may be part of a DOS attack.
 	 */
+    @Test
 	public void testReadFirstASN1ObjectLargerThanMaxRequestSize() {
 		inputStreamStub = new InputStreamStub(INVALID_LENGTH);
 		limitLengthASN1Reader = new LimitLengthASN1Reader(inputStreamStub, 0);
@@ -147,6 +153,7 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	 * Test readFirstASN1Object() with a stream that is missing it's last byte.
 	 * Might be due to a broken connection.
 	 */
+    @Test
 	public void testReadFirstASN1ObjectWithBrokenStream() throws IOException {
 		inputStreamStub = new InputStreamStub(FINITE_STREAM_TOO_SHORT);
 		limitLengthASN1Reader = new LimitLengthASN1Reader(inputStreamStub, 0);
@@ -160,6 +167,7 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	/**
 	 * Test readFirstASN1Object() with a stream where there is no defined ASN1 object length  
 	 */
+    @Test
 	public void testReadFirstASN1ObjectUndefinedLengthHappyPath() throws MalformedRequestException, IOException {
 		inputStreamStub = new InputStreamStub(UNDEFINED_LENGTH_HAPPY);
 		limitLengthASN1Reader = new LimitLengthASN1Reader(inputStreamStub, 108);
@@ -173,6 +181,7 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	 * Test readFirstASN1Object() with a stream where there is no defined ASN1 object length and
 	 * content is invalid.  
 	 */
+    @Test
 	public void testReadFirstASN1ObjectUndefinedLengthAndInvalidContentLengthHappyPath() throws MalformedRequestException, IOException {
 		inputStreamStub = new InputStreamStub(UNDEFINED_LENGTH_HAPPY);
 		limitLengthASN1Reader = new LimitLengthASN1Reader(inputStreamStub, 1);
@@ -188,9 +197,6 @@ public class LimitLengthASN1ReaderTest extends TestCase {
 	 * TODO: When our test runner is reformed to only run tests matching
 	 * **\*Test.class, make this an inner class to LimitLengthASN1ReaderTest
 	 * 
-	 * @author mikek
-	 * @version $Id: LimitLengthASN1ReaderTest.java 8739 2010-03-12 12:01:49Z anatom
-	 *          $
 	 */
 	class InputStreamStub extends InputStream {
 

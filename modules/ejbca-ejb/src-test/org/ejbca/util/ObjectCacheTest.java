@@ -13,14 +13,20 @@
 
 package org.ejbca.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import org.junit.Test;
 
 /**
  * Tests the simple object cache class .
  * 
  * @version $Id$
  */
-public class ObjectCacheTest extends TestCase {
+public class ObjectCacheTest {
+	
+    @Test
 	public void testObjectCache() throws Exception {
 		ObjectCache<Object,Object> cache = new ObjectCache<Object,Object>(200);
 		cache.put("foo", "bar");

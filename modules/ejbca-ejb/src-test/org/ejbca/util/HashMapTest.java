@@ -1,32 +1,25 @@
 package org.ejbca.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.junit.Test;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
  * @author tomasg
  * @version $Id$
  */
-public class HashMapTest extends TestCase {
+public class HashMapTest {
 
-    public HashMapTest(String name) {
-        super(name);
-    }
-
-    public void setUp() throws Exception {
-    }
-
-    public void tearDown() throws Exception {
-    }
-
-	public void test01HashMapNormal() throws Exception {
+    @Test
+	public void testHashMapNormal() throws Exception {
         HashMap a = new HashMap();
         a.put("foo0", Boolean.valueOf(false));
         a.put("foo1", "fooString");
@@ -51,7 +44,8 @@ public class HashMapTest extends TestCase {
 
 	}
 	
-    public void test01HashMapStrangeChars() throws Exception {
+    @Test
+    public void testHashMapStrangeChars() throws Exception {
         HashMap a = new HashMap();
         a.put("foo0", Boolean.valueOf(false));
         a.put("foo1", "\0001\0002fooString");
@@ -90,7 +84,8 @@ public class HashMapTest extends TestCase {
             assertTrue(false);        	        	
         }
     }
-    public void test01HashMapStrangeCharsSafe() throws Exception {
+    @Test
+    public void testHashMapStrangeCharsSafe() throws Exception {
         HashMap h = new HashMap();
         h.put("foo0", Boolean.valueOf(false));
         h.put("foo1", "\0001\0002fooString");
@@ -123,7 +118,8 @@ public class HashMapTest extends TestCase {
             assertTrue(false);
         }
     }
-    public void test01HashMapNormalCharsSafe() throws Exception {
+    @Test
+    public void testHashMapNormalCharsSafe() throws Exception {
         HashMap h = new HashMap();
         h.put("foo0", Boolean.valueOf(false));
         h.put("foo1", "fooString");

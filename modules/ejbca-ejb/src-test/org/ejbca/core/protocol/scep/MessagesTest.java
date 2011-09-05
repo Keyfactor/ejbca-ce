@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.scep;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -21,13 +27,13 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 
 
@@ -36,19 +42,14 @@ import org.cesecore.util.CryptoProviderTools;
  *
  * @version $Id$
  */
-public class MessagesTest extends TestCase {
+public class MessagesTest {
 
-    private PrivateKey privateKey = null;
-    private X509Certificate caCert = null;
+    private static PrivateKey privateKey = null;
+    private static X509Certificate caCert = null;
     private static final Logger log = Logger.getLogger(MessagesTest.class);
 
-    /**
-     * Creates a new TestMessages object.
-     *
-     * @param name name
-     */
-    public MessagesTest(String name) throws Exception {
-        super(name);
+    @BeforeClass
+    public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
 
@@ -72,15 +73,7 @@ public class MessagesTest extends TestCase {
         //log.debug(caCert.toString());
     }
 
-    public void setUp() throws Exception {
-    }
-
-    public void tearDown() throws Exception {
-    }
-
-    /** Tests scep message from OpenScep
-     * @throws Exception error
-     */
+    @Test
     public void test01TestOpenScep() throws Exception {
         log.trace(">test01TestOpenScep()");
         ScepRequestMessage msg = new ScepRequestMessage(openscep, true);
@@ -107,6 +100,7 @@ public class MessagesTest extends TestCase {
     /** Tests scep message from Simple Scep
      * @throws Exception error
      */
+    @Test
     public void test02TestSimpleScep() throws Exception {
         log.trace(">test02TestSimpleScep()");
         ScepRequestMessage msg = new ScepRequestMessage(sscep, true);
@@ -133,6 +127,7 @@ public class MessagesTest extends TestCase {
     /** Tests scep message from Java Scep Client
      * @throws Exception error
      */
+    @Test
     public void test03TestJavaScepClient() throws Exception {
         log.trace(">test03TestJavaScepClient()");
         ScepRequestMessage msg = new ScepRequestMessage(scepclient, true);
@@ -162,6 +157,7 @@ public class MessagesTest extends TestCase {
     /** Tests scep message from Cisco VPN client
      * @throws Exception error
      */
+    @Test
     public void test03TestCiscoVPNScep() throws Exception {
         log.trace(">test03TestCiscoVPNScep()");
         ScepRequestMessage msg = new ScepRequestMessage(ciscovpnscep, true);
@@ -210,6 +206,7 @@ public class MessagesTest extends TestCase {
         log.trace("<test04TestPixScep()");
     } */
     
+    @Test
     public void test05KeyToolP10() throws Exception {
         log.trace(">test05KeyToolP10()");
         PKCS10RequestMessage msg = new PKCS10RequestMessage(keytoolp10);
@@ -231,6 +228,7 @@ public class MessagesTest extends TestCase {
         log.trace("<test05KeyToolP10()");        
     }
 
+    @Test
     public void test06OldBCP10() throws Exception {
         log.trace(">test06OldBCP10()");
         PKCS10RequestMessage msg = new PKCS10RequestMessage(oldbcp10);
@@ -251,6 +249,7 @@ public class MessagesTest extends TestCase {
         
         log.trace("<test06OldBCP10()");        
     }
+    @Test
     public void test07IEP10() throws Exception {
         log.trace(">test07IEP10()");
         PKCS10RequestMessage msg = new PKCS10RequestMessage(iep10);
@@ -272,6 +271,7 @@ public class MessagesTest extends TestCase {
         log.trace("<test07IEP10()");        
     }
 
+    @Test
     public void test08AltNameP10() throws Exception {
     	
     	// P10 generated with openssl

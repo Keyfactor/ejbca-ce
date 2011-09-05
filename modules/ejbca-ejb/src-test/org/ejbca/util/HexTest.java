@@ -6,6 +6,9 @@
  */
 package org.ejbca.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.security.cert.Certificate;
 
 import junit.framework.TestCase;
@@ -15,31 +18,25 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.Before;
+import org.junit.Test;
 
 /** Tests base64 encoding and decoding
  * 
  * @author tomasg
  * @version $Id$
  */
-public class HexTest extends TestCase {
+public class HexTest {
     private static final Logger log = Logger.getLogger(HexTest.class);
-    /**
-     * Creates a new TestBase64 object.
-     *
-     */
-    public HexTest(String name) {
-        super(name);
-    }
 
+    @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         log.trace("<setUp()");
     }
 
-    public void tearDown() throws Exception {
-    }
-
+    @Test
 	public void test01HexSmall() throws Exception {
 		// Testcert is on long line of base 64 encoded stuff
 		byte[] certBytes = Base64.decode(testcert_oneline.getBytes());

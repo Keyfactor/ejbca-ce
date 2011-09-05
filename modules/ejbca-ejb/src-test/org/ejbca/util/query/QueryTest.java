@@ -13,10 +13,11 @@
 
 package org.ejbca.util.query;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.junit.Test;
 
 
 /**
@@ -24,25 +25,10 @@ import org.ejbca.core.model.ra.UserDataConstants;
  *
  * @version $Id$
  */
-public class QueryTest extends TestCase {
+public class QueryTest {
     private static Logger log = Logger.getLogger(QueryTest.class);
-    /**
-     * Creates a new Test object.
-     *
-     */
-    public QueryTest(String name) {
-        super(name);
-    }
 
-    public void setUp() throws Exception {
-    }
-
-    public void tearDown() throws Exception {
-    }
-
-    /**
-     * @throws Exception DOCUMENT ME!
-     */
+    @Test
     public void test01TestUserQuery() throws Exception {
         log.trace(">test01TestUserQuery()");
         Query query = new Query(Query.TYPE_USERQUERY);

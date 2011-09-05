@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,8 +35,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Vector;
-
-import junit.framework.TestCase;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -56,6 +60,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
@@ -75,23 +81,14 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * 
  * @version $Id$
  */
-public class CrmfRequestMessageTest extends TestCase {
-	//private static final Logger log = Logger.getLogger(CrmfRequestMessageTest.class);
+public class CrmfRequestMessageTest {
 
-	/**
-     * @param name name
-     */
-    public CrmfRequestMessageTest(String name) {
-        super(name);
-    	CryptoProviderTools.installBCProvider();
-    }
-
+	@Before
     public void setUp() throws Exception {
+    	CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
-    public void tearDown() throws Exception {
-    }
-
+	@Test
     public void testCrmfRequestMessageSerialization() throws IOException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
     	// Create a bogus PKIMessage
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
@@ -151,7 +148,8 @@ public class CrmfRequestMessageTest extends TestCase {
     	assertEquals("Inherited object was not properly deserilized: ", "macAlg", crmf2.getPbeMacAlg());
     }
 
-    public void testNovosecRARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
+	@Test
+	public void testNovosecRARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with RAVerifiedPOP and PBE protection to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(novosecrapopir);
@@ -178,6 +176,7 @@ public class CrmfRequestMessageTest extends TestCase {
     	assertFalse(verifyer.verify("bar123"));
     }
 
+	@Test
     public void testNovosecClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with a signature POP and signature protection to see that we can process it
@@ -244,10 +243,12 @@ public class CrmfRequestMessageTest extends TestCase {
     	}
     }
 
+	@Test
     public void testBc146RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	testBcRARequest(bc146rapopir);
     }
 
+	@Test
     public void testBc147RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	testBcRARequest(bc147rapopir);
     }

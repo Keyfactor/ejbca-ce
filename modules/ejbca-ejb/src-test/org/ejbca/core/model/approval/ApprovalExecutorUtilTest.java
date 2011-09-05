@@ -13,25 +13,29 @@
 
 package org.ejbca.core.model.approval;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @version $Id$
  */
-public class ApprovalExecutorUtilTest extends TestCase {
+public class ApprovalExecutorUtilTest {
 
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalExecutorUtilTest"));
     
+    @Before
 	public void setUp() throws Exception {
-		super.setUp();
 	}
-	
+
+    @Test
 	public void testNoOfApprovals() {
 		int numOfApprovalsRequired = 1;
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
@@ -43,6 +47,7 @@ public class ApprovalExecutorUtilTest extends TestCase {
 		assertFalse(approvalRequired);		
 	}
 	
+    @Test
 	public void testGloballyExcludedClasses() {
 		int numOfApprovalsRequired = 1;
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
@@ -59,6 +64,7 @@ public class ApprovalExecutorUtilTest extends TestCase {
 		assertTrue(approvalRequired);
 	}
 	
+    @Test
 	public void testOverridableClassNames() {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
 			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeUser"),
@@ -109,6 +115,7 @@ public class ApprovalExecutorUtilTest extends TestCase {
 
 	}
 	
+    @Test
 	public void testAllowedTransitions() {
 		int numOfApprovalsRequired = 1;
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", UserDataConstants.STATUS_NEW, UserDataConstants.STATUS_INPROCESS, admin, null, numOfApprovalsRequired, 1, 1);

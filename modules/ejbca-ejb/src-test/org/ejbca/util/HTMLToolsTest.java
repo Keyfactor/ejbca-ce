@@ -13,38 +13,18 @@
 
 package org.ejbca.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.log4j.Logger;
+import org.junit.Test;
 
 
 /**
- * Tests the StringTools class .
- *
  * @version $Id$
  */
-public class HTMLToolsTest extends TestCase {
-    private static Logger log = Logger.getLogger(HTMLToolsTest.class);
+public class HTMLToolsTest {
 
-    /**
-     * Creates a new TestStringTools object.
-     *
-     * @param name name
-     */
-    public HTMLToolsTest(String name) {
-        super(name);
-    }
 
-    public void setUp() throws Exception {
-        log.trace(">setUp()");
-        log.trace("<setUp()");
-    }
-
-    public void tearDown() throws Exception {
-        log.trace(">tearDown()");
-        log.trace("<tearDown()");
-    }
-
+    @Test
     public void test01JavascriptEscape() throws Exception {
         String test = "l'AC si vous l'avez";
         assertEquals("l\\'AC si vous l\\'avez", HTMLTools.javascriptEscape(test));

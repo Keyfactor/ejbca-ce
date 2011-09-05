@@ -1,22 +1,22 @@
 package org.ejbca.core.model.ra;
 
-import java.util.Date;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
-import junit.framework.TestCase;
+import java.util.Date;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.SecConst;
+import org.junit.Test;
 
 /** Tests some substitution variables for user notifications
  * @author Aveen Ismail
  * @version $Id$
  */
-public class UserNotificationParamGenTest extends TestCase {
+public class UserNotificationParamGenTest {
 
-	public void setUp() throws Exception {
-		super.setUp();		
-	}
-	
+	@Test
 	public void testInterpolate(){
 		Date now = new Date();
 		int caid = 123;

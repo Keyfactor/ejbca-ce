@@ -1,19 +1,18 @@
 package org.ejbca.core.model.approval;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Date;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /** Tests some substitution variables for approval notifications
  * @author Tomas Gustavsson
  * @version $Id$
  */
-public class ApprovalNotificationParamGenTest extends TestCase {
+public class ApprovalNotificationParamGenTest {
 
-	public void setUp() throws Exception {
-		super.setUp();		
-	}
-	
+    @Test
 	public void testInterpolate(){
 		Date now = new Date();
 		int id = 123;

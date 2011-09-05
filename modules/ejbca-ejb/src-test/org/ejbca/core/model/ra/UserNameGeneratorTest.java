@@ -13,24 +13,23 @@
 
 package org.ejbca.core.model.ra;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.bouncycastle.asn1.x509.X509Name;
+import org.junit.Test;
 
 /**
  * Test of the UserNameGenerator class.
  * 
  * @version $Id$
  */
-public class UserNameGeneratorTest extends TestCase {
-
-    public UserNameGeneratorTest(String testName) {
-        super(testName);
-    }
+public class UserNameGeneratorTest {
 
     /**
      * Test user generation based on both SN and CN.
      */
+	@Test
 	public void test01() throws Exception {
 		UsernameGeneratorParams usernameGeneratorParams = new UsernameGeneratorParams();
 		usernameGeneratorParams.setMode("DN");
@@ -57,6 +56,7 @@ public class UserNameGeneratorTest extends TestCase {
 	/*
 	 * Test method for 'org.ejbca.core.model.ra.UsernameGenerator.UsernameGenerator(String)'
 	 */
+	@Test
 	public void testUsernameGeneratorRandom() {
 		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.RANDOM);
 		String u = gen.generateUsername();
@@ -105,6 +105,7 @@ public class UserNameGeneratorTest extends TestCase {
 		assertTrue(u.startsWith("foo-"));
 	}
 
+	@Test
 	public void testUsernameGeneratorDN() {
 		String dn = "C=SE, O=FooO, UID=foo, CN=bar";
 		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.DN);
@@ -147,6 +148,7 @@ public class UserNameGeneratorTest extends TestCase {
 		assertTrue(u.endsWith("-post"));		
 	}
 
+	@Test
 	public void testUsernameGeneratorUsername() {
 		String username = "foo";
 		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.USERNAME);

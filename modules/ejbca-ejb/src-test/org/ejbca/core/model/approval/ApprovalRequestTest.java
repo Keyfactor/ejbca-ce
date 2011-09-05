@@ -13,6 +13,9 @@
 
 package org.ejbca.core.model.approval;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
@@ -21,8 +24,6 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import junit.framework.TestCase;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -30,11 +31,13 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @version $Id$
  */
-public class ApprovalRequestTest extends TestCase {
+public class ApprovalRequestTest {
 
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
@@ -54,6 +57,7 @@ public class ApprovalRequestTest extends TestCase {
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
             + "QUOBOvc=").getBytes());
 	
+    @Test
 	public void testWriteExternal() throws Exception {
 		X509Certificate testcert = (X509Certificate)CertTools.getCertfromByteArray(testcertenc);
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
@@ -82,6 +86,7 @@ public class ApprovalRequestTest extends TestCase {
 		
 	}
 
+    @Test
 	public void testGenerateApprovalId() throws Exception {
 		X509Certificate testcert = (X509Certificate)CertTools.getCertfromByteArray(testcertenc);
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
@@ -109,8 +114,8 @@ public class ApprovalRequestTest extends TestCase {
 
 	}
 
-	public void setUp() throws Exception {		
-		super.setUp();
+    @BeforeClass
+	public static void beforeClass() throws Exception {		
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 	}
 

@@ -13,21 +13,20 @@
 
 package org.ejbca.core.model;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * @version $Id$
  */
-public class InternalEjbcaResourcesTest extends TestCase {
+public class InternalEjbcaResourcesTest {
 
 	private static final String TEST_RESOURCE_PATH = "/intresources";
 	// Classpath issues, use "src/intresources" when running from within eclipse
 	//private static final String TEST_RESOURCE_PATH = "src/intresources";
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
+	@Test
     public void testGetLocalizedMessageString() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.testmsg");
@@ -37,18 +36,21 @@ public class InternalEjbcaResourcesTest extends TestCase {
         assertEquals("Test SV", res);
     }
 
+	@Test
     public void testNonExistingLocalizedMessageString() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.foo");
         assertEquals("test.foo", res);
     }
 
+	@Test
     public void testGetLocalizedMessageStringObject() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.testparams", new Long(1), new Integer(3), "hi", new Boolean(true), "bye");
         assertEquals("Test 1 3 hi true bye message 1", res);
     }
 
+	@Test
     public void testGetLocalizedMessageStringObjectWithNull() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.testparams", null, new Integer(3), null, new Boolean(true), "bye");
@@ -58,6 +60,7 @@ public class InternalEjbcaResourcesTest extends TestCase {
         assertEquals("Test      message ", res);
     }
 
+	@Test
     public void testMessageStringWithExtraParameter() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("test.testmsgsv");
@@ -66,6 +69,7 @@ public class InternalEjbcaResourcesTest extends TestCase {
         assertEquals("Test SV", res);
     }
     
+	@Test
     public void testCeSecoreMessage() {
         InternalEjbcaResources intres = new InternalEjbcaResources(TEST_RESOURCE_PATH);
         String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", new Boolean(true), "bye");

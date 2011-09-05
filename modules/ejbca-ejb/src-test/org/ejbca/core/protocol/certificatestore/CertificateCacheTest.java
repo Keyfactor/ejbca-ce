@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.protocol.certificatestore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.cert.Certificate;
@@ -20,26 +25,28 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.CertificateID;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * @author tomas
  * @version $Id$
  */
-public class CertificateCacheTest extends TestCase {
+public class CertificateCacheTest {
 	private static final Logger log = Logger.getLogger(CertificateCacheTest.class);
 
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void beforeClass() throws Exception {
 	    CryptoProviderTools.installBCProvider();
 	}
 
+	@Test
 	public void test01CACertificates() throws Exception {
 		// Prepare the certificate cache with some test certificates
 		EjbcaConfigurationHolder.instance(); // init config
