@@ -251,7 +251,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
         	list.add(new AccessUserAspectData(getRoleName(), cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
         			TEST_ADMIN_USERNAME));
-        	roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(getRoleName()), list);
         	roleManagementSession.addSubjectsToRole(intAdmin, role, list);
         	accessControlSession.forceCacheExpire();
         } else {
