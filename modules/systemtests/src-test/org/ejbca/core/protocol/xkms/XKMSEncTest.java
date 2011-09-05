@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.xkms;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -33,8 +35,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
 import org.bouncycastle.util.encoders.Hex;
@@ -44,6 +44,10 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2002._03.xkms_.ObjectFactory;
@@ -63,7 +67,7 @@ import org.w3c.dom.Document;
  * @version $Id$
  */
 
-public class XKMSEncTest extends TestCase {
+public class XKMSEncTest {
 	
 	private static final Logger log = Logger.getLogger(XKMSEncTest.class);
 		
@@ -76,7 +80,8 @@ public class XKMSEncTest extends TestCase {
 	private static DocumentBuilderFactory dbf = null;
 
 	
-	static{    	
+	@BeforeClass
+	public static void beforeClass() {    	
 		try {
 			CryptoProviderTools.installBCProvider();
 			org.apache.xml.security.Init.init();
@@ -93,14 +98,15 @@ public class XKMSEncTest extends TestCase {
 
 	}
 
+	@Before
     public void setUp() throws Exception {
-        log.trace(">setUp()"); 
-        log.trace("<setUp()");
     }
 
+	@After
     public void tearDown() throws Exception {
     }
   
+	@Test
     public void test01KeyEncryption() throws Exception {
         DocumentBuilder db = dbf.newDocumentBuilder();
         KeyPair keys = KeyTools.genKeys("1024", "RSA");                                
@@ -127,6 +133,7 @@ public class XKMSEncTest extends TestCase {
         cert.verify(keys.getPublic());    
     }    
 	
+	@Test
 	public void test02TestAliceRegistrationAuthenticationKey() throws Exception{	
 		String authenticationData= "024837";
 		
@@ -143,6 +150,7 @@ public class XKMSEncTest extends TestCase {
 	
 
 	
+	@Test
 	public void test03TestBOBRegistrationPrivateKeyEncryption() throws Exception{
 		
 		String authenticationData= "3N9CJ-K4JKS-04JWF-0934J-SR09JW-IK4";
@@ -160,6 +168,7 @@ public class XKMSEncTest extends TestCase {
 
 	}
 	
+	@Test
 	public void test04TestRevocationCodeIdentifyerGeneration() throws Exception{
 		String authenticationData= "Help I Have Revealed My Key";
 		
@@ -197,6 +206,7 @@ public class XKMSEncTest extends TestCase {
 	    assertTrue(byte64String.equals("5rRN2cOZiMlciJxBqaelrZDCzSE="));
 	}
 	
+	@Test
 	public void test04TestPublicKeyExtraction() throws Exception{
         DocumentBuilder db = dbf.newDocumentBuilder();
         KeyPair keys = KeyTools.genKeys("1024", "RSA");    

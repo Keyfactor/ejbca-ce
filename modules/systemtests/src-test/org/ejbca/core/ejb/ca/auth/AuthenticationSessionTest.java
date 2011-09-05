@@ -113,7 +113,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
 
-    public void createNewUser() throws Exception {
+    private void createNewUser() throws Exception {
         // Make user that we know later...
         username1 = genRandomUserName(); 
         pwd1 = genRandomPwd();

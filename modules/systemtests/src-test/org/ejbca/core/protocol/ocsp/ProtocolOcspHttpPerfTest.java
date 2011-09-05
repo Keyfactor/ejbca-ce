@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,8 +36,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -48,6 +50,10 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /** Tests http pages of a standalone ocsp
  * To run this test you must create a user named ocspTest that has at least two certificates and
@@ -56,7 +62,7 @@ import org.cesecore.util.CryptoProviderTools;
  * Change the adress 127.0.0.1 to where you standalone OCSP server is running.
  * Change caid to the CA that ocspTest blongs to
  **/
-public class ProtocolOcspHttpPerfTest extends TestCase {
+public class ProtocolOcspHttpPerfTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpPerfTest.class);
 
     //private static final String myOcspIp = "127.0.0.1";
@@ -119,9 +125,9 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 +"JYmKN5hy9liG5a0ADnVNRhL0zqRnO528OONgPUwri21ks0iW2L37nymQxa2EsgX3"
 +"Aw/k+uhfL1aW01jlXEMolz7+3cmAgw0lWAGImD5HG2g7zgcHGVNSd15aWYU6Gqp/"
 +"JV+mNkD7qQ+bUaRUj7eStN8Vy6E7DHr7Ir3ghKs0RBary544CK+LxRU=").getBytes());
-    
-    public ProtocolOcspHttpPerfTest(String name) throws Exception {
-        super(name);
+
+    @BeforeClass
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
     	cacert = CertTools.getCertfromByteArray(cacertbytes);
     	tomastest = CertTools.getCertfromByteArray(tomastestbytes);
@@ -155,15 +161,18 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     	return ret;
     }
     
+    @Before
     public void setUp() throws Exception {
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
+    @Test
     public void test01OcspGood() throws Exception {
         log.trace(">test02OcspGood()");
 
@@ -190,6 +199,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     }
     
     
+    @Test
     public void test03MakeLotsOfReqs() throws Exception {
 		long before = System.currentTimeMillis();
         Thread no1 = new Thread(new OcspTester(),"no1"); // NOPMD, this is not a JEE app

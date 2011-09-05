@@ -13,15 +13,19 @@
 
 package org.ejbca.ejb;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -39,7 +43,7 @@ import org.xml.sax.SAXException;
  * 
  * @version $Id$
  */
-public class GlassfishVerifierReportParserTest extends TestCase {
+public class GlassfishVerifierReportParserTest {
 
 	private static final Logger log = Logger.getLogger(GlassfishVerifierReportParserTest.class);
 	
@@ -48,6 +52,7 @@ public class GlassfishVerifierReportParserTest extends TestCase {
 	private int expectedFailures = 0;
 	private int expectedWarnings = 0;
 	
+	@Before
     public void setUp() throws Exception {
     	verifierReport = System.getProperty("vertest.report");
     	log.info("vertest.report="+verifierReport);
@@ -57,9 +62,11 @@ public class GlassfishVerifierReportParserTest extends TestCase {
 		expectedFailures = Integer.parseInt(System.getProperty("vertest.expectedFailures", "0"));
     }
     
+	@After
     public void tearDown() {
     }
     
+    @Test
     public void testJavaEnterpriseEditionCompliance() throws ParserConfigurationException, SAXException, IOException {
         javax.xml.parsers.DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = db.parse(new File(verifierReport));

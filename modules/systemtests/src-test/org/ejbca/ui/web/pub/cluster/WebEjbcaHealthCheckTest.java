@@ -13,10 +13,16 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebResponse;
@@ -26,24 +32,18 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  * @version $Id$
  */
 public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
-    private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
+
+	private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
 
-    /**
-     * Creates a new TestSignSession object.
-     *
-     * @param name name
-     */
-    public WebEjbcaHealthCheckTest(String name) {
-        super(name);
+    @Before
+    public void setUp() throws Exception {
         httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
     }
 
-    public void setUp() throws Exception {
-    }
-
+    @After
     public void tearDown() throws Exception {
     }
 
@@ -51,6 +51,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
      * Creates a number of threads that bombards the health check servlet 1000
      * times each
      */
+    @Test
     public void testEjbcaHealthHttp() throws Exception {
         log.trace(">testEjbcaHealthHttp()");
 

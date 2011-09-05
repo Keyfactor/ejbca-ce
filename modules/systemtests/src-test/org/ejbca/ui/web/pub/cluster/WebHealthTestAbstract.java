@@ -12,24 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.pub.cluster;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 
 /**
  * @author mikek
  *
  */
-public abstract class WebHealthTestAbstract extends TestCase {
+public abstract class WebHealthTestAbstract {
     
     private static final Logger log = Logger.getLogger(WebHealthTestAbstract.class);
     
     protected String httpPort;
     protected String httpReqPath;
-
-    public WebHealthTestAbstract(String name) {
-        super(name);
-    }
 
     public void createThreads() throws InterruptedException {
    

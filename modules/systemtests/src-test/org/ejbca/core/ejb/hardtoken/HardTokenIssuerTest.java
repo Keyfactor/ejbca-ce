@@ -13,7 +13,9 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -22,6 +24,9 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -29,33 +34,23 @@ import org.ejbca.util.InterfaceCache;
  *
  * @version $Id$
  */
-public class HardTokenIssuerTest extends TestCase {
+public class HardTokenIssuerTest {
     private static Logger log = Logger.getLogger(HardTokenIssuerTest.class);
     
     private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
 
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-    /**
-     * Creates a new TestHardTokenIssuer object.
-     *
-     * @param name name
-     */
-    public HardTokenIssuerTest(String name) {
-        super(name);
-    }
 
+    @Before
     public void setUp() throws Exception {
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
-    /**
-     * adds a issuer to the database
-     *
-     * @throws Exception error
-     */
+    @Test
     public void test01AddHardTokenIssuer() throws Exception {
         log.trace(">test01AddHardTokenIssuer()");
         boolean ret = false;
@@ -68,11 +63,7 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace("<test01AddHardTokenIssuer()");
     }
 
-    /**
-     * renames issuer
-     *
-     * @throws Exception error
-     */
+    @Test
     public void test02RenameHardTokenIssuer() throws Exception {
         log.trace(">test02RenameHardTokenIssuer()");
         boolean ret = false;
@@ -85,11 +76,7 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace("<test02RenameHardTokenIssuer()");
     }
 
-    /**
-     * clones issuer
-     *
-     * @throws Exception error
-     */
+    @Test
     public void test03CloneHardTokenIssuer() throws Exception {
         log.trace(">test03CloneHardTokenIssuer()");
         // First test the clone operation on the object (pure JUnit test)
@@ -114,11 +101,7 @@ public class HardTokenIssuerTest extends TestCase {
     }
 
 
-    /**
-     * edits issuer
-     *
-     * @throws Exception error
-     */
+    @Test
     public void test04EditHardTokenIssuer() throws Exception {
         log.trace(">test04EditHardTokenIssuer()");
         boolean ret = false;
@@ -132,11 +115,7 @@ public class HardTokenIssuerTest extends TestCase {
         log.trace("<test04EditHardTokenIssuer()");
     }
 
-    /**
-     * removes all profiles
-     *
-     * @throws Exception error
-     */
+    @Test
     public void test05removeHardTokenIssuers() throws Exception {
         log.trace(">test05removeHardTokenIssuers()");
         boolean ret = false;

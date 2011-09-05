@@ -13,6 +13,11 @@
 
 package org.ejbca.core.protocol.xkms;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -31,8 +36,6 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -78,6 +81,8 @@ import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2000._09.xmldsig_.X509DataType;
@@ -106,7 +111,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * @version $Id$
  */
 
-public class XKMSKRSSTest extends TestCase {
+public class XKMSKRSSTest {
 
     private final static Logger log = Logger.getLogger(XKMSKRSSTest.class);
 
@@ -142,7 +147,7 @@ public class XKMSKRSSTest extends TestCase {
     private final static String certprofilename2;
     private final static String endentityprofilename;
 
-    private final GlobalConfiguration orgGlobalConfig;
+    private GlobalConfiguration orgGlobalConfig;
 	private static CAInfo orgCaInfo;
 
     private final static DocumentBuilderFactory dbf;
@@ -196,11 +201,13 @@ public class XKMSKRSSTest extends TestCase {
         }
     }
 
-    public XKMSKRSSTest() throws CADoesntExistsException, AuthorizationDeniedException {
+    @Before
+    public void setUp() throws CADoesntExistsException, AuthorizationDeniedException {
         orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
         orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
     }
     
+	@Test
     public void test00SetupDatabase() throws Exception {
 
         final CAInfo caInfo = caSession.getCAInfo(administrator, "AdminCA1");
@@ -294,6 +301,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test01SimpleRegistration() throws Exception {
         cert1 = simpleRegistration(dn1, false);
     }
@@ -358,6 +366,7 @@ public class XKMSKRSSTest extends TestCase {
         return null;
     }
 
+	@Test
     public void test02ServerGenRegistration() throws Exception {
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("601");
@@ -412,6 +421,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test03RegisterWithWrongDN() throws Exception {
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
         registerRequestType.setId("602");
@@ -442,6 +452,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test04RegisterWithWrongStatus() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -473,6 +484,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test05RegisterWithWrongPassword() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -504,6 +516,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test06RegisterWithNoPOP() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -534,6 +547,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test07RegisterWithBasicAuthentication() throws Exception {
         KeyPair keys = genKeys();
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
@@ -574,6 +588,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test08SimpleReissue() throws Exception {
         simpleReissue(username1, dn1);
         simpleReissue(username1, dn1); // could be repeated any number of times
@@ -631,6 +646,7 @@ public class XKMSKRSSTest extends TestCase {
         }
     }
 
+	@Test
     public void test09ReissueWrongPassword() throws Exception {
         userAdminSession.setUserStatus(administrator, username1, 10);
         userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
@@ -663,6 +679,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test10ReissueWrongStatus() throws Exception {
         userAdminSession.setUserStatus(administrator, username1, 40);
         userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
@@ -694,6 +711,7 @@ public class XKMSKRSSTest extends TestCase {
         assertTrue(reissueResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
     }
 
+	@Test
     public void test11ReissueWrongCert() throws Exception {
 
         userAdminSession.setUserStatus(administrator, username1, 10);
@@ -726,6 +744,7 @@ public class XKMSKRSSTest extends TestCase {
         assertTrue(reissueResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
     }
 
+	@Test
     public void test12SimpleRecover() throws Exception {
         userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -785,6 +804,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test13RecoverWrongPassword() throws Exception {
         userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -818,6 +838,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test14RecoverWrongStatus() throws Exception {
         userAdminSession.setUserStatus(administrator, username2, 10);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -851,6 +872,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test15RecoverWrongCert() throws Exception {
         userAdminSession.setUserStatus(administrator, username2, UserDataConstants.STATUS_KEYRECOVERY);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -884,7 +906,8 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
-    public void test16CertNotMarked() throws Exception {
+	@Test
+   public void test16CertNotMarked() throws Exception {
         keyRecoverySession.unmarkUser(administrator, username2);
         userAdminSession.setUserStatus(administrator, username2, 40);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
@@ -918,6 +941,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test17SimpleRevoke() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("800");
@@ -942,6 +966,7 @@ public class XKMSKRSSTest extends TestCase {
 
     }
 
+	@Test
     public void test18RevokeWrongPassword() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("801");
@@ -967,6 +992,7 @@ public class XKMSKRSSTest extends TestCase {
         assertTrue(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION));
     }
 
+	@Test
     public void test19RevokeWithResult() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("802");
@@ -1016,6 +1042,7 @@ public class XKMSKRSSTest extends TestCase {
         }
     }
 
+	@Test
     public void test20RevokeAlreadyRevoked() throws Exception {
         RevokeRequestType revokeRequestType = xKMSObjectFactory.createRevokeRequestType();
         revokeRequestType.setId("804");
@@ -1041,6 +1068,7 @@ public class XKMSKRSSTest extends TestCase {
         assertTrue(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));
     }
 
+	@Test
     public void test21RevocationApprovals() throws Exception {
         final String APPROVINGADMINNAME = "superadmin";
         final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval.";
@@ -1134,6 +1162,7 @@ public class XKMSKRSSTest extends TestCase {
         }
     } // test21RevocationApprovals
 
+	@Test
     public void test22SimpleRegistrationSameKeyDifferentUsers() throws Exception {
         final String usernameX = baseUsername + 'X';
         final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
@@ -1142,7 +1171,8 @@ public class XKMSKRSSTest extends TestCase {
         userAdminSession.deleteUser(administrator, usernameX);
     }
 
-    public void test23SimpleRegistrationSameSubjcectDifferentUsers() throws Exception {
+	@Test
+   public void test23SimpleRegistrationSameSubjcectDifferentUsers() throws Exception {
         userAdminSession.deleteUser(administrator, username1);
         final String usernameX = baseUsername + 'X';
         addUser(usernameX, dn1);
@@ -1150,6 +1180,7 @@ public class XKMSKRSSTest extends TestCase {
         userAdminSession.deleteUser(administrator, usernameX);
     }
 
+	@Test
     public void test99CleanDatabase() throws Exception {
     	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         userAdminSession.deleteUser(administrator, username2);

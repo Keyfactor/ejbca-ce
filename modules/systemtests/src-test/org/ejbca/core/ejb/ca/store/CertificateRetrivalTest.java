@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.ca.store;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -21,8 +24,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -35,11 +36,14 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @version $Id$
  */
-public class CertificateRetrivalTest extends TestCase {
+public class CertificateRetrivalTest {
 
     static byte[] testrootcert = Base64.decode(("MIICnTCCAgagAwIBAgIBADANBgkqhkiG9w0BAQQFADBEMQswCQYDVQQGEwJTRTET"
             + "MBEGA1UECBMKU29tZS1TdGF0ZTEPMA0GA1UEChMGQW5hdG9tMQ8wDQYDVQQDEwZU"
@@ -109,10 +113,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<dumpCertificates()");
     }
 
-    public CertificateRetrivalTest(String name) {
-        super(name);
-    }
-
+    @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
@@ -155,14 +156,12 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<setUp()");
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
+
+    @Test
     public void test02FindCACertificates() throws Exception {
         log.trace(">test02FindCACertificates()");
         // List all certificates to see
@@ -188,11 +187,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<test02FindCACertificates()");
     }
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test03FindEndEntityCertificates() throws Exception {
         log.trace(">test03FindEndEntityCertificates()");
 
@@ -222,11 +217,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<test03FindEndEntityCertificates()");
     }
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test04FindRootCertificates() throws Exception {
         log.trace(">test04FindRootCertificates()");
 
@@ -254,11 +245,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<test04FindRootCertificates()");
     }
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test05CertificatesByIssuerAndSernos() throws Exception {
         log.trace(">test05CertificatesByIssuerAndSernos()");
 
@@ -293,11 +280,6 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<test05CertificatesByIssuerAndSernos()");
     }
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
     /*
      * Don't run this test since it can lookup a looot of certs and you will get
      * an OutOfMemoryException public void test06RetriveAllCertificates() throws
@@ -318,11 +300,7 @@ public class CertificateRetrivalTest extends TestCase {
      * m_log.trace("<test06CertificatesByIssuer()"); }
      */
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test07FindCACertificatesWithIssuer() throws Exception {
         log.trace(">test07FindCACertificatesWithIssuer()");
 
@@ -344,11 +322,7 @@ public class CertificateRetrivalTest extends TestCase {
         log.trace("<test07FindCACertificatesWithIssuer()");
     }
 
-    /**
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test08LoadRevocationInfo() throws Exception {
         log.trace(">test08LoadRevocationInfo()");
 

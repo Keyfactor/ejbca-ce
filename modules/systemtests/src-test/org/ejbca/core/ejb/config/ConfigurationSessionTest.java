@@ -13,31 +13,32 @@
 
 package org.ejbca.core.ejb.config;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests ConfigurationSessionBean
  * 
  * @version $Id$
  */
-public class ConfigurationSessionTest extends TestCase {
+public class ConfigurationSessionTest {
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     
-	public ConfigurationSessionTest(String name) {
-        super(name);
-	}
-	
+
+    @Before
     public void setUp() throws Exception { }
+    @After
     public void tearDown() throws Exception { }
     
-    /**
-     * Test that back and restore works as expected.
-     */
+    @Test
     public void test01BackupRestore() throws Exception {
     	configurationSession.restoreConfiguration();
     	assertFalse("Was able to restore config even though it was never backed up.", configurationSession.restoreConfiguration());
@@ -47,9 +48,7 @@ public class ConfigurationSessionTest extends TestCase {
     	assertFalse("Was able to restore config even though it was already restored..", configurationSession.restoreConfiguration());
     }
 
-    /**
-     * Test that updating properties works
-     */
+    @Test
     public void test02UpdateValue() throws Exception {
     	final String dummyProperty = "dummy-test-property";
     	configurationSession.restoreConfiguration();

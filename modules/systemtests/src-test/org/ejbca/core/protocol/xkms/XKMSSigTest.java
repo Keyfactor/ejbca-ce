@@ -13,6 +13,10 @@
 
 package org.ejbca.core.protocol.xkms;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -33,8 +37,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.apache.xml.security.utils.XMLUtils;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -51,6 +53,9 @@ import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
 import org.w3._2002._03.xkms_.ObjectFactory;
@@ -73,7 +78,7 @@ import org.w3c.dom.Element;
  * @version $Id$
  */
 
-public class XKMSSigTest extends TestCase {
+public class XKMSSigTest {
 
     private static final Logger log = Logger.getLogger(XKMSSigTest.class);
 
@@ -117,6 +122,7 @@ public class XKMSSigTest extends TestCase {
 
     }
 
+    @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");
         caid = CertTools.stringToBCDNString("CN=AdminCA1,O=EJBCA Sample,C=SE").hashCode();
@@ -127,9 +133,11 @@ public class XKMSSigTest extends TestCase {
         log.trace("<setUp()");
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
+    @Test
     public void test00SetupAccessRights() throws Exception {
     	log.trace(">test00SetupAccessRights");
         username = baseUsername + "1";
@@ -150,6 +158,7 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test00SetupAccessRights");
     }
 
+    @Test
     public void test01ClientSignature() throws Exception {
     	log.trace(">test01ClientSignature");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
@@ -212,6 +221,7 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test01ClientSignature");
     }
 
+    @Test
     public void test02SendSignedRequest() throws Exception {
     	log.trace(">test02SendSignedRequest");
         KeyStore clientKeyStore = KeyStore.getInstance("JKS");
@@ -262,7 +272,8 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test02SendSignedRequest");
     }
 
-    public void test03SendUntrustedRequest() throws Exception {
+    @Test
+   public void test03SendUntrustedRequest() throws Exception {
     	log.trace(">test03SendUntrustedRequest");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
         KeyStore trustKeyStore = KeyStore.getInstance("JKS");
@@ -313,6 +324,7 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test03SendUntrustedRequest");
     }
 
+    @Test
     public void test04SendRevokedRequest() throws Exception {
     	log.trace(">test04SendRevokedRequest");
         userAdminSession.revokeUser(administrator, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
@@ -365,6 +377,7 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test04SendRevokedRequest");
     }
 
+    @Test
     public void test05POPSignature() throws Exception {
     	log.trace(">test05POPSignature");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
@@ -441,6 +454,7 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test05POPSignature");
     }
 
+    @Test
     public void test06AuthenticationKeyBindingSignature() throws Exception {
     	log.trace(">test06AuthenticationKeyBindingSignature");
         KeyStore clientKeyStore = Constants.getUserKeyStore();
@@ -546,6 +560,7 @@ public class XKMSSigTest extends TestCase {
     	log.trace("<test06AuthenticationKeyBindingSignature");
     }
 
+    @Test
     public void test99RemoveUser() throws Exception {
     	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         userAdminSession.deleteUser(administrator, username);

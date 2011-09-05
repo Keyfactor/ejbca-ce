@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.web.pub;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,8 +27,6 @@ import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
@@ -40,11 +43,14 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @version $Id$
  */
-public class AutoEnrollServletTest extends TestCase {
+public class AutoEnrollServletTest {
 
 	private static Logger log = Logger.getLogger(AutoEnrollServletTest.class);
 
@@ -117,12 +123,9 @@ public class AutoEnrollServletTest extends TestCase {
 
 	private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-	public AutoEnrollServletTest(String name) {
-		super(name);
-	}
-
 	boolean installedBCProvider = false;
 
+	@Before
 	public void setUp() throws Exception {
 		log.trace(">setUp");
 		if (!installedBCProvider) {
@@ -132,6 +135,7 @@ public class AutoEnrollServletTest extends TestCase {
 		log.trace("<setUp");
 	}
 
+	@After
 	public void tearDown() throws Exception {
 		log.trace(">tearDown");
 		log.trace("<tearDown");
@@ -140,6 +144,7 @@ public class AutoEnrollServletTest extends TestCase {
 	/**
 	 * Test if a User-template certificate request is handled ok. 
 	 */
+	@Test
 	public void test01TestUserRequest() throws Exception {
 		log.trace(">test01TestUserRequest");
 		String remoteUser = "AETester@COMPANY.LOCAL";
@@ -163,6 +168,7 @@ public class AutoEnrollServletTest extends TestCase {
 	/**
 	 * Test if a User-template certificate request is handled ok. 
 	 */
+	@Test
 	public void test02TestMachineRequest() throws Exception {
 		log.trace(">test02TestMachineRequest");
 		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	
@@ -185,6 +191,7 @@ public class AutoEnrollServletTest extends TestCase {
 	/**
 	 * Test if a DomainController-template certificate request is handled ok. 
 	 */
+	@Test
 	public void test03TestDomainControllerRequest() throws Exception {
 		log.trace(">test03TestDomainControllerRequest");
 		String remoteUser = "TESTSRV-1$@COMPANY.LOCAL";	

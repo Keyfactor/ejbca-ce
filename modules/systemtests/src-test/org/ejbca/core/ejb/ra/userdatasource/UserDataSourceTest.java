@@ -13,56 +13,46 @@
 
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests User Data Sources.
  *
  * @version $Id$
  */
-public class UserDataSourceTest extends TestCase {
+public class UserDataSourceTest {
         
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     
     private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
-    
-    /**
-     * Creates a new TestUserDataSource object.
-     *
-     * @param name name
-     */
-    public UserDataSourceTest(String name) {
-        super(name);
-        CryptoProviderTools.installBCProvider();
-    }
-    
+
+    @Before
     public void setUp() throws Exception {
     }
     
+    @After
     public void tearDown() throws Exception {
     }
     
-    /**
-     * adds custom userdatasource
-     *
-     * @throws Exception error
-     */
+    @Test
     public void test01AddCustomUserDataSource() throws Exception {
         log.trace(">test01AddCustomUserDataSource()");
         boolean ret = false;
@@ -79,12 +69,7 @@ public class UserDataSourceTest extends TestCase {
         log.trace("<test01AddCustomUserDataSource()");
     }
 
-    /**
-     * renames userdatasource
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test02RenameUserDataSource() throws Exception {
         log.trace(">test02RenameUserDataSource()");
         boolean ret = false;
@@ -97,12 +82,7 @@ public class UserDataSourceTest extends TestCase {
         log.trace("<test02RenameUserDataSource()");
     }
 
-    /**
-     * clones userdatasource
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test03CloneUserDataSource() throws Exception {
         log.trace(">test03CloneUserDataSource()");
         boolean ret = false;
@@ -112,12 +92,7 @@ public class UserDataSourceTest extends TestCase {
         log.trace("<test03CloneUserDataSource()");
     }
 
-    /**
-     * edits userdatasource
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test04EditUserDataSource() throws Exception {
         log.trace(">test04EditUserDataSource()");
         boolean ret = false;
@@ -131,12 +106,7 @@ public class UserDataSourceTest extends TestCase {
         log.trace("<test04EditUserDataSource()");
     }
 
-    /**
-     * Tries to retrieve userdata from dummy user data source
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test05FetchFromDummy() throws Exception {
         log.trace(">test05FetchFromDummy()");
         ArrayList<Integer> userdatasources = new ArrayList<Integer>();
@@ -151,12 +121,7 @@ public class UserDataSourceTest extends TestCase {
         log.trace("<test05FetchFromDummy()");
     }
 
-    /**
-     * removes all userdatasources
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test06removeUserDataSources() throws Exception {
         log.trace(">test06removeUserDataSources()");
         boolean ret = false;

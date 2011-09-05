@@ -13,21 +13,24 @@
 
 package org.ejbca.ui.web.pub.cluster;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
  * @version $Id$
  */
-public class WebEjbcaClearCacheTest extends TestCase {
+public class WebEjbcaClearCacheTest {
     private static final Logger log = Logger.getLogger(WebEjbcaClearCacheTest.class);
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
@@ -36,24 +39,18 @@ public class WebEjbcaClearCacheTest extends TestCase {
     protected String httpReqPath;
     protected String httpReqPathNoCommand;
 
-    /**
-     * Creates a new TestSignSession object.
-     *
-     * @param name name
-     */
-    public WebEjbcaClearCacheTest(String name) {
-        super(name);
+    @Before
+    public void setUp() throws Exception {
         httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/clearcache/?command=clearcaches";
         httpReqPathNoCommand = "http://localhost:" + httpPort + "/ejbca/clearcache/";
     }
 
-    public void setUp() throws Exception {
-    }
-
+    @After
     public void tearDown() throws Exception {
     }
 
+    @Test
     public void testEjbcaClearCacheHttp() throws Exception {
         log.trace(">testEjbcaHealthHttp()");
 

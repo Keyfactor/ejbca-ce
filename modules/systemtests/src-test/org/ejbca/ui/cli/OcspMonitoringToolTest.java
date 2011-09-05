@@ -13,6 +13,8 @@
  
 package org.ejbca.ui.cli;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Date;
 import java.util.List;
 
@@ -20,21 +22,22 @@ import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Injects different kind of errors in the OCSP responder "ocsp1" and tries to detect them
  * by calling the OCSP monitoring tool.
  */
-public class OcspMonitoringToolTest extends TestCase {
+public class OcspMonitoringToolTest {
 
 	private static final Logger log = Logger.getLogger(OcspMonitoringToolTest.class);
 	
 	private final EntityManager ocspEntityManager = Persistence.createEntityManagerFactory("ocsp1").createEntityManager();
 
+	@Before
 	public void setUp() throws Exception { }
 
 	String[] args = {"ocspmon", "all", "1000", "60", "1", "9", "-", "ca", "ocsp1"};
@@ -42,6 +45,7 @@ public class OcspMonitoringToolTest extends TestCase {
 	/**
 	 * 	Run a test to see that the databases made available for testing is equal
 	 */
+	@Test
 	public void test01RunOnOkDatabases() throws Exception {
 		log.trace(">test01RunOnOkDatabases");
 		assertTrue("This test assumes that you have two configured databases ca and ocsp1 that are identical with only certs from certificateProfileId 1 and 9 .",
@@ -54,6 +58,7 @@ public class OcspMonitoringToolTest extends TestCase {
 	 * (Save) and remove middle from OCSP, run test, restore middle
 	 * (Save) and remove last from OCSP, run test, restore last
 	 */
+	@Test
 	public void test02DetectRemovedEntries() throws Exception {
 		log.trace(">test02DetectRemovedEntries");
 		
@@ -103,6 +108,7 @@ public class OcspMonitoringToolTest extends TestCase {
 	 * Insert fake in the middle of OCSP, run test, remove fake
 	 * Insert fake last in OCSP, run test, remove fake
 	 */
+	@Test
 	public void test03DetectAddedFakes() throws Exception {
 		log.trace(">test03DetectAddedFakes");
 		Query query = ocspEntityManager.createQuery("select a from CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
@@ -150,6 +156,7 @@ public class OcspMonitoringToolTest extends TestCase {
 	 * Modify an entity in OCSP: set updateTime > current updateTime
 	 * Modify an entity in OCSP: set updateTime = now
 	 */
+	@Test
 	public void test04DetectTampering() throws Exception {
 		log.trace(">test04DetectTampering");
 		ocspEntityManager.getTransaction().begin();
@@ -213,6 +220,7 @@ public class OcspMonitoringToolTest extends TestCase {
 	/**
 	 * Insert fake in OCSP with different certificateProfileId, run test and don't detect, remove fake
 	 */
+	@Test
 	public void test05OnlyCheckSpecifiedProfileIds() throws Exception {
 		log.trace(">test05OnlyCheckSpecifiedProfileIds");
 		Query query = ocspEntityManager.createQuery("select a from CertificateData a WHERE a.certificateProfileId=:certificateProfileId");
