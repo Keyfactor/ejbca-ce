@@ -23,11 +23,13 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -40,6 +42,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -54,7 +57,10 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
@@ -70,7 +76,6 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
@@ -79,7 +84,6 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -87,10 +91,8 @@ import org.junit.Test;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
- * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA
- * sends CMP messages authenticated using PBE (password based encryption) and
- * these requests are handled by EJBCA without further authentication, end
- * entities are created automatically in EJBCA.
+ * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
+ * and these requests are handled by EJBCA without further authentication, end entities are created automatically in EJBCA.
  * 
  * 'ant clean; ant bootstrap' to deploy configuration changes.
  * 
@@ -105,10 +107,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static final String APPROVINGADMINNAME = "superadmin";
     private static final String CPNAME = CrmfRAPbeRequestTest.class.getName();
     private static final String EEPNAME = CrmfRAPbeRequestTest.class.getName();
+    
+    private static final String APPROVING_ROLE_NAME = "CrmfRAPbeRequestTest_Approving_Role";
 
     /**
-     * userDN of user used in this test, this contains special, escaped,
-     * characters to test that this works with CMP RA operations
+     * userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations
      */
     private static String userDN = "C=SE,O=PrimeKey'foo'&bar\\,ha\\<ff\\\"aa,CN=cmptest";
 
@@ -129,17 +132,19 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-
+    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSessionRemote = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    
     @BeforeClass
-    public static void beforeClass() throws Exception{
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
     }
-    
+
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        
-     // Try to use AdminCA1 if it exists
+
+        // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
             Collection<Integer> caids = caSession.getAvailableCAs(admin);
@@ -203,36 +208,26 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
-        
+
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         }
-        
-        
+
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-
-        boolean cleanUpOk = true;
-        try {
-            userAdminSession.deleteUser(admin, "cmptest");
-        } catch (NotFoundException e) {
-            // A test probably failed before creating the entity
-            log.error("Failed to delete user \"cmptest\".");
-            cleanUpOk = false;
-        }
+        
         endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
         certificateProfileSession.removeCertificateProfile(admin, CPNAME);
         if (!configurationSession.restoreConfiguration()) {
-            cleanUpOk = false;
+            throw new RuntimeException("Unable to restore configuration");
         }
-        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
-    
+
     public String getRoleName() {
-        return this.getClass().getSimpleName(); 
+        return this.getClass().getSimpleName();
     }
 
     @Test
@@ -318,6 +313,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
         checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
+        
+        userAdminSession.deleteUser(admin, "cmptest");
     }
 
     @Test
@@ -358,8 +355,8 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertNotNull(cainfo);
             X509Certificate newCACert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
             // Create a user and generate the cert
-            EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-                    SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+            EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, 1,
+                    SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
             userAdminSession.addUser(admin, userdata, true);
             BatchMakeP12 makep12 = new BatchMakeP12();
@@ -400,20 +397,15 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
             checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, PBEPASSWORD);
-            checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE
-                    .getValue());
+            checkCmpFailMessage(resp, "The request is already awaiting approval.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0,
+                    ResponseStatus.FAILURE.getValue());
             reason = checkRevokeStatus(cainfo.getSubjectDN(), cert.getSerialNumber());
             assertEquals(reason, RevokedCertInfo.NOT_REVOKED);
             // Approve revocation and verify success
-            X509Certificate certificate = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
-            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(certificate);
-            Set<X500Principal> principals = new HashSet<X500Principal>();
-            principals.add(certificate.getSubjectX500Principal());
-            AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
-            //Admin approvingAdmin = new Admin((X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next(), APPROVINGADMINNAME, null);
-            approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
-                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession, cainfo.getCAId());
+
+            approveRevocation(admin, admin, username, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
+                    ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, approvalExecutionSession,
+                    cainfo.getCAId());
             // try to revoke the now revoked cert via CMP and verify error
             nonce = CmpMessageHelper.createSenderNonce();
             transid = CmpMessageHelper.createSenderNonce();
@@ -441,40 +433,40 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
     } // test04RevocationApprovals
 
-
     /**
-     *      Find all certificates for a user and approve any outstanding revocation. 
+     * Find all certificates for a user and approve any outstanding revocation.
      */
-    public int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason, int approvalType,
-                    CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession, ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
+    public int approveRevocation(AuthenticationToken internalAdmin, AuthenticationToken approvingAdmin, String username, int reason,
+            int approvalType, CertificateStoreSessionRemote certificateStoreSession, ApprovalSessionRemote approvalSession,
+            ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
         Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         Iterator<java.security.cert.Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
-        while ( i.hasNext() ) {
+        while (i.hasNext()) {
             X509Certificate cert = (X509Certificate) i.next();
             String issuerDN = cert.getIssuerDN().toString();
             BigInteger serialNumber = cert.getSerialNumber();
             boolean isRevoked = certificateStoreSession.isRevoked(issuerDN, serialNumber);
-                if ( (reason != RevokedCertInfo.NOT_REVOKED && !isRevoked )
-                            || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked) )  {
-                            int approvalID;
-                            if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
-                                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN);
-                            } else {
-                                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null);
-                            }
-                            Query q = new Query(Query.TYPE_APPROVALQUERY);
-                            q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
-                            ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
-                            Approval approval = new Approval("Approved during testing.");
-                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(internalAdmin));
-                            approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
-                            assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
-                    CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
-                            assertEquals(status.revocationReason, reason);
-                            approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
-                    approvedRevocations++;
+            if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {
+                int approvalID;
+                if (approvalType == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE) {
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, serialNumber, issuerDN);
+                } else {
+                    approvalID = RevocationApprovalRequest.generateApprovalId(approvalType, username, reason, null, null);
                 }
+                Query q = new Query(Query.TYPE_APPROVALQUERY);
+                q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
+                ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID,
+                        "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
+                Approval approval = new Approval("Approved during testing.");
+                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, raAdminSession.getCachedGlobalConfiguration(internalAdmin));
+                approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
+                assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
+                CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
+                assertEquals(status.revocationReason, reason);
+                approvalSession.removeApprovalRequest(internalAdmin, approvalData.getId());
+                approvedRevocations++;
+            }
         }
         return approvedRevocations;
     } // approveRevocation
