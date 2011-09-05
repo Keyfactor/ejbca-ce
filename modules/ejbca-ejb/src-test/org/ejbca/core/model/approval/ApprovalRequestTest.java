@@ -29,6 +29,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 
 /**
  * @version $Id$
@@ -94,6 +95,18 @@ public class ApprovalRequestTest extends TestCase {
     	int id1 = ar.generateApprovalId();
     	int id2 = ar.generateApprovalId();
     	assertEquals(id1, id2);
+    	
+        final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
+        final String TEST_NONADMIN_CN = "CN=wsnonadmintest";
+        final String serialNumber = "12344711";
+        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, token, null, 1, 0, 0);
+        int approvalId = approvalRequest.generateApprovalId();
+        ViewHardTokenDataApprovalRequest ar1 = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, CertTools.stringToBCDNString(TEST_NONADMIN_CN), serialNumber, 
+        		true,token,null,1,123456,1);
+        int approvalId1 = ar1.generateApprovalId();
+        assertEquals("Ids should be the same.", approvalId, approvalId1);
+
+
 	}
 
 	public void setUp() throws Exception {		

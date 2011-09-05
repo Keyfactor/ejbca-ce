@@ -251,8 +251,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setUpNonAdmin();
         setupApprovals();
 
-        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, reqadmin, null, 1,
-                0, 0);
+        ApprovalRequest approvalRequest = new ViewHardTokenDataApprovalRequest(TEST_NONADMIN_USERNAME, TEST_NONADMIN_CN, serialNumber, true, reqadmin, null, 1, 0, 0);
 
         // Setup the test
         if (!hardTokenSessionRemote.existsHardToken(reqadmin, serialNumber)) {
