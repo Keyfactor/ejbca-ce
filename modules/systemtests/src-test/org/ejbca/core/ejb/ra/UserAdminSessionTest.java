@@ -123,7 +123,10 @@ public class UserAdminSessionTest extends CaTestCase {
         } catch (Exception e) {
         } // NOPMD, ignore errors so we don't stop deleting users because one of
           // them does not exist.
-
+    }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
     }
 
     private void genRandomSerialnumber() throws Exception {

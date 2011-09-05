@@ -89,16 +89,13 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
 
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     
     @BeforeClass
-	public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
-	
-		CryptoProviderTools.installBCProvider();
-     
+    public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
+        CryptoProviderTools.installBCProvider();
     }
 
     @Before
@@ -151,6 +148,10 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         super.tearDown();
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     @Test
     public void test01CrmfUnknowUser() throws Exception {
         // A name that does not exis

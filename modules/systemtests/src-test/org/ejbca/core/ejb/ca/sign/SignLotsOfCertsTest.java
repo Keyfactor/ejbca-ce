@@ -34,16 +34,14 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -67,9 +65,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
     public static KeyPair keys;
      
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -93,6 +89,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         log.trace("<setUp()");
     }
 
+    @After
     public void tearDown() throws Exception {
         super.tearDown();
         removeTestCA(CANAME);
@@ -106,6 +103,10 @@ public class SignLotsOfCertsTest extends CaTestCase {
         deleteUser("no8");
         deleteUser("no9");
         deleteUser("no10");
+    }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
     }
 
     private void newUser(String post) throws Exception {

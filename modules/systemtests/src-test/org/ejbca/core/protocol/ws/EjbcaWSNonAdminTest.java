@@ -120,13 +120,16 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     @Before
     public void setUp() throws Exception {
-    	roleName = "EjbcaWSTestNonAdmin";
     	super.setUp();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+    
+    public String getRoleName() {
+        return "EjbcaWSTestNonAdmin";
     }
 
     private void setUpNonAdmin() throws Exception {
@@ -439,8 +442,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         makep12.createAllNew();
 
         adminEntities = new ArrayList<AccessUserAspectData>();
-        adminEntities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
-        roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(roleName), adminEntities);
+        adminEntities.add(new AccessUserAspectData(getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  
+        roleManagementSession.addSubjectsToRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
         accessControlSession.forceCacheExpire();
 
         admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername1).iterator().next();
@@ -468,6 +471,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     protected void removeApprovalAdmins() throws Exception {
         userAdminSession.deleteUser(intadmin, adminusername1);
-        roleManagementSession.removeSubjectsFromRole(intadmin, roleAccessSession.findRole(roleName), adminEntities);
+        roleManagementSession.removeSubjectsFromRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
     }
 }

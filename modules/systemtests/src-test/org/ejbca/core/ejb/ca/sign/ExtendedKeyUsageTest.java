@@ -104,7 +104,10 @@ public class ExtendedKeyUsageTest extends CaTestCase {
             log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
         } catch (Exception e) { /* ignore */
         }
-
+    }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
     }
 
     /**

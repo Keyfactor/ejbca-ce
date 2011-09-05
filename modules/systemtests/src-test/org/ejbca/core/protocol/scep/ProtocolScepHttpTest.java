@@ -189,6 +189,10 @@ public class ProtocolScepHttpTest extends CaTestCase {
         }        
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     @Test
     public void test01Access() throws Exception {
         // Hit scep, gives a 400: Bad Request

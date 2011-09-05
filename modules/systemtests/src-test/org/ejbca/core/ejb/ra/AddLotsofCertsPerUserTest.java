@@ -75,9 +75,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
      */
     @BeforeClass
     public static void beforeClass() {
-
-        CryptoProviderTools.installBCProviderIfNotAvailable();
-        
+        CryptoProviderTools.installBCProviderIfNotAvailable();       
     }
 
     @Before
@@ -94,6 +92,10 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
         super.tearDown();
     }
 
+    public String getRoleName() {
+        return "AddLotsofCertsPerUserTest"; 
+    }
+    
     private String genUserName(String baseUsername) {
         userNo++;
         return baseUsername + userNo;

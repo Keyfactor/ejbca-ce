@@ -44,6 +44,9 @@ public class AdminPreferenceTest extends CaTestCase {
     
     private static final String user = genRandomUserName();
 
+    public String getRoleName() {
+        return "AdminPreferenceTest"; 
+    }
 
     @Before
     public void setUp() throws Exception {

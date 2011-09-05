@@ -73,6 +73,10 @@ public class KeyRecoveryTest extends CaTestCase {
 
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     /**
      * tests adding a keypair and checks if it can be read again.
      * 

@@ -139,6 +139,10 @@ public class CAsTest extends CaTestCase {
         super.tearDown();
     }
 
+    public String getRoleName() {
+        return "CAsTest"; 
+    }
+    
     /**
      * adds a CA using RSA keys to the database.
      * 

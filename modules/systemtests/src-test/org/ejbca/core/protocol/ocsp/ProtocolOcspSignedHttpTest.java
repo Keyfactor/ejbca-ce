@@ -113,6 +113,10 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     	configurationSessionRemote.restoreConfiguration();
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     /** Tests ocsp message
      * @throws Exception error
      */

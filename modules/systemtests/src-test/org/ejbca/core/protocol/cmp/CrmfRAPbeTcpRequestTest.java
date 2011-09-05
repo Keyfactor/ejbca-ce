@@ -181,6 +181,10 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     @Test
     public void test02CrmfTcpOkUser() throws Exception {

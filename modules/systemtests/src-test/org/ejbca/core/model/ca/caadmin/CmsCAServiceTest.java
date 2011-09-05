@@ -73,9 +73,12 @@ public class CmsCAServiceTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
+    public String getRoleName() {
+        return "CmsCAServiceTest";
+    }
+    
     @Before
     public void setUp() throws Exception {
-    	roleName = "CmsCAServiceTest";
         super.setUp();
 
     }

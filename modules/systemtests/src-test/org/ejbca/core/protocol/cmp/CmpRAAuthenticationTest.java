@@ -217,4 +217,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         InterfaceCache.getConfigurationSession().restoreConfiguration();
         InterfaceCache.getEndEntityProfileSession().removeEndEntityProfile(ADMIN, EEP_1);
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 }

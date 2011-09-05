@@ -50,6 +50,10 @@ public class RemoveCATest extends CaTestCase {
         super.tearDown();
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     /**
      * removes RSA CA
      * 

@@ -58,19 +58,13 @@ import org.junit.Test;
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
-   
 
-
-    
     private static final int myCaId = issuerDN.hashCode();
     //private static final String myOcspIp = "127.0.0.1";	TODO: Refactor back to where we could use this test remotely?
-
   
     private String httpReqPath = "http://127.0.0.1:" + "8080" + "/ejbca";
     private String resourceOcsp = "publicweb/status/ocsp";
 
-   
-    
     // Required to override check in baseclass
     @Before
     public void setUp() throws Exception {
@@ -88,8 +82,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         super.tearDown();
     }
 
-
-
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     @Test
     public void test01Access() throws Exception {
         super.test01Access();

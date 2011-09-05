@@ -63,7 +63,6 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
     @Before
     public void setUp() throws Exception {
-    	roleName = "GlobalConfigurationSessionBeanTest";
         super.setUp();
     	enableCLI(true);  	
 
@@ -84,6 +83,10 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         administrator = null;
     }
 
+    public String getRoleName() {
+        return "GlobalConfigurationSessionBeanTest";
+    }
+    
     /**
      * Tests adding a global configuration and waiting for the cache to be updated.
      * 

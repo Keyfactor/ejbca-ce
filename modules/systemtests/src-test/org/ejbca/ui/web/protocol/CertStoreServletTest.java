@@ -30,6 +30,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -37,42 +39,59 @@ import org.junit.Test;
  * 
  * @author lars
  * @version $Id$
- *
+ * 
  */
 public class CertStoreServletTest extends CaTestCase {
-	private final static Logger log = Logger.getLogger(CertStoreServletTest.class);
-	/**
-	 * @throws MessagingException 
-	 * @throws URISyntaxException 
-	 * @throws IOException 
-	 * @throws CertificateException 
-	 * @throws MalformedURLException 
-	 * @throws AuthorizationDeniedException 
-	 * @throws CADoesntExistsException 
-	 */
-	
-	@Test
-	public void testIt() throws MalformedURLException, CertificateException, IOException, URISyntaxException, MessagingException, CADoesntExistsException, AuthorizationDeniedException {
-		final CAInHierarchy ca1 = new CAInHierarchy("root", this);
-		final CAInHierarchy ca1_1 = new CAInHierarchy("1 from root", this);
-		ca1.subs.add(ca1_1);
-		final CAInHierarchy ca2_1 = new CAInHierarchy("2 from root at"+new Date(), this);
-		ca1.subs.add(ca2_1);
-		final CAInHierarchy ca1_1_1 = new CAInHierarchy("1 from 1 from root", this);
-		ca1_1.subs.add(ca1_1_1);
-		final CAInHierarchy ca2_1_1 = new CAInHierarchy("2 from 1 from root at "+new Date(), this);
-		ca1_1.subs.add(ca2_1_1);
-		final CAInHierarchy ca3_1_1 = new CAInHierarchy("3 from 1 from root", this);
-		ca1_1.subs.add(ca3_1_1);
-		
-		try {
-			final Set<Integer> setOfSubjectKeyIDs = new HashSet<Integer>();
-			final X509Certificate rootCert = ca1.createCA(setOfSubjectKeyIDs);
-			log.info("The number of CAs created was "+setOfSubjectKeyIDs.size()+".");
-			new CertFetchAndVerify().doIt( rootCert, setOfSubjectKeyIDs );
-			assertEquals("All created CA certificates not found.", 0, setOfSubjectKeyIDs.size());
-		}finally {
-			ca1.deleteCA();
-		}
-	}
+    private final static Logger log = Logger.getLogger(CertStoreServletTest.class);
+
+    @Before
+    public void setUp() throws Exception{
+        super.setUp();
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
+    }
+    
+    
+    /**
+     * @throws MessagingException
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws MalformedURLException
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
+     */
+
+    @Test
+    public void testIt() throws MalformedURLException, CertificateException, IOException, URISyntaxException, MessagingException,
+            CADoesntExistsException, AuthorizationDeniedException {
+        final CAInHierarchy ca1 = new CAInHierarchy("root", this);
+        final CAInHierarchy ca1_1 = new CAInHierarchy("1 from root", this);
+        ca1.subs.add(ca1_1);
+        final CAInHierarchy ca2_1 = new CAInHierarchy("2 from root at" + new Date(), this);
+        ca1.subs.add(ca2_1);
+        final CAInHierarchy ca1_1_1 = new CAInHierarchy("1 from 1 from root", this);
+        ca1_1.subs.add(ca1_1_1);
+        final CAInHierarchy ca2_1_1 = new CAInHierarchy("2 from 1 from root at " + new Date(), this);
+        ca1_1.subs.add(ca2_1_1);
+        final CAInHierarchy ca3_1_1 = new CAInHierarchy("3 from 1 from root", this);
+        ca1_1.subs.add(ca3_1_1);
+
+        try {
+            final Set<Integer> setOfSubjectKeyIDs = new HashSet<Integer>();
+            final X509Certificate rootCert = ca1.createCA(setOfSubjectKeyIDs);
+            log.info("The number of CAs created was " + setOfSubjectKeyIDs.size() + ".");
+            new CertFetchAndVerify().doIt(rootCert, setOfSubjectKeyIDs);
+            assertEquals("All created CA certificates not found.", 0, setOfSubjectKeyIDs.size());
+        } finally {
+            ca1.deleteCA();
+        }
+    }
+
+    public String getRoleName() {
+        return this.getClass().getSimpleName();
+    }
 }

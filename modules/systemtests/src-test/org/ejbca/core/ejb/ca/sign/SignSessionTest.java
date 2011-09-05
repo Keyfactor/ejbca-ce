@@ -371,6 +371,10 @@ public class SignSessionTest extends CaTestCase {
         } catch (Exception e) { /* ignore */
         }
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     private void createUsers() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileExistsException, PersistenceException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);

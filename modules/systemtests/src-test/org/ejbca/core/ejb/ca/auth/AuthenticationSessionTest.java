@@ -339,5 +339,8 @@ public class AuthenticationSessionTest extends CaTestCase {
         }
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
 }

@@ -647,5 +647,9 @@ public class ApprovalSessionTest extends CaTestCase {
 
         log.trace("<testApprovalsWithExternalAdmins()");
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
 }
