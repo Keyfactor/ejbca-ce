@@ -313,7 +313,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     public Collection<Integer> getAuthorizedVisibleServiceIds(AuthenticationToken admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
-        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             Collection<Integer> allServiceIds = getServiceIdToNameMap(admin).keySet();
             Iterator<Integer> i = allServiceIds.iterator();
             while (i.hasNext()) {
@@ -888,7 +888,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      */
     private boolean isAuthorizedToEditService(AuthenticationToken admin, ServiceConfiguration serviceConfiguraion) {
 
-        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             return true;
         }
 

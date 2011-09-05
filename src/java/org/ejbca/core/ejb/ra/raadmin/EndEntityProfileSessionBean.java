@@ -245,7 +245,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     	final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
 		// If this is the special value ALLCAs we are authorized
     	authorizedcaids.add(Integer.valueOf(SecConst.ALLCAS));
-        if (authSession.isAuthorizedNoLog(admin, "/super_administrator")) {
+        if (authSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
             returnval.add(SecConst.EMPTY_ENDENTITYPROFILE);
         }
         try {

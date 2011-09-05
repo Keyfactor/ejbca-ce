@@ -125,7 +125,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
 
         time.start();
         for (int i = 0; i < WORKERS; i++) {
-            workers.execute(new Runnable() {
+            workers.execute(new Runnable() { // NOPMD: this is a test, not a JEE application
                 @Override
                 public void run() {
                     securityEventsLogger.log(EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE,

@@ -273,11 +273,11 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 			PersistenceException, CADoesntExistsException, EjbcaException {
 		
 		int caid = userdata.getCAId();
-		if(!authorizationSession.isAuthorizedNoLog(admin, StandardRules.CAACCESS.resource() +caid)) {
+		if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 	        throw new AuthorizationDeniedException(msg);
 		}
-		if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
+		if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_CREATECERTIFICATE)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_CREATECERTIFICATE, null);
 	        throw new AuthorizationDeniedException(msg);
 		}

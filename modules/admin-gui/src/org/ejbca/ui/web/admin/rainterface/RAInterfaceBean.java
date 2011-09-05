@@ -662,7 +662,7 @@ public class RAInterfaceBean implements Serializable {
     }
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws AuthorizationDeniedException {
-    	if (!authorizationsession.isAuthorizedNoLog(administrator, StandardRules.CAACCESS.resource() + issuerdn.hashCode())) {
+    	if (!authorizationsession.isAuthorizedNoLogging(administrator, StandardRules.CAACCESS.resource() + issuerdn.hashCode())) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + issuerdn.hashCode(), "Not authorized to view certificate.");
 	        throw new AuthorizationDeniedException(msg);
         }
@@ -741,7 +741,7 @@ public class RAInterfaceBean implements Serializable {
 
     public boolean keyRecoveryPossible(Certificate cert, String username) throws AuthorizationDeniedException {
     	boolean returnval = true;
-    	returnval = authorizationsession.isAuthorizedNoLog(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
+    	returnval = authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.REGULAR_KEYRECOVERY);
     	if (informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
     		EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
     		if (data != null) {       	
@@ -796,7 +796,7 @@ public class RAInterfaceBean implements Serializable {
     		returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights)
     		&& authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	} else {
-    		returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
+    		returnval = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
     				+ rights)
     				&& authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	}

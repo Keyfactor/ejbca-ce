@@ -154,11 +154,11 @@ public class CertificateProfileDataHandler implements Serializable {
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck) {
         boolean returnval = false;
 
-        boolean issuperadministrator = authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
+        boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, "/super_administrator");
 
         boolean editauth = true; // will be set to false if we should check it and we are not authorized
         if (editcheck) {
-            editauth = authorizationsession.isAuthorizedNoLog(administrator, "/ca_functionality/edit_certificate_profiles");
+            editauth = authorizationsession.isAuthorizedNoLogging(administrator, "/ca_functionality/edit_certificate_profiles");
         }
         if (editauth) {
             HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(administrator));

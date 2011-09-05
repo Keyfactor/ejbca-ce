@@ -354,7 +354,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
-        superadmin = authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        superadmin = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
         Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -474,7 +474,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToUserDataSource(AuthenticationToken admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
-    	if(authorizationSession.isAuthorizedNoLog(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
+    	if(authorizationSession.isAuthorizedNoLogging(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
     		return true;
         }
         if (remove) {
@@ -486,7 +486,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
                 return false;
             }
         }
-        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return true;
             }
@@ -511,12 +511,12 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      */
     private boolean isAuthorizedToEditUserDataSource(AuthenticationToken admin, BaseUserDataSource userdatasource) {
 
-        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             return true;
         }
 
-        if (authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)
-                && authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)
+                && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
                 return false;
             }

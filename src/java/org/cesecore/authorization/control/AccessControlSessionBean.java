@@ -33,7 +33,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 
 /**
- * Based on cesecore version: AccessControlSessionBean.java 897 2011-06-20 11:17:25Z johane
+ * Based on cesecore version: AccessControlSessionBean.java 956 2011-06-20 11:17:25Z johane
  * 
  * @version $Id$
  * 
@@ -56,26 +56,36 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     /** Cache for authorization data */
     private static AccessTreeCache accessTreeCache;
 
-    @Override
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) {
-        if (isAuthorizedNoLog(authenticationToken, resource)) {
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
+    private boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource, final boolean doLogging) {
+        if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("resource", resource);
-            securityEventsLoggerSession.log(EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
-                    authenticationToken.toString(), null, null, null, details);
+            if(doLogging) {
+                securityEventsLoggerSession.log(EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
+                        authenticationToken.toString(), null, null, null, details);
+            }
             return true;
         } else {
             return false;
         }
     }
-
+    
     @Override
-    public boolean isAuthorizedNoLog(AuthenticationToken authenticationToken, String resource) {
+    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource) {
         if (updateNeccessary()) {
-            updateAuthorizationTree(authenticationToken);
+            updateAuthorizationTree();
         }
-        return accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource);
+        return isAuthorized(authenticationToken, resource, true);
     }
+    
+    @Override
+    public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String resource) {
+        if (updateNeccessary()) {
+            updateAuthorizationTree();
+        }
+        return isAuthorized(authenticationToken, resource, false);
+    }
+
 
     @Override
     public void forceCacheExpire() {
@@ -112,11 +122,11 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     /**
      * method updating authorization tree.
      */
-    private void updateAuthorizationTree(AuthenticationToken authenticationToken) {
+    private void updateAuthorizationTree() {
         if (log.isTraceEnabled()) {
             log.trace(">updateAuthorizationTree");
         }
-        int authorizationtreeupdatenumber = accessTreeUpdateSession.getAccessTreeUpdateData().getAccessTreeUpdateNumber();
+        final int authorizationtreeupdatenumber = accessTreeUpdateSession.getAccessTreeUpdateData().getAccessTreeUpdateNumber();
         if (accessTreeCache == null) {
             accessTreeCache = new AccessTreeCache();
         }

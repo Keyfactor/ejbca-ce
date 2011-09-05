@@ -103,7 +103,7 @@ public class HardTokenAuthorization implements Serializable {
      */
 
     public boolean authorizedToHardTokenIssuer(String alias) {
-        return authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/edit_hardtoken_issuers")
+        return authorizationsession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/edit_hardtoken_issuers")
                 && this.getHardTokenIssuers().keySet().contains(alias);
     }
 
@@ -117,7 +117,7 @@ public class HardTokenAuthorization implements Serializable {
      */
 
     public boolean authorizedToHardTokenProfile(String name) {
-        return authorizationsession.isAuthorizedNoLog(admin, "/hardtoken_functionality/edit_hardtoken_profiles")
+        return authorizationsession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/edit_hardtoken_profiles")
                 && this.getHardTokenProfiles().keySet().contains(name);
     }
 

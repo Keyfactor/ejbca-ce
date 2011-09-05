@@ -426,7 +426,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
-        if(!authorizationSession.isAuthorizedNoLog(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
 	        throw new AuthorizationDeniedException(msg);
         }

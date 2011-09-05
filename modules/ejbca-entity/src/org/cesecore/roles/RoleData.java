@@ -141,34 +141,44 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         RoleData other = (RoleData) obj;
         if (accessRules == null) {
-            if (other.accessRules != null)
+            if (other.accessRules != null) {
                 return false;
-        } else if (!accessRules.equals(other.accessRules))
+            }
+        } else if (!accessRules.equals(other.accessRules)) {
             return false;
+        }
         if (accessUsers == null) {
-            if (other.accessUsers != null)
+            if (other.accessUsers != null) {
                 return false;
+            }
         } else if (!accessUsers.equals(other.accessUsers)) {
             return false;
         }
         if (primaryKey == null) {
-            if (other.primaryKey != null)
+            if (other.primaryKey != null) {
                 return false;
-        } else if (!primaryKey.equals(other.primaryKey))
+            }
+        } else if (!primaryKey.equals(other.primaryKey)) {
             return false;
+        }
         if (roleName == null) {
-            if (other.roleName != null)
+            if (other.roleName != null) {
                 return false;
-        } else if (!roleName.equals(other.roleName))
+            }
+        } else if (!roleName.equals(other.roleName)) {
             return false;
+        }
         return true;
     }
 

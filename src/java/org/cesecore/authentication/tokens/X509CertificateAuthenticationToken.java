@@ -240,18 +240,23 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         X509CertificateAuthenticationToken other = (X509CertificateAuthenticationToken) obj;
         if (certificate == null) {
-            if (other.certificate != null)
+            if (other.certificate != null) {
                 return false;
-        } else if (!certificate.equals(other.certificate))
+            }
+        } else if (!certificate.equals(other.certificate)) {
             return false;
+        }
         return true;
     }
 

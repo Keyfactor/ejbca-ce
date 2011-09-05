@@ -431,7 +431,7 @@ public class EjbcaWebBean implements Serializable {
      */
     public boolean isAuthorizedNoLog(String resource) throws AuthorizationDeniedException {
         if (certificates != null) {
-            if (!authorizationSession.isAuthorizedNoLog(administrator, resource)) {
+            if (!authorizationSession.isAuthorizedNoLogging(administrator, resource)) {
                 throw new AuthorizationDeniedException("Not authorized to " + resource);
             }
         } else {
@@ -459,7 +459,7 @@ public class EjbcaWebBean implements Serializable {
                 Set<X500Principal> principals = new HashSet<X500Principal>();
                 principals.add(certificates[0].getSubjectX500Principal());
                 AuthenticationToken admin = new X509CertificateAuthenticationToken(principals, credentials);
-                raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLog(admin, AUTHORIZED_RA_RESOURCES[resource]));
+                raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLogging(admin, AUTHORIZED_RA_RESOURCES[resource]));
             }
             returnval = raauthorized[resource].booleanValue();
         } else {

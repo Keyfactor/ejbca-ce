@@ -96,9 +96,9 @@ public class RAAuthorization implements Serializable {
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
         boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
      
-        authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
+        authorizedToApproveCAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVECAACTION);
 
-        authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
+        authorizedToApproveRAActions = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY);
 
         if (!authorizedToApproveCAActions && !authorizedToApproveRAActions) {
             throw new AuthorizationDeniedException("Not authorized to query apporvals");
@@ -201,7 +201,7 @@ public class RAAuthorization implements Serializable {
      */
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights) {
         boolean returnval = false;
-        returnval = authorizationsession.isAuthorizedNoLog(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
+        returnval = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights);
         return returnval;
     }  
 }

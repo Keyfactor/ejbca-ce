@@ -130,7 +130,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     private RoleData createNoAuth(AuthenticationToken authenticationToken, String roleName) throws RoleExistsException {
         if (roleAccessSession.findRole(roleName) == null) {
-            RoleData role = new RoleData(findFreeRoleId(authenticationToken), roleName);
+            RoleData role = new RoleData(findFreeRoleId(), roleName);
             entityManager.persist(role);
             final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingroupadded", roleName);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -409,7 +409,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     }
 
-    private int findFreeRoleId(AuthenticationToken token) {
+    private int findFreeRoleId() {
         final Random random = new SecureRandom();
         int id = random.nextInt();
         boolean foundfree = false;

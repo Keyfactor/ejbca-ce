@@ -184,29 +184,39 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         AccessUserAspectData other = (AccessUserAspectData) obj;
         if (caId == null) {
-            if (other.caId != null)
+            if (other.caId != null) {
                 return false;
-        } else if (!caId.equals(other.caId))
+            }
+        } else if (!caId.equals(other.caId)) {
             return false;
-        if (matchType != other.matchType)
+        }
+        if (matchType != other.matchType) {
             return false;
+        }
         if (matchValue == null) {
-            if (other.matchValue != null)
+            if (other.matchValue != null) {
                 return false;
-        } else if (!matchValue.equals(other.matchValue))
+            }
+        } else if (!matchValue.equals(other.matchValue)) {
             return false;
-        if (matchWith != other.matchWith)
+        }
+        if (matchWith != other.matchWith) {
             return false;
-        if (primaryKey != other.primaryKey)
+        }
+        if (primaryKey != other.primaryKey) {
             return false;
+        }
         return true;
     }
 
