@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -20,6 +20,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.util.SimpleMock;
+import org.junit.Test;
 
 /**
  * Unit tests for CrmfMessageHandler. 
@@ -30,14 +31,12 @@ import org.ejbca.util.SimpleMock;
  * @author mikek
  * @version $Id$
  */
-public class CrmfMessageHandlerTest extends TestCase {
+public class CrmfMessageHandlerTest {
 
     private static String USER_NAME = "foobar";
 
-    public CrmfMessageHandlerTest(String name) {
-        super(name);
-    }
 
+    @Test
     public void testExtractUserNameComponent() {
         CrmfMessageHandler crmfMessageHandler = new CrmfMessageHandler();
         /*

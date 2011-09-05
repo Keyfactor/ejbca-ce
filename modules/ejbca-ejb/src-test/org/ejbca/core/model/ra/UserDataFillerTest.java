@@ -12,26 +12,25 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.junit.Before;
+import org.junit.Test;
 
 /** Tests DN merging
  * 
  * @version $Id$
  */
-public class UserDataFillerTest extends TestCase {
+public class UserDataFillerTest {
 	EndEntityProfile profile;
 	EndEntityInformation userData = new EndEntityInformation();
-	public UserDataFillerTest(String testName) {
-        super(testName);
-    }
 
+	@Before
     public void setUp() throws Exception {
-        super.setUp();  
         userData = new EndEntityInformation("userName","CN=userName,O=linagora",-1688117755,"",
         		"user@linagora.com",1,3,1,2,0,new org.cesecore.certificates.endentity.ExtendedInformation());
         profile = new EndEntityProfile();
@@ -54,60 +53,62 @@ public class UserDataFillerTest extends TestCase {
         profile.setValue(DnComponents.ORGANIZATION, 0, "linagora");
     }
 
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
     /**
      * Test dn is merged
      */
+	@Test
     public void testFillUserDataWithDefaultValuesDnOnly() {
     	userData.setSendNotification(true);
     	userData.setPassword("userPassword");
     	String expectedUserDn="CN=userName,O=linagora,C=fr";
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertEquals("userName", userData.getUsername());
-    	Assert.assertTrue(userData.getSendNotification());
-    	Assert.assertEquals("user@linagora.com", userData.getEmail());
-    	Assert.assertEquals("userPassword", userData.getPassword());
-    	Assert.assertEquals(expectedUserDn, userData.getDN());
+    	assertEquals("userName", userData.getUsername());
+    	assertTrue(userData.getSendNotification());
+    	assertEquals("user@linagora.com", userData.getEmail());
+    	assertEquals("userPassword", userData.getPassword());
+    	assertEquals(expectedUserDn, userData.getDN());
     }
     /**
      * userName is merged
      */
+	@Test
     public void testFillUserDataWithDefaultValuesUserName() {
     	userData.setUsername("");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertTrue(!userData.getUsername().equals("userName"));
-    	Assert.assertEquals("defaultUserName", userData.getUsername());
+    	assertTrue(!userData.getUsername().equals("userName"));
+    	assertEquals("defaultUserName", userData.getUsername());
     }
     /**
      * SendNotification is merged
      */
-    public void testFillUserDataWithDefaultValuesSendNotification() {
+	@Test
+   public void testFillUserDataWithDefaultValuesSendNotification() {
     	profile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, "true");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertTrue(userData.getSendNotification());
+    	assertTrue(userData.getSendNotification());
     }
     /**
      * Email is merged
      */
+	@Test
     public void testFillUserDataWithDefaultValuesEmail() {
     	userData.setEmail("");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertEquals("defaultMail@linagora.com", userData.getEmail());
+    	assertEquals("defaultMail@linagora.com", userData.getEmail());
     	userData.setEmail("");
     	//Email is not merged because profile's email is not a valid email
     	profile.setValue(EndEntityProfile.EMAIL, 0, "@linagora.com");
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
     	//@linagora.com is not a valid e-mail address, no merge
-    	Assert.assertTrue(userData.getEmail().equals(""));
+    	assertTrue(userData.getEmail().equals(""));
     	
     }
     /**
      * Password is merged
      */
+	@Test
     public void testFillUserDataWithDefaultValuesPassword() {
     	UserDataFiller.fillUserDataWithDefaultValues(userData, profile);
-    	Assert.assertEquals("defaultPassword", userData.getPassword());
+    	assertEquals("defaultPassword", userData.getPassword());
     }
 }

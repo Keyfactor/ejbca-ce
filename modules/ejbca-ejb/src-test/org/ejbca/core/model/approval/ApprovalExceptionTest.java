@@ -13,19 +13,21 @@
 
 package org.ejbca.core.model.approval;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
 import org.cesecore.ErrorCode;
 import org.ejbca.core.EjbcaException;
+import org.junit.Test;
 
 /**
  * @version $Id$
  */
-public class ApprovalExceptionTest extends TestCase {
+public class ApprovalExceptionTest {
 
 	/**
 	 * Verify that nested ApprovalExceptions propagate errorCode.
 	 */
+	@Test
 	public void testErrorCode() {
 		ApprovalException approvalException = new ApprovalException(ErrorCode.APPROVAL_ALREADY_EXISTS, "JUnit test message..");
 		EjbcaException ejbcaException = new EjbcaException(approvalException);

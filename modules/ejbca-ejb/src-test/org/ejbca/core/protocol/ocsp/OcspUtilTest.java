@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -45,6 +49,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockDSAPublicKey;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockECDSAPublicKey;
 import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockRSAPublicKey;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * 
@@ -52,12 +58,14 @@ import org.ejbca.core.protocol.ocsp.OcspUtilMockups.MockRSAPublicKey;
  * @version $Id$
  *
  */
-public class OcspUtilTest extends TestCase {
+public class OcspUtilTest {
 	
+	@Before
 	public void setUp() throws Exception {
-		CryptoProviderTools.installBCProvider();
+		CryptoProviderTools.installBCProviderIfNotAvailable();
 	}
 
+	@Test
 	public void test01CreateOCSPCAServiceResponse() throws Exception {
 		KeyStore ks = KeyStore.getInstance("PKCS12", "BC");
 		ks.load(new ByteArrayInputStream(sceprap12), "foo123".toCharArray());
@@ -123,6 +131,7 @@ public class OcspUtilTest extends TestCase {
 		assertEquals(certId, myid);
 	}
 
+	@Test
 	public void test02getSigningAlgFromAlgSelection() throws Exception {
 		
 		RSAPublicKey rsa = new MockRSAPublicKey();

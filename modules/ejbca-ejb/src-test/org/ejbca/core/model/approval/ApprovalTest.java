@@ -13,6 +13,8 @@
 
 package org.ejbca.core.model.approval;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.cert.X509Certificate;
@@ -25,13 +27,13 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
-import junit.framework.TestCase;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test to externalize an approval
@@ -39,7 +41,7 @@ import org.cesecore.util.CryptoProviderTools;
  * $Id$
  */
 
-public class ApprovalTest extends TestCase {
+public class ApprovalTest {
 	
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
@@ -59,11 +61,12 @@ public class ApprovalTest extends TestCase {
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
             + "QUOBOvc=").getBytes());
 
-	public void setUp() throws Exception {
-		super.setUp();
+    @BeforeClass
+	public static void beforeClass() throws Exception {
 		CryptoProviderTools.installBCProvider();
 	}
 
+    @Test
 	public void testWriteExternal() throws Exception {
 		ArrayList<Approval> approvals = new ArrayList<Approval>();		
 		Approval ap = new Approval("test");

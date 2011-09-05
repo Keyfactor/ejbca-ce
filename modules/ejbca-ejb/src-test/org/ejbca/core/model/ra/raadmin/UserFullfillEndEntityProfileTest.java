@@ -13,11 +13,13 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Level;
@@ -26,6 +28,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.junit.Before;
+import org.junit.Test;
 
 
 
@@ -34,27 +38,15 @@ import org.ejbca.core.model.ra.ExtendedInformationFields;
  *
  * @version $Id$
  */
-public class UserFullfillEndEntityProfileTest extends TestCase {
+public class UserFullfillEndEntityProfileTest {
     private static final Logger log = Logger.getLogger(UserFullfillEndEntityProfileTest.class);
     final private static String standardDN = "CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE";
     
-
-    /**
-     * Creates a new TestEndEntityProfile object.
-     *
-     * @param name name
-     */
-    public UserFullfillEndEntityProfileTest(String name) {    	
-        super(name);
-    }
-
+    @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");
         log.setLevel(Level.DEBUG);
         log.trace("<setUp()");
-    }
-
-    public void tearDown() throws Exception {
     }
 
     /**
@@ -62,6 +54,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test01fulfillEndEntityProfiles() throws Exception {
         log.trace(">test01fulfillEndEntityProfiles()");
         // Dummy caids
@@ -1004,6 +997,7 @@ public class UserFullfillEndEntityProfileTest extends TestCase {
         }
     } // test01fulfillEndEntityProfiles
     
+    @Test
     public void test02fulfillEndEntityProfilesAvailableCAs() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         

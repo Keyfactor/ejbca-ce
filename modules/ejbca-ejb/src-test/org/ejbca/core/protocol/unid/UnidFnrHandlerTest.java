@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.unid;
 
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -23,8 +25,6 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
@@ -33,13 +33,16 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
+import org.junit.Test;
 
 /**
  * Testing of {@link UnidFnrHandler} .
  * @author primelars
  * @version $Id$
  */
-public class UnidFnrHandlerTest extends TestCase {
+public class UnidFnrHandlerTest {
+	
+    @Test
     public void test01() throws Exception {
     	final String unidPrefix = "1234-5678-";
     	final String fnr = "90123456789";
@@ -50,6 +53,7 @@ public class UnidFnrHandlerTest extends TestCase {
     	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
     	assertEquals(storage.unid, reqOut.getRequestX509Name().getValues(X509Name.SN).firstElement());
     }
+    
 	private static class MyStorage implements Storage {
 		final private String unidPrefix;
 		final private String fnr;

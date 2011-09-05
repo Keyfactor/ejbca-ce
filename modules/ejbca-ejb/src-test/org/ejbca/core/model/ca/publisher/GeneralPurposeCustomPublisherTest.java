@@ -13,17 +13,23 @@
 
 package org.ejbca.core.model.ca.publisher;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.util.Base64;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Was doing some unit testing when I realized that these run without a running
@@ -34,7 +40,7 @@ import org.cesecore.util.Base64;
  * @version $Id$
  * 
  */
-public class GeneralPurposeCustomPublisherTest extends TestCase {
+public class GeneralPurposeCustomPublisherTest {
 
     private static final String EXTERNAL_COMMAND_UNIX = "ls";
     private static final String EXTERNAL_COMMAND_WINDOWS = "cmd.exe /c dir";
@@ -66,6 +72,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
     private String invalidOption;
     private String commandFailsafe;
 
+    @Before
     public void setUp() {
     	admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GenPurpCustomePublisherTest"));
         //admin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -88,6 +95,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
 
     }
 
+    @After
     public void tearDown() {
         admin = null;
         gpcPublisher = null;
@@ -100,6 +108,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void testStoreCRL() {
         Properties props = new Properties();
 
@@ -117,6 +126,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
 
     }
 
+    @Test
     public void testStoreCRLwithDeltaCrl() {
         Properties props = new Properties();
         props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, commandFailsafe);
@@ -132,6 +142,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
 
     }
 
+    @Test
     public void testStoreCRLwithoutDeltaCrl() {
         Properties props = new Properties();
         props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, commandFailsafe);
@@ -147,6 +158,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
 
     }
 
+    @Test
     public void testStoreCRLWithInvalidProperties() {
         Properties props = new Properties();
 
@@ -168,6 +180,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void testErrorCodes() {
 
         Properties props = new Properties();
@@ -213,6 +226,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void testStandardErrors() {
         Properties props = new Properties();
 
@@ -256,6 +270,7 @@ public class GeneralPurposeCustomPublisherTest extends TestCase {
      * 
      * @throws Exception
      */
+    @Test
     public void testExternalExecutableDoesNotExist() throws Exception {
         Properties props = new Properties();
 
