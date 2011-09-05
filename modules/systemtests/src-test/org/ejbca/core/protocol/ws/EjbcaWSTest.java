@@ -141,7 +141,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @After
-    public void cleanUpAdmins() throws Exception {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 

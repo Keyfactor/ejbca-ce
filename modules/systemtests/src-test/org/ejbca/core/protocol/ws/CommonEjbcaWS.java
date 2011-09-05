@@ -223,8 +223,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setType(65);
 
         if (!userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+        	log.debug("Adding new user: "+user1.getUsername());
         	userAdminSession.addUser(intAdmin, user1, true);
         } else {
+        	log.debug("Changing user: "+user1.getUsername());
         	userAdminSession.changeUser(intAdmin, user1, true);
         }
         boolean adminExists = false;
@@ -236,11 +238,14 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
 
         if (!adminExists) {
+        	log.debug("Adding admin to role: "+roleName);
         	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
         	list.add(new AccessUserAspectData(roleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
         			TEST_ADMIN_USERNAME));
         	roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(roleName), list);
         	accessControlSession.forceCacheExpire();
+        } else {
+        	log.debug("Admin already exists in role: "+roleName);
         }
 
         EndEntityInformation user2 = new EndEntityInformation();
@@ -257,8 +262,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setType(1);
 
         if (!userAdminSession.existsUser(intAdmin, TEST_NONADMIN_USERNAME)) {
+        	log.debug("Adding new user: "+user2.getUsername());
         	userAdminSession.addUser(intAdmin, user2, true);
         } else {
+        	log.debug("Changing user: "+user2.getUsername());
         	userAdminSession.changeUser(intAdmin, user2, true);
         }
 
