@@ -85,10 +85,6 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         CryptoProviderTools.installBCProvider();
     }
 
-    public CustomCertSerialnumberTest(String name) throws Exception {
-
-    }
-
     @Before
     public void setUp() throws Exception {
         super.setUp();

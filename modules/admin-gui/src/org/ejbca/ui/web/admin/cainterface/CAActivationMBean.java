@@ -99,7 +99,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			complexAccessControlSession = ejb.getComplexAccessControlSession();
 			
             cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession,
-                    globalconfigurationsession, certificateProfileSession, revocationSession, userAspectSession, accessRuleSession,
+                    globalconfigurationsession, certificateProfileSession, revocationSession,
                     complexAccessControlSession, webBean);
             caInfoList = new ArrayList<CAWrapper>();
 	initializeWrappers();

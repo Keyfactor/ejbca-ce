@@ -58,8 +58,6 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
-import org.cesecore.CesecoreException;
-import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -69,8 +67,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -79,7 +75,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -94,12 +89,12 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
-import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthStatusException;
+import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -184,12 +179,10 @@ public class SignSessionTest extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertReqHistorySessionRemote certReqHistorySession = InterfaceCache.getCertReqHistorySession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private EndEntityAccessSessionRemote userAccessSession = InterfaceCache.getEndEntityAccessSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
     private CAInfo inforsa;
@@ -1975,7 +1968,7 @@ public class SignSessionTest extends CaTestCase {
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
         // check altNames, should be none
-        Collection c = cert.getSubjectAlternativeNames();
+        Collection<List<?>> c = cert.getSubjectAlternativeNames();
         assertNull(c);
 
         // Change so that we allow override of validity time
@@ -2103,7 +2096,7 @@ public class SignSessionTest extends CaTestCase {
         assertNotNull("Failed to create certificate", cert);
 
         // Check that certreq history was created
-        List history = certReqHistorySession.retrieveCertReqHistory(admin, username);
+        List<CertReqHistory> history = certReqHistorySession.retrieveCertReqHistory(admin, username);
         assertEquals(1, history.size());
 
         userAdminSession.deleteUser(admin, username);

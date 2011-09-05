@@ -14,8 +14,6 @@ package org.ejbca.core.ejb.services;
 
 import java.util.Collection;
 
-import javax.ejb.EJBException;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
@@ -106,7 +104,6 @@ public interface ServiceSession {
      * Finds a service configuration by id.
      * 
      * @returns the service configuration or null if it doesn't exist.
-     * @throws EJBException if a communication or other error occurs.
      */
     public ServiceConfiguration getServiceConfiguration(AuthenticationToken admin, int id);
 

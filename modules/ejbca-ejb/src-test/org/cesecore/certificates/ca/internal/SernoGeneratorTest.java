@@ -36,7 +36,6 @@ public class SernoGeneratorTest {
         HashMap<String, String> map = new HashMap<String, String>(500000);
         String hex = null;
 
-        int duplicates = 0;
         for (int j = 0; j < 500; j++) {
             for (int i = 1; i < 1001; i++) {
                 BigInteger bi = gen.getSerno();
@@ -45,7 +44,6 @@ public class SernoGeneratorTest {
                 hex = bi.toString(16);
 
                 if (map.put(hex, hex) != null) {
-                	duplicates++;
 //                    log.warn("Duplicate serno produced: " + hex);
 //                    log.warn("Number of sernos produced before duplicate: "+(j*1000+i));
                     assertTrue("Duplicate serno produced after "+(j*1000+i)+" sernos.", false);

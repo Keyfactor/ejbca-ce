@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.ejbca.util.query.IllegalQueryException;
 
 /**
  * Interface for message handler handling a specific CMP message
@@ -27,8 +26,6 @@ public interface ICmpMessageHandler {
 	 * 
 	 * @param msg input message
 	 * @return response message
-	 * @throws IllegalQueryException 
-	 * @throws NumberFormatException 
 	 */
 	public ResponseMessage handleMessage(BaseCmpMessage msg);
 

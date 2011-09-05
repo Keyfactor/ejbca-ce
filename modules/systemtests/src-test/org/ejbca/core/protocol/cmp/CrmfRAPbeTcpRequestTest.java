@@ -30,8 +30,6 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -45,7 +43,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -90,7 +87,6 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
 
-    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
@@ -100,8 +96,6 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     /**
      * This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
      * 
-     * @throws AuthorizationDeniedException
-     * @throws CADoesntExistsException
      */
     @BeforeClass
     public void beforeClass(String arg0) throws Exception {

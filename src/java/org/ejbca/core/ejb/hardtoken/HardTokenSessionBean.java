@@ -504,12 +504,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         boolean returnval = false;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
-            int admingroupid = htih.getAdminGroupId();
-            
             returnval = authorizationSession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/issue_hardtokens");
-
         }
-        log.trace("<getAuthorizedToHardTokenIssuer(" + returnval + ")");
+        if (log.isTraceEnabled()) {
+        	log.trace("<getAuthorizedToHardTokenIssuer(" + returnval + ")");
+        }
         return returnval;
     }
     
@@ -877,7 +876,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenCertificateMapping(certificatesn : " + certificatesn + ", tokensn : " + tokensn + ")");
         }
-        int caid = CertTools.getIssuerDN(certificate).hashCode();
         String fp = CertTools.getFingerprintAsString(certificate);
         if (HardTokenCertificateMap.findByCertificateFingerprint(entityManager, fp) == null) {
             try {
@@ -907,7 +905,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
         }
-        int caid = CertTools.getIssuerDN(certificate).hashCode();
         try {
             HardTokenCertificateMap htcm = HardTokenCertificateMap.findByCertificateFingerprint(entityManager, CertTools.getFingerprintAsString(certificate));
             if (htcm == null) {

@@ -14,8 +14,6 @@ package org.cesecore.authorization.control;
 
 import javax.ejb.Local;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-
 /**
  * Local interface for AccessControl
  * 

@@ -44,7 +44,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 
 /**
  * Holds a {@link SigningEntity} for each CA that the responder is capable of signing a response for.
@@ -187,7 +186,7 @@ class  SigningEntityContainer {
             final String tmpPassword = password!=null ? password : this.sessionData.cardPassword;
             if ( tmpPassword!=null  ) {
                 try {
-                    this.cardKeys = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(this.sessionData.hardTokenClassName).newInstance();
+                    this.cardKeys = (CardKeys)Thread.currentThread().getContextClassLoader().loadClass(this.sessionData.hardTokenClassName).newInstance();
                     this.cardKeys.autenticate(tmpPassword);
                 } catch( ClassNotFoundException e) {
                     m_log.info(intres.getLocalizedMessage("ocsp.classnotfound", this.sessionData.hardTokenClassName));
@@ -414,7 +413,7 @@ class  SigningEntityContainer {
      * @param adm  Administrator performing the operation. 
      * @return The chain of the certificate. Null if the certificate is not valid.
      */
-    private List<X509Certificate> getCertificateChain(X509Certificate cert, AuthenticationToken adm) {
+    private List<X509Certificate> getCertificateChain(X509Certificate cert) {
         String issuerDN = CertTools.getIssuerDN(cert);
         final CertificateStatus status = this.sessionData.data.certificateStoreSession.getStatus(issuerDN, CertTools.getSerialNumber(cert));
         if ( status.equals(CertificateStatus.NOT_AVAILABLE) ) {
@@ -458,7 +457,7 @@ class  SigningEntityContainer {
         if ( keyContainer==null || cert==null ) {
             return false;
         }
-        final List<X509Certificate> chain = getCertificateChain(cert, adm);
+        final List<X509Certificate> chain = getCertificateChain(cert);
         if ( chain==null || chain.size()<1 ) {
             return false;
         }

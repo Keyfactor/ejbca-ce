@@ -38,7 +38,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -79,7 +78,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	
 	private UserAdminSession userAdminSession;
 	
-	public RevocationMessageHandler(AuthenticationToken admin, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+	public RevocationMessageHandler(AuthenticationToken admin, UserAdminSession userAdminSession, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();

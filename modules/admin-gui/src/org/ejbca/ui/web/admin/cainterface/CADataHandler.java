@@ -31,8 +31,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -80,8 +78,6 @@ public class CADataHandler implements Serializable {
     private CAAdminSession caadminsession; 
     private CaSession caSession;
     private AuthenticationToken administrator;
-    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     private InformationMemory info;
     private UserAdminSession adminsession;
@@ -99,15 +95,11 @@ public class CADataHandler implements Serializable {
                          GlobalConfigurationSession globalconfigurationsession,
                          CertificateProfileSession certificateProfileSession,
                          RevocationSessionLocal revocationSession,
-                         AccessUserAspectManagerSessionLocal accessUserAspectManagerSession, 
-                         AccessRuleManagementSessionLocal accessRuleManagementSession,
                          ComplexAccessControlSessionLocal complexAccessControlSession,
                          EjbcaWebBean ejbcawebbean) {
                             
        this.caadminsession = caadminsession; 
        this.caSession = caSession;
-       this.accessRuleManagementSession = accessRuleManagementSession;
-       this.accessUserAspectManagerSession = accessUserAspectManagerSession;
        this.adminsession = adminsession;
        this.certificateProfileSession = certificateProfileSession;
        this.endEntityProfileSession = endEntityProfileSession;

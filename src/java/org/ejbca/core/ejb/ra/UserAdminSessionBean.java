@@ -183,7 +183,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
     
     /** Checks CA authorization and logs an official error if not and throws and AuthorizationDeniedException */
-    private void assertAuthorizedToCA(final AuthenticationToken admin, final int caid, final String username) throws AuthorizationDeniedException {
+    private void assertAuthorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCA(admin, caid)) {
             final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -210,7 +210,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     /** Checks EEP authorization and logs an official error if not and throws and AuthorizationDeniedException */
-    private void assertAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int endEntityProfileId, final String accessRule, final int caId, final String username, final int logEvent) throws AuthorizationDeniedException {
+    private void assertAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int endEntityProfileId, final String accessRule, final int caId) throws AuthorizationDeniedException {
         if (!authorizedToEndEntityProfile(admin, endEntityProfileId, accessRule)) {
             final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(endEntityProfileId));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -254,11 +254,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final int caid = endEntity.getCAId();
         final String username = StringTools.strip(endEntity.getUsername());
         // Check if administrator is authorized to add user to CA.
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to add user.
-        	assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.CREATE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_ADDEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.CREATE_RIGHTS, caid);
         }
     	final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(admin, endEntityProfileId);
         try {
@@ -310,7 +310,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final CAInfo caInfo = caSession.getCAInfo(admin, caid);
         // Check if approvals is required. (Only do this if store users, otherwise this approval is disabled.)
         if (caInfo.isUseUserStorage()) {
-        	final int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, endEntity.getCertificateProfileId());
+        	final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, endEntity.getCertificateProfileId());
         	if (numOfApprovalsRequired > 0) {
             	AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(endEntity, clearpwd, admin, null, numOfApprovalsRequired, caid, endEntityProfileId);
             	if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {
@@ -355,7 +355,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 	if (profile==null) {
                 		profile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileId);
                 	}
-        			print(admin, profile, endEntity);
+        			print(profile, endEntity);
         		}
         		final String msg = intres.getLocalizedMessage("ra.addedentity", username);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -413,14 +413,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     /**
      * Help method that checks the CA data config if specified action requires
      * approvals and how many
-     * 
      * @param action one of CAInfo.REQ_APPROVAL_ constants
      * @param caid of the ca to check
      * @param certprofileid of the certificate profile to check
+     * 
      * @return 0 of no approvals is required or no such CA exists, otherwise the
      *         number of approvals
      */
-    private int getNumOfApprovalRequired(AuthenticationToken admin, int action, int caid, int certprofileid) {
+    private int getNumOfApprovalRequired(int action, int caid, int certprofileid) {
         return caAdminSession.getNumOfApprovalRequired(action, caid, certprofileid);
     }
 
@@ -456,11 +456,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final int caid = userDataVO.getCAId();
         final String username = userDataVO.getUsername();
         // Check if administrator is authorized to edit user to CA.
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
-        	assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.EDIT_RIGHTS, caid);
         }
         try {
             FieldValidator.validate(userDataVO, endEntityProfileId, endEntityProfileSession.getEndEntityProfileName(admin, endEntityProfileId));
@@ -546,7 +546,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             }
         }
         // Check if approvals is required.
-        final int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, userDataVO.getCertificateProfileId());
+        final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, userDataVO.getCertificateProfileId());
         if (numOfApprovalsRequired > 0) {
             final EndEntityInformation orguserdata = userData.toUserDataVO();
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userDataVO, clearpwd, orguserdata, admin, null, numOfApprovalsRequired, caid, endEntityProfileId);
@@ -620,7 +620,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 // every time we press save
                 if ((type & SecConst.USER_PRINT) != 0
                         && (newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_KEYRECOVERY || newstatus == UserDataConstants.STATUS_INITIALIZED)) {
-                    print(admin, profile, userDataVO);
+                    print(profile, userDataVO);
                 }
                 final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(newstatus));
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -656,9 +656,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username);
+            assertAuthorizedToCA(admin, caid);
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-            	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_DELETEENDENTITY);
+            	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
             }
         } else {
             String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);
@@ -708,7 +708,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     	final UserData data1 = UserData.findByUsername(entityManager, username);
     	if (data1 != null) {
     		caid = data1.getCaId();
-    		assertAuthorizedToCA(admin, caid, username);
+    		assertAuthorizedToCA(admin, caid);
     		final ExtendedInformation ei = data1.getExtendedInformation();
     		if (ei != null) {
     			resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
@@ -756,7 +756,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username);
+            assertAuthorizedToCA(admin, caid);
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
             	counter = ei.getRemainingLoginAttempts();
@@ -814,9 +814,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid, username);
+            assertAuthorizedToCA(admin, caid);
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-            	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+            	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
             }
             // Do the work of decreasing the counter
             ExtendedInformation ei = data1.getExtendedInformation();
@@ -924,9 +924,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Check if administrator is authorized to edit user.
             UserData data1 = UserData.findByUsername(entityManager, username);
             if (data1 != null) {
-                assertAuthorizedToCA(admin, caid, username);
+                assertAuthorizedToCA(admin, caid);
                 if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+                	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
                 }
                 final ExtendedInformation ei = data1.getExtendedInformation();
                 if (ei == null) {
@@ -964,9 +964,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         // Check authorization
         final int caid = data.getCaId();
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
         }
         setUserStatus(admin, data, status);
     }
@@ -977,7 +977,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final String username = data1.getUsername();
         final int endEntityProfileId = data1.getEndEntityProfileId();
         // Check if approvals is required.
-        final int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
+        final int numOfApprovalsRequired = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid, data1.getCertificateProfileId());
         if (numOfApprovalsRequired > 0) {
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin, null,
                     numOfApprovalsRequired, data1.getCaId(), endEntityProfileId);
@@ -1077,9 +1077,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 throw ufe;
             }
             // Check if administrator is authorized to edit user.
-        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
         }
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         try {
         	final Date now = new Date();
             if ((newpasswd == null) && (cleartext)) {
@@ -1121,9 +1121,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         int caid = data.getCaId();
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
-        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid, username, LogConstants.EVENT_INFO_CHANGEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
         }
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         try {
             ret = data.comparePassword(password);
         } catch (NoSuchAlgorithmException nsae) {
@@ -1148,14 +1148,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         // Authorized?
         final int caid = data.getCaId();
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
         try {
             if (data.getStatus() != UserDataConstants.STATUS_REVOKED) {
                 // Check if approvals is required.
-                final int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, caid, data.getCertificateProfileId());
+                final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, data.getCertificateProfileId());
                 if (numOfReqApprovals > 0) {
                     final RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin, numOfReqApprovals, caid, data.getEndEntityProfileId());
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
@@ -1191,9 +1191,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new FinderException("Could not find user " + username);
         }
         final int caid = userData.getCaId();
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-        	assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
+        	assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
         if (userData.getStatus() == UserDataConstants.STATUS_REVOKED) {
         	final String msg = intres.getLocalizedMessage("ra.errorbadrequest", Integer.valueOf(userData.getEndEntityProfileId()));
@@ -1201,7 +1201,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new AlreadyRevokedException(msg);
         }
         // Check if approvals is required.
-        final int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, caid, userData.getCertificateProfileId());
+        final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, userData.getCertificateProfileId());
         if (numOfReqApprovals > 0) {
         	final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, numOfReqApprovals, caid, userData.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
@@ -1270,7 +1270,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         final int caid = info.getIssuerDN().hashCode();
         final String username = info.getUsername();
-        assertAuthorizedToCA(admin, caid, username);
+        assertAuthorizedToCA(admin, caid);
         int certificateProfileId = info.getCertificateProfileId();
         String userDataDN = info.getSubjectDN();
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(admin, certserno, issuerdn);
@@ -1302,7 +1302,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (endEntityProfileId != -1) {
         	// We can only perform this check if we have a trail of what eep was used..
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-            	assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.REVOKE_RIGHTS, caid, username, LogConstants.EVENT_ERROR_REVOKEDENDENTITY);
+            	assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.REVOKE_RIGHTS, caid);
             }
         }
         // Check that unrevocation is not done on anything that can not be unrevoked
@@ -1322,7 +1322,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (endEntityProfileId!=-1 && certificateProfileId!=CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
         	// We can only perform this check if we have a trail of what eep and cp was used..
             // Check if approvals is required.
-            final int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, caid, certificateProfileId);
+            final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, certificateProfileId);
             if (numOfReqApprovals > 0) {
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, numOfReqApprovals, caid, endEntityProfileId);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
@@ -1649,7 +1649,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         return UserData.countByHardTokenProfileId(entityManager, profileid) > 0;
     }
 
-    private void print(AuthenticationToken admin, EndEntityProfile profile, EndEntityInformation userdata) {
+    private void print(EndEntityProfile profile, EndEntityInformation userdata) {
         try {
             if (profile.getUsePrinting()) {
                 String[] pINs = new String[1];

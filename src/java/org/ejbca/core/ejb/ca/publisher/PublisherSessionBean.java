@@ -92,28 +92,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
             int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
             ExtendedInformation extendedinformation) {
-        return storeCertificate(admin, LogConstants.EVENT_INFO_STORECERTIFICATE, LogConstants.EVENT_ERROR_STORECERTIFICATE, publisherids, incert, username,
-                password, userDN, cafp, status, type, revocationDate, revocationReason, tag, certificateProfileId, lastUpdate, extendedinformation);
-    }
-
-    @Override
-    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
-            long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
-        storeCertificate(admin, LogConstants.EVENT_INFO_REVOKEDCERT, LogConstants.EVENT_ERROR_REVOKEDCERT, publisherids, cert, username, null, userDN, cafp,
-                SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
-    }
-
-    /**
-     * The same basic method is be used for both store and revoke
-     * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
-     */
-    private boolean storeCertificate(AuthenticationToken admin, int logInfoEvent, int logErrorEvent, Collection<Integer> publisherids, Certificate cert, String username,
-            String password, String userDN, String cafp, int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId,
-            long lastUpdate, ExtendedInformation extendedinformation) {
     	if (publisherids == null) {
     		return true;
     	}
-        String certSerno = CertTools.getSerialNumberAsString(cert);
+        String certSerno = CertTools.getSerialNumberAsString(incert);
         Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
@@ -121,12 +103,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             Integer id = iter.next();
             PublisherData pdl = PublisherData.findById(entityManager, Integer.valueOf(id));
             if (pdl != null) {
-                String fingerprint = CertTools.getFingerprintAsString(cert);
+                String fingerprint = CertTools.getFingerprintAsString(incert);
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
                     	try {
-                    		if (publisherQueueSession.storeCertificateNonTransactional(getPublisher(pdl), admin, cert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
+                    		if (publisherQueueSession.storeCertificateNonTransactional(getPublisher(pdl), admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
                     				tag, certificateProfileId, lastUpdate, extendedinformation)) {
                     			publishStatus = PublisherConst.STATUS_SUCCESS;
                     		}
@@ -138,7 +120,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         		throw e;
                         	}
                         }
-                        String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(cert), pdl.getName());
+                        String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(incert), pdl.getName());
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), username, certSerno, details);
@@ -166,7 +148,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     pqvd.setPassword(password);
                     pqvd.setExtendedInformation(extendedinformation);
                     pqvd.setUserDN(userDN);
-                    String fp = CertTools.getFingerprintAsString(cert);
+                    String fp = CertTools.getFingerprintAsString(incert);
                     try {
                         publisherQueueSession.addQueueData(id.intValue(), PublisherConst.PUBLISH_TYPE_CERT, fp, pqvd, publishStatus);
                         String msg = intres.getLocalizedMessage("publisher.storequeue", pdl.getName(), fp, status);
@@ -184,7 +166,18 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         return returnval;
     }
-    
+
+    /**
+     * The same basic method is be used for both store and revoke
+     * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
+     */
+    @Override
+    public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
+            long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
+        storeCertificate(admin, publisherids, cert, username, null, userDN, cafp,
+                SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
+    }
+
     @Override
     public boolean storeCRL(AuthenticationToken admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String userDN) {
         log.trace(">storeCRL");

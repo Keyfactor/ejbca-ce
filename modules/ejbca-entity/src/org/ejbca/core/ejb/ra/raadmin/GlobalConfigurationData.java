@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;

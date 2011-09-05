@@ -44,7 +44,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -95,11 +94,11 @@ public class InformationMemory implements Serializable {
     CertificateProfileNameProxy certificateprofilenameproxy = null;
 
     /** Creates a new instance of ProfileNameProxy */
-    public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSession caSession, RaAdminSession raadminsession,
-            AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession,
-            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardtokensession, PublisherSession publishersession,
-            UserDataSourceSession userdatasourcesession, CertificateProfileSession certificateProfileSession,
-            GlobalConfigurationSession globalConfigurationSession, GlobalConfiguration globalconfiguration) {
+    public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSession caSession, AccessControlSessionLocal authorizationsession,
+            ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
+            HardTokenSession hardtokensession, PublisherSession publishersession, UserDataSourceSession userdatasourcesession,
+            CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession,
+            GlobalConfiguration globalconfiguration) {
         this.caadminsession = caadminsession;
         this.administrator = administrator;
         this.endEntityProfileSession = endEntityProfileSession;
@@ -248,7 +247,7 @@ public class InformationMemory implements Serializable {
      */
     public CertificateProfileNameProxy getCertificateProfileNameProxy() {
         if (certificateprofilenameproxy == null) {
-            certificateprofilenameproxy = new CertificateProfileNameProxy(administrator, certificateProfileSession);
+            certificateprofilenameproxy = new CertificateProfileNameProxy(certificateProfileSession);
         }
         return certificateprofilenameproxy;
     }

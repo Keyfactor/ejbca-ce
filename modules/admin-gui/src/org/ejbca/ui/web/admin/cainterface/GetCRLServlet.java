@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -106,7 +105,6 @@ public class GetCRLServlet extends HttpServlet {
         }
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
-                AuthenticationToken admin = ejbcawebbean.getAdminObject();
                 byte[] crl = crlStoreSession.getLastCRL(issuerdn, false);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
@@ -129,7 +127,6 @@ public class GetCRLServlet extends HttpServlet {
         }
         if (command.equalsIgnoreCase(COMMAND_DELTACRL) && issuerdn != null) {
         	try {
-        		AuthenticationToken admin = ejbcawebbean.getAdminObject();
         		byte[] crl = crlStoreSession.getLastCRL(issuerdn, true);
         		X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         		String dn = CertTools.getIssuerDN(x509crl);

@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
@@ -155,7 +154,6 @@ public class JKStoPEM {
      * @throws KeyStoreException DOCUMENT ME!
      * @throws FileNotFoundException DOCUMENT ME!
      * @throws IOException DOCUMENT ME!
-     * @throws NoSuchProviderException DOCUMENT ME!
      * @throws NoSuchAlgorithmException DOCUMENT ME!
      * @throws CertificateEncodingException DOCUMENT ME!
      * @throws CertificateException DOCUMENT ME!
@@ -173,7 +171,7 @@ public class JKStoPEM {
             in.close();
         }
         // Find the key private key entry in the keystore
-        Enumeration e = ks.aliases();
+        Enumeration<String> e = ks.aliases();
         Object o = null;
         PrivateKey serverPrivKey = null;
 

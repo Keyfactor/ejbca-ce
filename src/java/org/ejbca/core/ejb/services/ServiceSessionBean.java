@@ -175,7 +175,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             log.trace(">addService(name: " + name + ", id: " + id + ")");
         }
         boolean success = false;
-        if (isAuthorizedToEditService(admin, serviceConfiguration)) {
+        if (isAuthorizedToEditService(admin)) {
             if (serviceDataSession.findByName(name) == null) {
                 if (serviceDataSession.findById(Integer.valueOf(id)) == null) {
                     try {
@@ -218,7 +218,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
         try {
             servicedata = (ServiceConfiguration) htp.getServiceConfiguration().clone();
-            if (isAuthorizedToEditService(admin, servicedata)) {
+            if (isAuthorizedToEditService(admin)) {
                 addService(admin, newname, servicedata);
                 final String msg = intres.getLocalizedMessage("services.servicecloned", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -249,7 +249,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 throw new FinderException("Cannot find service " + name);
             }
             ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
-            if (isAuthorizedToEditService(admin, serviceConfiguration)) {
+            if (isAuthorizedToEditService(admin)) {
                 IWorker worker = getWorker(serviceConfiguration, name, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                 if (worker != null) {
                     serviceSession.cancelTimer(htp.getId());
@@ -286,7 +286,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (serviceDataSession.findByName(newname) == null) {
             ServiceData htp = serviceDataSession.findByName(oldname);
             if (htp != null) {
-                if (isAuthorizedToEditService(admin, htp.getServiceConfiguration())) {
+                if (isAuthorizedToEditService(admin)) {
                     htp.setName(newname);
                     success = true;
                 } else {
@@ -368,7 +368,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         ServiceData htp = serviceDataSession.findByName(name);
         if (htp != null) {
             ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
-            if (isAuthorizedToEditService(admin, serviceConfiguration)) {
+            if (isAuthorizedToEditService(admin)) {
                 IWorker worker = getWorker(serviceConfiguration, name, htp.getRunTimeStamp(), htp.getNextRunTimeStamp());
                 if (worker != null) {
                     serviceSession.cancelTimer(htp.getId());
@@ -626,7 +626,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             log.trace(">changeService(name: " + name + ")");
         }
         boolean success = false;
-        if (isAuthorizedToEditService(admin, serviceConfiguration)) {
+        if (isAuthorizedToEditService(admin)) {
             if (serviceDataSession.updateServiceConfiguration(name, serviceConfiguration)) {
                 success = true;
             } else {
@@ -886,7 +886,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      * 
      * @return true if the administrator is authorized
      */
-    private boolean isAuthorizedToEditService(AuthenticationToken admin, ServiceConfiguration serviceConfiguraion) {
+    private boolean isAuthorizedToEditService(AuthenticationToken admin) {
 
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             return true;

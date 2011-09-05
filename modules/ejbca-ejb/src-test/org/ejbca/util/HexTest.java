@@ -11,8 +11,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.security.cert.Certificate;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.util.Base64;

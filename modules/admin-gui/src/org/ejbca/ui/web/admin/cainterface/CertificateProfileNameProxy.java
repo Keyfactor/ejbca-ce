@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.util.HashMap;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 
 /**
@@ -28,13 +27,11 @@ public class CertificateProfileNameProxy implements java.io.Serializable {
     
     private HashMap certificateprofilenamestore;
     private CertificateProfileSession certificateProfileSession;
-    private AuthenticationToken admin;
 
     /** Creates a new instance of ProfileNameProxy */
-    public CertificateProfileNameProxy(AuthenticationToken administrator, CertificateProfileSession certificateProfileSession){
+    public CertificateProfileNameProxy(CertificateProfileSession certificateProfileSession){
       this.certificateProfileSession = certificateProfileSession;
       certificateprofilenamestore = new HashMap(); 
-      this.admin = administrator;
     }
     
     /**

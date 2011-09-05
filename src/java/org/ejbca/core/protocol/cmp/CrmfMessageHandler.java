@@ -48,7 +48,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
