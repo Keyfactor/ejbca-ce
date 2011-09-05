@@ -181,7 +181,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
             // Ignore errors
         }
     }
-
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     @Test
     public void test01CrmfHttpOkUserWrongKeyId() throws Exception {
 

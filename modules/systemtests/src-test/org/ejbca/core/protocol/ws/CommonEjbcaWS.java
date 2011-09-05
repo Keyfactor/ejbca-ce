@@ -181,7 +181,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final String CA1 = "CA1";
     private static final String CA2 = "CA2";
     private static final String WS_EEPROF_EI = "WS_EEPROF_EI";
-
+    
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
@@ -195,8 +195,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-	final String wsroleName = "EjbcaWSTest";
-
+    
     public CommonEjbcaWS() {
 
         hostname = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
@@ -234,12 +233,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	userAdminSession.changeUser(intAdmin, user1, true);
         }
         boolean adminExists = false;
-        RoleData role = roleAccessSession.findRole(wsroleName);
+        RoleData role = roleAccessSession.findRole(getRoleName());
         if (role == null) {
-        	log.info("Creating new role: "+wsroleName);
-            role = roleManagementSession.create(roleMgmgToken, wsroleName);
+        	log.info("Creating new role: "+getRoleName());
+            role = roleManagementSession.create(roleMgmgToken, getRoleName());
             final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(wsroleName, "/", AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(getRoleName(), "/", AccessRuleState.RULE_ACCEPT, true));
             role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
         }
         for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
@@ -248,14 +247,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	}
         }
         if (!adminExists) {
-        	log.info("Adding admin to role: "+wsroleName);
+        	log.info("Adding admin to role: "+getRoleName());
         	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-        	list.add(new AccessUserAspectData(wsroleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+        	list.add(new AccessUserAspectData(getRoleName(), cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
         			TEST_ADMIN_USERNAME));
+        	roleManagementSession.addSubjectsToRole(intAdmin, roleAccessSession.findRole(getRoleName()), list);
         	roleManagementSession.addSubjectsToRole(intAdmin, role, list);
         	accessControlSession.forceCacheExpire();
         } else {
-        	log.info("Admin already exists in role: "+roleName);
+        	log.info("Admin already exists in role: "+getRoleName());
         }
 
         EndEntityInformation user2 = new EndEntityInformation();
@@ -2398,8 +2398,24 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void cleanUpAdmins() throws Exception {
+        if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+            // Remove from admin group
+            RoleData admingroup = roleAccessSession.findRole(getRoleName());
+            if (admingroup != null) {
+                for (AccessUserAspectData accessUserAspect : admingroup.getAccessUsers().values()) {
+                    if (accessUserAspect.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
+                        Collection<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
+                        list.add(accessUserAspect);
+                        roleManagementSession.removeSubjectsFromRole(intAdmin, roleAccessSession.findRole(getRoleName()), list);
+                        accessControlSession.forceCacheExpire();
+                    }
+                }            	
+            }
+            // Remove user
+            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
     	// Remove role
-    	RoleData role = roleAccessSession.findRole(wsroleName);
+    	RoleData role = roleAccessSession.findRole(getRoleName());
     	if (role != null) {
     		roleManagementSession.remove(roleMgmgToken, role);
 			accessControlSession.forceCacheExpire();

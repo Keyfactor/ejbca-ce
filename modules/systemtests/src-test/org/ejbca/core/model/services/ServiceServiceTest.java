@@ -194,6 +194,10 @@ public class ServiceServiceTest extends CaTestCase {
         log.trace("<test99CleanUp()");
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     private ServiceConfiguration createAServiceConfig(final String username, final String caName) throws Exception {
         // Create a new user
         final String pwd = genRandomPwd();

@@ -171,4 +171,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         super.tearDown();
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 }

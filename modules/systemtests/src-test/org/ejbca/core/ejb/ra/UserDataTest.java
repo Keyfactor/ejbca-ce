@@ -107,6 +107,10 @@ public class UserDataTest extends CaTestCase {
 
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     public void createNewUser() throws Exception {
         username = genRandomUserName();
         pwd = genRandomPwd();

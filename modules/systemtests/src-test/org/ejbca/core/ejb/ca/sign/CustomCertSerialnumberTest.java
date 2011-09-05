@@ -116,6 +116,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
+      super.tearDown();
         try {
             userAdminSession.deleteUser(admin, "foo");
             log.debug("deleted user: foo");
@@ -281,4 +282,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         log.trace("<test04CreateCertWithCustomSNNotAllowed()");
     }
 
+    public String getRoleName() {
+        return ""; 
+    }
 }

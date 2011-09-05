@@ -76,8 +76,7 @@ public class CertRequestHttpTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public static void beforeClass() {
-        
+    public static void beforeClass() {    
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
         
@@ -92,6 +91,7 @@ public class CertRequestHttpTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
     	try {
     		userAdminSession.deleteUser(admin, "reqtest");
     	} catch (NotFoundException e) {
@@ -446,4 +446,7 @@ public class CertRequestHttpTest extends CaTestCase {
         log.debug("Set status to: " + status);
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 }

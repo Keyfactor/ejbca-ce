@@ -250,4 +250,8 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     private boolean certificateExists(Certificate certificate) {
         return certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate)) != null;
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 }

@@ -230,6 +230,10 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         }
         assertTrue("Unable to clean up properly.", cleanUpOk);
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     @Test
     public void test01CrmfHttpOkUser() throws Exception {

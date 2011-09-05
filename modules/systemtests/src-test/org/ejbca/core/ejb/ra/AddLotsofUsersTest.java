@@ -49,13 +49,18 @@ public class AddLotsofUsersTest extends CaTestCase {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
     }
 
     @After
     public void tearDown() throws Exception {
-
+        super.tearDown();
     }
 
+    public String getRoleName() {
+        return "AddLotsofUsersTest"; 
+    }
+    
     /**
      * Generate a new user name
      */

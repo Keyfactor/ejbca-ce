@@ -382,6 +382,10 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         removeCertificateProfile(CERTPROFILE4);
         removeCertificateProfile(CERTPROFILE5);
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     private void removeCA(int caId) {
         try {

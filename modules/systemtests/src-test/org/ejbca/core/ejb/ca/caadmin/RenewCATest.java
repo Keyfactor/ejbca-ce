@@ -50,6 +50,10 @@ public class RenewCATest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     /**
      * renews CA.

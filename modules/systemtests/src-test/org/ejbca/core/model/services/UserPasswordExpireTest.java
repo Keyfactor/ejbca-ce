@@ -69,6 +69,10 @@ public class UserPasswordExpireTest extends CaTestCase {
         serviceSession.removeService(admin, "TestUserPasswordService");
         log.debug("Removed service: TestUserPasswordService");
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     /**
      * Add a new user and an expire service. Test that the service expires the

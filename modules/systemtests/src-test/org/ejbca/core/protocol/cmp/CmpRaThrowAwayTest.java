@@ -115,6 +115,10 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         LOG.trace("<testZZZTearDown");
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     /**
      * Sends a certificate request message and verifies result. Sends a confirm message and verifies result. Sends a revocation message and verifies
      * result. (If we save certificate data!)

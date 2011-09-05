@@ -360,12 +360,12 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "certcreatereq", "foo123");
         	req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
         	req.setRequestDN("CN=foounique,O=PrimeKey,C=SE");
-        	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user1, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+        	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user1, req, X509ResponseMessage.class);
             assertNotNull("Failed to create cert", resp);
         	fp1 = CertTools.getFingerprintAsString(resp.getCertificate());
             // Create second cert, should not work with the same DN
             try {
-            	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user2, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user2, req, X509ResponseMessage.class);
             	assertTrue("Should not work to create same DN with another username", false);
             } catch (CesecoreException e) {
             	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());

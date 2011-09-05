@@ -52,7 +52,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.util.InterfaceCache;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -259,13 +259,16 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     	}
     }
 
-    @AfterClass
-    public void testZZZCleanUp() throws Exception {
-    	log.trace(">testZZZCleanUp");
+    @After
+    public void tearDown() throws Exception {
+    	super.tearDown();
         assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
         // Remove test profiles
         certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");
         eeProfileSession.removeEndEntityProfile(admin, "CMPTESTPROFILE");
-    	log.trace("<testZZZCleanUp");
+    }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
     }
 }

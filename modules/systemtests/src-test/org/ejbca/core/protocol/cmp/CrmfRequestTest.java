@@ -156,6 +156,10 @@ public class CrmfRequestTest extends CmpTestCase {
         }
         assertTrue("Unable to clean up properly.", cleanUpOk);
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     // client mode
     @Test

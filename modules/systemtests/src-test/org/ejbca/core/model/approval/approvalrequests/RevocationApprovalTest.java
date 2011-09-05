@@ -127,18 +127,18 @@ public class RevocationApprovalTest extends CaTestCase {
         	makep12.setMainStoreDir(tmpfile.getParent());
         	makep12.createAllNew();
         }
-        RoleData role = roleAccessSession.findRole(roleName);
+        RoleData role = roleAccessSession.findRole(getRoleName());
         if (role == null) {
-        	role = roleManagementSession.create(internalAdmin, roleName);
+        	role = roleManagementSession.create(internalAdmin, getRoleName());
         }
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(getRoleName(), AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(getRoleName(), AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
         adminentities = new ArrayList<AccessUserAspectData>();
-        adminentities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
-        adminentities.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
+        adminentities.add(new AccessUserAspectData(getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
+        adminentities.add(new AccessUserAspectData(getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
         roleManagementSession.addSubjectsToRole(internalAdmin, role, adminentities);
         accessControlSession.forceCacheExpire();
      
@@ -151,6 +151,10 @@ public class RevocationApprovalTest extends CaTestCase {
         approvalCAID = createApprovalCA(internalAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
     }
 
+    public String getRoleName() {
+        return "RevocationApprovalTest";
+    }
+    
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(certificate.getSubjectX500Principal());

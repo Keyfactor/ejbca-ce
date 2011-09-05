@@ -179,5 +179,8 @@ public class CertificateExpireTest extends CaTestCase {
         log.trace("<test01CreateNewUser()");
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
 }

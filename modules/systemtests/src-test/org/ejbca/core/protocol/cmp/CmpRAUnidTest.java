@@ -188,6 +188,10 @@ public class CmpRAUnidTest extends CmpTestCase {
         this.certificateProfileSession.removeCertificateProfile(this.admin, CPNAME);
         assertTrue("Unable to clean up properly.", this.configurationSession.restoreConfiguration());
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     @Override
     protected void checkDN(String sExpected, X509Name actual) {

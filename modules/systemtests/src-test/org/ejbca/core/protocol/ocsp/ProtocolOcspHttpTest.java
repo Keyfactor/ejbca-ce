@@ -245,6 +245,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     }
 
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
+    
     @Test
     public void test01Access() throws Exception {
         super.test01Access();

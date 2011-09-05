@@ -296,11 +296,13 @@ public class CrmfRARequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        log.trace(">testZZZCleanUp");
         Assert.assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
         // Remove test profiles
         certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");
         eeProfileSession.removeEndEntityProfile(admin, "CMPTESTPROFILE");
-        log.trace("<testZZZCleanUp");
+    }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
     }
 }

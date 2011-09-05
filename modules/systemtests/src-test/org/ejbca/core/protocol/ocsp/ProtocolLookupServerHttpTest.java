@@ -127,6 +127,10 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
     }
+        
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     /**
      * Tests ocsp message with good status and a valid unid

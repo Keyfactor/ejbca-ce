@@ -83,6 +83,10 @@ public class HardTokenTest extends CaTestCase {
         super.tearDown();
 
     }
+    
+    public String getRoleName() {
+        return this.getClass().getSimpleName(); 
+    }
 
     @Test
     public void test01AddHardToken() throws Exception {

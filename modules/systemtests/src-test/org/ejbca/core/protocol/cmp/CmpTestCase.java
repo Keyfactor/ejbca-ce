@@ -116,7 +116,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * @author tomas
  * @version $Id$
  */
-public class CmpTestCase extends CaTestCase {
+public abstract class CmpTestCase extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CmpTestCase.class);
 
