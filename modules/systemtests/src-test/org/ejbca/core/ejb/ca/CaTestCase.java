@@ -43,6 +43,7 @@ import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
@@ -57,6 +58,8 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -90,9 +93,12 @@ import org.junit.Assert;
  */
 public abstract class CaTestCase extends RoleUsingTestCase {
 
+    public static final String TEST_RSA_REVERSE_CA_NAME = "TESTRSAREVERSE";
+    public static final String TEST_RSA_REVSERSE_CA_DN = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
+    
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private CAAdminSessionRemote caAdminSessionRemote = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
+    private CAAdminSessionRemote caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
     private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -277,7 +283,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         );
 
         try {
-            this.caAdminSessionRemote.createCA(admin, cainfo);
+            this.caAdminSession.createCA(admin, cainfo);
         } catch (Exception e) {
             log.error("", e);
             return false;
@@ -449,5 +455,85 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     public CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException {
         return this.caSession.getCAInfo(admin, name);
+    }
+    
+    protected void createTestRSAReverseCa(AuthenticationToken admin) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, AuthorizationDeniedException {
+        String dn = TEST_RSA_REVSERSE_CA_DN;
+        String name = TEST_RSA_REVERSE_CA_NAME;
+
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        // Create and active OSCP CA Service.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + dn, "", "1024",
+                AlgorithmConstants.KEYALGORITHM_RSA));
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+
+        X509CAInfo cainfo = new X509CAInfo(
+                dn,
+                name,
+                SecConst.CA_ACTIVE,
+                new Date(),
+                "",
+                SecConst.CERTPROFILE_FIXED_ROOTCA,
+                365,
+                null, // Expiretime
+                CAInfo.CATYPE_X509,
+                CAInfo.SELFSIGNED,
+                (Collection<Certificate>) null,
+                catokeninfo,
+                "JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
+                -1, null, null, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                0, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                false, // Use X500 DN order
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, // Include in health check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+
+        caAdminSession.createCA(admin, cainfo);
     }
 }
