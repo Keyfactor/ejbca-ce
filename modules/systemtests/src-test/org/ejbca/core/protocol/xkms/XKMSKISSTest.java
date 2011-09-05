@@ -13,6 +13,9 @@
 
 package org.ejbca.core.protocol.xkms;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -29,8 +32,6 @@ import java.util.Random;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.XMLGregorianCalendar;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -58,6 +59,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.KeyValueType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -83,7 +87,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * @version $Id$
  */
 
-public class XKMSKISSTest extends TestCase {
+public class XKMSKISSTest {
 
     private static Logger log = Logger.getLogger(XKMSKISSTest.class);
 
@@ -123,6 +127,7 @@ public class XKMSKISSTest extends TestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
+    @Before
     public void setUp() throws Exception {
         log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
@@ -133,9 +138,11 @@ public class XKMSKISSTest extends TestCase {
         log.trace("<setUp()");
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
+	@Test
     public void test00SetupDatabase() throws Exception {
     	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
@@ -222,6 +229,7 @@ public class XKMSKISSTest extends TestCase {
         log.debug("username3: \"" + username3 + "\" dn3: \"" + dn3 + "\"");
     }
 
+	@Test
     public void test01AbstractType() throws Exception {
         LocateRequestType abstractRequestType = xKMSObjectFactory.createLocateRequestType();
         abstractRequestType.setId("123");
@@ -243,6 +251,7 @@ public class XKMSKISSTest extends TestCase {
 
     }
 
+	@Test
     public void test02TimeInstantNotSupported() throws Exception {
         LocateRequestType localteRequestType = xKMSObjectFactory.createLocateRequestType();
         localteRequestType.setId("124");
@@ -262,6 +271,7 @@ public class XKMSKISSTest extends TestCase {
 
     }
 
+	@Test
     public void test03Locate() throws Exception {
 
         // Test simple locate
@@ -283,6 +293,7 @@ public class XKMSKISSTest extends TestCase {
         assertTrue(locateResultType.getUnverifiedKeyBinding().size() > 0);
     }
 
+	@Test
     public void test04LocateAndUseKeyWith() throws Exception {
 
         // Locate by URI
@@ -430,6 +441,7 @@ public class XKMSKISSTest extends TestCase {
         assertTrue(locateResultType.getUnverifiedKeyBinding().size() == 1);
     }
 
+	@Test
     public void test05LocateAndReturnWith() throws Exception {
         // Test with returnwith values, first check that certificate is
         // returning
@@ -807,6 +819,7 @@ public class XKMSKISSTest extends TestCase {
 
     }
 
+	@Test
     public void test06LocateAndKeyUsage() throws Exception {
         // request with Signature and expect signature
         LocateRequestType locateRequestType = xKMSObjectFactory.createLocateRequestType();
@@ -987,6 +1000,7 @@ public class XKMSKISSTest extends TestCase {
 
     }
 
+	@Test
     public void test07LocateAndResponseLimit() throws Exception {
         // request with 3 and expect 3
         LocateRequestType locateRequestType = xKMSObjectFactory.createLocateRequestType();
@@ -1031,6 +1045,7 @@ public class XKMSKISSTest extends TestCase {
             + "9w0BAQUFAAOBgQA1cB6wWzC2rUKBjFAzfkLvDUS3vEMy7ntYMqqQd6+5s1LHCoPw" + "eaR42kMWCxAbdSRgv5ATM0JU3Q9jWbLO54FkJDzq+vw2TaX+Y5T+UL1V0o4TPKxp"
             + "nKuay+xl5aoUcVEs3h3uJDjcpgMAtyusMEyv4d+RFYvWJWFzRTKDueyanw==").getBytes());
 
+	@Test
     public void test09Validate() throws Exception {
 
         // Test simple validate

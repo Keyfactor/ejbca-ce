@@ -13,29 +13,35 @@
 
 package org.ejbca.core.ejb.log;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Date;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-public class LoggingStressTest extends TestCase {
+public class LoggingStressTest {
 	
 	private static Logger log = Logger.getLogger(LoggingStressTest.class);
 	
 	private static final int NUMBER_OF_THREADS = 10; 
 	private static final int TIME_TO_RUN = 15*60000; // Run for 15 minutes
 
+	@Before
     public void setUp() throws Exception {
     }
 
+	@After
     public void tearDown() throws Exception {
     }
 
+	@Test
     public void test01LogALot() throws Exception {
 		ArrayList<Thread> threads = new ArrayList<Thread>(); // NOPMD, it's not a JEE app
 		for (int i=0; i<NUMBER_OF_THREADS; i++) {

@@ -115,6 +115,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
     /**
      * Verify that a soft token can be generated in a single transaction.
      */
+    @Test
     public void testCertificateRequestRollback() throws Exception {
         // First try a successful request and validate the returned KeyStore
         String username = "certificateRequestTest-" + random.nextInt();
@@ -148,6 +149,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
     /**
      * Test what happens if we supply empty DN fields. Created in response to ECA-1767.
      */
+    @Test
     public void testEmptyFields() throws Exception {
         // First try a successful request and validate the returned KeyStore
         String username = "certificateRequestTest-" + random.nextInt();

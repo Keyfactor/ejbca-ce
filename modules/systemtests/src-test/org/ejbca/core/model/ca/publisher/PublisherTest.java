@@ -13,11 +13,12 @@
 
 package org.ejbca.core.model.ca.publisher;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Date;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -35,6 +36,9 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 
 
@@ -43,7 +47,7 @@ import org.ejbca.util.InterfaceCache;
  *
  * @version $Id$
  */
-public class PublisherTest extends TestCase {
+public class PublisherTest {
     
     static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -98,19 +102,12 @@ public class PublisherTest extends TestCase {
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
 
-    /**
-     * Creates a new TestPublisher object.
-     *
-     * @param name name
-     */
-    public PublisherTest(String name) {
-        super(name);
-    }
-    
+    @Before
     public void setUp() throws Exception {        
     	CryptoProviderTools.installBCProvider();
     }
     
+    @After
     public void tearDown() throws Exception {
     }
     
@@ -120,6 +117,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test01AddLDAPPublisher() throws Exception {
         log.trace(">test01AddLDAPPublisher()");
         boolean ret = false;
@@ -141,6 +139,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test02AddADPublisher() throws Exception {
         log.trace(">test02AddADPublisher() ");
         boolean ret = false;
@@ -162,6 +161,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test03AddCustomPublisher() throws Exception {
         log.trace(">test03AddCustomPublisher()");
         boolean ret = false;
@@ -184,6 +184,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test04RenamePublisher() throws Exception {
         log.trace(">test04RenamePublisher()");
         
@@ -204,6 +205,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test05ClonePublisher() throws Exception {
         log.trace(">test05ClonePublisher()");
         
@@ -221,6 +223,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test06EditPublisher() throws Exception {
         log.trace(">test06EditPublisher()");
         
@@ -242,7 +245,8 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
-    public void test07StoreCertToDummy() throws Exception {
+    @Test
+   public void test07StoreCertToDummy() throws Exception {
         log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
@@ -258,6 +262,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test08storeCRLToDummy() throws Exception {
         log.trace(">test08storeCRLToDummy()");
         
@@ -269,6 +274,7 @@ public class PublisherTest extends TestCase {
         log.trace("<test08storeCRLToDummy()");
     }
    
+    @Test
     public void test14ExternalOCSPPublisherCustom() throws Exception {
 	    log.trace(">test14ExternalOCSPPublisher()");
         boolean ret = false;
@@ -303,6 +309,7 @@ public class PublisherTest extends TestCase {
 	    log.trace("<test14ExternalOCSPPublisherCustom()");
     }
     
+    @Test
     public void test15ExternalOCSPPublisher() throws Exception {
 	    log.trace(">test15ExternalOCSPPublisher()");
         boolean ret = false;
@@ -358,6 +365,7 @@ public class PublisherTest extends TestCase {
      *
      * @throws Exception error
      */
+    @Test
     public void test99removePublishers() throws Exception {
         log.trace(">test99removePublishers()");
         boolean ret = true;

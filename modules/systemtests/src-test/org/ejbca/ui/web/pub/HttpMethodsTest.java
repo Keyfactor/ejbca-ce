@@ -13,6 +13,9 @@
 
 package org.ejbca.ui.web.pub;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,12 +25,12 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.SubmitMethod;
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -41,51 +44,59 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  * 
  * @version $Id$
  */
-public class HttpMethodsTest extends TestCase {
+public class HttpMethodsTest {
 
     final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
 
-    private final String httpBaseUrl;
+    private String httpBaseUrl;
     private String httpPort;
 
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
 
-    public HttpMethodsTest() {
+    @Before
+    public void setUp() {
         httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
         httpBaseUrl = "http://127.0.0.1:" + httpPort;
     }
 
     /** Test the doc.war module. */
+    @Test
     public void testDocs() throws Exception {
         testResource("/ejbca/doc/index.html");
     }
 
     /** Test the publicweb.war module. */
+    @Test
     public void testPublicWeb() throws Exception {
         testResource("/ejbca/index.jsp");
     }
 
     /** Test the webdist.war module. */
+    @Test
     public void testWebDist() throws Exception {
         testResource("/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0");
     }
 
     /** Test the status.war module. */
+    @Test
     public void testStatus() throws Exception {
         testResource("/ejbca/publicweb/status/ocsp");
     }
 
     /** Test the scep.war module. */
+    @Test
     public void testScep() throws Exception {
         testResource("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=AdminCA1");
     }
 
     /** Test the healthcheck.war module. */
+    @Test
     public void testHealthCheck() throws Exception {
         testResource("/ejbca/publicweb/healthcheck/ejbcahealth");
     }
 
     /** Test the cmp.war module. */
+    @Test
     public void testCmp() throws Exception {
         // Servlet only answers to POST
         String resourceName = "/ejbca/publicweb/cmp";
@@ -96,6 +107,7 @@ public class HttpMethodsTest extends TestCase {
     // TODO: Renew bundle
 
     /** Perform basic HTTP method tests on the specified resource */
+    @Test
     private void testResource(String resourceName) throws Exception {
         log.info("Started tests of " + resourceName);
         assertTrue("HTTP GET is not supported. (This test expects " + resourceName + " to exist)", getUrl(httpBaseUrl + resourceName) == 200);

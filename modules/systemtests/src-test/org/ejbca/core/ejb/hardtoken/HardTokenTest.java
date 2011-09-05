@@ -84,13 +84,7 @@ public class HardTokenTest extends CaTestCase {
 
     }
 
-    /**
-     * adds a token to the database
-     * 
-     * @throws Exception
-     *             error
-     */
-@Test
+    @Test
     public void test01AddHardToken() throws Exception {
         log.trace(">test01AddHardToken()");
 
@@ -114,13 +108,7 @@ public class HardTokenTest extends CaTestCase {
         log.trace("<test01AddHardToken()");
     }
 
-    /**
-     * edits token
-     * 
-     * @throws Exception
-     *             error
-     */
-@Test
+    @Test
     public void test02EditHardToken() throws Exception {
         log.trace(">test02EditHardToken()");
 
@@ -141,13 +129,7 @@ public class HardTokenTest extends CaTestCase {
         log.trace("<test02EditHardToken()");
     }
 
-    /**
-     * Test that tries to find a hardtokensn from is certificate
-     * 
-     * @throws Exception
-     *             error
-     */
-@Test
+    @Test
     public void test03FindHardTokenByCertificate() throws Exception {
         log.trace(">test03FindHardTokenByCertificate()");
 
@@ -164,13 +146,7 @@ public class HardTokenTest extends CaTestCase {
         log.trace("<test03FindHardTokenByCertificate()");
     }
 
-    /**
-     * edits token
-     * 
-     * @throws Exception
-     *             error
-     */
-@Test
+    @Test
     public void test04EncryptHardToken() throws Exception {
         log.trace(">test04EncryptHardToken()");
 
@@ -204,13 +180,7 @@ public class HardTokenTest extends CaTestCase {
         log.trace("<test04EncryptHardToken()");
     }
 
-    /**
-     * removes all profiles
-     * 
-     * @throws Exception
-     *             error
-     */
-@Test
+    @Test
     public void test05removeHardTokens() throws AuthorizationDeniedException {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
         gc.setHardTokenEncryptCA(orgEncryptCAId);

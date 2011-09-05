@@ -13,9 +13,12 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
-import java.util.HashMap;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -29,30 +32,26 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the end entity profile entity bean.
  *
  * @version $Id$
  */
-public class EndEntityProfileTest extends TestCase {
+public class EndEntityProfileTest {
     private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     
-    /**
-     * Creates a new TestEndEntityProfile object.
-     *
-     * @param name name
-     */
-    public EndEntityProfileTest(String name) {
-        super(name);
-    }
-
+    @Before
     public void setUp() throws Exception {
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
@@ -62,6 +61,7 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test01AddEndEntityProfile() throws Exception {
         log.trace(">test01AddEndEntityProfile()");
         boolean ret = false;
@@ -85,7 +85,8 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
-    public void test02RenameEndEntityProfile() throws Exception {
+    @Test
+   public void test02RenameEndEntityProfile() throws Exception {
         log.trace(">test02RenameEndEntityProfile()");
 
         boolean ret = false;
@@ -105,7 +106,8 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
-    public void test03CloneEndEntityProfile() throws Exception {
+    @Test
+   public void test03CloneEndEntityProfile() throws Exception {
         log.trace(">test03CloneEndEntityProfile()");
 
         boolean ret = false;
@@ -125,6 +127,7 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test04EditEndEntityProfile() throws Exception {
         log.trace(">test04EditEndEntityProfile()");
 
@@ -146,6 +149,7 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test05removeEndEntityProfiles() throws Exception {
         log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
@@ -166,6 +170,7 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test06testEndEntityProfilesDynamicFields() throws Exception {
         log.trace(">test06testEndEntityProfilesDynamicFields()");
         String testProfileName = "TESTDYNAMICFIELDS";
@@ -207,6 +212,7 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
+    @Test
     public void test07PasswordAutoGeneration() throws Exception {
         log.trace(">test07PasswordAutoGeneration()");
         // Create testprofile
@@ -230,7 +236,8 @@ public class EndEntityProfileTest extends TestCase {
      * @throws Exception
      *             error
      */
-    public void test08FieldIds() throws Exception {
+    @Test
+   public void test08FieldIds() throws Exception {
         log.trace(">test08FieldIds()");
         EndEntityProfile profile = new EndEntityProfile();
 
@@ -251,6 +258,7 @@ public class EndEntityProfileTest extends TestCase {
         log.trace("<test08FieldIds()");
     }
 
+    @Test
     public void test09Clone() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         EndEntityProfile clone = (EndEntityProfile)profile.clone();
@@ -277,6 +285,7 @@ public class EndEntityProfileTest extends TestCase {
      * @throws CertificateProfileExistsException 
      * @throws AuthorizationDeniedException 
      */
+    @Test
     public void test10CardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException {
     	log.trace(">test10CardnumberRequired()");
 
@@ -321,7 +330,8 @@ public class EndEntityProfileTest extends TestCase {
     }
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
-    public void test11EndEntityProfileReferenceDetection() throws Exception {
+    @Test
+   public void test11EndEntityProfileReferenceDetection() throws Exception {
         log.trace(">test11EndEntityProfileReferenceDetection()");
         final String NAME = "EndEntityProfileReferenceDetection";
         try {
@@ -344,7 +354,8 @@ public class EndEntityProfileTest extends TestCase {
     }
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
-    public void test12OperationsOnEmptyProfile() throws Exception {
+    @Test
+   public void test12OperationsOnEmptyProfile() throws Exception {
         log.trace(">test12OperationsOnEmptyProfile()");
     	final EndEntityProfile profile = new EndEntityProfile();
         try {

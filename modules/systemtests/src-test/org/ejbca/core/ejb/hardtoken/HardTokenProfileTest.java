@@ -13,9 +13,9 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.TestCase;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -28,13 +28,16 @@ import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the hard token profile entity bean.
  * 
  * @version $Id$
  */
-public class HardTokenProfileTest extends TestCase {
+public class HardTokenProfileTest {
     private static Logger log = Logger.getLogger(HardTokenProfileTest.class);
 
     private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
@@ -43,24 +46,16 @@ public class HardTokenProfileTest extends TestCase {
 
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-    public HardTokenProfileTest(String name) {
-        super(name);
-    }
-
+    @Before
     public void setUp() throws Exception {
         CryptoProviderTools.installBCProvider();
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
-    /**
-     * adds a profile to the database
-     * @throws HardTokenProfileExistsException 
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test01AddHardTokenProfile() throws HardTokenProfileExistsException {
 
         SwedishEIDProfile profile = new SwedishEIDProfile();
@@ -86,12 +81,7 @@ public class HardTokenProfileTest extends TestCase {
         assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 != null));
     }
 
-    /**
-     * renames profile
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test02RenameHardTokenProfile() throws Exception {
         log.trace(">test02RenameHardTokenProfile()");
 
@@ -107,12 +97,7 @@ public class HardTokenProfileTest extends TestCase {
         log.trace("<test02RenameHardTokenProfile()");
     }
 
-    /**
-     * clones profile
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test03CloneHardTokenProfile() throws Exception {
         log.trace(">test03CloneHardTokenProfile()");
 
@@ -128,12 +113,7 @@ public class HardTokenProfileTest extends TestCase {
         log.trace("<test03CloneHardTokenProfile()");
     }
 
-    /**
-     * edits profile
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test04EditHardTokenProfile() throws Exception {
         log.trace(">test04EditHardTokenProfile()");
         boolean ret = false;
@@ -145,12 +125,7 @@ public class HardTokenProfileTest extends TestCase {
         log.trace("<test04EditHardTokenProfile()");
     }
 
-    /**
-     * removes all profiles
-     * 
-     * @throws Exception
-     *             error
-     */
+    @Test
     public void test05removeHardTokenProfiles() throws Exception {
         log.trace(">test05removeHardTokenProfiles()");
         boolean ret = false;

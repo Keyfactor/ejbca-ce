@@ -13,14 +13,19 @@
 
 package org.ejbca.core.ejb.ca.publisher;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -41,13 +46,16 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests Publisher Queue Data.
  *
  * @version $Id$
  */
-public class PublisherQueueTest extends TestCase {
+public class PublisherQueueTest {
 
     private static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
@@ -69,17 +77,16 @@ public class PublisherQueueTest extends TestCase {
     private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
-    
-    public PublisherQueueTest(String name) {
-        super(name);
-    }
 
+    @Before
     public void setUp() throws Exception {
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
+    @Test
     public void test01QueueData() throws Exception {
     	publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
     	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(12345);
@@ -150,6 +157,7 @@ public class PublisherQueueTest extends TestCase {
     	assertEquals(4,d.getTryCounter());    	
     }
 
+    @Test
     public void test02ExternalOCSPPublisherFail() throws Exception {
     	log.trace(">test02ExternalOCSPPublisherFail");
         boolean ret = false;
@@ -187,6 +195,7 @@ public class PublisherQueueTest extends TestCase {
     	log.trace("<test02ExternalOCSPPublisherFail");
     }
 
+    @Test
     public void test03ExternalOCSPPublisherOk() throws Exception {
     	log.trace(">test03ExternalOCSPPublisherOk");
         boolean ret = false;
@@ -227,6 +236,7 @@ public class PublisherQueueTest extends TestCase {
     	log.trace("<test03ExternalOCSPPublisherOk");
     }
     
+    @Test
     public void test04ExternalOCSPPublisherOnlyUseQueue() throws Exception {
     	log.trace(">test04ExternalOCSPPublisherOnlyUseQueue");
         boolean ret = false;
@@ -275,6 +285,7 @@ public class PublisherQueueTest extends TestCase {
     	log.trace("<test04ExternalOCSPPublisherOnlyUseQueue");
     }
     
+    @Test
     public void test05PublisherQueueCountInInterval1() throws Exception {
     	// Nothing in the queue from the beginning
     	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisher(56789));
@@ -305,6 +316,7 @@ public class PublisherQueueTest extends TestCase {
     	assertEquals(0, actual[2]); // 10s old = 0
     }
     
+    @Test
     public void test06PublisherQueueCountInInterval2() throws Exception {
     	// Nothing in the queue from the beginning
     	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
@@ -337,6 +349,7 @@ public class PublisherQueueTest extends TestCase {
     	assertEquals(2, actual[3]); // (0, ~) s = 2
     }
     
+    @Test
     public void test99CleanUp() throws Exception {
     	Collection<PublisherQueueData> c = publisherQueueSession.getEntriesByFingerprint("XX");
     	Iterator<PublisherQueueData> i = c.iterator();

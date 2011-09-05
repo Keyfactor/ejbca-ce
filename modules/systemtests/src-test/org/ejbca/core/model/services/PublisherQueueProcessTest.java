@@ -13,13 +13,13 @@
 
 package org.ejbca.core.model.services;
 
+import static org.junit.Assert.assertEquals;
+
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-
-import junit.framework.TestCase;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -39,13 +39,16 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.util.InterfaceCache;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  * 
  * @version $Id$
  */
-public class PublisherQueueProcessTest extends TestCase {
+public class PublisherQueueProcessTest {
 
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
@@ -62,19 +65,12 @@ public class PublisherQueueProcessTest extends TestCase {
     private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
 
-    /**
-     * Creates a new TestUserPasswordExpire object.
-     * 
-     * @param name
-     *            DOCUMENT ME!
-     */
-    public PublisherQueueProcessTest(String name) throws Exception {
-        super(name);
-    }
 
+    @Before
     public void setUp() throws Exception {
     }
 
+    @After
     public void tearDown() throws Exception {
     }
 
@@ -83,7 +79,7 @@ public class PublisherQueueProcessTest extends TestCase {
      * with no publisher.
      * 
      */
-
+    @Test
     public void test01PublishQueueProcessFail() throws Exception {
         publisherQueueSession.addQueueData(12345, PublisherConst.PUBLISH_TYPE_CERT, "TestPublishQueueProcessService12345", null,
                 PublisherConst.STATUS_PENDING);
@@ -132,6 +128,7 @@ public class PublisherQueueProcessTest extends TestCase {
      * with a publisher.
      * 
      */
+    @Test
     public void test01PublishQueueProcessSuccess() throws Exception {
         // Add a Dummy publisher with Id 12345
         try {
@@ -200,6 +197,7 @@ public class PublisherQueueProcessTest extends TestCase {
      * Remove all data stored by JUnit tests
      * 
      */
+    @Test
     public void test99CleanUp() throws Exception {
         Collection<PublisherQueueData> c = publisherQueueSession.getEntriesByFingerprint("TestPublishQueueProcessService12345");
         Iterator<PublisherQueueData> i = c.iterator();

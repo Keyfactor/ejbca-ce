@@ -1,8 +1,14 @@
 package org.ejbca.ui.web.pub.cluster;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -16,20 +22,13 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
     private static final Logger log = Logger.getLogger(WebOcspHealthCheckTest.class);
 
-    /**
-     * Creates a new TestSignSession object.
-     *
-     * @param name name
-     */
-    public WebOcspHealthCheckTest(String name) {
-        super(name);
+    @Before
+    public void setUp() throws Exception {
         httpPort = "8080"; 
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/vahealthcheck/extocsphealth";
     }
 
-    public void setUp() throws Exception {
-    }
-
+    @After
     public void tearDown() throws Exception {
     }
 
@@ -37,6 +36,7 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
      * Creates a number of threads that bombards the health check servlet 1000
      * times each
      */
+    @Test
     public void testEjbcaHealthHttp() throws Exception {
         log.trace(">testEjbcaHealthHttp()");
         // Make a quick test first that it works at all before starting all threads

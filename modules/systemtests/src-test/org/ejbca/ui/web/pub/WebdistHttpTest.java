@@ -13,12 +13,12 @@
 
 package org.ejbca.ui.web.pub;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
@@ -35,23 +37,20 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 /**
  * Tests http pages of public webdist
  **/
-public class WebdistHttpTest extends TestCase {
+public class WebdistHttpTest {
 
     final private static Logger log = Logger.getLogger(WebdistHttpTest.class);
 
-    private final String httpPort;
+    private String httpPort;
 
     private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
     
-    public static TestSuite suite() {
-        return new TestSuite(WebdistHttpTest.class);
-    }
-
-    public WebdistHttpTest(String name) {
-        super(name);
+    @Before
+    public void setUp() {
         httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
     }
 
+    @Test
     public void testJspCompile() throws Exception {
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
@@ -71,6 +70,7 @@ public class WebdistHttpTest extends TestCase {
 
     }
 
+    @Test
     public void testPublicWeb() throws Exception {
         // We hit the pages and see that they return a 200 value, so we know
         // they at least compile correctly
@@ -120,6 +120,7 @@ public class WebdistHttpTest extends TestCase {
 
     }
 
+    @Test
     public void testPublicWebChainDownload() throws Exception {
     	
     	// This test assumes we have a default AdminCA1 installed with CAId=-1688117755
