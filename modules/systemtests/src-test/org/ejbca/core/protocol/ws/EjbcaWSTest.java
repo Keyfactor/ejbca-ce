@@ -129,7 +129,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Before
     public void setUpAdmin() throws Exception {
-    	roleName = "EjbcaWSTest";
+    	roleName = "WsTestRoleMgmt";
     	super.setUp();
         if (new File("p12/wstest.jks").exists()) {
             final String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
