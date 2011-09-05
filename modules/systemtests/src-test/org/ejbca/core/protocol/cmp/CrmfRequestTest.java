@@ -377,8 +377,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {
-            userAdminSession.addUser(admin, user, false);
-            // usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            userAdminSession.addUser(admin, user, false); 
             log.debug("created user: cmptest, foo123, " + userDN);
         } catch (Exception e) {
             userExists = true;
