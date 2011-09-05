@@ -118,6 +118,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
+    private final String wsadminRoleName = "WsTEstRole";
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();    	
@@ -142,7 +144,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     public String getRoleName() {
         return "WsTestRoleMgmt";
     }
-    
+
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -151,7 +153,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test00SetupAccessRights() throws Exception {
-        super.setupAccessRights();
+        super.setupAccessRights(wsadminRoleName);
     }
 
     @Test
@@ -666,7 +668,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test99cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins();
+        super.cleanUpAdmins(wsadminRoleName);
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {

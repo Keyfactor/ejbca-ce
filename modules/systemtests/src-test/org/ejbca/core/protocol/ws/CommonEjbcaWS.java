@@ -208,7 +208,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return "AdminCA1";
     }
 
-    protected void setupAccessRights() throws Exception {
+    protected void setupAccessRights(final String wsadminRoleName) throws Exception {
 
         EndEntityInformation user1 = new EndEntityInformation();
         user1.setUsername(TEST_ADMIN_USERNAME);
@@ -233,12 +233,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	userAdminSession.changeUser(intAdmin, user1, true);
         }
         boolean adminExists = false;
-        RoleData role = roleAccessSession.findRole(getRoleName());
+        RoleData role = roleAccessSession.findRole(wsadminRoleName);
         if (role == null) {
-        	log.info("Creating new role: "+getRoleName());
-            role = roleManagementSession.create(roleMgmgToken, getRoleName());
+        	log.info("Creating new role: "+wsadminRoleName);
+            role = roleManagementSession.create(roleMgmgToken, wsadminRoleName);
             final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(getRoleName(), "/", AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(wsadminRoleName, "/", AccessRuleState.RULE_ACCEPT, true));
             role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
         }
         for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
@@ -247,9 +247,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	}
         }
         if (!adminExists) {
-        	log.info("Adding admin to role: "+getRoleName());
+        	log.info("Adding admin to role: "+wsadminRoleName);
         	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-        	list.add(new AccessUserAspectData(getRoleName(), cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+        	list.add(new AccessUserAspectData(wsadminRoleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
         			TEST_ADMIN_USERNAME));
         	roleManagementSession.addSubjectsToRole(intAdmin, role, list);
         	accessControlSession.forceCacheExpire();
@@ -2396,29 +2396,18 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         deleteDVCAExt();
     }
 
-    protected void cleanUpAdmins() throws Exception {
-        if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+    protected void cleanUpAdmins(final String wsadminRoleName) throws Exception {
             // Remove from admin group
-            RoleData admingroup = roleAccessSession.findRole(getRoleName());
-            if (admingroup != null) {
-                for (AccessUserAspectData accessUserAspect : admingroup.getAccessUsers().values()) {
-                    if (accessUserAspect.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
-                        Collection<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-                        list.add(accessUserAspect);
-                        roleManagementSession.removeSubjectsFromRole(intAdmin, roleAccessSession.findRole(getRoleName()), list);
-                        accessControlSession.forceCacheExpire();
-                    }
-                }            	
-            }
-            // Remove user
-            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        }
-    	// Remove role
-    	RoleData role = roleAccessSession.findRole(getRoleName());
+    	RoleData role = roleAccessSession.findRole(wsadminRoleName);
     	if (role != null) {
     		roleManagementSession.remove(roleMgmgToken, role);
 			accessControlSession.forceCacheExpire();
     	}
+    	if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+    		// Remove user
+    		userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+    	}
+    	// Remove role
     	if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
     		// Remove user
     		userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

@@ -53,10 +53,12 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
     private CertificateProfileSession certificateProfileSession = InterfaceCache.getCertificateProfileSession();
 
+    private final String wsadminRoleName = "WsCustomSernoTestRole";
+    
     @Before
     public void setupAccessRights() {
         try {
-            super.setupAccessRights();
+            super.setupAccessRights(wsadminRoleName);
         } catch (Exception e) {
             log.debug(e.getMessage());
         }
@@ -145,7 +147,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
     @After
     public void cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins();
+        super.cleanUpAdmins(wsadminRoleName);
     }
 
     public String getRoleName() {
