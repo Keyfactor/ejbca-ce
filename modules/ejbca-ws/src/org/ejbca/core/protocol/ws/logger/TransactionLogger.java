@@ -16,9 +16,9 @@ package org.ejbca.core.protocol.ws.logger;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.GUIDGenerator;
 import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.util.DummyPatternLogger;
-import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.IPatternLogger;
 import org.ejbca.util.PatternLogger;
 

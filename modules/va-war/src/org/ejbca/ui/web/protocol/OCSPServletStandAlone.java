@@ -69,7 +69,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
          * @param password Password for activation. If null then ust key loading.
          * @throws Exception
          */
-        void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception;
+        void loadPrivateKeys(String password) throws Exception;
         /**
          * Answers the OCSP request. The answer is assembled in a separate thread by an object of the class {@link SignerThread}.
          * @param caid EJBCA id for the CA.
@@ -115,8 +115,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    protected void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception {
-        this.session.loadPrivateKeys(adm, password);
+    @Override
+    protected void loadPrivateKeys(String password) throws Exception {
+        this.session.loadPrivateKeys(password);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#extendedService(org.ejbca.core.model.log.Admin, int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)

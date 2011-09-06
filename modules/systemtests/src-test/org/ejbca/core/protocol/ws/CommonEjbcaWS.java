@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -1600,7 +1601,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             fail("Should not happen");
         } catch (CADoesntExistsException_Exception e) {
         }
-        createCVCCA(rootcadn, rootcaname, subcadn, subcaname, keyspec, keyalg, signalg);
+        createCVCCA(rootcadn, rootcaname, subcadn, subcaname, keyspec, signalg);
         List<Certificate> ca_path = ejbcaraws.getLastCAChain(subcaname);
         assertEquals("Must be two", 2, ca_path.size());
 
@@ -2111,7 +2112,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         CardVerifiableCertificate cvcacert = new CardVerifiableCertificate(cvcert);
 
         // Create the DVCA signed by our external CVCA
-        String caname = createDVCCASignedByExternal(dvcaName, dvcaMnemonic, keyspec, keyalg, signalg);
+        String caname = createDVCCASignedByExternal(dvcaName, dvcaMnemonic, keyspec, signalg);
         assertNotNull("Failed to create DVC CA " + dvcaName + "Signed By External.", caname);
         assertEquals(caname, dvcaName);
         // Now test our WS API to generate a request, setting status to
@@ -2491,7 +2492,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      * Create a CVCA, and a DV CA signed by the CVCA
      * 
      */
-    private void createCVCCA(String rootcadn, String rootcaname, String subcadn, String subcaname, String keyspec, String keyalg, String signalg)
+    private void createCVCCA(String rootcadn, String rootcaname, String subcadn, String subcaname, String keyspec, String signalg)
             throws Exception {
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(signalg);
@@ -2506,7 +2507,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         catokeninfo.setProperties(prop);
         // No CA Services.
-        List extendedcaservices = new ArrayList();
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
 
         java.security.cert.Certificate cvcacert = null;
         int cvcaid = rootcadn.hashCode();
@@ -2518,9 +2519,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -2551,9 +2552,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys
@@ -2582,7 +2583,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      * Create a DVCA, signed by an external CVCA
      * 
      */
-    private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic, final String keyspec, final String keyalg,
+    private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic, final String keyspec,
             final String signalg) throws Exception {
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(signalg);
@@ -2597,7 +2598,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         catokeninfo.setProperties(prop);
         // No CA Services.
-        ArrayList extendedcaservices = new ArrayList();
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
 
         try {
             String dvcadn = "CN=" + dvcaMnemonic + ",C=SE";
@@ -2607,9 +2608,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
-                    new ArrayList(), // CRL publishers
+                    new ArrayList<Integer>(), // CRL publishers
                     true, // Finish User
-                    extendedcaservices, new ArrayList(), // Approvals Settings
+                    extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     true, // Include in health check
                     true, // isDoEnforceUniquePublicKeys

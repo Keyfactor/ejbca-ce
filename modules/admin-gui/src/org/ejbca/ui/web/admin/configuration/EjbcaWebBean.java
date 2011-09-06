@@ -73,7 +73,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -119,7 +118,6 @@ public class EjbcaWebBean implements Serializable {
     private final HardTokenSessionLocal hardTokenSession = ejb.getHardTokenSession();
     private final SecurityEventsLoggerSessionLocal auditSession = ejb.getSecurityEventsLoggerSession();
     private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
-    private final RaAdminSessionLocal raAdminSession = ejb.getRaAdminSession();
     private final RoleAccessSessionLocal roleAccessSession = ejb.getRoleAccessSession();
     private final RoleManagementSessionLocal roleManagementSession = ejb.getRoleManagementSession();
     private final UserAdminSessionLocal userAdminSession = ejb.getUserAdminSession();

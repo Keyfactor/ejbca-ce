@@ -901,26 +901,26 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void removeHardTokenCertificateMapping(AuthenticationToken admin, Certificate certificate) {
-        String certificatesn = CertTools.getSerialNumberAsString(certificate);
+        final String certificatesn = CertTools.getSerialNumberAsString(certificate);
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenCertificateMapping(Certificatesn: " + certificatesn + ")");
         }
         try {
-            HardTokenCertificateMap htcm = HardTokenCertificateMap.findByCertificateFingerprint(entityManager, CertTools.getFingerprintAsString(certificate));
+            final HardTokenCertificateMap htcm = HardTokenCertificateMap.findByCertificateFingerprint(entityManager, CertTools.getFingerprintAsString(certificate));
             if (htcm == null) {
             	if (log.isDebugEnabled()) {
             		log.debug("Trying to remove HardTokenCertificateMap that does not exist: "+CertTools.getFingerprintAsString(certificate));                		
             	}
             } else {
-            	String tokensn = htcm.getTokenSN();
+            	final String tokensn = htcm.getTokenSN();
             	entityManager.remove(htcm);
-            	String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
+            	final String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, certificatesn, null, details);
             }
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingcert", certificatesn);
+            final String msg = intres.getLocalizedMessage("hardtoken.errorremovetokencertmappingcert", certificatesn);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVECERTMAP, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, certificatesn, null, details);

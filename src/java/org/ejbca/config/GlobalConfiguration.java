@@ -421,9 +421,10 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
    		   return (ret == null ? AUTOENROLL_DEFAULT_USE : ret);
        }
        
-       public void setNodesInCluster(final Set/*String*/ nodes) { data.put(NODESINCLUSTER, nodes); }
-       public Set/*String*/ getNodesInCluster() {
-    	   Set ret = (Set) data.get(NODESINCLUSTER);
+       public void setNodesInCluster(final Set<String> nodes) { data.put(NODESINCLUSTER, nodes); }
+       public Set<String> getNodesInCluster() {
+	       @SuppressWarnings("unchecked")
+    	   Set<String> ret = (Set<String>) data.get(NODESINCLUSTER);
     	   return (ret == null ? NODESINCLUSTER_DEFAULT : ret);
     	   }
 

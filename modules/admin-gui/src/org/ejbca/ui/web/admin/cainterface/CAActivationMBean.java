@@ -21,8 +21,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -66,8 +64,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private UserAdminSession adminsession;
 	private GlobalConfigurationSession globalconfigurationsession;
 	private RevocationSessionLocal revocationSession;
-	private AccessUserAspectManagerSessionLocal userAspectSession;
-	private AccessRuleManagementSessionLocal accessRuleSession; 
 	private ComplexAccessControlSessionLocal complexAccessControlSession;
 	
 	public static final String MAKEOFFLINE = "makeoffline";
@@ -94,8 +90,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			certificateProfileSession = ejb.getCertificateProfileSession();
 			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			revocationSession = ejb.getRevocationSession();
-			accessRuleSession = ejb.getAccessRuleManagementSession();
-			userAspectSession = ejb.getAccessUserAspectSession();
 			complexAccessControlSession = ejb.getComplexAccessControlSession();
 			
             cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession,

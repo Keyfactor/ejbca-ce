@@ -27,8 +27,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import junit.framework.TestCase;
-
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;

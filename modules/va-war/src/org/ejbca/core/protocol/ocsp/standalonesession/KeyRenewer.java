@@ -83,7 +83,7 @@ class KeyRenewer {
     /**
      * Class used for the thread doing the renewing.
      */
-    private class Runner implements Runnable {
+    private class Runner implements Runnable { // NOPMD: we need to use threads, even if it's a JEE app
         /* (non-Javadoc)
          * @see java.lang.Runnable#run()
          */
@@ -354,7 +354,7 @@ class KeyRenewer {
         if ( this.privateKeyContainerKeyStore.sessionData.doKeyRenewal() ) {
             this.runner = new Runner();
             this.doUpdateKey = true;
-            new Thread(this.runner).start();
+            new Thread(this.runner).start(); // NOPMD: we need to use threads, even if it's a JEE app
         } else {
             this.runner = null;
         }
