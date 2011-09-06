@@ -56,6 +56,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -252,6 +253,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
                     	// Issue the certificate from the request
                     	ret = certificateCreateSession.createCertificate(admin, data, req, responseClass);
+                    	postCreateCertificate(admin, data, ca, ((X509ResponseMessage) ret).getCertificate());
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -605,38 +607,54 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     	Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter, extensions, sequence);
 
-    	// Store the request data in history table.
-    	if (ca.isUseCertReqHistory()) {
-    		certreqHistorySession.addCertReqHistoryData(admin,cert,data);
-    	}
-
-    	// Store certificate in certificate profiles publishers.
-    	// But check if the certificate was revoked directly on issuance, the revocation was then handled by CertificateCreateSession, but that session does not know about
-    	// publishers to we need to manage it here with unfortunately a little duplicated code. We could just look up certificate info to see what the result was, but that
-    	// would be very slow since it probably would cause an extra database lookup. Therefore we do it here similarly to what we do in CertificateCreateSession.
-        final int certProfileId = data.getCertificateProfileId();
-        CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
-    	final Collection<Integer> publishers = certProfile.getPublisherList();
-    	if (!publishers.isEmpty()) {
-        	final String username = data.getUsername();
-            final Certificate cacert = ca.getCACertificate();
-            final String cafingerprint = CertTools.getFingerprintAsString(cacert);
-            String tag = null;
-    		final long updateTime = System.currentTimeMillis();
-    		
-            int revreason = RevokedCertInfo.NOT_REVOKED;
-            long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
-            int certstatus = CertificateConstants.CERT_ACTIVE;
-            ExtendedInformation ei = data.getExtendedinformation();
-            if (ei != null) {
-            	revreason = ei.getIssuanceRevocationReason();
-            }
-            publisherSession.storeCertificate(admin, publishers, cert, username, data.getPassword(), data.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId, updateTime, data.getExtendedinformation());
-    	}
+    	postCreateCertificate(admin, data, ca, cert);
+    	
     	if (log.isTraceEnabled()) {
     		log.trace("<createCertificate(pk, ku, notAfter)");
     	}
     	return cert;
+    }
+    
+    /**
+     * Perform a set of actions post certificate creation
+     * 
+     * @param authenticationToken the authentication token being used
+     * @param endEntity the end entity involved
+     * @param ca the relevant CA
+     * @param certificate the newly created Certificate
+     */
+    private void postCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, CA ca, Certificate certificate) {
+        // Store the request data in history table.
+        if (ca.isUseCertReqHistory()) {
+            certreqHistorySession.addCertReqHistoryData(authenticationToken, certificate, endEntity);
+        }
+
+        /* Store certificate in certificate profiles publishers. But check if the certificate was revoked directly on issuance, 
+         * the revocation was then handled by CertificateCreateSession, but that session does not know about publishers to we need 
+         * to manage it here with unfortunately a little duplicated code. We could just look up certificate info to see what the
+         * result was, but that would be very slow since it probably would cause an extra database lookup. Therefore we do it here 
+         * similarly to what we do in CertificateCreateSession. 
+         */
+        final int certProfileId = endEntity.getCertificateProfileId();
+        CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
+        final Collection<Integer> publishers = certProfile.getPublisherList();
+        if (!publishers.isEmpty()) {
+            final String username = endEntity.getUsername();
+            final Certificate cacert = ca.getCACertificate();
+            final String cafingerprint = CertTools.getFingerprintAsString(cacert);
+            String tag = null;
+            final long updateTime = System.currentTimeMillis();
+
+            int revreason = RevokedCertInfo.NOT_REVOKED;
+            long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
+            int certstatus = CertificateConstants.CERT_ACTIVE;
+            ExtendedInformation ei = endEntity.getExtendedinformation();
+            if (ei != null) {
+                revreason = ei.getIssuanceRevocationReason();
+            }
+            publisherSession.storeCertificate(authenticationToken, publishers, certificate, username, endEntity.getPassword(), endEntity.getCertificateDN(), cafingerprint,
+                    certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId, updateTime, endEntity.getExtendedinformation());
+        }
     }
 
 }

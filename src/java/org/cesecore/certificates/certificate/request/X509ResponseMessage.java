@@ -91,9 +91,11 @@ public class X509ResponseMessage implements ResponseMessage {
      * Gets the complete certificate in the response message.
      *
      * @return certificate in the response message.
+     * 
+     * @throws CertificateException if the byte array in this response does not contain a proper certificate
      */
-    public Certificate getCertificate() throws CertificateEncodingException, CertificateException, IOException {
-        return CertTools.getCertfromByteArray(getResponseMessage());
+    public Certificate getCertificate() {     
+       return cert;
     }
 
     /**
@@ -101,7 +103,7 @@ public class X509ResponseMessage implements ResponseMessage {
      *
      * @return the response message in the default encoding format.
      */
-    public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
+    public byte[] getResponseMessage() throws CertificateEncodingException {
         return cert.getEncoded();
     }
 
