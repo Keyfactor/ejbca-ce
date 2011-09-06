@@ -2151,6 +2151,7 @@ public class SignSessionTest extends CaTestCase {
      */
     @Test
     public void test34privateKeyUsagePeriod_unused() throws Exception {
+        createUsers();
     	X509Certificate cert = privateKeyUsageGetCertificate(false, 0L, false, 0L);        
         assertNull("Has not the extension", cert.getExtensionValue("2.5.29.16"));
     }
@@ -2314,10 +2315,6 @@ public class SignSessionTest extends CaTestCase {
         
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
         assertNotNull("Failed to create certificate", cert);
-//        FileOutputStream fos = new FileOutputStream("cert.crt");
-//        fos.write(cert.getEncoded());
-//        fos.close();
-//        System.out.println(cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));
         return cert;
