@@ -29,10 +29,10 @@ import javax.persistence.Transient;
 import org.apache.log4j.Logger;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.GUIDGenerator;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
-import org.ejbca.util.GUIDGenerator;
-import org.ejbca.util.ValueExtractor;
 
 /**
  * Entity Bean representing publisher failure data. Data is stored here when

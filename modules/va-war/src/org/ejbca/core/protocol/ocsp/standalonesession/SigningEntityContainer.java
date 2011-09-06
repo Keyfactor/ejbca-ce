@@ -134,7 +134,7 @@ class  SigningEntityContainer {
      * @param password This password is only set if passwords should not be stored in memory.
      * @throws Exception
      */
-    void loadPrivateKeys(final AuthenticationToken adm, final String password ) throws Exception {
+    void loadPrivateKeys(final String password ) throws Exception {
         try {
             this.mutex.getMutex();
             final long currentTime = new Date().getTime();
@@ -154,7 +154,7 @@ class  SigningEntityContainer {
                 m_log.trace(">loadPrivateKeys2");
         	}
             this.updating  = true; // stops new action on token
-            loadPrivateKeys2(adm, password);
+            loadPrivateKeys2(password);
         } finally {
             this.lastTryOfKeyReload = new Date().getTime();
             synchronized(this) {
@@ -172,7 +172,7 @@ class  SigningEntityContainer {
      * @param password This password is only set if passwords should not be stored in memory.
      * @throws Exception
      */
-    private void loadPrivateKeys2(AuthenticationToken adm, String password ) throws Exception {
+    private void loadPrivateKeys2(String password ) throws Exception {
         if ( this.signEntityMap!=null ){
             Collection<SigningEntity> values=this.signEntityMap.values();
             if ( values!=null ) {
@@ -201,15 +201,15 @@ class  SigningEntityContainer {
         synchronized(this) {
             this.wait(500); // wait for actions on token to get ready
         }
-        loadFromP11HSM(adm, newSignEntity, password);
+        loadFromP11HSM(newSignEntity, password);
         final File dir = this.sessionData.mKeystoreDirectoryName!=null ? new File(this.sessionData.mKeystoreDirectoryName) : null;
         if ( dir!=null && dir.isDirectory() ) {
             final File files[] = dir.listFiles();
             if ( files!=null && files.length>0 ) {
                 for ( int i=0; i<files.length; i++ ) {
                     final String fileName = files[i].getCanonicalPath();
-                    if ( !loadFromSWKeyStore(adm, fileName, newSignEntity, password) ) {
-                        loadFromKeyCards(adm, fileName, newSignEntity);
+                    if ( !loadFromSWKeyStore(fileName, newSignEntity, password) ) {
+                        loadFromKeyCards(fileName, newSignEntity);
                     }
                 }
             } else {
@@ -268,7 +268,7 @@ class  SigningEntityContainer {
      * @return true if keys where found on the HSM
      * @throws Exception
      */
-    private boolean loadFromP11HSM(AuthenticationToken adm, Map<Integer, SigningEntity> newSignEntity,
+    private boolean loadFromP11HSM(Map<Integer, SigningEntity> newSignEntity,
                                    String password) {
         final PasswordProtection pwp = this.sessionData.getP11Pwd(password);
         if ( !checkPassword( pwp, OcspConfiguration.P11_PASSWORD) ) {
@@ -281,7 +281,7 @@ class  SigningEntityContainer {
         this.sessionData.slot.reset();
         try {
             final P11ProviderHandler providerHandler = new P11ProviderHandler(this.sessionData);
-            loadFromKeyStore(adm, providerHandler.getKeyStore(pwp), null,
+            loadFromKeyStore(providerHandler.getKeyStore(pwp), null,
                              this.sessionData.slot.toString(),
                              providerHandler, newSignEntity, null);
             pwp.destroy();
@@ -311,7 +311,7 @@ class  SigningEntityContainer {
      * @param newSignEntity The map where the signing entity should be stored for the key if the certificate is a valid OCSP certificate.
      * @return true if the key in the SW java keystore was valid.
      */
-    private boolean loadFromSWKeyStore(AuthenticationToken adm, String fileName, HashMap<Integer, SigningEntity> newSignEntity,
+    private boolean loadFromSWKeyStore(String fileName, HashMap<Integer, SigningEntity> newSignEntity,
                                        String password) {
         try {
             final String storePassword = this.sessionData.mStorePassword!=null ? this.sessionData.mStorePassword : password;
@@ -328,7 +328,7 @@ class  SigningEntityContainer {
                 keyStore.load(new FileInputStream(fileName), storePassword.toCharArray());
             }
             final String keyPassword = this.sessionData.mKeyPassword!=null ? this.sessionData.mKeyPassword : password;
-            loadFromKeyStore(adm, keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity, fileName);
+            loadFromKeyStore(keyStore, keyPassword, fileName, new SWProviderHandler(), newSignEntity, fileName);
             m_log.trace("<loadFromSWKeyStore OK");
             return true;
         } catch( Exception e ) {
@@ -363,7 +363,7 @@ class  SigningEntityContainer {
      * @param fileName Name of the keystore file. Use null for P11
      * @throws KeyStoreException
      */
-    private void loadFromKeyStore(AuthenticationToken adm, KeyStore keyStore, String keyPassword,
+    private void loadFromKeyStore(KeyStore keyStore, String keyPassword,
                                   String errorComment, ProviderHandler providerHandler,
                                   Map<Integer, SigningEntity> newSignEntity, String fileName) throws KeyStoreException {
         final Enumeration<String> eAlias = keyStore.aliases();
@@ -393,7 +393,7 @@ class  SigningEntityContainer {
                 try {
                 	KeyTools.testKey(key, pkf.getCertificate().getPublicKey(), providerHandler.getProviderName());
                     m_log.debug("Adding sign entity for '"+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'");
-                    putSignEntity(pkf, pkf.getCertificate(), adm, providerHandler, newSignEntity);
+                    putSignEntity(pkf, pkf.getCertificate(), providerHandler, newSignEntity);
                 } catch (InvalidKeyException e) {
                 	// thrown by testKey
                     m_log.debug("Key not working. Not adding signer entity for: "+pkf.getCertificate().getSubjectDN()+"', keystore alias '"+alias+"'. Error comment '"+errorComment+"'. Message '"+e.getMessage());
@@ -452,7 +452,7 @@ class  SigningEntityContainer {
      * @param newSignEntitys The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
      * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
      */
-    private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, AuthenticationToken adm, ProviderHandler providerHandler,
+    private boolean putSignEntity( PrivateKeyContainer keyContainer, X509Certificate cert, ProviderHandler providerHandler,
                                    final Map<Integer, SigningEntity> newSignEntitys) {
         if ( keyContainer==null || cert==null ) {
             return false;
@@ -482,12 +482,12 @@ class  SigningEntityContainer {
      * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
      * @return true if the key and certificate are valid for OCSP signing for one of the EJBCA CAs.
      */
-    private boolean putSignEntityCard( Certificate cert, AuthenticationToken adm,
+    private boolean putSignEntityCard( Certificate cert,
                                        Map<Integer, SigningEntity> newSignEntity) {
         if ( cert!=null &&  cert instanceof X509Certificate) {
             final X509Certificate x509cert = (X509Certificate)cert;
             final PrivateKeyContainer keyContainer = new PrivateKeyContainerCard(x509cert, this.cardKeys);
-            return putSignEntity( keyContainer, x509cert, adm, new CardProviderHandler(), newSignEntity );
+            return putSignEntity( keyContainer, x509cert, new CardProviderHandler(), newSignEntity );
         }
         return false;
     }
@@ -497,7 +497,7 @@ class  SigningEntityContainer {
      * @param fileName The name of the file where the certificates are stored.
      * @param newSignEntity The map where the signing entity should be stored for all keys found where the certificate is a valid OCSP certificate.
      */
-    private void loadFromKeyCards(AuthenticationToken adm, String fileName, Map<Integer, SigningEntity> newSignEntity) {
+    private void loadFromKeyCards(String fileName, Map<Integer, SigningEntity> newSignEntity) {
         m_log.trace(">loadFromKeyCards");
         final CertificateFactory cf;
         try {
@@ -511,7 +511,7 @@ class  SigningEntityContainer {
             if ( c!=null && !c.isEmpty() ) {
                 Iterator<? extends Certificate> i = c.iterator();
                 while (i.hasNext()) {
-                    if ( putSignEntityCard(i.next(), adm, newSignEntity) ) {
+                    if ( putSignEntityCard(i.next(), newSignEntity) ) {
                         fileType = "PKCS#7";
                     }
                 }
@@ -523,7 +523,7 @@ class  SigningEntityContainer {
             try {// read concatenated certificate in PEM format
                 final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
                 while (bis.available() > 0) {
-                    if ( putSignEntityCard(cf.generateCertificate(bis), adm, newSignEntity) ) {
+                    if ( putSignEntityCard(cf.generateCertificate(bis), newSignEntity) ) {
                         fileType="PEM";
                     }
                 }

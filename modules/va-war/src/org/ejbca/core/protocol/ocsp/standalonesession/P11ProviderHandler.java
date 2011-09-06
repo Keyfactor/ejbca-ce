@@ -78,7 +78,7 @@ class P11ProviderHandler implements ProviderHandler {
     /**
      * An object of this class reloads the provider in a separate thread.
      */
-    private class Reloader implements Runnable {
+    private class Reloader implements Runnable { // NOPMD: we need to use threads, even if it's a JEE app
         /* (non-Javadoc)
          * @see java.lang.Runnable#run()
          */
@@ -128,7 +128,7 @@ class P11ProviderHandler implements ProviderHandler {
             return;
         }
         this.data.isNotReloadingP11Keys = false;
-        new Thread(new Reloader()).start();
+        new Thread(new Reloader()).start(); // NOPMD: we need to use threads, even if it's a JEE app
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.ProviderHandler#addKeyContainer(org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer)

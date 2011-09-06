@@ -62,7 +62,7 @@ public class OCSPServlet extends OCSPServletBase {
 	}
 
     @Override
-	protected void loadPrivateKeys(AuthenticationToken adm, String password) {
+	protected void loadPrivateKeys(String password) {
         // not used by this servlet
     }
 }

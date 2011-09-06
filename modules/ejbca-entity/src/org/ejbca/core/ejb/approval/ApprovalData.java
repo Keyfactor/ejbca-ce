@@ -25,8 +25,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.approval.ApprovalDataVO;
-import org.ejbca.util.ValueExtractor;
 
 /**
  * Representation of approval data used to control request and their approvals.

@@ -30,9 +30,6 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
@@ -73,8 +70,6 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
      */
     final private SessionData sessionData;
     
-	private final AuthenticationToken m_internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("OCSP ServletBase"));
-
     /**
      * Called when a servlet is initialized. This should only occur once.
      * 
@@ -200,7 +195,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
             }
             this.sessionData = new SessionData(slot, tmpData, webURL, renewTimeBeforeCertExpiresInSeconds, storePassword, cardPassword, keystoreDirectoryName, keyAlias, doNotStorePasswordsInMemory, p11Password);
             this.signEntitycontainer = new SigningEntityContainer(this.sessionData);
-            loadPrivateKeys(m_internalAdmin, null);
+            loadPrivateKeys(null);
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -277,16 +272,17 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.IStandAloneSession#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    public void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception {
+    @Override
+    public void loadPrivateKeys(String password) throws Exception {
         if ( this.sessionData.doNotStorePasswordsInMemory ) {
             if ( password==null ) {
                 return; // can not load without password.
             }
-            this.signEntitycontainer.loadPrivateKeys(adm, password);
+            this.signEntitycontainer.loadPrivateKeys(password);
             return;
         }
         if ( password==null ) {
-            this.signEntitycontainer.loadPrivateKeys(adm, null);
+            this.signEntitycontainer.loadPrivateKeys(null);
             return;
         }
         if ( this.sessionData.mKeyPassword==null ) {
@@ -301,7 +297,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
         if ( this.sessionData.cardPassword==null ) {
             this.sessionData.cardPassword = password;
         }
-        this.signEntitycontainer.loadPrivateKeys(adm, null);
+        this.signEntitycontainer.loadPrivateKeys(null);
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.IStandAloneSession#extendedService(int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
@@ -330,7 +326,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
             throw e;
         }
         final SignerThread runnable = new SignerThread(se,request);
-        final Thread thread = new Thread(runnable);
+        final Thread thread = new Thread(runnable); // NOPMD: we need to use threads, even if it's a JEE app
         thread.start();
         final OCSPCAServiceResponse result = runnable.getSignResult();
         thread.interrupt();

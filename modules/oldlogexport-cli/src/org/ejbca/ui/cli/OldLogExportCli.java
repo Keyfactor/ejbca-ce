@@ -24,11 +24,11 @@ import javax.persistence.Persistence;
 import org.apache.log4j.Logger;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.ejb.log.LogEntryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.util.ValueExtractor;
 
 /**
  * Small CLI to export the audit log from EJBCA 4.0 and earlier to a simple text file.

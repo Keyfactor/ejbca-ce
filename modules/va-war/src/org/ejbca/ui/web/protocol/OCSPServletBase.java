@@ -73,6 +73,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.GUIDGenerator;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
@@ -91,7 +92,6 @@ import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.core.protocol.ocsp.TransactionLogger;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.DummyPatternLogger;
-import org.ejbca.util.GUIDGenerator;
 import org.ejbca.util.IPatternLogger;
 
 /** Base servlet for handling OCSP requests, subclass of both OCSPServlet and OCSPServletStandalone.
@@ -135,8 +135,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	
 	/** Configures OCSP extensions, these init-params are optional
 	 */
-	private final Collection m_extensionOids = OcspConfiguration.getExtensionOids();
-	private final Collection m_extensionClasses = OcspConfiguration.getExtensionClasses();
+	private final Collection<String> m_extensionOids = OcspConfiguration.getExtensionOids();
+	private final Collection<String> m_extensionClasses = OcspConfiguration.getExtensionClasses();
 	private HashMap m_extensionMap = null;
 	private final boolean mDoAuditLog = OcspConfiguration.getAuditLog();
 	private final boolean mDoTransactionLog = OcspConfiguration.getTransactionLog();
@@ -185,7 +185,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 	}
 
-	abstract void loadPrivateKeys(AuthenticationToken adm, String password) throws Exception;
+	abstract void loadPrivateKeys(String password) throws Exception;
 
 	abstract OCSPCAServiceResponse extendedService(AuthenticationToken m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, AuthorizationDeniedException;
 
@@ -374,7 +374,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
             // Also reload signing keys
             this.data.mKeysValidTo = 0;
             try {
-                loadPrivateKeys(this.m_internalAdmin, password);
+                loadPrivateKeys(password);
             } catch (Exception e) {
                 m_log.error("Problem loading keys.", e);
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
@@ -399,7 +399,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				try {
 					// Also reload signing keys
 					this.data.mKeysValidTo = 0;
-					loadPrivateKeys(this.m_internalAdmin, null);
+					loadPrivateKeys(null);
 				} catch (Exception e) {
                     m_log.error("Problem loading keys.", e);
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
@@ -582,7 +582,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 					transactionLogger.paramPut(ITransactionLogger.REQ_NAME, req.getRequestorName().toString());
 				}
 				// Make sure our signature keys are updated
-				loadPrivateKeys(this.m_internalAdmin, null);
+				loadPrivateKeys(null);
 
 				/**
 				 * check the signature if contained in request.
@@ -674,7 +674,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
             	transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
             	auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				// Look over the status requests
-				ArrayList responseList = new ArrayList();
+				ArrayList<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
 				for (int i = 0; i < requests.length; i++) {
 					CertificateID certId = requests[i].getCertID();
 					// now some Logging

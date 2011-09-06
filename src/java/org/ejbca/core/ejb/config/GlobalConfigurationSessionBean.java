@@ -130,7 +130,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
     }
     
-    @Override
+	@Override
     public void saveGlobalConfiguration(AuthenticationToken admin, GlobalConfiguration globconf) {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
@@ -140,8 +140,10 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
         if (gcdata != null) {
         	// Save object and create a diff over what has changed
+            @SuppressWarnings("unchecked")
             Map<Object, Object> orgmap = (Map<Object, Object>)gcdata.getGlobalConfiguration().saveData(); 
             gcdata.setGlobalConfiguration(globconf);
+            @SuppressWarnings("unchecked")
             Map<Object, Object> newmap = (Map<Object, Object>)globconf.saveData();             
 			// Get the diff of what changed
 			Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
