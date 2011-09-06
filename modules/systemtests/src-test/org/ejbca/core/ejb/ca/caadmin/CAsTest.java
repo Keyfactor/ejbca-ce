@@ -2058,10 +2058,13 @@ public class CAsTest extends CaTestCase {
     @Test
     public void test21UnprivilegedCaProcessRequest() throws Exception {
         log.trace(">test21UnprivilegedCaProcessRequest()");
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
+        AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         CAInfo caInfo = caSession.getCAInfo(admin, getTestCAName());
         try {
             // Try to process a request for a CA with an unprivileged user.
-            caAdminSession.processRequest(roleMgmgToken, caInfo, null);
+            caAdminSession.processRequest(unpriviledgedUser, caInfo, null);
             fail("Was able to process request to CA as unprivileged user.");
         } catch (AuthorizationDeniedException e) {
             // Expected
