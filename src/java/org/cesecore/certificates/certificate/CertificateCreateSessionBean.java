@@ -34,6 +34,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -190,8 +191,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             String sequence = null;
             byte[] ki = req.getRequestKeyInfo();
-            if ((ki != null) && (ki.length > 0)) {
-                sequence = new String(ki);
+            // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
+            if ((ki != null) && (ki.length > 0) && (ki.length < 10) ) {
+            	final String str = new String(ki);
+            	// A cvc sequence must be ascii printable, otherwise it's some binary data
+            	if (StringUtils.isAsciiPrintable(str)) {
+                    sequence = new String(ki);            		
+            	}
             }
             Certificate cert = createCertificate(admin, userData, ca, req.getRequestX509Name(), reqpk, keyusage, notBefore, notAfter, exts, sequence);
 
@@ -449,8 +455,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             final Map<String, Object> issuedetails = new LinkedHashMap<String, Object>();
             issuedetails.put("subjectdn", data.getDN());
             issuedetails.put("certprofile", data.getCertificateProfileId());
-            details.put("issuancerevocationreason", revreason);
-            details.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
+            issuedetails.put("issuancerevocationreason", revreason);
+            issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
             logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(ca.getCAId()).toString(), serialNo, data.getUsername(),
                     details);
 
