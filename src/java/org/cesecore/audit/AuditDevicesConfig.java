@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.audit.AuditExporter;
 import org.cesecore.audit.impl.AuditExporterDummy;
@@ -167,11 +168,20 @@ public class AuditDevicesConfig {
         return deviceProperties.get(id);
     }
 
-    /** @return the file name of the current export. */
-    public static File getExportFile(final Properties properties, final Date exportDate) throws IOException {
-        final File dir = new File(properties.getProperty("export.dir", System.getProperty("java.io.tmpdir")));
-        return new File(dir, "cesecore-" + ValidityDate.formatAsISO8601(exportDate, ValidityDate.TIMEZONE_UTC) + ".log");
-    }
+	private static final String EXPORTFILE_DATE_FORMAT = "yyyy-MM-dd-HHmmss";
+	
+	/** @return the file name of the current export. */
+	public static File getExportFile(final Properties properties, final Date exportDate) throws IOException {
+		final String p = properties.getProperty("export.dir", System.getProperty("java.io.tmpdir"));
+		final File dir = new File(p);
+		final String file = "cesecore-" + FastDateFormat.getInstance(EXPORTFILE_DATE_FORMAT, ValidityDate.TIMEZONE_UTC).format(exportDate) + ".log";
+        File ret = new File(dir, file);
+        if (log.isDebugEnabled()) {
+        	log.debug("Export file: "+p+file);
+        	log.debug("Export file canonical: "+ret.getCanonicalPath());
+        }
+        return ret;
+	}
 
     /** Parameter to specify the number of logs to be fetched in each validation round trip. */
     public static int getAuditLogValidationFetchSize(final Properties properties) {
