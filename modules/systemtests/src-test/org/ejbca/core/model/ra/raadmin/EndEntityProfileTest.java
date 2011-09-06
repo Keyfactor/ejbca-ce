@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -258,6 +259,7 @@ public class EndEntityProfileTest {
         log.trace("<test08FieldIds()");
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
     public void test09Clone() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
@@ -274,9 +276,6 @@ public class EndEntityProfileTest {
         String clonestr = (String)clonemap.get("FOO");
         assertEquals("FAR", profstr);
         assertEquals("BAR", clonestr);
-        EndEntityProfile clone2 = (EndEntityProfile)clone.clone();
-        HashMap clonemap2 = (HashMap)clone2.saveData();
-        assertEquals(clonemap2.size(), profmap.size());
     }
     
     /**
