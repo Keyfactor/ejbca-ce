@@ -95,7 +95,13 @@ public class X509ResponseMessage implements ResponseMessage {
      * @throws CertificateException if the byte array in this response does not contain a proper certificate
      */
     public Certificate getCertificate() {     
-       return cert;
+        try {
+            return CertTools.getCertfromByteArray(getResponseMessage());
+        } catch (CertificateEncodingException e) {
+            throw new Error("Could not encode certificate. This should not happen", e);
+        } catch (CertificateException e) {
+            throw new Error("Response was created without containing valid certificate. This should not happen", e);
+        }
     }
 
     /**
