@@ -458,7 +458,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             issuedetails.put("issuancerevocationreason", revreason);
             issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
             logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(ca.getCAId()).toString(), serialNo, data.getUsername(),
-                    details);
+            		issuedetails);
 
             if (log.isTraceEnabled()) {
                 log.trace("<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)");
